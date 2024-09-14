@@ -1,0 +1,65 @@
+
+/*! @import */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: var(--main-bg-color);
+}
+
+
+/*.container {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    height: 100vh; !* Занимает всю высоту экрана *!*/
+/*}*/
+
+/*header, footer {*/
+/*    flex: 0 0 auto; !* Фиксированная высота *!*/
+/*    background-color: #f0f0f0;*/
+/*}*/
+
+/*main {*/
+/*    flex: 1; !* Занимает оставшееся пространство *!*/
+/*    overflow-y: auto; !* Включаем прокрутку, если содержимое больше, чем доступное пространство *!*/
+/*}*/
+
+
+
+/*header, footer {*/
+/*    @apply fixed bg-slate-300 p-0 m-0 box-border;*/
+
+/*    !*position: fixed;*!*/
+/*    !*width: 100%;*!*/
+/*    !*background-color: #f0f0f0;*!*/
+/*    !*padding: 10px;*!*/
+/*    !*box-sizing: border-box;*!*/
+/*}*/
+
+/*header {*/
+/*    @apply top-0;*/
+/*    !*top: 0;*!*/
+/*}*/
+
+/*footer {*/
+/*    @apply bottom-0 w-screen;*/
+/*    !*bottom: 0;*!*/
+/*}*/
+
+/*main {*/
+/*    @apply pt-12 pb-12 w-screen h-screen;*/
+/*    !*padding-top: 50px; !* Высота header *!*!*/
+/*    !*padding-bottom: 50px; !* Высота footer *!*!*/
+/*}*/
+
+/*--sidebar-width = 150px;*/
+
+:root {
+    --sidebar-width: 200px;                         /* Ширина сайд бара */
+    --header-height: 50px;                          /* Высота header */
+    --footer-height: 50px;                          /* Высота footer */
+    --main-bg-color: rgb(243 244 246);              /* Цвет фона */
+    --main-border-color: rgb(156 163 175);          /* Цвет границы */
+
+}
