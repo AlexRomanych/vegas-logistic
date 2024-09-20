@@ -8,14 +8,32 @@ const menu = function () {
                     {itemId: 2, itemName: 'Клиент 2'},
                     {itemId: 3, itemName: 'Клиент 3'},
                 ]
-        }, {
+        },
+        {
             groupName: 'Справочники', shown: false, isActive: false, icon: 'BookOpenIcon', items:
                 [
                     {itemId: 1, itemName: 'Справочник 1'},
                     {itemId: 2, itemName: 'Справочник 2'},
                     {itemId: 3, itemName: 'Справочник 3'},
                 ]
+        },
+        {
+            groupName: 'Tutorials', shown: false, isActive: false, icon: 'BookOpenIcon', items:
+                [
+                    {itemId: 1, itemName: 'Tutorial 1'},
+                    {itemId: 2, itemName: 'Tutorial 2'},
+                    {itemId: 3, itemName: 'Tutorial 3'},
+                ]
+        },
+        {
+            groupName: '1234567890', shown: false, isActive: false, icon: 'BookOpenIcon', items:
+                [
+                    {itemId: 1, itemName: 'Tutorial 1'},
+                    {itemId: 2, itemName: 'Tutorial 2'},
+                    {itemId: 3, itemName: 'Tutorial 3'},
+                ]
         }
+
     ]
 }
 

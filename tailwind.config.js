@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
-
+const defaultTheme = require('tailwindcss/defaultTheme');
+// const defaultTheme = import('tailwindcss').Config
 export default {
     content: [
         "./resources/**/*.blade.php",
@@ -10,7 +11,14 @@ export default {
     ],
 //    darkMode: false, // or 'media' or 'class'
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                'sans': ['"Raleway"', ...defaultTheme.fontFamily.sans],
+                'mono': ['"Fira Code"', ...defaultTheme.fontFamily.mono],
+                // 'serif': ['"Fira Code"', ...defaultTheme.fontFamily.serif],
+
+            },
+        }
     },
     variants: {
         extend: {},
