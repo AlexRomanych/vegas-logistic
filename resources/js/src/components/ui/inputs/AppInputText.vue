@@ -5,7 +5,11 @@
             :id="id"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
             :placeholder="placeholder"
+            :disabled="disabled"
             type="text"
+            v-model="inputText"
+            @input="getInputText"
+
         >
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
 
@@ -41,6 +45,11 @@ const props = defineProps({
         required: false,
         default: '',
     },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
     width: {
         type: String,
         required: false,
@@ -61,32 +70,34 @@ const props = defineProps({
 
 })
 
-const currentColor = computed(() => getColorClassByType(props.type))
 
-const placeholderColor = ref('placeholder-' + currentColor.value)
-const borderColor = ref('border-' + currentColor.value)
-const focusBorderColor = ref('focus:ring-' + currentColor.value)
-const textColor = ref('text-' + currentColor.value)
-textColor.value = textColor.value.replace('300', '500')
-// const focusBorderColor = 'focus:ring-yellow-300'
+const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
+const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
-// const borderColor_1 = 'border-red-300'// + currentColor.value
+const placeholderColor = 'placeholder' + currentColor
+const borderColor = 'border' + currentColor
+const focusBorderColor = 'focus:ring' + currentColor
 
+let textColor = 'text' + currentColor
+textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
-// const borderColor_1 = 'border-yellow-300'
+const inputText = defineModel({
+    type: String,
+    default: ''
+})
 
+const emit = defineEmits(['getInputText'])
 
-// const placeholderColor_1 = 'placeholder-yellow-300'
-
-// console.log(placeholderColor.value)
-// console.log(placeholderColor_1)
-
-
-// console.log('placeholder-' + currentColor.value === placeholderColor_1)
+const getInputText = e => emit('getInputText', e.target.value)
+// const onInput = function(e) {
+//     console.log(e.target.value)
+// }
+// const onInput = function(inputText) {
+//     console.log(inputText.target.value)
+// }
 
 
 </script>
-
 
 <style scoped>
 .app-input {
@@ -100,42 +111,5 @@ textColor.value = textColor.value.replace('300', '500')
 .input-label {
     @apply text-sm font-semibold ml-2 mb-0.5 mt-2
 }
-
-.needed-red {
-    @apply
-    border-red-300
-    placeholder-red-300
-    focus:ring-red-300
-    text-red-300
-    text-red-500
-}
-
-.needed-yellow {
-    @apply
-    border-yellow-300
-    placeholder-yellow-300
-    focus:ring-yellow-300
-    text-yellow-300
-    text-yellow-500
-}
-
-.needed-green {
-    @apply
-    border-green-300
-    placeholder-green-300
-    focus:ring-green-300
-    text-green-300
-    text-green-500
-}
-
-.needed-gray {
-    @apply
-    border-gray-300
-    placeholder-gray-300
-    focus:ring-gray-300
-    text-gray-300
-    text-gray-500
-}
-
 
 </style>

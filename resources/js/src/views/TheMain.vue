@@ -4,9 +4,10 @@
 
         <AppInputText
             :id = 'newInput'
-            :placeholder = '"Search"'
-            :label = '"Введите имя"'
-            :type = '"error"'
+            placeholder = 'Search'
+            label = 'Введите имя'
+            :type = '"danger"'
+            :disabled="true"
         />
 
         <AppInputText
@@ -14,15 +15,25 @@
             :placeholder = '"Enter..."'
             :label = '"Введите данные"'
             :error = 'workError'
-            :type = '"warn"'
+            :type = '"warning"'
         />
 
         <AppInputText
             :label = '"Введите данные"'
             :id = 'newInput_2'
             :placeholder = '"Enter..."'
-            :type = '"notice"'
+            :type = '"success"'
+            @getInputText = 'showText'
         />
+
+<!--        <AppButtonSubmit-->
+
+<!--        />-->
+
+<!--        <AppInputButton-->
+<!--            id="newButton"-->
+<!--            :type = '"error"'-->
+<!--        />-->
 
     </main>
 </template>
@@ -31,7 +42,9 @@
 <script setup>
 import {ref} from "vue";
 import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
+import AppButtonSubmit from "@/src/components/ui/buttons/AppButtonSubmit.vue";
 import ErrorClass from "@/src/app/classes/ErrorClass.js";
+import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
 
 
 const newInput = ref('123')
@@ -42,7 +55,9 @@ const workError = new ErrorClass()
 
 const defError = new Error('Привет')
 // console.log(workError)
-
+const showText = function (data) {
+    console.log(data)
+}
 
 </script>
 
