@@ -28,7 +28,6 @@
         />
 
 
-
         <AppInputButton
             :id='"newButton"'
             title='Ошибка'
@@ -58,7 +57,6 @@
         />
 
 
-
         <div>
             <AppInputButton
                 :id='"newButton"'
@@ -69,25 +67,38 @@
 
             <AppInputButton
                 :id='"newButton"'
-                title='Warning'
-                type='warning'
+                title="Warning"
+                type="warning"
                 @buttonClick="buttonClickHandler"
             />
 
             <AppInputButton
                 :id='"newButton"'
-                title='Ошибка'
+                title="Ошибка"
                 type='light'
                 @buttonClick="buttonClickHandler"
             />
 
             <AppInputButton
                 :id='"newButton"'
-                title='Ошибка'
-                type='dark'
+                title="Ошибка"
+                type="dark"
                 @buttonClick="buttonClickHandler"
             />
         </div>
+
+        <AppCallout
+            type="danger"
+
+
+        />
+
+        <AppModal
+            text="A am modal"
+            :show="true"
+            type="info"
+        />
+
 
     </main>
 </template>
@@ -98,6 +109,8 @@ import {ref} from "vue";
 import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
 import ErrorClass from "@/src/app/classes/ErrorClass.js";
 import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
+import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
+import AppModal from "@/src/components/ui/modals/AppModal.vue";
 
 
 const newInput = ref('123')

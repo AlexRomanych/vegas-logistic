@@ -8,7 +8,7 @@ import {
 } from "@/src/app/constants/colorsClasses.js"
 
 export function getColorClassByType(type, prefix = '', colorIndexData = 0) {
-    if (prefix === '' || colorIndexData === 0) {
+    if (prefix === '') {
         return '-' + colorsClasses[type].color + '-'
     }
 

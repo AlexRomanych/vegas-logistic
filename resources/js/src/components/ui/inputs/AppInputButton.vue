@@ -7,7 +7,7 @@
         class="app-input"
         type="button"
         @click="buttonClick"
-        v-model="inputButton"
+
     />
 </template>
 
@@ -39,6 +39,11 @@ const props = defineProps({
         default: 'w-[100px]',
 
     },
+    height: {
+        type: String,
+        required: false,
+        default: 'h-[30px]',
+    },
     title: {
         type: String,
         required: false,
@@ -47,18 +52,18 @@ const props = defineProps({
 
 })
 
-console.log(props.title)
+// console.log(props.title)
 // const inputButton = defineModel(props.title)
 
 // const title = computed(() => props.title)
 const emit = defineEmits(['buttonClick'])
 
-const title = props.title
-const inputButton = defineModel('title')
-const buttonClick = function() {
+// const title = props.title
+// const inputButton = defineModel('title')
+const buttonClick = function(e) {
     // inputButton.value++
     // console.log(inputButton.value)
-    emit('buttonClick', inputButton.value)
+    emit('buttonClick', e.target.value)
 }
 
 const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
