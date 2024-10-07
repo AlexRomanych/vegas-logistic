@@ -1,4 +1,6 @@
-const colorValue = 300                  // value of the color
+const colorIndex = 500                  // value of the color
+const colorIndexLight = 200             // value of the color of light scheme
+const colorIndexOffset = 100            // смещение цвета для наведения курсора
 
 const mainColor = 'color'               // основной цвет элемента
 const textColor = 'text'                // цвет текста
@@ -7,11 +9,6 @@ const toLight = 'toLight'               // изменение основного
 const toDark = 'toDark'               // изменение основного цвета элемента на более светлый
 
 // Задаем классы для каждого цвета
-
-// const warn = 'warn'
-// const error = 'error'
-// const notice = 'notice'
-// const normal = 'normal'
 
 const primary = 'primary'
 const secondary = 'secondary'
@@ -29,22 +26,22 @@ const colorsClasses = {}
 colorsClasses[primary] = {
     [mainColor]: 'blue',
     [textColor]: 'white',
-    [effectDirection]: toLight
+    [effectDirection]: toDark
 }
 colorsClasses[secondary] = {
     [mainColor]: 'slate',
     [textColor]: 'white',
-    [effectDirection]: toLight
+    [effectDirection]: toDark
 }
 colorsClasses[success] = {
     [mainColor]: 'green',
     [textColor]: 'white',
-    [effectDirection]: toLight
+    [effectDirection]: toDark
 }
 colorsClasses[danger] = {
     [mainColor]: 'red',
     [textColor]: 'white',
-    [effectDirection]: toLight
+    [effectDirection]: toDark
 }
 colorsClasses[warning] = {
     [mainColor]: 'yellow',
@@ -57,30 +54,15 @@ colorsClasses[info] = {
     [effectDirection]: toLight
 }
 colorsClasses[light] = {
-    [mainColor]: 'gray',
+    [mainColor]: 'zinc',
     [textColor]: 'black',
     [effectDirection]: toDark
 }
 colorsClasses[dark] = {
-    [mainColor]: 'black',
+    [mainColor]: 'gray',
     [textColor]: 'white',
     [effectDirection]: toLight
 }
-
-
-// colorsClasses[warn] = 'yellow-' + colorValue
-// colorsClasses[warn] = 'yellow-' + colorValue
-// colorsClasses[error] = 'red-' + colorValue
-// colorsClasses[notice] = 'green-' + colorValue
-// colorsClasses[normal] = 'gray-' + colorValue
-//
-//
-// const colorsClasses = {}
-// colorsClasses[warn] = 'yellow-' + colorValue
-// colorsClasses[error] = 'red-' + colorValue
-// colorsClasses[notice] = 'green-' + colorValue
-// colorsClasses[normal] = 'gray-' + colorValue
-
 
 const colorsList = [primary, secondary, success, danger, warning, info, light, dark]
 const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark}
@@ -96,5 +78,6 @@ const colorsListObj = {primary, secondary, success, danger, warning, info, light
 export {
     colorsClasses, colorsList, colorsListObj,
     toLight, toDark,
-    primary, secondary, success, danger, warning, info, light, dark
+    primary, secondary, success, danger, warning, info, light, dark,
+    colorIndex, colorIndexLight, colorIndexOffset
 }

@@ -3,37 +3,91 @@
         <div>The Main</div>
 
         <AppInputText
-            :id = 'newInput'
-            placeholder = 'Search'
-            label = 'Введите имя'
-            :type = '"danger"'
+            :id='newInput'
             :disabled="true"
+            :type='"danger"'
+            label='Введите имя'
+            placeholder='Search'
         />
 
         <AppInputText
-            :id = 'newInput_1'
-            :placeholder = '"Enter..."'
-            :label = '"Введите данные"'
-            :error = 'workError'
-            :type = '"warning"'
+            :id='newInput_1'
+            :error='workError'
+            :label='"Введите данные"'
+            :placeholder='"Enter..."'
+            :type='"warning"'
+            width='w-[300px]'
         />
 
         <AppInputText
-            :label = '"Введите данные"'
-            :id = 'newInput_2'
-            :placeholder = '"Enter..."'
-            :type = '"success"'
-            @getInputText = 'showText'
+            :id='newInput_2'
+            :label='"Введите данные"'
+            :placeholder='"Enter..."'
+            :type='"success"'
+            @getInputText='showText'
         />
 
-<!--        <AppButtonSubmit-->
 
-<!--        />-->
 
-<!--        <AppInputButton-->
-<!--            id="newButton"-->
-<!--            :type = '"error"'-->
-<!--        />-->
+        <AppInputButton
+            :id='"newButton"'
+            title='Ошибка'
+            type='primary'
+            @buttonClick="buttonClickHandler"
+        />
+
+        <AppInputButton
+            :id='"newButton"'
+            title='Ошибка'
+            type='secondary'
+            @buttonClick="buttonClickHandler"
+        />
+
+        <AppInputButton
+            :id='"newButton"'
+            title='Ошибка'
+            type='success'
+            @buttonClick="buttonClickHandler"
+        />
+
+        <AppInputButton
+            :id='"newButton"'
+            title='Ошибка'
+            type='danger'
+            @buttonClick="buttonClickHandler"
+        />
+
+
+
+        <div>
+            <AppInputButton
+                :id='"newButton"'
+                title='Ошибка'
+                type='info'
+                @buttonClick="buttonClickHandler"
+            />
+
+            <AppInputButton
+                :id='"newButton"'
+                title='Warning'
+                type='warning'
+                @buttonClick="buttonClickHandler"
+            />
+
+            <AppInputButton
+                :id='"newButton"'
+                title='Ошибка'
+                type='light'
+                @buttonClick="buttonClickHandler"
+            />
+
+            <AppInputButton
+                :id='"newButton"'
+                title='Ошибка'
+                type='dark'
+                @buttonClick="buttonClickHandler"
+            />
+        </div>
 
     </main>
 </template>
@@ -42,7 +96,6 @@
 <script setup>
 import {ref} from "vue";
 import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
-import AppButtonSubmit from "@/src/components/ui/buttons/AppButtonSubmit.vue";
 import ErrorClass from "@/src/app/classes/ErrorClass.js";
 import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
 
@@ -57,6 +110,11 @@ const defError = new Error('Привет')
 // console.log(workError)
 const showText = function (data) {
     console.log(data)
+}
+
+
+const buttonClickHandler = function (args) {
+    console.log(args)
 }
 
 </script>

@@ -1,23 +1,21 @@
 <template>
-    <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
-        <input
-            :id="id"
-            v-model="inputText"
-            :class="['app-input', borderColor, focusBorderColor]"
-            type="button"
-            @input="getInputText"
-
-        >
-
-    </div>
-
+    <input
+        :id="id"
+        :class="[props.width, backgroundColor, borderColor, currentTextColor]"
+        :disabled="disabled"
+        :value="title"
+        class="app-input"
+        type="button"
+        @click="buttonClick"
+        v-model="inputButton"
+    />
 </template>
 
 
 <script setup>
 
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
+import {colorsList} from "@/src/app/constants/colorsClasses.js"
+import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
 import {computed, ref} from "vue";
 
 const props = defineProps({
@@ -27,8 +25,13 @@ const props = defineProps({
     type: {
         type: String,
         required: false,
-        default: 'normal',
+        default: 'primary',
         validator: (type) => colorsList.includes(type)
+    },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
     },
     width: {
         type: String,
@@ -36,87 +39,40 @@ const props = defineProps({
         default: 'w-[100px]',
 
     },
-
-
+    title: {
+        type: String,
+        required: false,
+        default: 'Нажми меня',
+    }
 
 })
-// console.log(props)
 
-const currentColor = computed(() => getColorClassByType(props.type))
+console.log(props.title)
+// const inputButton = defineModel(props.title)
 
-const placeholderColor = 'placeholder-' + currentColor.value
-const borderColor = 'border-' + currentColor.value
-const focusBorderColor = 'focus:ring-' + currentColor.value
-let textColor = 'text-' + currentColor.value
-textColor = textColor.replace('300', '500')
+// const title = computed(() => props.title)
+const emit = defineEmits(['buttonClick'])
 
-const inputText = defineModel({
-    type: String,
-    default: ''
-})
+const title = props.title
+const inputButton = defineModel('title')
+const buttonClick = function() {
+    // inputButton.value++
+    // console.log(inputButton.value)
+    emit('buttonClick', inputButton.value)
+}
 
-const emit = defineEmits(['getInputText'])
-
-const getInputText = e => emit('getInputText', e.target.value)
-// const onInput = function(e) {
-//     console.log(e.target.value)
-// }
-// const onInput = function(inputText) {
-//     console.log(inputText.target.value)
-// }
-
+const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
+const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
+const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value
+const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex)).value
 
 </script>
 
 
 <style scoped>
+
 .app-input {
-    @apply p-1 border rounded-md focus:outline-none focus:ring-2;
+    @apply ml-1 mt-1 p-1 border-2 rounded-lg cursor-pointer;
 }
-
-.input-error {
-    @apply text-sm ml-2 font-semibold;
-}
-
-.input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
-}
-
-.needed-red {
-    @apply
-    border-red-300
-    placeholder-red-300
-    focus:ring-red-300
-    text-red-300
-    text-red-500
-}
-
-.needed-yellow {
-    @apply
-    border-yellow-300
-    placeholder-yellow-300
-    focus:ring-yellow-300
-    text-yellow-300
-    text-yellow-500
-}
-
-.needed-green {
-    @apply
-    border-green-300
-    placeholder-green-300
-    focus:ring-green-300
-    text-green-300
-    text-green-500
-}
-
-.needed-gray {
-    @apply
-    border-gray-300
-    placeholder-gray-300
-    focus:ring-gray-300
-    text-gray-300
-    text-gray-500
-}
-
 
 </style>

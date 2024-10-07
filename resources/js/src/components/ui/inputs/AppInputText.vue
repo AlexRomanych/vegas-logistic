@@ -32,7 +32,7 @@ const props = defineProps({
     type: {
         type: String,
         required: false,
-        default: 'normal',
+        default: 'primary',
         validator: (type) => colorsList.includes(type)
     },
     placeholder: {
@@ -71,6 +71,7 @@ const props = defineProps({
 })
 
 
+
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
@@ -88,7 +89,7 @@ const inputText = defineModel({
 
 const emit = defineEmits(['getInputText'])
 
-const getInputText = e => emit('getInputText', e.target.value)
+const getInputText = (e) => emit('getInputText', e.target.value)
 // const onInput = function(e) {
 //     console.log(e.target.value)
 // }
@@ -101,7 +102,7 @@ const getInputText = e => emit('getInputText', e.target.value)
 
 <style scoped>
 .app-input {
-    @apply p-1 border rounded-md focus:outline-none focus:ring-2;
+    @apply p-1 border rounded-lg focus:outline-none focus:ring-2;
 }
 
 .input-error {

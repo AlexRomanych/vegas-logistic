@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors')
+
 import {
     colorsClasses,
     danger, dark, info, light,
@@ -37,19 +39,21 @@ export default {
         'text-2xl',
         'text-3xl',
         {
-            pattern: /bg-(blue|slate|green|red|yellow|sky|gray|black)-(200|300|400|500|600|700|800)/,
+            pattern: /bg-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
+            variants: ['hover'],
         },
         {
-            pattern: /text-(blue|slate|green|red|yellow|sky|gray|black)-(200|300|400|500|600|700|800)/,
+            pattern: /text-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
         },
         {
-            pattern: /border-(blue|slate|green|red|yellow|sky|gray|black)-(200|300|400|500|600|700|800)/,
+            pattern: /border-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
+            variants: ['hover'],
         },
         {
-            pattern: /placeholder-(blue|slate|green|red|yellow|sky|gray|black)-(200|300|400|500|600|700|800)/,
+            pattern: /placeholder-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
         },
         {
-            pattern: /ring-(blue|slate|green|red|yellow|sky|gray|black)-(200|300|400|500|600|700|800)/,
+            pattern: /ring-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
             variants: ['focus'],
         },
 
