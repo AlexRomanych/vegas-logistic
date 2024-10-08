@@ -99,12 +99,9 @@
 
         />
 
-        <AppSelect
-            :selectData="selectData"
-            :multiple="false"
-            type="warning"
-            @change="changeHandler"
-        />
+<!--        <AppSelect-->
+<!--            :selectData="selectData"-->
+<!--        />-->
 
 
     </main>
@@ -137,9 +134,6 @@ const buttonClickHandler = function (args) {
     console.log(args)
 }
 
-const changeHandler = function (args) {
-    console.log(args)
-}
 
 const selectData = {
     name: 'numbers',
@@ -147,7 +141,7 @@ const selectData = {
         {id: 1, name: 'One'},
         {id: 2, name: 'Two'},
         {id: 3, name: 'Three', selected: true},
-        {id: 4, name: 'Four', disabled: true},
+        {id: 4, name: 'Four'},
         {id: 5, name: 'Five'},
     ]
 }
