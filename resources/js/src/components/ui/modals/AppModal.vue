@@ -1,5 +1,5 @@
 <template>
-    <teleport to="body">
+    <Teleport to="body">
         <div v-if="showModal"
              class="dark-container">
 
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-    </teleport>
+    </Teleport>
 </template>
 
 <script setup>
@@ -86,11 +86,11 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 <style scoped>
 .dark-container {
-    @apply z-[999] bg-slate-500 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
+    @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
 }
 
 .modal-container {
-    @apply bg-slate-800 rounded-xl flex flex-col justify-between items-center border-l-8
+    @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8
 }
 
 .close-cross-container {

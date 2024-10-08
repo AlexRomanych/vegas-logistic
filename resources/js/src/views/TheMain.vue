@@ -88,15 +88,15 @@
         </div>
 
         <AppCallout
-            type="danger"
-
+            type="dark"
 
         />
 
         <AppModal
             text="A am modal"
-            :show="true"
+            :show="false"
             type="info"
+
         />
 
 
@@ -138,5 +138,6 @@ const buttonClickHandler = function (args) {
     flex: 1;
     overflow-y: auto;
     margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+ /*   position: relative; */
 }
 </style>
