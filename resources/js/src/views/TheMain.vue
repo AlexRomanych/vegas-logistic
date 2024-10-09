@@ -93,19 +93,25 @@
         />
 
         <AppModal
-            :show="false"
+            :show="true"
             text="A am modal"
             type="info"
 
         />
 
         <AppSelect
-            :selectData="selectData"
             :multiple="false"
+            :selectData="selectData"
             type="warning"
             @change="changeHandler"
         />
 
+        <AppButton
+            id="newButtonBut_1"
+            type="light"
+            @buttonClick="buttonClickHandler"
+
+        />
 
     </main>
 </template>
@@ -119,6 +125,7 @@ import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
 import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
 import AppModal from "@/src/components/ui/modals/AppModal.vue";
 import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
+import AppButton from "@/src/components/ui/buttons/AppButton.vue";
 
 const newInput = ref('123')
 const newInput_1 = ref('123')

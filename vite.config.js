@@ -3,7 +3,7 @@ import laravel from 'laravel-vite-plugin'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
-// import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 // console.log(new URL('./src', import.meta.url))
 export default defineConfig({
