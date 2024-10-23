@@ -7,7 +7,11 @@ import {
     colorIndexLight
 } from "@/src/app/constants/colorsClasses.js"
 
-export function getColorClassByType(type, prefix = '', colorIndexData = 0) {
+// Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
+// prefix - префикс для класса tailwind ('bg', 'text', 'border')
+// colorIndexData - индекс цвета для кнопки
+// hover - менять ли цвет кнопки при наведении
+export function getColorClassByType(type, prefix = '', colorIndexData = 0, hover = true) {
     if (prefix === '') {
         return '-' + colorsClasses[type].color + '-'
     }
@@ -26,6 +30,10 @@ export function getColorClassByType(type, prefix = '', colorIndexData = 0) {
     }
 
     const simpleClass = prefix + '-' + colorsClasses[type].color + '-' + mainIndexColor.toString()
+
+    if (!hover) {
+        return simpleClass
+    }
     const hoverClass = 'hover:' + prefix + '-' + colorsClasses[type].color + '-' + newIndex.toString()
 
     // if (type === 'dark') {

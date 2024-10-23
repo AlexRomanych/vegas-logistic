@@ -93,7 +93,7 @@
         />
 
         <AppModal
-            :show="true"
+            :show="false"
             text="A am modal"
             type="info"
 
@@ -113,6 +113,14 @@
 
         />
 
+
+        <AppCheckbox
+            :checkboxData="checkboxData"
+            legend="Numbers"
+            type="dark"
+            @checked="chackedHandler"
+        />
+
     </main>
 </template>
 
@@ -126,6 +134,7 @@ import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
 import AppModal from "@/src/components/ui/modals/AppModal.vue";
 import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
 import AppButton from "@/src/components/ui/buttons/AppButton.vue";
+import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
 
 const newInput = ref('123')
 const newInput_1 = ref('123')
@@ -148,12 +157,28 @@ const changeHandler = function (args) {
     console.log(args)
 }
 
+const chackedHandler = function (args) {
+    delete args.uniqID
+    console.log(args)
+}
+
 const selectData = {
     name: 'numbers',
     data: [
         {id: 1, name: 'One'},
         {id: 2, name: 'Two'},
         {id: 3, name: 'Three', selected: true},
+        {id: 4, name: 'Four', disabled: true},
+        {id: 5, name: 'Five'},
+    ]
+}
+
+const checkboxData = {
+    name: 'numbers',
+    data: [
+        {id: 1, name: 'One'},
+        {id: 2, name: 'Two'},
+        {id: 3, name: 'Three', checked: true},
         {id: 4, name: 'Four', disabled: true},
         {id: 5, name: 'Five'},
     ]
