@@ -81,8 +81,8 @@ const getPositionClass = (pos_x, pos_y) => {
     return `${x_pos} ${y_pos}`
 }
 
-const position = getPositionClass(props.pos_x, props.pos_y)             // Получаем класс для позиции
-const bgColor = computed(() => getColorClassByType(props.type, 'bg'))                   // Получаем класс для цвета заднего фона
+const position = getPositionClass(props.pos_x, props.pos_y)                                     // Получаем класс для позиции
+const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))         // Получаем класс для цвета заднего фона
 const borderColor = computed(() => getColorClassByType(props.type, 'border', 700))      // Получаем класс для цвета границы
 const textColor = computed(() => getTextColorClassByType(props.type))
 

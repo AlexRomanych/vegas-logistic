@@ -207,8 +207,7 @@ const tableData = {
     data: [
         ['Row 1', 'Cell 1', 'Cell 2'],
         ['Row 2', 'Cell 3', 'Cell 4'],
-        ['Row 3', 'Cell 5', 'Cell 6'],
-        ['Row 4', 'Cell 7', 'Cell 8'],
+
     ]
 }
 
