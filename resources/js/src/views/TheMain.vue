@@ -116,9 +116,12 @@
 
         <AppCheckbox
             :checkboxData="checkboxData"
-            legend="Numbers"
-            type="dark"
-            @checked="chackedHandler"
+            inputType="radio"
+            legend="Many Numbers"
+            type="secondary"
+            @checked="checkedHandler"
+            width="w-[600px]"
+            dir="horizontal"
         />
 
     </main>
@@ -157,9 +160,16 @@ const changeHandler = function (args) {
     console.log(args)
 }
 
-const chackedHandler = function (args) {
-    delete args.uniqID
-    console.log(args)
+const checkedHandler = function (args) {
+    // delete args.uniqID
+    if (args instanceof Array) {
+
+        // args.forEach(item => {delete item.uniqID})
+    } else {
+        // delete args.uniqID
+    }
+    // console.log(args)
+
 }
 
 const selectData = {
@@ -180,7 +190,7 @@ const checkboxData = {
         {id: 2, name: 'Two'},
         {id: 3, name: 'Three', checked: true},
         {id: 4, name: 'Four', disabled: true},
-        {id: 5, name: 'Five'},
+        {id: 5, name: 'Five', checked: true},
     ]
 }
 

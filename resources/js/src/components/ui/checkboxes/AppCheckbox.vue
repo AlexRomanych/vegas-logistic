@@ -1,37 +1,42 @@
 <template>
     <div v-if="checkboxData.data.length" :class="[width, bgColor, 'check-box-data-container']">
+
+        <!-- дополнительное расстояние вверху fieldset, если нет легенды-->
+        <div v-if="!legend" class="h-[6px]"></div>
+
         <fieldset class="fieldset-container">
 
             <legend>
-                    <span  :class="[textColor, 'legent-text-container']">
+                    <span :class="[textColor, 'legent-text-container']">
                         {{ legend ? '&nbsp' : '' }}
                         {{ legend }}
                         {{ legend ? '&nbsp' : '' }}
                     </span>
             </legend>
 
-            <div v-for="item in checkBoxObject" :key="item.uniqID">
-                <input
-                    :id="item.uniqID"
-                    :checked="item.checked"
-                    :disabled="item.disabled"
-                    :name="item.name"
-                    :value="item.uniqID"
-                    @change="checked"
-                    type="checkbox"
-                />
-                <label
-                    :class="[textColor]"
-                    :for="item.uniqID"
-                    class="ml-1"
-                >
-                    {{ item.name }}
-                </label>
+            <div :class="[dir === 'horizontal' ? 'flex items-center justify-around' : '']">
+                <div v-for="item in checkBoxObject" :key="item.uniqID" >
+                    <input
+                        :id="item.uniqID"
+                        :checked="item.checked"
+                        :disabled="item.disabled"
+                        :name="inputType === 'checkbox' ? item.name : 'radio'"
+                        :type="inputType"
+                        :value="item.uniqID"
+                        @change="checked"
+                    />
+                    <label
+                        :class="[textColor]"
+                        :for="item.uniqID"
+                        class="ml-1"
+                    >
+                        {{ item.name }}
+                    </label>
+                </div>
             </div>
-
         </fieldset>
-<!-- дополнительное расстояние снизу fieldset-->
-    <div class="h-[6px]"></div>
+        <!-- дополнительное расстояние снизу fieldset-->
+        <div class="h-[6px]"></div>
 
     </div>
 </template>
@@ -51,6 +56,18 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[300px]'
+    },
+    inputType: {
+        type: String,
+        required: false,
+        default: 'checkbox',
+        validator: (type) => ['checkbox', 'radio'].includes(type)
+    },
+    dir: {
+        type: String,
+        required: false,
+        default: 'vertical',
+        validator: (dir) => ['vertical', 'horizontal'].includes(dir)
     },
     type: {
         type: String,
@@ -73,6 +90,8 @@ const props = defineProps({
 })
 
 // добавляем uniqID, чтобы не было коллизий
+// и добавляем checked в зависимости от типа кнопок
+
 const tempData = props.checkboxData.data.map((item, idx) => {
     return {
         ...item,
@@ -81,19 +100,40 @@ const tempData = props.checkboxData.data.map((item, idx) => {
     }
 })
 
+// если это radio и есть несколько checked, то выбираем первый
+if (props.inputType === 'radio') {
+
+    const initValue = -1
+    const trueIndex = tempData.reduce(
+        (acc, item, idx) => (item.checked && acc === initValue) ? acc = idx : acc = acc,
+        initValue
+    )
+
+    tempData.forEach((item, idx) => { item.checked = idx === trueIndex})
+}
+
+
 // создаем объект отслеживания изменений checkbox
 const checkBoxObject = reactive(tempData)
 
-console.log(checkBoxObject)
+// console.log(checkBoxObject)
 
 const emit = defineEmits(['checked'])
 const checked = (e) => {
     const idx = checkBoxObject.findIndex(item => item.uniqID === e.target.value)
-    checkBoxObject[idx].checked = !checkBoxObject[idx].checked
+
+    if (props.inputType === 'checkbox') {
+        checkBoxObject[idx].checked = !checkBoxObject[idx].checked
+    } else {
+        // сбрасываем все, кроме выбранного элемента
+        checkBoxObject.forEach(item => item.checked = item.uniqID === e.target.value)
+        console.log(e.target.value)
+    }
 
 //    console.log(checkBoxObject[idx].name, checkBoxObject[idx].checked)
 
-    emit('checked', checkBoxObject[idx])              // вызываем событие
+    // возвращаем в зависимости от типа кнопок: checkbox (весь объект) или radio (выбранный элемент)
+    emit('checked', props.inputType === 'checkbox' ? checkBoxObject : checkBoxObject[idx])              // вызываем событие
 }
 
 const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))                   // Получаем класс для цвета заднего фона
