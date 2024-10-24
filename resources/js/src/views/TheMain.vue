@@ -116,12 +116,19 @@
 
         <AppCheckbox
             :checkboxData="checkboxData"
+            dir="horizontal"
             inputType="radio"
             legend="Many Numbers"
             type="secondary"
-            @checked="checkedHandler"
             width="w-[600px]"
-            dir="horizontal"
+            @checked="checkedHandler"
+        />
+
+
+        <AppTable
+            :tableData="tableData"
+            caption="Table Caption"
+            textSize="small"
         />
 
     </main>
@@ -138,6 +145,7 @@ import AppModal from "@/src/components/ui/modals/AppModal.vue";
 import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
 import AppButton from "@/src/components/ui/buttons/AppButton.vue";
 import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
+import AppTable from "@/src/components/ui/tables/AppTable.vue";
 
 const newInput = ref('123')
 const newInput_1 = ref('123')
@@ -193,6 +201,26 @@ const checkboxData = {
         {id: 5, name: 'Five', checked: true},
     ]
 }
+
+const tableData = {
+    headers: ['Column 1', 'Column 2', 'Column 3'],
+    data: [
+        ['Row 1', 'Cell 1', 'Cell 2'],
+        ['Row 2', 'Cell 3', 'Cell 4'],
+        ['Row 3', 'Cell 5', 'Cell 6'],
+        ['Row 4', 'Cell 7', 'Cell 8'],
+    ]
+}
+
+
+// const tableData = {
+//     data: [
+//         ['Row 1', 'Cell 1', 'Cell 2'],
+//         ['Row 2', 'Cell 3', 'Cell 4'],
+//         ['Row 3', 'Cell 5', 'Cell 6'],
+//         ['Row 4', 'Cell 7', 'Cell 8'],
+//     ]
+// }
 
 
 // console.log(selectData)
