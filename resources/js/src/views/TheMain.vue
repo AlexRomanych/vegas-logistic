@@ -131,6 +131,15 @@
             textSize="small"
         />
 
+        <AppInputDate
+            :id="newInputDate"
+            label="Введите данные"
+            placeholder="Enter..."
+            type="warning"
+            width="w-[300px]"
+        />
+
+
     </main>
 </template>
 
@@ -146,10 +155,13 @@ import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
 import AppButton from "@/src/components/ui/buttons/AppButton.vue";
 import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
 import AppTable from "@/src/components/ui/tables/AppTable.vue";
+import AppInputDate from "@/src/components/ui/inputs/AppInputDate.vue";
+
 
 const newInput = ref('123')
 const newInput_1 = ref('123')
 const newInput_2 = ref('123')
+const newInputDate = ref('newInputDate_123')
 // const workError = new ErrorClass({message: 'Это ошибка'})
 const workError = new ErrorClass()
 
