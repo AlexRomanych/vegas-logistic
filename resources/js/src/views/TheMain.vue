@@ -134,9 +134,15 @@
         <AppInputDate
             :id="newInputDate"
             label="Введите данные"
-            placeholder="Enter..."
             type="warning"
-            width="w-[300px]"
+            width="w-[150px]"
+        />
+
+        <AppInputDate_comp
+            :id="newInputDate_"
+            label="Введите данные"
+            type="warning"
+            width="w-[150px]"
         />
 
 
@@ -156,6 +162,7 @@ import AppButton from "@/src/components/ui/buttons/AppButton.vue";
 import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
 import AppTable from "@/src/components/ui/tables/AppTable.vue";
 import AppInputDate from "@/src/components/ui/inputs/AppInputDate.vue";
+import AppInputDate_comp from "@/src/components/ui/inputs/AppInputDate_comp.vue";
 
 
 const newInput = ref('123')

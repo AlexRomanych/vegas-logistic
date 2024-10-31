@@ -3,12 +3,15 @@
         <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
         <input
             :id="id"
+            type="date"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
-            :placeholder="placeholder"
             :disabled="disabled"
-            type="text"
-            v-model="inputText"
-            @input="getInputText"
+            :value="defaultDate"
+            :max="maxDate || periodEndText"
+            :min="minDate || periodStartText"
+            step="1"
+            v-model="inputDate"
+            @change="getInputDate"
 
         >
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
@@ -22,7 +25,7 @@
 <script setup>
 
 import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
+import {getColorClassByType, getPeriod} from "@/src/app/helpers/helpers.js"
 import {computed, ref} from "vue";
 
 const props = defineProps({
@@ -34,11 +37,6 @@ const props = defineProps({
         required: false,
         default: 'primary',
         validator: (type) => colorsList.includes(type)
-    },
-    placeholder: {
-        type: String,
-        required: false,
-        default: 'Enter...',
     },
     label: {
         type: String,
@@ -56,6 +54,21 @@ const props = defineProps({
         default: 'w-[500px]',
 
     },
+    minDate: {
+        type: String,
+        required: false,
+        default: '',
+    },
+    maxDate: {
+        type: String,
+        required: false,
+        default: '',
+    },
+    value: {
+        type: String,
+        required: false,
+        default: '2024-10-05',
+    },
     error: {
         type: Object,
         required: false,
@@ -70,7 +83,33 @@ const props = defineProps({
 
 })
 
+// const defaultDate_= defineModel({
+//     name: 'defaultDate_',
+//     type: String,
+//     default: '2024-10-05'
+// })
 
+const inputDate = defineModel({
+    name: 'inputDate',
+    type: String,
+    default: ''
+})
+console.log(inputDate.value)
+// const inputDate_ = defineModel({
+//     name: 'inputDate_',
+//     type: String,
+//     default: ''
+// })
+
+const selectedDate = ref(new Date().toISOString().slice(0, 10));
+
+const defaultDate = computed(() => {
+    // Здесь можно выполнять дополнительные логики для определения даты по умолчанию
+    return selectedDate.value;
+});
+
+const {periodStart, periodEnd, periodStartText, periodEndText} = getPeriod()
+// const value = ref(periodStartText)
 
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
@@ -82,21 +121,22 @@ const focusBorderColor = 'focus:ring' + currentColor
 let textColor = 'text' + currentColor
 textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
-const inputText = defineModel({
-    type: String,
-    default: ''
-})
 
-const emit = defineEmits(['getInputText'])
 
-const getInputText = (e) => emit('getInputText', e.target.value)
+
+
+const emit = defineEmits(['getInputDate'])
+
+// const getInputText = (e) => emit('getInputDate', e.target.value)
+const getInputDate = (e) => console.log(e.target.value)
+
+
 // const onInput = function(e) {
 //     console.log(e.target.value)
 // }
 // const onInput = function(inputText) {
 //     console.log(inputText.target.value)
 // }
-
 
 </script>
 

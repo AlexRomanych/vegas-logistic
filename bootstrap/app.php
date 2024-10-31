@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+//use App\Http\Middleware\JwtMiddleware;
+//use App\Http\Middleware\GuestsMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
     )
     ->withMiddleware(function (Middleware $middleware) {
+//        $middleware->append(JwtMiddleware::class);
+//        $middleware->append(JwtMiddleware::class);
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {

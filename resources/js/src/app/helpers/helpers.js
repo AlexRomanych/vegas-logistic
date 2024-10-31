@@ -1,11 +1,8 @@
 import {
-    colorsClasses,
-    toDark,
-    toLight,
-    colorIndex,
-    colorIndexOffset,
-    colorIndexLight
+    colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
 } from "@/src/app/constants/colorsClasses.js"
+
+import {PERIOD_LENGTH} from "@/src/app/constants/dates.js"
 
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
 // prefix - префикс для класса tailwind ('bg', 'text', 'border')
@@ -76,3 +73,26 @@ function getColorSchemeByEffect(effect) {
 //
 //     return undefined
 // }
+// ----------------------------------------------------------------------------------------------------------
+// __________________________________________________________________________________________________________
+// возвращает отображаемый период производства
+export function getPeriod() {
+    const tempDate = new Date()
+    const day = tempDate.getDate()
+    const month = tempDate.getMonth()
+    const year = tempDate.getFullYear()
+
+    const periodStart = new Date(year, month, '01')
+    const periodEnd = new Date(year, month + PERIOD_LENGTH, '00')
+
+    const periodStartText_Day = periodStart.getDate() < 10 ? '0' + periodStart.getDate().toString() : periodStart.getDate().toString()
+    const periodStartText_Month = periodStart.getMonth() < 9 ? '0' + (periodStart.getMonth() + 1).toString() : (periodStart.getMonth() + 1).toString()
+
+    const periodEndText_Day = periodEnd.getDate() < 10 ? '0' + periodEnd.getDate().toString() : periodEnd.getDate().toString()
+    const periodEndText_Month = periodEnd.getMonth() < 9 ? '0' + (periodEnd.getMonth() + 1).toString() : (periodEnd.getMonth() + 1).toString()
+
+    const periodStartText = periodStart.getFullYear().toString() + '-' + periodStartText_Month + '-' + periodStartText_Day
+    const periodEndText = periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
+
+    return {periodStart, periodEnd, periodStartText, periodEndText}
+}
