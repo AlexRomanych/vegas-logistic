@@ -1,6 +1,14 @@
 <template>
 
-    <div class="container">
+
+    <div v-if="true">
+
+
+
+        <router-view></router-view>
+    </div>
+
+    <div v-else class="container">
 
         <router-view></router-view>
 

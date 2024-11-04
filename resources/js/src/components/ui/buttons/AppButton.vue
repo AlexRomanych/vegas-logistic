@@ -2,7 +2,7 @@
     <div id="id" :class="[width, currentTextColor, backgroundColor, borderColor, 'btn-container']">
         <button
             class="btn"
-            type="button"
+            :type="func"
             @click="buttonClick"
         >
             {{ title }}
@@ -26,6 +26,12 @@ const props = defineProps({
         required: false,
         default: 'primary',
         validator: (type) => colorsList.includes(type)
+    },
+    func: {
+        type: String,
+        required: false,
+        default: 'button',
+        validator: (func) => ['button', 'submit', 'reset'].includes(func)
     },
     title: {
         type: String,

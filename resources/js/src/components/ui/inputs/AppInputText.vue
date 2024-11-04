@@ -6,13 +6,18 @@
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
             :placeholder="placeholder"
             :disabled="disabled"
-            type="text"
+            :type="func"
             v-model="inputText"
             @input="getInputText"
 
         >
-        <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
-
+        <div v-if="errors">
+            <div v-for="(err, index) in errors" :key="index">
+                <span :class="['input-error', textColor]">
+                    {{ err.$message}}
+                </span>
+            </div>
+        </div>
 
     </div>
 
@@ -35,6 +40,12 @@ const props = defineProps({
         default: 'primary',
         validator: (type) => colorsList.includes(type)
     },
+    func: {
+        type: String,
+        required: false,
+        default: 'text',
+        validator: (func) => ['text', 'password', 'email', 'tel'].includes(func)
+    },
     placeholder: {
         type: String,
         required: false,
@@ -56,21 +67,14 @@ const props = defineProps({
         default: 'w-[500px]',
 
     },
-    error: {
-        type: Object,
+    errors: {
+        type: Array,
         required: false,
         default: null,
-        message: {
-            type: String,
-            required: false,
-            default: 'Ошибка...',
-        }
     }
 
 
 })
-
-
 
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex

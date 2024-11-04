@@ -53,8 +53,13 @@ const props = defineProps({
 
 })
 
+const emits = defineEmits(['toggleShow'])
+
 const show = ref(true)
-const toggleShow = () => show.value = !show.value
+const toggleShow = () => {
+    show.value = !show.value
+    emits('toggleShow', show.value)
+}
 
 const getPositionClass = (pos_x, pos_y) => {
     let x_pos = ''

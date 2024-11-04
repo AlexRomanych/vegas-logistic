@@ -49,6 +49,8 @@ class AuthController extends BaseController
         }
 
         $success = $this->respondWithToken($token);
+        $success['name'] = auth()->user()->name;
+        $success['id'] = auth()->user()->id;
 
         return $this->sendResponse($success, 'User login successfully.');
     }

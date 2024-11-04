@@ -4,8 +4,8 @@
         :class="[width, backgroundColor, borderColor, currentTextColor]"
         :disabled="disabled"
         :value="title"
+        :type="func"
         class="app-input"
-        type="button"
         @click="buttonClick"
 
     />
@@ -27,6 +27,12 @@ const props = defineProps({
         required: false,
         default: 'primary',
         validator: (type) => colorsList.includes(type)
+    },
+    func: {
+        type: String,
+        required: false,
+        default: 'button',
+        validator: (func) => ['button', 'submit', 'reset'].includes(func)
     },
     disabled: {
         type: Boolean,
