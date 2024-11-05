@@ -6,7 +6,7 @@ export const useMenuStore = defineStore('menu', () => {
 
     const menuData = menu().map((item, index) => ({...item, groupID: ++index }))    // Добавляем id группы
 
-    console.log(menuData, typeof menuData)
+    // console.log(menuData, typeof menuData)
     //
     // const menuList = reactive(menuData)
     //

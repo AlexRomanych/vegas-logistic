@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\VegasDataGetContract;
+use App\Http\Resources\Model\ModelCollection;
+use App\Http\Resources\Model\ModelResource;
 use App\Models\Model;
 use App\Services\ModelsService;
 use Illuminate\Support\Facades\App;
 
 class ModelController extends Controller
 {
+
 
     public function show($id)
     {

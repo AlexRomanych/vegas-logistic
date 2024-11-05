@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\User\UserCollection;
+use App\Http\Resources\User\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,7 +14,12 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return new UserResource(User::query()->orderByDesc('email')->first());
+    }
+
+    public function all()
+    {
+        return new UserCollection(User::all());
     }
 
     /**
@@ -26,7 +33,7 @@ class UserController extends Controller
             'password' => 'required|min:6',
         ]);
         $data['password'] = bcrypt($data['password']);
-        $user = User::create($data);
+        $user = User::query()->create($data);
         return response()->json($user, 201);
     }
 

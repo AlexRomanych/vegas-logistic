@@ -36,6 +36,10 @@ class User extends Authenticatable implements JWTSubject
         'is_admin', 'is_active'
     ];
 
+
+
+
+
     /**
      * Get the attributes that should be cast.
      *

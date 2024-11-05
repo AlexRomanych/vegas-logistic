@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/test', function () {
     $user = User::where('email', '1')->first();
-    dd($user);
+
     return $user;
 })->where('any', '.*');
 

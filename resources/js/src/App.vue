@@ -1,20 +1,18 @@
 <template>
 
-
-    <div v-if="true">
-
+    <div class="container">
 
 
-        <router-view></router-view>
-    </div>
 
-    <div v-else class="container">
-
-        <router-view></router-view>
 
         <TheNav/>
         <TheHeader/>
+
+
         <TheFooter/>
+        <TheMain/>
+
+<!--        <router-view></router-view>     &lt;!&ndash; вывод всех компонентов &ndash;&gt;-->
 
     </div>
 
@@ -26,6 +24,7 @@ import {ref} from 'vue'
 import TheHeader from "@/src/components/dashboard/TheHeader.vue"
 import TheFooter from "@/src/components/dashboard/TheFooter.vue";
 import TheNav from "@/src/components/dashboard/TheNav.vue";
+import TheMain from "@/src/views/TheMain.vue";
 
 
 
@@ -44,7 +43,7 @@ export default {
         }
     },
 
-    components: {TheNav, TheFooter, TheHeader},
+    components: {TheNav, TheFooter, TheHeader, TheMain},
 }
 
 

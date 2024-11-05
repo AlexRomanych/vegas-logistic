@@ -18,7 +18,7 @@ use App\Models\Model;
 //});
 //
 //
-//route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->name('models.update');
+route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->name('models.update');
 //route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->name('models.update');
 
 //Route::get('models', [ModelController::class, 'all'])->name('models.all');
@@ -96,6 +96,16 @@ use App\Http\Middleware\AuthMiddleware;
 //
 //Route::apiResource('users', UserController::class);
 
+
+
+Route::get('/user', [UserController::class, 'index']);
+Route::get('/users', [UserController::class, 'all']);
+
+Route::get('/model/{code1C}', [ModelController::class, 'model']);
+Route::get('/models', [ModelController::class, 'models']);
+//Route::get('/users', function () {
+//    return 11111;
+//});
 
 
 Route::get('auth/me', [AuthController::class, 'me'])

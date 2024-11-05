@@ -3,22 +3,33 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ModelCollection;
-use App\Http\Resources\ModelResource;
+use App\Http\Resources\Model\ModelCollection;
+use App\Http\Resources\Model\ModelResource;
 use App\Models\Model;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ModelController extends Controller
 {
     //
-
-    public function show(string $id)
+    public function model($code1C)
     {
-        return new ModelResource(Model::query()->find($id));
+        return new ModelResource(Model::query()->find($code1C));
     }
 
-    public function all()
+    public function models()
     {
-        return new ModelCollection(Model::all());
+//        return 11111;
+//        return new ModelCollection(Model::query()->get(10));
+        return new ModelCollection(DB::table('models')->get());
     }
+
+//    public function show(string $id)
+//    {
+//        return new ModelResource(Model::query()->find($id));
+//    }
+//
+//    public function all()
+//    {
+//        return new ModelCollection(Model::all());
+//    }
 }

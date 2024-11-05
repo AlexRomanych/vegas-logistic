@@ -22,6 +22,17 @@ const routes = [
         component: () => import('@/src/views/auth/TheRegister.vue'),
     },
 
+
+    {path: '/users',
+        name: 'users',
+        component: () => import('@/src/views/users/TheUsers.vue'),
+    },
+
+    {path: '/models',
+        name: 'models',
+        component: () => import('@/src/views/models/TheModels.vue'),
+    },
+
     {path: '/ui', name: 'ui', component: () => import('../views/TheMain.vue')},
 
     {path: '/about', name: 'about', component: () => import('../views/About.vue')},
