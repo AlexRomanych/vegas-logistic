@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/', function () {
@@ -18,8 +19,13 @@ use Illuminate\Support\Facades\Route;
 ////    return view('welcome.blade.php');
 //});
 
-Route::get('/{any}', function () {
-    return view('welcome');
+Route::get('/test', function () {
+    $user = User::where('email', '1')->first();
+    dd($user);
+    return $user;
 })->where('any', '.*');
 
 
+Route::get('/{any}', function () {
+    return view('welcome');
+})->where('any', '.*');

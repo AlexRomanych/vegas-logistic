@@ -138,12 +138,12 @@
             width="w-[150px]"
         />
 
-        <AppInputDate_comp
-            :id="newInputDate_"
-            label="Введите данные"
-            type="warning"
-            width="w-[150px]"
-        />
+<!--        <AppInputDate_comp-->
+<!--            :id="newInputDate_"-->
+<!--            label="Введите данные"-->
+<!--            type="warning"-->
+<!--            width="w-[150px]"-->
+<!--        />-->
 
 
     </main>

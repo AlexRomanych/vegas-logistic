@@ -1,9 +1,9 @@
 <template>
-    <div class="w-screen h-screen flex flex-col justify-center items-center bg-slate-200 z-50">
+    <div class="main-container">
         <form @submit.prevent="formSubmit">
 
-            <div class="w-[500px] border rounded-lg border-slate-500 shadow shadow-slate-700 bg-slate-300">
-                <div class="flex justify-around items-center ml-2 mr-2 mt-2 font-semibold text-xl text-slate-600">
+            <div class="form-container">
+                <div class="container">
                     <div>
                         <router-link :to="{name: 'login'}">
                             <AppInputButton
@@ -78,29 +78,23 @@
 
                 <div class="m-3 mt-5 flex justify-end">
                     <AppInputButton
-                        id="newButton"
+                        id="submitButton"
                         :title="isRegister ? 'Зарегистрироваться' : 'Войти'"
                         func="submit"
                         type="dark"
                         width="w-[200px]"
-
                     />
                 </div>
 
             </div>
         </form>
 
-        <!--        <div>-->
-        <!--           {{v$}}-->
-        <!--        </div>-->
-
         <AppCallout
-            v-if="!currUser.email && confirmClick"
-            text="Неверный пароль или имя пользователя"
-            type="danger"
+            v-if="calloutMessage && confirmClick"
+            :text="calloutMessage"
+            :type="calloutType"
             @toggleShow="calloutHandler"
         />
-
 
     </div>
 
@@ -155,11 +149,12 @@ const passwordСonfirmationValue = defineModel('passwordСonfirmationValue', {
 })
 
 const user = useUserStore()
-// console.log(user.user)
-
 
 const router = useRouter()
+const MIN_PASSWORD_LENGTH = 8
+const MIN_NAME_LENGTH = 3
 
+// подготавливаем правила валидации
 const rulesObject = {
     loginValue: {
         email: helpers.withMessage('Неверный формат e-mail', email),
@@ -167,11 +162,11 @@ const rulesObject = {
     },
     passwordValue: {
         required: helpers.withMessage('Поле обязательно для заполнения', required),
-        minLength: helpers.withMessage('Минимальная длина пароля - 8 символов', minLength(8)),
+        minLength: helpers.withMessage(`Минимальная длина пароля - ${MIN_PASSWORD_LENGTH} символов`, minLength(MIN_PASSWORD_LENGTH)),
     },
 }
 
-
+// добавляем правила, если это форма регистрации
 if (props.isRegister) {
     rulesObject.passwordСonfirmationValue = {}
     rulesObject.passwordСonfirmationValue.required = helpers.withMessage('Поле обязательно для заполнения', required)
@@ -179,13 +174,12 @@ if (props.isRegister) {
 
     rulesObject.nameValue = {}
     rulesObject.nameValue.required = helpers.withMessage('Поле обязательно для заполнения', required)
-    rulesObject.nameValue.minLength = helpers.withMessage('Минимальная длина имени - 3 символа', minLength(3))
+    rulesObject.nameValue.minLength = helpers.withMessage(`Минимальная длина имени - ${MIN_NAME_LENGTH} символа`, minLength(MIN_NAME_LENGTH))
 }
 
-// console.log(rulesObject)
+const rules = computed(() => (rulesObject)) // оборачиваем в computed
 
-const rules = computed(() => (rulesObject))
-
+// подготавливаем объект валидации
 const verify = props.isRegister ?
     {
         loginValue,
@@ -202,7 +196,6 @@ const v$ = useVuelidate(rules, verify)
 
 const loginHandler = (text) => {
 
-
 }
 
 // для того, чтобы оставить анимацию в callout
@@ -213,25 +206,25 @@ const calloutHandler = (show) => {
 }
 
 
-let currUser = reactive(new UserClass())        // определяем реактивный класс для вызова callout
-let confirmClick = ref(false)            // определяем для вывода этого callout
-
-console.log(currUser)
+const currUser = reactive(new UserClass())        // определяем реактивный класс для вызова callout
+const confirmClick = ref(false)            // определяем для вывода этого callout
+const calloutMessage = ref('')             // определяем показываемое сообщение
+const calloutType = ref('danger')          // определяем тип callout
 
 const formSubmit = async (e) => {
 
     v$.value.$touch()                           // валидируем всю форму
 
-    if (!v$.value.$error) {
+    if (!v$.value.$error) {                     // это показатель ошибки
 
-    let currUserTemp = null                     // для получения данных с сервера
+        let currUserTemp = null                     // для получения данных с сервера
 
         if (props.isRegister) {
             currUserTemp = user.registerUser({
-                login: loginValue,
-                name: nameValue,
-                password: passwordValue,
-                password_confirmation: passwordСonfirmationValue,
+                email: loginValue.value,
+                name: nameValue.value,
+                password: passwordValue.value,
+                password_confirmation: passwordСonfirmationValue.value,
             })
         } else {
             currUserTemp = user.fetchUser({
@@ -244,10 +237,33 @@ const formSubmit = async (e) => {
 
         Object.assign(currUser, userData)
 
-        if (currUser.id !== 0) {
-            router.push({name: 'ui'})               // потом изменить
+        if (currUser.status === 200) {
+            router.push({name: 'ui'})               // переход в сам dashboard todo потом изменить
         } else {
             confirmClick.value = true
+            calloutType.value = 'danger'
+
+            console.log(currUser)
+
+            switch (currUser.status) {
+                case 403:
+                    calloutMessage.value = 'Пользователь заблокирован'
+                    break
+                case 404:
+                    calloutMessage.value = 'Неверный пароль или имя пользователя'
+                    break
+                case 409:
+                    calloutMessage.value = 'Пользователь с таким email уже существует'
+                    break
+                case 500:
+                    calloutMessage.value = 'Неизвестная ошибка'
+                    break
+                case 201:
+                    calloutMessage.value = 'Пользователь успешно зарегистрирован'
+                    calloutType.value = 'success'
+                    break
+
+            }
         }
 
     }
@@ -257,5 +273,15 @@ const formSubmit = async (e) => {
 </script>
 
 <style scoped>
+.main-container {
+    @apply w-screen h-screen flex flex-col justify-center items-center bg-slate-200 z-50
+}
 
+.form-container {
+    @apply w-[500px] border rounded-lg border-slate-500 shadow shadow-slate-700 bg-slate-300
+}
+
+.container {
+    @apply flex justify-around items-center ml-2 mr-2 mt-2 font-semibold text-xl text-slate-600
+}
 </style>

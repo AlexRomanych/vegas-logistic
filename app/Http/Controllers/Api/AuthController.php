@@ -14,25 +14,39 @@ class AuthController extends BaseController
      * Register a User.
      *
      */
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            'c_password' => 'required|same:password',
+            'password_confirmation' => 'required|same:password',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
+
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
-        $user = User::create($input);
-        $success['user'] =  $user;
 
-        return $this->sendResponse($success, 'User register successfully.');
+        $user = User::where('email', $input['email'])->first();
+
+        if ($user !== null) {
+            return $this->sendError('User already exists.', ['USER_ALREADY_EXISTS'], 409);
+        } else {
+            try {
+                $user = User::create($input);
+                $success['user'] = $user;
+            } catch (\Exception $err) {
+                return $this->sendError($err->getMessage(), ['UNKNOWN_ERROR'], 500);
+            }
+
+        }
+
+        return $this->sendResponse($success, 'User register successfully.', 201);
     }
 
 
@@ -44,8 +58,14 @@ class AuthController extends BaseController
     {
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
-            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user->is_active) {
+            return $this->sendError('User blocked.', ['error' => 'Blocked'], 403);
+        }
+
+        if (!$token = auth()->attempt($credentials)) {
+            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
         }
 
         $success = $this->respondWithToken($token);
@@ -91,7 +111,7 @@ class AuthController extends BaseController
     /**
      * Get the token array structure.
      *
-     * @param  string $token
+     * @param string $token
      *
      */
     protected function respondWithToken($token)
