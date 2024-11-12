@@ -16,15 +16,18 @@
         <TheNav/>
         <TheHeader/>
         <TheFooter/>
-        <TheMain
-            :isAuthenticated="isAuthenticated"
-        />
+<!--        <router-view></router-view>-->
+<!--        <TheMain-->
+<!--            :isAuthenticated="isAuthenticated"-->
+<!--            :source="source"-->
+<!--        />-->
+        <TheMain/>
 
     </div>
 
-    <div v-else>
-        <router-view></router-view>
-    </div>
+<!--    <div v-else>-->
+<!--        <router-view></router-view>-->
+<!--    </div>-->
 
 </template>
 
@@ -34,10 +37,10 @@ import {ref} from 'vue'
 import TheHeader from "@/src/components/dashboard/TheHeader.vue"
 import TheFooter from "@/src/components/dashboard/TheFooter.vue";
 import TheNav from "@/src/components/dashboard/TheNav.vue";
-import TheMain from "@/src/views/TheMain.vue";
+import TheMain from "@/src/components/dashboard/TheMain.vue";
 
 import {useUserStore} from "@/src/stores/UserStore";
-
+import {useRouter} from "vue-router";
 
 export default {
 
@@ -49,6 +52,12 @@ export default {
         console.log('user', user.getUser())
         console.log(user.isAuthenticated())
 
+        const router = useRouter()
+        // console.log(router.currentRoute)
+
+        const source = router.currentRoute.value.meta.source
+        // console.log(source)
+
         // const menuStore = useMenuStore()
 
         // console.log(menuStore.menuList)
@@ -56,6 +65,7 @@ export default {
 
         return {
             isAuthenticated,
+            source,
         }
     },
 

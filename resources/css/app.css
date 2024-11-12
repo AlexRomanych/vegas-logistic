@@ -7,6 +7,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Определяем стиль для блоков, которые должны быть выше dashboard (404? login и т.д.) */
+@layer base {
+    .upper-layer {
+        @apply absolute w-screen h-screen top-0 left-0 z-[100];
+    }
+}
+
+
+
 @font-face {
     font-family: 'Fira Code';
     src: url('fonts/FiraCode/woff2/FiraCode-Light.woff2') format('woff2'),
@@ -128,3 +137,6 @@ body {
     --main-border-color: rgb(156 163 175);          /* Цвет границы */
 
 }
+
+
+

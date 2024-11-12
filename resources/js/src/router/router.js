@@ -46,19 +46,30 @@ const routes = [
     },
 
 
-    {
-        path: '/users',
-        name: 'users',
-        component: () => import('@/src/views/users/TheUsers.vue'),
-    },
-
+    // {
+    //     path: '/models',
+    //     name: 'models',
+    //     component: () => import('@/src/components/dashboard/TheDashboard.vue'),
+    //     meta: {source: 'TheModels'},
+    // },
     {
         path: '/models',
         name: 'models',
-        component: () => import('@/src/views/models/TheModels.vue'),
+        component: () => import('@/src/components/dashboard/models/TheModels.vue'),
+        meta: {destination: '/models'},
     },
 
-    {path: '/ui', name: 'ui', component: () => import('../views/TheMain.vue')},
+
+
+    {
+        path: '/users',
+        name: 'users',
+        component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
+    },
+
+
+
+    {path: '/ui', name: 'ui', component: () => import('../components/dashboard/TheMain.vue')},
 
 //-----------------------------------------------------------------------
 
@@ -76,6 +87,7 @@ const routes = [
 // info Others (Errors - 404)
     {
         path: '/:pathMatch(.*)*',
+        alias: '/error/404',
         name: 'error.404',
         component: () => import('../views/errors/TheNotFound.vue')
 

@@ -56,11 +56,21 @@ export const useUserStore = defineStore('user', () => {
 
     // Возвращаем текущего пользователя
     const getUser = function () {
+    // заглушка
+        const tempUser = new UserClass({
+            id: 100,
+            name: 'test',
+            status: 200,
+            email: 'test@test.com'
+        })
+        currentUser = tempUser                  // warning todo Убрать!!!
+
         return currentUser
     }
 
     // Возвращаем статус авторизации
     const isAuthenticated = function () {
+        return true                             // warning todo Убрать!!!
         return !! currentUser.id
     }
 

@@ -1,8 +1,10 @@
 <template>
-    <TheAutorization
-        :isRegister="true"
-        :key="'1'"
-    />
+    <div class="upper-layer">
+        <TheAutorization
+            :isRegister="true"
+            :key="'1'"
+        />
+    </div>
 </template>
 
 <script setup>

@@ -1,13 +1,14 @@
 <template>
-    <TheAutorization
-        :isRegister="false"
-        :key="'0'"
-    />
+    <div class="upper-layer">
+        <TheAutorization
+            :key="'0'"
+            :isRegister="false"
+        />
+    </div>
 </template>
 
 <script setup>
 import TheAutorization from '@/src/views/auth/TheAutorization.vue'
-
 </script>
 
 <style scoped>

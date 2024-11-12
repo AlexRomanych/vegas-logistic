@@ -1,7 +1,14 @@
 <template>
-    <div class="w-full h-full bg-slate-600 text-white">
+
+<!--    <the-dashboard>-->
         The Models
-    </div>
+
+
+        <div class="w-full h-full bg-slate-600 text-white">
+            The Models
+        </div>
+
+<!--    </the-dashboard>-->
 
 </template>
 
@@ -9,6 +16,7 @@
 console.log('Here')
 // import axios from 'axios'
 
+// import TheDashboard from '@/src/components/dashboard/TheDashboard.vue'
 
 import AppTable from "@/src/components/ui/tables/AppTable.vue";
 
@@ -17,6 +25,7 @@ import AppTable from "@/src/components/ui/tables/AppTable.vue";
 
 
 // console.log(data);
+
 import {jwtGet} from "@/src/app/utils/jwt_api.js";
 
 const res = jwtGet('/models');
