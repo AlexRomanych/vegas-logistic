@@ -1,7 +1,7 @@
 import {createRouter, createMemoryHistory, createWebHistory} from "vue-router"
+import {useUserStore} from "@/src/stores/UserStore";
 // import Help from "../views/Help.vue"
 import Help from "../views/Help.vue"
-
 // import TheAutorization from '../views/auth/TheAutorization.vue'
 // import TheLogin from '../views/auth/TheLogin.vue'
 
@@ -11,24 +11,39 @@ import Help from "../views/Help.vue"
 // component: () => import('../views/auth/TheLogin.vue'),
 
 const routes = [
-    {path: '/login',
-        alias: '/',
+    // {path: '/login',
+    //     alias: '/',
+    //     name: 'login',
+    //     component: () => import('@/src/views/auth/TheLogin.vue'),
+    // },
+    {
+        path: '/login',
         name: 'login',
         component: () => import('@/src/views/auth/TheLogin.vue'),
     },
 
-    {path: '/register',
+
+    {
+        path: '/register',
         name: 'register',
         component: () => import('@/src/views/auth/TheRegister.vue'),
     },
 
+    {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: () => import('@/src/components/dashboard/TheDashboard.vue'),
 
-    {path: '/users',
+    },
+
+    {
+        path: '/users',
         name: 'users',
         component: () => import('@/src/views/users/TheUsers.vue'),
     },
 
-    {path: '/models',
+    {
+        path: '/models',
         name: 'models',
         component: () => import('@/src/views/models/TheModels.vue'),
     },
@@ -41,9 +56,36 @@ const routes = [
 
 ]
 
+
 const router = createRouter({
     history: createWebHistory(),
     routes,
+
+})
+
+// Это правильное иcпользование
+router.beforeEach((to, from, next) => {
+    const user = useUserStore()
+
+    // console.log('from:', from.name)
+    // console.log('to:', to.name)
+
+    if (!user.isAuthenticated()) {
+        if (to.name === 'register' || to.name === 'login') {
+            next()
+        } else {
+            next({name: 'login'})
+        }
+    } else {
+        next()
+    }
+
+// if (!(to.name === 'login' || user.isAuthenticated())) {
+//     next({ name: 'login' })
+// } else {
+//     next()
+// }
+
 })
 
 

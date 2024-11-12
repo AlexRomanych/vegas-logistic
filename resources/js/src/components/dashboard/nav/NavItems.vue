@@ -31,7 +31,7 @@ const defineProps = defineProps({
     }
 })
 
-console.log(defineProps)
+// console.log(defineProps)
 
 </script>
 

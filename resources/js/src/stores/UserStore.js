@@ -1,6 +1,8 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 import {useRouter} from "vue-router";
+
+
 import axios from 'axios'
 
 import UserClass from "@/src/app/classes/UserClass.js";
@@ -9,6 +11,7 @@ const api = axios.create({
     withCredentials: false,
     baseURL: '/api/v1/auth'
 })
+
 
 export const useUserStore = defineStore('user', () => {
 
@@ -51,8 +54,14 @@ export const useUserStore = defineStore('user', () => {
 
     }
 
+    // Возвращаем текущего пользователя
     const getUser = function () {
         return currentUser
+    }
+
+    // Возвращаем статус авторизации
+    const isAuthenticated = function () {
+        return !! currentUser.id
     }
 
     const logout = function () {
@@ -66,6 +75,7 @@ export const useUserStore = defineStore('user', () => {
         fetchUser,
         logout,
         getUser,
+        isAuthenticated,
 
     }
 })

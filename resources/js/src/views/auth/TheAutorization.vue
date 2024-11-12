@@ -238,7 +238,7 @@ const formSubmit = async (e) => {
         Object.assign(currUser, userData)
 
         if (currUser.status === 200) {
-            router.push({name: 'ui'})               // переход в сам dashboard todo потом изменить
+            router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
         } else {
             confirmClick.value = true
             calloutType.value = 'danger'

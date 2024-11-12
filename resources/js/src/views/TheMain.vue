@@ -1,16 +1,19 @@
 <template>
-    <main class="content">
-<!--        <div>The Main</div>-->
-<router-view></router-view>
-
-
-
+    <main v-if="isAuthenticated" class="content">
+        <router-view></router-view>
     </main>
 </template>
 
 
 <script setup>
+    const props = defineProps({
+        isAuthenticated: {
+            type: Boolean,
+            default: false
+        }
+    })
 
+    console.log(props.isAuthenticated)
 
 </script>
 

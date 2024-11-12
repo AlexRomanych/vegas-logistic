@@ -18,7 +18,7 @@ export default {
         const menus = menuStore.menuData
 
 
-        console.log(menus)
+        // console.log(menus)
 
         return {
             menus,
