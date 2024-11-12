@@ -1,7 +1,7 @@
 import {createRouter, createMemoryHistory, createWebHistory} from "vue-router"
 import {useUserStore} from "@/src/stores/UserStore";
 // import Help from "../views/Help.vue"
-import Help from "../views/Help.vue"
+// import Help from "../views/Help.vue"
 // import TheAutorization from '../views/auth/TheAutorization.vue'
 // import TheLogin from '../views/auth/TheLogin.vue'
 
@@ -11,16 +11,20 @@ import Help from "../views/Help.vue"
 // component: () => import('../views/auth/TheLogin.vue'),
 
 const routes = [
-    // {path: '/login',
-    //     alias: '/',
-    //     name: 'login',
-    //     component: () => import('@/src/views/auth/TheLogin.vue'),
-    // },
-    {
-        path: '/login',
+
+
+//-----------------------------------------------------------------------
+// info Autorization
+    {path: '/login',
+        alias: '/',
         name: 'login',
         component: () => import('@/src/views/auth/TheLogin.vue'),
     },
+    // {
+    //     path: '/login',
+    //     name: 'login',
+    //     component: () => import('@/src/views/auth/TheLogin.vue'),
+    // },
 
 
     {
@@ -29,12 +33,18 @@ const routes = [
         component: () => import('@/src/views/auth/TheRegister.vue'),
     },
 
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+// info Dashboard
+
     {
         path: '/dashboard',
         name: 'dashboard',
         component: () => import('@/src/components/dashboard/TheDashboard.vue'),
 
     },
+
 
     {
         path: '/users',
@@ -50,9 +60,26 @@ const routes = [
 
     {path: '/ui', name: 'ui', component: () => import('../views/TheMain.vue')},
 
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+// info Information
+
     {path: '/about', name: 'about', component: () => import('../views/About.vue')},
-    // {path: '/help', name: 'help', component: () => import('../views/Help.vue')}
-    {path: '/help', name: 'help', component: Help},
+    {path: '/help', name: 'help', component: () => import('../views/Help.vue')},
+    // {path: '/help', name: 'help', component: Help},
+
+
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+// info Others (Errors - 404)
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'error.404',
+        component: () => import('../views/errors/TheNotFound.vue')
+
+    }
 
 ]
 
@@ -71,7 +98,7 @@ router.beforeEach((to, from, next) => {
     // console.log('to:', to.name)
 
     if (!user.isAuthenticated()) {
-        if (to.name === 'register' || to.name === 'login') {
+        if (to.name === 'register' || to.name === 'login' || to.name === 'error.404') {
             next()
         } else {
             next({name: 'login'})
