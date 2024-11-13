@@ -1,17 +1,18 @@
 <template>
-    <main class="content">
-        <router-view></router-view>
-    </main>
-
-<!--    <main v-if="isAuthenticated" class="content">-->
-<!--        <router-view></router-view>-->
-<!--    </main>-->
+    <Suspense>
+        <main class="content">
+            <router-view></router-view>
+        </main>
+    </Suspense>
+    <!--    <main v-if="isAuthenticated" class="content">-->
+    <!--        <router-view></router-view>-->
+    <!--    </main>-->
 </template>
 
 
 <script setup>
-import { computed, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {computed, reactive} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 //
 //
 const router = useRouter()
@@ -28,8 +29,8 @@ const name_ = computed(() => router.currentRoute.value.name)
 // const name = route.name
 
 
-console.log(name.value)
-console.log(name_.value)
+// console.log(name.value)
+// console.log(name_.value)
 // console.log(route)
 
 
@@ -38,34 +39,34 @@ console.log(name_.value)
 // const isAuth = router.currentRoute.value
 // console.log(isAuth)
 
-    // const props = defineProps({
-    //     isAuthenticated: {
-    //         type: Boolean,
-    //         required: true,
-    //         default: false
-    //     },
-    //     source: {
-    //         type: String,
-    //         required: true
-    //     }
-    // })
+// const props = defineProps({
+//     isAuthenticated: {
+//         type: Boolean,
+//         required: true,
+//         default: false
+//     },
+//     source: {
+//         type: String,
+//         required: true
+//     }
+// })
 
-    // console.log(props.isAuthenticated)
+// console.log(props.isAuthenticated)
 
-    // console.log(props.source)
-    //
-    // const obj = {
-    //     component: () => import('@/src/components/dashboard/TheDashboard.vue')
-    // }
-    //
-    // console.log(obj.component())
-    //
-    //
-    // const dashComponent = async () => import('@/src/components/dashboard/TheDashboard.vue')
-    // await data = dashComponent()
-    //
-    // console.log(dashComponent())
-    // console.log(data)
+// console.log(props.source)
+//
+// const obj = {
+//     component: () => import('@/src/components/dashboard/TheDashboard.vue')
+// }
+//
+// console.log(obj.component())
+//
+//
+// const dashComponent = async () => import('@/src/components/dashboard/TheDashboard.vue')
+// await data = dashComponent()
+//
+// console.log(dashComponent())
+// console.log(data)
 
 </script>
 

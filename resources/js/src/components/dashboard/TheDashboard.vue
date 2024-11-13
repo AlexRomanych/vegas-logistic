@@ -49,8 +49,8 @@ export default {
         const user = useUserStore()
         const isAuthenticated = ref(user.isAuthenticated())
 
-        console.log('user', user.getUser())
-        console.log(user.isAuthenticated())
+        // console.log('user', user.getUser())
+        // console.log(user.isAuthenticated())
 
         const router = useRouter()
         // console.log(router.currentRoute)

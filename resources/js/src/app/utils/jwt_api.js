@@ -8,14 +8,14 @@ const jwtAxios = axios.create({
 
 
 export async function jwtGet(url) {
-    console.log(url)
+    // console.log(url)
 
     const res = await jwtAxios.get(url)
     const data = res.data
     // const data = await res
-    console.log(data)
-    console.log(data.models[2])
-    // return res
+    // console.log(data)
+    // console.log(data.models[2])
+    return data
 }
 
 // export default jwtAxios

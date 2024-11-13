@@ -1,34 +1,43 @@
 <template>
 
-<!--    <the-dashboard>-->
-        The Models
+    <!--        <div class="w-full h-full bg-slate-600 text-white">-->
+    <!--            The Models-->
+    <!--        </div>-->
+    <div>
 
-
-        <div class="w-full h-full bg-slate-600 text-white">
-            The Models
-        </div>
-
-<!--    </the-dashboard>-->
+    </div>
+    <AppTable
+        :tableData="modelsTableData"
+        textSize="mini"
+        width="w-full"
+    />
 
 </template>
 
 <script setup>
-console.log('Here')
+// console.log('Here')
 // import axios from 'axios'
 
 // import TheDashboard from '@/src/components/dashboard/TheDashboard.vue'
 
 import AppTable from "@/src/components/ui/tables/AppTable.vue";
 
-// const res = axios.get('api/v1/models');
-// const data = await res
-
-
-// console.log(data);
-
 import {jwtGet} from "@/src/app/utils/jwt_api.js";
 
-const res = jwtGet('/models');
+const models = await jwtGet('/models');                    // даем запрос на получение данных по моделям
+
+const modelsData = models.models.map(model => {
+    return [model.type,model.coll, model.name, model.textile, model.bh, model.ch, model.bc]
+})
+
+const modelsTableData = {
+    headers: ['Тип', 'Коллекция', 'Модель', 'Ткань', 'Выс. МЭ', 'Выс. чехла', 'Состав МЭ'],
+    data: modelsData
+}
+
+console.log(models)
+console.log(modelsTableData)
+
 
 </script>
 

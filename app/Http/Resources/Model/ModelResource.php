@@ -18,8 +18,14 @@ class ModelResource extends JsonResource
 //        return parent::toArray($request);
         return [
             'id' => $this->code1C,
+            'type' => $this->type,
             'name' => $this->name,
-            'name_1C' => $this->name_1C,
+            'coll' => $this->collection->name,
+            'bh' => $this->base_height * 100,
+            'ch' => $this->cover_height * 100,
+            'textile' => $this->textile,
+            'bc' => $this->base_composition,
+
         ];
     }
 }

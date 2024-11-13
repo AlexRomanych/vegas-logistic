@@ -13,6 +13,12 @@ const pinia = createPinia()
 // console.log(import.meta.url)
 // console.log(import.meta)
 
+// const TheApp = {
+//     template: `<Suspense><App /></Suspense>`,
+//     components: { App },
+// };
+
+
 createApp(App)
     .use(pinia)
     .use(router)

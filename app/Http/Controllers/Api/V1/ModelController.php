@@ -19,17 +19,35 @@ class ModelController extends Controller
     public function models()
     {
 //        return 11111;
-//        return new ModelCollection(Model::query()->get(10));
-        return new ModelCollection(DB::table('models')->get());
+//        return new ModelCollection(Model::all());
+        return new ModelCollection(Model::query()->orderBy('type')->orderBy('name')->with('collection')->get());
+
+//        $models = $users = DB::table('models')
+//            ->select(DB::raw('*'))
+//            ->where('type', '<>', '')
+//            ->groupBy('serial')
+//            ->get();
+
+//        $models = $users = DB::table('models')
+//            ->select('*', 'name', 'type')
+////            ->where('type', '<>', '')
+//            ->orderBy('type')
+//            ->get();
+//
+//        $models = $models->orderBy('type');
+
+//        return $models;
+//        return new ModelCollection(DB::table('models')->get());
+//        return new ModelCollection($models);
     }
 
-//    public function show(string $id)
-//    {
-//        return new ModelResource(Model::query()->find($id));
-//    }
-//
-//    public function all()
-//    {
-//        return new ModelCollection(Model::all());
-//    }
+    public function show(string $id)
+    {
+        return new ModelResource(Model::query()->find($id));
+    }
+
+    public function all()
+    {
+        return new ModelCollection(Model::all());
+    }
 }
