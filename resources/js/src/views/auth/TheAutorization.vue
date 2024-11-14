@@ -220,14 +220,14 @@ const formSubmit = async (e) => {
         let currUserTemp = null                     // для получения данных с сервера
 
         if (props.isRegister) {
-            currUserTemp = user.registerUser({
+            currUserTemp = await user.registerUser({
                 email: loginValue.value,
                 name: nameValue.value,
                 password: passwordValue.value,
                 password_confirmation: passwordСonfirmationValue.value,
             })
         } else {
-            currUserTemp = user.fetchUser({
+            currUserTemp = await user.fetchUser({
                 email: loginValue.value,
                 password: passwordValue.value
             })
@@ -238,7 +238,9 @@ const formSubmit = async (e) => {
         Object.assign(currUser, userData)
 
         if (currUser.status === 200) {
-            router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
+            // router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
+            // debugger
+            router.push({name: 'models'})               // переход в сам dashboard todo потом изменить
         } else {
             confirmClick.value = true
             calloutType.value = 'danger'

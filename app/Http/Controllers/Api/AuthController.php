@@ -60,13 +60,14 @@ class AuthController extends BaseController
 
         $user = User::where('email', $credentials['email'])->first();
 
+        if (!$token = auth()->attempt($credentials)) {
+            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
+        }
+
         if (!$user->is_active) {
             return $this->sendError('User blocked.', ['error' => 'Blocked'], 403);
         }
 
-        if (!$token = auth()->attempt($credentials)) {
-            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
-        }
 
         $success = $this->respondWithToken($token);
         $success['name'] = auth()->user()->name;
@@ -103,6 +104,8 @@ class AuthController extends BaseController
      */
     public function refresh()
     {
+//        return 1111;
+
         $success = $this->respondWithToken(auth()->refresh());
 
         return $this->sendResponse($success, 'Refresh token return successfully.');

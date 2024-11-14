@@ -16,15 +16,19 @@ const api = axios.create({
 export const useUserStore = defineStore('user', () => {
 
     let currentUser = new UserClass()               // Переменная, хранящая информацию о текущем пользователе
+
+    const errorApi = function (err) {
+        currentUser.status = err.response.status      // возвращаем статус для отображения ошибки
+        currentUser.id = 0
+    }
     const registerUser = async function (userDatа) {
         try {
             const res = await api.post('register', userDatа)
             currentUser.status = res.status
             return currentUser
         } catch (e) {
-            currentUser.id = 0
-            currentUser.status = e.response.status
-            return currentUser   // возвращаем пользователя
+            errorApi(e)                                 // обрабатываем ошибку
+            return currentUser                          // возвращаем пользователя
         }
 
     }
@@ -33,6 +37,7 @@ export const useUserStore = defineStore('user', () => {
     const fetchUser = async function (userDatа) {
 
         try {
+
             const res = await api.post('login', userDatа)
             console.log(res)
             if (res.data.success && res.data.data.access_token) {
@@ -44,34 +49,89 @@ export const useUserStore = defineStore('user', () => {
                     name: res.data.data.name,
                     status: res.status
                 })
+
+                // debugger
                 return currentUser // возвращаем пользователя
             }
+
         } catch (e) {
-            currentUser.id = 0
-            currentUser.status = e.response.status
-            return currentUser   // возвращаем пользователя
+
+            errorApi(e)                                 // обрабатываем ошибку
+            return currentUser                          // возвращаем пользователя
+
         }
 
     }
 
     // Возвращаем текущего пользователя
-    const getUser = function () {
-    // заглушка
-        const tempUser = new UserClass({
-            id: 100,
-            name: 'test',
-            status: 200,
-            email: 'test@test.com'
-        })
-        currentUser = tempUser                  // warning todo Убрать!!!
+    const getUser = async function () {
+        // // заглушка
+        //     const tempUser = new UserClass({
+        //         id: 100,
+        //         name: 'test',
+        //         status: 200,
+        //         email: 'test@test.com'
+        //     })
+        //     currentUser = tempUser                  // warning todo Убрать!!!
+
+
+        if (!currentUser.id) {
+
+            // debugger
+
+            try {
+
+                const profile = await api.post('profile', {}, {
+                    headers: {
+                        'authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+
+                // debugger
+                // console.log(profile)
+
+
+                if (profile.data.success && profile.data.data.id != 0) {
+                    currentUser = new UserClass({
+                        id: profile.data.data.id,
+                        email: profile.data.data.email,
+                        name: profile.data.data.name,
+                        status: profile.status
+                    })
+                    return currentUser // возвращаем пользователя
+                }
+
+            } catch (e) {
+
+                // debugger
+
+
+
+
+                errorApi(e)                                 // обрабатываем ошибку
+                return currentUser                          // возвращаем пользователя
+
+            }
+
+        }
+
+        // console.log(currentUser)
 
         return currentUser
     }
 
     // Возвращаем статус авторизации
-    const isAuthenticated = function () {
-        return true                             // warning todo Убрать!!!
-        return !! currentUser.id
+    const isAuthenticated = async function () {
+        currentUser = await getUser()
+        // console.log(currentUser)
+        // return true                             // warning todo Убрать!!!
+
+        // if (!currentUser.id) {
+        //     const router = useRouter()
+        //     console.log(router)
+        //     // router.push({name: 'login'})
+        // }
+        return !!currentUser.id
     }
 
     const logout = function () {

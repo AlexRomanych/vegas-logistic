@@ -21,8 +21,8 @@ class ModelResource extends JsonResource
             'type' => $this->type,
             'name' => $this->name,
             'coll' => $this->collection->name,
-            'bh' => $this->base_height * 100,
-            'ch' => $this->cover_height * 100,
+            'bh' => round($this->base_height * 100),
+            'ch' => round ($this->cover_height * 100),
             'textile' => $this->textile,
             'bc' => $this->base_composition,
 

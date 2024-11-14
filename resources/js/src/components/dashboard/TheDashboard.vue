@@ -16,22 +16,25 @@
         <TheNav/>
         <TheHeader/>
         <TheFooter/>
-<!--        <router-view></router-view>-->
-<!--        <TheMain-->
-<!--            :isAuthenticated="isAuthenticated"-->
-<!--            :source="source"-->
-<!--        />-->
+        <!--        <router-view></router-view>-->
+        <!--        <TheMain-->
+        <!--            :isAuthenticated="isAuthenticated"-->
+        <!--            :source="source"-->
+        <!--        />-->
         <TheMain/>
-
     </div>
 
-<!--    <div v-else>-->
-<!--        <router-view></router-view>-->
-<!--    </div>-->
+    <div v-else>
+        <TheMain/>
+    </div>
+
+    <!--    <div v-else>-->
+    <!--        <router-view></router-view>-->
+    <!--    </div>-->
 
 </template>
 
-<script>
+<script setup>
 import {ref} from 'vue'
 // import TheHeader from "@/src/components/structure/TheHeader.vue"
 import TheHeader from "@/src/components/dashboard/TheHeader.vue"
@@ -40,37 +43,49 @@ import TheNav from "@/src/components/dashboard/TheNav.vue";
 import TheMain from "@/src/components/dashboard/TheMain.vue";
 
 import {useUserStore} from "@/src/stores/UserStore";
-import {useRouter} from "vue-router";
-
-export default {
+// import {useRouter} from "vue-router";
 
 
-    setup() {
-        const user = useUserStore()
-        const isAuthenticated = ref(user.isAuthenticated())
+const user = useUserStore()
+const isAuth = await user.isAuthenticated()
+const isAuthenticated = ref(isAuth)
 
-        // console.log('user', user.getUser())
-        // console.log(user.isAuthenticated())
-
-        const router = useRouter()
-        // console.log(router.currentRoute)
-
-        const source = router.currentRoute.value.meta.source
-        // console.log(source)
-
-        // const menuStore = useMenuStore()
-
-        // console.log(menuStore.menuList)
-        // const title = ref('This is Main Layout')
-
-        return {
-            isAuthenticated,
-            source,
-        }
-    },
-
-    components: {TheNav, TheFooter, TheHeader, TheMain},
-}
+// export default {
+//
+//
+//     async setup() {
+//         const user = useUserStore()
+//         const isAuth = await user.isAuthenticated()
+//
+//         // console.log('is_auth', isAuth)
+//
+//         const isAuthenticated = ref(isAuth)
+//         debugger
+//         // console.log('auth', isAuthenticated.value)
+//         // debugger
+//
+//         // console.log('user', user.getUser())
+//         // console.log(user.isAuthenticated())
+//
+//         // const router = useRouter()
+//         // console.log(router.currentRoute)
+//
+//         // const source = router.currentRoute.value.meta.source
+//         // console.log(source)
+//
+//         // const menuStore = useMenuStore()
+//
+//         // console.log(menuStore.menuList)
+//         // const title = ref('This is Main Layout')
+//
+//         return {
+//             isAuthenticated,
+//             // source,
+//         }
+//     },
+//
+//     components: {TheNav, TheFooter, TheHeader, TheMain},
+// }
 
 
 </script>

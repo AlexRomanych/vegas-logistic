@@ -102,7 +102,7 @@ Route::get('/user', [UserController::class, 'index']);
 Route::get('/users', [UserController::class, 'all']);
 
 Route::get('/model/{code1C}', [ModelController::class, 'model']);
-Route::get('/models', [ModelController::class, 'models']);
+Route::get('/models', [ModelController::class, 'models'])->middleware('auth');
 //Route::get('/users', function () {
 //    return 11111;
 //});
@@ -120,6 +120,6 @@ Route::group([
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
-    Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
+    Route::get('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
     Route::post('/profile', [AuthController::class, 'profile'])->middleware('auth:api');
 });

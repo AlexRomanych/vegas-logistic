@@ -1,7 +1,8 @@
 <template>
-    <TheDashboard />
-
-<!--    <router-view></router-view>-->
+    <Suspense>
+        <TheDashboard/>
+    </Suspense>
+    <!--    <router-view></router-view>-->
 </template>
 
 <script setup>

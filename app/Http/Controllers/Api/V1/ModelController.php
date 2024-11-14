@@ -20,7 +20,13 @@ class ModelController extends Controller
     {
 //        return 11111;
 //        return new ModelCollection(Model::all());
-        return new ModelCollection(Model::query()->orderBy('type')->orderBy('name')->with('collection')->get());
+        return new ModelCollection(
+            Model::query()
+                ->orderBy('type')
+                ->orderBy('name')
+                ->with('collection')
+                ->get()
+        );
 
 //        $models = $users = DB::table('models')
 //            ->select(DB::raw('*'))

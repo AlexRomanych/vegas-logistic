@@ -5,7 +5,6 @@
         <div><span class="chrono-field">{{ formattedDate }}</span><span class="divider">|</span></div>
         <div><span class="chrono-field">{{ currUser.name }}</span></div>
     </div>
-
 </template>
 
 <script setup>
@@ -60,8 +59,11 @@ onUnmounted(() => {
     clearInterval(intervalDate)
 });
 
+// debugger
 const user = useUserStore();
-const currUser = user.getUser()
+const currUser = ref(await user.getUser())
+// debugger
+// console.log('logo', currUser.value)
 
 </script>
 

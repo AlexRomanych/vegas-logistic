@@ -15,7 +15,8 @@ const routes = [
 
 //-----------------------------------------------------------------------
 // info Autorization
-    {path: '/login',
+    {
+        path: '/login',
         alias: '/',
         name: 'login',
         component: () => import('@/src/views/auth/TheLogin.vue'),
@@ -60,13 +61,11 @@ const routes = [
     },
 
 
-
     {
         path: '/users',
         name: 'users',
         component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
     },
-
 
 
     {path: '/ui', name: 'ui', component: () => import('../components/dashboard/TheMain.vue')},
@@ -95,6 +94,7 @@ const routes = [
 
 ]
 
+console.log('i am router')
 
 const router = createRouter({
     history: createWebHistory(),
@@ -103,27 +103,38 @@ const router = createRouter({
 })
 
 // Это правильное иcпользование
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const user = useUserStore()
 
+    // debugger
     // console.log('from:', from.name)
     // console.log('to:', to.name)
 
-    if (!user.isAuthenticated()) {
+    // debugger
+    const auth = await user.isAuthenticated()
+    // console.log(auth)
+    // debugger
+
+    // debugger
+
+    // if (!user.isAuthenticated()) {
+    if (!auth) {
         if (to.name === 'register' || to.name === 'login' || to.name === 'error.404') {
             next()
         } else {
             next({name: 'login'})
         }
     } else {
+        // debugger
         next()
     }
 
-// if (!(to.name === 'login' || user.isAuthenticated())) {
-//     next({ name: 'login' })
-// } else {
-//     next()
-// }
+
+    // if (!(to.name === 'login' || user.isAuthenticated())) {
+    //     next({ name: 'login' })
+    // } else {
+    //     next()
+    // }
 
 })
 

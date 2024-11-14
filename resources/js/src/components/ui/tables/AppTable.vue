@@ -76,7 +76,9 @@ switch(props.textSize) {
         break
 }
 
-const {headers, data} = props.tableData
+const {headers, data, widths} = props.tableData     // todo Доработать ширину столбцов через поле widths: [10, 15, ...]
+
+// console.log(widths)
 
 if ('headers' in props.tableData) {
     headers.unshift('#')

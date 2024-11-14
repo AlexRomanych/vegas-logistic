@@ -26,6 +26,8 @@ import {jwtGet} from "@/src/app/utils/jwt_api.js";
 
 const models = await jwtGet('/models');                    // даем запрос на получение данных по моделям
 
+// debugger
+
 const modelsData = models.models.map(model => {
     return [model.type,model.coll, model.name, model.textile, model.bh, model.ch, model.bc]
 })

@@ -1,11 +1,12 @@
 <template>
-    <header class="header">
-        <div>
-            <TheLogo/>
-        </div>
+    <Suspense> <!--В компоненте Thelogo - асинхронная загрузка User-->
+        <header class="header">
+            <div>
+                <TheLogo/>
+            </div>
 
-    </header>
-
+        </header>
+    </Suspense>
 </template>
 
 <script setup>
