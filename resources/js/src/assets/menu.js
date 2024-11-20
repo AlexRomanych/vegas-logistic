@@ -36,7 +36,7 @@ const menuData = () => {
                 ]
         },
         {
-            group: {name: 'Справочники', shown: true, isActive: false, icon: 'BookOpenIcon'},
+            group: {name: 'Справочники', shown: true, isActive: true, icon: 'BookOpenIcon'},
             items:
                 [
                     {name: 'Модели'},

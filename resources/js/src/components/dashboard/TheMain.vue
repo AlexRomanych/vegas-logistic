@@ -1,7 +1,7 @@
 <template>
     <Suspense>
         <main class="content">
-            <router-view></router-view>
+            <router-view :key="$route.fullPath"></router-view>
         </main>
     </Suspense>
     <!--    <main v-if="isAuthenticated" class="content">-->

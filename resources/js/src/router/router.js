@@ -47,6 +47,12 @@ const routes = [
 
     },
 
+    {
+        path: '/dashboard/menu/:groupId',
+        name: 'menu',
+        component: () => import('@/src/components/dashboard/nav/NavItemMenuRouter.vue'),
+
+    },
 
     // {
     //     path: '/models',
