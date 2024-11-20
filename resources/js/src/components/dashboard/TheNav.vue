@@ -1,7 +1,7 @@
 <template>
     <nav class="sidebar">
         <aside class="sidebar-menu">
-            <NavItems :menus="menus"/>
+            <NavItems :menu="menu"/>
         </aside>
     </nav>
 </template>
@@ -14,14 +14,12 @@ export default {
     components: {NavItems},
     setup() {
         const menuStore = useMenuStore()
+        const menu = menuStore.menu
 
-        const menus = menuStore.menuData
-
-
-        // console.log(menus)
+        // console.log(menu)
 
         return {
-            menus,
+            menu,
         }
     }
 }

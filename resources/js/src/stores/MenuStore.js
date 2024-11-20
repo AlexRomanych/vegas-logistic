@@ -4,7 +4,9 @@ import menu from '../assets/menu.js'
 
 export const useMenuStore = defineStore('menu', () => {
 
-    const menuData = menu().map((item, index) => ({...item, groupID: ++index }))    // Добавляем id группы
+    const menuData = menu
+
+    // const menuData = menu.map((item, index) => ({...item, groupID: ++index }))    // Добавляем id группы
 
     // console.log(menuData, typeof menuData)
     //
@@ -14,7 +16,8 @@ export const useMenuStore = defineStore('menu', () => {
 
 
     return {
-        menuData,
+        menu,
+        // menuData,
     }
 
 })

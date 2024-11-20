@@ -40,9 +40,10 @@ const routes = [
 // info Dashboard
 
     {
-        path: '/dashboard',
+        path: '/dashboard/start',
+        alias: '/dashboard',
         name: 'dashboard',
-        component: () => import('@/src/components/dashboard/TheDashboard.vue'),
+        component: () => import('@/src/components/dashboard/start_pages/TheStartFacade.vue'),
 
     },
 

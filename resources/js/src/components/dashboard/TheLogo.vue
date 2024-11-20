@@ -3,14 +3,17 @@
         <div><span class="chrono-field">{{ formattedTime }}</span><span class="divider">|</span></div>
         <div><span class="chrono-field">{{ formattedWeek }}</span><span class="divider">|</span></div>
         <div><span class="chrono-field">{{ formattedDate }}</span><span class="divider">|</span></div>
+        <div class="user-icon"><UserCircleIcon /></div>
         <div><span class="chrono-field">{{ currUser.name }}</span></div>
     </div>
+
 </template>
 
 <script setup>
 import {computed, watch, ref, onMounted, onUnmounted} from 'vue'
 import {useUserStore} from "@/src/stores/UserStore";
 import {getWeekNumber} from "@/src/app/helpers/helpers_date.js"
+import {UserCircleIcon} from '@heroicons/vue/24/solid'
 
 // Вычисляем время
 const formattedTime = ref('');
@@ -80,6 +83,12 @@ const currUser = ref(await user.getUser())
 
 .divider {
     @apply text-slate-600;
+}
+
+.user-icon {
+    @apply text-slate-500 p-2;
+    height: var(--header-height);
+    width: var(--header-height);
 }
 
 </style>

@@ -65,14 +65,14 @@ export const useUserStore = defineStore('user', () => {
 
     // Возвращаем текущего пользователя
     const getUser = async function () {
-        // // заглушка
-        //     const tempUser = new UserClass({
-        //         id: 100,
-        //         name: 'test',
-        //         status: 200,
-        //         email: 'test@test.com'
-        //     })
-        //     currentUser = tempUser                  // warning todo Убрать!!!
+        // заглушка
+            const tempUser = new UserClass({
+                id: 100,
+                name: 'test',
+                status: 200,
+                email: 'test@test.com'
+            })
+            currentUser = tempUser                  // warning todo Убрать!!!
 
 
         if (!currentUser.id) {
@@ -131,6 +131,7 @@ export const useUserStore = defineStore('user', () => {
         //     console.log(router)
         //     // router.push({name: 'login'})
         // }
+
         return !!currentUser.id
     }
 
