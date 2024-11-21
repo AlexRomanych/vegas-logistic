@@ -5,88 +5,97 @@ const menuData = () => {
             group: {name: 'Производство', shown: true, isActive: true, icon: 'HomeModernIcon'},
             items:
                 [
-                    {name: 'Сменные задания', path: 'manufacture',},
-                    {name: 'План производства по ПЯ', path: 'plan',},
-                    {name: 'Планирование производства', path: 'plan'},
+                    {name: 'Сменные задания', path: 'plan', shown: false, isActive: true,},
+                    {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Планирование производства', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Сменные задания', path: '', shown: true, isActive: true,},
+                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
+                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
+                    {name: 'Сменные задания', path: '', shown: true, isActive: true,},
+                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
+                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
+                    {name: 'Сменные задания', path: 'plan', shown: true, isActive: true,},
+                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
+                    {name: 'Планирование производства', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Заявки', shown: true, isActive: true, icon: 'ShoppingCartIcon'},
             items:
                 [
-                    {name: 'Заявки за период'},
-                    {name: 'Новая заявка'},
+                    {name: 'Заявки за период', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Клиенты', shown: true, isActive: true, icon: 'UserGroupIcon'},
             items:
                 [
-                    {name: 'Список клиентов'},
-                    {name: 'Новый клиент'},
-                    {name: 'Клиент 3'},
+                    {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Новый клиент', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Клиент 3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Склад', shown: true, isActive: false, icon: 'BuildingStorefrontIcon'},
             items:
                 [
-                    {name: 'План отгрузок'},
-                    {name: 'Динамика загрузки склада'},
+                    {name: 'План отгрузок', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Динамика загрузки склада', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Справочники', shown: true, isActive: true, icon: 'BookOpenIcon'},
             items:
                 [
-                    {name: 'Модели'},
-                    {name: 'Процедуры'},
-                    {name: 'Производственные ячейки'},
+                    {name: 'Модели', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Процедуры', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Производственные ячейки', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Отчеты', shown: true, isActive: false, icon: 'ClipboardDocumentIcon'},
             items:
                 [
-                    {name: 'Отчет_1'},
-                    {name: 'Отчет_2'},
-                    {name: 'Отчет_3'},
+                    {name: 'Report_1', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Report_2', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Report_3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Пользователи', shown: true, isActive: false, icon: 'UsersIcon'},
             items:
                 [
-                    {name: 'Отчет_1'},
-                    {name: 'Отчет_2'},
-                    {name: 'Отчет_3'},
+                    {name: 'User_1', path: 'plan', shown: true, isActive: true,},
+                    {name: 'User_2', path: 'plan', shown: true, isActive: true,},
+                    {name: 'User_3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Настройки', shown: true, isActive: false, icon: 'Cog8ToothIcon'},
             items:
                 [
-                    {name: 'Отчет_1'},
-                    {name: 'Отчет_2'},
-                    {name: 'Отчет_3'},
+                    {name: 'Setting_1', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Setting_2', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Setting_3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: 'Tutorials', shown: false, isActive: false, icon: 'BookOpenIcon'},
             items:
                 [
-                    {name: 'Tutorial 1'},
-                    {name: 'Tutorial 2'},
-                    {name: 'Tutorial 3'},
+                    {name: 'Tutorial 1', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Tutorial 2', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Tutorial 3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
             group: {name: '1234567890', shown: false, isActive: false, icon: 'BookOpenIcon'},
             items:
                 [
-                    {name: 'Tutorial 1'},
-                    {name: 'Tutorial 2'},
-                    {name: 'Tutorial 3'},
+                    {name: 'Tutorial 1', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Tutorial 2', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Tutorial 3', path: 'plan', shown: true, isActive: true,},
                 ]
         }
 
@@ -94,12 +103,19 @@ const menuData = () => {
 }
 
 // Добавляем id к группам и подменю
+// Делаем защиту: если path='' то isActive = false
 const menu = menuData().map((item, index) => {
     const {group, items} = item
     group.id = ++index
-    const newItems = items.map((item, index) => ({...item, 'id': ++index}))
+    const newItems = items.map((item, index) => {
+        item.isActive = item.path !== ''
+        return {...item, 'id': ++index}
+    })
+
     return {group, items: newItems}
 })
+
+console.log(menu)
 
 export default menu
 

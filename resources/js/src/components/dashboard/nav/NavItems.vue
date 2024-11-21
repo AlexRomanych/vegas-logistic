@@ -8,7 +8,7 @@
                 <!--                </a>-->
 
                 <div
-                    :class="['nav-item', menuItem.group.isActive ? 'nav-item-hover' : '']"
+                    :class="['nav-item', menuItem.group.isActive ? 'nav-item-hover nav-item-text-active' : 'nav-item-text']"
                     :data-group-id="menuItem.group.id"
                     @click.stop="selectMenu(menuItem.group.id, $event)"
                 >
@@ -73,19 +73,25 @@ const selectMenu = (groupId, e) => {
     flex
     items-center
     px-4 py-1
-    text-gray-700
     ml-1
-    border
-    rounded-xl
-    border-gray-100;
+    border rounded-xl border-slate-100;
     width: calc(var(--sidebar-width) - 10px);
     height: 100%;
 }
 
 .nav-item-hover {
     @apply
-    hover:bg-gray-300
-    hover:text-blue-500
+    hover:bg-slate-300
+    hover:text-slate-800
+    hover:border-slate-500
     cursor-pointer
+}
+
+.nav-item-text {
+    @apply text-slate-400
+}
+
+.nav-item-text-active {
+    @apply text-slate-500
 }
 </style>

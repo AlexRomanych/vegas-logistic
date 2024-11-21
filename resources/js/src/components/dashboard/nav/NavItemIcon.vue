@@ -50,6 +50,6 @@ export default {
 
 <style scoped>
 .nav-item-icon {
-    @apply size-6 text-slate-500 m-1.5
+    @apply size-6 m-1.5
 }
 </style>

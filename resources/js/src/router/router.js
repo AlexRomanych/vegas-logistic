@@ -50,7 +50,7 @@ const routes = [
     {
         path: '/dashboard/menu/:groupId',
         name: 'menu',
-        component: () => import('@/src/components/dashboard/nav/NavItemMenuRouter.vue'),
+        component: () => import('@/src/components/dashboard/nav/NavItemMenu.vue'),
 
     },
 
@@ -71,6 +71,13 @@ const routes = [
     {
         path: '/users',
         name: 'users',
+        component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
+    },
+
+
+    {
+        path: '/plan',
+        name: 'plan',
         component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
     },
 

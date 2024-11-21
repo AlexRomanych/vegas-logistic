@@ -1,43 +1,38 @@
 <template>
-<div>I am Menu {{$route.params.groupId}}</div>
-    <NavItemCard :groupId="$route.params.groupId"/>
+    <!--    <div>I am Menu {{$route.params.groupId}}</div>-->
+    <div class="flex flex-wrap">
+        <div v-for="groupMenuItem in group.items" :key="groupMenuItem.id">
+
+            <NavItemCard
+                :groupMenuItem="groupMenuItem"
+            />
+        </div>
+    </div>
 </template>
 
-<!--<script setup>-->
-<!--import {useMenuStore} from "@/src/stores/MenuStore.js"-->
-<!--import {useRouter, useRoute} from "vue-router";-->
-<!--import {ref, reactive} from "vue";-->
-
-<!--const menu = useMenuStore()-->
-<!--const router = useRouter()-->
-<!--const menuItem = reactive(router.currentRoute.value.params)-->
-
-<!--const route = useRoute()-->
-
-
-<!--console.log(menuItem)-->
-<!--console.log(route)-->
-
-
-<!--</script>-->
-
-<script>
-import NavItemMenu from "@/src/components/dashboard/nav/NavItemMenu.vue"
+<script setup>
+import {useMenuStore} from "@/src/stores/MenuStore.js"
 import NavItemCard from "@/src/components/dashboard/nav/NavItemCard.vue"
-export default {
-    data() {
-        return {
-            groupId: this.$route.params.groupId
-        }
-    },
+import {useRouter} from "vue-router";
+import {ref} from "vue";
 
-    components: {
-        NavItemCard
-    }
+const menuStore = useMenuStore()
+const menu = menuStore.menu
 
-}
+const router = useRouter()
+const groupId = +router.currentRoute.value.params.groupId
+
+// Находим группу по заданному id
+const group = menu.find(item => item.group.id === groupId)
+
+
+console.log(groupId)
+console.log(menu)
+console.log(group)
+
 
 </script>
+
 
 <style scoped>
 

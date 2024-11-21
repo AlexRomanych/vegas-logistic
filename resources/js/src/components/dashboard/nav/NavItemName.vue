@@ -15,6 +15,6 @@ const props = defineProps({
 
 <style scoped>
   .nav-item-name {
-      @apply text-lg text-slate-500 font-semibold;
+      @apply text-lg font-semibold;
   }
 </style>
