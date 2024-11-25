@@ -20,7 +20,10 @@ export const useUserStore = defineStore('user', () => {
     const errorApi = function (err) {
         currentUser.status = err.response.status      // возвращаем статус для отображения ошибки
         currentUser.id = 0
+        console.log('error')
     }
+
+
     const registerUser = async function (userDatа) {
         try {
             const res = await api.post('register', userDatа)
@@ -32,6 +35,7 @@ export const useUserStore = defineStore('user', () => {
         }
 
     }
+
 
     // Функционал для авторизации
     const fetchUser = async function (userDatа) {
@@ -63,54 +67,60 @@ export const useUserStore = defineStore('user', () => {
 
     }
 
+
     // Возвращаем текущего пользователя
     const getUser = async function () {
         // заглушка
-            const tempUser = new UserClass({
-                id: 100,
-                name: 'test',
-                status: 200,
-                email: 'test@test.com'
-            })
-            currentUser = tempUser                  // warning todo Убрать!!!
-
+        //     const tempUser = new UserClass({
+        //         id: 100,
+        //         name: 'test',
+        //         status: 200,
+        //         email: 'test@test.com'
+        //     })
+        //     currentUser = tempUser                  // warning todo Убрать!!!
 
         if (!currentUser.id) {
 
-            // debugger
+            debugger
 
             try {
 
-                const profile = await api.post('profile', {}, {
+                console.log(`Bearer ${localStorage.getItem('token')}`)
+
+                const profileRequest = await api.post('profile', {}, {
                     headers: {
                         'authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 })
 
-                // debugger
-                // console.log(profile)
+                const profile = await profileRequest.data
+
+                console.log(profile)
+                debugger
 
 
-                if (profile.data.success && profile.data.data.id != 0) {
+                if (profile.data.id != 0) {
                     currentUser = new UserClass({
-                        id: profile.data.data.id,
-                        email: profile.data.data.email,
-                        name: profile.data.data.name,
-                        status: profile.status
+                        id: profile.data.id,
+                        email: profile.data.email,
+                        name: profile.data.name,
+                        status: profileRequest.status
                     })
-                    return currentUser // возвращаем пользователя
                 }
+
+                // debugger
+                // return currentUser // возвращаем пользователя
 
             } catch (e) {
 
-                // debugger
-
-
-
-
                 errorApi(e)                                 // обрабатываем ошибку
-                return currentUser                          // возвращаем пользователя
+                // debugger
+                // return currentUser                          // возвращаем пользователя
 
+            } finally {
+                // console.log('finally')
+                // currentUser.finnaly = true
+                return currentUser
             }
 
         }
@@ -121,8 +131,34 @@ export const useUserStore = defineStore('user', () => {
     }
 
     // Возвращаем статус авторизации
+
     const isAuthenticated = async function () {
+
+        console.trace()
+        debugger
         currentUser = await getUser()
+
+
+        console.log('isAuthenticated', currentUser)
+        debugger
+
+        // return true                             // warning todo Убрать!!!
+
+        // if (!currentUser.id) {
+        //     const router = useRouter()
+        //     console.log(router)
+        //     // router.push({name: 'login'})
+        // }
+
+        return !!currentUser.id
+    }
+
+    const isAuthenticated_Old = async function () {
+
+
+        currentUser = await getUser()
+
+
         // console.log(currentUser)
         // return true                             // warning todo Убрать!!!
 

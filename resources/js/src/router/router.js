@@ -123,11 +123,11 @@ router.beforeEach(async (to, from, next) => {
     // debugger
     // console.log('from:', from.name)
     // console.log('to:', to.name)
-
+    //
     // debugger
     const auth = await user.isAuthenticated()
-    // console.log(auth)
-    // debugger
+    console.log(auth)
+    debugger
 
     // debugger
 

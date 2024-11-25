@@ -48,6 +48,7 @@ import {useUserStore} from "@/src/stores/UserStore";
 
 const user = useUserStore()
 const isAuth = await user.isAuthenticated()
+// console.log('isAuth', isAuth)
 const isAuthenticated = ref(isAuth)
 
 // export default {

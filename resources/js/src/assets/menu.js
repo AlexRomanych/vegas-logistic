@@ -5,18 +5,10 @@ const menuData = () => {
             group: {name: 'Производство', shown: true, isActive: true, icon: 'HomeModernIcon'},
             items:
                 [
-                    {name: 'Сменные задания', path: 'plan', shown: false, isActive: true,},
                     {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Планирование производства', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Сменные задания', path: '', shown: true, isActive: true,},
-                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
-                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
-                    {name: 'Сменные задания', path: '', shown: true, isActive: true,},
-                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
+                    {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
                     {name: 'Планирование производства', path: '', shown: true, isActive: true,},
                     {name: 'Сменные задания', path: 'plan', shown: true, isActive: true,},
-                    {name: 'План производства по ПЯ', path: '', shown: true, isActive: true,},
-                    {name: 'Планирование производства', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
@@ -33,7 +25,6 @@ const menuData = () => {
                 [
                     {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
                     {name: 'Новый клиент', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Клиент 3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
@@ -48,9 +39,10 @@ const menuData = () => {
             group: {name: 'Справочники', shown: true, isActive: true, icon: 'BookOpenIcon'},
             items:
                 [
-                    {name: 'Модели', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Процедуры', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Производственные ячейки', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Модели', path: 'models', shown: true, isActive: true,},
+                    {name: 'Процедуры расчета', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {
@@ -115,7 +107,7 @@ const menu = menuData().map((item, index) => {
     return {group, items: newItems}
 })
 
-console.log(menu)
+// console.log(menu)
 
 export default menu
 
