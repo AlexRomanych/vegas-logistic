@@ -48,7 +48,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['buttonClick'])
-const buttonClick = () => emit('buttonClick', props.title)
+const buttonClick = () => emit('buttonClick', props.id)
 
 const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
 const backgroundColor = getColorClassByType(props.type, 'bg')
@@ -62,7 +62,7 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border')).va
     @apply ml-1 mt-1 p-1 border-2 rounded-lg cursor-pointer flex justify-center items-center;
 }
 .btn {
-    @apply w-full h-full;
+    @apply w-full h-full font-semibold;
 }
 
 </style>

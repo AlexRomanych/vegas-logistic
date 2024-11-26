@@ -2,8 +2,6 @@ import {
     colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
 } from "@/src/app/constants/colorsClasses.js"
 
-import {PERIOD_LENGTH} from "@/src/app/constants/dates.js"
-
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
 // prefix - префикс для класса tailwind ('bg', 'text', 'border')
 // colorIndexData - индекс цвета для кнопки

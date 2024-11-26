@@ -1,6 +1,8 @@
 // Здесь все, что касается даты и времени
 
-// __________________________________________________________________________________________________________
+import {PERIOD_LENGTH} from "@/src/app/constants/dates.js"
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // возвращает отображаемый период производства
 export function getPeriod() {
     const tempDate = new Date()
@@ -23,6 +25,9 @@ export function getPeriod() {
     return {periodStart, periodEnd, periodStartText, periodEndText}
 }
 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Возвращает номер недели для указанной даты
 export function getWeekNumber(date) {
     // Копируем дату, чтобы не изменять исходную
     const d = new Date(date);
@@ -45,7 +50,31 @@ export function getWeekNumber(date) {
     return weekNum;
 }
 
-// Пример использования
-// const today = new Date();
-// const weekNumber = getWeekNumber(today);
-// console.log("Номер недели:", weekNumber);
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Определяет, какая дата в текстовом формате больше:
+//      если dateString2 > dateString1, то возвращает true
+//      если dateString1 > dateString2, то возвращает false
+//      если dateString1 = dateString2, то возвращает undefined
+export function compareDatesLogic(dateString1, dateString2) {
+    // Преобразуем строки в объекты Date
+    const date1 = new Date(dateString1);
+    const date2 = new Date(dateString2);
+
+    if (date1 === date2) return undefined
+    return date2 > date1
+}
+
+// Возвращает разницу дат в миллисекундах: dateString2 - dateString1
+export function compareDates(dateString1, dateString2) {
+    // Преобразуем строки в объекты Date
+    const date1 = new Date(dateString1);
+    const date2 = new Date(dateString2);
+
+    return date2 - date1
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+// const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD

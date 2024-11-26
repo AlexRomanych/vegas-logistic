@@ -66,11 +66,11 @@ jwtAxios.interceptors.response.use(
     (error) => onRejected(error)
 )
 
-export async function jwtGet(url) {
+export async function jwtGet(url, params = {}) {
     // console.log(url)
     try {
 
-        const res = await jwtAxios.get(url)
+        const res = await jwtAxios.get(url, params)
         const data = await res.data
         return data
 

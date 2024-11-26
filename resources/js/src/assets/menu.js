@@ -15,8 +15,8 @@ const menuData = () => {
             group: {name: 'Заявки', shown: true, isActive: true, icon: 'ShoppingCartIcon'},
             items:
                 [
-                    {name: 'Заявки за период', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Загрузить текущие заявки с диска', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Заявки за период', path: 'orders', shown: true, isActive: true,},
+                    {name: 'Загрузить с диска', path: 'orders.upload', shown: true, isActive: true,},
                     {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
                 ]
         },

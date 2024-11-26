@@ -110,6 +110,9 @@ Route::get('/model/{code1C}', [ModelController::class, 'model']);
 Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth');
 
 
+Route::get('/orders', [ModelController::class, 'models'])->middleware('jwt.auth');
+
+
 
 //Route::get('/users', function () {
 //    return 11111;

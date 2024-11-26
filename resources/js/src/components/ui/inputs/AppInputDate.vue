@@ -6,12 +6,12 @@
             type="date"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
             :disabled="disabled"
-            :value="defaultDate"
             :max="maxDate || periodEndText"
             :min="minDate || periodStartText"
             step="1"
             v-model="inputDate"
             @change="getInputDate"
+
 
         >
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
@@ -25,7 +25,8 @@
 <script setup>
 
 import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getPeriod} from "@/src/app/helpers/helpers.js"
+import {getColorClassByType} from "@/src/app/helpers/helpers.js"
+import {getPeriod} from "@/src/app/helpers/helpers_date.js"
 import {computed, ref} from "vue";
 
 const props = defineProps({
@@ -51,7 +52,7 @@ const props = defineProps({
     width: {
         type: String,
         required: false,
-        default: 'w-[500px]',
+        default: 'w-[150px]',
 
     },
     minDate: {
@@ -67,7 +68,7 @@ const props = defineProps({
     value: {
         type: String,
         required: false,
-        default: '2024-10-05',
+        // default: '2024-10-05',
     },
     error: {
         type: Object,
@@ -101,12 +102,15 @@ const inputDate = defineModel({
 //     default: ''
 // })
 
-const selectedDate = ref(new Date().toISOString().slice(0, 10));
+const selectedDate = new Date().toISOString().slice(0, 10);
+const defaultDate = selectedDate
 
-const defaultDate = computed(() => {
-    // Здесь можно выполнять дополнительные логики для определения даты по умолчанию
-    return selectedDate.value;
-});
+// const selectedDate = ref(new Date().toISOString().slice(0, 10));
+
+// const defaultDate = computed(() => {
+//     // Здесь можно выполнять дополнительные логики для определения даты по умолчанию
+//     return selectedDate.value;
+// });
 
 const {periodStart, periodEnd, periodStartText, periodEndText} = getPeriod()
 // const value = ref(periodStartText)
@@ -127,8 +131,9 @@ textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex +
 
 const emit = defineEmits(['getInputDate'])
 
-// const getInputText = (e) => emit('getInputDate', e.target.value)
-const getInputDate = (e) => console.log(e.target.value)
+const getInputDate = (e) => emit('getInputDate', {id: props.id, value: e.target.value}) //todo сделать валидацию ввода даты
+
+// const getInputDate = (e) => console.log(e.target.value)
 
 
 // const onInput = function(e) {
