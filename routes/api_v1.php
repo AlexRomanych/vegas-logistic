@@ -102,7 +102,15 @@ Route::get('/user', [UserController::class, 'index']);
 Route::get('/users', [UserController::class, 'all']);
 
 Route::get('/model/{code1C}', [ModelController::class, 'model']);
-Route::get('/models', [ModelController::class, 'models'])->middleware('auth');
+
+// Тут уже будем работать над функционалом.
+// LaravelCreative утверждает, что вместо
+// ->middleware('auth') нужно использовать ->middleware('jwt.auth')
+// это работает
+Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth');
+
+
+
 //Route::get('/users', function () {
 //    return 11111;
 //});
@@ -112,14 +120,14 @@ Route::get('auth/me', [AuthController::class, 'me'])
     ->name('me');
 
 
-
+// Это, что касается аутентификации
 Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'
 ], function ($router) {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/refresh', [AuthController::class, 'refresh']); // Тут без middleware
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
-    Route::get('/refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
     Route::post('/profile', [AuthController::class, 'profile'])->middleware('auth:api');
 });

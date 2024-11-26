@@ -2,6 +2,7 @@
     <Suspense>
         <main class="content">
             <router-view :key="$route.fullPath"></router-view>
+<!--            {{$route.fullPath}}-->
         </main>
     </Suspense>
     <!--    <main v-if="isAuthenticated" class="content">-->

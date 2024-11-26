@@ -16,6 +16,7 @@ const menuData = () => {
             items:
                 [
                     {name: 'Заявки за период', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Загрузить текущие заявки с диска', path: 'plan', shown: true, isActive: true,},
                     {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
                 ]
         },

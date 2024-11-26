@@ -41,7 +41,7 @@ const routes = [
 
     {
         path: '/dashboard/start',
-        alias: '/dashboard',
+
         name: 'dashboard',
         component: () => import('@/src/components/dashboard/start_pages/TheStartFacade.vue'),
 
@@ -126,8 +126,8 @@ router.beforeEach(async (to, from, next) => {
     //
     // debugger
     const auth = await user.isAuthenticated()
-    console.log(auth)
-    debugger
+    // console.log(auth)
+    // debugger
 
     // debugger
 
@@ -140,6 +140,7 @@ router.beforeEach(async (to, from, next) => {
         }
     } else {
         // debugger
+        // window.location.reload()
         next()
     }
 

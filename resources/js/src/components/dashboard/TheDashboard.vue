@@ -12,6 +12,7 @@
 
     <!-- Показываем страицу, если пользователь авторизован -->
     <div v-if="isAuthenticated" class="container">
+<!--    <div class="container">-->
 
         <TheNav/>
         <TheHeader/>
@@ -35,7 +36,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref, computed} from 'vue'
 // import TheHeader from "@/src/components/structure/TheHeader.vue"
 import TheHeader from "@/src/components/dashboard/TheHeader.vue"
 import TheFooter from "@/src/components/dashboard/TheFooter.vue";
@@ -47,9 +48,12 @@ import {useUserStore} from "@/src/stores/UserStore";
 
 
 const user = useUserStore()
-const isAuth = await user.isAuthenticated()
+// const isAuth = await user.isAuthenticated()
+const isAuthenticated = computed(() => user.isAuth)
 // console.log('isAuth', isAuth)
-const isAuthenticated = ref(isAuth)
+// const isAuthenticated = ref(isAuth)
+
+// window.location.reload()
 
 // export default {
 //

@@ -16,11 +16,13 @@ const api = axios.create({
 export const useUserStore = defineStore('user', () => {
 
     let currentUser = new UserClass()               // Переменная, хранящая информацию о текущем пользователе
+    let isAuth = ref(false)
 
     const errorApi = function (err) {
         currentUser.status = err.response.status      // возвращаем статус для отображения ошибки
         currentUser.id = 0
-        console.log('error')
+        isAuth.value= false
+        console.log('errorApi', err.response)
     }
 
 
@@ -43,7 +45,7 @@ export const useUserStore = defineStore('user', () => {
         try {
 
             const res = await api.post('login', userDatа)
-            console.log(res)
+            // console.log(res)
             if (res.data.success && res.data.data.access_token) {
                 localStorage.setItem('token', res.data.data.access_token)
 
@@ -54,6 +56,7 @@ export const useUserStore = defineStore('user', () => {
                     status: res.status
                 })
 
+                isAuth.value= true
                 // debugger
                 return currentUser // возвращаем пользователя
             }
@@ -81,11 +84,12 @@ export const useUserStore = defineStore('user', () => {
 
         if (!currentUser.id) {
 
-            debugger
+            // debugger
 
             try {
 
-                console.log(`Bearer ${localStorage.getItem('token')}`)
+                console.trace()
+                // console.log(`Bearer ${localStorage.getItem('token')}`)
 
                 const profileRequest = await api.post('profile', {}, {
                     headers: {
@@ -95,8 +99,8 @@ export const useUserStore = defineStore('user', () => {
 
                 const profile = await profileRequest.data
 
-                console.log(profile)
-                debugger
+                // console.log(profile)
+                // debugger
 
 
                 if (profile.data.id != 0) {
@@ -113,6 +117,7 @@ export const useUserStore = defineStore('user', () => {
 
             } catch (e) {
 
+                // console.log(e.response)
                 errorApi(e)                                 // обрабатываем ошибку
                 // debugger
                 // return currentUser                          // возвращаем пользователя
@@ -134,13 +139,14 @@ export const useUserStore = defineStore('user', () => {
 
     const isAuthenticated = async function () {
 
-        console.trace()
-        debugger
+        // console.trace()
+        // debugger
         currentUser = await getUser()
 
+        isAuth.value= !!currentUser.id
 
-        console.log('isAuthenticated', currentUser)
-        debugger
+        // console.log('isAuthenticated', currentUser)
+        // debugger
 
         // return true                             // warning todo Убрать!!!
 
@@ -183,6 +189,8 @@ export const useUserStore = defineStore('user', () => {
         logout,
         getUser,
         isAuthenticated,
+
+        isAuth,
 
     }
 })

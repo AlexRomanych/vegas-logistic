@@ -1,9 +1,13 @@
 import axios from 'axios';
 import {useRouter} from "vue-router";
+import ErrorClass from "@/src/app/classes/ErrorClass.js";
+
+
+const versionBaseUrl = '/api/v1'
 
 const jwtAxios = axios.create({
     withCredentials: false,
-    baseURL: '/api/v1'
+    baseURL: versionBaseUrl
 })
 
 // Настраиваем конфиг для экземпляра axios
@@ -16,9 +20,37 @@ const onFulfilled = (config) => {
 
 // Добавляем обработчик ошибки
 const onRejected = (error) => {
-    console.log(error)
-    // const router = useRouter()
-    // router.push({name: 'login'})
+    // console.log('onRejected', error.response.data.message)
+    // console.log('onRejected', error.response)
+
+// Тут обрабатываем ошибку, связанную с истечением срока действия токена
+    if (error.response.data.message === 'Token has expired') {
+
+        return axios.post(versionBaseUrl + '/auth/refresh', {},
+            {
+                headers: {
+                    'authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }
+            // config.headers.authorization = `Bearer ${localStorage.getItem('token')}`
+
+        ).then(res => {
+            console.log('in Onrejected ok', res.data)
+            console.log('in Onrejected ok', res.data.data.access_token)
+            localStorage.setItem('token', res.data.data.access_token)                       // устанавливаем refresh токен
+            error.config.headers.authorization = `Bearer ${res.data.data.access_token}`     // В объект ошибки измеяем config, тот же, что и в jwtAxios
+            return jwtAxios.request(error.config)
+
+        }).catch(error => {
+            // const router = useRouter()
+            // router.push({name: 'login'})
+        })
+    } else {
+        // throw new Error({name: error.response.data.message})
+        // debugger
+        // throw new ErrorClass ({name: 'Ошибка загрузки данных'})
+        return []    // todo Тут надо подумать еще, что возвращать в случае ошибки или как-то ее обрабатывать, прокидывая Callout
+    }
 
 }
 
@@ -36,13 +68,18 @@ jwtAxios.interceptors.response.use(
 
 export async function jwtGet(url) {
     // console.log(url)
+    try {
 
-    const res = await jwtAxios.get(url)
-    const data = res.data
-    // const data = await res
-    // console.log(data)
-    // console.log(data.models[2])
-    return data
+        const res = await jwtAxios.get(url)
+        const data = await res.data
+        return data
+
+    } catch (error) {
+        // console.log(error.response)
+        console.log('jwtGet', error.response.data.message)
+        debugger
+    }
+
 }
 
 // export default jwtAxios

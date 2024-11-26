@@ -10,6 +10,19 @@ use Illuminate\Http\Request;
 class AuthController extends BaseController
 {
 
+
+//    /**
+//     * Create a new AuthController instance.
+//     *
+//     * @return void
+//     */
+//    public function __construct()
+//    {
+//        $this->middleware('auth:api', ['except' => ['login', 'profile']]);
+//    }
+
+
+
     /**
      * Register a User.
      *
@@ -104,12 +117,31 @@ class AuthController extends BaseController
      */
     public function refresh()
     {
-//        return 1111;
 
         $success = $this->respondWithToken(auth()->refresh());
 
         return $this->sendResponse($success, 'Refresh token return successfully.');
     }
+
+
+
+//    public function refreshToken(Request $request)
+//    {
+//
+//        $odlToken = $request->input('token');
+//
+//        if(!$odlToken)
+//            return response()->json(null);
+//
+//        $token = JWTAuth::refresh($odlToken);
+//
+//        return response()->json(compact('token'));
+//    }
+
+
+
+
+
 
     /**
      * Get the token array structure.

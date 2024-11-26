@@ -240,7 +240,7 @@ const formSubmit = async (e) => {
         if (currUser.status === 200) {
             // router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
             // debugger
-            router.push({name: 'models'})               // переход в сам dashboard todo потом изменить
+            router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
         } else {
             confirmClick.value = true
             calloutType.value = 'danger'

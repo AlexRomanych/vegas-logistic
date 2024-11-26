@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
+//use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+//use Illuminate\Support\Facades\Auth;
 
 class BaseController extends Controller
 {
+
+
+
     /**
      * success response method.
      *
