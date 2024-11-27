@@ -1,5 +1,5 @@
 <template>
-    <div id="id" :class="[width, currentTextColor, backgroundColor, borderColor, 'btn-container']">
+    <div id="id" :class="[width, height, currentTextColor, backgroundColor, borderColor, 'btn-container']">
         <button
             class="btn"
             :type="func"
@@ -42,6 +42,11 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[100px]',
+    },
+    height: {
+        type: String,
+        required: false,
+        default: 'min-h-[20px]',
     },
 
 

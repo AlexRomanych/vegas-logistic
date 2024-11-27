@@ -7,6 +7,7 @@ import {
 // colorIndexData - индекс цвета для кнопки
 // hover - менять ли цвет кнопки при наведении
 export function getColorClassByType(type, prefix = '', colorIndexData = 0, hover = true) {
+
     if (prefix === '') {
         return '-' + colorsClasses[type].color + '-'
     }

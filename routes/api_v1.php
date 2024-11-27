@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\ModelController;
 //use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UpdateData1CController as Update;
+use App\Http\Controllers\Api\V1\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Model;
@@ -110,7 +111,8 @@ Route::get('/model/{code1C}', [ModelController::class, 'model']);
 Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth');
 
 
-Route::get('/orders', [ModelController::class, 'models'])->middleware('jwt.auth');
+Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');
+Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');
 
 
 

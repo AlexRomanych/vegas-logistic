@@ -15,13 +15,14 @@ const jwtAxios = axios.create({
 const onFulfilled = (config) => {
     const token = localStorage.getItem('token')
     config.headers.Authorization = `Bearer ${token}`
+    console.log(config)
     return config
 }
 
 // Добавляем обработчик ошибки
 const onRejected = (error) => {
-    // console.log('onRejected', error.response.data.message)
-    // console.log('onRejected', error.response)
+    console.log('onRejected', error.response.data.message)
+    console.log('onRejected', error.response)
 
 // Тут обрабатываем ошибку, связанную с истечением срока действия токена
     if (error.response.data.message === 'Token has expired') {
@@ -77,6 +78,29 @@ export async function jwtGet(url, params = {}) {
     } catch (error) {
         // console.log(error.response)
         console.log('jwtGet', error.response.data.message)
+        debugger
+    }
+
+}
+
+export async function jwtPost(url, dataIn = {}, headers = {}) {
+    console.log(dataIn)
+    try {
+
+        jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+
+        const res = await jwtAxios.post(url, dataIn)
+        const data = await res.data
+
+        console.log(res)
+        console.log(data)
+
+        return data
+
+
+    } catch (error) {
+        // console.log(error.response)
+        console.log('jwtGet', error)
         debugger
     }
 

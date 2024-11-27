@@ -1,29 +1,28 @@
 <template>
 
-        <div :class="width" class="flex flex-col m-4">
+    <div :class="width" class="flex flex-col m-1">
 
-<!-- todo дооформить AppInputFile-->
+        <!-- todo доделать и дооформить AppInputFile-->
 
-<!--            <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>-->
-            <label v-if="label" :class="['input-label']" :for="id">{{ label }}</label>
-            <input
-                :id="id"
-                :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
-                :disabled="disabled"
-                type="file"
-                @change="inputText"
-                @input="getInputText"
-
-            >
-            <div v-if="errors">
-                <div v-for="(err, index) in errors" :key="index">
+        <!--<label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>-->
+        <label v-if="label" :for="id" class="input-label">{{ label }}</label>
+        <input
+            :id="id"
+            :class="['app-input', width]"
+            :disabled="disabled"
+            type="file"
+            @input="selectFile"
+        >
+        <div><span class="input-label">JSON (*.json)</span></div>
+        <div v-if="errors">
+            <div v-for="(err, index) in errors" :key="index">
                     <span :class="['input-error', textColor]">
                         {{ err.$message }}
                     </span>
-                </div>
             </div>
-
         </div>
+
+    </div>
 
 </template>
 
@@ -33,6 +32,7 @@
 import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
 import {getColorClassByType} from "@/src/app/helpers/helpers.js"
 import {computed, ref} from "vue";
+import AppButton from '@/src/components/ui/buttons/AppButton.vue'
 
 const props = defineProps({
     id: {
@@ -57,7 +57,7 @@ const props = defineProps({
     width: {
         type: String,
         required: false,
-        default: 'w-[500px]',
+        default: 'w-[400px]',
 
     },
     errors: {
@@ -66,45 +66,42 @@ const props = defineProps({
         default: null,
     }
 
-
 })
 
-const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
-const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
+const emit = defineEmits(['selectFile'])
 
-const placeholderColor = 'placeholder' + currentColor
-const borderColor = 'border' + currentColor
-const focusBorderColor = 'focus:ring' + currentColor
+// const file = ref(null)
 
-let textColor = 'text' + currentColor
-textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
-
-const inputText = defineModel({
-    type: String,
-    default: ''
-})
-
-const emit = defineEmits(['getInputText'])
-
-const getInputText = (e) => emit('getInputText', e.target.value)
-// const onInput = function(e) {
-//     console.log(e.target.value)
-// }
-// const onInput = function(inputText) {
-//     console.log(inputText.target.value)
+// Сохраняем ссылку на файл
+// const selectFile = (e) => file.value = e.target.files[0]
+const selectFile = (e) => emit('selectFile', e.target.files[0])
+// const selectFile = (e) => {
+//     console.log(e.target.files[0])
+//
+//     // const file = e.target.files[0]
+//     // const url = URL.createObjectURL(file)
+//     // console.log('RESULT', url)
 // }
 
+// const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
+// const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
+//
+// let textColor = 'text' + currentColor
+// textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
 </script>
 
 <style scoped>
 .app-input {
     /*@apply p-1 border rounded-lg focus:outline-none focus:ring-2;*/
-    @apply block w-[600px] text-lg text-slate-500 font-semibold border-2 rounded-2xl border-slate-500
+    @apply
+    block
+    text-lg text-slate-500 font-semibold
+    border-2 rounded-lg border-slate-500
     hover:bg-slate-200
     file:py-4
     file:px-4
-    file:rounded-l-xl file:border-0 file:border-slate-500
+    file:rounded-l-lg file:border-0 file:border-slate-500
     file:text-lg file:font-semibold
     file:bg-slate-500 file:text-white
     hover:file:bg-slate-400
