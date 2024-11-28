@@ -39,23 +39,47 @@ export const useOrdersStore = defineStore('orders', () => {
 
     const uploadOrders = async (formData) => {
 
+        console.log(formData)
+
+        // for (const [key, value] of formData.entries()) {
+        //     console.log(key, value);
+        // }
+
+        // fetch('/api/v1/orders/upload', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/x-www-form-urlencoded',
+        //         // 'Content-Type': 'multipart/form-data',
+        //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+        //     },
+        //     body: formData
+        // })
+        //     .then(response => console.log(response.data))
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //     });
+
+
+        // debugger
+
         const headers = {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
         }
 
-        // jwtPost(URL_ORDER_UPLOAD, formData, headers)
-            // .then(data => {
-            //     console.log(data)
-            // })
-            // .catch(error => {
-            //     console.log(error)
-            // })
         const result = await jwtPost(URL_ORDER_UPLOAD, formData, headers)
         const data = await result
-        return data
 
-        // console.log(data)
-        // debugger
+        // return data
+        try{
+            const a =JSON.stringify(data)
+            console.log(a)
+        } catch(e){
+            console.log(e)
+        }
+
+        console.log(typeof  data)
+        console.log(data)
+        debugger
     }
 
     return {

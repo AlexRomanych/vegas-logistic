@@ -1,23 +1,23 @@
 <template>
     <div class="flex justify-start items-center m-4">
-    <div>
-        <AppInputFile
-            id="file"
-            label="Файл JSON c заявками"
-            type="slate"
-            @selectFile="onFileSelected"
-        />
-    </div>
-    <div>
-        <AppButton
-            id="upload"
-            type="slate"
-            title="Загрузить"
-            width="w-[200px]"
-            height="min-h-[64px]"
-            @buttonClick="uploadFile"
-        />
-    </div>
+        <div>
+            <AppInputFile
+                id="file"
+                label="Файл JSON c заявками"
+                type="slate"
+                @selectFile="onFileSelected"
+            />
+        </div>
+        <div>
+            <AppButton
+                id="upload"
+                height="min-h-[64px]"
+                title="Загрузить"
+                type="slate"
+                width="w-[200px]"
+                @buttonClick="uploadFile"
+            />
+        </div>
     </div>
 
     <!--    <div>-->
@@ -27,60 +27,40 @@
 </template>
 
 <script setup>
-import axios from 'axios';
+// import axios from 'axios';
 import {ref} from 'vue';
 import AppInputFile from '@/src/components/ui/inputs/AppInputFile.vue'
 import AppButton from '@/src/components/ui/buttons/AppButton.vue'
-
 import {useOrdersStore} from '@/src/stores/OrdersStore.js'
+import {getFileText} from '@/src/app/helpers/helpers_file_reader.js'
+
 
 const selectedFile = ref(null)
 
+// todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 const onFileSelected = (formData) => selectedFile.value = formData
 
-// todo Сделать отображение данных файла и сделать проверку на тип данных
 
 const uploadFile = async () => {
 
     // Создаем объект FormData и пихаем туда ссылку на файл
     const formData = new FormData()
-    formData.append('file', selectedFile.value, 'orders.json')
+    console.log(selectedFile.value)
+    formData.append('file', selectedFile.value)
+    formData.append('_method', 'PATCH');
 
     const ordersStore = useOrdersStore()
 
-    console.log(selectedFile.value)
-    console.log(formData)
+    // Возвращаем результат операции todo сделать проверку на существующие заявки
+    // const res = await ordersStore.uploadOrders(formData)
+    const res = await ordersStore.uploadOrders(selectedFile.value)
 
-    const res = await ordersStore.uploadOrders(formData)
+    // console.log(res)
 
-    console.log(res)
+    const fileData = await getFileText(selectedFile.value)
+    // console.log(fileData)
 
-    // axios.post('api/v1/orders/upload', formData, {
-    //     headers: {
-    //         'Content-Type': 'multipart/form-data'
-    //     }
-    // })
-    //     .then(response => {
-    //         console.log(response);
-    //     })
-    //     .catch(error => {
-    //         console.error(error);
-    //
-    //     });
+
 }
 
 </script>
-
-
-<!--<template>-->
-<!--    I am Upload-->
-<!--</template>-->
-
-<!--<script setup>-->
-
-<!--</script>-->
-
-<!--<style scoped>-->
-
-<!--</style>-->
-

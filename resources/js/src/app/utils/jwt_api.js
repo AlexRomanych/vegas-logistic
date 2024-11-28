@@ -15,7 +15,7 @@ const jwtAxios = axios.create({
 const onFulfilled = (config) => {
     const token = localStorage.getItem('token')
     config.headers.Authorization = `Bearer ${token}`
-    console.log(config)
+    config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return config
 }
 
@@ -83,24 +83,29 @@ export async function jwtGet(url, params = {}) {
 
 }
 
-export async function jwtPost(url, dataIn = {}, headers = {}) {
-    console.log(dataIn)
+export async function jwtPost(url, data = {}, headers = {}) {
+
     try {
 
-        jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+        // todo Сделать потом обход свойств объекта и добавлять в заголовки
+        if (headers) {
+            jwtAxios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
+            // jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
 
-        const res = await jwtAxios.post(url, dataIn)
-        const data = await res.data
+        }
 
-        console.log(res)
-        console.log(data)
+        const result = await jwtAxios.post(url, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        const serverData = await result.data
 
-        return data
-
+        return serverData
 
     } catch (error) {
         // console.log(error.response)
-        console.log('jwtGet', error)
+        console.log('jwtPost', error)
         debugger
     }
 
