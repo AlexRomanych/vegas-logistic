@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-//        JsonResource::withoutWrapping();  // удаляет обертку для Resource
-//        JsonResource::wrap('test');  // задает глобальную обертку для Resource
+//        JsonResource::withoutWrapping();  // удаляет обертку для OrderResource
+//        JsonResource::wrap('test');  // задает глобальную обертку для OrderResource
     }
 }

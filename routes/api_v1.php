@@ -113,6 +113,9 @@ Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth'
 
 Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');
 //Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');
+
+
+//Route::('/orders/upload', [OrderController::class, 'uploadOrders']);
 Route::post('/orders/upload', [OrderController::class, 'uploadOrders']);
 Route::patch('/orders/upload', [OrderController::class, 'uploadOrders']);
 Route::put('/orders/upload', [OrderController::class, 'uploadOrders']);

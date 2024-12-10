@@ -45,20 +45,20 @@ const uploadFile = async () => {
 
     // Создаем объект FormData и пихаем туда ссылку на файл
     const formData = new FormData()
-    console.log(selectedFile.value)
+    // console.log(selectedFile.value)
     formData.append('file', selectedFile.value)
     formData.append('_method', 'PATCH');
 
     const ordersStore = useOrdersStore()
 
     // Возвращаем результат операции todo сделать проверку на существующие заявки
-    // const res = await ordersStore.uploadOrders(formData)
-    const res = await ordersStore.uploadOrders(selectedFile.value)
-
+    const res = await ordersStore.uploadOrders(formData)
+    // const res = await ordersStore.uploadOrders(selectedFile.value)
+    debugger
     // console.log(res)
 
     const fileData = await getFileText(selectedFile.value)
-    // console.log(fileData)
+    console.log(fileData)
 
 
 }

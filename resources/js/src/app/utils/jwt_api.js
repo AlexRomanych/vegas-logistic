@@ -15,7 +15,7 @@ const jwtAxios = axios.create({
 const onFulfilled = (config) => {
     const token = localStorage.getItem('token')
     config.headers.Authorization = `Bearer ${token}`
-    config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    // config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return config
 }
 
@@ -70,7 +70,7 @@ jwtAxios.interceptors.response.use(
 export async function jwtGet(url, params = {}) {
     // console.log(url)
     try {
-
+        params.XDEBUG_SESSION_START = 'PHPSTORM'
         const res = await jwtAxios.get(url, params)
         const data = await res.data
         return data
@@ -87,16 +87,20 @@ export async function jwtPost(url, data = {}, headers = {}) {
 
     try {
 
-        // todo Сделать потом обход свойств объекта и добавлять в заголовки
-        if (headers) {
-            jwtAxios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
-            // jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+        console.log('jwtPost', data)
 
-        }
+        // todo Сделать потом обход свойств объекта и добавлять в заголовки
+        // if (headers) {
+        //     jwtAxios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
+        //     // jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+        //
+        // }
 
         const result = await jwtAxios.post(url, data, {
             headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'multipart/form-data',
+                // 'X-Debug': 1,
+                // 'Content-Type': 'application/json',
             }
         })
         const serverData = await result.data
