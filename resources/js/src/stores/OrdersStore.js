@@ -37,54 +37,24 @@ export const useOrdersStore = defineStore('orders', () => {
         }
     }
 
-    const uploadOrders = async (formData) => {
+    // Загрузка заказов на сервер
+    // fileData - данные файла, отправляем в RAW формате
+    const uploadOrders = async (fileData) => {
 
-        console.log(formData)
+        console.log(fileData)
 
-        for (const [key, value] of formData.entries()) {
-            console.log(key, value);
+
+        const headers = {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/octet-stream',
+            // 'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
         }
 
-        fetch('/api/v1/orders/upload', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                // 'Content-Type': 'multipart/form-data',
-                // 'Content-Type': 'application/json',
-                // 'Content-Type': 'multipart/form-data; charset=utf-8; boundary=' + Math.random().toString().substr(2),
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: formData
-        })
-            .then(response => console.log(response.data))
-            .catch(error => {
-                debugger
-                console.error('Error:', error);
-            });
+        const response = await jwtPost(URL_ORDER_UPLOAD, fileData, headers)
+        const result = await response
 
-
-        // debugger
-
-        // const headers = {
-        //     // 'Content-Type': 'application/json',
-        //     'Content-Type': 'multipart/form-data',
-        //
-        // }
-        //
-        // const result = await jwtPost(URL_ORDER_UPLOAD, formData, headers)
-        // const data = await result
-        //
-        // // return data
-        // try {
-        //     // const a = JSON.stringify(data)
-        //     console.log(a)
-        // } catch (e) {
-        //     console.log(e)
-        // }
-        //
-        // console.log(typeof data)
-        // console.log(data)
-        // debugger
+        return result
     }
 
     return {

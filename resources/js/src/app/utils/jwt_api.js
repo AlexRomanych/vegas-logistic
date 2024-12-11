@@ -67,51 +67,53 @@ jwtAxios.interceptors.response.use(
     (error) => onRejected(error)
 )
 
+// Формируем свой GET
 export async function jwtGet(url, params = {}) {
     // console.log(url)
     try {
-        params.XDEBUG_SESSION_START = 'PHPSTORM'
         const res = await jwtAxios.get(url, params)
         const data = await res.data
         return data
 
     } catch (error) {
         // console.log(error.response)
-        console.log('jwtGet', error.response.data.message)
+        console.log('jwtGet: ', error.response.data.message)
         debugger
     }
 
 }
 
+// Формируем свой POST
 export async function jwtPost(url, data = {}, headers = {}) {
 
-    try {
-
-        console.log('jwtPost', data)
+    // try {
 
         // todo Сделать потом обход свойств объекта и добавлять в заголовки
-        // if (headers) {
-        //     jwtAxios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
-        //     // jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
-        //
-        // }
+        if (headers) {
+            Object.entries(headers).forEach(([key, value]) => {
+                jwtAxios.defaults.headers.common[key] = value
+            })
 
-        const result = await jwtAxios.post(url, data, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                // 'X-Debug': 1,
-                // 'Content-Type': 'application/json',
-            }
-        })
-        const serverData = await result.data
+            // jwtAxios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded'
+            // jwtAxios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+        }
 
-        return serverData
+        // const result = await jwtAxios.post(url, data, {
+        //     headers: {
+        //         'Content-Type': 'multipart/form-data',
+        //         // 'X-Debug': 1,
+        //         // 'Content-Type': 'application/json',
+        //     }
+        // })
 
-    } catch (error) {
-        // console.log(error.response)
-        console.log('jwtPost', error)
-        debugger
-    }
+        const response = await jwtAxios.post(url, data)
+        const result = await response.data
+
+        return result
+
+    // } catch (error) {
+    //     console.log('jwtPost: ', error)
+    // }
 
 }
 
