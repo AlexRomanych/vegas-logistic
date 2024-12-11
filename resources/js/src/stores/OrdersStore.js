@@ -3,7 +3,9 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 
-import {jwtGet, jwtPost} from "@/src/app/utils/jwt_api";
+import {jwtGet, jwtPost} from "@/src/app/utils/jwt_api"
+import {openNewTab} from "@/src/app/helpers/helpers_service"
+
 
 
 // Устанавливаем глобальные переменные
@@ -53,6 +55,9 @@ export const useOrdersStore = defineStore('orders', () => {
 
         const response = await jwtPost(URL_ORDER_UPLOAD, fileData, headers)
         const result = await response
+
+        openNewTab(result)
+
 
         return result
     }

@@ -39,3 +39,10 @@ if (! function_exists('validate')) {
         return validator($data, $rules)->validate();
     }
 }
+
+
+
+function apiDebug($data = []): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+{
+    return view('dd', ['data' => $data]);
+}

@@ -17,12 +17,12 @@ return new class extends Migration
 
             $table->id();
 
-            $table->string('no_origin')->nullable(false)->comment('оригинальный номер заявки');
             $table->decimal('no_num')->nullable(false)->default(0)->comment('номер заявки в числовом формате');
+            $table->string('no_origin')->nullable()->comment('оригинальный номер заявки');
 
-            $table->timestamp('plan_period')->nullable(false)->comment('период (начало месяца), к которому принадлежит заявка');
+            $table->timestamp('plan_period')->nullable()->comment('период (начало месяца), к которому принадлежит заявка');
 
-            $table->integer('status')->nullable(false)->default(0)->comment('статус заявки (типа загружена-не загружена)');
+            $table->integer('status')->nullable()->default(0)->comment('статус заявки (типа загружена-не загружена)');
 
             $table->timestamp('load_date')->nullable(false)->default(now())->comment('дата загрузки на складе Вегаса');
             $table->timestamp('unload_date')->nullable()->comment('дата разгрузки на складе клиента');
@@ -42,14 +42,14 @@ return new class extends Migration
             $table->timestamp('design_start')->nullable()->comment('момент начала обработки заявки КБ (ранее ОДСП)');
             $table->timestamp('design_end')->nullable()->comment('момент окончания обработки заявки КБ (ранее ОДСП)');
 
-            $table->timestamp('manuf_date_1C')->nullable()->comment('дата производства из 1С');
+            $table->timestamp('manuf_date')->nullable()->comment('дата производства из ЕПС');
 
             $table->string('comment')->nullable()->comment('комментарий к заявке из 1С');
 
             $table->json('service_json')->nullable()->comment('сервисная для хранения различной информации в json формате');
             //************************************************************************************************************************
 
-            $table->string('service_text')->nullable()->comment('сервисная для хранения различной информации в текстовом формате');
+            $table->string('meta')->nullable()->comment('сервисная для хранения различной информации в текстовом формате');
 
             $table->timestamps();
 

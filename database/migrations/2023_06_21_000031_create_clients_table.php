@@ -31,8 +31,6 @@ return new class extends Migration
 
             $table->foreignIdFor(Manager::class)->constrained();
 
-
-
         });
     }
 

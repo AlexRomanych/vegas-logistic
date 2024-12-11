@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order\Line;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Order\Order;
 
 class OrderController extends Controller
 {
@@ -26,102 +28,109 @@ class OrderController extends Controller
     public function uploadOrders(Request $request)
     {
 
-/*
-    Info: Структура выгружаемых данных
-[
-  {
-    "order":                                Объект заказа
-        {
-            "client_id": 5,                 'c'
-            "order_no": 456,                'o'
-            "load": "25.01.2025",           'l'
-            "unload": "25.01.2025",         'u'
-            "date_1C": "25.01.2025",        'd'
-            "meta": "Text"                  'meta'
-            "remark": "Comment"             'r'
-            "status": 10                    's'
-        },
-    "order_data":
+        /*
+            Info: Структура выгружаемых данных
         [
-            {
-                "size": "160x200x20",       's'
-                "model": "F5",              'm'
-                "amount": 5,                'a'
-                "textile": "кб",            't'
-                "comment": "commm",         'c'
-                "describe_1": "d1",         'd1'
-                "describe_2": "d2",         'd2'
-                "describe_3": "d3"          'd3'
-            }
+          {
+            "order":                                Объект заказа
+                {
+                    "client_id": 5,                 'c'
+                    "order_no": 456,                'n'
+                    "load": "25.01.2025",           'l'
+                    "unload": "25.01.2025",         'u'
+                    "manufacture": "25.01.2025",    'm'
+                    "date_1C": "25.01.2025",        'd'
+                    "meta": "Text"                  'meta'
+                    "remark": "Comment"             'r'
+                    "status": 10                    's'
+                    "short_name": "ЛММ_Брест"       'sn'            не используем
+                },
+            "order_data":
+                [
+                    {
+                        "size": "160x200x20",       's'
+                        "model": "F5",              'm'
+                        "amount": 5,                'a'
+                        "textile": "кб",            't'
+                        "comment": "comment",       'c'
+                        "describe_1": "d1",         'd1'
+                        "describe_2": "d2",         'd2'
+                        "describe_3": "d3"          'd3'
+                    }
+                ]
+          },
+          {}
         ]
-  },
-  {}
-]
-*/
+        */
 
-        return $request->all();
-//        Log::info('User data:',  [$request]);
+        $orders = $request->all();
 
-//        $orders = $request->all();
-        $orders = $request->json()->all();
-//        Log::info('User data:',  $orders);
+        // todo проверка на валидность данных
 
+        $dubs = [];
 
-        foreach ($orders as $order) {
-//            $this->validate($order, []
+        // обходим все заказы
+        foreach ($orders as $orderBag) {
 
+            $order = $orderBag['order'];        // берем всю инфу о заказе
 
-            Log::info('value:', [$order['order']]);
+            // проверяем есть ли такой заказ
+            $checkOrder = Order::where('client_id', $order['c'])
+                ->where('no_num', $order['n'])
+                ->first();
 
+            if ($checkOrder) {
+                $dubs[] = $order;
 
+            } else {
+                // создаем новый заказ
+                $newOrder = Order::create([
+//                    'client_id' => $order['c'],
+                    'client_id' => 1,               // todo заменить
+
+                    'no_num' => $order['n'],
+                    'load_date' => $order['l'],
+                    'unload_date' => $order['u'],
+                    'manuf_date' => $order['m'],
+//                        'date_1C' => $order['d'],
+                    'meta' => $order['meta'],
+                    'description' => $order['r'],
+                    'status' => $order['s']
+                ]);
+
+                $newOrderId = $newOrder->id;
+
+                foreach ($orderBag['order_data'] as $line) {
+                    $newLine = new Line([
+                        'order_id' => $newOrderId,
+                        'size' => $line['s'],
+                        'model' => $line['m'],
+                        'amount' => $line['a'],
+                        'textile' => $line['t'],
+                        'comment' => $line['c'],
+                        'describe_1' => $line['d1'],
+                        'describe_2' => $line['d2'],
+                        'describe_3' => $line['d3']
+                    ]);
+
+                    $newLine->save();
+
+                }
+            }
         }
 
-
-//        Log::info('User data:', [$orders[0]]);
-
-
-        return 0;
-
-        Log::info('isJson:', [$request->expectsJson()]);
-
-//        $data = json_decode($request->getContent(), true);
-        $data = $request->getContent();
-
-        Log::info('data:', [$data]);
-        Log::info('data_val:', [json_decode($data)]);
-
-        $data_json = json_encode($data);
-//        return $data_json;
-        return json_last_error_msg();
-
-
-        return $request->expectsJson();
-
-        $orders = $request->json()->all();
-
-        return $orders;
-
-        Log::info('User data:', $orders);
-
-//        foreach ($orders as $order) {
-//            Log::info('order:', $order['order']);
-////            foreach ($order->order_data as $line) {
-////                Log::info('line:', $line);
-////            }
-//        }
-
-//        Log::info('data:', $request->header());
-
-//        var_dump($orders);
-
+        return $dubs;           // возвращаем дубликаты
 
 //        return response()->json([
-//            'start' => 1,
-//            'end' => 2
+//            'dubs' => $dubs
 //        ]);
 
-//        return $orders;
-//        return response()->json($orders);
+
+        $data = $request->all();
+        return view('dd', ['data' => $data]);
+
+        return $request->all();
+
         return 'Data Received';
     }
 

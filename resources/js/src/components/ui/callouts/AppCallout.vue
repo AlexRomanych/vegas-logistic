@@ -128,7 +128,7 @@ const textColor = computed(() => getTextColorClassByType(props.type))
 }
 
 .callout-container {
-    @apply z-[500] fixed flex items-center justify-start p-4 m-1 rounded-xl font-semibold border-l-8
+    @apply z-[500] fixed flex items-center justify-start p-4 m-1 rounded-xl font-semibold border-l-8 text-wrap break-words
 }
 
 </style>

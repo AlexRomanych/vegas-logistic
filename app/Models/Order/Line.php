@@ -11,18 +11,19 @@ class Line extends Model
 {
 
     protected $fillable = [
+        'order_id',
         'load_1C',
-        'size', 'amount', 'name', 'textile', 'composition',
+        'size', 'amount', 'model', 'textile', 'composition',
         'comment', 'describe_1', 'describe_2', 'describe_3',
 
-        'check_assembly', 'moment_assembly',
-        'check_sewing', 'moment_sewing',
-
-        'check_cutting', 'moment_cutting',
-
-        'model_code1C',
-
-        'assembly_part_id', 'sewing_part_id', 'cutting_part_id',
+//        'check_assembly', 'moment_assembly',
+//        'check_sewing', 'moment_sewing',
+//
+//        'check_cutting', 'moment_cutting',
+//
+//        'model_code1C',
+//
+//        'assembly_part_id', 'sewing_part_id', 'cutting_part_id',
     ];
 
     protected $hidden = [

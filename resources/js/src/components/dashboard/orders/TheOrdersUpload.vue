@@ -20,6 +20,19 @@
         </div>
     </div>
 
+    <AppCallout
+        v-if="!isDataJson"
+        text="Ошибка данных!"
+        type="danger"
+    />
+
+    <AppCallout
+        v-if="opResult"
+        :text="opResultText"
+        :type="opResultType"
+    />
+
+
     <!--    <div>-->
     <!--        <input ref="fileInput" type="file" @change="onFileSelected">-->
     <!--        <button @click="uploadFile">Загрузить</button>-->
@@ -31,11 +44,17 @@
 import {ref} from 'vue';
 import AppInputFile from '@/src/components/ui/inputs/AppInputFile.vue'
 import AppButton from '@/src/components/ui/buttons/AppButton.vue'
+import AppCallout from '@/src/components/ui/callouts/AppCallout.vue'
+
 import {useOrdersStore} from '@/src/stores/OrdersStore.js'
 import {getFileContent} from '@/src/app/helpers/helpers_file_reader.js'
 import {isJSON} from '@/src/app/helpers/helpers_checks.js'
 
 const selectedFile = ref(null)
+const isDataJson = ref(true)                // Проверка на тип файла для вызова Callout
+const opResult = ref(false)                 // Проверка на результат выполнения операции
+const opResultText = ref('')                // Сообщение результата операции
+const opResultType = ref('')                // Тип результата операции
 
 // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 // Получаем данные файла
@@ -53,8 +72,12 @@ const uploadFile = async () => {
     // Получаем данные файла
     // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
     // если что-то загружено
+
+
     if (selectedFile.value) {
         const fileData = await getFileContent(selectedFile.value)
+
+        isDataJson.value = true
 
         if (isJSON(fileData)) {
             // Отправляем в RAW формате и возвращаем результат операции
@@ -63,7 +86,28 @@ const uploadFile = async () => {
             const res = await ordersStore.uploadOrders(fileData)
             // const res = await ordersStore.uploadOrders(fileData)
 
-            console.log(res)
+
+            if (!res) {
+                opResultText.value = 'Данные успешно загружены'
+                opResultType.value = 'success'
+                setTimeout(() => {opResult.value = false}, 5000)
+            } else {
+                const dubsTextArray = res.map(item => {
+                    return item['sh'] + ' ' + item['n']
+                })
+
+                // console.log(dubsTextArray)
+
+                opResultText.value = 'Дубликат:' + dubsTextArray.join(', ')
+                opResultType.value = 'danger'
+
+            }
+            opResult.value = true
+            setTimeout(() => {opResult.value = false}, 5000)
+
+        } else {
+            isDataJson.value = false
+            setTimeout(() => {isDataJson.value = true}, 5000)
         }
     }
 }
