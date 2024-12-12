@@ -53,7 +53,7 @@ const setPeriod = (pointDate) => {
 
 }
 
-const clickApply = (id) => {
+const clickApply = async (id) => {
 
     // подготавливаем данные
     const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
@@ -67,7 +67,12 @@ const clickApply = (id) => {
         dateInterval.end = start
     }
 
-    console.log(dateInterval)
+
+    const ordersStore = useOrdersStore()
+    const data = await ordersStore.getOrders(dateInterval)
+
+    console.log(data)
+    // console.log(dateInterval)
 
 }
 

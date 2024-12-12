@@ -31,23 +31,23 @@ class Line extends Model
         'created_at', 'updated_at',
     ];
 
-    protected $with = [
-        'model'
-    ];
+//    protected $with = [
+//        'model'
+//    ];
 
 
 
 
 
-    public function assemblyPart(): BelongsTo
+    public function Order(): BelongsTo
     {
-        return $this->belongsTo(AssemblyPart::class);
+        return $this->belongsTo(Order::class);
     }
 
 
-    public function model(): HasOne
-    {
-        return $this->hasOne(\App\Models\Model::class, 'code1C', 'model_code1C');
-    }
+//    public function model(): HasOne
+//    {
+//        return $this->hasOne(\App\Models\Model::class, 'code1C', 'model_code1C');
+//    }
 
 }

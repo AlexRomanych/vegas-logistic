@@ -24,6 +24,8 @@ const onRejected = (error) => {
     console.log('onRejected', error.response.data.message)
     console.log('onRejected', error.response)
 
+    // debugger
+
 // Тут обрабатываем ошибку, связанную с истечением срока действия токена
     if (error.response.data.message === 'Token has expired') {
 
@@ -50,8 +52,13 @@ const onRejected = (error) => {
         // throw new Error({name: error.response.data.message})
         // debugger
         // throw new ErrorClass ({name: 'Ошибка загрузки данных'})
-        return []    // todo Тут надо подумать еще, что возвращать в случае ошибки или как-то ее обрабатывать, прокидывая Callout
+        // return []    // todo Тут надо подумать еще, что возвращать в случае ошибки или как-то ее обрабатывать, прокидывая Callout
+
+        //warning ключ data - обязательный
+        return {data: {name: 'Ошибка загрузки данных', status: 600}}
+
     }
+
 
 }
 
@@ -69,7 +76,9 @@ jwtAxios.interceptors.response.use(
 
 // Формируем свой GET
 export async function jwtGet(url, params = {}) {
-    // console.log(url)
+
+    jwtAxios.defaults.params = params
+
     try {
         const res = await jwtAxios.get(url, params)
         const data = await res.data
@@ -88,7 +97,6 @@ export async function jwtPost(url, data = {}, headers = {}) {
 
     // try {
 
-        // todo Сделать потом обход свойств объекта и добавлять в заголовки
         if (headers) {
             Object.entries(headers).forEach(([key, value]) => {
                 jwtAxios.defaults.headers.common[key] = value

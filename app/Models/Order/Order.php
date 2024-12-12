@@ -33,6 +33,7 @@ class Order extends Model
 
     protected $with = [
         'client',
+        'lines',
     ];
 
 //    protected $appends = [
@@ -54,19 +55,26 @@ class Order extends Model
         return $this->belongsTo(Client::class);
     }
 
-    public function assemblyParts(): HasMany
+    public function lines(): HasMany
     {
-        return $this->hasMany(AssemblyPart::class);
+        return $this->hasMany(Line::class);
     }
 
-    public function sewingParts(): HasMany
-    {
-        return $this->hasMany(SewingPart::class);
-    }
 
-    public function cuttingParts(): HasMany
-    {
-        return $this->hasMany(CuttingPart::class);
-    }
+//
+//    public function assemblyParts(): HasMany
+//    {
+//        return $this->hasMany(AssemblyPart::class);
+//    }
+//
+//    public function sewingParts(): HasMany
+//    {
+//        return $this->hasMany(SewingPart::class);
+//    }
+//
+//    public function cuttingParts(): HasMany
+//    {
+//        return $this->hasMany(CuttingPart::class);
+//    }
 
 }

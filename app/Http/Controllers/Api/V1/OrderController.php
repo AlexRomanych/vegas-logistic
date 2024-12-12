@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Resources\Order\OrderCollection;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Line;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Models\Order\Order;
 
 class OrderController extends Controller
@@ -14,13 +14,29 @@ class OrderController extends Controller
     // Отдаем заказы за период
     public function getOrders(Request $request)
     {
-        $start = $request->query('start');
-        $end = $request->query('end');
+//        return apiDebug($request->all());
 
-        return response()->json([
-            'start' => $start,
-            'end' => $end
+        $validData = $request->validate([
+            'start' => 'required|date|beforeOrEqual:end',
+            'end' => 'required|date|afterOrEqual:start',
         ]);
+
+//        return apiDebug($validData);
+//        return $validData;
+
+        $orders = Order::whereBetween('unload_date', [$validData['start'], $validData['end']])->get();
+//        $orders = Order::all();
+
+
+        return new OrderCollection($orders);
+
+//        return $orders;
+
+//        return apiDebug($orders);
+//        return new OrderCollection(
+//            Order::whereBetween('unload_date', [$validData['start'], $validData['end']])
+//        );
+
     }
 
 // Загружаем заказы из браузера
@@ -85,8 +101,8 @@ class OrderController extends Controller
             } else {
                 // создаем новый заказ
                 $newOrder = Order::create([
-//                    'client_id' => $order['c'],
-                    'client_id' => 1,               // todo заменить
+                    'client_id' => $order['c'],
+//                    'client_id' => 1,               // todo заменить
 
                     'no_num' => $order['n'],
                     'load_date' => $order['l'],

@@ -7,7 +7,6 @@ import {jwtGet, jwtPost} from "@/src/app/utils/jwt_api"
 import {openNewTab} from "@/src/app/helpers/helpers_service"
 
 
-
 // Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_ORDERS = 'orders/'                    // URL для получения списка заказов
@@ -24,19 +23,17 @@ export const useOrdersStore = defineStore('orders', () => {
 
 
     // Получаем с API список заказов
-    const getOrders = async (start, end) => {
+    const getOrders = async (params) => {
 
-        if (orders.length === 0) {
+        console.log(params)
 
-            const params = {
-                start,
-                end,
-            }
+        const result = await jwtGet(URL_ORDERS, params)
 
-            const result = await jwt_get(URL_ORDERS, params)
-            console.log(result)
+        // openNewTab(result)
+        // console.log(data)
+        console.log(result)
 
-        }
+
     }
 
     // Загрузка заказов на сервер
@@ -61,6 +58,7 @@ export const useOrdersStore = defineStore('orders', () => {
 
         return result
     }
+
 
     return {
         orders,

@@ -1,11 +1,12 @@
 // Константы размеров шрифта в ui компонентах
 
 
-const mini = 'mini'
-const small = 'small'
-const normal = 'normal'
-const large = 'large'
-const huge = 'huge'
+const fontMini = 'mini'
+const fontSmall = 'small'
+const fontNormal = 'normal'
+const fontLarge = 'large'
+const fontHuge = 'huge'
 
-export default [mini, small, normal, large, huge]
+const fontSizesList = [fontMini, fontSmall, fontNormal, fontLarge, fontHuge]
+export {fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList}
 

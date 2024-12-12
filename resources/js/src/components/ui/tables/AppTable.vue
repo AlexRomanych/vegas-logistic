@@ -27,6 +27,9 @@
 </template>
 
 <script setup>
+import {fontSizesList} from "@/src/app/constants/fontSizes.js"
+import {getFontSizeClass} from "@/src/app/helpers/helpers.js"
+
 
 const props = defineProps({
     width: {
@@ -48,33 +51,36 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'normal',
-        validator: (size) => ['mini', 'normal', 'small', 'large', 'huge'].includes(size)
+        validator: (size) => fontSizesList.includes(size)
+        // validator: (size) => ['mini', 'normal', 'small', 'large', 'huge'].includes(size)
     }
 
 
 })
 
-let textSizeClass = ''
-switch(props.textSize) {
-    case 'mini':
-        textSizeClass = 'text-xs'
-        break
-    case 'small':
-        textSizeClass = 'text-sm'
-        break
-    case 'normal':
-        textSizeClass = 'text-base'
-        break
-    case 'large':
-        textSizeClass = 'text-lg'
-        break
-    case 'huge':
-        textSizeClass = 'text-xl'
-        break
-    default:
-        textSizeClass = 'text-base'
-        break
-}
+const textSizeClass = getFontSizeClass(props.textSize)
+
+// let textSizeClass = ''
+// switch(props.textSize) {
+//     case 'mini':
+//         textSizeClass = 'text-xs'
+//         break
+//     case 'small':
+//         textSizeClass = 'text-sm'
+//         break
+//     case 'normal':
+//         textSizeClass = 'text-base'
+//         break
+//     case 'large':
+//         textSizeClass = 'text-lg'
+//         break
+//     case 'huge':
+//         textSizeClass = 'text-xl'
+//         break
+//     default:
+//         textSizeClass = 'text-base'
+//         break
+// }
 
 const {headers, data, widths} = props.tableData     // todo Доработать ширину столбцов через поле widths: [10, 15, ...]
 

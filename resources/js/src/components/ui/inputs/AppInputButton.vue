@@ -1,7 +1,7 @@
 <template>
     <input
         :id="id"
-        :class="[width, height, backgroundColor, borderColor, currentTextColor]"
+        :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold]"
         :disabled="disabled"
         :value="title"
         :type="func"
@@ -15,7 +15,9 @@
 <script setup>
 
 import {colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
+import {fontSizesList} from "@/src/app/constants/fontSizes.js"
+import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from "@/src/app/helpers/helpers.js"
+
 import {computed, ref} from "vue";
 
 const props = defineProps({
@@ -53,9 +55,22 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'Нажми меня',
-    }
-
+    },
+    textSize: {
+        type: String,
+        required: false,
+        default: 'normal',
+        validator: (size) => fontSizesList.includes(size)
+        // validator: (size) => ['mini', 'normal', 'small', 'large', 'huge'].includes(size)
+    },
+    bold: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
 })
+
+
 
 // console.log(props.title)
 // const inputButton = defineModel(props.title)
@@ -71,6 +86,8 @@ const buttonClick = function(e) {
     emit('buttonClick', e.target.value)
 }
 
+const textSizeClass = getFontSizeClass(props.textSize)
+const semibold = props.bold ? 'font-semibold' : ''
 const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
 const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
 const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value

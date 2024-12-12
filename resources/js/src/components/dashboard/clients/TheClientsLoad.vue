@@ -2,19 +2,53 @@
     <div class="ml-5 pt-3">
         <AppInputButton
             id="load"
-            title="Загрузить из хранилища"
-            width="w-[400px]"
+            :bold="true"
             func="button"
+            textSize="huge"
+            title="Загрузить из хранилища в БД"
             type="dark"
-
+            width="w-[400px]"
+            @buttonClick="loadFromStorage"
         />
     </div>
+
+    <AppCallout
+        v-if="opStatus"
+        :text="opText"
+        :type="opType"
+    />
 
 
 </template>
 
 <script setup>
-    import AppInputButton from '@/src/components/ui/inputs/AppInputButton.vue'
+import {ref} from 'vue'
+import {useClientsStore} from '@/src/stores/ClientsStore'
+import AppInputButton from '@/src/components/ui/inputs/AppInputButton.vue'
+import AppCallout from '@/src/components/ui/callouts/AppCallout.vue'
+
+const opStatus = ref(false)
+const opText = ref('')
+const opType = ref('')
+
+
+const loadFromStorage = async () => {
+    const clientsStore = useClientsStore()
+    const res = await clientsStore.clientsLoad()
+
+    console.log(res)
+
+    opStatus.value = true
+    if (!res) {
+        opText.value = 'Данные успешно загружены'
+        opType.value = 'success'
+    } else {
+        opText.value = 'Упс, что-то пошло не так'
+        opType.value = 'danger'
+    }
+    setTimeout(() => {opStatus.value =false}, 5000)
+    // console.log(res)
+}
 
 </script>
 

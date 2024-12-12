@@ -32,7 +32,7 @@ final class ClientsService implements VegasDataUpdateContract
                     'region' => $client['rg'],
                     'manager_id' => $client['mi'],
 
-                    'active' => 1,
+                    'active' => $client['ia'],
                 ]
             );
         }
