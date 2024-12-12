@@ -32,11 +32,6 @@
         :type="opResultType"
     />
 
-
-    <!--    <div>-->
-    <!--        <input ref="fileInput" type="file" @change="onFileSelected">-->
-    <!--        <button @click="uploadFile">Загрузить</button>-->
-    <!--    </div>-->
 </template>
 
 <script setup>

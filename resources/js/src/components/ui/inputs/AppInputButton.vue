@@ -1,7 +1,7 @@
 <template>
     <input
         :id="id"
-        :class="[width, backgroundColor, borderColor, currentTextColor]"
+        :class="[width, height, backgroundColor, borderColor, currentTextColor]"
         :disabled="disabled"
         :value="title"
         :type="func"
@@ -47,7 +47,7 @@ const props = defineProps({
     height: {
         type: String,
         required: false,
-        default: 'h-[30px]',
+        default: 'h-[70px]',
     },
     title: {
         type: String,

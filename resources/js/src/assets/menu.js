@@ -25,6 +25,7 @@ const menuData = () => {
             items:
                 [
                     {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Загрузка из базы', path: 'clients.load', shown: true, isActive: true,},
                     {name: 'Новый клиент', path: 'plan', shown: true, isActive: true,},
                 ]
         },
