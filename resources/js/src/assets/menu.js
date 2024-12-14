@@ -91,6 +91,13 @@ const menuData = () => {
                     {name: 'Tutorial 2', path: 'plan', shown: true, isActive: true,},
                     {name: 'Tutorial 3', path: 'plan', shown: true, isActive: true,},
                 ]
+        },
+        {
+            group: {name: 'UI', shown: true, isActive: true, icon: 'BookOpenIcon'},
+            items:
+                [
+                    {name: 'User Interface', path: 'ui.show', shown: true, isActive: true,},
+                ]
         }
 
     ]

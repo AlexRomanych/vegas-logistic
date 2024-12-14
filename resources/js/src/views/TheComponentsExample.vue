@@ -145,6 +145,13 @@
         <!--            width="w-[150px]"-->
         <!--        />-->
 
+        <AppLabel
+            text="Label"
+            type="dark"
+            :bold="true"
+            position="center"
+        />
+
 
     </main>
 </template>
@@ -162,7 +169,8 @@ import AppButton from "@/src/components/ui/buttons/AppButton.vue";
 import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
 import AppTable from "@/src/components/ui/tables/AppTable.vue";
 import AppInputDate from "@/src/components/ui/inputs/AppInputDate.vue";
-import AppInputDate_comp from "@/src/components/ui/inputs/AppInputDate_comp.vue";
+import AppLabel from "@/src/components/ui/labels/AppLabel.vue";
+// import AppInputDate_comp from "@/src/components/ui/inputs/AppInputDate_comp.vue";
 
 
 const newInput = ref('123')
@@ -244,6 +252,7 @@ const tableData = {
 // console.log(selectData)
 
 // const selectData = reactive({})
+
 
 </script>
 

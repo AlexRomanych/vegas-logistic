@@ -6,6 +6,7 @@ import clients from "@/src/router/routes_clients"
 import users from "@/src/router/routes_users"
 import info from "@/src/router/routes_info"
 import errors from "@/src/router/routes_errors"
+import service from "@/src/router/routes_service"
 
 const routes = [
 
@@ -17,6 +18,7 @@ const routes = [
     ...users,
     ...info,
     ...errors,
+    ...service,
 
 
     {
@@ -26,8 +28,8 @@ const routes = [
     },
 
 
-    {path: '/ui', name: 'ui', component: () => import('../components/dashboard/TheMain.vue')},
-
 ]
+
+// console.log(routes)
 
 export default routes

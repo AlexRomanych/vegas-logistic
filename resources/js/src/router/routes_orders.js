@@ -5,7 +5,7 @@ const orders = [
     {
         path: '/orders',
         name: 'orders',
-        component: () => import('@/src/components/dashboard/orders/TheOrders.vue'),
+        component: () => import('@/src/components/dashboard/orders/TheOrdersShow.vue'),
     },
 
     {

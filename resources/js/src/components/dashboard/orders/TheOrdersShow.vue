@@ -27,20 +27,37 @@
             />
         </div>
 
+
+
+
     </div>
+
+    <TheOrdersBag v-if="orders.length" :key="Date.now()"
+    />
 
 
 </template>
 
 <script setup>
-import {useOrdersStore} from "@/src/stores/OrdersStore";
+import {ref} from 'vue'
+import {useOrdersStore} from "@/src/stores/OrdersStore"
 import {compareDatesLogic} from "@/src/app/helpers/helpers_date.js"
+import {isResponseWithError} from "@/src/app/helpers/helpers_checks.js"
+
+import TheOrdersBag from '@/src/components/dashboard/orders/components/TheOrdersBag.vue'
+
 import AppInputDate from '@/src/components/ui/inputs/AppInputDate.vue'
 import AppButton from '@/src/components/ui/buttons/AppButton.vue'
+
 
 const ordersStore = useOrdersStore()
 
 const dateInterval = {}
+const orders = ref([])
+
+// watch(ordersLength, (newValue, oldValue) => {
+//     console.log('Count changed from', oldValue, 'to', newValue);
+// });
 
 const setPeriod = (pointDate) => {
     // console.log(pointDate.id, pointDate.value)
@@ -50,7 +67,6 @@ const setPeriod = (pointDate) => {
     } else if (pointDate.id === 'end') {
         dateInterval.end = pointDate.value
     }
-
 }
 
 const clickApply = async (id) => {
@@ -67,24 +83,19 @@ const clickApply = async (id) => {
         dateInterval.end = start
     }
 
-
+    // получаем данные
     const ordersStore = useOrdersStore()
-    const data = await ordersStore.getOrders(dateInterval)
+    orders.value = await ordersStore.getOrders(dateInterval)
 
-    console.log(data)
-    // console.log(dateInterval)
+    // todo Сделать вывод ошибки, если сервер криво ответил
+    if (isResponseWithError(orders.value)) {
+        orders.value.data = []
+    }
+
+    console.log(orders.value)
 
 }
 
-
-// function setPeriod(pointDate) {
-//
-// }
-
-
-// ordersStore.orders = [1,2,3]
-//
-// console.log(ordersStore.orders)
 
 </script>
 

@@ -38,7 +38,7 @@ class Line extends Model
 
 
 
-
+// Отношение к Заказу
     public function Order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

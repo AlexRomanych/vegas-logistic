@@ -18,21 +18,25 @@ const URL_ORDER_UPLOAD = 'orders/upload/'       // URL для загрузки �
 export const useOrdersStore = defineStore('orders', () => {
 
 
-    // Список заказов
-    const orders = ref([])
+    // Список заказов, которые получили к отображению
+    let ordersShow = []
 
 
     // Получаем с API список заказов
     const getOrders = async (params) => {
 
-        console.log(params)
+        // console.log(params)
 
         const result = await jwtGet(URL_ORDERS, params)
+        ordersShow.value = result.data             // кэшируем
+        //
+        // console.log(ordersShow.value)
 
         // openNewTab(result)
         // console.log(data)
-        console.log(result)
+        // console.log(result)
 
+        return result.data // все возвращается через Resource с ключем data
 
     }
 
@@ -53,15 +57,14 @@ export const useOrdersStore = defineStore('orders', () => {
         const response = await jwtPost(URL_ORDER_UPLOAD, fileData, headers)
         const result = await response
 
-        openNewTab(result)
-
+        // openNewTab(result)
 
         return result
     }
 
 
     return {
-        orders,
+        ordersShow,
         getOrders,
         uploadOrders,
     }

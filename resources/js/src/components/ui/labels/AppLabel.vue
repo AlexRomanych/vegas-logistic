@@ -1,14 +1,11 @@
 <template>
-    <input
-        :id="id"
-        :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold]"
-        :disabled="disabled"
-        :value="title"
-        :type="func"
-        class="app-input"
-        @click="buttonClick"
-
-    />
+    <div
+        :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
+        class="flex flex-col m-0.5 app-label justify-center">
+        <div>
+            {{ text }}
+        </div>
+    </div>
 </template>
 
 
@@ -21,40 +18,28 @@ import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from "@/
 import {computed, ref} from "vue";
 
 const props = defineProps({
-    id: {
-        required: true,
+    text: {
+        type: String,
+        required: false,
+        default: 'Enter...',
     },
     type: {
         type: String,
         required: false,
-        default: 'primary',
+        default: 'dark',
         validator: (type) => colorsList.includes(type)
-    },
-    func: {
-        type: String,
-        required: false,
-        default: 'button',
-        validator: (func) => ['button', 'submit', 'reset'].includes(func)
-    },
-    disabled: {
-        type: Boolean,
-        required: false,
-        default: false,
     },
     width: {
         type: String,
         required: false,
-        default: 'w-[100px]',
+        default: 'w-[200px]',
+
     },
     height: {
         type: String,
         required: false,
-        default: 'h-[50px]',
-    },
-    title: {
-        type: String,
-        required: false,
-        default: 'Нажми меня',
+        default: 'h-[30px]',
+
     },
     textSize: {
         type: String,
@@ -68,23 +53,14 @@ const props = defineProps({
         required: false,
         default: false,
     },
+    position: {
+        type: String,
+        required: false,
+        default: 'left',
+        validator: (position) => ['left', 'right', 'center'].includes(position)
+    }
+
 })
-
-
-
-// console.log(props.title)
-// const inputButton = defineModel(props.title)
-
-// const title = computed(() => props.title)
-const emit = defineEmits(['buttonClick'])
-
-// const title = props.title
-// const inputButton = defineModel('title')
-const buttonClick = function(e) {
-    // inputButton.value++
-    // console.log(inputButton.value)
-    emit('buttonClick', e.target.value)
-}
 
 const textSizeClass = getFontSizeClass(props.textSize)
 const semibold = props.bold ? 'font-semibold' : ''
@@ -93,13 +69,29 @@ const currentTextColor = computed(() => getTextColorClassByType(props.type)).val
 const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value
 const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex)).value
 
+let horizontalAlign = 'items-'
+switch (props.position) {
+    case 'left':
+        horizontalAlign += 'start'
+        break;
+    case 'right':
+        horizontalAlign += 'end'
+        break;
+    case 'center':
+        horizontalAlign += 'center'
+        break;
+}
+
+
 </script>
 
-
 <style scoped>
-
-.app-input {
-    @apply m-0.5 p-1 border-2 rounded-lg cursor-pointer;
+.app-label {
+    @apply
+        flex flex-col justify-center
+        p-1 m-0.5
+        border rounded-lg focus:outline-none focus:ring-2;
 }
+
 
 </style>
