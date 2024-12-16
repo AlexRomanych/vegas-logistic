@@ -18,7 +18,7 @@ import {colorsList} from "@/src/app/constants/colorsClasses.js"
 import {fontSizesList} from "@/src/app/constants/fontSizes.js"
 import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from "@/src/app/helpers/helpers.js"
 
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue"
 
 const props = defineProps({
     id: {
@@ -66,7 +66,7 @@ const props = defineProps({
     bold: {
         type: Boolean,
         required: false,
-        default: false,
+        default: true,
     },
 })
 
@@ -89,9 +89,21 @@ const buttonClick = function(e) {
 const textSizeClass = getFontSizeClass(props.textSize)
 const semibold = props.bold ? 'font-semibold' : ''
 const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
-const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
-const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value
-const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex)).value
+// const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
+// const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value
+// const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex)).value
+
+const currentTextColor = ref(getTextColorClassByType(props.type))
+const backgroundColor =ref( getColorClassByType(props.type, 'bg', currentColorIndex))
+const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
+
+// Без этой функции не перерисовывает стили
+watch(() => props.type, (type) => {
+    currentTextColor.value = getTextColorClassByType(props.type)
+    backgroundColor.value = getColorClassByType(props.type, 'bg', currentColorIndex)
+    borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
+})
+
 
 </script>
 

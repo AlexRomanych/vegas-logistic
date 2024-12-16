@@ -1,5 +1,15 @@
 <template>
-    <div class="flex justify-start items-end">
+    <div class="flex justify-start items-end ml-3">
+
+        <div>
+            <AppLabel
+                text="Дата отгрузки: "
+                height="h-[35px]"
+                width="w-[130px]"
+                :bold="true"
+            />
+        </div>
+
         <div>
             <AppInputDate
                 id="start"
@@ -28,12 +38,13 @@
         </div>
 
 
-
-
     </div>
 
-    <TheOrdersBag v-if="orders.length" :key="Date.now()"
-    />
+    <div class="ml-3 mt-3">
+        <TheOrdersBag v-if="orders.length" :key="Date.now()"
+        />
+    </div>
+
 
 
 </template>
@@ -44,10 +55,13 @@ import {useOrdersStore} from "@/src/stores/OrdersStore"
 import {compareDatesLogic} from "@/src/app/helpers/helpers_date.js"
 import {isResponseWithError} from "@/src/app/helpers/helpers_checks.js"
 
+
+
 import TheOrdersBag from '@/src/components/dashboard/orders/components/TheOrdersBag.vue'
 
 import AppInputDate from '@/src/components/ui/inputs/AppInputDate.vue'
 import AppButton from '@/src/components/ui/buttons/AppButton.vue'
+import AppLabel from '@/src/components/ui/labels/AppLabel.vue'
 
 
 const ordersStore = useOrdersStore()
@@ -92,7 +106,7 @@ const clickApply = async (id) => {
         orders.value.data = []
     }
 
-    console.log(orders.value)
+    // console.log(orders.value)
 
 }
 

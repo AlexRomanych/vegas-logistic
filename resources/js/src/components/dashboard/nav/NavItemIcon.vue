@@ -13,6 +13,8 @@ import {BuildingStorefrontIcon} from '@heroicons/vue/24/solid'
 import {UsersIcon} from '@heroicons/vue/24/solid'
 import {ClipboardDocumentIcon} from '@heroicons/vue/24/solid'
 import {Cog8ToothIcon} from '@heroicons/vue/24/solid'
+import {WrenchScrewdriverIcon} from '@heroicons/vue/24/solid'
+import {UserPlusIcon} from '@heroicons/vue/24/solid'
 
 export default {
     components: {
@@ -23,7 +25,9 @@ export default {
         BuildingStorefrontIcon,
         UsersIcon,
         ClipboardDocumentIcon,
-        Cog8ToothIcon
+        Cog8ToothIcon,
+        WrenchScrewdriverIcon,
+        UserPlusIcon,
     },
     props: {
         icon: {

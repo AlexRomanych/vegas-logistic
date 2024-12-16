@@ -20,7 +20,8 @@ export const useOrdersStore = defineStore('orders', () => {
 
     // Список заказов, которые получили к отображению
     let ordersShow = []
-
+    const ordersShowTest = ref('123')
+    const ordersShowIsChanged = false
 
     // Получаем с API список заказов
     const getOrders = async (params) => {
@@ -65,6 +66,8 @@ export const useOrdersStore = defineStore('orders', () => {
 
     return {
         ordersShow,
+        ordersShowTest,
+        ordersShowIsChanged,
         getOrders,
         uploadOrders,
     }

@@ -5,10 +5,11 @@ const menuData = () => {
             group: {name: 'Производство', shown: true, isActive: true, icon: 'HomeModernIcon'},
             items:
                 [
-                    {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Группы ПЯ', path: 'plan', shown: true, isActive: true,},
                     {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
+                    {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
                     {name: 'Сменные задания', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
                 ]
         },
         {
@@ -17,6 +18,7 @@ const menuData = () => {
                 [
                     {name: 'Заявки за период', path: 'orders', shown: true, isActive: true,},
                     {name: 'Загрузить с диска', path: 'orders.upload', shown: true, isActive: true,},
+                    {name: 'Загрузить из 1C', path: 'plan', shown: true, isActive: false,},
                     {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
                 ]
         },
@@ -30,11 +32,11 @@ const menuData = () => {
                 ]
         },
         {
-            group: {name: 'Склад', shown: true, isActive: false, icon: 'BuildingStorefrontIcon'},
+            group: {name: 'Персонал', shown: true, isActive: true, icon: 'UserPlusIcon'},
             items:
                 [
-                    {name: 'План отгрузок', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Динамика загрузки склада', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Список сотрудников', path: '', shown: true, isActive: true,},
+                    {name: 'Добавить сотрудника', path: '', shown: true, isActive: true,},
                 ]
         },
         {
@@ -45,6 +47,22 @@ const menuData = () => {
                     {name: 'Процедуры расчета', path: 'plan', shown: true, isActive: true,},
                     {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
                     {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
+                ]
+        },
+        {
+            group: {name: 'Инструменты', shown: true, isActive: true, icon: 'WrenchScrewdriverIcon'},
+            items:
+                [
+                    {name: 'Резка ППУ(A)', path: '', shown: true, isActive: false,},
+                    {name: 'Резка ППУ', path: '', shown: true, isActive: false,},
+                ]
+        },
+        {
+            group: {name: 'Склад', shown: true, isActive: false, icon: 'BuildingStorefrontIcon'},
+            items:
+                [
+                    {name: 'План отгрузок', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Динамика загрузки склада', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {

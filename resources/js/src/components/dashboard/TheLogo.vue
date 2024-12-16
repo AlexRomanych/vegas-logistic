@@ -5,6 +5,7 @@
         <div><span class="chrono-field">{{ formattedDate }}</span><span class="divider">|</span></div>
         <div class="user-icon"><UserCircleIcon /></div>
         <div><span class="chrono-field">{{ currUser.name }}</span></div>
+<!--        <div id="data-status-indicator" class="mr-2 ml-2"></div>-->
     </div>
 
 </template>
