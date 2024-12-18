@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->id();
 
-            $table->decimal('no_num')->nullable(false)->default(0)->comment('номер заявки в числовом формате');
+            $table->decimal('no_num', 8, 3)->nullable(false)->default(0)->comment('номер заявки в числовом формате');
             $table->string('no_origin')->nullable()->comment('оригинальный номер заявки');
 
             $table->timestamp('plan_period')->nullable()->comment('период (начало месяца), к которому принадлежит заявка');

@@ -77,10 +77,11 @@ jwtAxios.interceptors.response.use(
 // Формируем свой GET
 export async function jwtGet(url, params = {}) {
 
-    jwtAxios.defaults.params = params
+    // jwtAxios.defaults.params = params        // эта намертво закрепляет параметры
+    console.log(params)
 
     try {
-        const res = await jwtAxios.get(url, params)
+        const res = await jwtAxios.get(url, {params: params})
         const data = await res.data
         return data
 
@@ -125,4 +126,26 @@ export async function jwtPost(url, data = {}, headers = {}) {
 
 }
 
+
+// Формируем свой DELETE
+export async function jwtDelete(url, data = {}) {
+
+    try {
+        const response = await jwtAxios.delete(url, {data: data})
+
+        console.log(response)
+
+        const res = await response.data
+        return res
+
+    } catch (error) {
+        // console.log(error.response)
+        // console.log('jwtDelete: ', error.response.data.message)
+        console.log('jwtDelete: ', error)
+        debugger
+    }
+
+}
+
 // export default jwtAxios
+

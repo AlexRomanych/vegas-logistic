@@ -83,7 +83,7 @@ const emit = defineEmits(['buttonClick'])
 const buttonClick = function(e) {
     // inputButton.value++
     // console.log(inputButton.value)
-    emit('buttonClick', e.target.value)
+    emit('buttonClick', e.target.value, props.id)
 }
 
 const textSizeClass = getFontSizeClass(props.textSize)

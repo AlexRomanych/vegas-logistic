@@ -49,17 +49,24 @@ class Order extends Model
 //    }
 
 
-    //---------------------------------------------------------------------------------------------
+    //h2 Clients ---------------------------------------------------------------------------------------------
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
     }
 
+
+    //h2 Lines ---------------------------------------------------------------------------------------------
     public function lines(): HasMany
     {
         return $this->hasMany(Line::class);
     }
 
+    public function delete()
+    {
+        $this->lines()->delete();
+        parent::delete();
+    }
 
 //
 //    public function assemblyParts(): HasMany

@@ -115,8 +115,13 @@ Route::get('/model/{code1C}', [ModelController::class, 'model']);
 
 
 //Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');
-Route::get('/orders', [OrderController::class, 'getOrders']);
-Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');;
+Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');;
+Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');
+Route::delete('/orders/delete', [OrderController::class, 'deleteOrders'])->middleware('jwt.auth');
+//Route::delete('/orders/delete', function (Request $request) {
+//    return $request->all();
+//});
+
 //Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');
 //Route::('/orders/upload', [OrderController::class, 'uploadOrders']);
 //Route::patch('/orders/upload', [OrderController::class, 'uploadOrders']);

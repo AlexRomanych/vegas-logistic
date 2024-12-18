@@ -81,6 +81,7 @@ class OrderController extends Controller
 
         $orders = $request->all();
 
+//        return $orders;
         // todo проверка на валидность данных
 
         $dubs = [];
@@ -91,8 +92,8 @@ class OrderController extends Controller
             $order = $orderBag['order'];        // берем всю инфу о заказе
 
             // проверяем есть ли такой заказ
-            $checkOrder = Order::where('client_id', $order['c'])
-                ->where('no_num', $order['n'])
+            $checkOrder = Order::where('client_id', (int) $order['c'])
+                ->where('no_num', (float) ($order['n']))
                 ->first();
 
             if ($checkOrder) {
@@ -135,6 +136,8 @@ class OrderController extends Controller
             }
         }
 
+
+//        return 1111;
         return $dubs;           // возвращаем дубликаты
 
 //        return response()->json([
@@ -142,12 +145,36 @@ class OrderController extends Controller
 //        ]);
 
 
-        $data = $request->all();
-        return view('dd', ['data' => $data]);
-
-        return $request->all();
-
-        return 'Data Received';
+//        $data = $request->all();
+//        return view('dd', ['data' => $data]);
+//
+//        return $request->all();
+//
+//        return 'Data Received';
     }
+
+
+    public function deleteOrders(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        try {
+            Order::whereIn('id', $ids)->delete();
+            return response()->json([
+                'success' => 'Заказы удалены'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+
+//        $data = $request->all();
+//        return view('dd', ['data' => $data]);
+
+//        return $ids;
+    }
+
 
 }

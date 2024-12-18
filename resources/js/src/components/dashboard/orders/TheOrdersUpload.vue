@@ -82,7 +82,8 @@ const uploadFile = async () => {
             // const res = await ordersStore.uploadOrders(fileData)
 
 
-            if (!res) {
+
+            if (res.length === 0) {
                 opResultText.value = 'Данные успешно загружены'
                 opResultType.value = 'success'
                 setTimeout(() => {opResult.value = false}, 5000)

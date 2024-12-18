@@ -31,7 +31,11 @@ return new class extends Migration
 //            $table->timestamp('load_1C')->nullable()->comment('загрузка данных в 1С');
 
             // Привязываем к заказу
-            $table->foreignIdFor(Order::class)->nullable(false)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Order::class)->constrained()->cascadeOnDelete();
+//            $table->foreignIdFor(Order::class)->nullable(false)->constrained()->cascadeOnDelete();
+
+
+
 //            $table->foreignId('order_id')->nullable(false)->constrained()->nullOnDelete();
 
 /*
