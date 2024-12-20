@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Contracts\VegasDataGetContract;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Model\ModelCollection;
 use App\Http\Resources\Model\ModelResource;
 use App\Models\Model;
+use App\Services\CollectionsService;
+use App\Services\ModelsService;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class ModelController extends Controller
@@ -56,4 +60,18 @@ class ModelController extends Controller
     {
         return new ModelCollection(Model::all());
     }
+
+
+    public function modelsLoad(VegasDataGetContract $getter)
+    {
+        try {
+            App::make(CollectionsService::class, [$getter])->updateData();
+            App::make(ModelsService::class, [$getter])->updateData();
+            return '';
+
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 400);
+        }
+    }
+
 }

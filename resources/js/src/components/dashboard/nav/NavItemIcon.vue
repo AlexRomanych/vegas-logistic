@@ -15,6 +15,7 @@ import {ClipboardDocumentIcon} from '@heroicons/vue/24/solid'
 import {Cog8ToothIcon} from '@heroicons/vue/24/solid'
 import {WrenchScrewdriverIcon} from '@heroicons/vue/24/solid'
 import {UserPlusIcon} from '@heroicons/vue/24/solid'
+import {PuzzlePieceIcon} from '@heroicons/vue/24/solid'
 
 export default {
     components: {
@@ -28,6 +29,7 @@ export default {
         Cog8ToothIcon,
         WrenchScrewdriverIcon,
         UserPlusIcon,
+        PuzzlePieceIcon
     },
     props: {
         icon: {

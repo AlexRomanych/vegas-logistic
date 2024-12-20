@@ -23,6 +23,14 @@ const menuData = () => {
                 ]
         },
         {
+            group: {name: 'Модели', shown: true, isActive: true, icon: 'PuzzlePieceIcon'},
+            items:
+                [
+                    {name: 'Список моделей', path: 'models', shown: true, isActive: true,},
+                    {name: 'Загрузка из базы', path: 'models.load', shown: true, isActive: true,},
+                ]
+        },
+        {
             group: {name: 'Клиенты', shown: true, isActive: true, icon: 'UserGroupIcon'},
             items:
                 [
@@ -135,6 +143,19 @@ const menu = menuData().map((item, index) => {
 })
 
 // console.log(menu)
+
+const reduceRight = (fn, acc) => arr1.reverse().reduceRight(fn, acc)
+//
+console.log([1,2,3].reduceRight((item) => item + ' 1', 0))
+
+// String.prototype.strTrim = function () {return this.trim()}
+// const strTrim = (arg1, arg2) => tempStr.trim()
+//
+// console.log('     123     '.strTrim())
+//
+//
+// console.log('  123   '.strTrim(1, 2))
+//
 
 export default menu
 

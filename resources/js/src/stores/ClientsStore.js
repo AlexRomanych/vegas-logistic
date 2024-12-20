@@ -11,7 +11,7 @@ const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_CLIENTS = 'clients/'                  // URL для клиентов
 const URL_CLIENT = 'client/'                    // URL для клиентов
 
-const URL_CLIENTS_LOAD = 'clients/load'          // URL для загрузки клиентов из хранилища
+const URL_CLIENTS_LOAD = 'clients/load'         // URL для загрузки клиентов из хранилища
 
 
 export const useClientsStore = defineStore('clients', () => {

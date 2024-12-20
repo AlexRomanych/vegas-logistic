@@ -110,7 +110,7 @@ Route::get('/users', [UserController::class, 'all']);
 // это работает
 Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth');
 Route::get('/model/{code1C}', [ModelController::class, 'model']);
-
+Route::get('/models/load', [ModelController::class, 'modelsLoad'])->middleware('jwt.auth');
 
 
 

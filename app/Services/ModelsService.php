@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\VegasDataGetContract;
 use App\Contracts\VegasDataUpdateContract;
 use App\Models\Model;
+use Illuminate\Support\Facades\Log;
 
 final class ModelsService implements VegasDataUpdateContract
 {
@@ -20,6 +21,15 @@ final class ModelsService implements VegasDataUpdateContract
         Model::query()->update(['active' => 0]);
 
         foreach ($modelsList as $modelItem) {
+            $base = json_encode($modelItem['bs'],JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
+            $cover = json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
+//            $base = $modelItem['bs'];
+//            $cover = $modelItem['cv'];
+//            view('dd', ['data' => $modelItem]);
+//            return $base;
+
+            Log::info($base);
+
             Model::query()->updateOrCreate(
                 [
                     'code1C' => $modelItem['cd']
@@ -58,8 +68,10 @@ final class ModelsService implements VegasDataUpdateContract
                     'weight' => $modelItem['wg'],
                     'barcode' => $modelItem['bc'],
                     'collection_id' => $modelItem['ci'],
-                    'base' => json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE),
-                    'cover' => json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE),
+//                    'base' => json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE),
+//                    'cover' => json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE),
+                    'base' => $base,
+                    'cover' => $cover,
                     'active' => 1,
                 ]
             );

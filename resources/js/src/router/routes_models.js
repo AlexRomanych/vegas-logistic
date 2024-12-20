@@ -14,6 +14,11 @@ const models = [
         component: () => import('@/src/components/dashboard/models/TheModels.vue'),
         meta: {destination: '/models'},
     },
+    {
+        path: '/models/load',
+        name: 'models.load',
+        component: () => import('@/src/components/dashboard/models/TheModelsLoad.vue'),
+    },
 ]
 
 export default models

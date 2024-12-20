@@ -14,8 +14,8 @@ const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_ORDERS = 'orders/'                    // URL для получения списка заказов
 const URL_ORDER = 'order/'                      // URL для получения заказа
 
-const URL_ORDER_UPLOAD = 'orders/upload/'       // URL для загрузки заказов
-const URL_ORDER_DELETE = 'orders/delete/'       // URL для загрузки заказов
+const URL_ORDERS_UPLOAD = 'orders/upload/'      // URL для загрузки заказов с диска
+const URL_ORDER_DELETE = 'orders/delete/'       // URL для удаления заказов
 
 
 export const useOrdersStore = defineStore('orders', () => {
@@ -60,7 +60,7 @@ export const useOrdersStore = defineStore('orders', () => {
             // 'Content-Type': 'application/x-www-form-urlencoded',
         }
 
-        const response = await jwtPost(URL_ORDER_UPLOAD, fileData, headers)
+        const response = await jwtPost(URL_ORDERS_UPLOAD, fileData, headers)
         const result = await response
 
         // openNewTab(result)

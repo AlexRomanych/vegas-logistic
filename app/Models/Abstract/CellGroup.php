@@ -15,5 +15,6 @@ abstract class CellGroup extends Model
                                                             окончание другого процесса (конец другой группы)
                                                             дата внесения в 1С
                                                             расчетная дата, например за пару дней до загрузки
+      protected string $description                   - описание группы
 */
 }
