@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
+use Exception;
 
 class OrderController extends Controller
 {
@@ -115,6 +116,7 @@ class OrderController extends Controller
                     'status' => $order['s']
                 ]);
 
+//                return $newOrder;
                 $newOrderId = $newOrder->id;
 
                 foreach ($orderBag['order_data'] as $line) {
@@ -164,7 +166,7 @@ class OrderController extends Controller
                 'success' => 'Заказы удалены'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
             ]);

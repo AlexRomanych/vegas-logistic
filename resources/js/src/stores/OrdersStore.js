@@ -50,8 +50,7 @@ export const useOrdersStore = defineStore('orders', () => {
     // fileData - данные файла, отправляем в RAW формате
     const uploadOrders = async (fileData) => {
 
-        console.log(fileData)
-
+        // console.log(fileData)
 
         const headers = {
             'Content-Type': 'application/json',
@@ -63,8 +62,9 @@ export const useOrdersStore = defineStore('orders', () => {
         const response = await jwtPost(URL_ORDERS_UPLOAD, fileData, headers)
         const result = await response
 
-        // openNewTab(result)
-        // ordersShowIsChanged = false
+        openNewTab(result)
+
+        console.log(result)
 
         return result
     }

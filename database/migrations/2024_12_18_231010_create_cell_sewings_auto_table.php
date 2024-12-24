@@ -12,14 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cell_sewings', function (Blueprint $table) {
+        Schema::create('cell_sewing_auto', function (Blueprint $table) {
             $table->id();
-            $table->integer('amount');
+            $table->integer('amount')->nullable(false);
             $table->timestamp('manufactured_at')->nullable(false);
             $table->timestamps();
+            $table->timestamp('deleted_at')->nullable();
 
             //attract создаем связь с Line - записью в заказе
-            $table->foreignIdFor(Line::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Line::class)->constrained()->cascadeOnDelete();  // Связываем с датой в заказе
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cell_sewings');
+        Schema::dropIfExists('cell_sewing_auto');
     }
 };

@@ -77,7 +77,7 @@ import AppLabel from '@/src/components/ui/labels/AppLabel.vue'
 
 
 const ordersStore = useOrdersStore()
-const {ordersShowIsChanged} = storeToRefs(ordersStore)
+const {ordersShowIsChanged} = storeToRefs(ordersStore)  // реактивная, меняем в сторе - сохраняет реактивность
 
 const dateInterval = {}
 const orders = ref([])

@@ -6,6 +6,9 @@ import {ref, reactive, computed, watch} from 'vue'
 import {jwtGet, jwtPost, jwtDelete} from "@/src/app/utils/jwt_api"
 import {openNewTab} from "@/src/app/helpers/helpers_service"
 
+// Обертка на бэке
+const WRAP = 'models'
+
 // Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_MODELS = 'models/'                    // URL для получения списка моделей
@@ -18,25 +21,29 @@ const URL_MODEL_DELETE = 'models/delete/'       // URL для загрузки �
 
 export const useModelsStore = defineStore('models', () => {
 
+    // Список заказов, которые получили к отображению
+    let modelsShow = []
+
+    //attract: Загружаем спислк моделей из файла
     const modelsLoad = async () => {
         const response = await jwtGet(URL_MODELS_LOAD)
-
-        openNewTab(response)
-
+        // openNewTab(response)
         return response
+    }
+
+    //attract: Получаем с API список моделей
+    const getModels = async (params) => {
+        const result = await jwtGet(URL_MODELS, params)
+        modelsShow.value = result[WRAP]                 // кэшируем
+        return result[WRAP]                             // все возвращается через Resource с ключем data
     }
 
     return {
         modelsLoad,
+        getModels,
     }
 
 })
-
-
-
-
-
-
 
 
 //

@@ -11,7 +11,7 @@ const models = [
     {
         path: '/models',
         name: 'models',
-        component: () => import('@/src/components/dashboard/models/TheModels.vue'),
+        component: () => import('@/src/components/dashboard/models/TheModelsShow.vue'),
         meta: {destination: '/models'},
     },
     {

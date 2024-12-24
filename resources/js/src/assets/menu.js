@@ -34,7 +34,7 @@ const menuData = () => {
             group: {name: 'Клиенты', shown: true, isActive: true, icon: 'UserGroupIcon'},
             items:
                 [
-                    {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Список клиентов', path: 'clients', shown: true, isActive: true,},
                     {name: 'Загрузка из базы', path: 'clients.load', shown: true, isActive: true,},
                     {name: 'Новый клиент', path: 'plan', shown: true, isActive: true,},
                 ]

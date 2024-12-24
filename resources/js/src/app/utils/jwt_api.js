@@ -78,7 +78,7 @@ jwtAxios.interceptors.response.use(
 export async function jwtGet(url, params = {}) {
 
     // jwtAxios.defaults.params = params        // эта намертво закрепляет параметры
-    console.log(params)
+    // console.log(params)
 
     try {
         const res = await jwtAxios.get(url, {params: params})

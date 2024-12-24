@@ -25,6 +25,11 @@ class ModelResource extends JsonResource
             'ch' => round ($this->cover_height * 100),
             'textile' => $this->textile,
             'bc' => $this->base_composition,
+            'auto' => $this->is_auto,
+            'universal' => $this->is_universal,
+            'solid' => $this->is_solid,
+            'solid_light' => $this->is_solid_light,
+            'solid_hard' => $this->is_solid_hard,
 
         ];
     }

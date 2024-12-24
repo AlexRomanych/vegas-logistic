@@ -12,9 +12,17 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('cells_groups', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(1);
             $table->string('name')->nullable(false)->unique(true)->comment('Название группы');
             $table->string('description')->nullable()->comment('Описание группы');
+
+            //attract: Тут может быть:
+            //attract: 1. Дата внесения в заявки 1С (+ какое-то время)
+            //attract: 2. Дата начала/окончания производства другой группы ПЯ (+/- какое-то время)
+            //attract: 3. Дата загрузки на складе (- какое-то время)
+            //attract: 4. Может еще какие-то условия
+            $table->string('manufacture_start_position')->nullable()->comment('Начало производства группы ПЯ');
+
             $table->timestamps();
         });
 

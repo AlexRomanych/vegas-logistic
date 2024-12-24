@@ -38,12 +38,13 @@ class Line extends Model
 
 
 
-// Отношение к Заказу
+    //attract: Отношение к Заказу
     public function Order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    //attract: Отношение к ПЯ -
 
 //    public function model(): HasOne
 //    {

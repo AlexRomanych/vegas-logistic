@@ -20,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        mb_internal_encoding('UTF-8'); // Устанавливаем кодировку
+
 //        JsonResource::withoutWrapping();  // удаляет обертку для OrderResource
 //        JsonResource::wrap('test');  // задает глобальную обертку для OrderResource
     }
