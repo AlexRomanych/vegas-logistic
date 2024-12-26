@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Resources\Order;
+namespace App\Http\Resources\Manufacture\CellsGroups;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class OrderCollection extends ResourceCollection
+class CellsGroupsCollection extends ResourceCollection
 {
-//    public static $wrap = 'orders';
+    public static $wrap = 'cells_groups';
+    
     /**
      * Transform the resource collection into an array.
      *

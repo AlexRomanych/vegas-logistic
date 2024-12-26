@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Resources\Order;
+namespace App\Http\Resources\Manufacture\Cells\Sewing;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class OrderCollection extends ResourceCollection
+class CellSewingAutoCollection extends ResourceCollection
 {
-//    public static $wrap = 'orders';
+    public static $wrap = 'sewing';
     /**
      * Transform the resource collection into an array.
      *

@@ -20,4 +20,6 @@ abstract class Cell extends Model
     {
         parent::__construct();
     }
+
+
 }

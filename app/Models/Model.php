@@ -52,7 +52,6 @@ final class Model extends LaravelModel
     //'weight'                          ('Вес в г. куб. см.')
     //'barcode'                         ('Штрихкод')
 
-
     protected $primaryKey = 'code1C';
     protected $keyType = 'string';
     public $incrementing = false;

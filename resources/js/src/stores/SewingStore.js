@@ -1,4 +1,4 @@
-// Хранилище для моделей
+// Хранилище для ПЯ Швейки
 
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
@@ -7,7 +7,7 @@ import {jwtGet, jwtPost, jwtDelete} from "@/src/app/utils/jwt_api"
 import {openNewTab} from "@/src/app/helpers/helpers_service"
 
 // Обертка на бэке
-const WRAP = 'models'
+const WRAP = 'cells'
 
 // Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                   // Префикс API
@@ -24,7 +24,7 @@ export const useModelsStore = defineStore('models', () => {
     // Список заказов, которые получили к отображению
     let modelsShow = []
 
-    //attract: Загружаем список моделей из файла
+    //attract: Загружаем спислк моделей из файла
     const modelsLoad = async () => {
         const response = await jwtGet(URL_MODELS_LOAD)
         // openNewTab(response)

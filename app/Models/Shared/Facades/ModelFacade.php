@@ -53,7 +53,8 @@ class ModelFacade
             return false;
         }
         $model->owner = $model->owner ?? '';
-        return Str::contains(strtolower($model->owner), COMPARE_STRING_CHILDREN);
+        return Str::contains(strtolower($model->owner), 'todo');
+//        return Str::contains(strtolower($model->owner), COMPARE_STRING_CHILDREN);
     }
 
 
@@ -120,7 +121,6 @@ class ModelFacade
     }
 
 
-
     /**
      * Возвращает модель по имени
      * @param string|null $name
@@ -153,9 +153,6 @@ class ModelFacade
     }
 
 
-
-
-
     /**
      * Возвращает модель по имени
      * @param string|null $name
@@ -185,5 +182,92 @@ class ModelFacade
 
             Cache::put('models', $modelsByNameIndex);
         }
+    }
+
+
+    //attract: Тут будем реализовывать функционал производства (ПЯ)
+
+    /**
+     * Проверка на AШМ
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingAuto(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_auto;
+    }
+
+    /**
+     * Проверка на УШМ
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingUniversal(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_universal;
+    }
+
+    /**
+     * Проверка на Глухие
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingSolid(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_solid;
+    }
+
+    /**
+     * Проверка на Глухие простые
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingSolidLight(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_solid_light;
+    }
+
+    /**
+     * Проверка на Глухие сложные
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingSolidHard(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_solid_hard;
+    }
+
+    /**
+     * Проверка на неопределенное свойство
+     * @param string $modelName
+     * @return bool
+     */
+    public function isSewingUndefined(string $modelName = ''): bool
+    {
+        $model = $this->getModelByName($modelName);
+        if (is_null($model)) {
+            return false;
+        }
+        return $model->is_undefined;
     }
 }

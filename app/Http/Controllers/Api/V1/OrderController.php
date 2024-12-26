@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Resources\Order\OrderCollection;
-use Illuminate\Http\Request;
+use App\Facades\Model;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Order\OrderCollection;
+use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
 use Exception;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -25,7 +27,7 @@ class OrderController extends Controller
 //        return apiDebug($validData);
 //        return $validData;
 
-        $orders = Order::whereBetween('unload_date', [$validData['start'], $validData['end']])->get();
+        $orders = Order::whereBetween('load_date', [$validData['start'], $validData['end']])->get();
 //        $orders = Order::all();
 
 
@@ -102,15 +104,18 @@ class OrderController extends Controller
 
             } else {
                 // создаем новый заказ
+                // Создаем через Create, потому что возвращает объект
+                // todo проверить на валидность данных
+
                 $newOrder = Order::create([
                     'client_id' => $order['c'],
-//                    'client_id' => 1,               // todo заменить
+                    //'client_id' => 1,               // todo заменить
 
                     'no_num' => $order['n'],
                     'load_date' => $order['l'],
                     'unload_date' => $order['u'],
                     'manuf_date' => $order['m'],
-//                        'date_1C' => $order['d'],
+                    // 'date_1C' => $order['d'],
                     'meta' => $order['meta'],
                     'description' => $order['r'],
                     'status' => $order['s']
@@ -119,8 +124,30 @@ class OrderController extends Controller
 //                return $newOrder;
                 $newOrderId = $newOrder->id;
 
+
+                $sewingAuto = [];               // АШМ
+                $sewingUniversal = [];          // УШМ
+                $sewingSolidHard = [];          // Обшивка Light
+                $sewingSolidLight = [];         // Обшивка Hard
+                $sewingUndefined = [];          // Неопознанные
+
+
                 foreach ($orderBag['order_data'] as $line) {
-                    $newLine = new Line([
+//                    $newLine = new Line([
+//                        'order_id' => $newOrderId,
+//                        'size' => $line['s'],
+//                        'model' => $line['m'],
+//                        'amount' => $line['a'],
+//                        'textile' => $line['t'],
+//                        'comment' => $line['c'],
+//                        'describe_1' => $line['d1'],
+//                        'describe_2' => $line['d2'],
+//                        'describe_3' => $line['d3']
+//                    ]);
+//
+//                    $newLine->save();
+
+                    $newLine = Line::create([
                         'order_id' => $newOrderId,
                         'size' => $line['s'],
                         'model' => $line['m'],
@@ -132,9 +159,23 @@ class OrderController extends Controller
                         'describe_3' => $line['d3']
                     ]);
 
-                    $newLine->save();
+                    // Создаем запись для добавления в ПЯ швейки
+                    $sewingLine = [
+                        'amount' => $line['a'],
+                        'line_id' => $newLine->id,
+                        'manufactured_at' => $newOrder->manufacture_date_opp,
+                    ];
+
+                    // Пользуем Фасад
+                    if (Model::isSewingAuto($line['m'])) {
+                        $sewingAuto[] = $sewingLine;
+                    }
+
 
                 }
+
+                CellSewingAuto::insert($sewingAuto);            // Вставляем данные в швейку АШМ
+
             }
         }
 

@@ -3,20 +3,16 @@
         <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
         <input
             :id="id"
-            type="date"
+            v-model="inputDate"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
             :disabled="disabled"
-            :max="maxDate || periodEndText"
-            :min="minDate || periodStartText"
+            :max="maxDateTemp"
+            :min="minDateTemp"
             step="1"
-            v-model="inputDate"
+            type="date"
             @change="getInputDate"
-
-
         >
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
-
-
     </div>
 
 </template>
@@ -113,6 +109,16 @@ const defaultDate = selectedDate
 // });
 
 const {periodStart, periodEnd, periodStartText, periodEndText} = getPeriod()
+// console.log(props.minDate)
+// console.log(props.maxDate)
+
+const minDateTemp = props.minDate === '' ? periodStartText : props.minDate
+const maxDateTemp = props.maxDate === '' ? periodEndText : props.maxDate
+
+// console.log(minDateTemp)
+// console.log(maxDateTemp)
+// console.trace()
+
 // const value = ref(periodStartText)
 
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
@@ -124,9 +130,6 @@ const focusBorderColor = 'focus:ring' + currentColor
 
 let textColor = 'text' + currentColor
 textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
-
-
-
 
 
 const emit = defineEmits(['getInputDate'])

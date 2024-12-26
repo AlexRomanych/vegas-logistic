@@ -11,7 +11,10 @@ export function getPeriod() {
     const year = tempDate.getFullYear()
 
     const periodStart = new Date(year, month, '01')
-    const periodEnd = new Date(year, month + PERIOD_LENGTH, '00')
+    periodStart.setMonth(periodStart.getMonth() - 1)        // отнимаем месяц от предыдущего, то есть минус месяц от текущего
+
+    const periodEnd = new Date(year, month , '00')
+    periodEnd.setMonth(periodStart.getMonth() + PERIOD_LENGTH)
 
     const periodStartText_Day = periodStart.getDate() < 10 ? '0' + periodStart.getDate().toString() : periodStart.getDate().toString()
     const periodStartText_Month = periodStart.getMonth() < 9 ? '0' + (periodStart.getMonth() + 1).toString() : (periodStart.getMonth() + 1).toString()

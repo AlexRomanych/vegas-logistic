@@ -5,11 +5,11 @@ const menuData = () => {
             group: {name: 'Производство', shown: true, isActive: true, icon: 'HomeModernIcon'},
             items:
                 [
-                    {name: 'Группы ПЯ', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
-                    {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Группы ПЯ', path: 'manufacture.cells.groups', shown: true, isActive: true,},
+                    {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
                     {name: 'Сменные задания', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Планирование производства', path: '', shown: true, isActive: true,},
+                    // {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
+                    // {name: 'Планирование производства', path: '', shown: true, isActive: true,},
                 ]
         },
         {
@@ -52,9 +52,10 @@ const menuData = () => {
             items:
                 [
                     {name: 'Модели', path: 'models', shown: true, isActive: true,},
+                    {name: 'Группы ПЯ', path: 'manufacture.cells.groups', shown: true, isActive: true,},
+                    {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
+                    {name: 'Список клиентов', path: 'clients', shown: true, isActive: true,},
                     {name: 'Процедуры расчета', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Производственные ячейки (ПЯ)', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Список клиентов', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {

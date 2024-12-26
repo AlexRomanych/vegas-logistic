@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CellsGroup extends CellGroup
 {
+    protected $guarded = [];
 
+    protected $with = ['cellItems'];
 
-    protected $with = ['cellItem'];
-
-    public function cellItem(): HasMany
+    public function cellItems(): HasMany
     {
         return $this->hasMany(CellItem::class);
     }

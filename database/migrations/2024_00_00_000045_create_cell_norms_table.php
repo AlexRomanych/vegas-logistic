@@ -21,6 +21,8 @@ return new class extends Migration {
             $table->string('formula')->nullable()->comment('Формула для расчета производительности динамической нормы');
             $table->string('formula_php')->nullable()->comment('Формула для расчета производительности динамической нормы, адаптированная под PHP');
             $table->timestamps();
+
+            $table->foreignIdFor(CellItem::class)->nullable(false)->comment('Привязка нормы к ПЯ');
         });
 
         //        public const PRODUCTIVITY_SQUARE_METERS_PER_HOUR = 'м2/ч';
@@ -31,22 +33,22 @@ return new class extends Migration {
 
         // attract: Заполняем таблицу ПЯ на 20.12.2024
         DB::table('cell_norms')->insert([
-            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_SECOND],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR],
-            ['unit' => Unit::PRODUCTIVITY_SQUARE_METERS_PER_HOUR],
+            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'cell_item_id' => 1],
+            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'cell_item_id' => 2],
+            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'cell_item_id' => 3],
+            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'cell_item_id' => 4],
+            ['unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'cell_item_id' => 5],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 6],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 7],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_SECOND, 'cell_item_id' => 8],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 9],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 10],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 11],
+            ['unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'cell_item_id' => 12],
+            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR, 'cell_item_id' => 13],
+            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR, 'cell_item_id' => 14],
+            ['unit' => Unit::PRODUCTIVITY_PICS_PER_HOUR, 'cell_item_id' => 15],
+            ['unit' => Unit::PRODUCTIVITY_SQUARE_METERS_PER_HOUR, 'cell_item_id' => 16],
         ]);
     }
 

@@ -23,6 +23,7 @@ return new class extends Migration {
             //attract: 4. Может еще какие-то условия
             $table->string('manufacture_start_position')->nullable()->comment('Начало производства группы ПЯ');
 
+
             $table->timestamps();
         });
 
