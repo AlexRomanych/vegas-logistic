@@ -15,8 +15,6 @@
                 id="start"
                 label="Начало"
                 type="light"
-                minDate="2024-10-01"
-                maxDate="2024-12-31"
                 @getInputDate="setPeriod"
             />
         </div>
@@ -27,8 +25,6 @@
                 id="end"
                 label="Окончание"
                 type="light"
-                minDate="2024-10-01"
-                maxDate="2024-12-31"
                 @getInputDate="setPeriod"
             />
         </div>

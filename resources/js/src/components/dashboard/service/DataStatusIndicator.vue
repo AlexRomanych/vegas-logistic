@@ -1,7 +1,7 @@
 <template>
     <!--    <teleport defer to="#data-status-indicator"> -->
     <teleport to="body">
-        <div class="absolute top-0 left-0 w-[200px] h-[50px] z-50">
+        <div class="fixed top-0 left-0 w-[200px] h-[50px] z-10">
             <AppInputButton
                 id="data-status-button"
                 func="button"

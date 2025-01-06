@@ -7,8 +7,8 @@
             <AppInputButton
                 :id="order.id"
                 :title="collapseChar"
-                height="h-[30px]"
                 :type="labelType"
+                height="h-[30px]"
                 width="w-[30px]"
                 @click="collapseLines"
             />
@@ -44,13 +44,15 @@
                 width="w-[100px]"
             />
 
-            <AppLabel
-                align="center"
-                :text="orderDeletedText"
-                :type="labelType"
-                width="w-[100px]"
-                @click="deleteOrder"
-            />
+            <div class="cursor-pointer">
+                <AppLabel
+                    :text="orderDeletedText"
+                    :type="labelType"
+                    align="center"
+                    width="w-[100px]"
+                    @click="deleteOrder"
+                />
+            </div>
 
         </div>
 
