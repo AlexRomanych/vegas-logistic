@@ -18,6 +18,22 @@
             align="center"
             width="w-[100px]"
         />
+
+        <AppLabel
+            :bold="true"
+            :text="'∑ ' + getDayTotalAmount().toString()"
+            align="center"
+            width="w-[100px]"
+        />
+
+        <AppLabel
+            :bold="true"
+            :text="'∑ ' + getDayManufTime().toFixed(3)"
+            type="primary"
+            align="center"
+            width="w-[100px]"
+        />
+
     </div>
 
     <div v-if="!collapse" class="ml-8">
@@ -68,6 +84,30 @@ const collapseLines = () => {
 const formattedDate = (date) => {
     return new Date(date).toLocaleDateString()
 }
+
+
+// считаем общее количество изделий в день
+const getDayTotalAmount = () => {
+    const dayTotalAmount = props.item.orders.reduce((acc, order) => {
+        let orderTotalAmount = order.order.cells.reduce((acc2, cell) => acc2 + cell.amount, 0)
+        return acc + orderTotalAmount
+    }, 0)
+
+    return dayTotalAmount
+}
+
+
+// считаем время по участку за производственный день
+const getDayManufTime = () => {
+    const dayManufTime = props.item.orders.reduce((acc, order) => {
+        let orderManufTime = order.order.cells.reduce((acc2, cell) => acc2 + cell.norm, 0)
+        return acc + orderManufTime
+    }, 0)
+
+    return dayManufTime
+}
+
+console.log('dayTime', getDayManufTime())
 
 // console.log(props.orders)
 

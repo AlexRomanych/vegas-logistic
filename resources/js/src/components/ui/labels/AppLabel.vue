@@ -69,7 +69,7 @@ const emits = defineEmits(['labelClick'])
 
 // обрабатываем нажатие на label
 const labelClick = (e) => {
-    console.log(e.target.innerText)
+    // console.log(e.target.innerText)
     emits('labelClick', e.target.innerText)
 }
 

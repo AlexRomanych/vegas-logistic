@@ -1,5 +1,5 @@
 <template>
-    <div class="ml-8">
+    <div class="ml-16">
 
         <div class="flex justify-start items-center">
             <AppLabel

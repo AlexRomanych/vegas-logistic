@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CellSewingAuto extends CellItem
 {
+    protected CellSewingAutoNorm $norm;
+
     protected $table = 'cell_sewing_auto';
 
     protected $guarded = [];
@@ -23,19 +25,20 @@ class CellSewingAuto extends CellItem
     //attract: Задаем вычисляемые свойства
     protected $appends = ['norm'];    // Задаем норму
 
-    //info получаем время изготовления чехла АШМ
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->norm = new CellSewingAutoNorm();     // добавляем объект норм
+    }
 
+//info получаем время изготовления чехла АШМ
     public function getNormAttribute(): float
     {
-        $norm = new CellSewingAutoNorm();
-
-//        return 1.21;
-
-        return $norm->calculateNorm(
+        return $this->norm->calculateNorm(
             size: $this->line->size,
             modelName: $this->line->model,
-            amount: (int) $this->line->model);
+            amount: (int)$this->amount);
     }
 
 

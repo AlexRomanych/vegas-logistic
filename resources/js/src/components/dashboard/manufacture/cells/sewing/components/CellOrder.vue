@@ -27,21 +27,21 @@
                 width="w-[100px]"
             />
 
-            <!--            <AppLabel-->
-            <!--                :bold="true"-->
-            <!--                :text="'∑ ' + totalAmount"-->
-            <!--                :type="labelType"-->
-            <!--                align="center"-->
-            <!--                width="w-[100px]"-->
-            <!--            />-->
+            <AppLabel
+                :bold="true"
+                :text="'∑ ' + getOrderTotalAmount()"
+                align="center"
+                width="w-[70px]"
+            />
 
-            <!--            <AppLabel-->
-            <!--                align="center"-->
-            <!--                :text="orderDeletedText"-->
-            <!--                :type="labelType"-->
-            <!--                width="w-[100px]"-->
-            <!--                @click="deleteOrder"-->
-            <!--            />-->
+            <AppLabel
+                :bold="true"
+                :text="'∑ ' + getOrderManufTime().toFixed(3)"
+                type="primary"
+                align="center"
+                width="w-[100px]"
+            />
+
 
         </div>
 
@@ -105,6 +105,19 @@ if (orderNo.indexOf('.') !== -1) {
         orderNo = orderNoDec
     }
 }
+
+console.log(props.order)
+
+// считаем кол-во матрасов в заказе по ПЯ
+const getOrderTotalAmount = () => {
+    return props.order.cells.reduce((acc, cell) => acc + cell.amount, 0)
+}
+
+// считаем кол-во трудозатрат в заказе по ПЯ
+const getOrderManufTime = () => {
+    return props.order.cells.reduce((acc, cell) => acc + cell.norm, 0)
+}
+
 
 
 </script>

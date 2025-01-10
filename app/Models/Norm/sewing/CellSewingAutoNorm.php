@@ -41,4 +41,6 @@ class CellSewingAutoNorm extends CellNorm
         return $amount === 0 ? $normPerPic : $amount * $normPerPic;
     }
 
+
+
 }
