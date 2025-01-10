@@ -33,7 +33,7 @@
 
 <script setup>
 import {ref} from "vue";
-import CellOrderBag from '/resources/js/src/components/dashboard/manufacture/cells/components/CellOrderBag.vue'
+import CellOrderBag from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellOrderBag.vue'
 
 
 const props = defineProps({

@@ -30,7 +30,8 @@ return new class extends Migration {
         // Добавляем начальные данные
         DB::table('cells_groups')->insert([
             ['name' => 'Швейный цех', 'created_at' => now(), 'updated_at' => now(),],
-            ['name' => 'Сборка', 'created_at' => now(), 'updated_at' => now(),]
+            ['name' => 'Сборка', 'created_at' => now(), 'updated_at' => now(),],
+            ['name' => 'Стежка', 'created_at' => now(), 'updated_at' => now(),],
         ]);
     }
 

@@ -1,7 +1,10 @@
 <template>
     <div
         :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
-        class="flex flex-col m-0.5 app-label justify-center">
+        class="flex flex-col m-0.5 app-label justify-center"
+        @click="labelClick"
+    >
+
         <div>
             {{ text }}
         </div>
@@ -61,6 +64,14 @@ const props = defineProps({
     }
 
 })
+
+const emits = defineEmits(['labelClick'])
+
+// обрабатываем нажатие на label
+const labelClick = (e) => {
+    console.log(e.target.innerText)
+    emits('labelClick', e.target.innerText)
+}
 
 const textSizeClass = getFontSizeClass(props.textSize)
 const semibold = props.bold ? 'font-semibold' : ''

@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import CellOrder from '/resources/js/src/components/dashboard/manufacture/cells/components/CellOrder.vue'
+import CellOrder from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellOrder.vue'
 import AppInputButton from "/resources/js/src/components/ui/inputs/AppInputButton.vue";
 import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue";
 
@@ -52,7 +52,7 @@ const props = defineProps({
     }
 })
 
-console.log('item', props.item)
+// console.log('item', props.item)
 
 const collapse = ref(true)                  // указатель на схлопывание lines
 const collapseChar = ref('+')               // символ схлопывания lines

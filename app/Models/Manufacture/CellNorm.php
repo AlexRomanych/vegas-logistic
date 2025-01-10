@@ -2,17 +2,17 @@
 
 namespace App\Models\Manufacture;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Abstract\Norm;
+//use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CellNorm extends Model
+class CellNorm extends Norm
 {
 
-    protected $guarded = [];
 
-    //attract: связываем с ПЯ
-    public function cellItem(): BelongsTo
+    public function __construct(int $normID = 0)
     {
-        return $this->belongsTo(CellItem::class);
+        parent::__construct($normID);
     }
+
+
 }

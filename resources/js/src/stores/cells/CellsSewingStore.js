@@ -53,6 +53,8 @@ export const useCellsSewingStore = defineStore('cells_sewing', () => {
     let cellsSewingSolidHardShow = []           // Список Обшивка hard
     let cellsSewingSolidLightShow = []          // Список Обшивка light
 
+    let dateInterval = {}                       // сюда будет залетать интервал к отображению
+
     //attract: Получаем с API список ПЯ Швенйки (cellsType указывает на тип ПЯ)
     const getCellsSewing = async (params, cellsType) => {
 
@@ -84,6 +86,7 @@ export const useCellsSewingStore = defineStore('cells_sewing', () => {
 
     return {
         getCellsSewing,
+        dateInterval
 
     }
 

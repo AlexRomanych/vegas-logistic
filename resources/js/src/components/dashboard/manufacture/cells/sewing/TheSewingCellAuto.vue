@@ -4,49 +4,105 @@
         @clickApply="getSewingCellData"
     />
 
+    <!--    <div class="flex flex-row justify-start items-center m-3 space-x-10">-->
+    <!--        <AppLabel-->
+    <!--            :bold="true"-->
+    <!--            :text="tabs.list.name"-->
+    <!--            @label-click="changeTab"-->
+    <!--            align="center"-->
+    <!--            height="h-[35px]"-->
+    <!--            textSize="small"-->
+    <!--            width="w-[100px]"-->
+    <!--        />-->
+
+    <!--        <AppLabel-->
+    <!--            :bold="true"-->
+    <!--            :text="tabs.table.name"-->
+    <!--            @label-click="changeTab"-->
+    <!--            align="center"-->
+    <!--            height="h-[35px]"-->
+    <!--            textSize="small"-->
+    <!--            width="w-[100px]"-->
+    <!--        />-->
+
+    <!--        <AppLabel-->
+    <!--            :bold="true"-->
+    <!--            :text="tabs.calendar.name"-->
+    <!--            @label-click="changeTab"-->
+    <!--            align="center"-->
+    <!--            height="h-[35px]"-->
+    <!--            textSize="small"-->
+    <!--            width="w-[100px]"-->
+    <!--        />-->
+
+    <!--        <AppLabel-->
+    <!--            :bold="true"-->
+    <!--            :text="tabs.union.name"-->
+    <!--            @label-click="changeTab"-->
+    <!--            align="center"-->
+    <!--            height="h-[35px]"-->
+    <!--            textSize="small"-->
+    <!--            width="w-[100px]"-->
+    <!--        />-->
+
+    <!--    </div>-->
+
+    <!-- attract Выводим табы -->
     <div class="flex flex-row justify-start items-center m-3 space-x-10">
         <AppLabel
+            v-for="tab in tabs"
+            :key="tab.name"
             :bold="true"
+            :text="tab.name"
+            :type="tab.shown ? 'primary' : 'dark'"
             align="center"
+            class="cursor-pointer"
             height="h-[35px]"
-            text="Список"
             textSize="small"
             width="w-[100px]"
+            @label-click="changeTab"
         />
-        <AppLabel
-            :bold="true"
-            align="center"
-            height="h-[35px]"
-            text="Таблица"
-            textSize="small"
-            width="w-[100px]"
-        />
-
-        <AppLabel
-            :bold="true"
-            align="center"
-            height="h-[35px]"
-            text="Календарь"
-            textSize="small"
-            width="w-[100px]"
-        />
-
-        <AppLabel
-            :bold="true"
-            align="center"
-            height="h-[35px]"
-            text="Oбъединение"
-            textSize="small"
-            width="w-[100px]"
-        />
-
     </div>
+
 
     <div class="ml-3 mt-3">
-        <CellDataBag v-if="datesWithOrders.length" :key="Date.now()"
-                     :cells-data="datesWithOrders"
-        />
+
+        <!--attract: Список-->
+        <div v-if="tabs.list.shown">
+            <CellDataBagList
+                v-if="datesWithOrders.length"
+                :key="Date.now()"
+                :cells-data="datesWithOrders"
+            />
+        </div>
+
+        <!--attract: Таблица-->
+        <div v-if="tabs.table.shown">
+            <CellDataBagTable
+                :key="Date.now()"
+                :cells-data="datesWithOrders"
+            />
+        </div>
+
+        <!--attract: Календарь-->
+        <div v-if="tabs.calendar.shown">
+            <CellDataBagCalendar
+                :key="Date.now()"
+                :cells-data="datesWithOrders"
+            />
+        </div>
+
+        <!--attract: Объединение-->
+        <div v-if="tabs.union.shown">
+            <CellDataBagUnion
+                :key="Date.now()"
+                :cells-data="datesWithOrders"
+            />
+        </div>
+
     </div>
+
+
 </template>
 
 <script setup>
@@ -54,8 +110,17 @@ import {ref, reactive} from 'vue'
 import {useCellsSewingStore} from '/resources/js/src/stores/cells/CellsSewingStore.js'
 
 import CellDatesSelect from '/resources/js/src/components/dashboard/manufacture/cells/components/CellDatesSelect.vue'
-import CellDataBag from '/resources/js/src/components/dashboard/manufacture/cells/components/CellDataBag.vue'
+import CellDataBagList
+    from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellDataBagList.vue'
+import CellDataBagTable
+    from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellDataBagTable.vue'
+import CellDataBagCalendar
+    from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellDataBagCalendar.vue'
+import CellDataBagUnion
+    from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellDataBagUnion.vue'
+
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+// import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
 
 
 import {
@@ -68,14 +133,45 @@ import {
 // attract: Задаем тип ПЯ Швейки
 const THIS_SEWING_TYPE = CELL_AUTO_TYPE
 
+// attract: Задаем отображение вкладок (список, таблица, календарь, объединение)
+const tabs = reactive({
+    list: {shown: false, name: 'Список'},
+    table: {shown: false, name: 'Таблица'},
+    calendar: {shown: false, name: 'Календарь'},
+    union: {shown: false, name: 'Объединение'},
+})
+
+// переключаем выбранную вкладку
+const changeTab = (selectedTab) => {
+    for (const tab in tabs) {
+        if (tabs.hasOwnProperty(tab)) {
+            tabs[tab].shown = tabs[tab].name === selectedTab
+        }
+    }
+    console.log(tabs)
+}
+
+// сбрасываем все вкладки в false, потому что в некоторых ситуациях появляется мультивыбор
+const resetTabs = () => {
+    for (const tab in tabs) {
+        if (tabs.hasOwnProperty(tab)) {
+            tabs[tab].shown = false
+        }
+    }
+    console.log(tabs)
+}
+
 const datesWithOrders = ref([])                    // выходной массив
 // const datesWithOrders = []                    // выходной массив
 
 // attract: получаем данные
 let sewingCells = []
+
 const getSewingCellData = async (dateInterval) => {
     // console.log(dateInterval)
     const sewingStore = useCellsSewingStore()
+
+    sewingStore.dateInterval = dateInterval     // заносим в переменную дату интервала
     sewingCells = await sewingStore.getCellsSewing(dateInterval, THIS_SEWING_TYPE)
 
     console.log(sewingCells);
@@ -129,6 +225,9 @@ const getSewingCellData = async (dateInterval) => {
 
 
     console.log(datesWithOrders.value)
+
+    resetTabs()                             // сбрасываем все табы
+    tabs.list.shown = true                  // делаем вкладку "список" активной, чтобы запустить реактивность
 
 }
 

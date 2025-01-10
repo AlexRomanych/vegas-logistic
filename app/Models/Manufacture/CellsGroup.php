@@ -9,6 +9,8 @@ class CellsGroup extends CellGroup
 {
     protected $guarded = [];
 
+    protected $hidden = ['created_at', 'updated_at'];
+
     protected $with = ['cellItems'];
 
     public function cellItems(): HasMany

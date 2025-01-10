@@ -71,7 +71,7 @@
 import {ref} from "vue";
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
 import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue"
-import CellLine from "/resources/js/src/components/dashboard/manufacture/cells/components/CellLine.vue";
+import CellLine from "/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellLine.vue";
 
 const props = defineProps({
     order: {

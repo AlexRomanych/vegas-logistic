@@ -31,7 +31,7 @@
 
             <AppLabel
                 :bold="true"
-                :text="(cell.amount * 1.98).toFixed(2)"
+                :text="(cell.norm).toFixed(3)"
                 align="center"
                 textSize="small"
                 type="primary"

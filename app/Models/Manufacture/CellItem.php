@@ -2,25 +2,18 @@
 
 namespace App\Models\Manufacture;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Abstract\Cell;
+use App\Models\Norm\sewing\CellSewingAutoNorm;
 
-class CellItem extends Model
+//use Illuminate\Database\Eloquent\Model;
+
+class CellItem extends Cell
 {
-    protected $guarded = [];
+    protected CellSewingAutoNorm $norm;
 
-    protected $with = ['cellNorm'];
-
-    //attract: Привязываем к группе ПЯ
-    public function cellsGroup(): BelongsTo
+    public function __construct()
     {
-        return $this->belongsTo(CellsGroup::class);
-    }
-
-    //attract: Привязываем группу к норме
-    public function cellNorm(): HasOne
-    {
-        return $this->hasOne(CellNorm::class);
+        parent::__construct();
+//        $this->norm = new CellSewingAutoNorm();
     }
 }

@@ -53,11 +53,11 @@ return new class extends Migration {
 //        ]);
 
         DB::table('cell_items')->insert([
-            ['code1C' => 'ПЯ001', 'no' => 1, 'name' => 'Стежка Китаец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 1, 'url' => 'stitch/china'],
-            ['code1C' => 'ПЯ002', 'no' => 2, 'name' => 'Стежка Немец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 2, 'url' => 'stitch/german'],
-            ['code1C' => 'ПЯ003', 'no' => 3, 'name' => 'Стежка Американец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 3, 'url' => 'stitch/american'],
-            ['code1C' => 'ПЯ004', 'no' => 4, 'name' => 'Стежка Кореец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 4, 'url' => 'stitch/korean'],
-            ['code1C' => 'ПЯ005', 'no' => 5, 'name' => 'Стежка одноиголка', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 5, 'url' => 'stitch/one_needle'],
+            ['code1C' => 'ПЯ001', 'no' => 1, 'name' => 'Стежка Китаец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 3, 'cell_norm_id' => 1, 'url' => 'stitch/china'],
+            ['code1C' => 'ПЯ002', 'no' => 2, 'name' => 'Стежка Немец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 3, 'cell_norm_id' => 2, 'url' => 'stitch/german'],
+            ['code1C' => 'ПЯ003', 'no' => 3, 'name' => 'Стежка Американец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 3, 'cell_norm_id' => 3, 'url' => 'stitch/american'],
+            ['code1C' => 'ПЯ004', 'no' => 4, 'name' => 'Стежка Кореец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 3, 'cell_norm_id' => 4, 'url' => 'stitch/korean'],
+            ['code1C' => 'ПЯ005', 'no' => 5, 'name' => 'Стежка одноиголка', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 3, 'cell_norm_id' => 5, 'url' => 'stitch/one_needle'],
             ['code1C' => 'ПЯ006', 'no' => 6, 'name' => 'Раскрой (панели чехла)', 'unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 6, 'url' => 'cutting/cover_panel'],
             ['code1C' => 'ПЯ007', 'no' => 7, 'name' => 'Раскрой (дет. чехла)', 'unit' => Unit::PRODUCTIVITY_METERS_PER_HOUR, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 7, 'url' => 'cutting/cover_panel_child'],
             ['code1C' => 'ПЯ008', 'no' => 8, 'name' => 'Оверлок', 'unit' => Unit::PRODUCTIVITY_METERS_PER_SECOND, 'source' => '', 'cells_group_id' => null, 'cell_norm_id' => 8, 'url' => 'overloсk'],

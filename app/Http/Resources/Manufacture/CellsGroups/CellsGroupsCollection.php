@@ -8,7 +8,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 class CellsGroupsCollection extends ResourceCollection
 {
     public static $wrap = 'cells_groups';
-    
+
     /**
      * Transform the resource collection into an array.
      *
