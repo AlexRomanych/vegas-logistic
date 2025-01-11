@@ -107,7 +107,7 @@ const getDayManufTime = () => {
     return dayManufTime
 }
 
-console.log('dayTime', getDayManufTime())
+// console.log('dayTime', getDayManufTime())
 
 // console.log(props.orders)
 

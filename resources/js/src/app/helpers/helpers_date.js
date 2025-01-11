@@ -2,6 +2,9 @@
 
 import {PERIOD_LENGTH} from "@/src/app/constants/dates.js"
 
+const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
+const GMT_0 = ':00Z'
+
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // возвращает отображаемый период производства
 export function getPeriod() {
@@ -13,7 +16,7 @@ export function getPeriod() {
     const periodStart = new Date(year, month, '01')
     periodStart.setMonth(periodStart.getMonth() - 1)        // отнимаем месяц от предыдущего, то есть минус месяц от текущего
 
-    const periodEnd = new Date(year, month , '00')
+    const periodEnd = new Date(year, month, '00')
     periodEnd.setMonth(periodStart.getMonth() + PERIOD_LENGTH)
 
     const periodStartText_Day = periodStart.getDate() < 10 ? '0' + periodStart.getDate().toString() : periodStart.getDate().toString()
@@ -30,7 +33,7 @@ export function getPeriod() {
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Возвращает номер недели для указанной даты
+// attract Возвращает номер недели для указанной даты
 export function getWeekNumber(date) {
     // Копируем дату, чтобы не изменять исходную
     const d = new Date(date);
@@ -55,7 +58,7 @@ export function getWeekNumber(date) {
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Определяет, какая дата в текстовом формате больше:
+// attract Определяет, какая дата в текстовом формате больше:
 //      если dateString2 > dateString1, то возвращает true
 //      если dateString1 > dateString2, то возвращает false
 //      если dateString1 = dateString2, то возвращает undefined
@@ -78,6 +81,103 @@ export function compareDates(dateString1, dateString2) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Вычитает из даты количество дней
+// inDate - дата, может быть в формате объекта или строки
+export function subtractDays(inDate = new Date(), days = 1) {
+
+    const workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+    // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
+
+    // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
+    // const timeInMsMinusOneDay = timeInMs - MILLISECONDS_IN_DAY * days   // Вычитаем дни в миллисекундах
+    //
+    // return new Date(timeInMsMinusOneDay)                                // Создаем новый объект Date с измененным временем
+
+    return new Date(workDate.setDate(workDate.getDate() - days))
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Прибавляет к дате количество дней
+// inDate - дата, может быть в формате объекта или строки
+export function addDays(inDate = new Date(), days = 1) {
+
+    const workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+    // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
+
+    // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
+    // const timeInMsMinusOneDay = timeInMs + MILLISECONDS_IN_DAY * days   // Прибавляем дни в миллисекундах
+    //
+    // return new Date(timeInMsMinusOneDay)                                // Создаем новый объект Date с измененным временем
+
+    return new Date(workDate.setDate(workDate.getDate() + days))
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает ближайший понедельник до заданной даты
+// inDate - дата, может быть в формате объекта или строки
+export function getMondayBefore(inDate = new Date()) {
+
+    let workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+
+    while ((workDate.getDay()) !== 1) {
+        workDate = subtractDays(workDate)
+    }
+
+    return workDate
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает ближайшее воскресенье после заданной даты
+// inDate - дата, может быть в формате объекта или строки
+export function getSundayAfter(inDate = new Date()) {
+
+    let workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+
+    while (workDate.getDay() !== 0) {
+        workDate = addDays(workDate)
+    }
+
+    return workDate
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает интервал в виде матрицу календаря ([1..x] x [1..7]), где элемент массива - дата
+//      между ближайшим понедельником до начальной даты и
+//      ближайшим воскресеньем после конечной даты
+// inDate - дата, может быть в формате объекта или строки
+export function getDateIntervalMatrix(startInterval = new Date(), endInterval = new Date()) {
+
+    console.log(startInterval, endInterval)
+
+    const mondayStart = getMondayBefore(startInterval)
+    const sundayEnd = getSundayAfter(endInterval)
+
+    const weeksAmount = (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY)    // добавляем 1 день к разности
+
+    console.log(weeksAmount)
+
+    const intervalMatrix = []
+
+    let workDate = mondayStart
+    workDate = subtractDays(workDate)   // не понятно почему, но при создании система прибавляет 1 день. Может из-за часового пояса. Вот тут и убираем его
+
+    console.log('workDate', workDate)
+
+    for (let i = 0; i < weeksAmount; i++) {
+        // intervalMatrix[i] = []
+        intervalMatrix.push([])
+
+        for (let j = 0; j < 7; j++) {
+            intervalMatrix[i].push(workDate)
+            // intervalMatrix[i][j] = workDate
+            // console.log('workDate', workDate, i, j, intervallMatrix[i][j])
+            console.log(intervalMatrix[i][j])
+            workDate = addDays(workDate)
+        }
+    }
+
+    return intervalMatrix
+}
 
 
 // const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
