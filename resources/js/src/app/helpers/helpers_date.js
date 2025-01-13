@@ -154,24 +154,28 @@ export function getDateIntervalMatrix(startInterval = new Date(), endInterval = 
 
     const weeksAmount = (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY)    // добавляем 1 день к разности
 
-    console.log(weeksAmount)
+    // console.log(weeksAmount)
 
     const intervalMatrix = []
 
     let workDate = mondayStart
-    workDate = subtractDays(workDate)   // не понятно почему, но при создании система прибавляет 1 день. Может из-за часового пояса. Вот тут и убираем его
 
-    console.log('workDate', workDate)
+    // не понятно почему, но при создании система прибавляет 1 день. Может из-за часового пояса. Вот тут и убираем его.
+    // Это касается только формата объекта Date. Если это формат строки - комментируем
+    // workDate = subtractDays(workDate)
+
+    // console.log('workDate', workDate)
 
     for (let i = 0; i < weeksAmount; i++) {
         // intervalMatrix[i] = []
         intervalMatrix.push([])
 
         for (let j = 0; j < 7; j++) {
-            intervalMatrix[i].push(workDate)
+            // intervalMatrix[i].push(workDate)
+            intervalMatrix[i].push(workDate.toISOString().slice(0, 10))
             // intervalMatrix[i][j] = workDate
             // console.log('workDate', workDate, i, j, intervallMatrix[i][j])
-            console.log(intervalMatrix[i][j])
+            // console.log(intervalMatrix[i][j])
             workDate = addDays(workDate)
         }
     }
@@ -179,5 +183,51 @@ export function getDateIntervalMatrix(startInterval = new Date(), endInterval = 
     return intervalMatrix
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает дату в красивом формате
+export function formatDate (inDate = new Date()) {
+    return getDate(inDate).toLocaleDateString().slice(0, 10)
+}
 
 // const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает день недели в строковом представлении
+//  short - 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'
+export function getDayOfWeek (inDate = new Date(), short = true) {
+    const workDate = getDate(inDate)
+
+    let result = ''
+
+    switch (workDate.getDay()) {
+        case 0:
+            result = short ? 'вс' : 'воскресенье'
+            break
+        case 1:
+            result = short ? 'пн' : 'понедельник'
+            break
+        case 2:
+            result = short ? 'вт' : 'вторник'
+            break
+        case 3:
+            result = short ? 'ср' : 'среда'
+            break
+        case 4:
+            result = short ? 'чт' : 'четверг'
+            break
+        case 5:
+            result = short ? 'пт' : 'пятница'
+            break
+        case 6:
+            result = short ? 'сб' : 'суббота'
+    }
+
+    return result
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает дату в формате объекта
+export function getDate (inDate = new Date()) {
+    return !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
+}
+
