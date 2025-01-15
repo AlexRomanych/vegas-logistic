@@ -64,18 +64,19 @@ export function getWeekNumber(date) {
 //      если dateString1 = dateString2, то возвращает undefined
 export function compareDatesLogic(dateString1, dateString2) {
     // Преобразуем строки в объекты Date
-    const date1 = new Date(dateString1);
-    const date2 = new Date(dateString2);
+    const date1 = getDate(dateString1)
+    const date2 = getDate(dateString2)
 
-    if (date1 === date2) return undefined
+    if (date1.toISOString().slice(0, 10) === date2.toISOString().slice(0, 10)) return undefined
     return date2 > date1
 }
 
-// Возвращает разницу дат в миллисекундах: dateString2 - dateString1
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает разницу дат в миллисекундах: dateString2 - dateString1
 export function compareDates(dateString1, dateString2) {
     // Преобразуем строки в объекты Date
-    const date1 = new Date(dateString1);
-    const date2 = new Date(dateString2);
+    const date1 = getDate(dateString1)
+    const date2 = getDate(dateString2)
 
     return date2 - date1
 }
@@ -185,7 +186,7 @@ export function getDateIntervalMatrix(startInterval = new Date(), endInterval = 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает дату в красивом формате
-export function formatDate (inDate = new Date()) {
+export function formatDate(inDate = new Date()) {
     return getDate(inDate).toLocaleDateString().slice(0, 10)
 }
 
@@ -194,7 +195,7 @@ export function formatDate (inDate = new Date()) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает день недели в строковом представлении
 //  short - 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'
-export function getDayOfWeek (inDate = new Date(), short = true) {
+export function getDayOfWeek(inDate = new Date(), short = true) {
     const workDate = getDate(inDate)
 
     let result = ''
@@ -226,8 +227,45 @@ export function getDayOfWeek (inDate = new Date(), short = true) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает, является ли день выходным или рабочим
+export function isWorkingDay(inDate = new Date()) {
+
+    const BLACK_DAYS = [
+        "04.01.2020", "04.04.2020",
+        "16.01.2021", "15.05.2021", "15.09.2021",
+        "12.03.2022", "14.05.2022",
+        "29.04.2023", "13.05.2023", "29.04.2023", "11.11.2023",
+        "18.05.2024", "16.11.2024",
+        "11.01.2025", "26.04.2025", "12.07.2025", "20.12.2025"
+    ]
+
+    const RED_DAYS = [
+        "01.01.2020", "02.01.2020", "06.01.2020", "07.01.2020", "27.04.2020", "28.04.2020", "01.05.2020", "03.07.2020", "25.12.2020",
+        "01.01.2021", "07.01.2021", "08.01.2021", "08.03.2021", "10.05.2021", "11.05.2021",
+        "07.01.2022", "07.03.2022", "08.03.2022", "02.05.2022", "03.05.2022", "09.05.2022", "07.11.2022",
+        "02.01.2023", "08.03.2023", "24.04.2023", "25.04.2023", "01.05.2023", "08.05.2023", "09.05.2023", "03.07.2023", "06.11.2023", "07.11.2023", "25.12.2023",
+        "01.01.2024", "02.01.2024", "08.03.2024", "01.05.2024", "09.05.2024", "13.05.2024", "14.05.2024", "03.07.2024", "07.11.2024", "08.11.2024", "25.12.2024",
+        "01.01.2025", "02.01.2025", "06.01.2025", "07.01.2025", "28.04.2025", "29.04.2025", "01.05.2025", "09.05.2025", "03.07.2025", "04.07.2025", "07.11.2025", "25.12.2025", "26.12.2025"
+    ]
+
+    const workDate = getDate(inDate)
+
+    if (workDate.getDay() === 0 || workDate.getDay() === 6) {
+        return BLACK_DAYS.includes(workDate.toLocaleDateString().slice(0, 10))
+    }
+
+    return ! RED_DAYS.includes(workDate.toLocaleDateString().slice(0, 10))
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает, является ли дата текущей
+export function isToday(inDate = new Date()) {
+    return getDate(inDate).toLocaleDateString() === new Date().toLocaleDateString()
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает дату в формате объекта
-export function getDate (inDate = new Date()) {
+export function getDate(inDate = new Date()) {
     return !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 }
 

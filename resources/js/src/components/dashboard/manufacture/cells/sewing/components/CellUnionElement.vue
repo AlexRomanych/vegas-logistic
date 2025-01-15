@@ -1,10 +1,9 @@
 <template>
     <div>
-
-        <div class="flex items-center">
+        <div class="flex justify-start items-center">
 
             <AppInputButton
-                :id="order.id"
+                :id="element.element.size + element.element.model"
                 :title="collapseChar"
                 :type="labelType"
                 height="h-[30px]"
@@ -14,44 +13,49 @@
 
             <AppLabel
                 :bold="true"
-                :text="order.client.short_name"
-                :type="labelType"
+                :text="element.element.size"
+                align="center"
                 textSize="small"
+                type="dark"
+                width="w-[120px]"
                 @click="collapseLines"
             />
 
             <AppLabel
                 :bold="true"
-                :text="'№ ' + getPrettyOrderNumber(order.no_num)"
-                :type="labelType"
+                :text="element.element.model"
+                align="left"
+                textSize="small"
+                type="dark"
+                width="w-[150px]"
+                @click="collapseLines"
+            />
+
+            <AppLabel
+                :bold="true"
+                :text="element.element.amount.toString()"
                 align="center"
                 textSize="small"
-                width="w-[100px]"
+                type="dark"
+                width="w-[40px]"
             />
 
             <AppLabel
                 :bold="true"
-                :text="'∑ ' + getOrderElementsAmount(order)"
+                :text="(element.element.norm).toFixed(2)"
                 align="center"
-                width="w-[70px]"
-            />
-
-            <AppLabel
-                :bold="true"
-                :text="'∑ ' + getOrderTimesAmount(order).toFixed(2)"
+                textSize="small"
                 type="primary"
-                align="center"
-                width="w-[100px]"
+                width="w-[60px]"
             />
 
 
         </div>
 
-
         <div v-if="!collapse">
-            <div v-for="cell in order.cells" :key="cell.id">
-                <CellLine
-                    :cell="cell"
+            <div v-for="(order, idx) in element.orders" :key="idx">
+                <CelUnionOrder
+                    :order="order"
                 />
             </div>
         </div>
@@ -61,24 +65,19 @@
 </template>
 
 <script setup>
-import {ref} from "vue"
-import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue"
-import CellLine from "/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellLine.vue"
 
-import {
-    getPrettyOrderNumber,
-    getOrderElementsAmount,
-    getOrderTimesAmount,
-} from '/resources/js/src/app/helpers/helpers_order.js'
+import {ref} from "vue"
+import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue"
+import AppInputButton from "/resources/js/src/components/ui/inputs/AppInputButton.vue"
+import CelUnionOrder
+    from "/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellUnionOrder.vue"
 
 
 const props = defineProps({
-    order: {
+    element: {
         type: Object,
         required: true
     }
-
 })
 
 const collapse = ref(true)                  // указатель на схлопывание lines
@@ -89,6 +88,8 @@ const collapseLines = () => {
     collapse.value = !collapse.value
     collapseChar.value = collapse.value ? '+' : '-'
 }
+
+// console.log(props.element)
 
 </script>
 

@@ -39,11 +39,11 @@
 
     <div v-if="!collapse" class="ml-8">
 
-        <div v-for="order in item.orders" :key="order.order.id">
+        <div v-for="(element, idx) in item.union" :key="idx">
 
             <div>
-                <CellOrder
-                    :order="order.order"
+                <CellUnionElement
+                    :element="element"
                 />
             </div>
 
@@ -55,7 +55,7 @@
 
 <script setup>
 import {ref} from "vue"
-import CellOrder from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellOrder.vue'
+import CellUnionElement from '/resources/js/src/components/dashboard/manufacture/cells/sewing/components/CellUnionElement.vue'
 import AppInputButton from "/resources/js/src/components/ui/inputs/AppInputButton.vue"
 import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue"
 
@@ -77,6 +77,8 @@ const props = defineProps({
         required: true
     }
 })
+
+// console.log(props.item)
 
 const collapse = ref(true)                  // указатель на схлопывание lines
 const collapseChar = ref('+')               // символ схлопывания lines

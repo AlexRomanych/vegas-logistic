@@ -2,17 +2,17 @@
     <div class="flex flex-col"> <!--Общий контейнер для всего календаря-->
 
         <div v-for="(week, weekIdx) in dateIntervalMatrixRender" :key="weekIdx" class="flex flex-row">
-            <!--Контейнер для недели-->
 
+            <!--Контейнер для недели-->
             <div v-for="day in week" :key="day.date"
                  class="flex flex-col border-2 rounded-lg mr-3 mb-3 bg-slate-200 border-slate-500 p-2">
-                <!--Контейнер для дня-->
 
+                <!--Контейнер для дня-->
                 <AppLabel
                     :text="formatDate(day.date) + ' (' + getDayOfWeek(day.date) + ')'"
+                    :type="getDayType(day.date)"
                     align="center"
                     textSize="mini"
-                    type="info"
                     width="w-[278px]"
                 />
 
@@ -51,7 +51,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -84,32 +83,38 @@
                             width="w-[50px]"
                         />
 
-
                     </div>
                 </div>
 
             </div>
 
-
         </div>
-
 
     </div>
 </template>
 
 <script setup>
+import {ref} from 'vue'
 import {useCellsSewingStore} from '/resources/js/src/stores/cells/CellsSewingStore.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 
-import {getDateIntervalMatrix, formatDate, getDayOfWeek} from '/resources/js/src/app/helpers/helpers_date.js'
-// import {subtractDays, addDays} from 'resources/js/src/app/helpers/helpers_date.js'
+import {
+    getDateIntervalMatrix,
+    formatDate,
+    getDayOfWeek,
+    compareDatesLogic,
+    isWorkingDay,
+    isToday
+} from '/resources/js/src/app/helpers/helpers_date.js'
+
 import {
     getPrettyOrderNumber,
     getOrderElementsAmount,
     getOrderTimesAmount,
     getDayOrdersElementsAmount,
-    getDayOrdersTimesAmount
+    getDayOrdersTimesAmount,
+    getMaxOrdersInDay
 } from '/resources/js/src/app/helpers/helpers_order.js'
 
 const props = defineProps({
@@ -123,11 +128,27 @@ const sewingStore = useCellsSewingStore()
 const dateInterval = sewingStore.dateInterval       // восстанавливаем интервал выборки
 
 // находим максимальное количество заказов в день
-const maxOrdersInDay = props.cellsData.reduce((maxOrders, item,) => item.orders.length > maxOrders ? item.orders.length : maxOrders, 0)
+const maxOrdersInDay = getMaxOrdersInDay(props.cellsData)
 
 console.log(props.cellsData)
 console.log(dateInterval)
 console.log(maxOrdersInDay)
+
+// определяем тип label дня, в зависимости от даты
+const getDayType = function (inDate) {
+
+    if (isToday(inDate)) return 'warning'
+
+    let resTypeBool =
+        compareDatesLogic(dateInterval.start, inDate) && compareDatesLogic(inDate, dateInterval.end)
+
+    resTypeBool ||= compareDatesLogic(dateInterval.start, inDate) === undefined
+    resTypeBool ||= compareDatesLogic(inDate, dateInterval.end) === undefined
+
+    if (resTypeBool && !isWorkingDay(inDate)) return 'danger'
+
+    return resTypeBool ? 'info' : 'dark'
+}
 
 // attract Возвращаем матрицу календаря ([1..x] x [1..7]), где элемент массива - дата
 const dateIntervalMatrix = getDateIntervalMatrix(dateInterval.start, dateInterval.end)

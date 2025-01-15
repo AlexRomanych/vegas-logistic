@@ -12,6 +12,12 @@ export function getPrettyOrderNumber(noNum) {
 
         if (+orderNoFloat === 0) {
             orderNo = orderNoDec
+        } else {
+            let orderNoFloatNumber = +orderNoFloat
+
+            while (orderNoFloatNumber % 10 == 0) orderNoFloatNumber /= 10
+
+            orderNo = orderNoDec + '.' + orderNoFloatNumber.toString()
         }
     }
 
@@ -46,4 +52,10 @@ export function getDayOrdersTimesAmount(ordersDayBag) {
         let orderManufTime = order.order.cells.reduce((acc2, cell) => acc2 + cell.norm, 0)
         return acc + orderManufTime
     }, 0)
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает максимальное количество заказов в день
+export function getMaxOrdersInDay(cellsData) {
+    return cellsData.reduce((maxOrders, item) => item.orders.length > maxOrders ? item.orders.length : maxOrders, 0)
 }

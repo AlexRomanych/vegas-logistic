@@ -1,39 +1,33 @@
 <template>
-    <div class="ml-16">
+    <div class="ml-8">
 
         <div class="flex justify-start items-center">
+
             <AppLabel
                 :bold="true"
-                :text="cell.line.size"
-                align="center"
+                :text="order.short_name"
                 textSize="small"
-                type="dark"
-                width="w-[100px]"
             />
 
             <AppLabel
                 :bold="true"
-                :text="cell.line.model"
-                align="left"
+                :text="'№ ' + getPrettyOrderNumber(order.no_num)"
+                align="center"
                 textSize="small"
-                type="dark"
-                width="w-[200px]"
+                width="w-[70px]"
             />
 
             <AppLabel
                 :bold="true"
-                :text="cell.amount.toString()"
+                :text="order.amount.toString()"
                 align="center"
-                textSize="small"
-                type="dark"
                 width="w-[40px]"
             />
 
             <AppLabel
                 :bold="true"
-                :text="(cell.norm).toFixed(2)"
+                :text="order.norm.toFixed(2)"
                 align="center"
-                textSize="small"
                 type="primary"
                 width="w-[60px]"
             />
@@ -41,19 +35,23 @@
         </div>
 
     </div>
+
 </template>
 
 <script setup>
+import {ref} from "vue"
 import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue"
 
+import {getPrettyOrderNumber} from '/resources/js/src/app/helpers/helpers_order.js'
+
 const props = defineProps({
-    cell: {
+    order: {
         type: Object,
         required: true
     }
 
-
 })
+
 </script>
 
 <style scoped>
