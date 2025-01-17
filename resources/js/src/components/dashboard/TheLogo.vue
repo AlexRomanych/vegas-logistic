@@ -1,20 +1,41 @@
 <template>
     <div class="logo-container">
-        <div><span class="chrono-field">{{ formattedTime }}</span><span class="divider">|</span></div>
-        <div><span class="chrono-field">{{ formattedWeek }}</span><span class="divider">|</span></div>
-        <div><span class="chrono-field">{{ formattedDate }}</span><span class="divider">|</span></div>
-        <div class="user-icon"><UserCircleIcon /></div>
-        <div><span class="chrono-field">{{ currUser.name }}</span></div>
-<!--        <div id="data-status-indicator" class="mr-2 ml-2"></div>-->
+        <div class="w-full flex justify-center">
+            <AppLabel
+                :key="$route.fullPath"
+                :text="pageTitle"
+                align="center"
+                textSize="huge"
+                type="dark"
+                width="w-full"
+            />
+        </div>
+        <div class="h-full flex justify-end items-center">
+            <div><span class="chrono-field">{{ formattedTime }}</span><span class="divider">|</span></div>
+            <div><span class="chrono-field">{{ formattedWeek }}</span><span class="divider">|</span></div>
+            <div><span class="chrono-field">{{ formattedDate }}</span><span class="divider">|</span></div>
+            <div class="user-icon">
+                <UserCircleIcon/>
+            </div>
+            <div><span class="chrono-field">{{ currUser.name }}</span></div>
+            <!--        <div id="data-status-indicator" class="mr-2 ml-2"></div>-->
+        </div>
     </div>
 
 </template>
 
 <script setup>
 import {computed, watch, ref, onMounted, onUnmounted} from 'vue'
+import {useRoute} from 'vue-router'
 import {useUserStore} from "@/src/stores/UserStore";
 import {getWeekNumber} from "@/src/app/helpers/helpers_date.js"
 import {UserCircleIcon} from '@heroicons/vue/24/solid'
+import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+
+const route = useRoute()
+const pageTitle = computed(() => route.meta.title ? route.meta.title : 'The Page')
+
+console.log(route)
 
 // Вычисляем время
 const formattedTime = ref('');
@@ -74,12 +95,12 @@ const currUser = ref(await user.getUser())
 <style scoped>
 
 .logo-container {
-    @apply h-full w-full flex justify-end items-center;
+    @apply h-full w-full flex justify-center items-center;
     height: var(--header-height);
 }
 
 .chrono-field {
-    @apply font-semibold pr-2 pl-2 text-slate-600;
+    @apply font-semibold pr-2 pl-2 text-slate-600 w-full text-nowrap;
 }
 
 .divider {

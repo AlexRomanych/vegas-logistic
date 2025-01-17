@@ -3,6 +3,7 @@
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
 const _CELL_PREFIX = '/cell/'
+const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
 const manufactureRaw = [
@@ -15,15 +16,26 @@ const manufactureRaw = [
         path: _MANUFACTURE_PREFIX + '/cells/groups',
         name: 'manufacture.cells.groups',
         component: () => import('@/src/components/dashboard/manufacture/groups/TheCellsGroupsShow.vue'),
-        // meta: {destination: '/models'},
+        meta: {title: 'Группы ПЯ'},
 
     },
+
     // info сами ПЯ
     {
         path: _MANUFACTURE_PREFIX + '/cells',
         name: 'manufacture.cells',
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellsShow.vue'),
+        meta: {title: 'Производственные ячейки'},
     },
+
+    // info сменные задания к ПЯ
+    {
+        path: _MANUFACTURE_PREFIX + '/cells/tasks',
+        name: 'manufacture.cells.tasks',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellsTaskShow.vue'),
+        meta: {title: 'Сменные задания к ПЯ'},
+    },
+
     //hr----------------------------------------------------------------------------------------------------------------
 
     //hr----------------------------------------------------------------------------------------------------------------
@@ -88,6 +100,7 @@ const manufactureRaw = [
         path: _MAIN_PREFIX + 'sewing/auto',
         // name: getRouteName(this.path),
         component: () => import('@/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
+        meta: {title: 'ПЯ: Пошив (автоматы)'},
     },
     //info Пошив (УШМ)
     {
@@ -138,12 +151,113 @@ const manufactureRaw = [
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
     },
 
+
+    //hr----------------------------------------------------------------------------------------------------------------
+    //hr----------------------------------------------------------------------------------------------------------------
+    //hr----------------------------------------------------------------------------------------------------------------
+    // attract: Сменные задания для Производственных ячеек
+
+    // attract: Стежка -------------------------------------------------------------------------------------------------
+    //info Стежка Китаец
+    {
+        path: _MAIN_PREFIX + 'stitch/china' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+
+    },
+    //info Стежка Немец
+    {
+        path: _MAIN_PREFIX + 'stitch/german' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Стежка Американец
+    {
+        path: _MAIN_PREFIX + 'stitch/american' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Стежка Кореец
+    {
+        path: _MAIN_PREFIX + 'stitch/korean' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Стежка одноиголка
+    {
+        path: _MAIN_PREFIX + 'stitch/one_needle' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
+    // attract: Раскрой-------------------------------------------------------------------------------------------------
+    //info Раскрой (панели чехла)
+    {
+        path: _MAIN_PREFIX + 'cutting/cover_panel' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Раскрой (дет. чехла)
+    {
+        path: _MAIN_PREFIX + 'cutting/cover_panel_child' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Оверлок
+    {
+        path: _MAIN_PREFIX + 'overloсk' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
+    // attract: Швейка -------------------------------------------------------------------------------------------------
+    //info Пошив (автоматы) hr ok
+    {
+        path: _MAIN_PREFIX + 'sewing/auto' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/sewing/TheSewingCellAutoTask.vue'),
+        meta: {title: 'Сменные задания к ПЯ: Пошив (автоматы)'},
+    },
+    //info Пошив (УШМ)
+    {
+        path: _MAIN_PREFIX + 'sewing/universal' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Обшивка 1 (hard)
+    {
+        path: _MAIN_PREFIX + 'sewing/hard' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Обшивка 1 (lite)
+    {
+        path: _MAIN_PREFIX + 'sewing/light' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
+    // attract: Сборка -------------------------------------------------------------------------------------------------
+    //info Сборка Lamit
+    {
+        path: _MAIN_PREFIX + 'assembly/lamit' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+    //info Сборка Столы
+    {
+        path: _MAIN_PREFIX + 'assembly/table' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
+    // attract: Упаковка -----------------------------------------------------------------------------------------------
+    //info Упаковка
+    {
+        path: _MAIN_PREFIX + 'pack' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
+    // attract: НПБ(производство) --------------------------------------------------------------------------------------
+    //info НПБ(производство)
+    {
+        path: _MAIN_PREFIX + 'blocks' + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+    },
+
 ]
 
 
 // Меняем слеши на точки для названия маршрута
 const getRouteName = (path) => path.slice(1).replace(/\//g, ".")
 
+// attract Определяем маршруты для визуализации ПЯ
 const manufacture = manufactureRaw.map(route => {
     if (route.hasOwnProperty('name')) {
         return route
@@ -152,6 +266,8 @@ const manufacture = manufactureRaw.map(route => {
     }
 })
 
-// console.log(manufacture)
+
+console.log(manufacture)
+
 
 export default manufacture
