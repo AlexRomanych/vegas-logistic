@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 //use Illuminate\Database\Eloquent\Model;
 
-class CellSewingAuto extends CellItem
+class CellSewingUniversal extends CellItem
 {
-    protected CellSewingAutoNorm $norm;
+    protected CellSewingAutoNorm $norm;                 // attract: todo Не забыть поменять норму для УШМ
 
-    protected $table = 'cell_sewing_auto';
+    protected $table = 'cell_sewing_universal';
+
 
     protected $guarded = [];
 

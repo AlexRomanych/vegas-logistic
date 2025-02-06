@@ -12,7 +12,10 @@ const models = [
         path: '/models',
         name: 'models',
         component: () => import('@/src/components/dashboard/models/TheModelsShow.vue'),
-        meta: {destination: '/models'},
+        meta: {
+            title: 'Модели - справочник',
+            destination: '/models'
+        },
     },
     {
         path: '/models/load',

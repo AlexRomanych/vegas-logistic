@@ -13,8 +13,8 @@
 <script setup>
 import {useMenuStore} from "@/src/stores/MenuStore.js"
 import NavItemCard from "@/src/components/dashboard/nav/NavItemCard.vue"
-import {useRouter} from "vue-router";
-import {ref} from "vue";
+import {useRouter} from "vue-router"
+import {ref} from "vue"
 
 const menuStore = useMenuStore()
 const menu = menuStore.menu
@@ -28,7 +28,7 @@ const group = menu.find(item => item.group.id === groupId)
 
 console.log(groupId)
 console.log(menu)
-console.log(group)
+console.log('Group', group)
 
 
 </script>

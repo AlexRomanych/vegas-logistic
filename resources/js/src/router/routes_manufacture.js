@@ -6,6 +6,13 @@ const _CELL_PREFIX = '/cell/'
 const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
+import {
+    CELL_AUTO_TYPE,
+    CELL_UNIVERSAL_TYPE,
+    CELL_SOLID_HARD_TYPE,
+    CELL_SOLID_LIGHT_TYPE
+} from '/resources/js/src/app/constants/sewingTypes.js'
+
 const manufactureRaw = [
 
     //hr----------------------------------------------------------------------------------------------------------------
@@ -97,28 +104,37 @@ const manufactureRaw = [
     // attract: Швейка -------------------------------------------------------------------------------------------------
     //info Пошив (автоматы) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/auto',
+        path: _MAIN_PREFIX + 'sewing/' + CELL_AUTO_TYPE,
         // name: getRouteName(this.path),
-        component: () => import('@/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
-        meta: {title: 'ПЯ: Пошив (автоматы)'},
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
+        meta: {
+            title: 'ПЯ: Пошив (автоматы)',
+            type: CELL_AUTO_TYPE
+        },
     },
-    //info Пошив (УШМ)
+    //info Пошив (УШМ) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/universal',
+        path: _MAIN_PREFIX + 'sewing/' + CELL_UNIVERSAL_TYPE,
         // name: getRouteName(this.path),
-        component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
+        meta: {
+            title: 'ПЯ: Пошив (УШМ)',
+            type: CELL_UNIVERSAL_TYPE
+        }
     },
     //info Обшивка 1 (hard)
     {
         path: _MAIN_PREFIX + 'sewing/hard',
         // name: getRouteName(this.path),
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
+        meta: {title: 'Обшивка 1 (hard)'}
     },
     //info Обшивка 1 (lite)
     {
         path: _MAIN_PREFIX + 'sewing/light',
         // name: getRouteName(this.path),
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
+        meta: {title: 'Обшивка 1 (lite)'}
     },
 
     // attract: Сборка -------------------------------------------------------------------------------------------------
@@ -205,14 +221,21 @@ const manufactureRaw = [
     // attract: Швейка -------------------------------------------------------------------------------------------------
     //info Пошив (автоматы) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/auto' + _TASK_PREFIX,
+        path: _MAIN_PREFIX + 'sewing/' + CELL_AUTO_TYPE + _TASK_PREFIX,
         component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/sewing/TheSewingCellAutoTask.vue'),
-        meta: {title: 'Сменные задания к ПЯ: Пошив (автоматы)'},
+        meta: {
+            title: 'Сменные задания к ПЯ: Пошив - АШМ',
+            type: CELL_AUTO_TYPE
+        },
     },
-    //info Пошив (УШМ)
+    //info Пошив (УШМ) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/universal' + _TASK_PREFIX,
-        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+        path: _MAIN_PREFIX + 'sewing/' + CELL_UNIVERSAL_TYPE + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/sewing/TheSewingCellAutoTask.vue'),
+        meta: {
+            title: 'Сменные задания к ПЯ: Пошив - УШМ',
+            type: CELL_UNIVERSAL_TYPE
+        },
     },
     //info Обшивка 1 (hard)
     {

@@ -2,6 +2,8 @@ import {createRouter, createMemoryHistory, createWebHistory} from "vue-router"
 import {useUserStore} from "@/src/stores/UserStore"
 import routes from "@/src/router/routes"
 
+import menu from '/resources/js/src/assets/menu.js'
+
 // import Help from "../views/Help.vue"
 // import Help from "../views/Help.vue"
 // import TheAutorization from '../views/auth/TheAutorization.vue'
@@ -11,7 +13,6 @@ import routes from "@/src/router/routes"
 
 // component: () => import('../views/auth/TheAutorization.vue'),
 // component: () => import('../views/auth/TheLogin.vue'),
-
 
 
 console.log('i am router')
@@ -46,6 +47,15 @@ router.beforeEach(async (to, from, next) => {
             next({name: 'login'})
         }
     } else {
+
+        // Здесь определяем заголовки страниц для меню
+        if (to.name === 'menu') {
+            to.meta.title = menu[parseInt(to.params.groupId) - 1].group.name
+        }
+
+        // console.log(to)
+
+
         // debugger
         // window.location.reload()
         next()

@@ -107,6 +107,7 @@
 
 <script setup>
 import {ref, reactive} from 'vue'
+import {useRoute} from 'vue-router'
 import {useCellsSewingStore} from '/resources/js/src/stores/cells/CellsSewingStore.js'
 
 import CellDatesSelect from '/resources/js/src/components/dashboard/manufacture/cells/components/CellDatesSelect.vue'
@@ -130,8 +131,12 @@ import {
     CELL_SOLID_LIGHT_TYPE
 } from '/resources/js/src/app/constants/sewingTypes.js'
 
+const route = useRoute()
+
 // attract: Задаем тип ПЯ Швейки
-const THIS_SEWING_TYPE = CELL_AUTO_TYPE
+const THIS_SEWING_TYPE = route.meta.type    // получаем из маршрута
+// const THIS_SEWING_TYPE = CELL_AUTO_TYPE
+
 
 // attract: Задаем отображение вкладок (список, таблица, календарь, объединение)
 const tabs = reactive({

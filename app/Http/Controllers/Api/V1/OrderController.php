@@ -6,6 +6,7 @@ use App\Facades\Model;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderCollection;
 use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
+use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
 use Exception;
@@ -169,12 +170,21 @@ class OrderController extends Controller
                     // Пользуем Фасад
                     if (Model::isSewingAuto($line['m'])) {
                         $sewingAuto[] = $sewingLine;
+                    } else if (Model::isSewingUniversal($line['m'])) {
+                        $sewingUniversal[] = $sewingLine;
+                    } else if (Model::isSewingSolidHard($line['m'])) {
+                        $sewingSolidHard[] = $sewingLine;
+                    } else if (Model::isSewingSolidLight($line['m'])) {
+                        $sewingSolidLight[] = $sewingLine;
+                    } else {
+                        $sewingUndefined[] = $sewingLine;
                     }
 
 
                 }
 
                 CellSewingAuto::insert($sewingAuto);            // Вставляем данные в швейку АШМ
+                CellSewingUniversal::insert($sewingUniversal);       // Вставляем данные в швейку УШМ
 
             }
         }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Sewing\CellSewingAutoCollection;
 use App\Http\Resources\Order\OrderCollection;
 use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
+use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
 use App\Models\Order\Order;
 use Illuminate\Http\Request;
 
@@ -29,9 +30,9 @@ class CellSewingController extends Controller
             case 'auto':
                 $result = CellSewingAuto::query()->whereBetween('manufactured_at', [$validData['start'], $validData['end']])->get();
                 break;
-//            case 'universal':
-//                $result = CellSewingAuto::query()->whereBetween('load_date', [$validData['start'], $validData['end']])->get();
-//                break;
+            case 'universal':
+                $result = CellSewingUniversal::query()->whereBetween('manufactured_at', [$validData['start'], $validData['end']])->get();
+                break;
 //            case 'hard':
 //                $result = CellSewingAuto::query()->whereBetween('load_date', [$validData['start'], $validData['end']])->get();
 //                break;
