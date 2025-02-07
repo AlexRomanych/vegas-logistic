@@ -26,6 +26,8 @@ return new class extends Migration {
 
             $table->string('source')->nullable()->comment('Источник данных (откуда берется информация о принадлежности изделия к ПЯ)');
             $table->timestamps();
+
+            // attract У таблицы ПЯ есть норма, а сама ПЯ принадлежит группе ПЯ
             $table->foreignIdFor(CellNorm::class)->nullable()->constrained()->cascadeOnDelete();    //Внешний ключ, указывающий на таблицу с нормами
             $table->foreignIdFor(CellsGroup::class)->nullable()->constrained()->cascadeOnDelete();  //Внешний ключ, указывающий на таблицу с группами
         });

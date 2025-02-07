@@ -6,6 +6,8 @@ use App\Facades\Model;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderCollection;
 use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
+use App\Models\Manufacture\Cells\sewing\CellSewingHard;
+use App\Models\Manufacture\Cells\sewing\CellSewingLight;
 use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
@@ -183,19 +185,21 @@ class OrderController extends Controller
 
                 }
 
-                CellSewingAuto::insert($sewingAuto);            // Вставляем данные в швейку АШМ
-                CellSewingUniversal::insert($sewingUniversal);       // Вставляем данные в швейку УШМ
+                CellSewingAuto::insert($sewingAuto);                    // Вставляем данные в швейку АШМ
+                CellSewingUniversal::insert($sewingUniversal);          // Вставляем данные в швейку УШМ
+                CellSewingHard::insert($sewingSolidHard);               // Вставляем данные в швейку Обшивка Hard
+                CellSewingLight::insert($sewingSolidLight);             // Вставляем данные в швейку Обшивка Light
 
             }
         }
 
 
 //        return 1111;
-        return $dubs;           // возвращаем дубликаты
+//        return $dubs;           // возвращаем дубликаты
 
-//        return response()->json([
-//            'dubs' => $dubs
-//        ]);
+        return response()->json([
+            'dubs' => $dubs
+        ]);
 
 
 //        $data = $request->all();

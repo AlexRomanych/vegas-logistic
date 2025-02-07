@@ -122,19 +122,25 @@ const manufactureRaw = [
             type: CELL_UNIVERSAL_TYPE
         }
     },
-    //info Обшивка 1 (hard)
+    //info Обшивка 1 (hard) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/hard',
+        path: _MAIN_PREFIX + 'sewing/' + CELL_SOLID_HARD_TYPE,
         // name: getRouteName(this.path),
-        component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
-        meta: {title: 'Обшивка 1 (hard)'}
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
+        meta: {
+            title: 'Обшивка 1 (hard)',
+            type: CELL_SOLID_HARD_TYPE
+        }
     },
-    //info Обшивка 1 (lite)
+    //info Обшивка 1 (lite) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/light',
+        path: _MAIN_PREFIX + 'sewing/' + CELL_SOLID_LIGHT_TYPE,
         // name: getRouteName(this.path),
-        component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
-        meta: {title: 'Обшивка 1 (lite)'}
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/sewing/TheSewingCellAuto.vue'),
+        meta: {
+            title: 'Обшивка 1 (lite)',
+            type: CELL_SOLID_LIGHT_TYPE
+        }
     },
 
     // attract: Сборка -------------------------------------------------------------------------------------------------
@@ -237,15 +243,23 @@ const manufactureRaw = [
             type: CELL_UNIVERSAL_TYPE
         },
     },
-    //info Обшивка 1 (hard)
+    //info Обшивка 1 (hard) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/hard' + _TASK_PREFIX,
-        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+        path: _MAIN_PREFIX + 'sewing/' + CELL_SOLID_HARD_TYPE + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/sewing/TheSewingCellAutoTask.vue'),
+        meta: {
+            title: 'Сменные задания к ПЯ: Пошив - Обшивка 1 (hard)',
+            type: CELL_SOLID_HARD_TYPE
+        },
     },
-    //info Обшивка 1 (lite)
+    //info Обшивка 1 (lite) hr ok
     {
-        path: _MAIN_PREFIX + 'sewing/light' + _TASK_PREFIX,
-        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'), //Заглушка
+        path: _MAIN_PREFIX + 'sewing/' + CELL_SOLID_LIGHT_TYPE + _TASK_PREFIX,
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/sewing/TheSewingCellAutoTask.vue'),
+        meta: {
+            title: 'Сменные задания к ПЯ: Пошив - Обшивка 1 (lite)',
+            type: CELL_SOLID_LIGHT_TYPE
+        },
     },
 
     // attract: Сборка -------------------------------------------------------------------------------------------------

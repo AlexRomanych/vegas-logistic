@@ -43,8 +43,8 @@ const menuData = () => {
             group: {name: 'Персонал', shown: true, isActive: true, icon: 'UserPlusIcon'},
             items:
                 [
-                    {name: 'Список сотрудников', path: '', shown: true, isActive: true,},
-                    {name: 'Добавить сотрудника', path: '', shown: true, isActive: true,},
+                    {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
+                    {name: 'Добавить сотрудника', path: 'workers.add', shown: true, isActive: true,},
                 ]
         },
         {

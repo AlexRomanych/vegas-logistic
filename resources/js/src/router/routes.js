@@ -1,13 +1,14 @@
-import auth from "@/src/router/routes_auth"
-import dashboard from "@/src/router/routes_dashboard"
-import orders from "@/src/router/routes_orders"
-import models from "@/src/router/routes_models"
-import clients from "@/src/router/routes_clients"
-import manufacture from "@/src/router/routes_manufacture"
-import users from "@/src/router/routes_users"
-import info from "@/src/router/routes_info"
-import errors from "@/src/router/routes_errors"
-import service from "@/src/router/routes_service"
+import auth from "/resources/js/src/router/routes_auth"
+import dashboard from "/resources/js/src/router/routes_dashboard"
+import orders from "/resources/js/src/router/routes_orders"
+import models from "/resources/js/src/router/routes_models"
+import clients from "/resources/js/src/router/routes_clients"
+import manufacture from "/resources/js/src/router/routes_manufacture"
+import users from "/resources/js/src/router/routes_users"
+import info from "/resources/js/src/router/routes_info"
+import errors from "/resources/js/src/router/routes_errors"
+import service from "/resources/js/src/router/routes_service"
+import workers from "/resources/js/src/router/routes_workers.js"
 
 const routes = [
 
@@ -21,6 +22,7 @@ const routes = [
     ...info,
     ...errors,
     ...service,
+    ...workers,
 
 
     {

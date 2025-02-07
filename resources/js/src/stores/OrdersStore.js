@@ -3,8 +3,8 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 
-import {jwtGet, jwtPost, jwtDelete} from "@/src/app/utils/jwt_api"
-import {openNewTab} from "@/src/app/helpers/helpers_service"
+import {jwtGet, jwtPost, jwtDelete} from "/resources/js/src/app/utils/jwt_api"
+import {openNewTab} from "/resources/js/src/app/helpers/helpers_service"
 
 import axios from 'axios'
 
@@ -27,6 +27,7 @@ export const useOrdersStore = defineStore('orders', () => {
     const ordersShowIsChanged = ref(false)
 
     // Получаем с API список заказов
+    // params - период
     const getOrders = async (params) => {
 
         // console.log(params)
