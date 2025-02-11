@@ -1,7 +1,7 @@
 // info Dashboard
 import menu from '/resources/js/src/assets/menu.js'
 
-console.log(menu)
+// console.log(menu)
 
 const dashboard = [
     {

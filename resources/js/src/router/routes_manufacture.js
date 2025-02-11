@@ -304,7 +304,7 @@ const manufacture = manufactureRaw.map(route => {
 })
 
 
-console.log(manufacture)
+// console.log(manufacture)
 
 
 export default manufacture

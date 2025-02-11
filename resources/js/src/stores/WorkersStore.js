@@ -20,17 +20,19 @@ const URL_WORKER = 'worker/'                        // URL для crud с раб
 
 export const useWorkersStore = defineStore('workers', () => {
 
-    const workersCashe = reactive([])       // Список рабочих
+    let workersCashe = reactive([])       // Список рабочих
 
     // attract: Получаем список рабочих
     const getWorkers = async () => {
-        if (!workersCashe.length) {
+
+        if (workersCashe.length !== 0) {
             return workersCashe
         }
 
         const result = await jwtGet(URL_WORKERS)
-        workersCashe = result.data
-        return result.data
+        workersCashe = result.workers
+
+        return result.workers
     }
 
     // // Список заказов, которые получили к отображению

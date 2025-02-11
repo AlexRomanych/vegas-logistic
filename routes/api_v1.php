@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ModelController;
 use App\Http\Controllers\Api\V1\OrderController;
 //use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\V1\WorkerController;
 use App\Http\Controllers\UpdateData1CController as Update;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -185,3 +186,9 @@ Route::group([
 
 
 
+//hr--------------------------------------------------------------------------------------------------------------------
+// attract: Блок Персонала
+Route::get('/workers', [WorkerController::class, 'workers'])->middleware('jwt.auth');
+
+
+//hr--------------------------------------------------------------------------------------------------------------------

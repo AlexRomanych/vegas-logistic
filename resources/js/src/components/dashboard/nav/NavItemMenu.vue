@@ -26,9 +26,9 @@ const groupId = +router.currentRoute.value.params.groupId
 const group = menu.find(item => item.group.id === groupId)
 
 
-console.log(groupId)
-console.log(menu)
-console.log('Group', group)
+// console.log(groupId)
+// console.log(menu)
+// console.log('Group', group)
 
 
 </script>

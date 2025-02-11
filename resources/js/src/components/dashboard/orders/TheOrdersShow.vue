@@ -64,17 +64,17 @@
 <script setup>
 import {ref} from 'vue'
 import {storeToRefs} from 'pinia'
-import {useOrdersStore} from "@/src/stores/OrdersStore"
-import {compareDatesLogic} from "@/src/app/helpers/helpers_date.js"
-import {isResponseWithError} from "@/src/app/helpers/helpers_checks.js"
+import {useOrdersStore} from "/resources/js/src/stores/OrdersStore"
+import {compareDatesLogic} from "/resources/js/src/app/helpers/helpers_date.js"
+import {isResponseWithError} from "/resources/js/src/app/helpers/helpers_checks.js"
 
 
 
-import TheOrdersBag from '@/src/components/dashboard/orders/components/TheOrdersBag.vue'
+import TheOrdersBag from '/resources/js/src/components/dashboard/orders/components/TheOrdersBag.vue'
 
-import AppInputDate from '@/src/components/ui/inputs/AppInputDate.vue'
-import AppButton from '@/src/components/ui/buttons/AppButton.vue'
-import AppLabel from '@/src/components/ui/labels/AppLabel.vue'
+import AppInputDate from '/resources/js/src/components/ui/inputs/AppInputDate.vue'
+import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
+import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 
 
 const ordersStore = useOrdersStore()

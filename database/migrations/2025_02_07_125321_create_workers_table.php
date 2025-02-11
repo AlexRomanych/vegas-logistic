@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             // attract: У каждого рабочего может быть привязка к ПЯ
-//            $table->foreignIdFor(CellItem::class)->nullable()->constrained()->nullOnDelete();    //Внешний ключ, указывающий на таблицу с ПЯ
+            $table->foreignIdFor(CellItem::class)->nullable()->constrained()->nullOnDelete();    //Внешний ключ, указывающий на таблицу с ПЯ
         });
     }
 

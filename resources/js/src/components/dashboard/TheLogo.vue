@@ -35,9 +35,8 @@ import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 const route = useRoute()
 const pageTitle = computed(() => route.meta.title ? route.meta.title : 'The Page')
 
-console.log(route.meta)
-
-console.log(route)
+// console.log(route.meta)
+// console.log(route)
 
 // Вычисляем время
 const formattedTime = ref('');

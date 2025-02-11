@@ -15,7 +15,7 @@ import menu from '/resources/js/src/assets/menu.js'
 // component: () => import('../views/auth/TheLogin.vue'),
 
 
-console.log('i am router')
+// console.log('i am router')
 
 const router = createRouter({
     history: createWebHistory(),

@@ -23,7 +23,7 @@ const props = defineProps({
 })
 
 const link = props.groupMenuItem.path ? props.groupMenuItem.path : 'error.404'
-console.log(link)
+// console.log(link)
 
 </script>
 

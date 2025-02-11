@@ -16,14 +16,14 @@ abstract class Cell extends Model
     //  public string $unit       единица измерения производительности ПЯ
 
 
-    public function __construct(
-        public int    $no = 0,
-        public string $name = '',
-        public string $unit = ''
-    )
-    {
-        parent::__construct();
-    }
+//    public function __construct(
+//        public int    $no = 0,
+//        public string $name = '',
+//        public string $unit = ''
+//    )
+//    {
+//        parent::__construct();
+//    }
 
 
 

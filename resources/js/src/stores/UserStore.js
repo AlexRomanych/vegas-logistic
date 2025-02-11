@@ -88,7 +88,7 @@ export const useUserStore = defineStore('user', () => {
 
             try {
 
-                console.trace()
+                // console.trace()
                 // console.log(`Bearer ${localStorage.getItem('token')}`)
 
                 const profileRequest = await api.post('profile', {}, {

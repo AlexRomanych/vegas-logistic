@@ -20,4 +20,5 @@ const workers = [
     }
 ]
 
+// console.log(workers)
 export default workers
