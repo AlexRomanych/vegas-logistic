@@ -24,17 +24,30 @@
                     </div>
                 </div>
 
-                <div class="w-full h-full flex justify-end">
-                    <div class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :type="type"
-                            title="Закрыть"
-                            @buttonClick="closeModal"
-                        />
-                    </div>
-                </div>
 
+                    <div class="w-full h-full flex justify-end">
+
+                        <div v-if="mode === 'confirm'"
+                             class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :type="type"
+                                title="Да"
+                                @buttonClick="closeModal"
+                            />
+                        </div>
+
+                        <div
+                            class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :type="type"
+                                title="Закрыть"
+                                @buttonClick="closeModal"
+                            />
+                        </div>
+
+                </div>
             </div>
         </div>
 
@@ -74,6 +87,12 @@ const props = defineProps({
         required: false,
         default: false,
     },
+    mode: {
+        type: String,
+        required: false,
+        default: 'inform',
+        validator: (mode) => ['inform', 'confirm'].includes(mode)
+    }
 
 })
 
