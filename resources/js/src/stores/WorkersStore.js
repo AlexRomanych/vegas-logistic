@@ -3,7 +3,7 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 
-import {jwtGet, jwtPost, jwtDelete} from "/resources/js/src/app/utils/jwt_api"
+import {jwtGet, jwtPost, jwtDelete, jwtUpdate} from "/resources/js/src/app/utils/jwt_api"
 // import {openNewTab} from "/resources/js/src/app/helpers/helpers_service"
 
 import axios from 'axios'
@@ -33,6 +33,45 @@ export const useWorkersStore = defineStore('workers', () => {
         workersCashe = result.workers
 
         return result.workers
+    }
+
+
+    // attract: Получаем рабочего
+    const getWorkerById = async (id = 0) => {
+
+        if (id === 0) return
+
+        const result = await jwtGet(URL_WORKER + id)
+
+        // console.log('getWorker', result)
+
+        return result.worker
+    }
+
+    // Attract: Обновление рабочего
+    const updateWorker = async (worker) => {
+        const result = await jwtUpdate(URL_WORKER, worker)
+        workersCashe = []
+        return result
+        // console.log(result)
+    }
+
+    // Attract: Создание рабочего
+    const createWorker = async (worker) => {
+        const result = await jwtPost(URL_WORKER,  {data: worker})
+        workersCashe = []
+        return result
+        // console.log(result)
+    }
+
+    // Attract: Удаление рабочего
+    const deleteWorker = async (delWorkerId = 0) => {
+        if (delWorkerId === 0) {return}
+
+        const result = await jwtDelete(URL_WORKER, {id: delWorkerId})
+        workersCashe = []
+        return result
+        // console.log(result)
     }
 
     // // Список заказов, которые получили к отображению
@@ -94,6 +133,10 @@ export const useWorkersStore = defineStore('workers', () => {
 
     return {
         getWorkers,
+        deleteWorker,
+        getWorkerById,
+        updateWorker,
+        createWorker,
 
         // ordersShow,
         // // ordersShowTest,

@@ -4,6 +4,7 @@
         <input
             :id="id"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
+
             :placeholder="placeholder"
             :disabled="disabled"
             :type="func"
@@ -37,7 +38,7 @@ const props = defineProps({
     type: {
         type: String,
         required: false,
-        default: 'primary',
+        default: 'dark',
         validator: (type) => colorsList.includes(type)
     },
     func: {
@@ -45,6 +46,11 @@ const props = defineProps({
         required: false,
         default: 'text',
         validator: (func) => ['text', 'password', 'email', 'tel'].includes(func)
+    },
+    value: {
+        type: String,
+        required: false,
+        default: '',
     },
     placeholder: {
         type: String,
@@ -88,8 +94,11 @@ textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex +
 
 const inputText = defineModel({
     type: String,
-    default: ''
+    default: '',
 })
+
+// Задаем начальное значение
+inputText.value = props.value
 
 const emit = defineEmits(['getInputText'])
 

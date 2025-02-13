@@ -13,9 +13,19 @@ const workers = [
     {
         path: '/workers/add',
         name: 'workers.add',
-        component: () => import('/resources/js/src/components/dashboard/workers/TheWorkersShow.vue'),
+        component: () => import('/resources/js/src/components/dashboard/workers/TheWorkerEditForm.vue'),
         meta: {
             title: 'Добавление сотрудника',
+            mode: 'add'
+        },
+    },
+    {
+        path: '/worker/:id',
+        name: 'worker.show',
+        component: () => import('/resources/js/src/components/dashboard/workers/TheWorkerEditForm.vue'),
+        meta: {
+            title: 'Редактирование сотрудника',
+            mode: 'edit'
         },
     }
 ]

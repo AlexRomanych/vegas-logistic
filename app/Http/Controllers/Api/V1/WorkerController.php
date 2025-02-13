@@ -38,50 +38,68 @@ class WorkerController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Attract Создаем сотрудника
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $workerPayload = $request->input('data');           // получаем данные из запроса
+        $worker = Worker::query()->create([
+            'surname' => $workerPayload['surname'],
+            'name' => $workerPayload['name'],
+            'patronymic' => $workerPayload['patronymic'],
+            'cell_item_id' => $workerPayload['cell_item_id'],
+        ]);
+
+        if ($worker) {
+            return OK_STATUS_WORD;
+        }
+        return FAIL_STATUS_WORD;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
-     * Display the specified resource.
+     * Attract Возвращаем сотрудника
      */
     public function show(string $id)
     {
-        //
+        $worker = Worker::query()->find($id);
+        if ($worker) return new WorkerResource($worker);
+        return FAIL_STATUS_WORD;
+    }
+
+
+    /**
+     * Attract Обновляем сотрудника
+     */
+    public function update(Request $request)
+    {
+        $workerPayload = $request->input('data');           // получаем данные из запроса
+        $worker = Worker::query()->find($workerPayload['id']);   // ищем сотрудника по id в базе
+
+        if ($worker) {
+            $worker->surname = $workerPayload['surname'];
+            $worker->name = $workerPayload['name'];
+            $worker->patronymic = $workerPayload['patronymic'];
+            $worker->cell_item_id = $workerPayload['cell_item_id'];
+            $worker->save();
+            return OK_STATUS_WORD;
+        }
+        return FAIL_STATUS_WORD;
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Attract Удаляем сотрудника
      */
-    public function edit(string $id)
+    public function destroy(Request $request)
     {
-        //
-    }
+        $id = $request->input('id');
+        $worker = Worker::query()->find($id);
+        if ($worker) {
+            $worker->delete();
+            return OK_STATUS_WORD;
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        return FAIL_STATUS_WORD;
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

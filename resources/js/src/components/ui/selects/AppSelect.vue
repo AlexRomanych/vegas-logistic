@@ -51,7 +51,7 @@ const props = defineProps({
     type: {
         type: String,
         required: false,
-        default: 'secondary',
+        default: 'dark',
         validator: (type) => colorsList.includes(type)
     },
     selectData: {

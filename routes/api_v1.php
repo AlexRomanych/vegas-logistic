@@ -189,6 +189,10 @@ Route::group([
 //hr--------------------------------------------------------------------------------------------------------------------
 // attract: Блок Персонала
 Route::get('/workers', [WorkerController::class, 'workers'])->middleware('jwt.auth');
+Route::get('/worker/{id}', [WorkerController::class, 'show'])->middleware('jwt.auth');
+Route::put('/worker', [WorkerController::class, 'update'])->middleware('jwt.auth');
+Route::post('/worker', [WorkerController::class, 'create'])->middleware('jwt.auth');
+Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.auth');
 
 
 //hr--------------------------------------------------------------------------------------------------------------------

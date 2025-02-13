@@ -13,7 +13,7 @@
                             height="w-5"
                             title="x"
                             width="w-[30px]"
-                            @buttonClick="closeModal"
+                            @buttonClick="closeModal(false)"
                         />
                     </div>
                 </div>
@@ -25,27 +25,27 @@
                 </div>
 
 
-                    <div class="w-full h-full flex justify-end">
+                <div class="w-full h-full flex justify-end">
 
-                        <div v-if="mode === 'confirm'"
-                             class="m-1 p-1">
-                            <AppInputButton
-                                id="confirm"
-                                :type="type"
-                                title="Да"
-                                @buttonClick="closeModal"
-                            />
-                        </div>
+                    <div v-if="mode === 'confirm'"
+                         class="m-1 p-1">
+                        <AppInputButton
+                            id="confirm"
+                            :type="type"
+                            title="Да"
+                            @buttonClick="closeModal(true)"
+                        />
+                    </div>
 
-                        <div
-                            class="m-1 p-1">
-                            <AppInputButton
-                                id="confirm"
-                                :type="type"
-                                title="Закрыть"
-                                @buttonClick="closeModal"
-                            />
-                        </div>
+                    <div
+                        class="m-1 p-1">
+                        <AppInputButton
+                            id="confirm"
+                            :type="type"
+                            :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
+                            @buttonClick="closeModal(false)"
+                        />
+                    </div>
 
                 </div>
             </div>
@@ -58,7 +58,7 @@
 import {colorsList} from "@/src/app/constants/colorsClasses.js"
 import {getColorClassByType} from "@/src/app/helpers/helpers.js"
 import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
-import {computed, ref} from "vue";
+import {computed, ref, watch, watchEffect} from "vue";
 
 const props = defineProps({
     width: {
@@ -96,8 +96,21 @@ const props = defineProps({
 
 })
 
+const emit = defineEmits(['closeModal'])
+
 const showModal = ref(props.show)
-const closeModal = () => showModal.value = false
+
+// Следим за отображением модального окна
+watch(() => props.show, (value) => {
+    showModal.value = value
+    // console.log('watch showModal', value)
+})
+
+// закрываем модальное окно и возвращаем подтверждение
+const closeModal = (confirm = false) => {
+    showModal.value = false
+    emit('closeModal', confirm)
+}
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
