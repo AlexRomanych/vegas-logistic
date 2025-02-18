@@ -49,6 +49,47 @@ const manufactureRaw = [
     // attract: Производственные ячейки
 
     // attract: Стежка -------------------------------------------------------------------------------------------------
+
+    {
+        path: _MAIN_PREFIX + 'fabrics',
+        name: 'manufacture.cell.fabrics',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMain.vue'),
+        meta: {
+            title: 'Стежка'
+        }
+    },
+
+    {
+        path: _MAIN_PREFIX + 'fabrics/show',
+        name: 'manufacture.cell.fabrics.show',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsShow.vue'),
+        meta: {
+            title: 'Список ПС'
+        }
+    },
+
+    {
+        path: _MAIN_PREFIX + 'fabrics/upload',
+        name: 'manufacture.cell.fabrics.upload',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsUpload.vue'),
+        meta: {
+            title: 'Загрузка ПС в БД'
+        }
+    },
+
+    {
+        path: _MAIN_PREFIX + 'fabrics/buffer',
+        name: 'manufacture.cell.fabrics.buffer',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsBuffer.vue'),
+        meta: {
+            title: 'Буфер'
+        }
+    },
+
+
+
+
+
     //info Стежка Китаец
     {
         path: _MAIN_PREFIX + 'stitch/china',

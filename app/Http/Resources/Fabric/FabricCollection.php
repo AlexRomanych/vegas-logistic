@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Http\Resources\Fabric;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+
+class FabricCollection extends ResourceCollection
+{
+    public static $wrap = 'fabrics';
+
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @return array<int|string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return parent::toArray($request);
+    }
+}

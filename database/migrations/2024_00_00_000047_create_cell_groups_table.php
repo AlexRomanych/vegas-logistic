@@ -29,9 +29,12 @@ return new class extends Migration {
 
         // Добавляем начальные данные
         DB::table('cells_groups')->insert([
-            ['name' => 'Швейный цех', 'created_at' => now(), 'updated_at' => now(),],
-            ['name' => 'Сборка', 'created_at' => now(), 'updated_at' => now(),],
-            ['name' => 'Стежка', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 1, 'name' => 'Стежка', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 2, 'name' => 'Раскрой', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 3, 'name' => 'Швейный цех', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 4, 'name' => 'Сборка', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 5, 'name' => 'Упаковка', 'created_at' => now(), 'updated_at' => now(),],
+            ['id' => 6, 'name' => 'Участок ПБ', 'created_at' => now(), 'updated_at' => now(),],
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\CellItemController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -120,7 +121,7 @@ Route::get('/users', [UserController::class, 'all']);
 //hr--------------------------------------------------------------------------------------------------------------------
 //attract: Блок Моделей
 Route::get('/models', [ModelController::class, 'models'])->middleware('jwt.auth');
-Route::get('/model/{code1C}', [ModelController::class, 'model']);
+Route::get('/model/{code1C}', [ModelController::class, 'model'])->middleware('jwt.auth');;
 Route::get('/models/load', [ModelController::class, 'modelsLoad'])->middleware('jwt.auth');
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -196,3 +197,14 @@ Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.
 
 
 //hr--------------------------------------------------------------------------------------------------------------------
+
+
+//hr--------------------------------------------------------------------------------------------------------------------
+// attract: Блок Стежки
+Route::get('/fabrics', [CellFabricController::class, 'fabrics'])->middleware('jwt.auth');
+Route::get('/fabric/{code1C}', [CellFabricController::class, 'fabric'])->middleware('jwt.auth');;
+Route::post('/fabrics/upload', [CellFabricController::class, 'uploadFabrics'])->middleware('jwt.auth');
+
+
+//hr--------------------------------------------------------------------------------------------------------------------
+
