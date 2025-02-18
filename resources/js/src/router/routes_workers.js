@@ -20,8 +20,8 @@ const workers = [
         },
     },
     {
-        path: '/worker/:id',
-        name: 'worker.show',
+        path: '/worker/edit/:id',
+        name: 'worker.edit',
         component: () => import('/resources/js/src/components/dashboard/workers/TheWorkerEditForm.vue'),
         meta: {
             title: 'Редактирование сотрудника',

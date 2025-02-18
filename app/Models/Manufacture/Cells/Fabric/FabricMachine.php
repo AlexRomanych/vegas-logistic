@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FabricMachine extends Model
 {
-    public $guarded = [];
+    protected $guarded = [];
+
+    protected $hidden = ['created_at', 'updated_at'];
+
     public function fabrics(): HasMany
     {
         return $this->hasMany(Fabric::class);

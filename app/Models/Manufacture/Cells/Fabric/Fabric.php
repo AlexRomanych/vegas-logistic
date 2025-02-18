@@ -41,6 +41,11 @@ class Fabric extends Model
         return new FabricInstance($this->name);
     }
 
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->fabric_instance->getFabricDisplayName();
+    }
+
     public function getPicAttribute(): string
     {
         return $this->fabric_instance->getPicture();

@@ -60,7 +60,7 @@ colorsClasses[light] = {
     [effectDirection]: toDark
 }
 colorsClasses[dark] = {
-    [mainColor]: 'gray',
+    [mainColor]: 'slate',
     [textColor]: 'white',
     [effectDirection]: toLight
 }

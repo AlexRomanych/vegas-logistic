@@ -50,7 +50,7 @@
                 <router-link :to="{name: 'workers'}">
                     <AppInputButton
                         id="submitButton"
-                        func="submit"
+                        func="button"
                         title="К списку сотрудников"
                         type="primary"
                         width="w-[200px]"

@@ -5,7 +5,7 @@ const service = [
     {
         path: '/ui.show',
         name: 'ui.show',
-        component: () => import('@/src/views/TheComponentsExample.vue')
+        component: () => import('/resources/js/src/views/TheComponentsExample.vue')
     }
 ]
 

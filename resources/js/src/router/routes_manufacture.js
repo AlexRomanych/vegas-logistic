@@ -51,6 +51,7 @@ const manufactureRaw = [
     // attract: Стежка -------------------------------------------------------------------------------------------------
 
     {
+        // Основная менюха
         path: _MAIN_PREFIX + 'fabrics',
         name: 'manufacture.cell.fabrics',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMain.vue'),
@@ -60,6 +61,7 @@ const manufactureRaw = [
     },
 
     {
+        // Список ПС
         path: _MAIN_PREFIX + 'fabrics/show',
         name: 'manufacture.cell.fabrics.show',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsShow.vue'),
@@ -69,6 +71,7 @@ const manufactureRaw = [
     },
 
     {
+        // Загрузка с диска
         path: _MAIN_PREFIX + 'fabrics/upload',
         name: 'manufacture.cell.fabrics.upload',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsUpload.vue'),
@@ -78,6 +81,7 @@ const manufactureRaw = [
     },
 
     {
+        // Буфер
         path: _MAIN_PREFIX + 'fabrics/buffer',
         name: 'manufacture.cell.fabrics.buffer',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsBuffer.vue'),
@@ -86,6 +90,27 @@ const manufactureRaw = [
         }
     },
 
+    {
+        // Добавление ПС
+        path: _MAIN_PREFIX + 'fabrics/add',
+        name: 'manufacture.cell.fabrics.add',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricEditForm.vue'),
+        meta: {
+            title: 'Добавление ПС',
+            mode: 'add'
+        },
+    },
+
+    {
+        // Редактирование ПС
+        path: '/fabric/edit/:id',
+        name: 'manufacture.cell.fabric.edit',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricEditForm.vue'),
+        meta: {
+            title: 'Редактирование ПС',
+            mode: 'edit'
+        },
+    },
 
 
 

@@ -6,6 +6,7 @@ namespace App\Classes;
 class FabricInstance
 {
     private string $fabricName = '';                // Название ПС
+    private string $fabricDisplayName = '';         // Форматированное Название ПС
     private string $textileShortName = '';          // Сокращенное название ткани
     private string $picture = '';                   // Рисунок стежки
     private array $fillersList = [];                // Список наполнителей ПС
@@ -36,9 +37,8 @@ class FabricInstance
             $tempFabric = str_replace('  ', ' ', $tempFabric);
         }
 
-//        $this->picture = $tempFabric;
-//
-//        return;
+        // Добавляем отформатированное название
+        $this->fabricDisplayName = $tempFabric;
 
         // Разбиваем на составляющие по пробелу
         $parseFabric = explode(' ', $tempFabric);
@@ -58,8 +58,13 @@ class FabricInstance
         $shortTextileEnd = $picsPos;                // позиция окончания названия ткани
         $shortTextileStart = $shortTextileEnd;      // позиция начала названия ткани
 
-        while (strlen(getDigitPart($parseFabric[$shortTextileStart])) === 0) {
-            $shortTextileStart--;                   // Уменьшаем позицию названия ткани, пока не попадем на наполнитель
+        if (!str_contains(mb_strtolower($tempFabric), mb_strtolower('М-24'))) {            // Костыль для "M-24"
+            while (strlen(getDigitPart($parseFabric[$shortTextileStart])) === 0) {
+                $shortTextileStart--;                   // Уменьшаем позицию названия ткани, пока не попадем на наполнитель
+            }
+        } else {
+            $shortTextileStart--;
+            $shortTextileStart--;
         }
 
         $shortTextileStart++;                       // Увеличиваем позицию названия ткани
@@ -82,6 +87,15 @@ class FabricInstance
     public function getFabricName(): string
     {
         return $this->fabricName;
+    }
+
+    /**
+     * Возвращаем отформатированное название
+     * @return string
+     */
+    public function getFabricDisplayName(): string
+    {
+        return $this->fabricDisplayName;
     }
 
     /**

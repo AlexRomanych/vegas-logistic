@@ -22,7 +22,7 @@
                     :text="worker.cell_item_name"
                 />
 
-                <router-link :to="{name: 'worker.show', params: {id: worker.id}}">
+                <router-link :to="{name: 'worker.edit', params: {id: worker.id}}">
                     <AppLabel
                         align="center"
                         class="cursor-pointer"
@@ -93,9 +93,9 @@ const workersStore = useWorkersStore()
 
 let workers = reactive(await workersStore.getWorkers())
 
-console.log(workers)
+// console.log(workers)
 
-const editMode = ref(false)             // режим отображения - либо показываем список, либо редактируем
+// const editMode = ref(false)             // режим отображения - либо показываем список, либо редактируем
 
 const modalShow = ref(false)
 const modalAnswer = ref(false)

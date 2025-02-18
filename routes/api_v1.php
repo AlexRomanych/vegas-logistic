@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -191,6 +192,7 @@ Route::group([
 // attract: Блок Персонала
 Route::get('/workers', [WorkerController::class, 'workers'])->middleware('jwt.auth');
 Route::get('/worker/{id}', [WorkerController::class, 'show'])->middleware('jwt.auth');
+Route::get('/worker/edit/{id}', [WorkerController::class, 'show'])->middleware('jwt.auth');
 Route::put('/worker', [WorkerController::class, 'update'])->middleware('jwt.auth');
 Route::post('/worker', [WorkerController::class, 'create'])->middleware('jwt.auth');
 Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.auth');
@@ -201,10 +203,15 @@ Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.
 
 //hr--------------------------------------------------------------------------------------------------------------------
 // attract: Блок Стежки
-Route::get('/fabrics', [CellFabricController::class, 'fabrics'])->middleware('jwt.auth');
-Route::get('/fabric/{code1C}', [CellFabricController::class, 'fabric'])->middleware('jwt.auth');;
 Route::post('/fabrics/upload', [CellFabricController::class, 'uploadFabrics'])->middleware('jwt.auth');
+Route::get('/fabrics', [CellFabricController::class, 'fabrics'])->middleware('jwt.auth');
+Route::get('/fabric/{id}', [CellFabricController::class, 'fabric'])->middleware('jwt.auth');;
+Route::put('/fabric', [CellFabricController::class, 'update'])->middleware('jwt.auth');
+Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt.auth');
+Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
 
+Route::get('/fabrics/machines', [CellFabricMachineController::class, 'machines'])->middleware('jwt.auth');
+Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machine'])->middleware('jwt.auth');
 
 //hr--------------------------------------------------------------------------------------------------------------------
 

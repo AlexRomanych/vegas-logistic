@@ -7,9 +7,10 @@
 
             :placeholder="placeholder"
             :disabled="disabled"
-            :type="func"
-            v-model="inputText"
-            @input="getInputText"
+            :step="step"
+            type="number"
+            v-model="inputNumber"
+            @input="getInputNumber"
 
         >
         <div v-if="errors">
@@ -41,16 +42,21 @@ const props = defineProps({
         default: 'dark',
         validator: (type) => colorsList.includes(type)
     },
-    func: {
-        type: String,
-        required: false,
-        default: 'text',
-        validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func)
-    },
+    // func: {
+    //     type: String,
+    //     required: false,
+    //     default: 'text',
+    //     validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func)
+    // },
     value: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+    step: {
         type: String,
         required: false,
-        default: '',
+        default: '1',
     },
     placeholder: {
         type: String,
@@ -92,17 +98,17 @@ const focusBorderColor = 'focus:ring' + currentColor
 let textColor = 'text' + currentColor
 textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
-const inputText = defineModel({
-    type: String,
-    default: '',
+const inputNumber = defineModel({
+    type: Number,
+    default: 0,
 })
 
 // Задаем начальное значение
-inputText.value = props.value
+inputNumber.value = props.value
 
-const emit = defineEmits(['getInputText'])
+const emit = defineEmits(['getInputNumber'])
 
-const getInputText = (e) => emit('getInputText', e.target.value)
+const getInputNumber = (e) => emit('getInputNumber', e.target.value)
 // const onInput = function(e) {
 //     console.log(e.target.value)
 // }
