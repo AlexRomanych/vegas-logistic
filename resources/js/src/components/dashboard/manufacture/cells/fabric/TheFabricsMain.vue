@@ -1,26 +1,24 @@
 <template>
+
     <div class="flex flex-wrap">
+        <div v-for="group in menuItems" :key="group.id">
 
-        <NavItemCard
-            :groupMenuItem="showFabrics"
-        />
+            <NavItemCard
+                :groupMenuItem="group"
+            />
 
-        <NavItemCard
-            :groupMenuItem="bufferFabrics"
-        />
-
-        <NavItemCard
-            :groupMenuItem="uploadFabrics"
-        />
-
+        </div>
     </div>
+
 </template>
 
 <script setup>
 import NavItemCard from '/resources/js/src/components/dashboard/nav/NavItemCard.vue'
 
+/*
 // attract: Список ПС
 const showFabrics = {
+
     name: 'Список ПС',
     path: 'manufacture.cell.fabrics.show',
     shown: true,
@@ -43,6 +41,18 @@ const uploadFabrics = {
     shown: true,
     isActive: true,
 }
+*/
+
+
+let menuItems = [
+    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
+    {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
+    {name: 'Загрузка ПС из 1С', path: 'manufacture.cell.fabrics.upload'},
+    {name: 'Загрузка расхода ПС из 1С', path: 'manufacture.cell.fabrics.expense.upload'},
+]
+
+menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
+
 
 </script>
 

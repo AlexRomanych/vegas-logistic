@@ -71,7 +71,7 @@ const manufactureRaw = [
     },
 
     {
-        // Загрузка с диска
+        // Загрузка с диска списка ПС
         path: _MAIN_PREFIX + 'fabrics/upload',
         name: 'manufacture.cell.fabrics.upload',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsUpload.vue'),
@@ -112,7 +112,15 @@ const manufactureRaw = [
         },
     },
 
-
+    {
+        // Загрузка расхода ПС из 1С из отчета "Сводная ведомость потребности материалов" - СВПМ
+        path: '/fabric/expense/upload',
+        name: 'manufacture.cell.fabrics.expense.upload',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpenseUpload.vue'),
+        meta: {
+            title: 'Загрузка расхода ПС из отчета 1С - СВПМ',
+        },
+    },
 
 
     //info Стежка Китаец

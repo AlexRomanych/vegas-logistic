@@ -10,14 +10,18 @@ import axios from 'axios'
 
 
 // Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/'                       // Префикс API
-const URL_FABRICS = 'fabrics/'                      // URL для получения списка ПС
-const URL_FABRIC = 'fabric/'                        // URL для получения ПС
-const URL_FABRICS_MACHINES = 'fabrics/machines/'    // URL для получения списка Стегальных Машин
-const URL_FABRICS_MACHINE = 'fabrics/machine/'      // URL для получения Стегальной Машины
+const API_PREFIX = '/api/v1/'                                   // Префикс API
+const URL_FABRICS = 'fabrics/'                                  // URL для получения списка ПС
+const URL_FABRIC = 'fabric/'                                    // URL для получения ПС
 
-const URL_FABRICS_UPLOAD = 'fabrics/upload/'        // URL для загрузки ПС с диска
-const URL_FABRIC_DELETE = 'fabrics/delete/'         // URL для удаления ПС
+const URL_FABRICS_MACHINES = 'fabrics/machines/'                // URL для получения списка Стегальных Машин
+const URL_FABRICS_MACHINE = 'fabrics/machine/'                  // URL для получения Стегальной Машины
+
+const URL_FABRICS_UPLOAD = 'fabrics/upload/'                    // URL для загрузки ПС с диска
+const URL_FABRIC_DELETE = 'fabrics/delete/'                     // URL для удаления ПС
+
+const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'      // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
+const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'        // URL для удаления заказа
 
 
 export const useFabricsStore = defineStore('fabrics', () => {
@@ -105,6 +109,29 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.machine
     }
 
+    // Attract: Загрузка расхода ПС на сервер из отчета 1С - СВПМ
+    // fileData - данные файла, отправляем в RAW формате
+    const uploadFabricsOrders = async (fileData) => {
+
+        // console.log(fileData)
+
+        const headers = {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/octet-stream',
+            // 'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        const response = await jwtPost(URL_FABRICS_ORDERS_UPLOAD, fileData, headers)
+        const result = await response
+
+        openNewTab(result)
+
+        console.log(result)
+
+        return result
+    }
+
 
     return {
         fabricsCashe,
@@ -117,6 +144,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         deleteFabric,
         getFabricsMachines,
         getFabricsMachineById,
+        uploadFabricsOrders,
     }
 
 })

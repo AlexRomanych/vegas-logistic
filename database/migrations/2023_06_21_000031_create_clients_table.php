@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('add_name')->default('')->comment('Дополнительный идентификатор клиента');
             $table->string('short_name')->nullable(false)->comment('Отображаемое название клиента');
             $table->string('description')->nullable()->comment('Дополнительная информация');
-            $table->string('region')->nullable(false)->comment('Регион');
+            $table->string('region')->nullable()->comment('Регион');
             $table->string('country')->nullable()->comment('Страна регистрации');
             $table->string('address')->nullable()->comment('Адрес');
             $table->decimal('longitude', 8,6,true)->nullable()->default(0)->comment('Долгота');
@@ -29,7 +29,7 @@ return new class extends Migration
 //            $table->index(['name', 'add_name', 'short_name']);
             $table->timestamps();
 
-            $table->foreignIdFor(Manager::class)->constrained();
+            $table->foreignIdFor(Manager::class)->nullable(false)->default(100)->constrained();
 
         });
     }

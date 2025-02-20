@@ -118,6 +118,7 @@ class CellFabricController extends Controller
         $fabricPayload = $request->input('data');           // получаем данные из запроса
         $fabric = Fabric::query()->create([
             'name' => $fabricPayload['name'],
+            'code_1C' => $fabricPayload['code_1C'],
             'buffer_amount' => $fabricPayload['buffer'],
             'optimal_party' => $fabricPayload['optimal_party'],
             'description' => $fabricPayload['description'],

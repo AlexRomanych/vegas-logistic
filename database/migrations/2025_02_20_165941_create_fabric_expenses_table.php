@@ -1,0 +1,35 @@
+<?php
+
+use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\FabricOrder;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('fabric_expenses', function (Blueprint $table) {
+            $table->id()->from(1);
+            $table->string('name')->nullable(false)->comment('Название ПС');
+            $table->float('expense')->nullable(false)->default(0)->comment('Количество расхода ПС');
+            $table->string('description')->nullable()->comment('Описание или дополнительная информация');
+            $table->timestamps();
+
+            $table->foreignIdFor(Fabric::class)->nullable(false)->comment('Привязка к ПС')->constrained()->nullOnDelete();
+            $table->foreignIdFor(FabricOrder::class)->nullable(false)->comment('Привязка к заказу')->constrained()->cascadeOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('fabric_expenses');
+    }
+};

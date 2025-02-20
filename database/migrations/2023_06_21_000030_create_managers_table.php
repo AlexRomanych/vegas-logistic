@@ -13,8 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('managers', function (Blueprint $table) {
-            $table->id('id')->from(100);
+        $defaultManagerId = 100;    // менеджер по умолчанию (не определен)
+
+        Schema::create('managers', function (Blueprint $table) use ($defaultManagerId) {
+            $table->id('id')->from($defaultManagerId);
             $table->string('surname')->nullable(false)->comment('Фамилия');
             $table->string('first_name')->nullable(false)->comment('Имя');
             $table->string('second_name')->default('')->comment('Отчество');
@@ -24,6 +26,7 @@ return new class extends Migration
         });
 
         DB::table('managers')->insert([
+            'id' => $defaultManagerId,
             'surname' => Manager::DEFAULT_MANAGER_NAME,
             'first_name' => '',
             'second_name' => '',

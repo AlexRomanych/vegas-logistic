@@ -27,10 +27,7 @@ final class Client extends Model
       'manager'
     ];
 
-//    protected $with = [
-//        'manager'
-//    ];
-
+    // Attract Связь с менеджером
     public function manager(): BelongsTo
     {
         return $this->belongsTo(Manager::class);

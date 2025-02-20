@@ -61,6 +61,9 @@ class Fabric extends Model
         return $this->fabric_instance->getFillersList();
     }
 
+
+
+
     //h2 fabricMachine -----------------------------------------------------------------------------------------
     public function fabricMachine(): BelongsTo
     {
