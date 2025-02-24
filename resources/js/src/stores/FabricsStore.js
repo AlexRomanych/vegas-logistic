@@ -125,9 +125,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         const response = await jwtPost(URL_FABRICS_ORDERS_UPLOAD, fileData, headers)
         const result = await response
 
-        openNewTab(result)
+        // openNewTab(result)
 
-        console.log(result)
+        // console.log(result)
 
         return result
     }
