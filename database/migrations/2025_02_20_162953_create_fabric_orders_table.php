@@ -16,12 +16,15 @@ return new class extends Migration {
             $table->string('code_1C')->nullable(false)->comment('Код заявки по 1С');
             $table->timestamp('time_1C')->nullable()->comment('Дата внесения заявки в 1С');
             $table->string('order_no')->nullable(false)->default('')->comment('Номер заявки');
-            $table->string('type')->nullable()->comment('Тип заявки из которй был сделан отчет');   // Тип заявки - из оригинальной заявки, из заявки на чехлы или заявки на аксессуары
+            $table->date('expense_date')->nullable(false)->default(now())->comment('Дата расхода ПС');
+            $table->string('type')->nullable()->comment('Тип заявки из которой был сделан отчет');   // Тип заявки - из оригинальной заявки, из заявки на чехлы или заявки на аксессуары
             $table->boolean('is_closed')->nullable(false)->default(false)->comment('Закрыта ли заявка (Передана в производство)');
             $table->timestamp('closed_at')->nullable()->comment('Дата закрытия заявки');
             $table->string('raw_text')->nullable()->comment('Оригинальный текст заявки из отчета СВПМ');
-            $table->string('description')->nullable()->comment('Описание заявки или дополнительная информация');
 
+            $table->string('description')->nullable()->comment('Описание заявки или дополнительная информация');
+            $table->string('comment')->nullable()->comment('Комментарий');
+            $table->string('note')->nullable()->comment('Примечание');
             $table->timestamps();
 
             $table->unsignedBigInteger('closed_by_user_id')->nullable()->comment('Ссылка на закрываемого');    // Объявляем столбец для внешнего ключа юзера, который закрывает заявку

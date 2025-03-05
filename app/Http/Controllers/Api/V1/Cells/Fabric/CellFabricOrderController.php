@@ -49,9 +49,11 @@ class CellFabricOrderController extends Controller
                     'code_1C' => $fabricOrder['code_1C'],
                     'time_1C' => $fabricOrder['moment'],
                     'type' => $fabricOrder['type'],
+                    'expense_date'=> now(),
                 ]);
 
                 $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
+                $newFabricOrderExpenseDate = $fabricOrder->expense_date;
 
                 foreach ($fabricOrder['fabrics'] as $fabricExpense) {
 
@@ -66,6 +68,7 @@ class CellFabricOrderController extends Controller
                         'fabric_id' => $fabric->id,
                         'name' => $fabricExpense['name'],
                         'expense' => $fabricExpense['expense'],
+                        'expense_at' => $newFabricOrderExpenseDate,
                     ]);
                 }
 

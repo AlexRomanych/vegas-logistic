@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id()->from(1);
             $table->string('name')->nullable(false)->comment('Название ПС');
             $table->float('expense')->nullable(false)->default(0)->comment('Количество расхода ПС');
+            $table->date('expense_at')->nullable()->comment('Дата расхода');        // Это на всякий случай, если расход не будем привязывать к общему заказу в 1С
             $table->string('description')->nullable()->comment('Описание или дополнительная информация');
             $table->timestamps();
 

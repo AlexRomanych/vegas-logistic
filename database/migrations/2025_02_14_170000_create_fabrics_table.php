@@ -19,16 +19,22 @@ return new class extends Migration
             $table->string('name')->nullable(false)->unique()->comment('Название');
             $table->float('buffer_amount')->nullable(false)->default(0.0)->comment('Количество в буфере, м.п.');
             $table->float('optimal_party')->nullable(false)->default(0.0)->comment('Оптимальная партия для запуска, м.п.');
+            $table->unsignedSmallInteger('rolls_amount')->nullable(false)->default(1)->comment('Количество рулонов ткани, шт.');
             $table->float('average_roll_length')->nullable(false)->default(0.0)->comment('Средняя длина рулона, м.п.');
             $table->float('translate_rate')->nullable()->comment('Коэффициент перевода');   // Непонятно пока зачем, но он равен 1,044 примерно
+            $table->unsignedSmallInteger('load_roll_time')->nullable(false)->default(0)->comment('Время загрузки рулона, мин.');
+
 
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность или архив');
+            $table->enum('belong_to', ['vegas', 'other'])->nullable(false)->default('vegas')->comment('Для собственного производства или аутсорс');
+
             $table->string('description')->nullable()->comment('Описание');
             $table->string('comment')->nullable()->comment('Комментарий');
+            $table->string('note')->nullable()->comment('Примечание');
             $table->timestamps();
 
-            $table->foreignIdFor(FabricMachine::class)->nullable(false)->default(1)->comment('Привязка ПС к стегальной машине')->constrained()->nullOnDelete();
-//            $table->foreignIdFor(FabricPicture::class)->nullable(false)->default(1)->comment('Привязка ПС к рисунку стежки')->constrained()->nullOnDelete();
+//            $table->foreignIdFor(FabricMachine::class)->nullable(false)->default(1)->comment('Привязка ПС к стегальной машине')->constrained()->nullOnDelete();
+            $table->foreignIdFor(FabricPicture::class)->nullable(false)->default(0)->comment('Привязка ПС к рисунку стежки')->constrained()->nullOnDelete();
 
             $table->json('alternative_machines')->nullable()->comment('Альтернативные машины');
 
