@@ -20,6 +20,8 @@ const URL_FABRICS_MACHINE = 'fabrics/machine/'                  // URL для п
 const URL_FABRICS_UPLOAD = 'fabrics/upload/'                    // URL для загрузки ПС с диска
 const URL_FABRIC_DELETE = 'fabrics/delete/'                     // URL для удаления ПС
 
+const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'  // URL для загрузки hрисунков ПС с диска
+
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'      // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
 const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'        // URL для удаления заказа
 
@@ -59,7 +61,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // Attract: Создание ПС
     const createFabric = async (fabric) => {
-        const result = await jwtPost(URL_FABRIC,  {data: fabric})
+        const result = await jwtPost(URL_FABRIC, {data: fabric})
         fabricsCashe = []
         return result
         // console.log(result)
@@ -90,13 +92,40 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     //  Attract: Удаление ПС
     const deleteFabric = async (delFabricId = 0) => {
-        if (delFabricId === 0) {return}
+        if (delFabricId === 0) {
+            return
+        }
 
         const result = await jwtDelete(URL_FABRIC, {id: delFabricId})
         fabricsCashe = []
         return result
         // console.log(result)
     }
+
+    // Attract: Загрузка ПС на сервер
+    // fileData - данные файла, отправляем в RAW формате
+    const uploadFabricsPictures = async (fileData) => {
+
+        // console.log(fileData)
+
+        const headers = {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/octet-stream',
+            // 'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        const response = await jwtPost(URL_FABRICS_PICTURES_UPLOAD, fileData, headers)
+        const result = await response
+
+        // openNewTab(result)
+
+        // console.log(result)
+
+        return result
+    }
+
+
     // Attract: Получаем с API список Стегальных машин
     const getFabricsMachines = async () => {
         const result = await jwtGet(URL_FABRICS_MACHINES)
@@ -142,6 +171,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         createFabric,
         uploadFabrics,
         deleteFabric,
+        uploadFabricsPictures,
         getFabricsMachines,
         getFabricsMachineById,
         uploadFabricsOrders,

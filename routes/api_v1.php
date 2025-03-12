@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -210,6 +211,12 @@ Route::get('/fabric/{id}', [CellFabricController::class, 'fabric'])->middleware(
 Route::put('/fabric', [CellFabricController::class, 'update'])->middleware('jwt.auth');
 Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt.auth');
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
+
+Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
+//Route::post('/fabrics/pictures/upload', function(Request $request){
+//    return json_encode($request->all());
+//})->middleware('jwt.auth');
+
 
 Route::get('/fabrics/machines', [CellFabricMachineController::class, 'machines'])->middleware('jwt.auth');
 Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machine'])->middleware('jwt.auth');

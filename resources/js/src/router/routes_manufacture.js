@@ -81,6 +81,16 @@ const manufactureRaw = [
     },
 
     {
+        // Загрузка с диска списка рисунков ПС
+        path: _MAIN_PREFIX + 'fabrics/pictures/upload',
+        name: 'manufacture.cell.fabrics.pictures.upload',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsPicturesUpload.vue'),
+        meta: {
+            title: 'Загрузка ПС в БД'
+        }
+    },
+
+    {
         // Буфер
         path: _MAIN_PREFIX + 'fabrics/buffer',
         name: 'manufacture.cell.fabrics.buffer',

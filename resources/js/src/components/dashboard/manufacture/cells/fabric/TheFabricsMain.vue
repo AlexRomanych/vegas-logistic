@@ -46,9 +46,10 @@ const uploadFabrics = {
 
 let menuItems = [
     {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
-    {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload'},
-    {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
     {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
+    {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
+    {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},
+    {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload'},
 ]
 
 menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
