@@ -4,6 +4,7 @@ use App\Models\FabricPictureSchema;
 use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -18,7 +19,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create(self::FABRIC_PICTURES_TABLE, function (Blueprint $table) {
-            $table->id()->from(1);
+            $table->id()->from(0);
             $table->string('name')->nullable(false)->unique()->comment('Название рисунка');
             $table->binary('image')->nullable()->comment('Рисунок стежки');
 //            $table->string('rows')->nullable()->comment('Количество задействованных рядов');  // '1' - 1 ряд, '1-2' - 1, 2 ряд, '1-3' - 1, 3 ряд
@@ -79,6 +80,15 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
+
+        DB::table(self::FABRIC_PICTURES_TABLE)->insert([
+            ['id' => 0, 'name' => 'Рисунок не определен'],
+        ]);
+
+
+
+
     }
 
     /**
