@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Fabric\FabricCollection;
 use App\Http\Resources\Fabric\FabricResource;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 
 class CellFabricController extends Controller
@@ -15,20 +17,21 @@ class CellFabricController extends Controller
      * @param Request $request
      * @return array|string
      */
-    public function uploadFabrics(Request $request)
+    public function uploadFabrics(Request $request): array|string
     {
         // Info: Структура выгружаемых данных
         /*
-        [
             {
-                "c":"000034799",                             Код по 1С
-                "n":"ПС 142МТ 8П 30С граф (рис. ГР)"         Название ПС
-            },
-            {
-                "c":"000028434",
-                "n":"ПС 142Т 8П 30С Maxx (рис. Ж5)"
+            "code":"000034799",                         ' ['code']          Код 1C
+            "name":"ПС 142МТ 8П 30С граф (рис. ГР)",    ' ['name']          Наименование ПС
+            "active":"да",                              ' ['active']        Действующий или архивный
+            "pic":"ГР",                                 ' ['pic']           Название рисунка
+            "opt_party":300,                            ' ['opt_party']     Оптимальная партия для запуска
+            "rolls_amount":1,                           ' ['rolls_amount']  Кол-во рулонов в ПС
+            "load_time":7,                              ' ['load_time']     Время загрузки рулона
+            "time_loss":5,                              ' ['time_loss']     Временные потери, %
+            "translate_rate":1.052                      ' ['translate_rate']    Перевод ПС в ткань
             }
-        ]
         */
 
         // todo Сделать проверку на валидность данных массива fabrics.json
@@ -39,25 +42,38 @@ class CellFabricController extends Controller
         foreach ($fabrics as $fabric) {
 
             $checkFabric = Fabric::query()
-                ->where('code_1C', $fabric['c'])
+                ->where('code_1C', $fabric['code'])
                 ->first();
 
             if ($checkFabric) {
-                $dubs[] = $fabric['n'];
+                $dubs[] = $fabric['name'];
+
             } else {
-                Fabric::query()->create([
-                    'code_1C' => $fabric['c'],
-                    'name' => $fabric['n'],
-                ]);
+
+                $fabricDataSet = [
+                    'code_1C' => $fabric['code'],
+                    'name' => $fabric['name'],
+                    'active' => strtolower($fabric['active']) == 'да',
+                    'optimal_party' => (int)$fabric['opt_party'],
+                    'rolls_amount' => (int)$fabric['rolls_amount'],
+                    'load_roll_time' => (int)$fabric['load_time'],
+                    'time_loss' => $fabric['time_loss'],
+                    'translate_rate' => (float)$fabric['translate_rate'],
+                ];
+
+                $fabricPictureId = FabricService::getFabricPicByName($fabric['pic']);
+                $fabricDataSet['fabric_picture_id'] = $fabricPictureId->id ?? 0;
+//
+                Fabric::query()->create($fabricDataSet);
             }
 
         }
 
         if (count($dubs)) {
-            return $dubs;
+            EndPointStaticRequestAnswer::dubs($dubs);
         }
 
-        return OK_STATUS_WORD;
+        return EndPointStaticRequestAnswer::ok();
     }
 
     /**

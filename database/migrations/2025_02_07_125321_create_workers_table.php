@@ -3,17 +3,19 @@
 use App\Models\Manufacture\CellItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private const TABLE_NAME = 'workers';
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('workers', function (Blueprint $table) {
-            $table->id();
+        Schema::create(self::TABLE_NAME, function (Blueprint $table) {
+            $table->id()->from(0);
             $table->string('surname')->nullable(false)->comment('фамилия');
             $table->string('name')->nullable(false)->comment('имя');
             $table->string('patronymic')->nullable(false)->comment('отчество');
@@ -27,6 +29,11 @@ return new class extends Migration
             // attract: У каждого рабочего может быть привязка к ПЯ
             $table->foreignIdFor(CellItem::class)->nullable()->constrained()->nullOnDelete();    //Внешний ключ, указывающий на таблицу с ПЯ
         });
+
+        DB::table(self::TABLE_NAME)->insert([
+            ['id' => 0, 'surname' => 'Не определен', 'name' => '', 'patronymic' =>''],
+        ]);
+
     }
 
     /**
@@ -34,6 +41,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workers');
+        Schema::dropIfExists(self::TABLE_NAME);
     }
 };

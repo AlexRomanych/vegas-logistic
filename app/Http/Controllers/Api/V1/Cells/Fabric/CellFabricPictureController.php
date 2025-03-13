@@ -78,6 +78,7 @@ class CellFabricPictureController extends Controller
                 $altMachine_3 = FabricService::getFabricMachineByShortName($fabricPic['alt_3_mach'] ?? '');
                 $picDataSet['alt_machine_3_id'] = $altMachine_3->id ?? 0;
 
+
                 // Сохранение схемы основной машины
                 $mainMachineSchema = FabricService::getFabricPicSchemaByName($fabricPic['main_mach_sch'] ?? '');
                 $picDataSet['fabric_picture_schema_id'] = $mainMachineSchema->id ?? 0;
@@ -113,6 +114,5 @@ class CellFabricPictureController extends Controller
 
         return EndPointStaticRequestAnswer::ok();
     }
-
 
 }
