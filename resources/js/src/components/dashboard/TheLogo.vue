@@ -27,13 +27,14 @@
 <script setup>
 import {computed, watch, ref, onMounted, onUnmounted} from 'vue'
 import {useRoute} from 'vue-router'
-import {useUserStore} from "@/src/stores/UserStore";
-import {getWeekNumber} from "@/src/app/helpers/helpers_date.js"
-import {UserCircleIcon} from '@heroicons/vue/24/solid'
+import {useUserStore} from "/resources/js/src/stores/UserStore";
+import {getWeekNumber} from "/resources/js/src/app/helpers/helpers_date.js"
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import {UserCircleIcon} from '@heroicons/vue/24/solid'
 
 const route = useRoute()
-const pageTitle = computed(() => route.meta.title ? route.meta.title : 'The Page')
+// const pageTitle = computed(() => route.meta.title ? route.meta.title : 'The Page')
+const pageTitle = computed(() => route.meta.title ? route.meta.title : '')
 
 // console.log(route.meta)
 // console.log(route)
@@ -81,8 +82,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    clearInterval(intervalTime)
-    clearInterval(intervalDate)
+    // clearInterval(intervalTime)
+    // clearInterval(intervalDate)
 });
 
 // debugger

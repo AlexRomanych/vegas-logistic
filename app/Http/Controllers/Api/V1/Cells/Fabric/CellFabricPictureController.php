@@ -97,7 +97,7 @@ class CellFabricPictureController extends Controller
 
 
                 // Сохранение характеристик ПС
-                $picDataSet['stitch length'] = (float)$fabricPic['stitch_length'];
+                $picDataSet['stitch_length'] = (float)$fabricPic['stitch_length'];
                 $picDataSet['stitch_speed'] = (int)$fabricPic['stitch_speed'];
                 $picDataSet['moment_speed'] = (int)$fabricPic['moment_speed'];
                 $picDataSet['shuttle_amount'] = (int)$fabricPic['shuttle_amount'] === 0 ? null : $fabricPic['shuttle_amount'];

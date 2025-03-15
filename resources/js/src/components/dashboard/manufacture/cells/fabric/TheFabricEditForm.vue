@@ -114,7 +114,7 @@ const fabricStore = useFabricsStore()
 const route = useRoute()
 const router = useRouter()
 
-console.log('meta', route.meta.mode)
+// console.log('meta', route.meta.mode)
 const editMode = route.meta.mode === 'edit'
 
 // Задаем пустое ПС для добавления

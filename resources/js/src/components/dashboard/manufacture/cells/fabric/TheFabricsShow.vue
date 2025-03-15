@@ -3,7 +3,7 @@
 
         <div v-if="fabrics.length">
 
-            <div class="flex">
+            <div class="sticky-header flex pt-1 pb-1 bg-slate-100">
                 <AppLabel
                     align="center"
                     text="Название ПС"
@@ -71,8 +71,8 @@
                     />
                 </router-link>
 
-
             </div>
+
 
             <div v-for="fabric in fabrics" :key="fabric.id">
                 <div class="flex">
@@ -147,6 +147,7 @@
 
                 </div>
             </div>
+
         </div>
         <div v-else>
 
@@ -169,8 +170,8 @@
     />
 
     <AppCallout v-if="calloutShow"
-        :text="calloutText"
-        :type="calloutType"
+                :text="calloutText"
+                :type="calloutType"
     />
 
 </template>
@@ -188,7 +189,7 @@ const fabricsStore = useFabricsStore()
 let fabrics = await fabricsStore.getFabrics()
 
 
-// console.log('fabrics', fabrics)
+console.log('fabrics', fabrics)
 
 const modalShow = ref(false)
 const modalAnswer = ref(false)
@@ -233,5 +234,8 @@ const closeModal = async (answer) => {
 </script>
 
 <style scoped>
-
+.sticky-header {
+    position: sticky;
+//top: var(--header-height); top: 0; //padding-top: 10px;
+}
 </style>

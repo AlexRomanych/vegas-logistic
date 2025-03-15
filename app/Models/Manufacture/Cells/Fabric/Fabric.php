@@ -26,7 +26,8 @@ class Fabric extends Model
     ];
 
     protected $with = [
-        'fabricMachine'
+//        'fabricMachine'
+        'fabricPicture'         // название как и в процедуре отношений
     ];
 
 //    public function __construct() {
@@ -62,12 +63,19 @@ class Fabric extends Model
     }
 
 
-
-
-    //h2 fabricMachine -----------------------------------------------------------------------------------------
-    public function fabricMachine(): BelongsTo
+    //h2 fabricPicture -----------------------------------------------------------------------------------------
+    public function fabricPicture(): BelongsTo
     {
-        return $this->belongsTo(FabricMachine::class);
+        return $this->belongsTo(FabricPicture::class);
     }
+
+
+
+
+//    //h2 fabricMachine -----------------------------------------------------------------------------------------
+//    public function fabricMachine(): BelongsTo
+//    {
+//        return $this->belongsTo(FabricMachine::class);
+//    }
 
 }

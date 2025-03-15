@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('name')->nullable(false)->unique()->comment('Название рисунка');
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность рисунка');
 //            $table->string('rows')->nullable()->comment('Количество задействованных рядов');  // '1' - 1 ряд, '1-2' - 1, 2 ряд, '1-3' - 1, 3 ряд
-            $table->float('stitch length')->nullable(false)->default(0)->comment('Длина стежка в мм'); // Длина стежка по КД, мм
+            $table->float('stitch_length')->nullable(false)->default(0)->comment('Длина стежка в мм'); // Длина стежка по КД, мм
             $table->integer('stitch_speed')->nullable(false)->default(0)->comment('Скорость стежков, шт./мин.'); // Скорость стежков шт./мин.
             $table->integer('moment_speed')->nullable(false)->default(0)->comment('Мгновенная скорость, м/ч'); // Мгновенная скорость, м/час
             $table->integer('shuttle_amount')->nullable()->comment('Количество челноков для Корейца'); // Количество челноков для Корейца

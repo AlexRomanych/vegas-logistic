@@ -4,7 +4,7 @@
         <div><span class="error-text">Запрашиваемый ресурс не найден</span></div>
         <div class="mt-8">
             <span class="back-to-main">
-                <router-link to="/">Вернуться на главную</router-link>
+                <router-link to="/dashboard/start">Вернуться на главную</router-link>
             </span>
         </div>
     </div>
@@ -16,7 +16,7 @@
 
 <style scoped>
 .main-container {
-    @apply w-screen h-screen flex flex-col justify-center items-center bg-slate-200
+    @apply w-screen h-screen flex flex-col justify-center items-center bg-slate-200 z-50
 }
 
 .error-code {

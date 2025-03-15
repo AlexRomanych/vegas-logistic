@@ -1,8 +1,12 @@
 <template>
     <Suspense>
-        <main class="content">
-            <router-view :key="$route.fullPath"></router-view>
-<!--            {{$route.fullPath}}-->
+
+        <main :class="$route.name == 'login' || $route.name == 'register' || $route.name == 'error.404' ? 'container-auth' : 'container'">
+            <div :class="$route.name == 'login' || $route.name == 'register' || $route.name == 'error.404' ? '' : 'content'">
+                <router-view :key="$route.fullPath"></router-view>
+                <!--            {{$route.fullPath}}-->
+<!--                <span>Name__ {{$route.name}}</span>-->
+            </div>
         </main>
     </Suspense>
     <!--    <main v-if="isAuthenticated" class="content">-->
@@ -12,7 +16,7 @@
 
 
 <script setup>
-import {computed, reactive} from 'vue'
+import {computed, reactive, unref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 //
 //
@@ -21,6 +25,25 @@ const route = useRoute()
 //
 const name = computed(() => route.name)
 const name_ = computed(() => router.currentRoute.value.name)
+
+const props = defineProps({
+    auth: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
+})
+
+
+// const route = useRoute()
+// console.log(router.currentRoute.value)
+// console.log(unref(router).currentRoute.value    )
+// console.log(JSON.stringify(router.currentRoute))
+// console.log(router.currentRoute.name)
+
+// const a = unref(router.currentRoute.value)
+// console.log('a', a)
+
 
 // const rt = reactive(router)
 // console.log('rt', rt.currentRoute)
@@ -73,10 +96,27 @@ const name_ = computed(() => router.currentRoute.value.name)
 
 
 <style scoped>
-.content {
+.container {
     flex: 1;
-    overflow-y: auto;
-    margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+//overflow-y: auto; //position: relative;
+//margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); //margin: 0 0 var(--footer-height) var(--sidebar-width); //margin-top: var(--header-height);
+
     /*   position: relative; */
 }
+
+.container-auth {
+    flex: 1;
+    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+}
+
+.content {
+    position: absolute;
+    width: calc(100% - var(--sidebar-width));
+    height: calc(100% - var(--header-height) - var(--footer-height));
+    top: var(--header-height);
+    left: var(--sidebar-width);
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
 </style>

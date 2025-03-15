@@ -17,6 +17,8 @@ return new class extends Migration
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id()->from(1);
 
+
+
             $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')
                 ->constrained()
                 ->cascadeOnDelete();
@@ -36,6 +38,13 @@ return new class extends Migration
 
             $table->double('textile_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
             $table->double('fabric_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
+
+            // статус позиции сменного задания
+            $table->unsignedTinyInteger('item_status')->nullable(false)->default(0)->comment('Статус задания');
+
+            $table->string('description')->nullable()->comment('Описание');
+            $table->string('comment')->nullable()->comment('Комментарий');
+            $table->string('note')->nullable()->comment('Примечание');
 
             $table->timestamps();
 

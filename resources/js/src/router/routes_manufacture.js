@@ -61,6 +61,16 @@ const manufactureRaw = [
     },
 
     {
+        // Инструмент управления ПС
+        path: _MAIN_PREFIX + 'fabrics/manage',
+        name: 'manufacture.cell.fabrics.manage',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsManage.vue'),
+        meta: {
+            title: 'Управление ПС'
+        }
+    },
+
+    {
         // Список ПС
         path: _MAIN_PREFIX + 'fabrics/show',
         name: 'manufacture.cell.fabrics.show',

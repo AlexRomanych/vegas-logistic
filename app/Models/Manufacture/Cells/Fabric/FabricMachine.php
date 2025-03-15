@@ -12,8 +12,9 @@ class FabricMachine extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    public function fabrics(): HasMany
+    //h2 fabricPicture (рисунки ПС) - ---------------------------------------------------------------------
+    public function fabricPictures(): HasMany
     {
-        return $this->hasMany(Fabric::class);
+        return $this->hasMany(FabricPicture::class);
     }
 }

@@ -22,6 +22,14 @@ return new class extends Migration
                 ->useCurrent()
                 ->comment('Дата создания сменного задания');
 
+            // Оригинальное сменное задание
+            // Перечень ПС и количества к стеганию
+            $table->json('initial_tasks')->nullable()->comment('Список заданий при выставлении');
+
+            // Зададим статус СЗ. 0 - создана, 1 - выполнена, 2 - выполнена не полностью
+            $table->unsignedTinyInteger('task_status')->nullable(false)->default(0)->comment('Статус задания');
+
+
             $table->timestamp('finish_task_date')
                 ->nullable(false)
                 ->useCurrent()
@@ -36,6 +44,10 @@ return new class extends Migration
             $table->ForeignIdFor(FabricTeam::class)->nullable(false)->default(1)->comment('Привязка к бригаде')
                 ->constrained()
                 ->nullOnDelete();
+
+            $table->string('description')->nullable()->comment('Описание');
+            $table->string('comment')->nullable()->comment('Комментарий');
+            $table->string('note')->nullable()->comment('Примечание');
 
             $table->timestamps();
         });

@@ -21,15 +21,15 @@ class FabricResource extends JsonResource
             'id' => $this->id,
             'code_1C' => $this->code_1C,
             'name' => $this->name,
-            'display_name' => $this->display_name,
-            'pic' => $this->pic,
-            'textile' => $this->textile,
+            'display_name' => $this->display_name,                  // вычисляемое поле
+            'pic' => $this->pic,                                    // вычисляемое поле
+            'textile' => $this->textile,                            // вычисляемое поле
+            'fillersList' => $this->fillersList,                    // вычисляемое поле
             'active' => $this->active,
-            'fillersList' => $this->fillersList,
+            'fabric_picture_id' => $this->fabric_picture_id,
             'fabric_machine' => [
-                'id' => $this->fabricMachine->id,
-                'name' => $this->fabricMachine->name,
-                'short_name' => $this->fabricMachine->short_name
+                'id' => $this->fabricPicture->fabricMainMachine->id,                    // Туту дергаем стегальную машину через цепочку отношений ПС->Рисунок ПС->Стегальная машина (Fabric->FabricPicture->FabricMachine)
+                'short_name' => $this->fabricPicture->fabricMainMachine->short_name,    // Туту дергаем стегальную машину через цепочку отношений ПС->Рисунок ПС->Стегальная машина (Fabric->FabricPicture->FabricMachine)
             ],
             'buffer' => (double)$this->buffer_amount,
             'optimal_party' => (double)$this->optimal_party,

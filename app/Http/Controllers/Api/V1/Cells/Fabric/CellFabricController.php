@@ -95,7 +95,7 @@ class CellFabricController extends Controller
         return new FabricCollection(
             Fabric::query()
                 ->orderBy('name')
-                ->with('fabricMachine')
+                ->with('fabricPicture')
                 ->get()
         );
 

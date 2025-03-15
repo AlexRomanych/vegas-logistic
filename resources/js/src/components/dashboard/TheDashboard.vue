@@ -26,7 +26,7 @@
     </div>
 
     <div v-else>
-        <TheMain/>
+        <TheMain :auth="true"/>
     </div>
 
     <!--    <div v-else>-->
@@ -38,12 +38,12 @@
 <script setup>
 import {ref, computed} from 'vue'
 // import TheHeader from "@/src/components/structure/TheHeader.vue"
-import TheHeader from "@/src/components/dashboard/TheHeader.vue"
-import TheFooter from "@/src/components/dashboard/TheFooter.vue";
-import TheNav from "@/src/components/dashboard/TheNav.vue";
-import TheMain from "@/src/components/dashboard/TheMain.vue";
+import TheHeader from "/resources/js/src/components/dashboard/TheHeader.vue"
+import TheFooter from "/resources/js/src/components/dashboard/TheFooter.vue";
+import TheNav from "/resources/js/src/components/dashboard/TheNav.vue";
+import TheMain from "/resources/js/src/components/dashboard/TheMain.vue";
 
-import {useUserStore} from "@/src/stores/UserStore";
+import {useUserStore} from "/resources/js/src/stores/UserStore";
 // import {useRouter} from "vue-router";
 
 

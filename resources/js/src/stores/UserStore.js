@@ -1,17 +1,19 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
-import {useRouter} from "vue-router";
+// import {useRouter} from 'vue-router'
 
 
 import axios from 'axios'
 
-import UserClass from "@/src/app/classes/UserClass.js";
+import UserClass from "/resources/js/src/app/classes/UserClass.js";
 
 const api = axios.create({
     withCredentials: false,
     baseURL: '/api/v1/auth'
 })
 
+// const router = useRouter()
+// console.log(router)
 
 export const useUserStore = defineStore('user', () => {
 
@@ -21,7 +23,7 @@ export const useUserStore = defineStore('user', () => {
     const errorApi = function (err) {
         currentUser.status = err.response.status      // возвращаем статус для отображения ошибки
         currentUser.id = 0
-        isAuth.value= false
+        isAuth.value = false
         console.log('errorApi', err.response)
     }
 
@@ -56,7 +58,7 @@ export const useUserStore = defineStore('user', () => {
                     status: res.status
                 })
 
-                isAuth.value= true
+                isAuth.value = true
                 // debugger
                 return currentUser // возвращаем пользователя
             }
@@ -143,7 +145,7 @@ export const useUserStore = defineStore('user', () => {
         // debugger
         currentUser = await getUser()
 
-        isAuth.value= !!currentUser.id
+        isAuth.value = !!currentUser.id
 
         // console.log('isAuthenticated', currentUser)
         // debugger
@@ -179,8 +181,8 @@ export const useUserStore = defineStore('user', () => {
 
     const logout = function () {
         localStorage.removeItem('token')
-        const router = useRouter()
-        router.push({name: 'Login'})
+        currentUser = new UserClass()
+        // router.push({name: 'login'})
     }
 
     return {

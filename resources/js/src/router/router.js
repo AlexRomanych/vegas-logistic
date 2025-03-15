@@ -1,6 +1,6 @@
 import {createRouter, createMemoryHistory, createWebHistory} from "vue-router"
-import {useUserStore} from "@/src/stores/UserStore"
-import routes from "@/src/router/routes"
+import {useUserStore} from "/resources/js/src/stores/UserStore"
+import routes from "/resources/js/src/router/routes"
 
 import menu from '/resources/js/src/assets/menu.js'
 
@@ -33,7 +33,7 @@ router.beforeEach(async (to, from, next) => {
     // console.log('to:', to.name)
     //
     // debugger
-    const auth = await user.isAuthenticated()
+    let auth = await user.isAuthenticated()
     // console.log(auth)
     // debugger
 
@@ -41,16 +41,39 @@ router.beforeEach(async (to, from, next) => {
 
     // if (!user.isAuthenticated()) {
     if (!auth) {
+
         if (to.name === 'register' || to.name === 'login' || to.name === 'error.404') {
             next()
         } else {
             next({name: 'login'})
         }
+
     } else {
 
-        // Здесь определяем заголовки страниц для меню
-        if (to.name === 'menu') {
+        // если пользователь уже в системе и он зашел на страницу регистрации или авторизации, то выходим из системы
+        if (to.name === 'register' || to.name === 'login') {
+
+
+
+            console.log('logout', from.name)
+
+            user.logout()
+
+            auth = false
+
+            next({name: 'login'})
+
+        } else if (to.name === 'menu') {
+
+            console.log('menu')
+
+            // Здесь определяем заголовки страниц для меню
             to.meta.title = menu[parseInt(to.params.groupId) - 1].group.name
+            next()
+
+        } else {
+
+            next()
         }
 
         // console.log(to)
@@ -58,7 +81,7 @@ router.beforeEach(async (to, from, next) => {
 
         // debugger
         // window.location.reload()
-        next()
+        // next()
     }
 
 })

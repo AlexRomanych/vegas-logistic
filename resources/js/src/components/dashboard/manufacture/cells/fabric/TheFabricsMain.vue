@@ -46,6 +46,7 @@ const uploadFabrics = {
 
 let menuItems = [
     {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
+    {name: 'Управление ПС', path: 'manufacture.cell.fabrics.manage'},
     {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
     {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},

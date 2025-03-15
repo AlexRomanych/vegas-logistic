@@ -11,7 +11,7 @@
 
 <script setup>
 
-import TheLogo from "@/src/components/dashboard/TheLogo.vue";
+import TheLogo from "/resources/js/src/components/dashboard/TheLogo.vue";
 
 </script>
 
