@@ -3,7 +3,7 @@ import {
 } from "@/src/app/constants/colorsClasses.js"
 
 import {
-    fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
+    fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
 } from "@/src/app/constants/fontSizes.js"
 
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
@@ -84,6 +84,9 @@ export function getFontSizeClass(param = fontNormal) {
 
     let textSizeClass = ''
     switch(param) {
+        case fontMicro:
+            textSizeClass = 'text-mc'
+            break
         case fontMini:
             textSizeClass = 'text-xs'
             break

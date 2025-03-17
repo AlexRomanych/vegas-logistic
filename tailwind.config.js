@@ -1,6 +1,7 @@
-/** @type {import('tailwindcss').Config} */
 const colors = require('tailwindcss/colors')
+const defaultTheme = require('tailwindcss/defaultTheme');
 
+/*
 import {
     colorsClasses,
     danger, dark, info, light,
@@ -10,8 +11,8 @@ import {
     toLight,
     warning
 } from "@/src/app/constants/colorsClasses.js";
+*/
 
-const defaultTheme = require('tailwindcss/defaultTheme');
 // const defaultTheme = import('tailwindcss').Config
 export default {
     content: [
@@ -24,10 +25,14 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                'sans': ['"Raleway"', ...defaultTheme.fontFamily.sans],
-                'mono': ['"Fira Code"', ...defaultTheme.fontFamily.mono],
+                'sans': ['Raleway', ...defaultTheme.fontFamily.sans],
+                'mono': ['Fira Code', ...defaultTheme.fontFamily.mono],
                 // 'serif': ['"Fira Code"', ...defaultTheme.fontFamily.serif],
 
+            },
+
+            fontSize: {
+                'mc': ['0.625rem', { lineHeight: '0.825rem' }],   // font-mc (micro)
             },
         }
     },

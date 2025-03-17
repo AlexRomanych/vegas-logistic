@@ -49,7 +49,7 @@ const props = defineProps({
         required: false,
         default: 'normal',
         validator: (size) => fontSizesList.includes(size)
-        // validator: (size) => ['mini', 'normal', 'small', 'large', 'huge'].includes(size)
+        // validator: (size) => ['micro', 'mini', 'normal', 'small', 'large', 'huge'].includes(size)
     },
     bold: {
         type: Boolean,
@@ -73,7 +73,7 @@ const labelClick = (e) => {
     emits('labelClick', e.target.innerText)
 }
 
-const textSizeClass = getFontSizeClass(props.textSize)
+const textSizeClass = ref(getFontSizeClass(props.textSize))
 const semibold = props.bold ? 'font-semibold' : ''
 const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
 // const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
@@ -113,8 +113,11 @@ watch(() => props.type, (type) => {
     borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
 })
 
-// Перерисовываем выравнивание текста по горизонтали
-watch(() => props.align, (align) => horizontalAlign.value = getHorizontalAlign(props.align))
+// делаем реактивным горизонтальное выравнивание
+watch(() => props.align, (align) => horizontalAlign.value = getHorizontalAlign(align))
+
+// делаем реактивным размер шрифта выравнивание
+watch(() => props.textSize, (textSize) => textSizeClass.value = getFontSizeClass(textSize))
 
 // watchEffect(() => {})
 

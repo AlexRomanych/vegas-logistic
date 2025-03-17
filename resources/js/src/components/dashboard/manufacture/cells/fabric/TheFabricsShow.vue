@@ -3,7 +3,7 @@
 
         <div v-if="fabrics.length">
 
-            <div class="sticky-header flex pt-1 pb-1 bg-slate-100">
+            <div class="sticky-header top-0 flex pt-1 pb-1 bg-slate-100">
                 <AppLabel
                     align="center"
                     text="Название ПС"
