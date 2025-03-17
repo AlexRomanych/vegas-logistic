@@ -14,9 +14,9 @@
 
 <script setup>
 
-import {colorsList} from "@/src/app/constants/colorsClasses.js"
-import {fontSizesList} from "@/src/app/constants/fontSizes.js"
-import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from "@/src/app/helpers/helpers.js"
+import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
 
 import {computed, ref, watch, watchEffect } from "vue";
 
@@ -86,6 +86,26 @@ const currentTextColor = ref(getTextColorClassByType(props.type))
 const backgroundColor =ref( getColorClassByType(props.type, 'bg', currentColorIndex))
 const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
 
+// вычисляем горизонтальное выравнивание
+const getHorizontalAlign = (alignPosition) => {
+    let horizontalAlign = 'items-'
+    switch (alignPosition) {
+        case 'left':
+            horizontalAlign += 'start'
+            break;
+        case 'right':
+            horizontalAlign += 'end'
+            break;
+        case 'center':
+            horizontalAlign += 'center'
+            break;
+    }
+    return horizontalAlign
+}
+
+const horizontalAlign = ref(getHorizontalAlign(props.align))
+
+
 // Без этой функции не перерисовывает стили
 watch(() => props.type, (type) => {
     currentTextColor.value = getTextColorClassByType(props.type)
@@ -93,19 +113,13 @@ watch(() => props.type, (type) => {
     borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
 })
 
+// Перерисовываем выравнивание текста по горизонтали
+watch(() => props.align, (align) => horizontalAlign.value = getHorizontalAlign(props.align))
 
-let horizontalAlign = 'items-'
-switch (props.align) {
-    case 'left':
-        horizontalAlign += 'start'
-        break;
-    case 'right':
-        horizontalAlign += 'end'
-        break;
-    case 'center':
-        horizontalAlign += 'center'
-        break;
-}
+// watchEffect(() => {})
+
+
+
 
 
 </script>
