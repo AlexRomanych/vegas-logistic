@@ -1,11 +1,15 @@
 
 @import 'fonts/Raleway.css';
 
+/* Добавлено в версии 4 */
+/*@import "tailwindcss";*/
 
-/*! @import */
+/* Удалено в версии 4 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 /* Определяем стиль для блоков, которые должны быть выше dashboard (404? login и т.д.) */
 @layer base {

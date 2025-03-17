@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
 import vue from '@vitejs/plugin-vue'
-import tailwindcss from 'tailwindcss'
+import tailwindcss from 'tailwindcss'               // удалено в версии 4.0
 import autoprefixer from 'autoprefixer'
-import { fileURLToPath } from 'node:url'
+// import tailwindcss from "@tailwindcss/vite";     // добавлено в версии 4.0
+// import { fileURLToPath } from 'node:url'
 
 // console.log(new URL('./src', import.meta.url))
 export default defineConfig({
@@ -13,12 +14,12 @@ export default defineConfig({
             refresh: true,
         }),
         vue(),
-
+        // tailwindcss(),
     ],
     css: {
         postcss: {
             plugins: [
-                tailwindcss,
+                tailwindcss,                 // удалено в версии 4.0
                 autoprefixer,
 
             ],
