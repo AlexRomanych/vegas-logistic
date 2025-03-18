@@ -1,8 +1,8 @@
 <template>
     <Suspense>
 
-        <main :class="$route.name == 'login' || $route.name == 'register' || $route.name == 'error.404' ? 'container-auth' : 'container'">
-            <div :class="$route.name == 'login' || $route.name == 'register' || $route.name == 'error.404' ? '' : 'content'">
+        <main :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? 'container-auth' : 'container'">
+            <div :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? '' : 'content'">
                 <router-view :key="$route.fullPath"></router-view>
                 <!--            {{$route.fullPath}}-->
 <!--                <span>Name__ {{$route.name}}</span>-->
@@ -98,25 +98,50 @@ const props = defineProps({
 <style scoped>
 .container {
     flex: 1;
-//overflow-y: auto; //position: relative;
-//margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); //margin: 0 0 var(--footer-height) var(--sidebar-width); //margin-top: var(--header-height);
+    position: relative;
+    //overflow-x: hidden;
+/*
+    // min-width: 100vw; // или ширина в пикселях
+    // width: auto;
+    //
+    // overflow-y: auto;
+    // overflow-x: auto;
+    // overflow-y: auto; //position: relative;
+    // margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); //margin: 0 0 var(--footer-height) var(--sidebar-width); //margin-top: var(--header-height);
+    // position: relative;
+ */
 
-    /*   position: relative; */
 }
 
 .container-auth {
     flex: 1;
+    /*
+    //overflow-y: auto;
+    //overflow-x: auto;
     //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+    */
 }
+
 
 .content {
     position: absolute;
-    width: calc(100% - var(--sidebar-width));
+    min-width: calc(100vw - var(--sidebar-width)); /* или ширина в пикселях *
+    /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
     height: calc(100% - var(--header-height) - var(--footer-height));
+
+    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+
     top: var(--header-height);
     left: var(--sidebar-width);
     overflow-y: auto;
     overflow-x: auto;
+
+    //overflow-x: auto;
+
+    /*
+    //min-width: 100vw; // или ширина в пикселях
+    //width: auto;
+    */
 }
 
 </style>

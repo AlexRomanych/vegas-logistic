@@ -36,8 +36,9 @@ export default {
     top: 0;
     width: var(--sidebar-width);
     /*   min-height: 100vh; */
-    height: calc(100% - var(--footer-height) - var(--header-height));
+    height: calc(100vh - var(--footer-height) - var(--header-height));
     margin: var(--header-height) 0 var(--footer-height) 0;
+    z-index: 100;
 }
 
 .sidebar-menu {

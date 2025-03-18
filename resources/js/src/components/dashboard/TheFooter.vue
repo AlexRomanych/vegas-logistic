@@ -19,10 +19,12 @@
     height: var(--footer-height);
     background-color: var(--main-bg-color);
     border-top: 2px solid var(--main-border-color);
+    z-index: 100;
 }
 
 .footer-container {
     @apply flex justify-center items-center w-full font-semibold text-slate-600;
     height: var(--footer-height);
+
 }
 </style>

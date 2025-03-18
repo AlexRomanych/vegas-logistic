@@ -10,7 +10,7 @@
     <!--    </div>-->
 
 
-    <!-- Показываем страицу, если пользователь авторизован -->
+    <!-- Показываем страницу, если пользователь авторизован -->
     <div v-if="isAuthenticated" class="container">
 <!--    <div class="container">-->
 
@@ -101,6 +101,7 @@ const isAuthenticated = computed(() => user.isAuth)
     display: flex;
     min-height: 100vh; /* или высота в пикселях */
     min-width: 100vw; /* или ширина в пикселях */
+    width: auto;
 }
 
 

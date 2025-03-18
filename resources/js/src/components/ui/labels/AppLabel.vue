@@ -105,7 +105,6 @@ const getHorizontalAlign = (alignPosition) => {
 
 const horizontalAlign = ref(getHorizontalAlign(props.align))
 
-
 // Без этой функции не перерисовывает стили
 watch(() => props.type, (type) => {
     currentTextColor.value = getTextColorClassByType(props.type)

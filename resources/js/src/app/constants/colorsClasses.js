@@ -36,7 +36,8 @@ colorsClasses[secondary] = {
 }
 colorsClasses[success] = {
     [mainColor]: 'green',
-    [textColor]: 'white',
+    [textColor]: 'black',
+    // [textColor]: 'white',
     [effectDirection]: toDark
 }
 colorsClasses[danger] = {

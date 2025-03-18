@@ -61,6 +61,15 @@ export default {
             pattern: /ring-(blue|slate|green|red|yellow|sky|gray|black|zinc)-(200|300|400|500|600|700|800)/,
             variants: ['focus'],
         },
+        // 'w-[330px]',
+        // 'w-[20px]',
+        // 'w-[30px]',
+        // 'w-[48px]',
+        // 'w-[51px]',
+        // 'w-[50px]',
+        // 'w-[450px]',
+        // 'w-[500px]',
+        // 'w-[600px]',
 
     ],
 }

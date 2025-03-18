@@ -142,6 +142,16 @@ const manufactureRaw = [
         },
     },
 
+    {
+        // Учет ПС
+        path: _MAIN_PREFIX + 'fabrics/expense',
+        name: 'manufacture.cell.fabrics.expense',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpensive.vue'),
+        meta: {
+            title: 'Учет ПС'
+        }
+    },
+
 
     //info Стежка Китаец
     {

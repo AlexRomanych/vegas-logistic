@@ -24,5 +24,6 @@ import TheLogo from "/resources/js/src/components/dashboard/TheLogo.vue";
     width: 100%;
     background-color: var(--main-bg-color);
     border-bottom: 2px solid var(--main-border-color);
+    z-index: 100;
 }
 </style>

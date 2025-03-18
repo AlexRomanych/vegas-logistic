@@ -1,4 +1,5 @@
 <template>
+
     <main class="content">
         <div>The Main</div>
 
@@ -159,17 +160,17 @@
 
 <script setup>
 import {reactive, ref} from "vue";
-import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
-import ErrorClass from "@/src/app/classes/ErrorClass.js";
-import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
-import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
-import AppModal from "@/src/components/ui/modals/AppModal.vue";
-import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
-import AppButton from "@/src/components/ui/buttons/AppButton.vue";
-import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
-import AppTable from "@/src/components/ui/tables/AppTable.vue";
-import AppInputDate from "@/src/components/ui/inputs/AppInputDate.vue";
-import AppLabel from "@/src/components/ui/labels/AppLabel.vue";
+import AppInputText from "/resources/js/src/components/ui/inputs/AppInputText.vue";
+import ErrorClass from "/resources/js/src/app/classes/ErrorClass.js";
+import AppInputButton from "/resources/js/src/components/ui/inputs/AppInputButton.vue";
+import AppCallout from "/resources/js/src/components/ui/callouts/AppCallout.vue";
+import AppModal from "/resources/js/src/components/ui/modals/AppModal.vue";
+import AppSelect from "/resources/js/src/components/ui/selects/AppSelect.vue";
+import AppButton from "/resources/js/src/components/ui/buttons/AppButton.vue";
+import AppCheckbox from "/resources/js/src/components/ui/checkboxes/AppCheckbox.vue";
+import AppTable from "/resources/js/src/components/ui/tables/AppTable.vue";
+import AppInputDate from "/resources/js/src/components/ui/inputs/AppInputDate.vue";
+import AppLabel from "/resources/js/src/components/ui/labels/AppLabel.vue";
 // import AppInputDate_comp from "@/src/components/ui/inputs/AppInputDate_comp.vue";
 
 
@@ -261,7 +262,8 @@ const tableData = {
 .content {
     flex: 1;
     overflow-y: auto;
-    margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
     /*   position: relative; */
+    //z-index: 9999;
 }
 </style>

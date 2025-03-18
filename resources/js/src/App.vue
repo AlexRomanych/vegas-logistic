@@ -3,6 +3,7 @@
         <TheDashboard/>
     </Suspense>
     <!--    <router-view></router-view>-->
+
 </template>
 
 <script setup>
