@@ -54,6 +54,8 @@ class CellFabricController extends Controller
                     'code_1C' => $fabric['code'],
                     'name' => $fabric['name'],
                     'active' => strtolower($fabric['active']) == 'да',
+                    'buffer_max' => (float)$fabric['buffer_max'],
+                    'buffer_min' => (float)$fabric['buffer_min'],
                     'optimal_party' => (int)$fabric['opt_party'],
                     'rolls_amount' => (int)$fabric['rolls_amount'],
                     'load_roll_time' => (int)$fabric['load_time'],

@@ -148,6 +148,16 @@ const manufactureRaw = [
         name: 'manufacture.cell.fabrics.expense',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpensive.vue'),
         meta: {
+            title: 'Расход ПС'
+        }
+    },
+
+    {
+        // Учет ПС
+        path: _MAIN_PREFIX + 'fabrics/movement',
+        name: 'manufacture.cell.fabrics.movement',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMovement.vue'),
+        meta: {
             title: 'Учет ПС'
         }
     },

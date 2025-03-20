@@ -9,7 +9,7 @@
                 :width="'w-[250px]'"
                 align="center"
                 class="border-2 rounded-lg border-blue-700"
-                text="Название ПС"
+                text="Полотно стеганное"
                 type="primary"
             />
 
