@@ -1,13 +1,13 @@
 <template>
-    <div class="flex justify-start items-end ml-3">
+    <div class="flex justify-start items-end ml-2">
 
         <div>
             <AppLabel
                 :bold="true"
                 align="center"
                 height="h-[35px]"
-                text="Дата производства: "
-                width="w-[180px]"
+                text="Архив: "
+                width="w-[100px]"
             />
         </div>
 
@@ -41,24 +41,24 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
-import {compareDatesLogic} from "@/src/app/helpers/helpers_date.js"
-import {isResponseWithError} from "@/src/app/helpers/helpers_checks.js"
+// import {ref} from 'vue'
+import {compareDatesLogic} from "/resources/js/src/app/helpers/helpers_date.js"
+// import {isResponseWithError} from "/resources/js/src/app/helpers/helpers_checks.js"
 
-import {CELL_TYPES} from '@/src/app/constants/sewingTypes.js'
+// import {CELL_TYPES} from '/resources/js/src/app/constants/sewingTypes.js'
 
-import AppInputDate from '@/src/components/ui/inputs/AppInputDate.vue'
-import AppButton from '@/src/components/ui/buttons/AppButton.vue'
-import AppLabel from '@/src/components/ui/labels/AppLabel.vue'
+import AppInputDate from '/resources/js/src/components/ui/inputs/AppInputDate.vue'
+import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
+import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 
-const props = defineProps({
-    sewingType: {
-        type: String,
-        required: true,
-        validator: (sewingType) => CELL_TYPES.includes(sewingType)
-    },
-
-})
+// const props = defineProps({
+//     sewingType: {
+//         type: String,
+//         required: true,
+//         validator: (sewingType) => CELL_TYPES.includes(sewingType)
+//     },
+//
+// })
 
 const emits = defineEmits(['clickApply'])
 

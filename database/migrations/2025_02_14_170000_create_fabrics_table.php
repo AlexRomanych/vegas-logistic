@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('name')->nullable(false)->unique()->comment('Название');
             $table->float('buffer_min')->nullable(false)->default(0.0)->comment('Минимальное количество в буфере, м.п.');
             $table->float('buffer_max')->nullable(false)->default(0.0)->comment('Максимальное количество в буфере, м.п.');
+            $table->unsignedSmallInteger('buffer_min_rolls')->nullable(false)->default(0.0)->comment('Минимальное количество в буфере, рул.');
+            $table->unsignedSmallInteger('buffer_max_rolls')->nullable(false)->default(0.0)->comment('Максимальное количество в буфере, рул.');
             $table->float('optimal_party')->nullable(false)->default(0.0)->comment('Оптимальная партия для запуска, м.п.');
             $table->unsignedSmallInteger('rolls_amount')->nullable(false)->default(1)->comment('Количество рулонов ткани, шт.');
             $table->float('average_roll_length')->nullable(false)->default(0.0)->comment('Средняя длина рулона, м.п.');

@@ -1,5 +1,5 @@
 <template>
-    <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
+    <div :class="width" class="flex flex-col">
         <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
         <input
             :id="id"
@@ -158,7 +158,7 @@ const getInputDate = (e) => emit('getInputDate', {id: props.id, value: e.target.
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
+    @apply text-sm font-semibold ml-2 mb-0.5
 }
 
 </style>

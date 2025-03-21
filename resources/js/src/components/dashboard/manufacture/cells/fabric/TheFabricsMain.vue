@@ -49,6 +49,8 @@ let menuItems = [
     {name: 'Управление ПС', path: 'manufacture.cell.fabrics.manage'},
     {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense'},
     {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement'},
+    {name: 'Управление СЗ', path: 'manufacture.cell.fabrics.task.manage'},
+    {name: 'Выполнение СЗ', path: 'manufacture.cell.fabrics.task.execute'},
     {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
     {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},

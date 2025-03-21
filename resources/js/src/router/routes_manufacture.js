@@ -143,7 +143,7 @@ const manufactureRaw = [
     },
 
     {
-        // Учет ПС
+        // Расход ПС
         path: _MAIN_PREFIX + 'fabrics/expense',
         name: 'manufacture.cell.fabrics.expense',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpensive.vue'),
@@ -162,6 +162,25 @@ const manufactureRaw = [
         }
     },
 
+    {
+        // Управление СЗ ПС (создание, редактирование, удаление)
+        path: _MAIN_PREFIX + 'fabrics/task/manage',
+        name: 'manufacture.cell.fabrics.task.manage',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskManage.vue'),
+        meta: {
+            title: 'Управление СЗ участка стежки'
+        }
+    },
+
+    {
+        // Выполнение СЗ ПС
+        path: _MAIN_PREFIX + 'fabrics/task/manage',
+        name: 'manufacture.cell.fabrics.task.execute',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskExecute.vue'),
+        meta: {
+            title: 'Выполнение СЗ участка стежки'
+        }
+    },
 
     //info Стежка Китаец
     {
