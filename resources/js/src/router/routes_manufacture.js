@@ -1,5 +1,7 @@
 // info Manufacture
 
+import fabrics from './routes_manufacture_fabrics.js'
+
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
 const _CELL_PREFIX = '/cell/'
@@ -50,6 +52,9 @@ const manufactureRaw = [
 
     // attract: Стежка -------------------------------------------------------------------------------------------------
 
+    ...fabrics,
+
+    /*
     {
         // Основная менюха
         path: _MAIN_PREFIX + 'fabrics',
@@ -173,6 +178,17 @@ const manufactureRaw = [
     },
 
     {
+        // Добавление СЗ ПС
+        path: _MAIN_PREFIX + 'fabrics/task/manage',
+        name: 'manufacture.cell.fabrics.task.execute',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskExecute.vue'),
+        // resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue
+        meta: {
+            title: 'Выполнение СЗ участка стежки'
+        }
+    },
+
+    {
         // Выполнение СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/manage',
         name: 'manufacture.cell.fabrics.task.execute',
@@ -213,6 +229,7 @@ const manufactureRaw = [
         // name: getRouteName(this.path),
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
     },
+ */
 
     // attract: Раскрой-------------------------------------------------------------------------------------------------
     //info Раскрой (панели чехла)

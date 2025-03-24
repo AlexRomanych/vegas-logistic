@@ -50,3 +50,10 @@ export const FABRIC_TASK_STATUS = Object.freeze({
     },
 })
 
+
+// descr Константы режима работы компонента
+export const FABRIC_PAGE_MODE = Object.freeze({
+    ADD: 'add',
+    EDIT: 'edit',
+    EXECUTE: 'execute',
+})
