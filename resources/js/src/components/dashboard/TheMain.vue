@@ -1,8 +1,9 @@
 <template>
     <Suspense>
 
-        <main :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? 'container-auth' : 'container'">
+        <main :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? 'container-auth upper-layer' : 'container'">
             <div :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? '' : 'content'">
+<!--                <p>Текущий маршрут: {{ currentRouteName }}</p>-->
                 <router-view :key="$route.fullPath"></router-view>
                 <!--            {{$route.fullPath}}-->
 <!--                <span>Name__ {{$route.name}}</span>-->
@@ -16,8 +17,9 @@
 
 
 <script setup>
-import {computed, reactive, unref} from 'vue'
+import {computed, onMounted, reactive, ref, unref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
+// import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js";
 //
 //
 const router = useRouter()
@@ -34,6 +36,37 @@ const props = defineProps({
     },
 })
 
+
+
+// attract Работает!!!
+// warning Работает!!!
+// const currentRouteName = ref(route.name);
+//
+// watch(
+//     () => route.name,
+//     (newRouteName) => {
+//         currentRouteName.value = newRouteName;
+//         console.log('Маршрут изменился на:', newRouteName);
+//     }
+// );
+// warning Работает!!!
+// attract Работает!!!
+
+// console.log(await route)
+
+// onMounted(() => {
+//     console.log(route.fullPath)
+// })
+//
+//
+// watch((route) => {
+//     console.log(route.fullPath)})
+
+// watch((route) => props.type, (type) => {
+//     currentTextColor.value = getTextColorClassByType(props.type)
+//     backgroundColor.value = getColorClassByType(props.type, 'bg', currentColorIndex)
+//     borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
+// })
 
 // const route = useRoute()
 // console.log(router.currentRoute.value)
@@ -112,6 +145,7 @@ const props = defineProps({
  */
 
 }
+
 
 .container-auth {
     flex: 1;
