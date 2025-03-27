@@ -13,7 +13,7 @@
                             height="w-5"
                             title="x"
                             width="w-[30px]"
-                            @buttonClick="closeModal(false)"
+                            @buttonClick="select(false)"
                         />
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                             id="confirm"
                             :type="type"
                             title="Да"
-                            @buttonClick="closeModal(true)"
+                            @buttonClick="select(true)"
                         />
                     </div>
 
@@ -41,9 +41,9 @@
                         class="m-1 p-1">
                         <AppInputButton
                             id="confirm"
-                            :type="type"
                             :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
-                            @buttonClick="closeModal(false)"
+                            :type="type"
+                            @buttonClick="select(false)"
                         />
                     </div>
 
@@ -96,21 +96,21 @@ const props = defineProps({
 
 })
 
-const emit = defineEmits(['closeModal'])
+const emit = defineEmits(['select'])
 
-const showModal = ref(props.show)
+const showModal = ref(props.show)           // реактивность видимости модального окна
+
+const select = (value) => {
+    showModal.value=false
+    emit('select', new Promise(resolve => resolve(value)))
+}
 
 // Следим за отображением модального окна
 watch(() => props.show, (value) => {
     showModal.value = value
+    // console.log(showModal.value)
     // console.log('watch showModal', value)
 })
-
-// закрываем модальное окно и возвращаем подтверждение
-const closeModal = (confirm = false) => {
-    showModal.value = false
-    emit('closeModal', confirm)
-}
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 

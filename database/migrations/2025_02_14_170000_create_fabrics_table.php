@@ -21,6 +21,7 @@ return new class extends Migration
             $table->id()->from(1);
             $table->string('code_1C')->unique()->nullable(false)->comment('Код 1С');
             $table->string('name')->nullable(false)->unique()->comment('Название');
+            $table->float('buffer_amount')->nullable(false)->default(0.0)->comment('Актуальное количество в буфере, м.п.');
             $table->float('buffer_min')->nullable(false)->default(0.0)->comment('Минимальное количество в буфере, м.п.');
             $table->float('buffer_max')->nullable(false)->default(0.0)->comment('Максимальное количество в буфере, м.п.');
             $table->unsignedSmallInteger('buffer_min_rolls')->nullable(false)->default(0.0)->comment('Минимальное количество в буфере, рул.');
@@ -36,6 +37,8 @@ return new class extends Migration
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность или архив');
             $table->boolean('rare')->nullable(false)->default(false)->comment('Редкий или нет');
             $table->enum('belong_to', ['vegas', 'other'])->nullable(false)->default('vegas')->comment('Для собственного производства или аутсорс');
+
+            $table->string('link')->nullable()->comment('Ссылка на ресурс с документацией');
 
             $table->string('description')->nullable()->comment('Описание');
             $table->string('comment')->nullable()->comment('Комментарий');

@@ -125,6 +125,7 @@ const menuData = () => {
             items:
                 [
                     {name: 'User Interface', path: 'ui.show', shown: true, isActive: true,},
+                    {name: 'Test', path: 'test.show', shown: true, isActive: true,},
                 ]
         }
 

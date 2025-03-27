@@ -34,11 +34,19 @@ return new class extends Migration {
         // Добавляем в таблицу имена машин
         DB::table(self::TABLE_NAME)->insert([
             ['id' => 0, 'name' => 'Машина не определена', 'short_name' => 'Нет данных'],
-            ['id' => 1, 'name' => 'LEGACY-4 (Американец)', 'short_name' => 'Американец'],
-            ['id' => 2, 'name' => 'CHAINTRONIC (Немец)', 'short_name' => 'Немец'],
-            ['id' => 3, 'name' => 'HY-W-DGW (Китаец)', 'short_name' => 'Китаец'],
-            ['id' => 4, 'name' => 'МТ-94 (Кореец)', 'short_name' => 'Кореец'],
+            ['id' => 1, 'name' => 'LEGACY-4', 'short_name' => 'Американец'],
+            ['id' => 2, 'name' => 'CHAINTRONIC', 'short_name' => 'Немец'],
+            ['id' => 3, 'name' => 'HY-W-DGW', 'short_name' => 'Китаец'],
+            ['id' => 4, 'name' => 'МТ-94', 'short_name' => 'Кореец'],
         ]);
+
+//        DB::table(self::TABLE_NAME)->insert([
+//            ['id' => 0, 'name' => 'Машина не определена', 'short_name' => 'Нет данных'],
+//            ['id' => 1, 'name' => 'LEGACY-4 (Американец)', 'short_name' => 'Американец'],
+//            ['id' => 2, 'name' => 'CHAINTRONIC (Немец)', 'short_name' => 'Немец'],
+//            ['id' => 3, 'name' => 'HY-W-DGW (Китаец)', 'short_name' => 'Китаец'],
+//            ['id' => 4, 'name' => 'МТ-94 (Кореец)', 'short_name' => 'Кореец'],
+//        ]);
 
     }
 

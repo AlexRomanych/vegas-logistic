@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Fabric\FabricCollection;
-use App\Http\Resources\Fabric\FabricResource;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
@@ -50,17 +50,24 @@ class CellFabricController extends Controller
 
             } else {
 
+                $bufferMinRolls = (int)$fabric['buffer_min_rolls'] === 0 ? 1 : (int)$fabric['buffer_min_rolls'];
+                $bufferMaxRolls = (int)$fabric['buffer_max_rolls'] === 0 ? 1 : (int)$fabric['buffer_max_rolls'];
+
                 $fabricDataSet = [
                     'code_1C' => $fabric['code'],
                     'name' => $fabric['name'],
                     'active' => strtolower($fabric['active']) == 'да',
-                    'buffer_max' => (float)$fabric['buffer_max'],
                     'buffer_min' => (float)$fabric['buffer_min'],
+                    'buffer_max' => (float)$fabric['buffer_max'],
+                    'buffer_min_rolls' => $bufferMinRolls,
+                    'buffer_max_rolls' => $bufferMaxRolls,
                     'optimal_party' => (int)$fabric['opt_party'],
                     'rolls_amount' => (int)$fabric['rolls_amount'],
                     'load_roll_time' => (int)$fabric['load_time'],
                     'time_loss' => $fabric['time_loss'],
                     'translate_rate' => (float)$fabric['translate_rate'],
+                    'productivity' => (float)$fabric['productivity'],
+                    'average_roll_length' => (float)$fabric['average_roll_length'],
                 ];
 
                 $fabricPictureId = FabricService::getFabricPicByName($fabric['pic']);
@@ -81,16 +88,16 @@ class CellFabricController extends Controller
     /**
      * Attract: Возвращаем ПС по id
      * @param $id
-     * @return FabricResource
+     * @return \App\Http\Resources\Manufacture\Cells\Fabric\FabricResource
      */
     public function fabric($id)
     {
-        return new FabricResource(Fabric::query()->find($id));
+        return new \App\Http\Resources\Manufacture\Cells\Fabric\FabricResource(Fabric::query()->find($id));
     }
 
     /**
      * Attract: Возвращаем список ПС
-     * @return FabricCollection
+     * @return \App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection
      */
     public function fabrics()
     {

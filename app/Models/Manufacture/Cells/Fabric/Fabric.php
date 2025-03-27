@@ -70,8 +70,6 @@ class Fabric extends Model
     }
 
 
-
-
 //    //h2 fabricMachine -----------------------------------------------------------------------------------------
 //    public function fabricMachine(): BelongsTo
 //    {

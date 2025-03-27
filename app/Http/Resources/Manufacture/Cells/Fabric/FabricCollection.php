@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Resources\Fabric;
+namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class FabricMachineCollection extends ResourceCollection
+class FabricCollection extends ResourceCollection
 {
-    public static $wrap = 'machines';
+    public static $wrap = 'fabrics';
 
     /**
      * Transform the resource collection into an array.

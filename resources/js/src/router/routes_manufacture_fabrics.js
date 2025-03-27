@@ -54,7 +54,7 @@ const fabrics = [{
         name: 'manufacture.cell.fabrics.pictures.upload',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsPicturesUpload.vue'),
         meta: {
-            title: 'Загрузка ПС в БД'
+            title: 'Загрузка рисунков ПС в БД'
         }
     },
 
@@ -132,19 +132,19 @@ const fabrics = [{
 
     {
         // descr Добавление нового СЗ ПС
-        path: _MAIN_PREFIX + 'fabrics/task/add',
-        name: 'manufacture.cell.fabrics.task.add',
+        path: _MAIN_PREFIX + 'fabrics/task/create',
+        name: 'manufacture.cell.fabrics.task.create',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue'),
         meta: {
             title: 'Создание нового СЗ участка стежки',
-            mode: FABRIC_PAGE_MODE.ADD,
+            mode: FABRIC_PAGE_MODE.CREATE,
         }
     },
 
     {
         // descr Редактирование СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/edit/:id',
-        name: 'manufacture.cell.fabrics.task.add',
+        name: 'manufacture.cell.fabrics.task.edit',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue'),
         meta: {
             title: 'Редактирование СЗ участка стежки',

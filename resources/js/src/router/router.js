@@ -53,9 +53,12 @@ router.beforeEach(async (to, from, next) => {
         // если пользователь уже в системе и он зашел на страницу регистрации или авторизации, то выходим из системы
         if (to.name === 'register' || to.name === 'login') {
             // console.log('logout', from.name)
-            user.logout()
-            auth = false
-            next({name: 'login'})
+
+            // todo Критически важное место! Logout - разобраться!!!
+
+            // user.logout()
+            // auth = false
+            // next({name: 'to.name'})
 
         } else if (to.name === 'menu') {
 

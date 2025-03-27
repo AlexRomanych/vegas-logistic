@@ -24,13 +24,15 @@
                 type="primary"
             />
 
-            <AppLabelMultiline
-                :text="['Создать', '']"
-                :width="serviceColWidth"
-                align="center"
-                class="border-2 rounded-lg border-blue-800 cursor-pointer"
-                type="info"
-            />
+            <router-link :to="{name: 'manufacture.cell.fabrics.task.create'}">
+                <AppLabelMultiline
+                    :text="['Создать', '']"
+                    :width="serviceColWidth"
+                    align="center"
+                    class="border-2 rounded-lg border-blue-800 cursor-pointer"
+                    type="info"
+                />
+            </router-link>
 
         </div>
 
@@ -39,7 +41,6 @@
             <div
                 v-for="task in tasks" :key="task.id"
                 class="cursor-pointer max-w-fit"
-                @click="showTaskCard(task)"
             >
 
                 <div class="flex">
@@ -49,6 +50,7 @@
                         :width="dateColWidth"
                         align="center"
                         title="Дата выполнения сменного задания"
+                        @click="showTaskCard(task)"
                     />
 
                     <AppLabel
@@ -56,16 +58,19 @@
                         :type="getStyleTypeByFabricTaskStatusCode(task.status)"
                         :width="statusColWidth"
                         align="center"
-                        title="Всплывающая подсказка"
+                        title="Статус выполнения сменного задания"
+                        @click="showTaskCard(task)"
                     />
 
-                    <AppLabel
-                        :title="'Редактировать сменное задание от ' + task.date "
-                        :width="actionsColWidth"
-                        align="center"
-                        text="Ред."
-                        type="warning"
-                    />
+                    <router-link :to="{name:'manufacture.cell.fabrics.task.edit', params:{id: task.id}}">
+                        <AppLabel
+                            :title="'Редактировать сменное задание от ' + task.date "
+                            :width="actionsColWidth"
+                            align="center"
+                            text="Ред."
+                            type="warning"
+                        />
+                    </router-link>
 
                     <AppLabel
                         :title="'Удалить сменное задание от ' + task.date "
@@ -73,6 +78,8 @@
                         align="center"
                         text="Удалить"
                         type="danger"
+                        @click="deleteTask(task)"
+
                     />
 
                 </div>
@@ -132,7 +139,11 @@ const tasks = reactive([
     {id: 7, date: '28.03.2025', status: 1},
 ])
 
+// attract Выводим карточку сменного задания
 const showTaskCard = (task) => console.log('TODO show task card', task)   // TODO: Сделать отображение СЗ в виде карточки
+
+// attract Удаление СЗ
+const deleteTask = (task) => console.log('Delete', task)
 // const setActive = (task) => tasks.forEach(({id}, i, arr) => arr[i].active = id === task.id)
 // const setActive = (task) => tasks.forEach(t => console.log(t))
 // const setActive = (task) => {

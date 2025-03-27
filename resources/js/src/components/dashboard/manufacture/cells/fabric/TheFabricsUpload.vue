@@ -74,11 +74,14 @@ const uploadFile = async (buttonId) => {
     if (selectedFile.value) {
         const fileData = await getFileContent(selectedFile.value)
 
-        isDataJson.value = true
+        // isDataJson.value = true
+        isDataJson.value = isJSON(fileData)     // Проверочка на Json формат
 
-        if (isJSON(fileData)) {
+        if (isDataJson.value) {
+
             // Отправляем в RAW формате и возвращаем результат операции
-            // todo сделать проверку на существующие заявки
+            // todo сделать проверку на существующие ПС
+
             const fabricsStore = useFabricsStore()
             const res = await fabricsStore.uploadFabrics(fileData)
             // const res = await ordersStore.uploadOrders(fileData)
@@ -96,18 +99,17 @@ const uploadFile = async (buttonId) => {
                 opResultType.value = 'danger'
             }
 
+            opResult.value = true
+            setTimeout(() => {
+                opResult.value = false
+            }, 5000)
 
+        } else {
+            isDataJson.value = false
+            setTimeout(() => {
+                isDataJson.value = true
+            }, 5000)
         }
-        opResult.value = true
-        setTimeout(() => {
-            opResult.value = false
-        }, 5000)
-
-    } else {
-        isDataJson.value = false
-        setTimeout(() => {
-            isDataJson.value = true
-        }, 5000)
     }
 }
 

@@ -21,6 +21,14 @@
 
 export const FABRIC_TASK_STATUS = Object.freeze({
 
+    // descr Сменное задание еще не создано (или сохранено)
+    UNKNOWN: {
+        WORD: 'unknown',
+        CODE: 0,
+        TITLE: 'Не создано',
+    },
+
+
     // descr Сменное задание создано (или сохранено)
     CREATED: {
         WORD: 'created',
@@ -32,7 +40,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
     PENDING: {
         WORD: 'pending',
         CODE: 2,
-        TITLE: 'Готов к выполнению',
+        TITLE: 'Готов к стежке',
     },
 
     // descr Сменное задание взято на выполнение (находится в процессе выполнения)
@@ -53,7 +61,16 @@ export const FABRIC_TASK_STATUS = Object.freeze({
 
 // descr Константы режима работы компонента
 export const FABRIC_PAGE_MODE = Object.freeze({
-    ADD: 'add',
+    CREATE: 'create',
     EDIT: 'edit',
     EXECUTE: 'execute',
+})
+
+// descr Константы ID машин стежки
+export const FABRIC_MACHINES = Object.freeze({
+    UNRNOWN: 0,
+    AMERICAN: 1,
+    GERMAN: 2,
+    CHINA: 3,
+    KOREAN: 4,
 })

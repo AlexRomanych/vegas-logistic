@@ -31,6 +31,11 @@ const routes = [
         component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
     },
 
+    {
+        path: '/test/show',
+        name: 'test.show',
+        component: () => import('/resources/js/src/components/ui/test/TestModal.vue'),
+    },
 
 ]
 

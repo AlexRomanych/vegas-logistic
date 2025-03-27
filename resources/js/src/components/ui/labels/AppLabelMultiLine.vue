@@ -199,10 +199,11 @@ watch(() => props.text, (text) => {
 
 .load-style {
     @apply
-    w-[60px]
-    w-[50px]
-    w-[75px]
-    w-[90px]
+    h-[60px]
+    h-[50px]
+    h-[70px]
+    h-[75px]
+    h-[90px]
 
 }
 

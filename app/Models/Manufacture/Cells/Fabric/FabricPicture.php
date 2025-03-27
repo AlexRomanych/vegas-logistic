@@ -17,7 +17,12 @@ class FabricPicture extends Model
         'stitch_length' => 'float',
     ];
 
-    protected $with = ['fabricMainMachine'];
+    protected $with = [
+        'fabricMainMachine',
+        'fabricAltMachine_1',
+        'fabricAltMachine_2',
+        'fabricAltMachine_3',
+    ];
 
 
 //    protected $attributes = [
@@ -34,6 +39,24 @@ class FabricPicture extends Model
     public function fabricMainMachine(): BelongsTo
     {
         return $this->belongsTo(FabricMachine::class, 'fabric_machine_id', 'id', 'fabric_machines');
+    }
+
+    //h2 fabric_alt_machine_1 (альтернативная стегальная машина 1) --------------------------------------------
+    public function fabricAltMachine_1(): BelongsTo
+    {
+        return $this->belongsTo(FabricMachine::class, 'alt_machine_1_id', 'id', 'fabric_machines');
+    }
+
+    //h2 fabric_alt_machine_2 (альтернативная стегальная машина 2) --------------------------------------------
+    public function fabricAltMachine_2(): BelongsTo
+    {
+        return $this->belongsTo(FabricMachine::class, 'alt_machine_2_id', 'id', 'fabric_machines');
+    }
+
+    //h2 fabric_alt_machine_3 (альтернативная стегальная машина 3) --------------------------------------------
+    public function fabricAltMachine_3(): BelongsTo
+    {
+        return $this->belongsTo(FabricMachine::class, 'alt_machine_3_id', 'id', 'fabric_machines');
     }
 }
 
