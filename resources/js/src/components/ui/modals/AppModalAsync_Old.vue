@@ -20,7 +20,7 @@
 
                 <div class="text-container">
                     <div class="text-data">
-                        <span>{{ showText }}</span>
+                        <span>{{ text }}</span>
                     </div>
                 </div>
 
@@ -55,10 +55,10 @@
 </template>
 
 <script setup>
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import {computed, ref, watch, watchEffect} from 'vue'
+import {colorsList} from "@/src/app/constants/colorsClasses.js"
+import {getColorClassByType} from "@/src/app/helpers/helpers.js"
+import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
+import {computed, ref, watch, watchEffect} from "vue";
 
 const props = defineProps({
     width: {
@@ -98,46 +98,18 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-const showModal = ref(false)           // реактивность видимости модального окна
-// const showModal = ref(props.show)           // реактивность видимости модального окна
-const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
-
-let resolvePromise
-const show = (msg = showText.value) => {
-    showModal.value = true;
-    showText.value = msg
-    return new Promise((resolve) => {
-        resolvePromise = resolve
-    })
-}
+const showModal = ref(props.show)           // реактивность видимости модального окна
 
 const select = (value) => {
-    if (resolvePromise) {
-        resolvePromise(value);
-        showModal.value = false;
-        resolvePromise = null;
-    }
+    showModal.value=false
+    emit('select', new Promise(resolve => resolve(value)))
 }
 
-defineExpose({
-    show,
-})
-
-
-
-// const select = (value) => {
-//     showModal.value=false
-//     emit('select', new Promise(resolve => resolve(value)))
-// }
-
-// // Следим за отображением модального окна
-// watch(() => props.show, (value) => {
-//     showModal.value = value
-// })
-
-// Следим за отображением текста в модальном окне
-watch(() => props.text, (value) => {
-    showText.value = value
+// Следим за отображением модального окна
+watch(() => props.show, (value) => {
+    showModal.value = value
+    // console.log(showModal.value)
+    // console.log('watch showModal', value)
 })
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))

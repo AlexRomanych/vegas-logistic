@@ -119,11 +119,10 @@
     <!--    />-->
 
     <AppModalAsync
+        :text="modalText"
         ref="appModalAsync"
-        :show="modalShow"
         mode="confirm"
         type="danger"
-        @select="getAnswer"
     />
 
 </template>
@@ -136,10 +135,12 @@ import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
 } from '/resources/js/src/app/constants/fabrics.js'
+
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+
 import {
     getDayOfWeek,
     formatDate,
@@ -150,6 +151,7 @@ import {
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
+// import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
 import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
 
 
@@ -484,36 +486,58 @@ const serviceBtnTitle = (status) => {
 }
 
 
+
+const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
+const modalText = ref('')
 const modalShow = ref(false)            // Определяем видимость модального окна
 const answerResult = ref(false)         // Результат работы
-let delTask = null
+// let delTask = null
 
 // Возвращаем ответ от модального окна
-const getAnswer = async (answer) => {
-    console.log('getAnswer')
-    modalShow.value = true
-    const answerResult = await answer
-
-    if (answerResult) {
-        console.log('удаление')
-        console.log(delTask)
-        delTask = null
-    } else {
-        console.log('отмена')
-        console.log(delTask)
-    }
-
-    modalShow.value = false
-    console.log('111')
-
-    console.log(answerResult)
-    // modalShow.value = false
-    // return result
-}
+// const getAnswer = async (answer) => {
+//     console.log('getAnswer')
+//     modalShow.value = true
+//     const answerResult = await answer
+//
+//     if (answerResult) {
+//         console.log('удаление')
+//         console.log(delTask)
+//         delTask = null
+//     } else {
+//         console.log('отмена')
+//         console.log(delTask)
+//     }
+//
+//     modalShow.value = false
+//     console.log('111')
+//
+//     console.log(answerResult)
+//     // modalShow.value = false
+//     // return result
+// }
 
 // modalShow.value = true
 // const test = await getModalAnswer()
 // console.log('test', test)
+
+// Удалить сменное задание
+// const delTask = async(task) => {
+//     if (!task.active) return
+//
+//     modalText.value = 'Вы уверены?'
+//     const result = await appModalAsync.value.show()
+//     if (result) {
+//         console.log('Пользователь ответил "да"')
+//         console.log(task.common.status)
+//
+//         task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
+//         console.log(task.status)
+//         // Продолжить логику, если пользователь ответил "да"
+//     } else {
+//         console.log('Пользователь ответил "нет"')
+//         // Продолжить логику, если пользователь ответил "нет"
+//     }
+// }
 
 
 // attract Меняем статус СЗ по сервисной кнопке
@@ -523,14 +547,11 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
     // Удалить сменное задание
     if (btnRow === 2 && task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
-        // task.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
-        console.log('call')
-        delTask = task
-        // const answer = await getAnswer()
-        modalShow.value = true
-        // console.log(answer)
-
-        task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
+        modalText.value = 'Вы уверены?'
+        const result = await appModalAsync.value.show()
+        if (result) {
+            task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
+        }
         return
     }
 
