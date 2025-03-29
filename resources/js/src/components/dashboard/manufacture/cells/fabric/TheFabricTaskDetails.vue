@@ -83,7 +83,133 @@
 
             <!--attract: Общее-->
             <div v-if="tabs.common.shown">
-                <div>Общие данные</div>
+                <div class="border-2 rounded-lg border-slate-400 p-2 w-fit">
+
+                    <!-- attract: Кем и когда создано задание -->
+                    <div class="mb-2">
+
+                        <div>
+                            <AppLabel
+                                text="Сменное задание:"
+                                type="success"
+                            />
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Статус:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="Выполняется"
+                                width="w-[200px]"
+                                type="warning"
+                            />
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Специалист ОПП:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="Рабчук А.А."
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Дата создания:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="29 сентября 2025 года"
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Время создания:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="15:24:54"
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                    </div>
+
+                    <!-- attract: Бригада -->
+                    <div class="mb-4">
+
+                        <div class="flex items-start">
+                            <AppLabel
+                                text="Бригада:"
+                                type="success"
+                                width="w-[100px]"
+                            />
+                            <AppLabel
+                                text="№ 2"
+                                type="success"
+                                width="w-[50px]"
+                            />
+                        </div>
+
+                        <div class="ml-3">
+                            <AppLabel
+                                text="Иванов И. И."
+                                width="w-[200px]"
+                            />
+                            <AppLabel
+                                text="Петров П. П."
+                                width="w-[200px]"
+                            />
+                            <AppLabel
+                                text="Сдоров С. С."
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                    </div>
+
+                    <!-- attract: Трудозатраты -->
+                    <div class="mb-2">
+                        <div>
+                            <AppLabel
+                                text="Трудозатраты:"
+                                type="success"
+                            />
+
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Американец:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="03ч. 39м. 59с."
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                        <div class="flex items-start ml-3">
+                            <AppLabel
+                                text="Немец:"
+                                width="w-[150px]"
+                            />
+                            <AppLabel
+                                text="03ч. 39м. 59с."
+                                width="w-[200px]"
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
 
             <!--attract: Американец-->
@@ -119,8 +245,8 @@
     <!--    />-->
 
     <AppModalAsync
-        :text="modalText"
         ref="appModalAsync"
+        :text="modalText"
         mode="confirm"
         type="danger"
     />
@@ -485,59 +611,8 @@ const serviceBtnTitle = (status) => {
     return titles[status]
 }
 
-
-
 const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
 const modalText = ref('')
-const modalShow = ref(false)            // Определяем видимость модального окна
-const answerResult = ref(false)         // Результат работы
-// let delTask = null
-
-// Возвращаем ответ от модального окна
-// const getAnswer = async (answer) => {
-//     console.log('getAnswer')
-//     modalShow.value = true
-//     const answerResult = await answer
-//
-//     if (answerResult) {
-//         console.log('удаление')
-//         console.log(delTask)
-//         delTask = null
-//     } else {
-//         console.log('отмена')
-//         console.log(delTask)
-//     }
-//
-//     modalShow.value = false
-//     console.log('111')
-//
-//     console.log(answerResult)
-//     // modalShow.value = false
-//     // return result
-// }
-
-// modalShow.value = true
-// const test = await getModalAnswer()
-// console.log('test', test)
-
-// Удалить сменное задание
-// const delTask = async(task) => {
-//     if (!task.active) return
-//
-//     modalText.value = 'Вы уверены?'
-//     const result = await appModalAsync.value.show()
-//     if (result) {
-//         console.log('Пользователь ответил "да"')
-//         console.log(task.common.status)
-//
-//         task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
-//         console.log(task.status)
-//         // Продолжить логику, если пользователь ответил "да"
-//     } else {
-//         console.log('Пользователь ответил "нет"')
-//         // Продолжить логику, если пользователь ответил "нет"
-//     }
-// }
 
 
 // attract Меняем статус СЗ по сервисной кнопке

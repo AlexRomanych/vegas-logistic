@@ -1,5 +1,6 @@
 <template>
     <Teleport to="body">
+
         <div v-if="showModal"
              class="dark-container">
 
@@ -58,7 +59,7 @@
 import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
 import {getColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import {computed, ref, watch, watchEffect} from 'vue'
+import {computed, ref, watch,} from 'vue'
 
 const props = defineProps({
     width: {
@@ -82,11 +83,6 @@ const props = defineProps({
         required: false,
         default: 'This is a Modal Window',
     },
-    show: {
-        type: Boolean,
-        required: false,
-        default: false,
-    },
     mode: {
         type: String,
         required: false,
@@ -99,7 +95,6 @@ const props = defineProps({
 const emit = defineEmits(['select'])
 
 const showModal = ref(false)           // реактивность видимости модального окна
-// const showModal = ref(props.show)           // реактивность видимости модального окна
 const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
 
 let resolvePromise
@@ -122,18 +117,6 @@ const select = (value) => {
 defineExpose({
     show,
 })
-
-
-
-// const select = (value) => {
-//     showModal.value=false
-//     emit('select', new Promise(resolve => resolve(value)))
-// }
-
-// // Следим за отображением модального окна
-// watch(() => props.show, (value) => {
-//     showModal.value = value
-// })
 
 // Следим за отображением текста в модальном окне
 watch(() => props.text, (value) => {
