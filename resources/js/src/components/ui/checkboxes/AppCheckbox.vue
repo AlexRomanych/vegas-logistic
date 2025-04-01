@@ -17,6 +17,7 @@
             <div :class="[dir === 'horizontal' ? 'flex items-center justify-around' : '']">
                 <div v-for="item in checkBoxObject" :key="item.uniqID" >
                     <input
+                        class="cursor-pointer"
                         :id="item.uniqID"
                         :checked="item.checked"
                         :disabled="item.disabled"
@@ -28,13 +29,14 @@
                     <label
                         :class="[textColor]"
                         :for="item.uniqID"
-                        class="ml-1"
+                        class="ml-1 cursor-pointer"
                     >
                         {{ item.name }}
                     </label>
                 </div>
             </div>
         </fieldset>
+
         <!-- дополнительное расстояние снизу fieldset-->
         <div class="h-[6px]"></div>
 
@@ -42,9 +44,9 @@
 </template>
 
 <script setup>
-import {colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed, reactive} from "vue";
+import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {getColorClassByType, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
+import {computed, reactive} from 'vue'
 
 const props = defineProps({
     id: {
@@ -144,14 +146,14 @@ const textColor = computed(() => getTextColorClassByType(props.type))
 <style scoped>
 
 .check-box-data-container {
-    @apply m-1 rounded-lg;
+    @apply m-0.5 rounded-lg cursor-pointer;
 }
 
 .fieldset-container {
-    @apply m-1 p-1 border-2 rounded-lg;
+    @apply ml-1 mr-1 p-1 border-2 rounded-lg cursor-pointer;
 }
 
 .legent-text-container {
-    @apply text-xs font-semibold;
+    @apply text-xs font-semibold cursor-pointer;
 }
 </style>

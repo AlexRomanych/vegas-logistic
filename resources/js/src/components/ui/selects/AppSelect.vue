@@ -4,16 +4,16 @@
          :class="[width, bgColor, 'container']">
 
         <label v-if="label"
-               :for="selectData.name"
-               :class="[textColor, 'label']">
+               :class="[textColor, 'label']"
+               :for="selectData.name">
             {{ label }}
         </label>
 
         <select :id="id"
+                :class="[bgColor, textColor, textSizeClass, semibold, 'select']"
                 :multiple="multiple"
                 :name="selectData.name"
                 :size="multiple ? size : false"
-                :class="[bgColor, textColor, 'select']"
                 @change="onChange">
 
             <option v-for="item in selectData.data"
@@ -33,9 +33,15 @@
 </template>
 
 <script setup>
-import {colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed} from "vue";
+import {computed, ref, watch} from 'vue'
+
+import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import {
+    getColorClassByType,
+    getFontSizeClass,
+    getTextColorClassByType,
+} from '/resources/js/src/app/helpers/helpers.js'
 
 const props = defineProps({
     id: {
@@ -73,7 +79,19 @@ const props = defineProps({
         type: String,
         required: false,
         default: '4'
-    }
+    },
+    textSize: {
+        type: String,
+        required: false,
+        default: 'normal',
+        validator: (size) => fontSizesList.includes(size)
+        // validator: (size) => ['micro', 'mini', 'normal', 'small', 'large', 'huge'].includes(size)
+    },
+    bold: {
+        type: Boolean,
+        required: false,
+        default: true,
+    },
 
 
 })
@@ -84,22 +102,38 @@ const onChange = (e) => {
     emit('change', props.selectData.data[idx])              // вызываем событие
 }
 
-const bgColor = computed(() => getColorClassByType(props.type, 'bg'))                   // Получаем класс для цвета заднего фона
-const textColor = computed(() => getTextColorClassByType(props.type))
+let textSizeClass = ref(getFontSizeClass(props.textSize))
+
+let bgColor = ref(getColorClassByType(props.type, 'bg'))                   // Получаем класс для цвета заднего фона
+let textColor = ref(getTextColorClassByType(props.type))
+
+// let bgColor = computed(() => getColorClassByType(props.type, 'bg'))                   // Получаем класс для цвета заднего фона
+// let textColor = computed(() => getTextColorClassByType(props.type))
+
+const semibold = props.bold ? 'font-semibold' : ''
+
+// реактивный тип
+watch(() => props.type, (newType) => {
+    bgColor.value = getColorClassByType(newType, 'bg')                   // Получаем класс для цвета заднего фона
+    textColor = getTextColorClassByType(newType)
+})
+
+// реактивный шрифт
+watch(() => props.textSize, (newSize) =>textSizeClass.value = getFontSizeClass(newSize))
 
 
 </script>
 
 <style scoped>
 .container {
-    @apply border-[2px] rounded-[6px] h-[58px] m-1 p-0 relative
+    @apply border-2 rounded-lg h-[54px] m-0 p-0 relative
 }
 
 .label {
-    @apply absolute text-xs mt-1 ml-1 font-semibold
+    @apply absolute text-mc mt-1 ml-1 font-semibold
 }
 
 .select {
-    @apply m-0 pt-4 h-full w-full rounded-[6px]
+    @apply m-0 pt-4 h-full w-full rounded-lg
 }
 </style>
