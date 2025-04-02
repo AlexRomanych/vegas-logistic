@@ -312,6 +312,10 @@ let fabrics = await fabricsStore.getFabrics()
 
 // attract: Сортируем по основной стегальной машине
 fabrics.sort((fabric1, fabric2) => fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name))
+
+fabrics.sort(fabric => fabric.active, true)
+
+
 // union.sort((a, b) => a.element.model.localeCompare(b.element.model))
 
 console.log('fabrics', fabrics)

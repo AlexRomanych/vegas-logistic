@@ -8,14 +8,15 @@
             v-model="areaText"
 
             :class="['app-input', height, borderColor, placeholderColor, textSizeClass, semibold, bgColor, textColor]"
-            :cols="cols"
 
             :disabled="disabled"
             :maxlength="maxlength"
             :placeholder="placeholder"
             :readonly="readonly"
 
+            :cols="cols"
             :rows="rows"
+
             @input="getAreaText"
 
         />

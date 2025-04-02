@@ -30,7 +30,9 @@ class OrderController extends Controller
 //        return apiDebug($validData);
 //        return $validData;
 
-        $orders = Order::whereBetween('load_date', [$validData['start'], $validData['end']])->get();
+        $orders = Order::query()
+            ->whereBetween('load_date', [$validData['start'], $validData['end']])
+            ->get();
 //        $orders = Order::all();
 
 
@@ -98,8 +100,8 @@ class OrderController extends Controller
             $order = $orderBag['order'];        // берем всю инфу о заказе
 
             // проверяем есть ли такой заказ
-            $checkOrder = Order::where('client_id', (int) $order['c'])
-                ->where('no_num', (float) ($order['n']))
+            $checkOrder = Order::where('client_id', (int)$order['c'])
+                ->where('no_num', (float)($order['n']))
                 ->first();
 
             if ($checkOrder) {

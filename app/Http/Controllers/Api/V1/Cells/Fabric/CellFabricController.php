@@ -88,16 +88,16 @@ class CellFabricController extends Controller
     /**
      * Attract: Возвращаем ПС по id
      * @param $id
-     * @return \App\Http\Resources\Manufacture\Cells\Fabric\FabricResource
+     * @return FabricResource
      */
     public function fabric($id)
     {
-        return new \App\Http\Resources\Manufacture\Cells\Fabric\FabricResource(Fabric::query()->find($id));
+        return new FabricResource(Fabric::query()->find($id));
     }
 
     /**
      * Attract: Возвращаем список ПС
-     * @return \App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection
+     * @return FabricCollection
      */
     public function fabrics()
     {

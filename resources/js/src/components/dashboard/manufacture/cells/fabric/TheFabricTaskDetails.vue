@@ -423,8 +423,8 @@
                     <!-- attract: Режим редактирования -->
                     <div class="flex">
                         <AppLabelMultiLine
-                            align="center"
                             :text="['00023548', '']"
+                            align="center"
                             text-size="mini"
                             width="w-[80px]"
                         />
@@ -441,58 +441,58 @@
                             :multiple="false"
                             :selectData="selectData"
                             label="Выберите ПС:"
-                            type="primary"
                             text-size="mini"
+                            type="primary"
                             width="w-[304px]"
                             @change="selectHandler"
                         />
 
                         <AppLabelMultiLine
-                            align="center"
                             :text="['100.8', '']"
+                            align="center"
                             text-size="mini"
                             width="w-[100px]"
                         />
 
                         <AppLabelMultiLine
-                            align="center"
                             :text="['2', '']"
+                            align="center"
                             text-size="mini"
                             type="primary"
                             width="w-[70px]"
                         />
 
                         <AppLabelMultiLine
-                            align="center"
                             :text="['208.16', '']"
+                            align="center"
                             text-size="mini"
                             type="primary"
                             width="w-[70px]"
                         />
 
                         <AppLabelMultiLine
-                            align="center"
                             :text="['208', '']"
+                            align="center"
                             text-size="mini"
                             width="w-[80px]"
                         />
 
                         <AppInputTextArea
-                            class="cursor-pointer"
                             id="comment"
-                            value="Рулон был создан на американской СМ, но не прокручен до конца"
-                            type="primary"
-                            rows="2"
-                            width="w-[304px]"
+                            class="cursor-pointer"
                             height="min-h-[50px]"
+                            :rows=2
                             text-size="mini"
+                            type="primary"
+                            value="Рулон был создан на американской СМ, но не прокручен до конца"
+                            width="w-[304px]"
 
                         />
 
                         <AppLabelMultiLine
+                            :text="['V', '']"
                             align="center"
                             class="cursor-pointer font-bold"
-                            :text="['V', '']"
                             text-size="mini"
                             type="success"
                             width="w-[50px]"
@@ -542,7 +542,9 @@
 
 <script setup>
 import {ref, reactive} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
+
+import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import {
     FABRIC_TASK_STATUS,
@@ -551,7 +553,9 @@ import {
 
 import {
     getTitleByFabricTaskStatusCode,
-    getStyleTypeByFabricTaskStatusCode
+    getStyleTypeByFabricTaskStatusCode,
+    getFabricTasksPeriod,
+    addEmptyFabricTasks
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -572,6 +576,17 @@ import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
 // import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
 
 const route = useRoute()
+const router = useRouter()
+
+const fabricsStore = useFabricsStore()
+
+// Получаем период отображения сменного задания
+const tasksPeriod = getFabricTasksPeriod()
+console.log('tasksPeriod:', tasksPeriod)
+
+// Получаем сами сменные задания
+const tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+console.log('tasks:', tasks)
 
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
@@ -634,11 +649,35 @@ const selectData = {
 const selectHandler = (item) => console.log(item)
 
 
+// создаем пустой объект с данными для формы создания сменного задания (болванка)
+const taskDraft = {
+    date: '',
+    active: false,
+    common: {
+        team: 1,
+        status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
+    },
+    machines: {
+        american: {
+            rolls: []
+        },
+        german: {
+            rolls: []
+        },
+        china: {
+            rolls: []
+        },
+        korean: {
+            rolls: []
+        },
+    }
+}
+
 
 // формируем тестовые данные
 const taskData = reactive([
     {
-        date: '2025-03-24',
+        date: '2025-04-02',
         active: true,
         common: {
             team: 1,
@@ -870,7 +909,7 @@ const taskData = reactive([
         }
     },
     {
-        date: '2025-03-30',
+        date: '2025-03-24',
         active: false,
         common: {
             team: 2,
@@ -908,6 +947,8 @@ const taskData = reactive([
         }
     },
 ])
+const testTasks = addEmptyFabricTasks(taskData)
+
 
 // attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
 const dayOfWeekStyle = (date) => {

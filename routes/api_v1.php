@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -222,6 +223,9 @@ Route::get('/fabrics/machines', [CellFabricMachineController::class, 'machines']
 Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machine'])->middleware('jwt.auth');
 
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
+
+// attract: Блок Заказов Стежки на производство
+Route::get('/fabrics/tasks', [CellFabricTaskController::class, 'tasks'])->middleware('jwt.auth');
 
 //hr--------------------------------------------------------------------------------------------------------------------
 

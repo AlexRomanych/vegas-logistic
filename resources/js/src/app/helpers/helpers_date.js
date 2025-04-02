@@ -254,7 +254,7 @@ export function isWorkingDay(inDate = new Date()) {
         return BLACK_DAYS.includes(workDate.toLocaleDateString().slice(0, 10))
     }
 
-    return ! RED_DAYS.includes(workDate.toLocaleDateString().slice(0, 10))
+    return !RED_DAYS.includes(workDate.toLocaleDateString().slice(0, 10))
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -268,4 +268,5 @@ export function isToday(inDate = new Date()) {
 export function getDate(inDate = new Date()) {
     return !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 }
+
 
