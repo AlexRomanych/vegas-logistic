@@ -38,7 +38,7 @@
 import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
 import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
 import {computed, ref, watch} from 'vue'
-import {fontSizesList} from "@/src/app/constants/fontSizes.js";
+import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {

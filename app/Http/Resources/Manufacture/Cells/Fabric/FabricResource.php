@@ -25,7 +25,7 @@ class FabricResource extends JsonResource
 
             'picture' => [
                 'id' => $this->fabric_picture_id,
-                'name' => $this->pic,                                    // вычисляемое поле
+                'name' => $this->pic,                               // вычисляемое поле
             ],
 
             'textile' => $this->textile,                            // вычисляемое поле
@@ -56,7 +56,13 @@ class FabricResource extends JsonResource
                 'amount' => (double)$this->buffer_amount,
                 'min' => (double)$this->buffer_min,
                 'max' => (double)$this->buffer_max,
+                'min_rolls' => (double)$this->buffer_min_rolls,
+                'max_rolls' => (double)$this->buffer_max_rolls,
                 'optimal_party' => (double)$this->optimal_party,
+                'average_length' => (double)$this->average_roll_length,
+                'rate' => (double)$this->translate_rate,
+                'productivity' => (double)$this->productivity,
+
             ],
 
             'text' => [

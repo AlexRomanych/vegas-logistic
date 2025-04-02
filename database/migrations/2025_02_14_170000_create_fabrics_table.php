@@ -29,6 +29,9 @@ return new class extends Migration
             $table->float('optimal_party')->nullable(false)->default(0.0)->comment('Оптимальная партия для запуска, м.п.');
             $table->unsignedSmallInteger('rolls_amount')->nullable(false)->default(1)->comment('Количество рулонов ткани, шт.');
             $table->float('average_roll_length')->nullable(false)->default(0.0)->comment('Средняя длина рулона, м.п.');
+            $table->float('average_roll_length_hand')->nullable(false)->default(0.0)->comment('Средняя длина рулона, м.п., копия для средней длины рулона при ручном внесении');
+            $table->float('average_roll_length_statistic')->nullable(false)->default(0.0)->comment('Средняя длина рулона, м.п., копия для средней длины рулона при автоматическом пересчете');
+            $table->boolean('average_roll_length_from_statistic')->nullable(false)->default(false)->comment('Пересчет средней длины рулона осуществляется автоматически или нет');
             $table->float('translate_rate')->nullable(false)->default(self::DEFAULT_TRANSLATE_RATE)->comment('Коэффициент перевода');   // Непонятно пока зачем, но он равен 1,044 примерно
             $table->float('productivity')->nullable(false)->default(0)->comment('Производительность, м.п./час ');
             $table->unsignedSmallInteger('load_roll_time')->nullable(false)->default(0)->comment('Время загрузки рулона, мин.');

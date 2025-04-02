@@ -4,70 +4,135 @@
         <div v-if="fabrics.length">
 
             <div class="sticky-header top-0 flex pt-1 pb-1 bg-slate-100">
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Название', 'полотна стеганного']"
                     align="center"
-                    text="Название ПС"
                     text-size="small"
                     type="primary"
-                    width="w-[350px]"
+                    width="w-[310px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Рис.', '']"
                     align="center"
-                    text="Рис."
                     text-size="small"
                     type="primary"
-                    width="w-[50px]"
+                    width="w-[40px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Ткань', '']"
                     align="center"
-                    text="Ткань"
                     text-size="small"
                     type="primary"
-                    width="w-[100px]"
+                    width="w-[90px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Буфер', 'м.п.']"
                     align="center"
-                    text="Буфер"
                     text-size="small"
                     type="primary"
-                    width="w-[70px]"
+                    width="w-[60px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Мин', 'м.п.']"
                     align="center"
-                    text="ОПЗ"
                     text-size="small"
+                    title="Минимальный запас"
                     type="primary"
-                    width="w-[70px]"
+                    width="w-[60px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Макс', 'м.п.']"
                     align="center"
-                    text="Ст. машина"
                     text-size="small"
+                    title="Максимальный запас"
                     type="primary"
-                    width="w-[100px]"
+                    width="w-[60px]"
                 />
 
-                <AppLabel
+                <AppLabelMultiLine
+                    :text="['Ср. дл.', 'м.п.']"
                     align="center"
-                    text="Статус"
+                    text-size="small"
+                    title="Средняя длина рулона"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['ОПЗ', 'м.п.']"
+                    align="center"
+                    text-size="small"
+                    title="Оптимальная партия для запуска"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['Основная', 'СМ']"
+                    align="center"
+                    text-size="small"
+                    title="Основная стегальная машина"
+                    type="success"
+                    width="w-[80px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['Альтернат.', 'СМ 1']"
+                    align="center"
+                    text-size="small"
+                    title="Альтернативная стегальная машина 1"
+                    type="primary"
+                    width="w-[80px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['Альтернат.', 'СМ 2']"
+                    align="center"
+                    text-size="small"
+                    title="Альтернативная стегальная машина 2"
+                    type="warning"
+                    width="w-[80px]"
+                />
+
+
+                <AppLabelMultiLine
+                    :text="['Статус', '']"
+                    align="center"
                     text-size="small"
                     type="primary"
-                    width="w-[100px]"
+                    width="w-[80px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['Коэфф.', 'ткани']"
+                    align="center"
+                    text-size="small"
+                    title="Коэффициент перевода ткани в ПС"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
+                <AppLabelMultiLine
+                    :text="['Описание', '']"
+                    align="center"
+                    text-size="small"
+                    type="primary"
+                    width="w-[200px]"
                 />
 
                 <router-link :to="{name: 'manufacture.cell.fabrics.add'}">
-                    <AppLabel
+                    <AppLabelMultiLine
+                        :text="['Создать', '']"
                         align="center"
                         class="cursor-pointer"
-                        text="Создать"
                         text-size="normal"
-                        type="warning"
-                        width="w-[164px]"
+                        type="success"
+                        width="w-[84px]"
                     />
                 </router-link>
 
@@ -78,50 +143,106 @@
                 <div class="flex">
                     <AppLabel
                         :text="fabric.display_name"
-                        text-size="small"
-                        width="w-[350px]"
+                        text-size="mini"
+                        width="w-[310px]"
                     />
 
                     <AppLabel
-                        :text="fabric.pic"
+                        :text="fabric.picture.name"
                         align="center"
-                        text-size="small"
-                        width="w-[50px]"
+                        text-size="mini"
+                        width="w-[40px]"
                     />
 
                     <AppLabel
                         :text="fabric.textile"
                         align="center"
-                        text-size="small"
-                        width="w-[100px]"
+                        text-size="mini"
+                        width="w-[90px]"
                     />
 
                     <AppLabel
-                        :text="fabric.buffer.toFixed(2)"
+                        :text="fabric.buffer.amount.toFixed(2)"
+                        :type="!(!fabric.buffer.amount && fabric.active) ? 'dark' : 'danger'"
                         align="center"
-                        text-size="small"
-                        width="w-[70px]"
+                        text-size="mini"
+                        width="w-[60px]"
                     />
 
                     <AppLabel
-                        :text="fabric.optimal_party.toFixed(2)"
+                        :text="fabric.buffer.min.toFixed(2)"
                         align="center"
-                        text-size="small"
-                        width="w-[70px]"
+                        text-size="mini"
+                        width="w-[60px]"
                     />
 
                     <AppLabel
-                        :text="fabric.fabric_machine.short_name"
+                        :text="fabric.buffer.max.toFixed(2)"
                         align="center"
-                        text-size="small"
-                        width="w-[100px]"
+                        text-size="mini"
+                        width="w-[60px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.buffer.average_length.toFixed(3)"
+                        :type="!(!fabric.buffer.average_length && fabric.active) ? 'dark' : 'danger'"
+                        align="center"
+                        text-size="mini"
+                        width="w-[60px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.buffer.optimal_party.toFixed(2)"
+                        align="center"
+                        text-size="mini"
+                        width="w-[60px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.machines[0].short_name"
+                        :type="!(!fabric.machines[0].short_name && fabric.active) ? 'success' : 'danger'"
+                        align="center"
+                        text-size="mini"
+                        width="w-[80px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.machines[1].id ? fabric.machines[1].short_name : ''"
+                        :type="fabric.machines[1].id ? 'primary' : 'dark'"
+                        align="center"
+                        text-size="mini"
+                        width="w-[80px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.machines[2].id ? fabric.machines[2].short_name : ''"
+                        :type="fabric.machines[2].id ? 'warning' : 'dark'"
+                        align="center"
+                        text-size="mini"
+                        width="w-[80px]"
                     />
 
                     <AppLabel
                         :text="fabric.active ? 'Активный' : 'Архив'"
+                        :type="fabric.active ? 'success' : 'dark'"
                         align="center"
-                        text-size="small"
-                        width="w-[100px]"
+                        text-size="mini"
+                        width="w-[80px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.buffer.rate.toFixed(3)"
+                        :type="!(!fabric.buffer.rate && fabric.active) ? 'dark' : 'danger'"
+                        align="center"
+                        text-size="mini"
+                        width="w-[60px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.text.description ? fabric.text.description : '...'"
+                        class="truncate"
+                        text-size="mini"
+                        width="w-[200px]"
                     />
 
                     <router-link :to="{name: 'manufacture.cell.fabric.edit', params: {id: fabric.id}}">
@@ -129,19 +250,19 @@
                             align="center"
                             class="cursor-pointer"
                             text="Ред."
-                            text-size="small"
-                            type="success"
-                            width="w-[80px]"
+                            text-size="mini"
+                            type="warning"
+                            width="w-[40px]"
                         />
                     </router-link>
 
                     <AppLabel
                         align="center"
-                        class="cursor-pointer"
-                        text="Удалить"
+                        class="cursor-pointer font-bold"
+                        text="X"
                         text-size="small"
                         type="danger"
-                        width="w-[80px]"
+                        width="w-[40px]"
                         @click="fabricDelete(fabric.id)"
                     />
 
@@ -177,17 +298,21 @@
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
 const fabricsStore = useFabricsStore()
 let fabrics = await fabricsStore.getFabrics()
 
+// attract: Сортируем по основной стегальной машине
+fabrics.sort((fabric1, fabric2) => fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name))
+// union.sort((a, b) => a.element.model.localeCompare(b.element.model))
 
 console.log('fabrics', fabrics)
 
