@@ -83,148 +83,9 @@
 
             <!--attract: Общее-->
             <div v-if="tabs.common.shown">
-                <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
 
-                    <!-- attract: Кем и когда создано задание -->
-                    <div class="mb-2">
+                <TheTaskCommonInfo/>
 
-                        <div>
-                            <AppLabel
-                                text="Сменное задание:"
-                                type="success"
-                            />
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Статус:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="Выполняется"
-                                text-size="mini"
-                                type="warning"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Специалист ОПП:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="Рабчук А.А."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Дата создания:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="29 сентября 2025 года"
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Время создания:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="15:24:54"
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                    </div>
-
-                    <!-- attract: Бригада -->
-                    <div class="mb-4">
-
-                        <div class="flex items-start">
-                            <AppLabel
-                                text="Бригада:"
-                                type="success"
-                                width="w-[100px]"
-                            />
-                            <AppLabel
-                                text="№ 2"
-                                type="success"
-                                width="w-[50px]"
-                            />
-                        </div>
-
-                        <div class="ml-3">
-                            <AppLabel
-                                text="Иванов И. И."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                            <AppLabel
-                                text="Петров П. П."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                            <AppLabel
-                                text="Сдоров С. С."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                    </div>
-
-                    <!-- attract: Трудозатраты -->
-                    <div class="mb-2">
-                        <div>
-                            <AppLabel
-                                text="Трудозатраты:"
-                                type="success"
-                            />
-
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Американец:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="03ч. 39м. 59с."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                        <div class="flex items-start ml-3">
-                            <AppLabel
-                                text="Немец:"
-                                text-size="mini"
-                                width="w-[150px]"
-                            />
-                            <AppLabel
-                                text="03ч. 39м. 59с."
-                                text-size="mini"
-                                width="w-[200px]"
-                            />
-                        </div>
-
-                    </div>
-
-                </div>
             </div>
 
             <!--attract: Американец-->
@@ -285,133 +146,15 @@
                     <div class="mt-2 mb-2 bg-slate-400 min-h-[4px] rounded-lg"></div>
 
                     <!--attract: Добавляем информацию о рулонах -->
-                    <div class="flex">
 
-                        <AppLabelMultiLine
-                            :text="['Номер', 'рулона']"
-                            align="center"
-                            width="w-[80px]"
-                        />
+                    <!--attract: Заголовок списка-->
+                    <TheTaskRecordTitle/>
 
-                        <AppLabelMultiLine
-                            :text="['Полотно', 'стеганное']"
-                            align="center"
-                            type="primary"
-                            width="w-[300px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['Ср. длина', 'ткани (м.п.)']"
-                            align="center"
-                            width="w-[100px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['Кол-во,', '(рул.)']"
-                            align="center"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['Кол-во,', '(м.п.)']"
-                            align="center"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['Труд-ты', '(мин.)']"
-                            align="center"
-                            width="w-[80px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['Комментарий', '']"
-                            align="center"
-                            type="primary"
-                            width="w-[300px]"
-                        />
-
-                    </div>
-
-
-                    <!--attract: Добавляем информацию о рулонах -->
-
-                    <!-- attract: Режим отображения -->
-                    <div class="flex">
-                        <AppLabel
-                            align="center"
-                            text="00023548"
-                            text-size="mini"
-                            width="w-[80px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            text="ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[300px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            text="100.8"
-                            text-size="mini"
-                            width="w-[100px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            text="2"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            text="208.16"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            text="208"
-                            text-size="mini"
-                            width="w-[80px]"
-                        />
-
-                        <AppLabel
-                            class="truncate"
-                            text="Рулон был создан на американской СМ, но не прокручен до конца"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[300px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            class="cursor-pointer font-bold"
-                            text="Ред."
-                            text-size="mini"
-                            type="warning"
-                            width="w-[50px]"
-                        />
-
-                        <AppLabel
-                            align="center"
-                            class="cursor-pointer font-bold"
-                            text="Х"
-                            text-size="mini"
-                            type="danger"
-                            width="w-[50px]"
-                        />
-
-                    </div>
+                    <!-- attract: Режим отображения/редактирования -->
+                    <TheTaskRecord
+                        :edit-mode="true"
+                        :selectData="selectData"
+                    />
 
                     <!-- attract: Заглушка "Пусто" -->
                     <AppLabel
@@ -420,88 +163,10 @@
                         type="info"
                     />
 
-                    <!-- attract: Режим редактирования -->
-                    <div class="flex">
-                        <AppLabelMultiLine
-                            :text="['00023548', '']"
-                            align="center"
-                            text-size="mini"
-                            width="w-[80px]"
-                        />
-
-                        <!--                        <AppLabel-->
-                        <!--                            align="center"-->
-                        <!--                            text="ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)"-->
-                        <!--                            text-size="mini"-->
-                        <!--                            type="primary"-->
-                        <!--                            width="w-[300px]"-->
-                        <!--                        />-->
-
-                        <AppSelect
-                            :multiple="false"
-                            :selectData="selectData"
-                            label="Выберите ПС:"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[304px]"
-                            @change="selectHandler"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['100.8', '']"
-                            align="center"
-                            text-size="mini"
-                            width="w-[100px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['2', '']"
-                            align="center"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['208.16', '']"
-                            align="center"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[70px]"
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['208', '']"
-                            align="center"
-                            text-size="mini"
-                            width="w-[80px]"
-                        />
-
-                        <AppInputTextArea
-                            id="comment"
-                            class="cursor-pointer"
-                            height="min-h-[50px]"
-                            :rows=2
-                            text-size="mini"
-                            type="primary"
-                            value="Рулон был создан на американской СМ, но не прокручен до конца"
-                            width="w-[304px]"
-
-                        />
-
-                        <AppLabelMultiLine
-                            :text="['V', '']"
-                            align="center"
-                            class="cursor-pointer font-bold"
-                            text-size="mini"
-                            type="success"
-                            width="w-[50px]"
-                        />
-
-                    </div>
-
 
                 </div>
+
+
             </div>
 
             <!--attract: Немец-->
@@ -517,6 +182,17 @@
             <!--attract: Китаец-->
             <div v-if="tabs.korean.shown">
                 <div>Кореец</div>
+            </div>
+
+            <!-- attract: Test-->
+            <!-- warning: key: - для реактивности -->
+            <!-- todo: доработать, потому, что task будем получать в самом компоненте -->
+            <div v-if="tabs.test.shown">
+                <TheTaskMachine
+                    :key="activeTask"
+                    :task="activeTask"
+                    :machine="FABRIC_MACHINES.AMERICAN"
+                />
             </div>
 
         </div>
@@ -565,6 +241,17 @@ import {
     isWorkingDay,
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
+import TheTaskRecordTitle
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordsTitle.vue'
+import TheTaskRecord
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecord.vue'
+import TheTaskCommonInfo
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
+
+import TheTaskMachine
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskMachine.vue'
+
+
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
@@ -588,6 +275,9 @@ console.log('tasksPeriod:', tasksPeriod)
 const tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 console.log('tasks:', tasks)
 
+// Получаем все ткани и запоминаем в хранилище
+const fabrics = await fabricsStore.getFabrics()
+fabricsStore.fabricsMemory = fabrics
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
@@ -596,6 +286,7 @@ const tabs = reactive({
     german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC']},
     china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW']},
     korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94']},
+    test: {id: 6, shown: false, name: ['Machine', 'Test']},
     // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
 })
 
@@ -649,33 +340,8 @@ const selectData = {
 const selectHandler = (item) => console.log(item)
 
 
-// создаем пустой объект с данными для формы создания сменного задания (болванка)
-const taskDraft = {
-    date: '',
-    active: false,
-    common: {
-        team: 1,
-        status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
-    },
-    machines: {
-        american: {
-            rolls: []
-        },
-        german: {
-            rolls: []
-        },
-        china: {
-            rolls: []
-        },
-        korean: {
-            rolls: []
-        },
-    }
-}
-
-
 // формируем тестовые данные
-const taskData = reactive([
+let taskData = reactive([
     {
         date: '2025-04-02',
         active: true,
@@ -687,33 +353,33 @@ const taskData = reactive([
             american: {
                 // id: FABRIC_MACHINES.AMERICAN,
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 38001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 49002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 51003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 // id: FABRIC_MACHINES.GERMAN,
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 // id: FABRIC_MACHINES.CHINA,
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 // id: FABRIC_MACHINES.KOREAN,
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -728,30 +394,30 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -766,30 +432,30 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -804,30 +470,30 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -842,30 +508,30 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -880,30 +546,30 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -918,36 +584,41 @@ const taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
     },
 ])
-const testTasks = addEmptyFabricTasks(taskData)
+taskData = addEmptyFabricTasks(taskData)
+
+// Ссылка на активное СЗ
+let activeTask = reactive(taskData.find(t => t.active))
+
+console.log(taskData)
 
 
 // attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
@@ -980,7 +651,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
     // Удалить сменное задание
     if (btnRow === 2 && task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
         modalText.value = 'Вы уверены?'
-        const result = await appModalAsync.value.show()
+        const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
         }
@@ -1004,7 +675,13 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 }
 
 // attract Меняем активный день по клику на нем
-const changeActiveTask = (task) => taskData.forEach((t) => t.active = t.date === task.date)
+const changeActiveTask = (task) => {
+    taskData.forEach((t) => t.active = t.date === task.date)
+    activeTask = taskData.find(t => t.active)
+    // console.log('active_task: ', activeTask)
+}
+
+// const taskRecordEditMode = ref(false)
 
 
 </script>

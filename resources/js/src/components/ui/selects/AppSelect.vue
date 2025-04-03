@@ -1,7 +1,7 @@
 <template>
 
     <div v-if="selectData.data.length"
-         :class="[width, bgColor, 'container']">
+         :class="[width, height, bgColor, 'container']">
 
         <label v-if="label"
                :class="[textColor, 'label']"
@@ -53,6 +53,11 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[300px]'
+    },
+    height: {
+        type: String,
+        required: false,
+        default: 'h-[60px]'
     },
     type: {
         type: String,
@@ -126,7 +131,7 @@ watch(() => props.textSize, (newSize) =>textSizeClass.value = getFontSizeClass(n
 
 <style scoped>
 .container {
-    @apply border-2 rounded-lg h-[54px] m-0 p-0 relative
+    @apply border-2 rounded-lg m-0 p-0 relative
 }
 
 .label {

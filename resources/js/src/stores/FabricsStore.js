@@ -32,6 +32,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // Список ПС, которые получили к отображению
     let fabricsCashe = []
+    let fabricsMemory = []
     // const ordersShowTest = ref('123')
     const fabricsCasheIsChanged = ref(false)
 
@@ -172,6 +173,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     return {
         fabricsCashe,
+        fabricsMemory,
         fabricsCasheIsChanged,
         getFabrics,
         getFabricById,

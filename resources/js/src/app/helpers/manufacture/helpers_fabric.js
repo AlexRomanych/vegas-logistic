@@ -1,6 +1,12 @@
 // Info Тут все функции для участка Стежки
 
-import {FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {
+    FABRIC_TASK_STATUS,
+    FABRIC_MACHINES,
+} from '/resources/js/src/app/constants/fabrics.js'
+
+import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
+
 import {addDays, subtractDays} from '/resources/js/src/app/helpers/helpers_date.js'
 
 // descr Получить тип стиля по коду статуса СЗ на стежке
@@ -76,7 +82,7 @@ export function getFabricTasksPeriod() {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// attract добавляет к массиву сменных заданий недостающие дни со статусом FABRIC_TASK_STATUS.UNKNOWN
+// attract: добавляет к массиву сменных заданий недостающие дни со статусом FABRIC_TASK_STATUS.UNKNOWN
 export function addEmptyFabricTasks(fabricTasks = []) {
 
     // Страхуемся
@@ -128,15 +134,43 @@ export function addEmptyFabricTasks(fabricTasks = []) {
     // добавляем недостающие даты в массив сменных заданий с статусом FABRIC_TASK_STATUS.UNKNOWN
     missingDates.forEach((date) => {
         taskDraft.date = date
-        console.log(taskDraft.date)
+        // console.log(taskDraft.date)
 
-        fabricTasks.push({... taskDraft})
+        fabricTasks.push({...taskDraft})       // создаем новый объект - избавляемся от ссылки на объект
     })
 
     // еще раз сортируем массив по дате начала по возрастанию
     fabricTasks = fabricTasks.sort((a, b) => new Date(a.date) - new Date(b.date))
 
-    console.log(fabricTasks)
+    // устанавливаем активный флаг для первого элемента
+    fabricTasks.forEach((item) => item.active = false)
+    fabricTasks[0].active = true
+
+    // console.log(fabricTasks)
 
     return fabricTasks
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: выбирает из массива ПС, только те, которые соответствуют заданной стегальной машине
+// attract: onlyBasics: если true, то возвращает только основные ПС, иначе - все ПС, которые можно простегать
+export function filterFabricsByMachineId(fabrics = [], machineId = -1, onlyBasics = true) {
+
+    if (fabrics.length === 0 || machineId === -1) return []   // страховочка
+
+    let result
+
+    if (onlyBasics) {
+        result = fabrics.filter((fabric) => fabric.machines[0].id === machineId)        // получаем массив объектов, где каждый элемент - Proxy()
+        return result.map((fabric) => ({...fabric}))                                    // избавляемся от Proxy()
+    }
+
+    // получаем массив объектов, где остались только нужные ПС
+    result = fabrics.map((fabric) => {
+        if ([fabric.machines[0].id, fabric.machines[1].id, fabric.machines[2].id, fabric.machines[3].id].includes(machineId)) {
+            return {...fabric}
+        }
+    })
+
+    return result.filter((fabric) => typeof fabric !== "undefined")                     // удаляем пустые объекты
 }

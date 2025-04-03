@@ -190,6 +190,7 @@ watch(() => props.text, (text) => {
 </script>
 
 <style scoped>
+
 .app-label {
     @apply
     flex flex-col justify-center

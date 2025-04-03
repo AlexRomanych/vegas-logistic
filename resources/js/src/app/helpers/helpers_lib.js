@@ -1,7 +1,7 @@
 // Info Эдакая библиотека полезных функций
 
 // descr: Возвращает только цифры из входящей строки
-export function getStringPart (inStr = '') {
+export function getStringPart(inStr = '') {
     if (typeof inStr !== 'string' || inStr === '') {
         return ''
     }
@@ -10,10 +10,21 @@ export function getStringPart (inStr = '') {
 }
 
 // descr: Возвращает только буквы из входящей строки
-export function getDigitPart (inStr = '') {
+export function getDigitPart(inStr = '') {
     if (typeof inStr !== 'string' || inStr === '') {
         return ''
     }
 
     return inStr.replace(/\D+/g, '')
 }
+
+// descr: Проверяет переменную на пустой объект
+export function isEmptyObj(obj) {
+
+    if (typeof obj !== 'object' || obj === null) {
+        return true
+
+    }
+    return Object.keys(obj).length === 0
+}
+

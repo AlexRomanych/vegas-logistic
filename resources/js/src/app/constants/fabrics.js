@@ -68,9 +68,24 @@ export const FABRIC_PAGE_MODE = Object.freeze({
 
 // descr Константы ID машин стежки
 export const FABRIC_MACHINES = Object.freeze({
-    UNRNOWN: 0,
-    AMERICAN: 1,
-    GERMAN: 2,
-    CHINA: 3,
-    KOREAN: 4,
+    UNRNOWN: {
+        ID: 0,
+        TITLE: 'unknown',
+    },
+    AMERICAN: {
+        ID: 1,
+        TITLE: 'american',
+    },
+    GERMAN: {
+        ID: 2,
+        TITLE: 'german',
+    },
+    CHINA: {
+        ID: 3,
+        TITLE: 'china',
+    },
+    KOREAN: {
+        ID: 4,
+        TITLE: 'korean',
+    },
 })
