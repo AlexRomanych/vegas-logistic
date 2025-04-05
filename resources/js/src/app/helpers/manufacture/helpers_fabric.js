@@ -161,13 +161,13 @@ export function filterFabricsByMachineId(fabrics = [], machineId = -1, onlyBasic
     let result
 
     if (onlyBasics) {
-        result = fabrics.filter((fabric) => fabric.machines[0].id === machineId)        // получаем массив объектов, где каждый элемент - Proxy()
+        result = fabrics.filter((fabric) => fabric.machines[0].id === machineId && fabric.active)        // получаем массив объектов, где каждый элемент - Proxy()
         return result.map((fabric) => ({...fabric}))                                    // избавляемся от Proxy()
     }
 
     // получаем массив объектов, где остались только нужные ПС
     result = fabrics.map((fabric) => {
-        if ([fabric.machines[0].id, fabric.machines[1].id, fabric.machines[2].id, fabric.machines[3].id].includes(machineId)) {
+        if ([fabric.machines[0].id, fabric.machines[1].id, fabric.machines[2].id, fabric.machines[3].id].includes(machineId) && fabric.active) {
             return {...fabric}
         }
     })

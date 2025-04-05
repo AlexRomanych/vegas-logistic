@@ -10,6 +10,8 @@
             height="h-[31px]"
             type="success"
             width="w-[170px]"
+            @click="addRoll"
+
         />
 
         <AppLabelMultiLine
@@ -19,6 +21,7 @@
             height="h-[31px]"
             type="warning"
             width="w-[170px]"
+            @click="optimizeLabor"
         />
 
         <AppLabelMultiLine
@@ -44,7 +47,7 @@
             inputType="radio"
             legend="Выбор ПС:"
             type="secondary"
-            width="w-[350px]"
+            width="w-[270px]"
             @checked="checkedHandler"
         />
 
@@ -61,13 +64,27 @@ import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.
 const checkboxData = {
     name: 'Availability',
     data: [
-        {id: 1, name: 'Основные ПС', checked: true},
-        {id: 2, name: 'Все доступные ПС', checked: false},
+        {id: 1, name: 'Основные', checked: true},
+        {id: 2, name: 'Все доступные', checked: false},
     ]
 }
 
+const emits = defineEmits(['addRoll', 'optimizeLabor'])
+
 // Обрабатываем клик по чек боксу
 const checkedHandler = (item) => console.log(item)
+
+// attract: Обрабатываем клик по кнопке "Добавить рулон"
+const addRoll = () => {
+    console.log('add roll')
+    emits('addRoll')
+}
+
+// attract: Обрабатываем клик по кнопке "Оптимизировать трудозатраты"
+const optimizeLabor = () => {
+    emits('optimizeLabor')
+    console.log('optimize labor')
+}
 
 
 </script>

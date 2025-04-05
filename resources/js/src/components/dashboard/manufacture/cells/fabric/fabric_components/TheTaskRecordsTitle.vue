@@ -3,11 +3,11 @@
     <!--attract: Добавляем информацию о рулонах -->
     <div class="flex">
 
-        <AppLabelMultiLine
-            :text="['Номер', 'рулона']"
-            align="center"
-            width="w-[80px]"
-        />
+<!--        <AppLabelMultiLine-->
+<!--            :text="['Номер', 'рулона']"-->
+<!--            align="center"-->
+<!--            width="w-[80px]"-->
+<!--        />-->
 
         <AppLabelMultiLine
             :text="['Полотно', 'стеганное']"

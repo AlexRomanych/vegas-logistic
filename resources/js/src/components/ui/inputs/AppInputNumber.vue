@@ -1,22 +1,22 @@
 <template>
-    <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
+
+    <div :class="[width, 'flex flex-col m-0.5']">
         <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
         <input
             :id="id"
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
-
-            :placeholder="placeholder"
+            v-model.number="inputNumber"
+            :value="value"
+            :class="['app-input', height, textSizeClass, semibold, horizontalAlign, borderColor, focusBorderColor, placeholderColor, backgroundColor, currentTextColor]"
             :disabled="disabled"
+            :placeholder="placeholder"
             :step="step"
             type="number"
-            v-model="inputNumber"
             @input="getInputNumber"
-
         >
         <div v-if="errors">
             <div v-for="(err, index) in errors" :key="index">
                 <span :class="['input-error', textColor]">
-                    {{ err.$message}}
+                    {{ err.$message }}
                 </span>
             </div>
         </div>
@@ -28,9 +28,10 @@
 
 <script setup>
 
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed, ref} from "vue";
+import {computed, ref, watch} from 'vue'
+import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
+import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {
@@ -42,14 +43,8 @@ const props = defineProps({
         default: 'dark',
         validator: (type) => colorsList.includes(type)
     },
-    // func: {
-    //     type: String,
-    //     required: false,
-    //     default: 'text',
-    //     validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func)
-    // },
     value: {
-        type: Number,
+        // type: Number,
         required: false,
         default: 0,
     },
@@ -76,46 +71,88 @@ const props = defineProps({
     width: {
         type: String,
         required: false,
-        default: 'w-[500px]',
+        default: 'w-[50px]',
+
+    },
+    height: {
+        type: String,
+        required: false,
+        default: 'h-[30px]',
 
     },
     errors: {
         type: Array,
         required: false,
         default: null,
+    },
+    textSize: {
+        type: String,
+        required: false,
+        default: 'normal',
+        validator: (size) => fontSizesList.includes(size)
+        // validator: (size) => ['micro', 'mini', 'normal', 'small', 'large', 'huge'].includes(size)
+    },
+    bold: {
+        type: Boolean,
+        required: false,
+        default: true,
+    },
+    align: {
+        type: String,
+        required: false,
+        default: 'left',
+        validator: (position) => ['left', 'right', 'center', 'justify'].includes(position)
+    },
+    fractionDigits: {
+        type: Number,
+        required: false,
+        default: 0,
     }
-
-
 })
 
-const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
-const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
+const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
+const placeholderColor = ref(getColorClassByType(props.type, 'placeholder', currentColorIndex))
+const focusBorderColor = ref(getColorClassByType(props.type, 'focus:ring', currentColorIndex))
+const currentTextColor = ref(getTextColorClassByType(props.type))
+const backgroundColor = ref(getColorClassByType(props.type, 'bg', currentColorIndex))
+const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
+const textColor = ref(currentTextColor.value.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString()))
 
-const placeholderColor = 'placeholder' + currentColor
-const borderColor = 'border' + currentColor
-const focusBorderColor = 'focus:ring' + currentColor
+// const currentColor = getColorClassByType(props.type) + currentColorIndex
+// const placeholderColor = 'placeholder' + currentColor
+// const borderColor = 'border' + currentColor
+// const focusBorderColor = 'focus:ring' + currentColor
 
-let textColor = 'text' + currentColor
-textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
+// вычисляем горизонтальное выравнивание
+const horizontalAlign = ref('text-' + props.align)
+const textSizeClass = ref(getFontSizeClass(props.textSize))
+const semibold = ref(props.bold ? 'font-semibold' : '')
 
-const inputNumber = defineModel({
-    type: Number,
+// attract: Определяем модель
+// const inputNumber = ref(props.value)
+const inputNumber = defineModel( 'inputNumber', {
+    // type: Number,
     default: 0,
 })
 
-// Задаем начальное значение
-inputNumber.value = props.value
+inputNumber.value = props.value === '' ? 0 : props.value     // Задаем начальное значение
 
-const emit = defineEmits(['getInputNumber'])
+const emits = defineEmits(['getInputNumber'])
+const getInputNumber = (e) => emits('getInputNumber', e.target.value)
 
-const getInputNumber = (e) => emit('getInputNumber', e.target.value)
-// const onInput = function(e) {
-//     console.log(e.target.value)
-// }
-// const onInput = function(inputText) {
-//     console.log(inputText.target.value)
-// }
+// Делаем реактивность вычисляемых стилей
+watch(() => props.type, (newType) => {
+    placeholderColor.value = getColorClassByType(props.type, 'placeholder', currentColorIndex)
+    focusBorderColor.value = getColorClassByType(props.type, 'focus:ring', currentColorIndex)
+    currentTextColor.value = getTextColorClassByType(props.type)
+    backgroundColor.value = getColorClassByType(props.type, 'bg', currentColorIndex)
+    borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
+    textColor.value = currentTextColor.value.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
+})
 
+watch(() => props.align, (newAlign) => horizontalAlign.value = 'text-' + newAlign)
+watch(() => props.textSize, (newTextSize) => textSizeClass.value = getFontSizeClass(newTextSize))
+watch(() => props.bold, (newBold) => semibold.value = newBold ? 'font-semibold' : '')
 
 </script>
 

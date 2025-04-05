@@ -84,7 +84,7 @@ const currentColorIndex = 500       // задаем основной индек�
 // const itemType = ref(props.type)
 
 const currentTextColor = ref(getTextColorClassByType(props.type))
-const backgroundColor =ref( getColorClassByType(props.type, 'bg', currentColorIndex))
+const backgroundColor =ref(getColorClassByType(props.type, 'bg', currentColorIndex))
 const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
 
 // вычисляем горизонтальное выравнивание

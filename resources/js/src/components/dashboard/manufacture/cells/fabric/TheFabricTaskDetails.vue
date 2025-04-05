@@ -192,6 +192,8 @@
                     :key="activeTask"
                     :task="activeTask"
                     :machine="FABRIC_MACHINES.AMERICAN"
+                    @add-roll="addRoll"
+                    @optimize-labor="optimizeLabor"
                 />
             </div>
 
@@ -353,33 +355,34 @@ let taskData = reactive([
             american: {
                 // id: FABRIC_MACHINES.AMERICAN,
                 rolls: [
-                    {num: 38001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 49002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 51003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 38001, fabric_id:7, fabric: 'ПС 218Ж 100С 15С блэк (рис. Ж2)', rolls_amount: 1, length_amount: 150.5, descr: 'I am description 1'},
+                    {average_length: 59.9, roll_id: 0, num: 49002, fabric_id:9, fabric: 'ПС 220Ж 100С 15С М-24 (рис. К2)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description 2'},
+                    {average_length: 59.9, roll_id: 0, num: 51003, fabric_id:11, fabric: 'ПС 220Ж 100С 220Ж микрофибра (рис. Ж2)', rolls_amount: 3, length_amount: 150.5, descr: 'I am description 3'},
+                    {average_length: 59.9, roll_id: 0, num: 51004, fabric_id:12, fabric: 'ПС 220Ж 200С 220Ж микрофибра (рис. Ж2)', rolls_amount: 4, length_amount: 150.5, descr: 'I am description 4'},
                 ]
             },
             german: {
                 // id: FABRIC_MACHINES.GERMAN,
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 // id: FABRIC_MACHINES.CHINA,
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 // id: FABRIC_MACHINES.KOREAN,
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -394,30 +397,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -432,30 +435,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -470,30 +473,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -508,30 +511,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -546,30 +549,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -584,30 +587,30 @@ let taskData = reactive([
         machines: {
             american: {
                 rolls: [
-                    {num: 27001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 27003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 27003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             german: {
                 rolls: [
-                    {num: 28004, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28005, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 28006, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28004, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28005, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 28006, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             china: {
                 rolls: [
-                    {num: 29007, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29008, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 29009, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29007, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29008, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 29009, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
             korean: {
                 rolls: [
-                    {num: 31001, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 32002, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
-                    {num: 33003, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 31001, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 32002, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
+                    {average_length: 59.9, roll_id: 0, num: 33003, fabric_id:0, fabric: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', rolls_amount: 2, length_amount: 150.5, descr: 'I am description'},
                 ]
             },
         }
@@ -683,6 +686,25 @@ const changeActiveTask = (task) => {
 
 // const taskRecordEditMode = ref(false)
 
+// attract: Поднятое событие при клике на кнопку "Добавить рулон"
+const addRoll = (newRoll, machine, task) => {
+
+    const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
+
+    workTask.machines[machine.TITLE].rolls.push(newRoll)
+
+    // debugger
+
+    console.log(newRoll)
+    console.log(machine.TITLE)
+    console.log(workTask)
+    console.log(workTask.machines)
+}
+
+// attract: Поднятое событие при клике на кнопку "Оптимизировать трудозатраты"
+const optimizeLabor = (machine, task) => {
+
+}
 
 </script>
 

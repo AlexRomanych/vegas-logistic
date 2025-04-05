@@ -7,7 +7,8 @@
 
             <!--attract: Меню с кнопками управления записями -->
             <TheTaskRecordsMenu
-
+                @add-roll="addRoll"
+                @optimize-labor="optimizeLabor"
             />
 
             <!--attract: Разделительная линия -->
@@ -22,7 +23,8 @@
                 v-for="roll in rolls"
                 :key="roll.num"
                 :roll="roll"
-                :select-data="selectData"
+                :select-data="getSelectData(roll)"
+
             />
 
 
@@ -50,8 +52,7 @@ import TheTaskRecordsTitle
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordsTitle.vue'
 import TheTaskRecord
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecord.vue'
-import {unref} from "vue";
-
+// import {unref} from "vue";
 
 
 const props = defineProps({
@@ -73,11 +74,13 @@ const props = defineProps({
     }
 })
 
+const emits = defineEmits(['addRoll', 'optimizeLabor'])
+
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
 
 // Выбираем те ПС, которые стегаются на этой машине
-let filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID,  false)
+let filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID )
 console.log(filteredFabrics)
 
 
@@ -86,22 +89,59 @@ const rolls = props.task.machines[props.machine.TITLE].rolls
 console.log('task: ', props.task)
 console.log('rolls: ', rolls)
 
-// attract: Определяем объект с данными селекта для ПС
-const selectData = {
-    name: 'fabrics',
-    data: [
-        // {id: 1, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-        // {id: 2, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-        // {id: 3, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', selected: true},
-        // {id: 4, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', disabled: true},
-        // {id: 5, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-    ]
+// attract: Определяем объект с данными селекта для ПС в зависимости от выбранного рулона и передаем его в компонент
+const getSelectData = (roll) => {
+    const data = filteredFabrics.map(fabric => ({
+        id: fabric.id,
+        name: fabric.display_name,
+        selected: fabric.id === roll.fabric_id
+    }))
+    return {name: 'fabrics', data}
 }
 
+// const selectData = {
+//     name: 'fabrics',
+//     data: [
+//         // {id: 1, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+//         // {id: 2, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+//         // {id: 3, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', selected: true},
+//         // {id: 4, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', disabled: true},
+//         // {id: 5, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
+//     ]
+// }
+// const getSelectData = (roll) => filteredFabrics.map(fabric => ({id: fabric.id, name: fabric.display_name, selected: fabric.id === roll.fabric_id}))
+// selectData.data = filteredFabrics.map(fabric => ({id: fabric.id, name: fabric.display_name,}))
 
-selectData.data = filteredFabrics.map(fabric => ({id: fabric.id, name: fabric.display_name,}))
+// Attract: Добавляем новый рулон
+const addRoll = () => {
+    // props.task.machines[props.machine.TITLE].rolls
+    const defaultFabric = filteredFabrics[0]
+    const newRoll = {
+        average_length: defaultFabric.buffer.average_length,
+        roll_id: 0,
+        num: 0,
+        fabric_id: defaultFabric.id,
+        fabric: defaultFabric.display_name,
+        rolls_amount: 0,
+        length_amount: 0,
+        descr: 'Нет описания'
+    }
 
-console.log(selectData)
+    // Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
+    emits('addRoll', newRoll, props.machine, props.task)
+
+}
+
+// attract: Оптимизируем трудозатраты
+const optimizeLabor = () => {
+    emits('optimizeLabor', props.machine, props.task)
+}
+
+// attract: Всплывающее событие при выборе ПС для рулона
+// const fabricSelect = (fabric, roll) => {
+//     console.log(fabric)
+//     console.log(roll)
+// }
 
 </script>
 
