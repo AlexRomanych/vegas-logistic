@@ -36,6 +36,14 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // const ordersShowTest = ref('123')
     const fabricsCasheIsChanged = ref(false)
 
+
+    // Маячок того, что в данный момент происходит редактирование какого-то ПС рулона
+    const globalEditMode = ref(false)       // Начальное значение - режим просмотра
+
+    // Маячок выбора режима доступности ПС - Основные или Все доступные
+    const globalFabricsMode = ref(true)    // Начальное значение - основные
+
+
     // Attract: Получаем с API список ПС
     const getFabrics = async () => {
 
@@ -175,6 +183,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         fabricsCashe,
         fabricsMemory,
         fabricsCasheIsChanged,
+        globalEditMode,
+        globalFabricsMode,
         getFabrics,
         getFabricById,
         updateFabric,

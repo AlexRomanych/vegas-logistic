@@ -19,12 +19,14 @@
 
             />
 
+
+<!--            :select-data="getSelectData(roll)"-->
             <TheTaskRecord
                 v-for="roll in rolls"
                 :key="roll.num"
                 :roll="roll"
-                :select-data="getSelectData(roll)"
 
+                :machine="machine"
             />
 
 
@@ -78,26 +80,33 @@ const emits = defineEmits(['addRoll', 'optimizeLabor'])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
+fabrics[0].machines[0].id = props.machine.ID
+
+// console.log('fabrics: ', fabrics)
 
 // Выбираем те ПС, которые стегаются на этой машине
-let filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID )
-console.log(filteredFabrics)
-
+// let filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID )
 
 const rolls = props.task.machines[props.machine.TITLE].rolls
 // const rolls = []
-console.log('task: ', props.task)
-console.log('rolls: ', rolls)
+// console.log('task: ', props.task)
+// console.log('rolls: ', rolls)
 
 // attract: Определяем объект с данными селекта для ПС в зависимости от выбранного рулона и передаем его в компонент
-const getSelectData = (roll) => {
-    const data = filteredFabrics.map(fabric => ({
-        id: fabric.id,
-        name: fabric.display_name,
-        selected: fabric.id === roll.fabric_id
-    }))
-    return {name: 'fabrics', data}
-}
+// const getSelectData = (roll) => {
+//
+//     // console.log('roll: ', roll)
+//
+//     const data = filteredFabrics.map(fabric => ({
+//         id: fabric.id,
+//         name: fabric.display_name,
+//         selected: fabric.id === roll.fabric_id
+//     }))
+//
+//     // console.log('data: ', data)
+//
+//     return {name: 'fabrics', data}
+// }
 
 // const selectData = {
 //     name: 'fabrics',
@@ -115,7 +124,7 @@ const getSelectData = (roll) => {
 // Attract: Добавляем новый рулон
 const addRoll = () => {
     // props.task.machines[props.machine.TITLE].rolls
-    const defaultFabric = filteredFabrics[0]
+    const defaultFabric = fabrics[0]
     const newRoll = {
         average_length: defaultFabric.buffer.average_length,
         roll_id: 0,
@@ -136,6 +145,9 @@ const addRoll = () => {
 const optimizeLabor = () => {
     emits('optimizeLabor', props.machine, props.task)
 }
+
+// attract: Получаем режим ПС - Основные или Все доступные
+const getFabricMode = (fabricMode) => {}
 
 // attract: Всплывающее событие при выборе ПС для рулона
 // const fabricSelect = (fabric, roll) => {

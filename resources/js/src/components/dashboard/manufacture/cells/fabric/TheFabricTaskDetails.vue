@@ -227,6 +227,7 @@ import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
+    FABRICS_NULLABLE,
 } from '/resources/js/src/app/constants/fabrics.js'
 
 import {
@@ -279,7 +280,9 @@ console.log('tasks:', tasks)
 
 // Получаем все ткани и запоминаем в хранилище
 const fabrics = await fabricsStore.getFabrics()
+fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
 fabricsStore.fabricsMemory = fabrics
+// console.log(fabrics)
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({

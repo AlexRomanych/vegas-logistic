@@ -89,3 +89,60 @@ export const FABRIC_MACHINES = Object.freeze({
         TITLE: 'korean',
     },
 })
+
+
+// descr Создаем болванку "нулевой" ткани для отображения в сервисе
+export const FABRICS_NULLABLE =
+    {
+        "id": 0,
+        "code_1C": "0",
+        "name": "Нет данных",
+        "display_name": "Нет данных",
+        "picture":
+            {
+                "id": 0,
+                "name": "Н/Д"
+            },
+        "textile": "",
+        "fillersList": [],
+        "active": true,
+        "rare": false,
+        "machines": [
+            {
+                "id": 0,
+                "short_name": "Нет данных"
+            },
+            {
+                "id": 0,
+                "short_name": "Нет данных"
+            },
+            {
+                "id": 0,
+                "short_name": "Нет данных"
+            },
+            {
+                "id": 0,
+                "short_name": "Нет данных"
+            }
+        ],
+        "buffer": {
+            "amount": 0,
+            "min": 0,
+            "max": 0,
+            "min_rolls": 0,
+            "max_rolls": 0,
+            "optimal_party": 0,
+            "average_length": 0,
+            "rate": 0,
+            "productivity": 0
+        },
+        "text": {
+            "description": null,
+            "comment": null,
+            "note": null
+        }
+    }
+
+
+
+

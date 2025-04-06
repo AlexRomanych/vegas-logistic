@@ -3,7 +3,9 @@
     <!--attract: Меню стегальной машины -->
     <div class="flex">
 
+        <!-- attract: Добавление рулона. Показываем только в режиме просмотра -->
         <AppLabelMultiLine
+            v-if="!fabricsStore.globalEditMode"
             :text="['Добавить', 'рулон']"
             align="center"
             class="cursor-pointer"
@@ -14,7 +16,9 @@
 
         />
 
+        <!-- attract: Оптимизация трудозатрат. Показываем только в режиме просмотра -->
         <AppLabelMultiLine
+            v-if="!fabricsStore.globalEditMode"
             :text="['Оптимизировать', 'трудозатраты']"
             align="center"
             class="cursor-pointer"
@@ -40,7 +44,9 @@
             width="w-[200px]"
         />
 
+        <!-- attract: Режим выбора ПС. Показываем только в режиме просмотра -->
         <AppCheckbox
+            v-if="!fabricsStore.globalEditMode"
             id="active"
             :checkboxData="checkboxData"
             dir="horizontal"
@@ -48,7 +54,7 @@
             legend="Выбор ПС:"
             type="secondary"
             width="w-[270px]"
-            @checked="checkedHandler"
+            @checked="changeFabricsMode"
         />
 
     </div>
@@ -56,23 +62,45 @@
 </template>
 
 <script setup>
+import {reactive} from 'vue'
 
+import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+
+import {storeToRefs} from 'pinia';
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
 
-// attract: Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
-const checkboxData = {
-    name: 'Availability',
-    data: [
-        {id: 1, name: 'Основные', checked: true},
-        {id: 2, name: 'Все доступные', checked: false},
-    ]
-}
-
 const emits = defineEmits(['addRoll', 'optimizeLabor'])
 
-// Обрабатываем клик по чек боксу
-const checkedHandler = (item) => console.log(item)
+// attract: Получаем данные из хранилища
+const fabricsStore = useFabricsStore()
+// глобальный режим редактирования + глобальный режим выбора ПС
+// let {globalEditMode, globalFabricsMode} = storeToRefs(fabricsStore)
+
+// console.log(globalFabricsMode.value)
+// const fabricsMode
+
+
+
+// attract: Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
+const checkboxData = reactive({
+    name: 'Availability',
+    data: [
+        {id: 1, name: 'Основные', checked: fabricsStore.globalFabricsMode},
+        {id: 2, name: 'Все доступные', checked: !fabricsStore.globalFabricsMode},
+    ]
+})
+
+
+
+// attract: Обрабатываем клик по чек боксу (Основные или все доступные)
+const changeFabricsMode = (item) => {
+    fabricsStore.globalFabricsMode = item.id === 1
+    // console.log('menu: ', fabricsStore.globalFabricsMode)
+    checkboxData.data[0].checked = fabricsStore.globalFabricsMode
+    checkboxData.data[1].checked = !fabricsStore.globalFabricsMode
+    // console.log(item)
+}
 
 // attract: Обрабатываем клик по кнопке "Добавить рулон"
 const addRoll = () => {

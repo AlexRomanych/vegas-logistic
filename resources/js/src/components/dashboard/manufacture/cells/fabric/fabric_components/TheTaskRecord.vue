@@ -4,13 +4,13 @@
     <div class="flex">
 
         <!-- attract: Номер рулона -->
-<!--        <AppLabelMultiLine-->
-<!--            :text="!editMode ? roll.num.toString() : [roll.num.toString(), '']"-->
-<!--            align="center"-->
-<!--            height="h-[30px]"-->
-<!--            text-size="mini"-->
-<!--            width="w-[80px]"-->
-<!--        />-->
+        <!--        <AppLabelMultiLine-->
+        <!--            :text="!editMode ? roll.num.toString() : [roll.num.toString(), '']"-->
+        <!--            align="center"-->
+        <!--            height="h-[30px]"-->
+        <!--            text-size="mini"-->
+        <!--            width="w-[80px]"-->
+        <!--        />-->
 
         <!-- attract: ПС -->
         <div v-if="!editMode">
@@ -18,7 +18,7 @@
                 :text="!editMode ? roll.fabric : [roll.fabric, '']"
                 height="h-[30px]"
                 text-size="mini"
-                type="primary"
+                :type="typeForErrorsAndConstraintsForLabel"
                 width="w-[300px]"
             />
         </div>
@@ -29,14 +29,14 @@
                 height="h-[64px]"
                 label="Выберите ПС:"
                 text-size="mini"
-                type="primary"
+                :type="typeForErrorsAndConstraintsForSelect"
                 width="w-[304px]"
-                @change="selectHandler"
+                @change="selectFabric"
             />
         </div>
 
         <!-- attract: Средняя длина рулона -->
-<!--        :text="!editMode ? roll.average_length.toFixed(2) : [roll.average_length.toFixed(2), '']"-->
+        <!--        :text="!editMode ? roll.average_length.toFixed(2) : [roll.average_length.toFixed(2), '']"-->
         <AppLabelMultiLine
             :text="!editMode ? averageLength.toFixed(2) : [averageLength.toFixed(2), '']"
             align="center"
@@ -49,10 +49,10 @@
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(3)"
+                :type="isRollsAmountFractional ? 'danger' : 'primary'"
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
-                :type="isRollsAmountFractional ? 'danger' : 'primary'"
                 width="w-[70px]"
             />
         </div>
@@ -206,15 +206,22 @@
 
 <script setup>
 
-import {computed, ref} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {storeToRefs} from 'pinia';
+
+import {
+    filterFabricsByMachineId,
+    getAddFabricMode
+} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
 import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
 import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
+import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js';
 
 const props = defineProps({
     roll: {
@@ -222,25 +229,100 @@ const props = defineProps({
         required: false,
         default: () => ({})
     },
-    editMode: {
-        type: Boolean,
-        required: false,
-        default: false
-    },
+    // editMode: {
+    //     type: Boolean,
+    //     required: false,
+    //     default: false
+    // },
     selectData: {
         type: Object,
         required: false,
         default: () => ({})
+    },
+    machine: {
+        type: Object,
+        required: false,
+        default: () => FABRIC_MACHINES.AMERICAN,
+        validator: (machine) => [
+            FABRIC_MACHINES.AMERICAN,
+            FABRIC_MACHINES.GERMAN,
+            FABRIC_MACHINES.CHINA,
+            FABRIC_MACHINES.KOREAN,
+        ].includes(machine)
     }
 })
 
-const emits = defineEmits(['setEditMode', 'saveTaskRecord', 'selectHandler'])
+const emits = defineEmits(['saveTaskRecord',])
 
 // attract: Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
 
-console.log(fabrics)
+
+// attract: Получаем тип раскраски ошибки и ограничения для рулона
+const getTypeForErrorsAndConstraintsForLabel = () => {
+    if (props.roll.fabric_id === 0) {
+        return 'danger'
+    }
+    // if (props.roll.fabric_id === 0) return 'danger'
+
+    // console.log(props.roll.fabric_id)
+
+    // console.log(props.roll.fabric_id)
+
+
+    const fabricMode = getAddFabricMode(fabrics, props.machine.ID, props.roll.fabric_id)
+
+    // Проверяем, если режим выбора ПС не основной, то возвращаем тип ошибки
+    if (fabricsStore.globalFabricsMode && !fabricMode) return 'warning'
+
+    console.log('fabricMode: ', fabricMode)
+
+    return 'primary'
+}
+
+
+
+// attract: Определяем переменные для стилей
+const typeForErrorsAndConstraintsForSelect = ref('primary')
+const typeForErrorsAndConstraintsForLabel = ref(getTypeForErrorsAndConstraintsForLabel())
+
+
+
+// attract: Определяем объект selectData для ПС в зависимости от выбранного рулона
+let selectData = {}
+const getSelectData = () => {
+
+    // console.log('getSelectData: ', fabricsStore.globalFabricsMode)
+
+    // attract: Фильтруем ПС в зависимости от выбранного режима ПС
+    const filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID, fabricsStore.globalFabricsMode)
+
+    const data = filteredFabrics.map(fabric => ({
+        id: fabric.id,
+        name: fabric.display_name,
+        selected: fabric.id === props.roll.fabric_id
+    }))
+
+    // console.log(data)
+    // const currItem = data.find(item => item.selected)
+    // console.log(currItem)
+
+    // if (currItem.id === 0) typeForErrorsAndConstraintsForSelect.value = 'danger'
+
+    console.log('data: ', data)
+
+    return {name: 'fabrics', data}
+}
+
+// attract: Обрабатываем событие выбора ПС. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
+// selectData = reactive(getSelectData())
+watch(() => fabricsStore.globalFabricsMode, () => {
+    // console.log(fabricsStore.globalFabricsMode)
+    selectData = getSelectData()
+    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()
+}, {deep: true, immediate: true})
+
 
 // attract: Определяем модели для передачи обмена данными
 // Длина в рулонах
@@ -270,40 +352,49 @@ const averageLengthComputed = computed(() => {
 const averageLength = ref(averageLengthComputed.value)
 
 
-// console.log(`props: `, props)
-// console.log('editMode: ', props.editMode)
-// console.log('selectData: ', props.selectData)
-
-
-
-const editMode = ref(false)         // Переключатель режима редактирования
-
-
-
 // attract: Обрабатываем событие выбора ПС
-const selectHandler = (item) => {
-    console.log(item)
+
+const selectFabric = (item) => {
     const tempFabric = fabrics.find(fabric => fabric.id === item.id)
     averageLength.value = tempFabric.buffer.average_length
+    if (item.id === 0) typeForErrorsAndConstraintsForSelect.value = 'danger'
+
+    console.log(item)
     console.log(averageLength.value)
     // emits('selectHandler', item, props.roll)
 }
 
-const setEditMode = () => editMode.value = true
-const cancelEditMode = () => editMode.value = false
+const editMode = ref(false)                     // Переключатель режима редактирования
+// attract: Сброс режима редактирования
+const resetEditMode = () => {
+    editMode.value = false
+    fabricsStore.globalEditMode = false                 // Отключаем глобальное редактирование
+}
 
+// attract: Устанавливаем режим редактирования
+const setEditMode = () => {
+    // Проверяем на глобальную переменную редактирования
+    if (!fabricsStore.globalEditMode) {
+        editMode.value = true
+        fabricsStore.globalEditMode = true
+    }
+}
+
+// attract: Отменяем редактирование
+const cancelEditMode = () => resetEditMode()
+
+// attract: Сохраняем рулон
 const saveTaskRecord = () => {
 
     console.log(rollsAmount.value)
     console.log(lengthAmount.value)
 
-    editMode.value = false
+    resetEditMode()                                     // Отключаем глобальное редактирование
     emits('saveTaskRecord', false)
 }
 
 
-
-// Пересчитываем количество в рулонах при изменении длины в м.п.
+// attract: Пересчитываем количество в рулонах при изменении длины в м.п.
 const getRollsAmount = () => {
     if (lengthAmount.value < 0) lengthAmount.value = 0
     rollsAmount.value = lengthAmount.value / props.roll.average_length
@@ -314,7 +405,7 @@ const getRollsAmount = () => {
 }
 
 
-// Пересчитываем количество в рулонах при изменении длины в м.п.
+// attract: Пересчитываем количество в рулонах при изменении длины в м.п.
 const getLengthAmount = () => {
     // console.log(rollsAmount.value)
     if (rollsAmount.value.toString() === '') rollsAmount.value = 0
@@ -323,6 +414,7 @@ const getLengthAmount = () => {
     isRollsAmountFractional.value = !Number.isInteger(rollsAmount.value) || rollsAmount.value === 0
 
 }
+
 
 
 </script>

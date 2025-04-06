@@ -174,3 +174,33 @@ export function filterFabricsByMachineId(fabrics = [], machineId = -1, onlyBasic
 
     return result.filter((fabric) => typeof fabric !== "undefined")                     // удаляем пустые объекты
 }
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Возвращает режим, в котором была добавлена ПС - только основная для этой СМ или только альтернативная
+export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
+
+    if (fabrics.length === 0 || machineId === -1 || fabricId === -1) return ''   // страховочка
+
+    const basicFabrics = filterFabricsByMachineId(fabrics, machineId )                     // Все основные ПС для данной СМ
+    const isBasicFabric = basicFabrics.some((fabric) => fabric.id === fabricId)            // Проверяем, является ли ПС основной для данной СМ
+
+    // console.log(basicFabrics)
+    // console.log(isBasicFabric)
+
+    // Выбираем только альтернативные ПС для данной СМ
+    const result =fabrics.map((fabric) => {
+        if ([fabric.machines[1].id, fabric.machines[2].id, fabric.machines[3].id].includes(machineId) && fabric.active) {
+            return {...fabric}
+        }
+    })
+
+    const nonBasicFabrics = result.filter((fabric) => typeof fabric !== "undefined")         // удаляем пустые объекты
+    const isNonBasicFabrics = nonBasicFabrics.some((fabric) => fabric.id === fabricId)       // Проверяем, является ли ПС альтернативной для данной СМ
+
+    // console.log(nonBasicFabrics)
+    // console.log(isNonBasicFabrics)
+
+    // return isBasicFabric && !isNonBasicFabrics
+    return !isNonBasicFabrics
+
+}
