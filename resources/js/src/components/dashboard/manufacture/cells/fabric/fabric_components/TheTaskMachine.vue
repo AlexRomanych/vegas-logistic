@@ -4,9 +4,9 @@
 
         <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
 
-
             <!--attract: Меню с кнопками управления записями -->
             <TheTaskRecordsMenu
+                :machine="machine"
                 @add-roll="addRoll"
                 @optimize-labor="optimizeLabor"
             />
@@ -16,19 +16,15 @@
 
             <!--attract: Заголовки таблицы для записей с рулонами -->
             <TheTaskRecordsTitle
-
             />
 
-
-<!--            :select-data="getSelectData(roll)"-->
             <TheTaskRecord
-                v-for="roll in rolls"
-                :key="roll.num"
+                v-for="(roll, index) in rolls"
+                :key="index"
                 :roll="roll"
-
+                :index="index"
                 :machine="machine"
             />
-
 
         </div>
 
@@ -39,12 +35,7 @@
 
 <script setup>
 
-import {
-    FABRIC_TASK_STATUS,
-    FABRIC_MACHINES,
-} from '/resources/js/src/app/constants/fabrics.js'
-
-import {filterFabricsByMachineId} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+import {FABRIC_MACHINES, NEW_ROLL,} from '/resources/js/src/app/constants/fabrics.js'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -54,8 +45,6 @@ import TheTaskRecordsTitle
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordsTitle.vue'
 import TheTaskRecord
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecord.vue'
-// import {unref} from "vue";
-
 
 const props = defineProps({
     task: {
@@ -80,80 +69,35 @@ const emits = defineEmits(['addRoll', 'optimizeLabor'])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
-fabrics[0].machines[0].id = props.machine.ID
+fabrics[0].machines[0].id = props.machine.ID                    // Добавляем ID машины в объект ПС с нулевым рулоном
 
-// console.log('fabrics: ', fabrics)
+const rolls = props.task.machines[props.machine.TITLE].rolls    // Получаем рулоны из задания
 
-// Выбираем те ПС, которые стегаются на этой машине
-// let filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID )
+console.log(rolls)
 
-const rolls = props.task.machines[props.machine.TITLE].rolls
-// const rolls = []
-// console.log('task: ', props.task)
-// console.log('rolls: ', rolls)
+const fillGlobalProductivity = () => {
+    rolls.forEach((roll, index, rolls) => {
+        const fabric = fabrics.find(fabric => fabric.id === roll.fabric_id)
+        console.log(fabricsStore.globalTaskProductivity)
+        fabricsStore.globalTaskProductivity[props.machine.TITLE][index] =
+            fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount : 0
+        // console.log(fabric)
+    })
+}
 
-// attract: Определяем объект с данными селекта для ПС в зависимости от выбранного рулона и передаем его в компонент
-// const getSelectData = (roll) => {
-//
-//     // console.log('roll: ', roll)
-//
-//     const data = filteredFabrics.map(fabric => ({
-//         id: fabric.id,
-//         name: fabric.display_name,
-//         selected: fabric.id === roll.fabric_id
-//     }))
-//
-//     // console.log('data: ', data)
-//
-//     return {name: 'fabrics', data}
-// }
+fillGlobalProductivity()
 
-// const selectData = {
-//     name: 'fabrics',
-//     data: [
-//         // {id: 1, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-//         // {id: 2, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-//         // {id: 3, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', selected: true},
-//         // {id: 4, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)', disabled: true},
-//         // {id: 5, name: 'ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)'},
-//     ]
-// }
-// const getSelectData = (roll) => filteredFabrics.map(fabric => ({id: fabric.id, name: fabric.display_name, selected: fabric.id === roll.fabric_id}))
-// selectData.data = filteredFabrics.map(fabric => ({id: fabric.id, name: fabric.display_name,}))
 
 // Attract: Добавляем новый рулон
 const addRoll = () => {
-    // props.task.machines[props.machine.TITLE].rolls
-    const defaultFabric = fabrics[0]
-    const newRoll = {
-        average_length: defaultFabric.buffer.average_length,
-        roll_id: 0,
-        num: 0,
-        fabric_id: defaultFabric.id,
-        fabric: defaultFabric.display_name,
-        rolls_amount: 0,
-        length_amount: 0,
-        descr: 'Нет описания'
-    }
-
-    // Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
-    emits('addRoll', newRoll, props.machine, props.task)
-
+// Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
+    emits('addRoll', NEW_ROLL, props.machine, props.task)
 }
 
 // attract: Оптимизируем трудозатраты
 const optimizeLabor = () => {
     emits('optimizeLabor', props.machine, props.task)
 }
-
-// attract: Получаем режим ПС - Основные или Все доступные
-const getFabricMode = (fabricMode) => {}
-
-// attract: Всплывающее событие при выборе ПС для рулона
-// const fabricSelect = (fabric, roll) => {
-//     console.log(fabric)
-//     console.log(roll)
-// }
 
 </script>
 

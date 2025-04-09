@@ -37,9 +37,9 @@
         />
 
         <AppLabelMultiLine
-            :text="['Труд-ты', '(мин.)']"
+            :text="['Труд-ты', '']"
             align="center"
-            width="w-[80px]"
+            width="w-[90px]"
         />
 
         <AppLabelMultiLine

@@ -181,6 +181,8 @@ export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
 
     if (fabrics.length === 0 || machineId === -1 || fabricId === -1) return ''   // страховочка
 
+    if (fabricId === 0) return false
+
     const basicFabrics = filterFabricsByMachineId(fabrics, machineId )                     // Все основные ПС для данной СМ
     const isBasicFabric = basicFabrics.some((fabric) => fabric.id === fabricId)            // Проверяем, является ли ПС основной для данной СМ
 

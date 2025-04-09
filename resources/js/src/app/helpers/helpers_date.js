@@ -269,4 +269,28 @@ export function getDate(inDate = new Date()) {
     return !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает дату в формате "10ч. 59м. 59с."
+// attract type - sec, min, hour - входящие данные: секунды, минуты, часы
+export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
 
+    let tempTime = inTime
+
+    if (type === 'min') {
+        tempTime = Math.round(tempTime * 60, 0)
+    } else if (type === 'hour') {
+        tempTime = Math.round(tempTime * 60 * 60, 0)
+    }
+
+    const hours = Math.floor(tempTime / 3600)
+    const minutes = Math.floor((tempTime % 3600) / 60)
+    const secs = tempTime % 60
+
+    const pad = (num) => num.toString().padStart(2, '0')
+
+    if (hours === 0 && minutes === 0 && secs === 0) return '00с.'
+    if (hours === 0 && minutes === 0) return `${pad(secs)}с.`
+    if (hours === 0) return `${pad(minutes)}м. ${pad(secs)}с.`
+
+    return `${pad(hours)}ч. ${pad(minutes)}м. ${pad(secs)}с.`
+}

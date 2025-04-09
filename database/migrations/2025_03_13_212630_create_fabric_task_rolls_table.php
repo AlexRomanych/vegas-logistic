@@ -25,18 +25,27 @@ return new class extends Migration
                 ->nullable(false)
                 ->unique()
                 ->comment('Номер рулона');
+
+            // attract: Порядковый номер позиции рулона в сменном задании
+            $table->unsignedTinyInteger('roll_order')->nullable(false)->default(0)->comment('Порядковый номер позиции рулона в сменном задании');
+
             // attract: Привязка к ПС
             $table->ForeignIdFor(Fabric::class)->nullable(false)->comment('Привязка к ПС')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            // attract: Время создания рулона на стежке и ответственный за выпуск
+            // attract: Время создания рулона на стежке
             $table->timestamp('finish_at')
-                ->nullable(true)->comment('Дата и время завершения стегания рулона');
+                ->nullable()->comment('Дата и время завершения стегания рулона');
+
+            // attract: Ответственный за выпуск рулона на стежке
             $table->ForeignId('finish_by')
                 ->nullable(false)->default(0)->comment('Ответственный за производство рулона')
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
+
+            // attract: Статус позиции сменного задания (статус стегания рулона)
+            $table->unsignedTinyInteger('roll_status')->nullable(false)->default(0)->comment('Статус задания');
 
             // attract: Время перемещения рулона на закрой и ответственный за перемещение на закрой
             $table->timestamp('move_to_cut_at')
@@ -68,8 +77,6 @@ return new class extends Migration
             $table->double('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
             $table->double('defect_length')->nullable(false)->default(0)->comment('Брак, м.п.');
 
-            // статус позиции сменного задания
-            $table->unsignedTinyInteger('item_status')->nullable(false)->default(0)->comment('Статус задания');
 
             $table->string('description')->nullable()->comment('Описание');
             $table->string('comment')->nullable()->comment('Комментарий');

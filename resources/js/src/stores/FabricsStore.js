@@ -3,6 +3,8 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 
+import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+
 import {jwtGet, jwtPost, jwtDelete, jwtUpdate} from "/resources/js/src/app/utils/jwt_api"
 import {openNewTab} from "/resources/js/src/app/helpers/helpers_service"
 
@@ -30,18 +32,32 @@ const URL_FABRIC_TASKS = 'fabrics/tasks/'                       // URL для п
 export const useFabricsStore = defineStore('fabrics', () => {
 
 
-    // Список ПС, которые получили к отображению
+    // attract: Список ПС, которые получили к отображению
     let fabricsCashe = []
     let fabricsMemory = []
     // const ordersShowTest = ref('123')
     const fabricsCasheIsChanged = ref(false)
 
-
-    // Маячок того, что в данный момент происходит редактирование какого-то ПС рулона
+    // attract: Маячок того, что в данный момент происходит редактирование какого-то ПС рулона
     const globalEditMode = ref(false)       // Начальное значение - режим просмотра
 
-    // Маячок выбора режима доступности ПС - Основные или Все доступные
+    // attract: Маячок выбора режима доступности ПС - Основные или Все доступные
     const globalFabricsMode = ref(true)    // Начальное значение - основные
+
+    // attract: Массив с трудозатратами по СЗ
+    const globalTaskProductivity = reactive({
+        [FABRIC_MACHINES.AMERICAN.TITLE]: [],
+        [FABRIC_MACHINES.GERMAN.TITLE]: [],
+        [FABRIC_MACHINES.CHINA.TITLE]: [],
+        [FABRIC_MACHINES.KOREAN.TITLE]: [],
+    })
+
+    // const globalTaskProductivity = reactive({
+    //     [FABRIC_MACHINES.AMERICAN]: [],
+    //     [FABRIC_MACHINES.GERMAN]: [],
+    //     [FABRIC_MACHINES.CHINA]: [],
+    //     [FABRIC_MACHINES.KOREAN]: [],
+    // })
 
 
     // Attract: Получаем с API список ПС
@@ -185,6 +201,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         fabricsCasheIsChanged,
         globalEditMode,
         globalFabricsMode,
+        globalTaskProductivity,
         getFabrics,
         getFabricById,
         updateFabric,

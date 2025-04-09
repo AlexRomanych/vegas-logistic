@@ -37,10 +37,10 @@
         />
 
         <AppLabelMultiLine
-            :text="['Общие трудозатраты', '08ч. 59м. 59с.']"
+            :text="['Общие трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount, 'hour')]"
             align="center"
             height="h-[31px]"
-            type="danger"
+            :type="totalProductivityAmount <= 10.5 ? 'success' : 'danger'"
             width="w-[200px]"
         />
 
@@ -62,13 +62,30 @@
 </template>
 
 <script setup>
-import {reactive} from 'vue'
+import {reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {storeToRefs} from 'pinia';
+import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+
+import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
+
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
+
+const props = defineProps({
+    machine: {
+        type: Object,
+        required: false,
+        default: () => FABRIC_MACHINES.AMERICAN,
+        validator: (machine) => [
+            FABRIC_MACHINES.AMERICAN,
+            FABRIC_MACHINES.GERMAN,
+            FABRIC_MACHINES.CHINA,
+            FABRIC_MACHINES.KOREAN,
+        ].includes(machine)
+    }
+})
 
 const emits = defineEmits(['addRoll', 'optimizeLabor'])
 
@@ -80,6 +97,21 @@ const fabricsStore = useFabricsStore()
 // console.log(globalFabricsMode.value)
 // const fabricsMode
 
+// attract: Общие трудозатраты
+const getTotalProductivityAmount = () => {
+    const productivityAmounts = fabricsStore.globalTaskProductivity[props.machine.TITLE]
+    console.log(productivityAmounts)
+
+    return productivityAmounts.reduce((acc, cur) => acc + cur, 0)
+}
+const totalProductivityAmount = ref(getTotalProductivityAmount())
+
+// attract: Отслеживаем изменения в хранилище по трудозатратам
+watch(
+    () => fabricsStore.globalTaskProductivity,
+    () => totalProductivityAmount.value = getTotalProductivityAmount(),
+    {deep: true}
+)
 
 
 // attract: Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
@@ -90,8 +122,6 @@ const checkboxData = reactive({
         {id: 2, name: 'Все доступные', checked: !fabricsStore.globalFabricsMode},
     ]
 })
-
-
 
 // attract: Обрабатываем клик по чек боксу (Основные или все доступные)
 const changeFabricsMode = (item) => {

@@ -73,6 +73,15 @@
                 />
 
                 <AppLabelMultiLine
+                    :text="['Пр-сть', 'м.п./ч.']"
+                    align="center"
+                    text-size="small"
+                    title="Оптимальная партия для запуска"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
+                <AppLabelMultiLine
                     :text="['Основная', 'СМ']"
                     align="center"
                     text-size="small"
@@ -193,6 +202,14 @@
 
                     <AppLabel
                         :text="fabric.buffer.optimal_party.toFixed(2)"
+                        align="center"
+                        text-size="mini"
+                        width="w-[60px]"
+                    />
+
+                    <AppLabel
+                        :text="fabric.buffer.productivity.toFixed(3)"
+                        :type="!(!fabric.buffer.productivity && fabric.active) ? 'dark' : 'danger'"
                         align="center"
                         text-size="mini"
                         width="w-[60px]"
