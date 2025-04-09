@@ -2,6 +2,7 @@
 
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,10 +19,9 @@ return new class extends Migration
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
 
             $table->id()->from(self::ROLL_NUMBER_START);
-//            $table->bigInteger('order')->nullable(false)->default(0)->comment('Порядковый номер позиции');
 
-            $table->unsignedBigInteger('roll_number')
-                ->from(1)
+            $table->unsignedInteger('roll_number')
+                ->from(self::ROLL_NUMBER_START)
                 ->nullable(false)
                 ->unique()
                 ->comment('Номер рулона');
@@ -65,6 +65,16 @@ return new class extends Migration
 
             // attract: Привязка к сменному заданию
             $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            // attract: Привязка к плановому сменному заданию
+            // attract: Плановое сменное задание и сменное задание к выполнению - это две разные сущности
+            // attract: В плановом СЗ учитывается ткань и количество рулонов - это одна позиция (один id)
+            // attract: В выполняемом СЗ учитывается это плановое сменное задание разбивается на каждый отдельный рулон
+            // attract: который и описывается в этом задании. Поэтому каждый рулон этой сущности привязываем
+            // attract: к группе рулонов планового сменного задания
+            $table->ForeignIdFor(FabricTaskContext::class)->nullable()->comment('Привязка к плановому сменному заданию')
                 ->constrained()
                 ->cascadeOnDelete();
 

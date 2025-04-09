@@ -167,5 +167,29 @@ export async function jwtUpdate(url, data = {}) {
 
 }
 
+
+export async function jwtPut(url, data = {}) {
+
+    return await jwtUpdate(url, data)
+
+
+    // try {
+    //     const response = await jwtAxios.put(url, {data: data})
+    //
+    //     console.log(response)
+    //
+    //     const res = await response.data
+    //     return res
+    //
+    // } catch (error) {
+    //     // console.log(error.response)
+    //     // console.log('jwtDelete: ', error.response.data.message)
+    //     console.log('jwtUpdate: ', error)
+    //     debugger
+    // }
+
+}
+
+
 // export default jwtAxios
 

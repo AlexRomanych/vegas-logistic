@@ -1,7 +1,8 @@
 <template>
     <div :class="[width, height]" class="flex flex-col">
 
-        <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
+<!--        <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>-->
+        <label v-if="label" :class="['input-label', 'text-slate-600']" :for="id">{{ label }}</label>
 
         <textarea
             :id="id"

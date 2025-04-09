@@ -100,7 +100,7 @@ const fabricsStore = useFabricsStore()
 // attract: Общие трудозатраты
 const getTotalProductivityAmount = () => {
     const productivityAmounts = fabricsStore.globalTaskProductivity[props.machine.TITLE]
-    console.log(productivityAmounts)
+    // console.log(productivityAmounts)
 
     return productivityAmounts.reduce((acc, cur) => acc + cur, 0)
 }
@@ -134,6 +134,8 @@ const changeFabricsMode = (item) => {
 
 // attract: Обрабатываем клик по кнопке "Добавить рулон"
 const addRoll = () => {
+    console.log(fabricsStore.globalRollsIndexes)
+    if (fabricsStore.globalRollsIndexes.includes(0)) return
     console.log('add roll')
     emits('addRoll')
 }

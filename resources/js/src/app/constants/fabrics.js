@@ -166,6 +166,7 @@ export const TEST_FABRICS = [
         common: {
             team: 1,
             status: FABRIC_TASK_STATUS.DONE.CODE,
+            description: 'Тестовое СЗ',
         },
         machines: {
             american: {

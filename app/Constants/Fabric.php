@@ -1,4 +1,9 @@
 <?php
+// descr Статусы сменного задания
+
+// descr Сменное задание создано (или сохранено)
+const FABRIC_TASK_UNKNOWN = 'unknown';
+const FABRIC_TASK_UNKNOWN_CODE = 0;
 
 // descr Сменное задание создано (или сохранено)
 const FABRIC_TASK_CREATED = 'created';
@@ -16,6 +21,16 @@ const FABRIC_TASK_RUNNING_CODE = 3;
 const FABRIC_TASK_DONE = 'done';
 const FABRIC_TASK_DONE_CODE = 4;
 
+//hr---------------------------------------------------------------------
 
-
-
+// descr Константы стегальных машин
+const FABRIC_MACHINE_UNKNOWN_ID = 0;
+const FABRIC_MACHINE_UNKNOWN_TITLE = 'unknown';
+const FABRIC_MACHINE_AMERICAN_ID = 1;
+const FABRIC_MACHINE_AMERICAN_TITLE = 'american';
+const FABRIC_MACHINE_GERMAN_ID = 2;
+const FABRIC_MACHINE_GERMAN_TITLE = 'german';
+const FABRIC_MACHINE_CHINA_ID = 3;
+const FABRIC_MACHINE_CHINA_TITLE = 'china';
+const FABRIC_MACHINE_KOREAN_ID = 4;
+const FABRIC_MACHINE_KOREAN_TITLE = 'korean';

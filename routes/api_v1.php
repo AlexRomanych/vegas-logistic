@@ -226,6 +226,7 @@ Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'upload
 
 // attract: Блок Заказов Стежки на производство
 Route::get('/fabrics/tasks', [CellFabricTaskController::class, 'tasks'])->middleware('jwt.auth');
+Route::put('/fabrics/tasks/create/', [CellFabricTaskController::class, 'create'])->middleware('jwt.auth');
 
 //hr--------------------------------------------------------------------------------------------------------------------
 

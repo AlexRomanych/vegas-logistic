@@ -9,11 +9,13 @@
             {{ label }}
         </label>
 
+
+<!-- attract: Убрал пока, так как глюки и надо разбираться :size="multiple ? size : ''"       -->
         <select :id="id"
                 :class="[bgColor, textColor, textSizeClass, semibold, 'select']"
                 :multiple="multiple"
                 :name="selectData.name"
-                :size="multiple ? size : false"
+
                 @change="onChange">
 
             <option v-for="item in selectData.data"

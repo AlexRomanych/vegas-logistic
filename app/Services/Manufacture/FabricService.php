@@ -7,6 +7,7 @@ use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Models\Manufacture\Cells\Fabric\FabricPictureSchema;
+use Carbon\Carbon;
 
 //use Illuminate\Support\Collection;
 
@@ -152,6 +153,59 @@ final class FabricService
             self::$fabricPicSchemasNameCache[$picSchema->schema] = $picSchema;
 
         }
+    }
+
+
+    /**
+     * Получаем название стегальной машины по ее ID
+     * @param int $machineId
+     * @return string
+     */
+    public static function getFabricMachineNameById(int $machineId): string
+    {
+        return match ($machineId) {
+            FABRIC_MACHINE_UNKNOWN_ID => FABRIC_MACHINE_UNKNOWN_TITLE,
+            FABRIC_MACHINE_AMERICAN_ID => FABRIC_MACHINE_AMERICAN_TITLE,
+            FABRIC_MACHINE_GERMAN_ID => FABRIC_MACHINE_GERMAN_TITLE,
+            FABRIC_MACHINE_CHINA_ID => FABRIC_MACHINE_CHINA_TITLE,
+            FABRIC_MACHINE_KOREAN_ID => FABRIC_MACHINE_KOREAN_TITLE,
+            default => 'error'
+        };
+    }
+
+    /**
+     * Получаем ID стегальной машины по ее имени
+     * @param string $machineName
+     * @return int
+     */
+    public static function getFabricMachineIdByName(string $machineName): int
+    {
+        return match (strtolower($machineName)) {
+            FABRIC_MACHINE_UNKNOWN_TITLE => FABRIC_MACHINE_UNKNOWN_ID,
+            FABRIC_MACHINE_AMERICAN_TITLE => FABRIC_MACHINE_AMERICAN_ID,
+            FABRIC_MACHINE_GERMAN_TITLE => FABRIC_MACHINE_GERMAN_ID,
+            FABRIC_MACHINE_CHINA_TITLE => FABRIC_MACHINE_CHINA_ID,
+            FABRIC_MACHINE_KOREAN_TITLE => FABRIC_MACHINE_KOREAN_ID,
+            default => 0
+        };
+    }
+
+    /**
+     * Получаем номер бригады стегальной машины по дате
+     * @param string|Carbon $date
+     * @return int
+     */
+    public static function getFabricTeamChangeNumberByDate(string | Carbon $date): int
+    {
+        $referenceDate = Carbon::parse('2025-03-26');
+        $targetDate = Carbon::parse($date);
+
+        $diffInDays = abs($referenceDate->diffInDays($targetDate));
+
+        $remainsOfDivision = $diffInDays % 4;
+
+        if ($remainsOfDivision === 0 || $remainsOfDivision === 1) return 1;
+        return 2;
     }
 
 }

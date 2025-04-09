@@ -39,7 +39,7 @@
         <!--        :text="!editMode ? roll.average_length.toFixed(2) : [roll.average_length.toFixed(2), '']"-->
         <AppLabelMultiLine
             :text="!editMode ? averageLength.toFixed(2) : [averageLength.toFixed(2), '']"
-            :type="averageLength ? 'primary' : 'danger'"
+            :type="averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -49,8 +49,8 @@
         <!-- attract: Количество в рулонах -->
         <div v-if="!editMode">
             <AppLabelMultiLine
-                :text="Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(3)"
-                :type="isRollsAmountFractional ? 'danger' : 'primary'"
+                :text="Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(5)"
+                :type="isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
@@ -63,7 +63,7 @@
                 v-model:input-number="rollsAmount"
                 :fraction-digits=2
                 :type="isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
-                :value=rollsAmount
+                :value=Math.round(rollsAmount*100000)/100000
                 align="center"
                 height="h-[60px]"
                 text-size="mini"
@@ -92,25 +92,24 @@
                 v-model:input-number="lengthAmount"
                 :fraction-digits=2
                 :type="lengthAmount ? 'primary' : 'danger'"
-                :value=lengthAmount
+                :value=Math.round(lengthAmount*100)/100
                 align="center"
                 height="h-[60px]"
                 step="0.01"
                 text-size="mini"
                 width="w-[70px]"
+                @blur="getRollsAmount"
                 @change="getRollsAmount"
                 @input="getRollsAmount"
-                @blur="getRollsAmount"
             />
             <!-- warning: оставим только событие change  -->
         </div>
 
 
         <!-- attract: Трудозатраты -->
-<!--        :text="!editMode ? productivityAmount.toFixed(2) : [productivityAmount.toFixed(2), '']"-->
         <AppLabelMultiLine
             :text="!editMode ? formatTimeWithLeadingZeros(productivityAmount, 'hour') : [formatTimeWithLeadingZeros(productivityAmount, 'hour'), '']"
-            :type="productivityAmount ? 'primary' : 'danger'"
+            :type="productivityAmount ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -120,7 +119,7 @@
         <!-- attract: Комментарий -->
         <div v-if="!editMode">
             <AppLabel
-                :text="workRoll.descr"
+                :text="description"
                 class="truncate"
                 height="h-[30px]"
                 text-size="mini"
@@ -128,11 +127,14 @@
                 width="w-[300px]"
             />
         </div>
+
+        <!-- v-model:input-textarea="workRoll.descr"       -->
         <div v-else>
             <AppInputTextArea
                 id="comment"
+                v-model="description"
                 :rows=2
-                :value="workRoll.descr"
+                :value="description"
                 class="cursor-pointer"
                 height="min-h-[60px]"
                 text-size="mini"
@@ -207,6 +209,7 @@
 <script setup>
 
 import {reactive, ref, watch} from 'vue'
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -257,6 +260,7 @@ let memRoll = {...props.roll}     // для возврата состояния 
 // attract: Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
+const rollsIndexes = fabricsStore.globalRollsIndexes        // для исключения их из selectData
 
 // attract: Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
 const fabricMode = ref(getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id))
@@ -278,9 +282,6 @@ const getAverageLength = () => {
 const averageLength = ref(getAverageLength())
 
 
-
-
-
 // attract: Получаем тип раскраски ошибки и ограничения для рулона
 const getTypeForErrorsAndConstraintsForLabel = () => {
 
@@ -300,6 +301,7 @@ const getTypeForErrorsAndConstraintsForLabel = () => {
 const typeForErrorsAndConstraintsForSelect = ref('primary')
 const typeForErrorsAndConstraintsForLabel = ref(getTypeForErrorsAndConstraintsForLabel())
 
+// todo: Сделать функционал, чтобы нельзя было выбирать на новом рулоне уже существующие ПС и нельзя было бы добавлять новый рулон, если есть незакрытые
 
 // attract: Определяем объект selectData для ПС в зависимости от выбранного рулона
 const getSelectData = () => {
@@ -307,11 +309,36 @@ const getSelectData = () => {
     // attract: Фильтруем ПС в зависимости от выбранного режима ПС
     const filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID, fabricsStore.globalFabricsMode)
 
-    const data = filteredFabrics.map(fabric => ({
-        id: fabric.id,
-        name: fabric.display_name,
-        selected: fabric.id === workRoll.fabric_id
-    }))
+    // attract: Делаем 2 разных selectData для рулонов с нулевым id (убираем существующие в СЗ ПС) и для остальных
+    let data
+
+    if (workRoll.fabric_id !== 0) {
+
+        data = filteredFabrics.map(fabric => {
+            return {
+                id: fabric.id,
+                name: fabric.display_name,
+                selected: fabric.id === workRoll.fabric_id
+            }
+        })
+
+    } else {
+
+        const dataRaw = filteredFabrics.map(fabric => {
+            if (!rollsIndexes.includes(fabric.id)) {
+                return {
+                    id: fabric.id,
+                    name: fabric.display_name,
+                    selected: fabric.id === workRoll.fabric_id
+                }
+            }
+        })
+
+        data = dataRaw.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
+    }
+
+    // console.log('select_data: ', data)
+    // console.log('id: : ', workRoll.fabric_id)
 
     return {name: 'fabrics', data}
 }
@@ -366,7 +393,9 @@ const lengthAmount = defineModel('lengthAmount', {
 })
 lengthAmount.value = rollsAmount.value * averageLength.value
 
-
+// attract: Описание
+const description = ref(workRoll.descr)
+// const description = defineModel('description', {})
 
 // attract: Определяем переменные для трудозатрат
 const getProductivity = () => {
@@ -384,29 +413,37 @@ const getProductivityAmount = () => {
 const productivityAmount = ref(getProductivityAmount())
 
 
-
 // attract: Флаг дробного количества в рулонах и нулевого количества
-const getIsRollsAmountFractional = () => !Number.isInteger(rollsAmount.value) || rollsAmount.value === 0
+const getIsRollsAmountFractional = () => !Number.isInteger(rollsAmount.value)
 const isRollsAmountFractional = ref(getIsRollsAmountFractional())
 
 
 // attract: Выделяем в отдельную функцию все общие реактивные методы
 const reactiveActions = () => {
 
+    // warning: Порядок важен
+    selectData = getSelectData()                                                        // Вычисляем данные для селекта ПС
+
     const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)         // Получаем объект ПС
-    averageLength.value = tempFabric.buffer.average_length                              // Получаем среднюю длину ПС
+
     workRoll.fabric = tempFabric.display_name                                           // Меняем название ПС
     workRoll.average_length = tempFabric.buffer.average_length                          // Меняем среднюю длину ПС
-    fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)  // Меняем режим выбора ПС
-    averageLength.value = getAverageLength()                                            // Получаем среднюю длину ПС
-    productivity.value = getProductivity()                                              // Получаем производительность
-    productivityAmount.value = getProductivityAmount()                                  // Получаем трудозатраты
-    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()// Меняем тип для стилей
-    selectData = getSelectData()                                                        // Вычисляем данные для селекта ПС
-    rollsAmount.value = workRoll.rolls_amount
+    workRoll.descr = description.value
+
+    averageLength.value = workRoll.average_length                                       // Получаем среднюю длину ПС
+    productivity.value = tempFabric.buffer.productivity                                 // Получаем производительность
     lengthAmount.value = workRoll.rolls_amount * workRoll.average_length
+    rollsAmount.value = workRoll.rolls_amount
+    productivityAmount.value = getProductivityAmount()                                  // Получаем трудозатраты
+    fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)  // Меняем режим выбора ПС
+
+    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()// Меняем тип для стилей
 
 
+    isRollsAmountFractional.value = getIsRollsAmountFractional()
+    // averageLength.value = getAverageLength()                                            // Получаем среднюю длину ПС
+    // productivity.value = getProductivity()                                              // Получаем производительность
+    // productivity.value = getProductivity()                                              // Получаем производительность
 }
 
 // attract: Обрабатываем событие выбора ПС
@@ -460,17 +497,32 @@ const cancelEditMode = () => {
     resetEditMode()
     workRoll = {...memRoll}     // Возвращаем состояние по кнопке отмены
     // typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()// Меняем тип для стилей
+
     reactiveActions()
 }
 
 // attract: Сохраняем рулон
 const saveTaskRecord = () => {
 
+    resetEditMode()                                     // Отключаем глобальное редактирование
+
     console.log(rollsAmount.value)
     console.log(lengthAmount.value)
+    console.log(workRoll.fabric_id)
+    console.log(workRoll.descr)
 
-    resetEditMode()                                     // Отключаем глобальное редактирование
-    emits('saveTaskRecord', false)
+    const saveRollData = {
+        textile_length: lengthAmount.value,
+        fabric_id: workRoll.fabric_id,
+        fabric_name: workRoll.fabric,
+        rolls_amount: rollsAmount.value,
+        descr: description.value,
+        fabric_mode: fabricMode.value,
+    }
+
+    console.log(saveRollData)
+
+    emits('saveTaskRecord', {index: props.index, roll: saveRollData})
 }
 
 
@@ -479,26 +531,29 @@ const amountActions = () => {
     if (lengthAmount.value.toString() === '' || lengthAmount.value < 0) lengthAmount.value = 0
     isRollsAmountFractional.value = getIsRollsAmountFractional()
     productivityAmount.value = getProductivityAmount()
-    // console.log('rolls_amount: ', rollsAmount.value)
-    // console.log('length_amount: ', lengthAmount.value)
-    // console.log(isRollsAmountFractional.value)
+    workRoll.rolls_amount = rollsAmount.value
+
+    console.log('ln: ', lengthAmount.value)
+    console.log('rolls: ', rollsAmount.value)
+    console.log('isRollsAmountFractional: ', isRollsAmountFractional.value)
 }
 
 // attract: Пересчитываем количество в рулонах при изменении длины в м.п.
 const getRollsAmount = () => {
-    amountActions()
+    // warning: Порядок важен
     if (averageLength.value) {
         rollsAmount.value = lengthAmount.value / averageLength.value
     } else {
         rollsAmount.value = 0
     }
+    amountActions()
 }
 
 
 // attract: Пересчитываем количество в рулонах при изменении длины в м.п.
 const getLengthAmount = () => {
-    amountActions()
     lengthAmount.value = rollsAmount.value * averageLength.value
+    amountActions()
 }
 
 
@@ -531,6 +586,9 @@ watch([
     saveRollFlag.value = getSaveRollFlag()
 }, {deep: true})
 
+// attract: сбрасываем глобальное редактирование
+onBeforeRouteLeave(() => fabricsStore.globalEditMode = false)
+onBeforeRouteUpdate(() => fabricsStore.globalEditMode = false)
 
 </script>
 

@@ -5,8 +5,8 @@ import {ref, reactive, computed, watch} from 'vue'
 
 import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
 
-import {jwtGet, jwtPost, jwtDelete, jwtUpdate} from "/resources/js/src/app/utils/jwt_api"
-import {openNewTab} from "/resources/js/src/app/helpers/helpers_service"
+import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut} from '/resources/js/src/app/utils/jwt_api'
+import {openNewTab} from '/resources/js/src/app/helpers/helpers_service'
 
 import axios from 'axios'
 
@@ -28,6 +28,7 @@ const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'      // URL для з
 const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'        // URL для удаления заказа
 
 const URL_FABRIC_TASKS = 'fabrics/tasks/'                       // URL для получения списка СЗ для ПС
+const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'         // URL для получения создания или обновления СЗ для ПС
 
 export const useFabricsStore = defineStore('fabrics', () => {
 
@@ -52,12 +53,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         [FABRIC_MACHINES.KOREAN.TITLE]: [],
     })
 
-    // const globalTaskProductivity = reactive({
-    //     [FABRIC_MACHINES.AMERICAN]: [],
-    //     [FABRIC_MACHINES.GERMAN]: [],
-    //     [FABRIC_MACHINES.CHINA]: [],
-    //     [FABRIC_MACHINES.KOREAN]: [],
-    // })
+    // attract: Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
+    let globalRollsIndexes = reactive([])
 
 
     // Attract: Получаем с API список ПС
@@ -195,6 +192,14 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    const createFabricTask = async (task) => {
+        const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
+        console.log('store', result)
+        return result
+        debugger
+    }
+
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -202,6 +207,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalEditMode,
         globalFabricsMode,
         globalTaskProductivity,
+        globalRollsIndexes,
         getFabrics,
         getFabricById,
         updateFabric,
@@ -213,6 +219,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         getFabricsMachineById,
         uploadFabricsOrders,
         getTasksByPeriod,
+        createFabricTask,
     }
 
 })

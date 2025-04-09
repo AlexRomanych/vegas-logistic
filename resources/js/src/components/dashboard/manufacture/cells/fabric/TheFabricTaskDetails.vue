@@ -98,6 +98,7 @@
                     :machine="FABRIC_MACHINES.AMERICAN"
                     @add-roll="addRoll"
                     @optimize-labor="optimizeLabor"
+                    @save-task-record="saveTasks"
                 />
 
             </div>
@@ -319,18 +320,40 @@ const addRoll = (newRoll, machine, task) => {
 
     workTask.machines[machine.TITLE].rolls.push(newRoll)
 
-    // debugger
-
-    console.log(newRoll)
-    console.log(machine.TITLE)
-    console.log(workTask)
-    console.log(workTask.machines)
+    // console.log(newRoll)
+    // console.log(machine.TITLE)
+    // console.log(workTask)
+    // console.log(workTask.machines)
 }
+
+
+// attract: Поднятое событие при клике на кнопку "Сохранить рулон"
+const saveTasks = async (saveData)  => {
+    // console.group('saveTasks')
+    // console.log(saveData)
+    // // console.log(roll)
+    // // console.log(index)
+    // // console.log(machine)
+    // // console.log(task)
+    // console.groupEnd()
+
+    const targetTask = taskData.find(t => t.date === saveData.task.date)
+    targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll
+
+    console.log(taskData)
+
+    const result = await fabricsStore.createFabricTask(targetTask)
+    console.log('SFC: ', result)
+}
+
+
 
 // attract: Поднятое событие при клике на кнопку "Оптимизировать трудозатраты"
 const optimizeLabor = (machine, task) => {
 
 }
+
+
 
 </script>
 
