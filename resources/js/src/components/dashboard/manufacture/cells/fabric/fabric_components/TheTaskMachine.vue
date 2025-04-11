@@ -1,15 +1,16 @@
 <template>
 
-    <div v-if="rolls.length">
 
-        <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
+    <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
 
-            <!--attract: Меню с кнопками управления записями -->
-            <TheTaskRecordsMenu
-                :machine="machine"
-                @add-roll="addRoll"
-                @optimize-labor="optimizeLabor"
-            />
+        <!--attract: Меню с кнопками управления записями -->
+        <TheTaskRecordsMenu
+            :machine="machine"
+            @add-roll="addRoll"
+            @optimize-labor="optimizeLabor"
+        />
+
+        <div v-if="rolls.length">
 
             <!--attract: Разделительная линия -->
             <div class="mt-2 mb-2 bg-slate-400 min-h-[4px] rounded-lg"></div>
@@ -21,9 +22,9 @@
             <TheTaskRecord
                 v-for="(roll, index) in rolls"
                 :key="index"
-                :roll="roll"
                 :index="index"
                 :machine="machine"
+                :roll="roll"
                 @save-task-record="saveTaskRecord"
             />
 
@@ -35,9 +36,9 @@
                 v-model="taskDescription"
                 :rows=2
                 :value="taskDescription"
-                label="Общий комментарий к сменному заданию:"
                 class="cursor-pointer"
                 height="min-h-[60px]"
+                label="Общий комментарий к сменному заданию:"
                 text-size="normal"
                 width="w-[955px]"
             />
@@ -85,6 +86,8 @@ const props = defineProps({
         ].includes(machine)
     }
 })
+
+// console.log(props.task)
 
 const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord'])
 

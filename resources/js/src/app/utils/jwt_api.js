@@ -190,6 +190,24 @@ export async function jwtPut(url, data = {}) {
 
 }
 
+export async function jwtPatch(url, data = {}) {
+
+    try {
+        const response = await jwtAxios.patch(url, {data: data})
+
+        console.log(response)
+
+        const res = await response.data
+        return res
+
+    } catch (error) {
+        // console.log(error.response)
+        // console.log('jwtDelete: ', error.response.data.message)
+        console.log('jwtPatch: ', error)
+        debugger
+    }
+
+}
 
 // export default jwtAxios
 

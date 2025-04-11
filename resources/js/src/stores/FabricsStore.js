@@ -5,30 +5,31 @@ import {ref, reactive, computed, watch} from 'vue'
 
 import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
 
-import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut} from '/resources/js/src/app/utils/jwt_api'
+import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch} from '/resources/js/src/app/utils/jwt_api'
 import {openNewTab} from '/resources/js/src/app/helpers/helpers_service'
 
 import axios from 'axios'
 
 
 // Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/'                                   // Префикс API
-const URL_FABRICS = 'fabrics/'                                  // URL для получения списка ПС
-const URL_FABRIC = 'fabric/'                                    // URL для получения ПС
+const API_PREFIX = '/api/v1/'                                           // Префикс API
+const URL_FABRICS = 'fabrics/'                                          // URL для получения списка ПС
+const URL_FABRIC = 'fabric/'                                            // URL для получения ПС
 
-const URL_FABRICS_MACHINES = 'fabrics/machines/'                // URL для получения списка Стегальных Машин
-const URL_FABRICS_MACHINE = 'fabrics/machine/'                  // URL для получения Стегальной Машины
+const URL_FABRICS_MACHINES = 'fabrics/machines/'                        // URL для получения списка Стегальных Машин
+const URL_FABRICS_MACHINE = 'fabrics/machine/'                          // URL для получения Стегальной Машины
 
-const URL_FABRICS_UPLOAD = 'fabrics/upload/'                    // URL для загрузки ПС с диска
-const URL_FABRIC_DELETE = 'fabrics/delete/'                     // URL для удаления ПС
+const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL для загрузки ПС с диска
+const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
 
-const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'  // URL для загрузки hрисунков ПС с диска
+const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки hрисунков ПС с диска
 
-const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'      // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
-const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'        // URL для удаления заказа
+const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
+const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
 
-const URL_FABRIC_TASKS = 'fabrics/tasks/'                       // URL для получения списка СЗ для ПС
-const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'         // URL для получения создания или обновления СЗ для ПС
+const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL для получения списка СЗ для ПС
+const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
+const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 
 export const useFabricsStore = defineStore('fabrics', () => {
 
@@ -184,14 +185,16 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result
     }
 
-    // Attract: Получаем с API список ПС
+    // attract: Получаем с API список ПС
     const getTasksByPeriod = async (params) => {
 
         const result = await jwtGet(URL_FABRIC_TASKS, params)
         console.log('store', result)
+        // debugger
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    // attract: Создание СЗ
     const createFabricTask = async (task) => {
         const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
         console.log('store', result)
@@ -199,6 +202,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         debugger
     }
 
+    // attract: Изменение статуса СЗ
+    const changeFabricTaskStatus = async (task) => {
+        const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
+        console.log('store', result)
+        return result
+        debugger
+    }
 
     return {
         fabricsCashe,
@@ -220,6 +230,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         uploadFabricsOrders,
         getTasksByPeriod,
         createFabricTask,
+        changeFabricTaskStatus
     }
 
 })

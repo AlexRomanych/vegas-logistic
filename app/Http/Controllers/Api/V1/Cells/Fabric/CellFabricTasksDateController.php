@@ -5,23 +5,28 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
+use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Exception;
 use Illuminate\Http\Request;
 
 
-class CellFabricTaskController extends Controller
+class CellFabricTasksDateController extends Controller
 {
     public function tasks(Request $request)
     {
+
+
+
 //        return json_encode($request->all());
         try {
 
             // Если без параметров, возвращаем все заказы
             if (!$request->has('start') || !$request->has('end')) {
-                return new FabricTaskCollection(FabricTask::all());
+                return new FabricTaskCollection(FabricTasksDate::all());
             }
 
             $validData = $request->validate([
@@ -29,13 +34,15 @@ class CellFabricTaskController extends Controller
                 'end' => 'required|date|afterOrEqual:start',
             ]);
 
-            $tasksQuery = FabricTask::query()
-                ->whereBetween('task_date', [$validData['start'], $validData['end']])
-//                ->with(['fabricTaskContexts', 'fabricTaskRolls'])
-                ->with(['fabricTaskContexts'])
+            $tasksQuery = FabricTasksDate::query()
+                ->whereBetween('tasks_date', [$validData['start'], $validData['end']])
+                // relations добавляем основные + вложенные
+                ->with(['fabricTasks.fabricTaskContexts', 'fabricTasks.fabricTaskRolls'])
                 ->get();
 
-            return json_encode($tasksQuery);
+            return new FabricTasksDateCollection($tasksQuery);
+
+//            return json_encode($tasksQuery);
 
 //            $tasksArray = $tasks->toArray();
 

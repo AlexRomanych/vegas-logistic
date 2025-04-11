@@ -1,15 +1,14 @@
 <?php
 
 use App\Models\Manufacture\Cells\Fabric\Fabric;
-use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     const TABLE_NAME = 'fabric_task_contexts';
+
     /**
      * Run the migrations.
      */
@@ -19,26 +18,51 @@ return new class extends Migration
             $table->id()->from(1);
 
             // attract: Порядковый номер позиции рулона в сменном задании
-            $table->unsignedTinyInteger('roll_position')->nullable(false)->default(0)->comment('Порядковый номер позиции рулона в сменном задании');
+            $table->unsignedTinyInteger('roll_position')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Порядковый номер позиции рулона в сменном задании');
 
-            $table->boolean('fabric_mode')->nullable(false)->default(true)->comment('Режим, в котором было создано ПС (true -основное для данной СМ, false - альтернативнное)');
-            $table->integer('rolls_amount')->nullable(false)->default(0)->comment('Количество рулонов, выставленное специалистом ОПП');
+            $table->boolean('fabric_mode')
+                ->nullable(false)
+                ->default(true)
+                ->comment('Режим, в котором было создано ПС (true -основное для данной СМ, false - альтернативное)');
+
+            $table->integer('rolls_amount')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Количество рулонов, выставленное специалистом ОПП');
+
+            // чтобы можно было потом отследить либо среднюю длину рулона ткани, либо еще чего-нибудь
+            $table->float('textile_length')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Количество ткани для стегания при выставлении СЗ');
 
             // attract: Привязка к сменному заданию
-            $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')
+            $table->ForeignIdFor(FabricTask::class)
+                ->nullable(false)
+                ->comment('Привязка к сменному заданию')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            // attract: Привязка к стегальной машине
-            $table->ForeignIdFor(FabricMachine::class)->nullable(false)->comment('Привязка к стегальной машине')
-                ->constrained()
-                ->cascadeOnDelete();
+//            // attract: Привязка к стегальной машине
+//              warning: не используется, привязка будет в самом сменном задании (см. FabricTask)
+//            $table->ForeignIdFor(FabricMachine::class)->nullable(false)->comment('Привязка к стегальной машине')
+//                ->constrained()
+//                ->cascadeOnDelete();
 
             // attract: Привязка к ПС
-            $table->ForeignIdFor(Fabric::class)->nullable(false)->comment('Привязка к ПС')
+            $table->ForeignIdFor(Fabric::class)
+                ->nullable(false)
+                ->comment('Привязка к ПС')
                 ->constrained()
                 ->cascadeOnDelete();
 
+            $table->boolean('active')
+                ->nullable(false)
+                ->default(true)
+                ->comment('Актуальность');
             $table->string('description')->nullable()->comment('Описание');
             $table->string('comment')->nullable()->comment('Комментарий');
             $table->string('note')->nullable()->comment('Примечание');
