@@ -173,7 +173,7 @@ import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
     getFabricTasksPeriod,
-    addEmptyFabricTasks
+    addEmptyFabricTasks, fillFabricsDisplayNames
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -205,16 +205,26 @@ const router = useRouter()
 
 const fabricsStore = useFabricsStore()
 
+// attract: Получаем все ткани и запоминаем в хранилище
+const fabrics = await fabricsStore.getFabrics()
+fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
+fabricsStore.fabricsMemory = fabrics
+console.log(fabrics)
+
 // attract: Получаем период отображения сменного задания
 const tasksPeriod = getFabricTasksPeriod()
 console.log('tasksPeriod:', tasksPeriod)
 
 // attract: Получаем сами сменные задания
-const tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+
+// attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
+tasks = fillFabricsDisplayNames(fabrics, tasks)
+
 console.log('tasks:', tasks)
 
 
-// attract: формируем тестовые данные
+// attract: формируем полный (дополненный) массив сменных заданий
 let taskData = reactive(tasks)
 // let taskData = reactive(TEST_FABRICS)
 taskData = addEmptyFabricTasks(taskData, tasksPeriod)
@@ -225,11 +235,7 @@ let activeTask = reactive(taskData.find(t => t.active))
 console.log('taskData: ', taskData)
 console.log('activeTask', activeTask)
 
-// attract: Получаем все ткани и запоминаем в хранилище
-const fabrics = await fabricsStore.getFabrics()
-fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
-fabricsStore.fabricsMemory = fabrics
-console.log(fabrics)
+
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
@@ -306,27 +312,26 @@ const changeTaskStatus = async (task, btnRow = 1) => {
     // attract: Сменить статус c "Не создано" на "Создано". Не обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.UNKNOWN.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
-        // const res = fabricsStore.changeFabricTaskStatus(task)
-        // console.log(res)
+        const res = await fabricsStore.changeFabricTaskDateStatus(task)
+        console.log(res)
         return
     }
 
-    // attract: Вернуть статус с "На стежку" на "Создано". Не обращаемся к API
+    // attract: Вернуть статус с "Готов к стежке" на "Создано". Не обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
-        // const res = fabricsStore.changeFabricTaskStatus(task)
-        // console.log(res)
+        const res = await fabricsStore.changeFabricTaskDateStatus(task)
+        console.log(res)
         return
     }
 
     // attract: Сменить статус с "Создано" на "На стежку". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
-        task.common.status = FABRIC_TASK_STATUS.PENDING.CODE
         modalText.value = ['Сменное задание будет закрыто для редактирования', 'и будут сформированы рулоны для производства.', 'Продолжить?']
         const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
-            task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
-            const res = fabricsStore.changeFabricTaskStatus(task)
+            task.common.status = FABRIC_TASK_STATUS.PENDING.CODE
+            const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
             // todo: сделать обработку ошибок + callout
         }

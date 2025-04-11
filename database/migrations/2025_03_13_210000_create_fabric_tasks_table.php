@@ -41,14 +41,12 @@ return new class extends Migration
                 ->comment('Статус задания по данной СМ');
 
             // warning: 'task_finish_date' - единственное число
-            $table->timestamp('task_finish_date')
+            $table->timestamp('task_finish_at')
                 ->nullable()
 //                ->useCurrent()
                 ->comment('Дата завершения сменного задания');
 
-            $table->timestamp('registration_1C')
-                ->nullable()
-                ->comment('Дата постановки на учет в 1С');
+
 
             $table->ForeignIdFor(FabricTasksDate::class)
                 ->nullable(false)

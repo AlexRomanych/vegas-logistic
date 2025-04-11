@@ -34,6 +34,10 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+            $table->timestamp('registration_1C_at')
+                ->nullable()
+                ->comment('Дата постановки на учет в 1С');
+
             // attract: Время создания рулона на стежке
             $table->timestamp('finish_at')
                 ->nullable()->comment('Дата и время завершения стегания рулона');

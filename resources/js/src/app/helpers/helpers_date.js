@@ -294,3 +294,27 @@ export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
 
     return `${pad(hours)}ч. ${pad(minutes)}м. ${pad(secs)}с.`
 }
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Возвращает разницу между двумя датами в днях
+// attract: absMode - модуль или нет,
+// attract: truncMode - отсекать ли дробную часть или нет
+export function getDateDiffInDays(inDate1 = new Date(), inDate2 = new Date(), absMode = false, truncMode = true) {
+
+    const MS_IN_DAY = 1000 * 60 * 60 * 24
+
+    const date1 = getDate(inDate1)
+    const date2 = getDate(inDate2)
+
+    const diffInMs = date2 - date1
+
+    // console.log('diffInMs', diffInMs)
+
+    if (absMode) diffInMs = Math.abs(date2 - date1)
+
+    if (truncMode) return Math.trunc(diffInMs / MS_IN_DAY)
+
+    // console.log('diffInDays', diffInMs / MS_IN_DAY)
+
+    return diffInMs / MS_IN_DAY
+}

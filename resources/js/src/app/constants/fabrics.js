@@ -148,7 +148,7 @@ export const FABRICS_NULLABLE = {
 // descr Нулевой рулон - болванка рулона для добавления
 export const NEW_ROLL = {
     id: 0,
-    average_length: FABRICS_NULLABLE.buffer.average_length,
+    average_textile_length: FABRICS_NULLABLE.buffer.average_length,
     fabric_id: FABRICS_NULLABLE.id,
     fabric: FABRICS_NULLABLE.display_name,
     fabric_mode: false,

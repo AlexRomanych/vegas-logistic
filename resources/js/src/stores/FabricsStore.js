@@ -202,13 +202,24 @@ export const useFabricsStore = defineStore('fabrics', () => {
         debugger
     }
 
-    // attract: Изменение статуса СЗ
+    // attract: Изменение статуса СЗ (именно для конкретной СМ)
     const changeFabricTaskStatus = async (task) => {
         const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
         console.log('store', result)
         return result
         debugger
     }
+
+    // attract: Изменение статуса СЗ (для всех СМ - для дня)
+    const changeFabricTaskDateStatus = async (task) => {
+        // console.log('debug')
+        const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
+        console.log('store', result)
+        return result
+        debugger
+    }
+
+
 
     return {
         fabricsCashe,
@@ -230,7 +241,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         uploadFabricsOrders,
         getTasksByPeriod,
         createFabricTask,
-        changeFabricTaskStatus
+        changeFabricTaskStatus,
+        changeFabricTaskDateStatus
     }
 
 })

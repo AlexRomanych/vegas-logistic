@@ -11,6 +11,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 
@@ -18,7 +19,6 @@ class CellFabricTasksDateController extends Controller
 {
     public function tasks(Request $request)
     {
-
 
 
 //        return json_encode($request->all());
@@ -74,9 +74,6 @@ class CellFabricTasksDateController extends Controller
                 ];
 
 
-
-
-
                 for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
 
 
@@ -99,15 +96,18 @@ class CellFabricTasksDateController extends Controller
 
     public function create(Request $request)
     {
+
+
 //        try {
         $payload = $request->all();
-        $taskData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
+        $tasksDayData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
+
+//        return $tasksDayData;
 
         // todo: сделать валидацию данных
 
         // Проверка статуса задания (если 0 - пропускаем)
-        if ($taskData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
-
+        if ($tasksDayData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
 //                return $taskData['common']['status'];
             return EndPointStaticRequestAnswer::ok();
         }
@@ -120,55 +120,114 @@ class CellFabricTasksDateController extends Controller
 
 //                return $payload;
 //                return $payload['machines'][$machineStr];
+
             // Проверка на наличие данных для данной машины
-            if (count($taskData['machines'][$machineStr]['rolls']) === 0) continue;
+            if (count($tasksDayData['machines'][$machineStr]['rolls']) === 0) continue;
 
-            // Создаем задание или обновляем основное задание
-            $task = FabricTask::query()->updateOrCreate(
-                [
-                    'task_date' => $taskData['date'],
-                    'fabric_machine_id' => $i
-                ],
-                [
-                    'task_date' => $taskData['date'],
-                    'fabric_machine_id' => $i,
-                    'task_status' => $taskData['common']['status'],
-                    'description' => $taskData['common']['description'],
+            // Создаем задание или обновляем основное задание на эту дату
+            $tasksDay = $this->createOrUpdateTasksDate($tasksDayData);
+//                return $tasksDay;
 
-                    // todo: сделать проверку на существование бригады и вообще тут продумать сущность
-                    'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
-//                        'fabric_team_id' => $taskData['common']['team'],
-                    'active' => true,
-//                        'active' => $taskData['active'],
-                ]
-            );
+            // Выносим для меньшей писанины в отдельную переменную
+            $taskData = $tasksDayData['machines'][$machineStr];
 
-            // Создаем или обновляем все рулоны, которые пришли с бэка
-            foreach ($taskData['machines'][$machineStr]['rolls'] as $key => $rollData) {
+            // если создали и обновили успешно, то получили экземпляр даты задания
+            // создаем тогда FabricTask - СЗ для СМ
+            if ($tasksDay instanceof Model) {
 
-//                    return $rollData;
 
-                $fabricTaskRoll = FabricTaskContext::query()->updateOrCreate(
+//                return $taskData;
+
+                // Создаем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
+                $task = FabricTask::query()->updateOrCreate(
                     [
-                        'fabric_task_id' => $task->id,
-                        'fabric_id' => $rollData['fabric_id']
+                        'fabric_tasks_date_id' => $tasksDay->id,
+                        'fabric_machine_id' => $i,
                     ],
                     [
-                        'roll_position' => $key + 1,
-                        'fabric_mode' => $rollData['fabric_mode'],
-                        'rolls_amount' => $rollData['rolls_amount'],
-                        'textile_length' => $rollData['textile_length'],
-                        'description' => $rollData['descr'],
-                        'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                        'fabric_task_id' => $task->id                          // привязка к СЗ
+                        'fabric_tasks_date_id' => $tasksDay->id,
+                        'fabric_machine_id' => $i,
+                        'task_status' => $tasksDay->tasks_status,             // записываем пока общий статус всего СЗ
+                        'active' => $taskData['active'],
+                        'task_finish_at' => $taskData['finish_at'],
+                        'description' => $taskData['description'],
                     ]
                 );
 
+                // Создаем или обновляем все рулоны, которые пришли с бэка
+                foreach ($tasksDayData['machines'][$machineStr]['rolls'] as $key => $rollData) {
+
+//                    return $rollData;
+
+
+                    $taskRoll = FabricTaskContext::query()->updateOrCreate(
+                        [
+                            'fabric_task_id' => $task->id,
+                            'fabric_id' => $rollData['fabric_id']
+                        ],
+                        [
+                            'roll_position' => $key + 1,
+                            'fabric_task_id' => $task->id,                          // привязка к СЗ
+                            'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                            'fabric_mode' => $rollData['fabric_mode'],
+                            'rolls_amount' => $rollData['rolls_amount'],
+                            'average_textile_length' => $rollData['average_textile_length'],
+                            'description' => $rollData['descr'],
+                        ]
+                    );
+
+                }
+
+
             }
+
+
+//            $task = FabricTask::query()->updateOrCreate(
+//                [
+//                    'task_date' => $taskData['date'],
+//                    'fabric_machine_id' => $i
+//                ],
+//                [
+//                    'task_date' => $taskData['date'],
+//                    'fabric_machine_id' => $i,
+//                    'task_status' => $taskData['common']['status'],
+//                    'description' => $taskData['common']['description'],
+//
+//                    // todo: сделать проверку на существование бригады и вообще тут продумать сущность
+//                    'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
+////                        'fabric_team_id' => $taskData['common']['team'],
+//                    'active' => true,
+////                        'active' => $taskData['active'],
+//                ]
+//            );
+
+//            // Создаем или обновляем все рулоны, которые пришли с бэка
+//            foreach ($tasksDayData['machines'][$machineStr]['rolls'] as $key => $rollData) {
+//
+////                    return $rollData;
+//
+//                $taskRoll = FabricTaskContext::query()->updateOrCreate(
+//                    [
+//                        'fabric_task_id' => $task->id,
+//                        'fabric_id' => $rollData['fabric_id']
+//                    ],
+//                    [
+//                        'roll_position' => $key + 1,
+//                        'fabric_mode' => $rollData['fabric_mode'],
+//                        'rolls_amount' => $rollData['rolls_amount'],
+//                        'textile_length' => $rollData['textile_length'],
+//                        'description' => $rollData['descr'],
+//                        'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+//                        'fabric_task_id' => $task->id                          // привязка к СЗ
+//                    ]
+//                );
+//
+//            }
 
         }
 
 
+        return 'reached';
         return EndPointStaticRequestAnswer::ok();
 
 //        } catch (Exception $e) {
@@ -178,38 +237,62 @@ class CellFabricTasksDateController extends Controller
     }
 
 
+    /**
+     * descr: Изменение статуса задания
+     * @param Request $request
+     * @return string
+     */
     public function statusChange(Request $request)
     {
-        $payload = $request->all();
-        $taskData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
+        try {
 
-        // todo: сделать валидацию данных
+            $payload = $request->all();
+            $tasksDayData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
 
-        // Проверка статуса задания (если 0 - пропускаем)
-        if ($taskData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
+            // todo: сделать валидацию данных
+
+            // Страховочка. Проверка статуса задания (если 0 - пропускаем)
+            if ($tasksDayData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
+                return EndPointStaticRequestAnswer::ok();
+            }
+
+            //todo: сделать проверку при изменении статуса на "Готов к стежке". Должно быть задание хотя бы на одну СМ
+
+            $task = $this->createOrUpdateTasksDate($tasksDayData);
+
             return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
+    }
 
-        $task = FabricTask::query()->updateOrCreate(
+    /**
+     * Возвращаем результат создания или обновления дня заданий
+     * @param $tasksDayData
+     * @return Model|null
+     */
+    private function createOrUpdateTasksDate($tasksDayData)
+    {
+        if (is_null($tasksDayData)) return null;
+
+        // Возвращаем результат создания или обновления дня заданий
+        return FabricTasksDate::query()->updateOrCreate(
             [
-                'task_date' => $taskData['date'],
-//                'fabric_machine_id' => $i
+                'tasks_date' => $tasksDayData['date'],
             ],
             [
-                'task_date' => $taskData['date'],
-//                'fabric_machine_id' => $i,
-                'task_status' => $taskData['common']['status'],
-                'description' => $taskData['common']['description'],
+                'tasks_date' => $tasksDayData['date'],
+                'tasks_status' => $tasksDayData['common']['status'],
+                'description' => $tasksDayData['common']['description'],
 
                 // todo: сделать проверку на существование бригады и вообще тут продумать сущность
-                'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
-                'active' => $taskData['active'],
+                'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($tasksDayData['date']),
+                'active' => $tasksDayData['active'],
             ]
         );
 
-
-        return $taskData;
     }
+
 
 }
 

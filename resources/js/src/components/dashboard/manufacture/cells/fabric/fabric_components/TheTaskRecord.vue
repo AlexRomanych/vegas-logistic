@@ -427,12 +427,12 @@ const reactiveActions = () => {
     const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)         // Получаем объект ПС
 
     workRoll.fabric = tempFabric.display_name                                           // Меняем название ПС
-    workRoll.average_length = tempFabric.buffer.average_length                          // Меняем среднюю длину ПС
+    workRoll.average_textile_length = tempFabric.buffer.average_length                  // Меняем среднюю длину ПС
     workRoll.descr = description.value
 
-    averageLength.value = workRoll.average_length                                       // Получаем среднюю длину ПС
+    averageLength.value = workRoll.average_textile_length                               // Получаем среднюю длину ПС
     productivity.value = tempFabric.buffer.productivity                                 // Получаем производительность
-    lengthAmount.value = workRoll.rolls_amount * workRoll.average_length
+    lengthAmount.value = workRoll.rolls_amount * workRoll.average_textile_length
     rollsAmount.value = workRoll.rolls_amount
     productivityAmount.value = getProductivityAmount()                                  // Получаем трудозатраты
     fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)  // Меняем режим выбора ПС
@@ -512,6 +512,7 @@ const saveTaskRecord = () => {
     console.log(workRoll.descr)
 
     const saveRollData = {
+        average_textile_length: averageLength.value,
         textile_length: lengthAmount.value,
         fabric_id: workRoll.fabric_id,
         fabric_name: workRoll.fabric,

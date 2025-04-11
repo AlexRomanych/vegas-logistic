@@ -7,7 +7,7 @@ import {
 
 import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
 
-import {addDays, subtractDays} from '/resources/js/src/app/helpers/helpers_date.js'
+import {addDays, subtractDays, getDateDiffInDays} from '/resources/js/src/app/helpers/helpers_date.js'
 
 // descr Получить тип стиля по коду статуса СЗ на стежке
 export const getStyleTypeByFabricTaskStatusCode = function (taskStatusCode = null) {
@@ -73,7 +73,7 @@ export function getFabricTasksPeriod() {
     let end = new Date(start)
 
     start = subtractDays(start)                                     // сегодня минус 1 день
-    end = addDays(subtractDays(end), PERIOD_LENGTH)                 // начало + неделя
+    end = addDays(end, PERIOD_LENGTH - 2)                     // начало + неделя - это танцы с бубнами
 
     return {
         start: start.toISOString().split('T')[0],
@@ -84,47 +84,61 @@ export function getFabricTasksPeriod() {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract: добавляет к массиву сменных заданий недостающие дни со статусом FABRIC_TASK_STATUS.UNKNOWN
 export function addEmptyFabricTasks(fabricTasks = [], period = null) {
+    console.log('period: ', period)
+    // страховочка
+    if (!Array.isArray(fabricTasks)) fabricTasks = []
 
     // создаем пустой объект с данными для формы создания сменного задания (болванка)
     const taskDraft = {
         date: '',
-        active: false,
         common: {
             team: 1,
             status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
             description: '',
+            active: false,
         },
         machines: {
             american: {
                 rolls: [],
-                description: ''
+                description: '',
+                active: true,
+                finish_at: null,
             },
             german: {
                 rolls: [],
-                description: ''
+                description: '',
+                active: true,
+                finish_at: null,
             },
             china: {
                 rolls: [],
-                description: ''
+                description: '',
+                active: true,
+                finish_at: null,
             },
             korean: {
                 rolls: [],
-                description: ''
+                description: '',
+                active: true,
+                finish_at: null,
             },
         }
     }
 
-    // console.log(fabricTasks)
+    // console.log('period: ', period)
+    // console.log('fabricTasks: ', fabricTasks)
 
     // attract: Может быть ситуация, когда нам с бэка придет пустой массив сменных заданий
     // attract: Если массив пустой, то просто заполняем его default объектами
-    if (!Array.isArray(fabricTasks) || fabricTasks.length === 0) {
+    if (fabricTasks.length === 0) {
 
         // страховочка
         if (period === null) return []
 
+        const compareDate = addDays(period.end).toISOString().split('T')[0] // конец периода + 1 день из-за !==
+
         let tempDate = new Date(period.start)
-        while (tempDate.toISOString().split('T')[0] !== period.end) {
+        while (tempDate.toISOString().split('T')[0] !== compareDate) {
             taskDraft.date = tempDate.toISOString().split('T')[0]
 
             // создаем глубокую  копию нового объекта - избавляемся от ссылки на объект
@@ -140,18 +154,35 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     // сортируем массив по дате начала по возрастанию
     fabricTasks = fabricTasks.sort((a, b) => new Date(a.date) - new Date(b.date))
 
+    console.log('period: ', period)
+    // new Date(Math.min(date1.getTime(), date2.getTime()));
+    // descr: Имеет 2 промежутка:
+    // descr: 1 - период period
+    // descr: 2 - период входного массива СЗ - fabricTasks
+    // descr: Определяем период, с началом минимальным из period и fabricTasks, и максимальным из period и fabricTasks
+    // descr: А мы будем делать универсальность, хотя можно было бы брать только period
 
-    let tempDate = new Date(fabricTasks[0].date)      // первый день в массиве - минус 1 день
-    const missingDates = []                           // массив пропущенных дат
+    const startDate = Math.min(new Date(period.start).getTime(), new Date(fabricTasks[0].date).getTime())
+    const endDate = Math.max(new Date(period.end).getTime(), new Date(fabricTasks[fabricTasks.length - 1].date).getTime())
 
-    let i = 0
-    while (i < fabricTasks.length) {
+    const periodLength = getDateDiffInDays(startDate, endDate)
 
-        if (tempDate.toISOString().split('T')[0] !== fabricTasks[i].date) {
-            missingDates.push(tempDate.toISOString().split('T')[0])
-        } else {
-            i++
+    let tempDate = new Date(startDate)                  // первый день
+    const missingDates = []                             // массив пропущенных дат
+
+    // console.log('periodLength: ', periodLength)
+    // console.log('startDate: ', tempDate)
+
+    for (let i = 0; i <= periodLength; i++) {            // перебираем весь период
+        let isFind = false
+        for (let j = 0; j < fabricTasks.length; j++) {
+            if (tempDate.toISOString().split('T')[0] === fabricTasks[j].date) {
+                isFind = true
+                break
+            }
         }
+
+        if (!isFind) missingDates.push(tempDate.toISOString().split('T')[0])
 
         tempDate = addDays(tempDate)
     }
@@ -159,20 +190,21 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     // добавляем недостающие даты в массив сменных заданий с статусом FABRIC_TASK_STATUS.UNKNOWN
     missingDates.forEach((date) => {
         taskDraft.date = date
-        // console.log(taskDraft.date)
 
         // создаем новый объект - избавляемся от ссылки на объект
         fabricTasks.push(JSON.parse(JSON.stringify(taskDraft)))
     })
+
+    console.log('fabricTasks: after', fabricTasks)
 
     // еще раз сортируем массив по дате начала по возрастанию
     fabricTasks = fabricTasks.sort((a, b) => new Date(a.date) - new Date(b.date))
 
     // устанавливаем активный флаг для первого элемента
     fabricTasks.forEach((item) => item.active = false)
-    fabricTasks[0].active = true    // устанавливаем активный флаг для первого элемента. Обязательно!!!
 
-    // console.log(fabricTasks)
+    // устанавливаем активный флаг для первого элемента. Обязательно!!!
+    fabricTasks[0].active = true
 
     return fabricTasks
 }
@@ -232,3 +264,21 @@ export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
     return !isNonBasicFabrics
 
 }
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Заполняет названия ПС в массиве сменных заданий
+export function fillFabricsDisplayNames(fabrics = [], tasks = []) {
+
+    // страховочка
+    if (!Array.isArray(fabrics) || !Array.isArray(tasks) || fabrics.length === 0 || tasks.length === 0) return [];
+
+    tasks.forEach((task) =>
+        Object.keys(task.machines).forEach((key) =>
+            task.machines[key].rolls.forEach((roll) =>
+                roll.fabric = fabrics.find((fabric) => fabric.id === roll.fabric_id).display_name)
+        )
+    )
+
+    return tasks
+}
+

@@ -24,13 +24,13 @@ class FabricTask extends Model
         return Carbon::parse($value)->format('Y-m-d');
     }
 
-    // attract: Связь со теоретическими рулонами в сменном задании (выставленным ОПП)
+    // relations: Связь со теоретическими рулонами в сменном задании (выставленным ОПП)
     public function fabricTaskContexts(): HasMany
     {
         return $this->hasMany(FabricTaskContext::class);
     }
 
-    // attract: Связь с рулонами в сменном задании
+    // relations: Связь с рулонами в сменном задании
     public function fabricTaskRolls(): HasMany
     {
         return $this->hasMany(FabricTaskRoll::class);

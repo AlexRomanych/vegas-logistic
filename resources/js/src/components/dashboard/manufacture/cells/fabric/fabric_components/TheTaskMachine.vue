@@ -101,7 +101,7 @@ fabricsStore.globalRollsIndexes = rollsIndexes.value                            
 
 fabricsStore.globalEditMode = false                                             // устанавливаем в false глобальный режим редактирования
 
-// Заполняем глобальный массив производительности в хранилище
+// attract: Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
     rolls.forEach((roll, index, rolls) => {
         const fabric = fabrics.find(fabric => fabric.id === roll.fabric_id)
