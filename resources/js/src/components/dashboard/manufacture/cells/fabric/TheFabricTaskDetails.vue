@@ -309,7 +309,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         return
     }
 
-    // attract: Сменить статус c "Не создано" на "Создано". Не обращаемся к API
+    // attract: Сменить статус c "Не создано" на "Создано". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.UNKNOWN.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
         const res = await fabricsStore.changeFabricTaskDateStatus(task)
@@ -317,7 +317,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         return
     }
 
-    // attract: Вернуть статус с "Готов к стежке" на "Создано". Не обращаемся к API
+    // attract: Вернуть статус с "Готов к стежке" на "Создано". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
         const res = await fabricsStore.changeFabricTaskDateStatus(task)
@@ -344,6 +344,8 @@ const changeActiveTask = (task) => {
     taskData.forEach((t) => t.active = t.date === task.date)
     activeTask = taskData.find(t => t.active)
     // console.log('active_task: ', activeTask)
+    // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
+    fabricsStore.clearTaskGlobalProductivity()
 }
 
 // const taskRecordEditMode = ref(false)

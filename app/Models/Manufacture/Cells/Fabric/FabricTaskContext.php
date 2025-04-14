@@ -3,7 +3,8 @@
 namespace App\Models\Manufacture\Cells\Fabric;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+//use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FabricTaskContext extends Model
 {
@@ -15,4 +16,10 @@ class FabricTaskContext extends Model
 //        return $this->belongsTo(FabricTask::class, 'fabric_task_id', 'id', 'fabric_task_id');
 ////        return $this->belongsTo(FabricTask::class);
 //    }
+
+// relations: Связь с физическими рулонами
+    public function fabricTaskRolls(): HasMany
+    {
+        return $this->hasMany(FabricTaskRoll::class);
+    }
 }

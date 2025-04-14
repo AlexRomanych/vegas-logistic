@@ -34,3 +34,10 @@ const FABRIC_MACHINE_CHINA_ID = 3;
 const FABRIC_MACHINE_CHINA_TITLE = 'china';
 const FABRIC_MACHINE_KOREAN_ID = 4;
 const FABRIC_MACHINE_KOREAN_TITLE = 'korean';
+
+//hr---------------------------------------------------------------------
+
+// descr Константы статусов состояния готовности рулона на стежке
+const FABRIC_ROLL_UNREADY = 0;
+const FABRIC_ROLL_PENDING = 1;
+const FABRIC_ROLL_READY = 2;

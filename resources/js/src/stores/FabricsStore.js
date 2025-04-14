@@ -54,6 +54,17 @@ export const useFabricsStore = defineStore('fabrics', () => {
         [FABRIC_MACHINES.KOREAN.TITLE]: [],
     })
 
+    console.log(globalTaskProductivity)
+
+    // attract: Сброс глобального массива трудозатрат СЗ
+    const clearTaskGlobalProductivity = () => {
+        globalTaskProductivity[FABRIC_MACHINES.AMERICAN.TITLE] = []
+        globalTaskProductivity[FABRIC_MACHINES.GERMAN.TITLE] = []
+        globalTaskProductivity[FABRIC_MACHINES.CHINA.TITLE] = []
+        globalTaskProductivity[FABRIC_MACHINES.KOREAN.TITLE] = []
+    }
+
+
     // attract: Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
     let globalRollsIndexes = reactive([])
 
@@ -220,14 +231,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
-
     return {
         fabricsCashe,
         fabricsMemory,
         fabricsCasheIsChanged,
         globalEditMode,
         globalFabricsMode,
-        globalTaskProductivity,
+        globalTaskProductivity, clearTaskGlobalProductivity,
         globalRollsIndexes,
         getFabrics,
         getFabricById,

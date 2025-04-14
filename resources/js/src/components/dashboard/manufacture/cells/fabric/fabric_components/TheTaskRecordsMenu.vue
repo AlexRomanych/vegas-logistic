@@ -28,6 +28,7 @@
             @click="optimizeLabor"
         />
 
+        <!--  attract: Текущий рисунок. -->
         <AppLabelMultiLine
             :text="['Текущий рисунок:', 'Ж25']"
             align="center"
@@ -112,7 +113,6 @@ watch(
     () => totalProductivityAmount.value = getTotalProductivityAmount(),
     {deep: true}
 )
-
 
 // attract: Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
 const checkboxData = reactive({

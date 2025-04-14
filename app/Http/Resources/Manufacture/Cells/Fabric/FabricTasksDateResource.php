@@ -32,6 +32,22 @@ class FabricTasksDateResource extends JsonResource
 
             $rollsContext = [];
             foreach ($task->fabricTaskContexts as $rollContext) {
+
+                $rolls = [];
+                foreach ($rollContext->fabricTaskRolls as $roll) {
+                    $rolls[] = [
+                        'id' => $roll->id,
+                        'fabric_id' => $roll->fabric_id,
+                        'position' => $roll->roll_position,
+                        'status' => $roll->roll_status,
+                        'finish_at' => $roll->finish_at,
+                        'finish_by' => $roll->finish_by,
+                        'textile_length' => $roll->textile_roll_length,
+                        'descr' => $roll->description,
+                    ];
+                }
+
+
                 $rollsContext[] = [
                     'id' => $rollContext->id,
                     'average_textile_length' => $rollContext->average_textile_length,
@@ -42,26 +58,9 @@ class FabricTasksDateResource extends JsonResource
                     'fabric_mode' => $rollContext->fabric_mode,
                     'descr' => $rollContext->description,
                     'correct' => true,
+                    'rolls_exec' => $rolls,
                 ];
             }
-
-
-
-//            export const NEW_ROLL = {
-//                id: 0,
-//    average_length: FABRICS_NULLABLE.buffer.average_length,
-//    fabric_id: FABRICS_NULLABLE.id,
-//    fabric: FABRICS_NULLABLE.display_name,
-//    fabric_mode: false,
-//    rolls_amount: 0,
-//    length_amount: 0,
-//    descr: '',
-//    correct: false,
-//    // num: 0,
-//}
-
-
-
 
 
             $machineName = FabricService::getFabricMachineNameById($task->fabric_machine_id);
@@ -69,7 +68,7 @@ class FabricTasksDateResource extends JsonResource
                 'active' => $task->active,
                 'description' => $task->description,
                 'finish_at' => $task->tasks_finish_at,
-                'rolls' => $rollsContext,          // Здесь будут все рулончики для данной машины
+                'rolls' => $rollsContext,          // Здесь будут все рулончики от ОПП для данной машины
             ];
 
             // убираем те данные из массива, которые обработали
@@ -96,7 +95,7 @@ class FabricTasksDateResource extends JsonResource
                 'description' => $this->description,
             ],
             'machines' => $machines,
-            'test' => $this->fabricTasks,
+//            'test' => $this->fabricTasks,
         ];
 
         //        return parent::toArray($request);

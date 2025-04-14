@@ -31,9 +31,9 @@ class FabricTask extends Model
     }
 
     // relations: Связь с рулонами в сменном задании
-    public function fabricTaskRolls(): HasMany
-    {
-        return $this->hasMany(FabricTaskRoll::class);
-    }
+//    public function fabricTaskRolls(): HasMany
+//    {
+//        return $this->hasMany(FabricTaskRoll::class);
+//    }
 
 }

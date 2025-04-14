@@ -20,20 +20,21 @@ return new class extends Migration
 
             $table->id()->from(self::ROLL_NUMBER_START);
 
-            $table->unsignedInteger('roll_number')
-                ->from(self::ROLL_NUMBER_START)
-                ->nullable(false)
-                ->unique()
-                ->comment('Номер рулона');
+//            $table->unsignedInteger('roll_number')
+//                ->from(self::ROLL_NUMBER_START)
+//                ->nullable(false)
+//                ->unique()
+//                ->comment('Номер рулона');
 
             // attract: Порядковый номер позиции рулона в сменном задании
-            $table->unsignedTinyInteger('roll_order')->nullable(false)->default(0)->comment('Порядковый номер позиции рулона в сменном задании');
+            $table->unsignedTinyInteger('roll_position')->nullable(false)->default(0)->comment('Порядковый номер позиции рулона в сменном задании');
 
             // attract: Привязка к ПС
             $table->ForeignIdFor(Fabric::class)->nullable(false)->comment('Привязка к ПС')
                 ->constrained()
                 ->cascadeOnDelete();
 
+            // attract: Постановка рулона на учет в 1С
             $table->timestamp('registration_1C_at')
                 ->nullable()
                 ->comment('Дата постановки на учет в 1С');
@@ -67,10 +68,10 @@ return new class extends Migration
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
 
-            // attract: Привязка к сменному заданию
-            $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')
-                ->constrained()
-                ->cascadeOnDelete();
+            // attract: Привязка к сменному заданию warning: Пока не будем реализовывать эту привязку
+//            $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')
+//                ->constrained()
+//                ->cascadeOnDelete();
 
             // attract: Привязка к плановому сменному заданию
             // attract: Плановое сменное задание и сменное задание к выполнению - это две разные сущности
