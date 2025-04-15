@@ -88,9 +88,10 @@ return new class extends Migration
 //                ->on('workers')
 //                ->nullOnDelete();
 
-            $table->double('textile_roll_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
-            $table->double('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
-            $table->double('defect_length')->nullable(false)->default(0)->comment('Брак, м.п.');
+            $table->float('textile_roll_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
+            $table->float('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
+            $table->float('productivity')->nullable(false)->default(0)->comment('Средняя производительность на момент формирования, м/ч.');     // то, что получилось в результате стегания
+            $table->float('defect_length')->nullable(false)->default(0)->comment('Брак, м.п.');
 
 
             $table->string('description')->nullable()->comment('Описание');

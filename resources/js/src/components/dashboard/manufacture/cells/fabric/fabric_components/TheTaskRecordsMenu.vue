@@ -3,9 +3,9 @@
     <!--attract: Меню стегальной машины -->
     <div class="flex">
 
-        <!-- attract: Добавление рулона. Показываем только в режиме просмотра -->
+        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
         <AppLabelMultiLine
-            v-if="!fabricsStore.globalEditMode"
+            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             :text="['Добавить', 'рулон']"
             align="center"
             class="cursor-pointer"
@@ -16,9 +16,9 @@
 
         />
 
-        <!-- attract: Оптимизация трудозатрат. Показываем только в режиме просмотра -->
+        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
         <AppLabelMultiLine
-            v-if="!fabricsStore.globalEditMode"
+            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             :text="['Оптимизировать', 'трудозатраты']"
             align="center"
             class="cursor-pointer"
@@ -39,15 +39,15 @@
 
         <AppLabelMultiLine
             :text="['Общие трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount, 'hour')]"
+            :type="totalProductivityAmount <= 10.5 ? 'success' : 'danger'"
             align="center"
             height="h-[31px]"
-            :type="totalProductivityAmount <= 10.5 ? 'success' : 'danger'"
             width="w-[200px]"
         />
 
-        <!-- attract: Режим выбора ПС. Показываем только в режиме просмотра -->
+        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
         <AppCheckbox
-            v-if="!fabricsStore.globalEditMode"
+            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             id="active"
             :checkboxData="checkboxData"
             dir="horizontal"
@@ -67,7 +67,8 @@ import {reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {getFunctionalByFabricTaskStatus,} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
 
@@ -85,6 +86,17 @@ const props = defineProps({
             FABRIC_MACHINES.CHINA,
             FABRIC_MACHINES.KOREAN,
         ].includes(machine)
+    },
+    taskStatus: {
+        type: Number,
+        required: true,
+        validator: (taskStatus) => [
+            FABRIC_TASK_STATUS.UNKNOWN.CODE,
+            FABRIC_TASK_STATUS.CREATED.CODE,
+            FABRIC_TASK_STATUS.PENDING.CODE,
+            FABRIC_TASK_STATUS.RUNNING.CODE,
+            FABRIC_TASK_STATUS.DONE.CODE,
+        ].includes(taskStatus)
     }
 })
 

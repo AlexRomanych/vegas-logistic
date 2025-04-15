@@ -143,66 +143,80 @@
             />
         </div>
 
-        <!-- attract: Управляющие кнопки -->
-        <div v-if="!editMode" class="flex">
 
-            <!-- attract: Редактировать -->
-            <AppLabel
-                v-if="funcButtonsConstraints"
-                align="center"
-                class="cursor-pointer font-bold"
-                height="h-[30px]"
-                text="Ред."
-                text-size="mini"
-                type="warning"
-                width="w-[50px]"
-                @click="setEditMode"
-            />
+        <!-- attract: Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные       -->
+        <div v-if="getFunctionalByFabricTaskStatus(taskStatus)">
 
-            <!-- attract: Удалить -->
-            <AppLabel
-                v-if="funcButtonsConstraints"
-                align="center"
-                class="cursor-pointer font-bold"
-                height="h-[30px]"
-                text="Х"
-                text-size="mini"
-                type="danger"
-                width="w-[50px]"
-            />
+            <!-- attract: Управляющие кнопки -->
+            <div v-if="!editMode" class="flex">
 
-        </div>
+                <!-- attract: Редактировать -->
+                <AppLabel
+                    v-if="funcButtonsConstraints"
+                    align="center"
+                    class="cursor-pointer font-bold"
+                    height="h-[30px]"
+                    text="Ред."
+                    text-size="mini"
+                    type="warning"
+                    width="w-[50px]"
+                    @click="setEditMode"
+                />
 
-        <div v-else class="flex">
+                <!-- attract: Удалить -->
+                <AppLabel
+                    v-if="funcButtonsConstraints"
+                    align="center"
+                    class="cursor-pointer font-bold"
+                    height="h-[30px]"
+                    text="Х"
+                    text-size="mini"
+                    type="danger"
+                    width="w-[50px]"
+                    @click="deleteTaskRecord"
+                />
 
-            <!-- attract: Отменить -->
-            <AppLabelMultiLine
-                :text="['Отмена', '']"
-                align="center"
-                class="cursor-pointer font-bold"
-                height="h-[30px]"
-                text-size="mini"
-                type="warning"
-                width="w-[50px]"
-                @click="cancelEditMode"
-            />
+            </div>
 
-            <!-- attract: Сохранить -->
-            <AppLabelMultiLine
-                v-if="saveRollFlag"
-                :text="['V', '']"
-                align="center"
-                class="cursor-pointer font-bold"
-                height="h-[30px]"
-                text-size="mini"
-                type="success"
-                width="w-[50px]"
-                @click="saveTaskRecord"
-            />
+            <div v-else class="flex">
+
+                <!-- attract: Отменить -->
+                <AppLabelMultiLine
+                    :text="['Отмена', '']"
+                    align="center"
+                    class="cursor-pointer font-bold"
+                    height="h-[30px]"
+                    text-size="mini"
+                    type="warning"
+                    width="w-[50px]"
+                    @click="cancelEditMode"
+                />
+
+                <!-- attract: Сохранить -->
+                <AppLabelMultiLine
+                    v-if="saveRollFlag"
+                    :text="['V', '']"
+                    align="center"
+                    class="cursor-pointer font-bold"
+                    height="h-[30px]"
+                    text-size="mini"
+                    type="success"
+                    width="w-[50px]"
+                    @click="saveTaskRecord"
+                />
+
+            </div>
 
         </div>
 
     </div>
+
+    <AppModalAsyncMultiLine
+        ref="appModalAsync"
+        :text="modalText"
+        type="danger"
+        mode="confirm"
+    />
 
 </template>
 
@@ -213,11 +227,12 @@ import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
 
 import {
     filterFabricsByMachineId,
-    getAddFabricMode
+    getAddFabricMode,
+    getFunctionalByFabricTaskStatus,
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
@@ -227,6 +242,7 @@ import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMu
 import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
 import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
 import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
+import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 
 const props = defineProps({
     roll: {
@@ -248,10 +264,24 @@ const props = defineProps({
             FABRIC_MACHINES.CHINA,
             FABRIC_MACHINES.KOREAN,
         ].includes(machine)
+    },
+    taskStatus: {
+        type: Number,
+        required: true,
+        validator: (taskStatus) => [
+            FABRIC_TASK_STATUS.UNKNOWN.CODE,
+            FABRIC_TASK_STATUS.CREATED.CODE,
+            FABRIC_TASK_STATUS.PENDING.CODE,
+            FABRIC_TASK_STATUS.RUNNING.CODE,
+            FABRIC_TASK_STATUS.DONE.CODE,
+        ].includes(taskStatus)
     }
 })
 
-const emits = defineEmits(['saveTaskRecord',])
+
+// console.log('props.roll: ', props.roll)
+
+const emits = defineEmits(['saveTaskRecord', 'deleteTaskRecord'])
 
 // attract: Объявляем дублирующую переменную для рулона, потому что state нельзя изменять в дочернем элементе
 let workRoll = reactive({...props.roll})
@@ -281,6 +311,9 @@ const getAverageLength = () => {
 }
 const averageLength = ref(getAverageLength())
 
+// attract: Текст модального окна + Получаем ссылку на модальное окно
+const modalText = ref([])
+const appModalAsync = ref(null)
 
 // attract: Получаем тип раскраски ошибки и ограничения для рулона
 const getTypeForErrorsAndConstraintsForLabel = () => {
@@ -309,36 +342,67 @@ const getSelectData = () => {
     // attract: Фильтруем ПС в зависимости от выбранного режима ПС
     const filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID, fabricsStore.globalFabricsMode)
 
+    console.log('filteredFabrics: ', filteredFabrics)
+
+
     // attract: Делаем 2 разных selectData для рулонов с нулевым id (убираем существующие в СЗ ПС) и для остальных
     let data
 
-    if (workRoll.fabric_id !== 0) {
+    console.log('rollsIndexes: ', rollsIndexes)
+    console.log('workRoll.fabric_id: ', workRoll.fabric_id)
 
-        data = filteredFabrics.map(fabric => {
-            return {
-                id: fabric.id,
-                name: fabric.display_name,
-                selected: fabric.id === workRoll.fabric_id
-            }
-        })
+    data = filteredFabrics.map(fabric => {
 
-    } else {
+        if (!rollsIndexes.includes(fabric.id) || fabric.id === workRoll.fabric_id) {
+        // if (!rollsIndexes.includes(fabric.id) && rollsIndexes.includes(workRoll.fabric_id)) {
 
-        const dataRaw = filteredFabrics.map(fabric => {
-            if (!rollsIndexes.includes(fabric.id)) {
+            if ((workRoll.fabric_id !== 0 && fabric.id !== 0) || (workRoll.fabric_id === 0)) {
+
                 return {
                     id: fabric.id,
                     name: fabric.display_name,
                     selected: fabric.id === workRoll.fabric_id
                 }
             }
-        })
+        }
+    })
 
-        data = dataRaw.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
-    }
+    data = data.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
 
-    // console.log('select_data: ', data)
-    // console.log('id: : ', workRoll.fabric_id)
+    console.log('data__: ', data)
+
+
+    // if (workRoll.fabric_id !== 0) {
+    //
+    //     data = filteredFabrics.map(fabric => {
+    //         if (fabric.id !== 0) {
+    //             return {
+    //                 id: fabric.id,
+    //                 name: fabric.display_name,
+    //                 selected: fabric.id === workRoll.fabric_id
+    //             }
+    //         }
+    //     })
+    //
+    //     data = data.filter((item) => typeof item !== "undefined")
+    //
+    //     console.log('data_1: ', data)
+    // } else {
+    //
+    //     data = filteredFabrics.map(fabric => {
+    //         if (!rollsIndexes.includes(fabric.id) || fabric.id === 0) {
+    //             return {
+    //                 id: fabric.id,
+    //                 name: fabric.display_name,
+    //                 selected: fabric.id === workRoll.fabric_id
+    //             }
+    //         }
+    //     })
+    //
+    //     data = data.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
+    //
+    //     console.log('data_2: ', data)
+    // }
 
     return {name: 'fabrics', data}
 }
@@ -428,10 +492,11 @@ const reactiveActions = () => {
 
     workRoll.fabric = tempFabric.display_name                                           // Меняем название ПС
     workRoll.average_textile_length = tempFabric.buffer.average_length                  // Меняем среднюю длину ПС
+    workRoll.productivity = tempFabric.buffer.productivity                              // Меняем производительность
     workRoll.descr = description.value
 
     averageLength.value = workRoll.average_textile_length                               // Получаем среднюю длину ПС
-    productivity.value = tempFabric.buffer.productivity                                 // Получаем производительность
+    productivity.value = workRoll.productivity                                          // Получаем производительность
     lengthAmount.value = workRoll.rolls_amount * workRoll.average_textile_length
     rollsAmount.value = workRoll.rolls_amount
     productivityAmount.value = getProductivityAmount()                                  // Получаем трудозатраты
@@ -450,6 +515,9 @@ const reactiveActions = () => {
 const selectFabric = (item) => {
 
     workRoll.fabric_id = item.id                                                  // Меняем id ПС
+
+    console.log('workRoll', workRoll)
+
     reactiveActions()
 
     // const tempFabric = fabrics.find(fabric => fabric.id === item.id)                    // Получаем объект ПС
@@ -506,13 +574,14 @@ const saveTaskRecord = () => {
 
     resetEditMode()                                     // Отключаем глобальное редактирование
 
-    console.log(rollsAmount.value)
-    console.log(lengthAmount.value)
-    console.log(workRoll.fabric_id)
-    console.log(workRoll.descr)
+    // console.log(rollsAmount.value)
+    // console.log(lengthAmount.value)
+    // console.log(workRoll.fabric_id)
+    // console.log(workRoll.descr)
 
     const saveRollData = {
         average_textile_length: averageLength.value,
+        productivity: productivity.value,
         textile_length: lengthAmount.value,
         fabric_id: workRoll.fabric_id,
         fabric_name: workRoll.fabric,
@@ -526,7 +595,20 @@ const saveTaskRecord = () => {
     emits('saveTaskRecord', {index: props.index, roll: saveRollData})
 }
 
+// attract: Удаляем рулон
+const deleteTaskRecord = async () => {
+    resetEditMode()                                     // Отключаем глобальное редактирование
 
+    modalText.value = ['Запись будет удалена.', 'Продолжить?']
+    const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+
+    if (!result) return
+
+    emits('deleteTaskRecord', workRoll)
+    // console.log(workRoll)
+}
+
+// attract: Общие действия при пересчете рулонов в штуках в метры и наоборот
 const amountActions = () => {
     if (rollsAmount.value.toString() === '' || rollsAmount.value < 0) rollsAmount.value = 0
     if (lengthAmount.value.toString() === '' || lengthAmount.value < 0) lengthAmount.value = 0

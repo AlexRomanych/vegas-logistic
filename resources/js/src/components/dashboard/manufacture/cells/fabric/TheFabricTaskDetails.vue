@@ -95,12 +95,13 @@
                 <!-- todo: доработать, потому, что task будем получать в самом компоненте -->
                 <div v-if="tabs.american.shown">
                     <TheTaskMachine
-                        :key="activeTask"
+                        :key="rerender"
                         :machine="FABRIC_MACHINES.AMERICAN"
                         :task="activeTask"
                         @add-roll="addRoll"
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
+                        @delete-task-record="deleteTasks"
                     />
 
                 </div>
@@ -108,36 +109,39 @@
                 <!--attract: Немец-->
                 <div v-if="tabs.german.shown">
                     <TheTaskMachine
-                        :key="activeTask"
+                        :key="rerender"
                         :machine="FABRIC_MACHINES.GERMAN"
                         :task="activeTask"
                         @add-roll="addRoll"
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
+                        @delete-task-record="deleteTasks"
                     />
                 </div>
 
                 <!--attract: Китаец-->
                 <div v-if="tabs.china.shown">
                     <TheTaskMachine
-                        :key="activeTask"
+                        :key="rerender"
                         :machine="FABRIC_MACHINES.CHINA"
                         :task="activeTask"
                         @add-roll="addRoll"
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
+                        @delete-task-record="deleteTasks"
                     />
                 </div>
 
                 <!--attract: Китаец-->
                 <div v-if="tabs.korean.shown">
                     <TheTaskMachine
-                        :key="activeTask"
+                        :key="rerender"
                         :machine="FABRIC_MACHINES.KOREAN"
                         :task="activeTask"
                         @add-roll="addRoll"
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
+                        @delete-task-record="deleteTasks"
                     />
                 </div>
 
@@ -150,14 +154,14 @@
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
+        :type="modalType"
         mode="confirm"
-        type="danger"
     />
 
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue'
+import {ref, reactive, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
@@ -209,7 +213,7 @@ const fabricsStore = useFabricsStore()
 const fabrics = await fabricsStore.getFabrics()
 fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
 fabricsStore.fabricsMemory = fabrics
-console.log(fabrics)
+// console.log(fabrics)
 
 // attract: Получаем период отображения сменного задания
 const tasksPeriod = getFabricTasksPeriod()
@@ -225,9 +229,15 @@ console.log('tasks:', tasks)
 
 
 // attract: формируем полный (дополненный) массив сменных заданий
-let taskData = reactive(tasks)
+// let taskData = reactive(tasks)
+// // let taskData = reactive(TEST_FABRICS)
+// taskData = reactive(addEmptyFabricTasks(taskData, tasksPeriod))
+
+// let taskData = reactive(tasks)
 // let taskData = reactive(TEST_FABRICS)
-taskData = addEmptyFabricTasks(taskData, tasksPeriod)
+const taskData = reactive(addEmptyFabricTasks(tasks, tasksPeriod))
+
+
 
 // attract: Ссылка на активное СЗ
 let activeTask = reactive(taskData.find(t => t.active))
@@ -235,7 +245,8 @@ let activeTask = reactive(taskData.find(t => t.active))
 console.log('taskData: ', taskData)
 console.log('activeTask', activeTask)
 
-
+// attract: Тип для модального окна
+const modalType = ref('danger')
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
@@ -301,11 +312,16 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
     // attract: Удалить сменное задание. Обращаемся к API
     if (btnRow === 2 && task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
-        modalText.value = ['Сменное задание будет удалено. Вы уверены?']
+
+        modalText.value = ['Сменное задания и все связанные с', 'ними данные будут удалены.', 'Продолжить?']
+        modalType.value = 'danger'
         const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
+            const res = await fabricsStore.changeFabricTaskDateStatus(task)
+            console.log(res)
         }
+
         return
     }
 
@@ -320,14 +336,25 @@ const changeTaskStatus = async (task, btnRow = 1) => {
     // attract: Вернуть статус с "Готов к стежке" на "Создано". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
-        const res = await fabricsStore.changeFabricTaskDateStatus(task)
-        console.log(res)
+
+        modalText.value = ['Сменное задание будет доступно для редактирования', 'и будут удалены все связанные рулоны для производства.', 'Продолжить?']
+        modalType.value = 'danger'
+        const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+        if (result) {
+            task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
+            const res = await fabricsStore.changeFabricTaskDateStatus(task)
+            console.log(res)
+            // todo: сделать обработку ошибок + callout
+        }
+
         return
     }
 
     // attract: Сменить статус с "Создано" на "На стежку". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
+
         modalText.value = ['Сменное задание будет закрыто для редактирования', 'и будут сформированы рулоны для производства.', 'Продолжить?']
+        modalType.value = 'primary'
         const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.PENDING.CODE
@@ -377,10 +404,36 @@ const saveTasks = async (saveData) => {
     const targetTask = taskData.find(t => t.date === saveData.task.date)
     targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll
 
-    console.log(taskData)
+    console.log('from saveTask: ', targetTask)
+    console.log('from taskData: ', taskData)
 
     const result = await fabricsStore.createFabricTask(targetTask)
     console.log('SFC: ', result)
+}
+
+// attract: Поднятое событие при клике на кнопку "Удалить рулон"
+const deleteTasks = async (deleteData) => {
+    console.log('deleteTasks: ', deleteData)
+
+    // Находим ссылку на СЗ на дату контекста
+    const targetTask = taskData.find(t => t.date === deleteData.task.date)
+    // Удаляем рулон из массива
+    targetTask.machines[deleteData.machine.TITLE].rolls
+        = targetTask.machines[deleteData.machine.TITLE].rolls.filter(r => r.id !== deleteData.id)
+
+    console.log(targetTask)
+
+    // activeTask.machines[deleteData.machine.TITLE].rolls = targetTask.machines[deleteData.machine.TITLE].rolls
+
+    // Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
+    // Иначе удаляем его из БД
+    if (deleteData.id) {
+        console.log('НеПустой рулон')
+
+        const result = await fabricsStore.deleteFabricTaskRollById(deleteData.id)
+        console.log('SFC: ', result)
+    }
+
 }
 
 
@@ -389,6 +442,15 @@ const optimizeLabor = (machine, task) => {
 
 }
 
+const rerender = ref(0)
+
+watch(() => taskData, async (newValue) => {
+
+    rerender.value++
+    console.log('taskData: changed: ', rerender.value)
+
+
+}, {deep: true})
 
 </script>
 

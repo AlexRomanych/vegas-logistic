@@ -42,7 +42,8 @@ class FabricTasksDateResource extends JsonResource
                         'status' => $roll->roll_status,
                         'finish_at' => $roll->finish_at,
                         'finish_by' => $roll->finish_by,
-                        'textile_length' => $roll->textile_roll_length,
+                        'textile_length' => (float)$roll->textile_roll_length,
+                        'productivity' => (float)$roll->productivity,
                         'descr' => $roll->description,
                     ];
                 }
@@ -50,7 +51,8 @@ class FabricTasksDateResource extends JsonResource
 
                 $rollsContext[] = [
                     'id' => $rollContext->id,
-                    'average_textile_length' => $rollContext->average_textile_length,
+                    'average_textile_length' => (float)$rollContext->average_textile_length,
+                    'productivity' => (float)$rollContext->productivity,
                     'rolls_amount' => $rollContext->rolls_amount,
                     'length_amount' => $rollContext->rolls_amount * $rollContext->average_textile_length,
                     'fabric_id' => $rollContext->fabric_id,

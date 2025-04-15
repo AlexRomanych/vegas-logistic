@@ -230,6 +230,7 @@ Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'upload
 Route::get('/fabrics/tasks', [CellFabricTasksDateController::class, 'tasks'])->middleware('jwt.auth');
 Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
 Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
+Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
 
 //Route::get('/fabrics/tasks', [CellFabricTaskController::class, 'tasks'])->middleware('jwt.auth');
 //Route::put('/fabrics/tasks/create/', [CellFabricTaskController::class, 'create'])->middleware('jwt.auth');

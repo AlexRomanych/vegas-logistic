@@ -30,6 +30,7 @@ const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL �
 const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL для получения списка СЗ для ПС
 const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
+const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
 
 export const useFabricsStore = defineStore('fabrics', () => {
 
@@ -54,7 +55,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         [FABRIC_MACHINES.KOREAN.TITLE]: [],
     })
 
-    console.log(globalTaskProductivity)
+    // console.log(globalTaskProductivity)
 
     // attract: Сброс глобального массива трудозатрат СЗ
     const clearTaskGlobalProductivity = () => {
@@ -200,7 +201,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const getTasksByPeriod = async (params) => {
 
         const result = await jwtGet(URL_FABRIC_TASKS, params)
-        console.log('store', result)
+        // console.log('store', result)
         // debugger
         return result.data                                  // все возвращается через Resource с ключем data
     }
@@ -230,6 +231,17 @@ export const useFabricsStore = defineStore('fabrics', () => {
         debugger
     }
 
+    // attract: Удаление рулона из СЗ по id созданного ОПП (FabricTaskContext)
+    const deleteFabricTaskRollById = async (fabricTaskContextId = 0) => {
+        if (fabricTaskContextId === 0) {
+            return
+        }
+
+        const result = await jwtDelete(URL_FABRIC_TASKS_CONTEXT_DELETE, {id: fabricTaskContextId})
+        console.log('store', result)
+        return result
+        // console.log(result)
+    }
 
     return {
         fabricsCashe,
@@ -252,7 +264,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         getTasksByPeriod,
         createFabricTask,
         changeFabricTaskStatus,
-        changeFabricTaskDateStatus
+        changeFabricTaskDateStatus,
+        deleteFabricTaskRollById
     }
 
 })

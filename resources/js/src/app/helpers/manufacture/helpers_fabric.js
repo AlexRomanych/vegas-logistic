@@ -84,7 +84,7 @@ export function getFabricTasksPeriod() {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract: добавляет к массиву сменных заданий недостающие дни со статусом FABRIC_TASK_STATUS.UNKNOWN
 export function addEmptyFabricTasks(fabricTasks = [], period = null) {
-    console.log('period: ', period)
+    // console.log('period: ', period)
     // страховочка
     if (!Array.isArray(fabricTasks)) fabricTasks = []
 
@@ -154,7 +154,7 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     // сортируем массив по дате начала по возрастанию
     fabricTasks = fabricTasks.sort((a, b) => new Date(a.date) - new Date(b.date))
 
-    console.log('period: ', period)
+    // console.log('period: ', period)
     // new Date(Math.min(date1.getTime(), date2.getTime()));
     // descr: Имеет 2 промежутка:
     // descr: 1 - период period
@@ -195,7 +195,7 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
         fabricTasks.push(JSON.parse(JSON.stringify(taskDraft)))
     })
 
-    console.log('fabricTasks: after', fabricTasks)
+    // console.log('fabricTasks: after', fabricTasks)
 
     // еще раз сортируем массив по дате начала по возрастанию
     fabricTasks = fabricTasks.sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -282,3 +282,15 @@ export function fillFabricsDisplayNames(fabrics = [], tasks = []) {
     return tasks
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Получаем статус функций и отображения компонентов в зависимости от статуса СЗ
+export function getFunctionalByFabricTaskStatus(fabricTask) {
+    return [
+        FABRIC_TASK_STATUS.UNKNOWN.CODE,
+        FABRIC_TASK_STATUS.CREATED.CODE,
+    ].includes(fabricTask)
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // attract: Получаем статус функций и отображения компонентов в зависимости от статуса СЗ
+// export function getFabricById(fabrics = [], id = -1) {}
