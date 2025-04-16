@@ -20,14 +20,14 @@
                         class="cursor-pointer"
                         :id="item.uniqID"
                         :checked="item.checked"
-                        :disabled="item.disabled"
-                        :name="inputType === 'checkbox' ? item.name : 'radio'"
+                        :disabled="disabled ? disabled : item.disabled"
+                        :name="checkboxData.name"
                         :type="inputType"
                         :value="item.uniqID"
                         @change="checked"
                     />
                     <label
-                        :class="[textColor]"
+                        :class="[textColor, textSizeClass]"
                         :for="item.uniqID"
                         class="ml-1 cursor-pointer"
                     >
@@ -45,8 +45,9 @@
 
 <script setup>
 import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import {computed, reactive} from 'vue'
+import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
+import {computed, reactive, ref} from 'vue'
+import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {
@@ -87,8 +88,17 @@ const props = defineProps({
         required: false,
         default: ''
     },
-
-
+    textSize: {
+        type: String,
+        required: false,
+        default: 'small',
+        validator: (size) => fontSizesList.includes(size)
+    },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false
+    }
 })
 
 // добавляем uniqID, чтобы не было коллизий
@@ -141,6 +151,7 @@ const checked = (e) => {
 const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))                   // Получаем класс для цвета заднего фона
 const textColor = computed(() => getTextColorClassByType(props.type))
 
+const textSizeClass = ref(getFontSizeClass(props.textSize))
 </script>
 
 <style scoped>

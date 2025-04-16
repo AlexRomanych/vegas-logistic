@@ -160,7 +160,7 @@
 
 <script setup>
 import {reactive, ref} from "vue";
-import AppInputText from "/resources/js/src/components/ui/inputs/AppInputText.vue"
+import AppInputText from "/resources/js/src/components/ui/inputs/AppInputText_.vue"
 import ErrorClass from "/resources/js/src/app/classes/ErrorClass.js"
 import AppInputButton from "/resources/js/src/components/ui/inputs/AppInputButton.vue"
 import AppCallout from "/resources/js/src/components/ui/callouts/AppCallout.vue"

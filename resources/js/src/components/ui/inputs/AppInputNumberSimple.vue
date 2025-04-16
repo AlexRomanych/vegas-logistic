@@ -1,12 +1,11 @@
 <template>
 
-    <div :class="[width, 'flex flex-col m-0.5']">
-        <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
+    <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
+        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
         <input
             :id="id"
             v-model.number="inputNumber"
-            :value="value"
-            :class="['app-input', height, textSizeClass, semibold, horizontalAlign, borderColor, focusBorderColor, placeholderColor, backgroundColor, currentTextColor]"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
             :disabled="disabled"
             :placeholder="placeholder"
             :step="step"
@@ -113,11 +112,6 @@ const props = defineProps({
         default: 'mini',
         validator: (size) => fontSizesList.includes(size)
     },
-    inputBgColor: {
-        type: String,
-        required: false,
-        default: 'none'
-    },
 
 })
 
@@ -127,7 +121,14 @@ const focusBorderColor = ref(getColorClassByType(props.type, 'focus:ring', curre
 const currentTextColor = ref(getTextColorClassByType(props.type))
 const backgroundColor = props.inputBgColor === 'none' ? ref(getColorClassByType(props.type, 'bg', currentColorIndex)) : props.inputBgColor
 const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
-const textColor = ref(currentTextColor.value.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString()))
+
+const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
+let textColor = 'text' + currentColor
+// attract: Делает цвет темнее
+// textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
+
+
+// const textColor = ref(currentTextColor.value.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString()))
 
 // const currentColor = getColorClassByType(props.type) + currentColorIndex
 // const placeholderColor = 'placeholder' + currentColor
@@ -136,8 +137,10 @@ const textColor = ref(currentTextColor.value.replace(currentColorIndex.toString(
 
 // вычисляем горизонтальное выравнивание
 const horizontalAlign = ref('text-' + props.align)
-const textSizeClass = ref(getFontSizeClass(props.textSize))
 const semibold = ref(props.bold ? 'font-semibold' : '')
+
+const textSizeClass = ref(getFontSizeClass(props.textSize))
+const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 
 // attract: Определяем модель
 // const inputNumber = ref(props.value)
@@ -177,7 +180,7 @@ watch(() => props.bold, (newBold) => semibold.value = newBold ? 'font-semibold' 
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
+    @apply font-semibold ml-2 mb-0.5 mt-2
 }
 
 </style>

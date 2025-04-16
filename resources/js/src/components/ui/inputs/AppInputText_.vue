@@ -1,22 +1,21 @@
 <template>
-
     <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
-        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
+        <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>
         <input
             :id="id"
-            v-model="inputText"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
 
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
-            :disabled="disabled"
             :placeholder="placeholder"
+            :disabled="disabled"
             :type="func"
+            v-model="inputText"
             @input="getInputText"
 
         >
         <div v-if="errors">
             <div v-for="(err, index) in errors" :key="index">
                 <span :class="['input-error', textColor]">
-                    {{ err.$message }}
+                    {{ err.$message}}
                 </span>
             </div>
         </div>
@@ -28,11 +27,9 @@
 
 <script setup>
 
-import {computed, ref} from 'vue'
-
-import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
+import {getColorClassByType} from "@/src/app/helpers/helpers.js"
+import {computed, ref} from "vue";
 
 const props = defineProps({
     id: {
@@ -80,19 +77,8 @@ const props = defineProps({
         type: Array,
         required: false,
         default: null,
-    },
-    textSize: {
-        type: String,
-        required: false,
-        default: 'small',
-        validator: (size) => fontSizesList.includes(size)
-    },
-    labelTextSize: {
-        type: String,
-        required: false,
-        default: 'mini',
-        validator: (size) => fontSizesList.includes(size)
-    },
+    }
+
 
 })
 
@@ -104,11 +90,7 @@ const borderColor = 'border' + currentColor
 const focusBorderColor = 'focus:ring' + currentColor
 
 let textColor = 'text' + currentColor
-// attract: Делает цвет темнее
-// textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
-
-const textSizeClass = ref(getFontSizeClass(props.textSize))
-const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
+textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
 const inputText = defineModel({
     type: String,
@@ -141,7 +123,7 @@ const getInputText = (e) => emit('getInputText', e.target.value)
 }
 
 .input-label {
-    @apply font-semibold ml-2 mb-0.5 mt-2
+    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
 }
 
 </style>

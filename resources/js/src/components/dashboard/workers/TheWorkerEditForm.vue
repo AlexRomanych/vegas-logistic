@@ -75,7 +75,7 @@ import {useCellsGroupsStore} from '/resources/js/src/stores/CellsGroupsStore.js'
 import {useRoute} from 'vue-router'
 import {useRouter} from 'vue-router'
 
-import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
+import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText_.vue'
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
 import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
 

@@ -195,89 +195,38 @@ export const NEW_ROLL = {
     // num: 0,
 }
 
-// descr Создаем болванку ПС для
-
-
-
-
-
-// {
-//     "id": 9,
-//     "code_1C": "000043186",
-//     "name": "ПС 220Ж 100С 15С М-24 (рис. К2)",
-//     "display_name": "ПС 220Ж 100С 15С М-24 (рис. К2)",
-//     "picture": {
-//     "id": 17,
-//         "name": "К2"
-// },
-//     "textile": "М-24",
-//     "fillersList": [
-//     "220Ж",
-//     "100С",
-//     "15С"
-// ],
-//     "active": true,
-//     "rare": false,
-//     "machines": [
-//     {
-//         "id": 1,
-//         "short_name": "Американец"
-//     },
-//     {
-//         "id": 4,
-//         "short_name": "Кореец"
-//     },
-//     {
-//         "id": 3,
-//         "short_name": "Китаец"
-//     },
-//     {
-//         "id": 0,
-//         "short_name": "Нет данных"
-//     }
-// ],
-//     "buffer": {
-//     "amount": 0,
-//         "min": 60,
-//         "max": 600,
-//         "min_rolls": 1,
-//         "max_rolls": 8,
-//         "optimal_party": 600,
-//         "average_length": 68.63,
-//         "rate": 1.0125,
-//         "productivity": 47.61904762
-// },
-//     "text": {
-//     "description": null,
-//         "comment": null,
-//         "note": null
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// descr Создаем болванку ПС
+export const NEW_FABRIC = {
+    id: 0,
+    code_1C: '',
+    name: '',
+    display_name: '',
+    picture: {
+        id: 0,
+        name: ''
+    },
+    textile: '',
+    fillersList: [],
+    active: true,
+    rare: false,
+    machines: [],
+    buffer: {
+        amount: 0,
+        min: 0,
+        max: 0,
+        min_rolls: 0,
+        max_rolls: 0,
+        optimal_party: 0,
+        average_length: 0,
+        rate: 0,
+        productivity: 0
+    },
+    text: {
+        description: null,
+        comment: null,
+        note: null
+    }
+}
 
 
 
