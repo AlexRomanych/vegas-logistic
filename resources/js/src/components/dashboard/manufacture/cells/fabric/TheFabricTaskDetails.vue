@@ -95,7 +95,7 @@
                 <!-- todo: доработать, потому, что task будем получать в самом компоненте -->
                 <div v-if="tabs.american.shown">
                     <TheTaskMachine
-                        :key="rerender"
+                        :key="rerender[FABRIC_MACHINES.AMERICAN.ID]"
                         :machine="FABRIC_MACHINES.AMERICAN"
                         :task="activeTask"
                         @add-roll="addRoll"
@@ -109,7 +109,7 @@
                 <!--attract: Немец-->
                 <div v-if="tabs.german.shown">
                     <TheTaskMachine
-                        :key="rerender"
+                        :key="rerender[FABRIC_MACHINES.GERMAN.ID]"
                         :machine="FABRIC_MACHINES.GERMAN"
                         :task="activeTask"
                         @add-roll="addRoll"
@@ -122,7 +122,7 @@
                 <!--attract: Китаец-->
                 <div v-if="tabs.china.shown">
                     <TheTaskMachine
-                        :key="rerender"
+                        :key="rerender[FABRIC_MACHINES.CHINA.ID]"
                         :machine="FABRIC_MACHINES.CHINA"
                         :task="activeTask"
                         @add-roll="addRoll"
@@ -135,7 +135,7 @@
                 <!--attract: Китаец-->
                 <div v-if="tabs.korean.shown">
                     <TheTaskMachine
-                        :key="rerender"
+                        :key="rerender[FABRIC_MACHINES.KOREAN.ID]"
                         :machine="FABRIC_MACHINES.KOREAN"
                         :task="activeTask"
                         @add-roll="addRoll"
@@ -222,6 +222,9 @@ console.log('tasksPeriod:', tasksPeriod)
 // attract: Получаем сами сменные задания
 let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 
+// console.log('tasks:', tasks)
+// debugger
+
 // attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
 tasks = fillFabricsDisplayNames(fabrics, tasks)
 
@@ -236,7 +239,6 @@ console.log('tasks:', tasks)
 // let taskData = reactive(tasks)
 // let taskData = reactive(TEST_FABRICS)
 const taskData = reactive(addEmptyFabricTasks(tasks, tasksPeriod))
-
 
 
 // attract: Ссылка на активное СЗ
@@ -361,6 +363,29 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
             // todo: сделать обработку ошибок + callout
+
+            console.log('pending: ', task)
+
+            const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
+            console.log('newTaskDay: ', newTaskDay)
+
+            // debugger
+
+            task.machines = newTaskDay[0].machines
+            // // task = newTaskDay
+            //
+
+            console.log(activeTask === task)
+            console.log('task from server: ', task)
+
+            // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+            rerender.forEach((_, index, array) => array[index]++)
+
+            // rerender[FABRIC_MACHINES.AMERICAN.ID]++
+            // rerender[FABRIC_MACHINES.GERMAN.ID]++
+            // rerender[FABRIC_MACHINES.CHINA.ID]++
+            // rerender[FABRIC_MACHINES.KOREAN.ID]++
+
         }
     }
 
@@ -434,6 +459,10 @@ const deleteTasks = async (deleteData) => {
         console.log('SFC: ', result)
     }
 
+
+    rerender[deleteData.machine.ID]++
+    console.log(deleteData.machine.ID)
+    console.log(rerender)
 }
 
 
@@ -442,12 +471,12 @@ const optimizeLabor = (machine, task) => {
 
 }
 
-const rerender = ref(0)
+const rerender = reactive([0, 0, 0, 0, 0])
 
 watch(() => taskData, async (newValue) => {
 
-    rerender.value++
-    console.log('taskData: changed: ', rerender.value)
+    // rerender.value++
+    console.log('taskData: changed: ', rerender)
 
 
 }, {deep: true})

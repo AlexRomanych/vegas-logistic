@@ -2,6 +2,7 @@
     <div
         :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
         class="flex flex-col m-0.5 app-label justify-center"
+        :title="title"
         @click="labelClick"
     >
 
@@ -61,8 +62,12 @@ const props = defineProps({
         required: false,
         default: 'left',
         validator: (position) => ['left', 'right', 'center'].includes(position)
+    },
+    title: {
+        type: String,
+        required: false,
+        default: '',
     }
-
 })
 
 const emits = defineEmits(['labelClick'])

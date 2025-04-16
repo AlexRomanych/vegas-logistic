@@ -2,6 +2,7 @@
     <div
         :class="[width, labelHeight, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
         class="flex flex-col m-0.5 app-label justify-center"
+        :title="title"
         @click="labelClick"
     >
         <div v-for="(text, idx) in textArray" :key="idx">
@@ -65,6 +66,11 @@ const props = defineProps({
         required: false,
         default: 'left',
         validator: (position) => ['left', 'right', 'center'].includes(position)
+    },
+    title: {
+        type: String,
+        required: false,
+        default: '',
     }
 
 })

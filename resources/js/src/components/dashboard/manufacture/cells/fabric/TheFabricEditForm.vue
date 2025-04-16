@@ -117,6 +117,8 @@ const router = useRouter()
 // console.log('meta', route.meta.mode)
 const editMode = route.meta.mode === 'edit'
 
+console.log('route: ', route)
+
 // Задаем пустое ПС для добавления
 let fabric = {
     id: 0,
@@ -132,15 +134,15 @@ let fabric = {
     description: '',
 }
 
+// attract: Получаем ПС
 if (editMode) {
     fabric = await fabricStore.getFabricById(route.params.id)
 }
 
 const machinesList = await fabricStore.getFabricsMachines()
 
-
-console.log(fabric)
-console.log(machinesList)
+console.log('fabric: ', fabric)
+console.log('machines: ', machinesList)
 
 
 // Формируем список для отображения Стегальных машин

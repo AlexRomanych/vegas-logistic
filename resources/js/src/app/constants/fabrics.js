@@ -19,7 +19,7 @@
  const FABRIC_TASK_DONE_CODE = 4;
 */
 
-import {reactive} from "vue";
+import {reactive} from 'vue'
 
 export const FABRIC_TASK_STATUS = Object.freeze({
 
@@ -59,6 +59,39 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         TITLE: 'Выполнено',
     },
 })
+
+
+// descr Тут все константы, касающиеся статусов движения рулона
+export const FABRIC_ROLL_STATUS = Object.freeze({
+
+    // descr Рулон создан (или сохранен)
+    CREATED: {
+        WORD: 'created',
+        CODE: 0,
+        TITLE: 'Создано',
+    },
+
+    // descr Рулон взят на выполнение (находится в процессе выполнения)
+    RUNNING: {
+        WORD: 'running',
+        CODE: 1,
+        TITLE: 'Выполняется',
+    },
+
+    // descr Рулон выполнен (закрыт)
+    DONE: {
+        WORD: 'done',
+        CODE: 2,
+        TITLE: 'Выполнено',
+    },
+})
+
+// descr Массив (псевдомассив - объект) статусов движения рулона
+export const FABRIC_ROLL_STATUS_LIST = {
+    [FABRIC_ROLL_STATUS.CREATED.CODE]: FABRIC_ROLL_STATUS.CREATED,
+    [FABRIC_ROLL_STATUS.RUNNING.CODE]: FABRIC_ROLL_STATUS.RUNNING,
+    [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
+}
 
 
 // descr Константы режима работы компонента
@@ -161,6 +194,92 @@ export const NEW_ROLL = {
     correct: false,
     // num: 0,
 }
+
+// descr Создаем болванку ПС для
+
+
+
+
+
+// {
+//     "id": 9,
+//     "code_1C": "000043186",
+//     "name": "ПС 220Ж 100С 15С М-24 (рис. К2)",
+//     "display_name": "ПС 220Ж 100С 15С М-24 (рис. К2)",
+//     "picture": {
+//     "id": 17,
+//         "name": "К2"
+// },
+//     "textile": "М-24",
+//     "fillersList": [
+//     "220Ж",
+//     "100С",
+//     "15С"
+// ],
+//     "active": true,
+//     "rare": false,
+//     "machines": [
+//     {
+//         "id": 1,
+//         "short_name": "Американец"
+//     },
+//     {
+//         "id": 4,
+//         "short_name": "Кореец"
+//     },
+//     {
+//         "id": 3,
+//         "short_name": "Китаец"
+//     },
+//     {
+//         "id": 0,
+//         "short_name": "Нет данных"
+//     }
+// ],
+//     "buffer": {
+//     "amount": 0,
+//         "min": 60,
+//         "max": 600,
+//         "min_rolls": 1,
+//         "max_rolls": 8,
+//         "optimal_party": 600,
+//         "average_length": 68.63,
+//         "rate": 1.0125,
+//         "productivity": 47.61904762
+// },
+//     "text": {
+//     "description": null,
+//         "comment": null,
+//         "note": null
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // descr Тестовые СЗ для разработки
 export const TEST_FABRICS = [

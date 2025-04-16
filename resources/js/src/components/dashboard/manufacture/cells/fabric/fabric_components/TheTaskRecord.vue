@@ -407,18 +407,7 @@ const getSelectData = () => {
     return {name: 'fabrics', data}
 }
 
-// attract: Обрабатываем событие выбора ПС глобальное. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
-// selectData = reactive(getSelectData())
-watch(() => fabricsStore.globalFabricsMode, () => {
 
-    // Вычисляем данные для селекта ПС
-    selectData = getSelectData()
-    // Вычисляем тип для стилей
-    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()
-    // Пересчитываем ограничения для сервисных кнопок
-    funcButtonsConstraints.value = getFuncButtonsConstraints()
-    // funcButtonsConstraints.value = typeForErrorsAndConstraintsForLabel.value === 'primary'
-}, {deep: true, immediate: true})
 
 // attract: Обрабатываем событие выбора ПС в компоненте. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
 // watch(() => workRoll, (newRoll) => {
@@ -668,6 +657,23 @@ watch([
     () => isRollsAmountFractional], () => {
     saveRollFlag.value = getSaveRollFlag()
 }, {deep: true})
+
+
+// attract: Обрабатываем событие выбора ПС глобальное. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
+// selectData = reactive(getSelectData())
+watch(() => fabricsStore.globalFabricsMode, () => {
+
+    reactiveActions()
+
+    // Вычисляем данные для селекта ПС
+    selectData = getSelectData()
+    // Вычисляем тип для стилей
+    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()
+    // Пересчитываем ограничения для сервисных кнопок
+    funcButtonsConstraints.value = getFuncButtonsConstraints()
+    // funcButtonsConstraints.value = typeForErrorsAndConstraintsForLabel.value === 'primary'
+}, {deep: true, immediate: true})
+
 
 // attract: сбрасываем глобальное редактирование
 onBeforeRouteLeave(() => fabricsStore.globalEditMode = false)
