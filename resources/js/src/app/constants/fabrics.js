@@ -19,7 +19,10 @@
  const FABRIC_TASK_DONE_CODE = 4;
 */
 
-import {reactive} from 'vue'
+
+// descr Длина рабочей смены в часах
+export const FABRIC_WORKING_SHIFT_LENGTH = 10.5
+
 
 export const FABRIC_TASK_STATUS = Object.freeze({
 

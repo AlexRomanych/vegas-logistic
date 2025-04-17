@@ -276,7 +276,7 @@ const props = defineProps({
     }
 })
 
-console.log(props.rolls)
+// console.log(props.rolls)
 
 const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST);
 // console.log(FABRIC_ROLL_STATUS_ARRAY)

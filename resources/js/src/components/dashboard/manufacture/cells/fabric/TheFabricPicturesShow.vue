@@ -1,5 +1,5 @@
 <template>
-    I am the TheFabricTaskExecute
+I am the fabric pictures show
 </template>
 
 <script setup>

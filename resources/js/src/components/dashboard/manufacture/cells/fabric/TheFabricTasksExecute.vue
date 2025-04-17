@@ -63,6 +63,8 @@
         <!-- attract: Выводим табы, если есть СЗ -->
         <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
+
+            <!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
             <!-- attract Выводим табы -->
             <div class="flex flex-row justify-start items-center m-3">
                 <div v-for="tab in tabs" :key="tab.id">
@@ -70,7 +72,7 @@
                     <AppLabelMultiLine
                         :bold="true"
                         :text="tab.name"
-                        :type="tab.shown ? 'primary' : 'dark'"
+                        :type="getTabType(tab)"
                         align="center"
                         class="cursor-pointer"
                         width="w-[150px]"
@@ -252,11 +254,11 @@ const modalType = ref('danger')
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
-    common: {id: 1, shown: false, name: ['Общие', 'данные']},
-    american: {id: 2, shown: false, name: ['Американец', 'LEGACY-4']},
-    german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC']},
-    china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW']},
-    korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94']},
+    common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
+    american: {id: 2, shown: false, name: ['Американец', 'LEGACY-4'], typePassive: 'dark', machine: FABRIC_MACHINES.AMERICAN},
+    german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC'], typePassive: 'dark', machine: FABRIC_MACHINES.GERMAN},
+    china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW'], typePassive: 'dark', machine: FABRIC_MACHINES.CHINA},
+    korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94'], typePassive: 'dark', machine: FABRIC_MACHINES.KOREAN},
     // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
     // test: {id: 6, shown: false, name: ['Machine', 'Test']},
 })
@@ -391,7 +393,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
 }
 
-// attract Меняем активный день по клику на нем
+// attract: Меняем активный день по клику на нем
 const changeActiveTask = (task) => {
     taskData.forEach((t) => t.active = t.date === task.date)
     activeTask = taskData.find(t => t.active)
@@ -399,6 +401,20 @@ const changeActiveTask = (task) => {
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
 }
+
+// attract: Определяем тип таба (цвет) в зависимости от наличия СЗ
+const getTabType = (tab) => {
+
+    // если вкладка активна
+    if (tab.shown) return 'primary'
+    if (tab.hasOwnProperty('machine')) {
+
+        // если неактивна, но есть СЗ
+        if (activeTask.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
+    }
+    return tab.typePassive
+}
+
 
 // const taskRecordEditMode = ref(false)
 

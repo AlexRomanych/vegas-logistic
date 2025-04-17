@@ -24,8 +24,6 @@ return new class extends Migration
                 ->unique()
                 ->comment('Дата сменного задания, которая объединяет все: СЗ на СМ + плановые СЗ + рулоны');
 
-
-
             // Зададим статус для всех СЗ в этом дне (американец, немец, китаец, кореец) -
             // своеобразный флаг действий, которые можно выполнять с заданием:
             //      0 - Сменное задание еще не создано (или сохранено)
@@ -39,6 +37,11 @@ return new class extends Migration
                 ->default(0)
                 ->comment('Статус задания');
 
+            // warning: 'tasks_start_date' - множественное число
+            $table->timestamp('tasks_start_date')
+                ->nullable()
+                ->comment('Дата начала всех сменных заданий в этом дне');
+
             // warning: 'tasks_finish_date' - множественное число
             $table->timestamp('tasks_finish_date')
                 ->nullable()
@@ -51,6 +54,7 @@ return new class extends Migration
                 ->constrained()
                 ->nullOnDelete();
 
+            // attract: Привязка к пользователю, создавшему запись
             $table->ForeignIdFor(User::class)
                 ->nullable(false)
                 ->default(1)

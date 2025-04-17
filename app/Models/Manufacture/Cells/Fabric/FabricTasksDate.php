@@ -2,9 +2,12 @@
 
 namespace App\Models\Manufacture\Cells\Fabric;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FabricTasksDate extends Model
 {
@@ -20,4 +23,11 @@ class FabricTasksDate extends Model
     {
         return $this->hasMany(FabricTask::class);
     }
+
+    // Relations Связь со текущий пользователь
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

@@ -8,25 +8,60 @@ const _CELL_PREFIX = '/cell/'
 const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
-const fabrics = [{
-    // Основная менюха
-    path: _MAIN_PREFIX + 'fabrics',
-    name: 'manufacture.cell.fabrics',
-    component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMain.vue'),
-    meta: {
-        title: 'Стежка'
-    }
-},
+const fabrics = [
+    {
+        // descr: Основная менюха
+        path: _MAIN_PREFIX + 'fabrics',
+        name: 'manufacture.cell.fabrics',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMain.vue'),
+        meta: {
+            title: 'Стежка'
+        }
+    },
 
     {
-        // descr Инструмент управления ПС
-        path: _MAIN_PREFIX + 'fabrics/manage',
-        name: 'manufacture.cell.fabrics.manage',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsManage.vue'),
+        // descr: Движение СЗ ПС
+        path: _MAIN_PREFIX + 'fabrics/tasks/movement',
+        name: 'manufacture.cell.fabric.tasks.movement',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksMovement.vue'),
+        meta: {
+            title: 'Управление СЗ участка стежки'
+        }
+    },
+
+    {
+        // descr Управление СЗ ПС (создание, редактирование, удаление)
+        path: _MAIN_PREFIX + 'fabrics/tasks/manage',
+        name: 'manufacture.cell.fabric.tasks.manage',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksManage.vue'),
+        meta: {
+            title: 'Управление СЗ участка стежки'
+        }
+    },
+
+    {
+        // descr Инструмент управления ПС - календарь
+        path: _MAIN_PREFIX + 'fabric/tasks/calendar',
+        name: 'manufacture.cell.fabric.tasks.calendar',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksCalendar.vue'),
         meta: {
             title: 'Управление ПС'
         }
     },
+
+    {
+        // descr: Выполнение СЗ ПС
+        path: _MAIN_PREFIX + 'fabric/tasks/execute',
+        name: 'manufacture.cell.fabric.tasks.execute',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksExecute.vue'),
+        meta: {
+            title: 'Выполнение СЗ участка стежки',
+            // mode: FABRIC_PAGE_MODE.EXECUTE,
+        }
+    },
+
+
+
 
     {
         // descr Список ПС
@@ -37,6 +72,8 @@ const fabrics = [{
             title: 'Список ПС'
         }
     },
+
+
 
     {
         // descr Загрузка с диска списка ПС
@@ -58,15 +95,15 @@ const fabrics = [{
         }
     },
 
-    {
-        // descr Буфер
-        path: _MAIN_PREFIX + 'fabrics/buffer',
-        name: 'manufacture.cell.fabrics.buffer',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsBuffer.vue'),
-        meta: {
-            title: 'Буфер'
-        }
-    },
+    // {
+    //     // descr Буфер
+    //     path: _MAIN_PREFIX + 'fabrics/buffer',
+    //     name: 'manufacture.cell.fabrics.buffer',
+    //     component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsBuffer.vue'),
+    //     meta: {
+    //         title: 'Буфер'
+    //     }
+    // },
 
     {
         // descr Добавление ПС
@@ -120,21 +157,13 @@ const fabrics = [{
         }
     },
 
-    {
-        // descr Управление СЗ ПС (создание, редактирование, удаление)
-        path: _MAIN_PREFIX + 'fabrics/task/manage',
-        name: 'manufacture.cell.fabrics.task.manage',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskManage.vue'),
-        meta: {
-            title: 'Управление СЗ участка стежки'
-        }
-    },
+
 
     {
         // descr Добавление нового СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/create',
         name: 'manufacture.cell.fabrics.task.create',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue'),
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksManage.vue'),
         meta: {
             title: 'Создание нового СЗ участка стежки',
             mode: FABRIC_PAGE_MODE.CREATE,
@@ -145,24 +174,25 @@ const fabrics = [{
         // descr Редактирование СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/edit/:id',
         name: 'manufacture.cell.fabrics.task.edit',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue'),
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksManage.vue'),
         meta: {
             title: 'Редактирование СЗ участка стежки',
             mode: FABRIC_PAGE_MODE.EDIT,
         }
     },
 
+
+
     {
-        // descr Выполнение СЗ ПС
-        path: _MAIN_PREFIX + 'fabrics/task/execute',
-        name: 'manufacture.cell.fabrics.task.execute',
-        // component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskExecute.vue'),
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTaskDetails.vue'),
+        // descr: Список рисунков ПС
+        path: _MAIN_PREFIX + 'fabric/pictures/show',
+        name: 'manufacture.cell.fabric.pictures.show',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricPicturesShow.vue'),
         meta: {
-            title: 'Выполнение СЗ участка стежки',
-            mode: FABRIC_PAGE_MODE.EXECUTE,
+            title: 'Список рисунков ПС'
         }
     },
+
 ]
 
 export default fabrics

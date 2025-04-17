@@ -39,7 +39,7 @@
 
         <AppLabelMultiLine
             :text="['Общие трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount, 'hour')]"
-            :type="totalProductivityAmount <= 10.5 ? 'success' : 'danger'"
+            :type="totalProductivityAmount <= FABRIC_WORKING_SHIFT_LENGTH ? 'success' : 'danger'"
             align="center"
             height="h-[31px]"
             width="w-[200px]"
@@ -67,7 +67,12 @@ import {reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {
+    FABRIC_MACHINES,
+    FABRIC_TASK_STATUS,
+    FABRIC_WORKING_SHIFT_LENGTH
+} from '/resources/js/src/app/constants/fabrics.js'
+
 import {getFunctionalByFabricTaskStatus,} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'

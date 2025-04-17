@@ -97,7 +97,7 @@ const props = defineProps({
     task: {
         type: Object,
         required: false,
-        default: {}
+        default: () => ({})
     },
     machine: {
         type: Object,
@@ -112,7 +112,7 @@ const props = defineProps({
     }
 })
 
-console.log('machine', props.task)
+// console.log('machine', props.task)
 
 const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord'])
 

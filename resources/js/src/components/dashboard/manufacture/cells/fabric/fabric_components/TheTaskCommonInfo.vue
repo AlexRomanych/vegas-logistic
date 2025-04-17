@@ -4,6 +4,7 @@
         <!-- attract: Кем и когда создано задание -->
         <div class="mb-2">
 
+            <!--  attract: descr: Группа: Сменное задание-->
             <div>
                 <AppLabel
                     text="Сменное задание:"
@@ -11,6 +12,7 @@
                 />
             </div>
 
+            <!-- attract: Статус -->
             <div class="flex items-start ml-3">
                 <AppLabel
                     text="Статус:"
@@ -18,26 +20,29 @@
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="Выполняется"
+                    :text="getTitleByFabricTaskStatusCode(task.common.status)"
+                    :type="getStyleTypeByFabricTaskStatusCode(task.common.status)"
                     text-size="mini"
                     type="warning"
                     width="w-[200px]"
                 />
             </div>
 
+            <!-- attract: Ответственный -->
             <div class="flex items-start ml-3">
                 <AppLabel
-                    text="Специалист ОПП:"
+                    text="Специалист:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="Рабчук А.А."
+                    :text="task.common.created_by"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
+            <!-- attract: Дата создания -->
             <div class="flex items-start ml-3">
                 <AppLabel
                     text="Дата создания:"
@@ -45,12 +50,13 @@
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="29 сентября 2025 года"
+                    :text="formatDateInFullFormat(task.common.created_at)"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
+            <!-- attract: Время создания -->
             <div class="flex items-start ml-3">
                 <AppLabel
                     text="Время создания:"
@@ -58,13 +64,15 @@
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="15:24:54"
+                    :text="formatTimeInFullFormat(task.common.created_at)"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
         </div>
+
+        <TheDividerLine/>
 
         <!-- attract: Бригада -->
         <div class="mb-4">
@@ -76,7 +84,7 @@
                     width="w-[100px]"
                 />
                 <AppLabel
-                    text="№ 2"
+                    :text="'№ ' + task.common.team.toString()"
                     type="success"
                     width="w-[50px]"
                 />
@@ -101,6 +109,8 @@
             </div>
 
         </div>
+
+        <TheDividerLine/>
 
         <!-- attract: Трудозатраты -->
         <div class="mb-2">
@@ -146,7 +156,33 @@
 
 <script setup>
 
+import {
+    getTitleByFabricTaskStatusCode,
+    getStyleTypeByFabricTaskStatusCode,
+
+} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+
+import {
+    formatTimeWithLeadingZeros,
+    formatDateInFullFormat,
+    formatTimeInFullFormat
+} from '/resources/js/src/app/helpers/helpers_date.js'
+
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import TheDividerLine
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
+
+const props = defineProps({
+    task: {
+        type: Object,
+        required: false,
+        default: () => ({})
+    },
+})
+
+console.log(props.task)
+
+
 </script>
 
 <style scoped>

@@ -342,16 +342,15 @@ const getSelectData = () => {
     // attract: Фильтруем ПС в зависимости от выбранного режима ПС
     const filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID, fabricsStore.globalFabricsMode)
 
-    console.log('filteredFabrics: ', filteredFabrics)
+    // console.log('filteredFabrics: ', filteredFabrics)
 
 
-    // attract: Делаем 2 разных selectData для рулонов с нулевым id (убираем существующие в СЗ ПС) и для остальных
-    let data
+    // attract: Делаем разные selectData для рулонов (убираем существующие в СЗ ПС) и для остальных
 
-    console.log('rollsIndexes: ', rollsIndexes)
-    console.log('workRoll.fabric_id: ', workRoll.fabric_id)
+    // console.log('rollsIndexes: ', rollsIndexes)
+    // console.log('workRoll.fabric_id: ', workRoll.fabric_id)
 
-    data = filteredFabrics.map(fabric => {
+    let data = filteredFabrics.map(fabric => {
 
         if (!rollsIndexes.includes(fabric.id) || fabric.id === workRoll.fabric_id) {
         // if (!rollsIndexes.includes(fabric.id) && rollsIndexes.includes(workRoll.fabric_id)) {
@@ -369,7 +368,7 @@ const getSelectData = () => {
 
     data = data.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
 
-    console.log('data__: ', data)
+    // console.log('data__: ', data)
 
 
     // if (workRoll.fabric_id !== 0) {

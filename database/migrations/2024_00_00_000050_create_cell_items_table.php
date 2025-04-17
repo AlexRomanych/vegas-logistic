@@ -12,9 +12,11 @@ return new class extends Migration {
     /**
      * Run the migrations.
      */
+    const TABLE_NAME = 'cell_items';
+
     public function up(): void
     {
-        Schema::create('cell_items', function (Blueprint $table) {
+        Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id()->from(1);
             $table->string('code1C')->comment('Код 1С');
             $table->string('name')->nullable(false)->unique()->comment('Название ПЯ');
@@ -54,7 +56,7 @@ return new class extends Migration {
 //            ['code1C' => 'ПЯ016', 'no' => 16, 'name' => 'НПБ(производство)', 'unit' => Unit::PRODUCTIVITY_SQUARE_METERS_PER_HOUR, 'source' => ''],
 //        ]);
 
-        DB::table('cell_items')->insert([
+        DB::table(self::TABLE_NAME)->insert([
             ['code1C' => 'ПЯ001', 'no' => 1, 'name' => 'Стежка Китаец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 1, 'cell_norm_id' => 1, 'url' => 'stitch/china'],
             ['code1C' => 'ПЯ002', 'no' => 2, 'name' => 'Стежка Немец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 1, 'cell_norm_id' => 2, 'url' => 'stitch/german'],
             ['code1C' => 'ПЯ003', 'no' => 3, 'name' => 'Стежка Американец', 'unit' => Unit::PRODUCTIVITY_METERS_LINEAR_PER_HOUR, 'source' => '', 'cells_group_id' => 1, 'cell_norm_id' => 3, 'url' => 'stitch/american'],
@@ -82,6 +84,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('cell_items');
+        Schema::dropIfExists(self::TABLE_NAME);
     }
 };

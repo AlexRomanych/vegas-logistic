@@ -45,14 +45,16 @@ const uploadFabrics = {
 
 
 let menuItems = [
-    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
-    {name: 'Управление ПС', path: 'manufacture.cell.fabrics.manage'},
+    {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement'},
+    {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage'},
+    {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar'},
+    {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute'},
     {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense'},
-    {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement'},
-    {name: 'Управление СЗ', path: 'manufacture.cell.fabrics.task.manage'},
-    {name: 'Выполнение СЗ', path: 'manufacture.cell.fabrics.task.execute'},
-    {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
     {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
+    // {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
+    {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement'},
+    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
+    {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show'},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},
     {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload'},
 ]

@@ -193,6 +193,39 @@ export function formatDate(inDate = new Date()) {
 // const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в формат "17 апреля 2025 года"
+export function formatDateInFullFormat(dateTimeString) {
+    const date = new Date(dateTimeString);
+    const day = date.getDate();
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+
+    const months = [
+        "января", "февраля", "марта", "апреля", "мая", "июня",
+        "июля", "августа", "сентября", "октября", "ноября", "декабря"
+    ];
+
+    return `${day} ${months[monthIndex]} ${year} года`;
+}
+
+export function formatTimeInFullFormat(dateTimeString) {
+
+    const dateObject = new Date(dateTimeString);
+
+    const hours = dateObject.getHours();        // Получить часы (0-23)
+    const minutes = dateObject.getMinutes();    // Получить минуты (0-59)
+    const seconds = dateObject.getSeconds();    // Получить секунды (0-59)
+
+    // console.log(`Часы: ${hours}, Минуты: ${minutes}, Секунды: ${seconds}`); // Часы: 20, Минуты: 58, Секунды: 57
+    return `${hours}ч. ${minutes}м. ${seconds}с.` // Часы: 20, Минуты: 58, Секунды: 57
+
+// Для получения времени в формате HH:MM:SS:
+    const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    console.log(timeString); // Выведет: 20:58:57
+
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает день недели в строковом представлении
 //  short - 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'
 export function getDayOfWeek(inDate = new Date(), short = true) {

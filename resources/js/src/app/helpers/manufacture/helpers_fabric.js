@@ -294,3 +294,6 @@ export function getFunctionalByFabricTaskStatus(fabricTask) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // // attract: Получаем статус функций и отображения компонентов в зависимости от статуса СЗ
 // export function getFabricById(fabrics = [], id = -1) {}
+
+
+

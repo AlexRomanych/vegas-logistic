@@ -31,6 +31,7 @@
                 </div>
 
                 <div class="flex">
+
                     <!-- attract: Средняя длина рулона ткани, м.п. -->
                     <AppInputNumberSimple
                         id="average_textile_length"
@@ -42,6 +43,19 @@
                         width="w-[230px]"
                     />
 
+
+                    <!-- attract: Получать среднюю длину ткани из статистики -->
+                    <AppCheckboxLine
+                        id="get_average_textile_length"
+                        :disabled="true"
+                        :width="'w-[300px]'"
+                        label="Получать среднюю длину ткани из статистики"
+                    />
+
+                </div>
+
+
+                <div class="flex">
 
                     <!-- attract: Буфер, м.п. -->
                     <AppInputNumberSimple
@@ -117,6 +131,10 @@
                         width="w-[230px]"
                     />
 
+                </div>
+
+                <div class="flex">
+
                     <!-- attract: Производительность, м.п./ч. -->
                     <AppInputNumberSimple
                         id="productivity"
@@ -127,6 +145,16 @@
                         step="0.001"
                         width="w-[230px]"
                     />
+
+                    <!-- attract: Получать среднюю производительность из статистики -->
+                    <AppCheckboxLine
+                        id="get_average_textile_productivity"
+                        :disabled="true"
+                        :width="'w-[300px]'"
+                        label="Получать ср. производительность из статистики"
+                    />
+
+
                 </div>
 
                 <div class="flex">
@@ -140,7 +168,7 @@
                                 inputType="radio"
                                 legend="Статус"
                                 type="secondary"
-                                width="w-[355px]"
+                                width="w-[230px]"
 
                                 @checked="checkedHandlerStatus"
                             />
@@ -157,7 +185,7 @@
                                 inputType="radio"
                                 legend="Периодичность"
                                 type="secondary"
-                                width="w-[355px]"
+                                width="w-[230px]"
                                 @checked="checkedHandlerRarity"
                             />
                         </div>
@@ -175,18 +203,18 @@
                     height="min-h-[60px]"
                     label="Описание полотна стеганного"
                     placeholder="Заполните описание ПС"
-                    width="w-[705px]"
+                    width="w-[465px]"
                 />
 
-<!--                <div class="mt-8">-->
-<!--                    <AppSelect-->
-<!--                        id="machine"-->
-<!--                        :multiple="false"-->
-<!--                        :selectData="selectData"-->
-<!--                        label="Выберите стегальную машину"-->
-<!--                        @change="changeHandler"-->
-<!--                    />-->
-<!--                </div>-->
+                <!--                <div class="mt-8">-->
+                <!--                    <AppSelect-->
+                <!--                        id="machine"-->
+                <!--                        :multiple="false"-->
+                <!--                        :selectData="selectData"-->
+                <!--                        label="Выберите стегальную машину"-->
+                <!--                        @change="changeHandler"-->
+                <!--                    />-->
+                <!--                </div>-->
 
 
                 <div class="flex mt-10">
@@ -233,6 +261,8 @@ import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vu
 import AppInputNumberSimple from '/resources/js/src/components/ui/inputs/AppInputNumberSimple.vue'
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
 import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
+import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
+import AppCheckboxLine from '/resources/js/src/components/ui/checkboxes/AppCheckboxLine.vue'
 import AppInputTextAreaSimple from '/resources/js/src/components/ui/inputs/AppInputTextAreaSimple.vue'
 // import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
 // import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'

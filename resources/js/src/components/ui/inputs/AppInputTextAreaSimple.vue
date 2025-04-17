@@ -7,7 +7,7 @@
             :id="id"
             v-model="areaText"
 
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass]"
 
             :disabled="disabled"
             :maxlength="maxlength"

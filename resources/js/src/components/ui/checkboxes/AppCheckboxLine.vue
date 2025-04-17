@@ -1,80 +1,35 @@
 <template>
 
-
-<!--    <div-->
-<!--        :class="[width, height, bgColor, textColor]"-->
-<!--        class=" flex flex-col ml-1 mr-1 mt-2 items-center justify-around rounded-lg border-2">-->
-<!--        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>-->
-<!--        <input-->
-<!--            :class="['app-input border-2 bg-slate-600', borderColor, focusBorderColor, textSizeClass ]"-->
-<!--            :id="id"-->
-<!--            :checked="checked"-->
-<!--            :disabled="disabled"-->
-<!--            :value="id"-->
-<!--            :name="name"-->
-<!--            type="checkbox"-->
-<!--            @change="checked"-->
-<!--        />-->
-
-<!--    </div>-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="flex items-center justify-around rounded-lg border-2"
-    :class="[width, height, bgColor, textColor]"
-    >
+    <div :class="width" class="flex flex-col ml-1 mr-1 mt-2">
+        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
         <input
             :id="id"
-            :checked="checked"
+            v-model="inputText"
+
+            :class="['app-input w-[25px]', height, borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
             :disabled="disabled"
-            :value="id"
-            :name="name"
+            :placeholder="placeholder"
             type="checkbox"
-            @change="checked"
-        />
+            @input="getInputText"
+
+        >
 
     </div>
 
 </template>
 
+
 <script setup>
-import {computed, ref,} from 'vue'
+
+import {computed, ref} from 'vue'
+
+import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {getColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
 import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
 
 const props = defineProps({
     id: {
-        type: String,
-        required: false,
-        default: Date.now().toString()
-    },
-    name: {
-        type: String,
-        required: false,
-        default: 'checkbox'
-    },
-    width: {
-        type: String,
-        required: false,
-        default: 'w-[300px]'
-    },
-    height: {
-        type: String,
-        required: false,
-        default: 'h-[30px]'
+        required: true,
     },
     type: {
         type: String,
@@ -82,20 +37,48 @@ const props = defineProps({
         default: 'dark',
         validator: (type) => colorsList.includes(type)
     },
-    checked: {
-        type: Boolean,
+    func: {
+        type: String,
         required: false,
-        default: false
+        default: 'text',
+        validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func)
     },
-    disabled: {
-        type: Boolean,
+    value: {
+        type: String,
         required: false,
-        default: false
+        default: '',
+    },
+    placeholder: {
+        type: String,
+        required: false,
+        default: 'Enter...',
     },
     label: {
         type: String,
         required: false,
-        default: ''
+        default: '',
+    },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
+    width: {
+        type: String,
+        required: false,
+        default: 'w-[500px]',
+
+    },
+    height: {
+        type: String,
+        required: false,
+        default: 'h-[30px]',
+
+    },
+    errors: {
+        type: Array,
+        required: false,
+        default: null,
     },
     textSize: {
         type: String,
@@ -114,7 +97,6 @@ const props = defineProps({
 
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
-const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))                   // Получаем класс для цвета заднего фона
 
 const placeholderColor = 'placeholder' + currentColor
 const borderColor = 'border' + currentColor
@@ -126,6 +108,24 @@ let textColor = 'text' + currentColor
 
 const textSizeClass = ref(getFontSizeClass(props.textSize))
 const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
+
+const inputText = defineModel({
+    type: String,
+    default: '',
+})
+
+// Задаем начальное значение
+inputText.value = props.value
+
+const emit = defineEmits(['getInputText'])
+
+const getInputText = (e) => emit('getInputText', e.target.value)
+// const onInput = function(e) {
+//     console.log(e.target.value)
+// }
+// const onInput = function(inputText) {
+//     console.log(inputText.target.value)
+// }
 
 
 </script>
@@ -142,6 +142,5 @@ const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 .input-label {
     @apply font-semibold ml-2 mb-0.5 mt-2
 }
-
 
 </style>

@@ -14,6 +14,7 @@ use App\Services\Manufacture\FabricService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class CellFabricTasksDateController extends Controller
@@ -41,9 +42,9 @@ class CellFabricTasksDateController extends Controller
 
             $tasksQuery = FabricTasksDate::query()
                 ->whereBetween('tasks_date', [$validData['start'], $validData['end']])
-                // relations добавляем основные + вложенные
+                // relations добавляем основные + вложенные + user
 //                ->with(['fabricTasks.fabricTaskContexts', 'fabricTasks.fabricTaskRolls'])
-                ->with(['fabricTasks.fabricTaskContexts.fabricTaskRolls'])
+                ->with(['fabricTasks.fabricTaskContexts.fabricTaskRolls', 'user'])
                 ->get();
 
             return new FabricTasksDateCollection($tasksQuery);
@@ -271,27 +272,34 @@ class CellFabricTasksDateController extends Controller
     /**
      * Возвращаем результат создания или обновления дня заданий
      * @param $tasksDayData
-     * @return Model|null
+     * @return string
      */
     private function createOrUpdateTasksDate($tasksDayData)
     {
         if (is_null($tasksDayData)) return null;
 
-        // Возвращаем результат создания или обновления дня заданий
-        return FabricTasksDate::query()->updateOrCreate(
-            [
-                'tasks_date' => $tasksDayData['date'],
-            ],
-            [
-                'tasks_date' => $tasksDayData['date'],
-                'tasks_status' => $tasksDayData['common']['status'],
-                'description' => $tasksDayData['common']['description'],
+        try {
 
-                // todo: сделать проверку на существование бригады и вообще тут продумать сущность
-                'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($tasksDayData['date']),
-                'active' => $tasksDayData['active'],
-            ]
-        );
+            // Возвращаем результат создания или обновления дня заданий
+            return FabricTasksDate::query()->updateOrCreate(
+                [
+                    'tasks_date' => $tasksDayData['date'],
+                ],
+                [
+                    'tasks_date' => $tasksDayData['date'],
+                    'tasks_status' => $tasksDayData['common']['status'],
+                    'user_id' => Auth::id(),                                // Текущий пользователь
+                    'description' => $tasksDayData['common']['description'],
+
+                    // todo: сделать проверку на существование бригады и вообще тут продумать сущность
+                    'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($tasksDayData['date']),
+                    'active' => $tasksDayData['active'],
+                ]
+            );
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
 
     }
 
