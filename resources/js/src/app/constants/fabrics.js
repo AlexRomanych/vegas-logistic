@@ -186,17 +186,16 @@ export const NEW_ROLL = {
     id: 0,
     average_textile_length: FABRICS_NULLABLE.buffer.average_length,
     productivity: FABRICS_NULLABLE.buffer.productivity,
+    rolls_amount: 0,
+    length_amount: 0,
     fabric_id: FABRICS_NULLABLE.id,
     fabric: FABRICS_NULLABLE.display_name,
+    fabric_rate: 0,
     fabric_mode: false,
-    rolls_amount: 0,
-    // average_textile_length: 0,
-
-    // length_amount: 0,
     descr: '',
     correct: false,
-    // num: 0,
 }
+
 
 // descr Создаем болванку ПС
 export const NEW_FABRIC = {

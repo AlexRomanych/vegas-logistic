@@ -230,8 +230,8 @@ let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 // console.log('tasks:', tasks)
 // debugger
 
-// attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
-tasks = fillFabricsDisplayNames(fabrics, tasks)
+// // attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
+// tasks = fillFabricsDisplayNames(fabrics, tasks)
 
 console.log('tasks:', tasks)
 
@@ -500,6 +500,7 @@ const optimizeLabor = (machine, task) => {
 
 }
 
+// attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])
 
 watch(() => taskData, async (newValue) => {

@@ -56,7 +56,10 @@ class FabricTasksDateResource extends JsonResource
                     'rolls_amount' => $rollContext->rolls_amount,
                     'length_amount' => $rollContext->rolls_amount * $rollContext->average_textile_length,
                     'fabric_id' => $rollContext->fabric_id,
-                    'fabric' => '', // Здесь будет название ткани, получим на бэке название ткани
+                    'fabric' =>  $rollContext->fabric->display_name, // Здесь будет название ткани, получим на бэке название ткани
+                    'fabric_rate' =>  (float)$rollContext->fabric->translate_rate, // Здесь будет название ткани, получим на бэке название ткани
+//                    'fabric__' =>  $rollContext->fabric, // Здесь будет название ткани, получим на бэке название ткани
+//                    'fabric' => '', // Здесь будет название ткани, получим на бэке название ткани
                     'fabric_mode' => $rollContext->fabric_mode,
                     'descr' => $rollContext->description,
                     'correct' => true,

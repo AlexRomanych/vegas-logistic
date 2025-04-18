@@ -110,39 +110,92 @@
 
         </div>
 
+        <!-- attract: Разделительная линия -->
         <TheDividerLine/>
 
         <!-- attract: Трудозатраты -->
-        <div class="mb-2">
+        <!-- attract: Показываем, если есть -->
+        <div v-if="getTotalProductivity()" class="mb-2">
             <div>
                 <AppLabel
                     text="Трудозатраты:"
                     type="success"
                 />
-
             </div>
 
-            <div class="flex items-start ml-3">
+            <!-- attract: Трудозатраты на американце -->
+            <div v-if="getProductivityAmerican()" class="flex items-start ml-3">
                 <AppLabel
                     text="Американец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="03ч. 39м. 59с."
+                    :text="formatTimeWithLeadingZeros(getProductivityAmerican(), 'hour')"
+                    :type="getStyleTypeByProductivity(getProductivityAmerican())"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
-            <div class="flex items-start ml-3">
+            <!-- attract: Трудозатраты на немце -->
+            <div v-if="getProductivityGerman()" class="flex items-start ml-3">
                 <AppLabel
                     text="Немец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    text="03ч. 39м. 59с."
+                    :text="formatTimeWithLeadingZeros(getProductivityGerman(), 'hour')"
+                    :type="getStyleTypeByProductivity(getProductivityGerman())"
+                    text-size="mini"
+                    width="w-[200px]"
+                />
+            </div>
+
+            <!-- attract: Трудозатраты на китайце -->
+            <div v-if="getProductivityChina()" class="flex items-start ml-3">
+                <AppLabel
+                    text="Китаец:"
+                    text-size="mini"
+                    width="w-[150px]"
+                />
+                <AppLabel
+                    :text="formatTimeWithLeadingZeros(getProductivityChina(), 'hour')"
+                    :type="getStyleTypeByProductivity(getProductivityChina())"
+                    text-size="mini"
+                    width="w-[200px]"
+                />
+            </div>
+
+            <!-- attract: Трудозатраты на корейце -->
+            <div v-if="getProductivityKorean()" class="flex items-start ml-3">
+                <AppLabel
+                    text="Кореец:"
+                    text-size="mini"
+                    width="w-[150px]"
+                />
+                <AppLabel
+                    :text="formatTimeWithLeadingZeros(getProductivityKorean(), 'hour')"
+                    :type="getStyleTypeByProductivity(getProductivityKorean())"
+                    text-size="mini"
+                    width="w-[200px]"
+                />
+            </div>
+
+            <!-- attract: Разделительная линия -->
+            <TheDividerLine/>
+
+            <!-- attract: Общие трудозатраты  -->
+            <div class="flex items-start ml-3">
+                <AppLabel
+                    text="Всего:"
+                    text-size="normal"
+                    width="w-[150px]"
+                />
+                <AppLabel
+                    :text="formatTimeWithLeadingZeros(getTotalProductivity(), 'hour')"
+                    type="primary"
                     text-size="mini"
                     width="w-[200px]"
                 />
@@ -156,10 +209,11 @@
 
 <script setup>
 
+import {FABRIC_WORKING_SHIFT_LENGTH} from '/resources/js/src/app/constants/fabrics.js'
+
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
-
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -180,8 +234,37 @@ const props = defineProps({
     },
 })
 
-console.log(props.task)
+// console.log('task', props.task)
 
+// attract: Трудозатраты на американце
+const getProductivityAmerican = () => props.task.machines.american.rolls.reduce((acc, roll) => {
+    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
+    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
+}, 0)
+
+// attract: Трудозатраты на немце
+const getProductivityGerman = () => props.task.machines.german.rolls.reduce((acc, roll) => {
+    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
+    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
+}, 0)
+
+// attract: Трудозатраты на китайце
+const getProductivityChina = () => props.task.machines.china.rolls.reduce((acc, roll) => {
+    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
+    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
+}, 0)
+
+// attract: Трудозатраты на корейце
+const getProductivityKorean = () => props.task.machines.korean.rolls.reduce((acc, roll) => {
+    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
+    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
+}, 0)
+
+// attract: Общие трудозатраты: Американец + Немец + Китаец + Кореец
+const getTotalProductivity = () => getProductivityAmerican() + getProductivityGerman() + getProductivityChina() + getProductivityKorean()
+
+// attract: Получаем тип стиля по трудозатратам
+const getStyleTypeByProductivity = (productivity) => productivity <= FABRIC_WORKING_SHIFT_LENGTH ? 'success' : 'danger'
 
 </script>
 

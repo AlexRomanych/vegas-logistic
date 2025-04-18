@@ -44,7 +44,11 @@ class CellFabricTasksDateController extends Controller
                 ->whereBetween('tasks_date', [$validData['start'], $validData['end']])
                 // relations добавляем основные + вложенные + user
 //                ->with(['fabricTasks.fabricTaskContexts', 'fabricTasks.fabricTaskRolls'])
-                ->with(['fabricTasks.fabricTaskContexts.fabricTaskRolls', 'user'])
+                ->with([
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls',
+                    'fabricTasks.fabricTaskContexts.fabric',
+                    'user'
+                ])
                 ->get();
 
             return new FabricTasksDateCollection($tasksQuery);
