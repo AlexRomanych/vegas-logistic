@@ -49,7 +49,7 @@
         <!-- attract: Средние трудозатраты на рулон -->
         <AppLabelMultiLine
             v-if="rollsRender.productivity.show"
-            :text="['Трудозатраты', '']"
+            :text="['Плановые', 'трудозатраты']"
             :title="rollsRender.productivity.title"
             :type="getHeaderType()"
             :width="rollsRender.productivity.width"
@@ -273,6 +273,11 @@ const props = defineProps({
         type: Array,
         required: false,
         default: []
+    },
+    execute: {                      // Режим отображения (в режиме демонстрации или в режиме выполнения)
+        type: Boolean,
+        required: false,
+        default: false
     }
 })
 
@@ -318,7 +323,12 @@ const rollsRender = {
         title: 'Средние трудозатраты, ч.',
         data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.textile_length / roll_exec.productivity, 'hour')
     },
-    description: {width: 'w-[120px]', show: true, title: 'Комментарий', data: (roll_exec) => roll_exec.descr},
+    description: {
+        width: props.execute ? 'w-[200px]' : 'w-[100px]',
+        show: true,
+        title: 'Комментарий',
+        data: (roll_exec) => roll_exec.descr
+    },
     status: {
         width: 'w-[70px]',
         show: true,
@@ -327,18 +337,18 @@ const rollsRender = {
     },
     startAt: {
         width: 'w-[110px]',
-        show: true,
+        show: props.execute,
         title: 'Начало стегания рулона',
         data: (roll_exec) => '16.04.2023 10:59'
     },
     finishAt: {
         width: 'w-[110px]',
-        show: true,
+        show: props.execute,
         title: 'Окончание стегания рулона',
         data: (roll_exec) => '16.04.2023 12:38'
     },
-    rollTime: {width: 'w-[90px]', show: true, title: 'Время стегания', data: (roll_exec) => '01ч. 59м. 59с.'},
-    finishBy: {width: 'w-[110px]', show: true, title: 'Ответственный', data: (roll_exec) => 'Сидорук И.И.'},
+    rollTime: {width: 'w-[90px]', show: props.execute, title: 'Время стегания', data: (roll_exec) => '01ч. 59м. 59с.'},
+    finishBy: {width: 'w-[110px]', show: props.execute, title: 'Ответственный', data: (roll_exec) => 'Сидорук И.И.'},
 }
 
 </script>

@@ -34,17 +34,21 @@
             <!--attract: Разделительная линия -->
             <TheDividerLine/>
 
+            <!--attract: Общий комментарий к сменному заданию -->
             <AppInputTextArea
                 id="comment"
                 v-model="taskDescription"
+                :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
                 :rows=2
                 :value="taskDescription"
                 class="cursor-pointer"
                 height="min-h-[60px]"
-                label="Общий комментарий к сменному заданию:"
+                label="Общий комментарий к СЗ на данной машине:"
+                placeholder="Введите комментарий"
                 text-size="normal"
                 width="w-[955px]"
             />
+
 
             <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
@@ -92,6 +96,7 @@ import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
 import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
+import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
 const props = defineProps({
     task: {
@@ -146,10 +151,10 @@ const fillGlobalProductivity = () => {
         // console.log(fabric)
     })
 }
-
 fillGlobalProductivity()
 
-const taskDescription = ref()
+// attract: Общий комментарий к сменному заданию
+const taskDescription = ref(props.task.machines[props.machine.TITLE].description)
 
 // Attract: Добавляем новый рулон
 const addRoll = () => {
@@ -164,8 +169,14 @@ const optimizeLabor = () => {
 
 // attract: Сохраняем запись
 const saveTaskRecord = (saveData) => {
-    // console.log('machine')
-    emits('saveTaskRecord', {...saveData, machine: props.machine, task: props.task})
+    // console.log(saveData)
+    emits('saveTaskRecord',
+        {
+            ...saveData,
+            machine: props.machine,
+            task: props.task,
+            taskDescription: taskDescription.value
+        })
 }
 
 // attract: Удаляем запись

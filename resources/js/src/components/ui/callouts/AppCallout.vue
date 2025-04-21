@@ -1,7 +1,7 @@
 <template>
     <Teleport to="body">
         <Transition name="fade">
-            <div v-if="show"
+            <div v-if="shown"
                  :class="[width, height, position, bgColor, borderColor, textColor, 'callout-container']"
                  @click="toggleShow">
                 <span>{{ text }}</span>
@@ -13,7 +13,7 @@
 <script setup>
 import {colorsList} from "@/src/app/constants/colorsClasses.js"
 import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 
 const props = defineProps({
     width: {
@@ -49,16 +49,20 @@ const props = defineProps({
         default: 'bottom',
         validator: (pos_y) => ['top', 'bottom'].includes(pos_y)
     },
-
+    show: {
+        type: Boolean,
+        required: false,
+        default: false
+    }
 
 })
 
 const emits = defineEmits(['toggleShow'])
 
-const show = ref(true)
+const shown = ref(props.show)
 const toggleShow = () => {
-    show.value = !show.value
-    emits('toggleShow', show.value)
+    shown.value = !shown.value
+    emits('toggleShow', shown.value)
 }
 
 const getPositionClass = (pos_x, pos_y) => {
@@ -90,6 +94,8 @@ const position = getPositionClass(props.pos_x, props.pos_y)                     
 const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))         // Получаем класс для цвета заднего фона
 const borderColor = computed(() => getColorClassByType(props.type, 'border', 700))      // Получаем класс для цвета границы
 const textColor = computed(() => getTextColorClassByType(props.type))
+
+watch( () => props.show, (newValue) => shown.value = newValue)
 
 </script>
 

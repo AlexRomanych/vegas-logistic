@@ -31,29 +31,29 @@
                         width="w-[150px]"
                     />
 
-                    <!-- attract: Первый ряд сервисных кнопок -->
-                    <AppLabel
-                        v-if="serviceBtnShowCondition(task.common.status)"
-                        :text="serviceBtnTitle(task.common.status)"
-                        align="center"
-                        class="cursor-pointer"
-                        textSize="small"
-                        type="info"
-                        width="w-[150px]"
-                        @click="changeTaskStatus(task)"
-                    />
+<!--                    &lt;!&ndash; attract: Первый ряд сервисных кнопок &ndash;&gt;-->
+<!--                    <AppLabel-->
+<!--                        v-if="serviceBtnShowCondition(task.common.status)"-->
+<!--                        :text="serviceBtnTitle(task.common.status)"-->
+<!--                        align="center"-->
+<!--                        class="cursor-pointer"-->
+<!--                        textSize="small"-->
+<!--                        type="info"-->
+<!--                        width="w-[150px]"-->
+<!--                        @click="changeTaskStatus(task)"-->
+<!--                    />-->
 
-                    <!-- attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") -->
-                    <AppLabel
-                        v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"
-                        align="center"
-                        class="cursor-pointer"
-                        text="Удалить"
-                        textSize="small"
-                        type="danger"
-                        width="w-[150px]"
-                        @click="changeTaskStatus(task, 2)"
-                    />
+<!--                    &lt;!&ndash; attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") &ndash;&gt;-->
+<!--                    <AppLabel-->
+<!--                        v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"-->
+<!--                        align="center"-->
+<!--                        class="cursor-pointer"-->
+<!--                        text="Удалить"-->
+<!--                        textSize="small"-->
+<!--                        type="danger"-->
+<!--                        width="w-[150px]"-->
+<!--                        @click="changeTaskStatus(task, 2)"-->
+<!--                    />-->
 
                 </div>
 
@@ -87,7 +87,10 @@
 
                 <!--attract: Общее-->
                 <div v-if="tabs.common.shown">
-                    <TheTaskCommonInfo/>
+                    <TheTaskCommonInfo
+                        :task="activeTask"
+                        :key="rerender[0]"
+                    />
                 </div>
 
 
@@ -227,8 +230,8 @@ let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 // console.log('tasks:', tasks)
 // debugger
 
-// attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
-tasks = fillFabricsDisplayNames(fabrics, tasks)
+// // attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
+// tasks = fillFabricsDisplayNames(fabrics, tasks)
 
 console.log('tasks:', tasks)
 
@@ -334,6 +337,16 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
         const res = await fabricsStore.changeFabricTaskDateStatus(task)
         console.log(res)
+
+        const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
+        console.log('newTaskDay: ', newTaskDay)
+
+        task.machines = newTaskDay[0].machines
+        task.common = newTaskDay[0].common
+
+        // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+        await rerender.forEach((_, index, array) => array[index]++)
+
         return
     }
 
@@ -377,8 +390,8 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             // // task = newTaskDay
             //
 
-            console.log(activeTask === task)
-            console.log('task from server: ', task)
+            // console.log(activeTask === task)
+            // console.log('task from server: ', task)
 
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             rerender.forEach((_, index, array) => array[index]++)
@@ -487,6 +500,7 @@ const optimizeLabor = (machine, task) => {
 
 }
 
+// attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])
 
 watch(() => taskData, async (newValue) => {

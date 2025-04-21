@@ -64,7 +64,7 @@
         <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
 
-<!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
+            <!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
             <!-- attract Выводим табы -->
             <div class="flex flex-row justify-start items-center m-3">
                 <div v-for="tab in tabs" :key="tab.id">
@@ -88,8 +88,8 @@
                 <!--attract: Общее-->
                 <div v-if="tabs.common.shown">
                     <TheTaskCommonInfo
-                        :task="activeTask"
                         :key="rerender[0]"
+                        :task="activeTask"
                     />
                 </div>
 
@@ -163,6 +163,18 @@
         mode="confirm"
     />
 
+<!--    <AppModal-->
+<!--        :show="modalSimpleShow"-->
+<!--        :text="modalSimpleText"-->
+<!--        :type="modalSimpleType"-->
+<!--    />-->
+
+    <AppCallout
+        :show="modalSimpleShow"
+        :text="modalSimpleText"
+        :type="modalSimpleType"
+    />
+
 </template>
 
 <script setup>
@@ -201,11 +213,13 @@ import TheTaskMachine
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+
+// import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
 // import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
 // import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
 // import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
 // import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
-// import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
 // import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
 // import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
 
@@ -258,7 +272,13 @@ const modalType = ref('danger')
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
     common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
-    american: {id: 2, shown: false, name: ['Американец', 'LEGACY-4'], typePassive: 'dark', machine: FABRIC_MACHINES.AMERICAN},
+    american: {
+        id: 2,
+        shown: false,
+        name: ['Американец', 'LEGACY-4'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.AMERICAN
+    },
     german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC'], typePassive: 'dark', machine: FABRIC_MACHINES.GERMAN},
     china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW'], typePassive: 'dark', machine: FABRIC_MACHINES.CHINA},
     korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94'], typePassive: 'dark', machine: FABRIC_MACHINES.KOREAN},
@@ -308,7 +328,13 @@ const serviceBtnTitle = (status) => {
     return titles[status]
 }
 
-const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
+// attract: Простое модальное окно для вывода ошибок и предупреждений
+const modalSimpleType = ref('danger')
+const modalSimpleText = ref('')
+const modalSimpleShow = ref(false)
+const modalSimpleClose = (delay = 5000) => setTimeout(() => modalSimpleShow.value = false, delay) // закрываем модалку
+
+const appModalAsync = ref(null)         // Получаем ссылку на модальное окно с асинхронной функцией
 const modalText = ref([])
 
 
@@ -345,7 +371,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         task.common = newTaskDay[0].common
 
         // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
-        await rerender.forEach((_, index, array) => array[index]++)
+        rerender.forEach((_, index, array) => array[index]++)
 
         return
     }
@@ -367,8 +393,23 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         return
     }
 
-    // attract: Сменить статус с "Создано" на "На стежку". Обращаемся к API
+    // attract: Сменить статус с "Создано" на "Готов стежке". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
+
+        // attract: проверяем, что у нас есть хотя бы один рулон в СЗ
+        let taskContextRolls = 0
+        for (const machine of Object.keys(task.machines)) {
+            // console.log(machine)
+            taskContextRolls += task.machines[machine].rolls.length
+        }
+
+        if (!taskContextRolls) {
+            modalSimpleType.value = 'danger'
+            modalSimpleText.value = 'В СЗ нет рулонов. Добавьте хотя бы один, чтобы создать задание для стежки.'
+            modalSimpleShow.value = true
+            modalSimpleClose()
+            return
+        }
 
         modalText.value = ['Сменное задание будет закрыто для редактирования', 'и будут сформированы рулоны для производства.', 'Продолжить?']
         modalType.value = 'primary'
@@ -425,7 +466,7 @@ const getTabType = (tab) => {
         // если неактивна, но есть СЗ
         if (activeTask.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
     }
-        return tab.typePassive
+    return tab.typePassive
 }
 
 
@@ -456,13 +497,17 @@ const saveTasks = async (saveData) => {
     // console.groupEnd()
 
     const targetTask = taskData.find(t => t.date === saveData.task.date)
-    targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll
+    targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll       // рулоны
+    targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
+
 
     console.log('from saveTask: ', targetTask)
     console.log('from taskData: ', taskData)
 
     const result = await fabricsStore.createFabricTask(targetTask)
     console.log('SFC: ', result)
+
+    rerender[saveData.machine.ID]++
 }
 
 // attract: Поднятое событие при клике на кнопку "Удалить рулон"
