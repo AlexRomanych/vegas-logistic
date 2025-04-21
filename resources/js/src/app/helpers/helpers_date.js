@@ -205,7 +205,9 @@ export function formatDateInFullFormat(dateTimeString) {
         "июля", "августа", "сентября", "октября", "ноября", "декабря"
     ];
 
-    return `${day} ${months[monthIndex]} ${year} года`;
+    const pad = (num) => num.toString().padStart(2, '0')
+
+    return `${pad(day)} ${months[monthIndex]} ${year} года`;
 }
 
 export function formatTimeInFullFormat(dateTimeString) {
@@ -216,8 +218,10 @@ export function formatTimeInFullFormat(dateTimeString) {
     const minutes = dateObject.getMinutes();    // Получить минуты (0-59)
     const seconds = dateObject.getSeconds();    // Получить секунды (0-59)
 
+    const pad = (num) => num.toString().padStart(2, '0')
+
     // console.log(`Часы: ${hours}, Минуты: ${minutes}, Секунды: ${seconds}`); // Часы: 20, Минуты: 58, Секунды: 57
-    return `${hours}ч. ${minutes}м. ${seconds}с.` // Часы: 20, Минуты: 58, Секунды: 57
+    return `${pad(hours)}ч. ${pad(minutes)}м. ${pad(seconds)}с.` // Часы: 20, Минуты: 58, Секунды: 57
 
 // Для получения времени в формате HH:MM:SS:
     const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;

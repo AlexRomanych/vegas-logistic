@@ -5,6 +5,7 @@ namespace App\Http\Resources\Manufacture\Cells\Fabric;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class FabricTasksDateResource extends JsonResource
 {
@@ -96,9 +97,9 @@ class FabricTasksDateResource extends JsonResource
                 'active' => $this->active,
                 'team' => 1,
                 'status' => $this->tasks_status,
-                'start_at' => $this->start_tasks_date,
-                'finish_at' => $this->finish_tasks_date,
-                'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+                'start_at' => $this->tasks_start_date ? (new Carbon($this->tasks_start_date))->format('Y-m-d H:i:s') : null,
+                'finish_at' => $this->tasks_finish_date ? (new Carbon($this->tasks_finish_date))->format('Y-m-d H:i:s') : null,
+                'created_at' => $this->created_at->format('Y-m-d H:i:s'),       // Laravel автоматически преобразует строку в объект Carbon
                 'created_by' => $this->user->name,
                 'description' => $this->description,
             ],

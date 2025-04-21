@@ -228,6 +228,7 @@ Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'upload
 // attract: Блок Заказов Стежки на производство
 // descr Получаем список СЗ, период в query
 Route::get('/fabrics/tasks', [CellFabricTasksDateController::class, 'tasks'])->middleware('jwt.auth');
+Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask'])->middleware('jwt.auth');
 Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
 Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
 Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');

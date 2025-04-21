@@ -4,7 +4,7 @@
 
 
         <!-- attract: Выводим даты + статусы + сервисные кнопки   -->
-        <div class="flex h-[165px]">
+        <div class="flex h-[165px] m-3">
             <div v-for="task in taskData" :key="task.date">
 
                 <!-- attract: Рамка выбора даты -->
@@ -378,7 +378,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
     // attract: Вернуть статус с "Готов к стежке" на "Создано". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
-        task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
+        // task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
 
         modalText.value = ['Сменное задание будет доступно для редактирования', 'и будут удалены все связанные рулоны для производства.', 'Продолжить?']
         modalType.value = 'danger'

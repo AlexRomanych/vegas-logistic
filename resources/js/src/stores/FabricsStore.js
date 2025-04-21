@@ -28,6 +28,7 @@ const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL �
 const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
 
 const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL для получения списка СЗ для ПС
+const URL_FABRIC_TASKS_LAST_DONE = 'fabrics/tasks/last/done/'           // URL для получения последнего выполненного СЗ
 const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
@@ -206,6 +207,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    // attract: Получаем с API последнее закрытое (выполненное) СЗ
+    const getLastDoneFabricTask = async () => {
+        const result = await jwtGet(URL_FABRIC_TASKS_LAST_DONE)
+        console.log('store', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
     // attract: Создание СЗ
     const createFabricTask = async (task) => {
         const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
@@ -243,6 +251,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
     }
 
+
+
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -262,6 +273,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         getFabricsMachineById,
         uploadFabricsOrders,
         getTasksByPeriod,
+        getLastDoneFabricTask,
         createFabricTask,
         changeFabricTaskStatus,
         changeFabricTaskDateStatus,

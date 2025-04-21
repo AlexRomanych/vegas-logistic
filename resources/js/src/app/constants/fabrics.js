@@ -96,6 +96,20 @@ export const FABRIC_ROLL_STATUS_LIST = {
     [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
 }
 
+// descr Константы статусов выполнения СЗ
+export const FABRIC_TASKS_EXECUTE = Object.freeze({
+    START: {
+        WORD: 'start',
+        CODE: 1,
+        TITLE: 'Начать',
+    },
+    STOP: {
+        WORD: 'stop',
+        CODE: 2,
+        TITLE: 'Закончить',
+    }
+})
+
 
 // descr Константы режима работы компонента
 export const FABRIC_PAGE_MODE = Object.freeze({

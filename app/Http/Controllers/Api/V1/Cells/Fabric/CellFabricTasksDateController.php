@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateResource;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
@@ -20,8 +21,8 @@ use Illuminate\Support\Facades\Auth;
 class CellFabricTasksDateController extends Controller
 {
     /**
-     * Возвращает все заказы за период
-     * Если без параметров, то все заказы
+     * descr: Возвращает все заказы за период
+     * descr: Если без параметров, то все заказы
      * @param Request $request
      * @return FabricTaskCollection|FabricTasksDateCollection|string
      */
@@ -49,6 +50,7 @@ class CellFabricTasksDateController extends Controller
                     'fabricTasks.fabricTaskContexts.fabric',
                     'user'
                 ])
+                ->orderBy('tasks_date')
                 ->get();
 
             return new FabricTasksDateCollection($tasksQuery);
@@ -59,8 +61,36 @@ class CellFabricTasksDateController extends Controller
 
     }
 
+
     /**
-     * Создает или обновляет данные по сменным заданиям на конкретную дату
+     * descr: Возвращает последнее выполненное СЗ
+     * @return FabricTasksDateResource|string
+     */
+    public function getLastDoneTask()
+    {
+        try {
+
+            $tasksQuery = FabricTasksDate::query()
+                ->where('tasks_status', FABRIC_TASK_DONE_CODE)
+                // relations добавляем основные + вложенные + user
+                ->with([
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls',
+                    'fabricTasks.fabricTaskContexts.fabric',
+                    'user'
+                ])
+                ->orderBy('tasks_date', 'desc')
+                ->first();
+
+            return new FabricTasksDateResource($tasksQuery);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    /**
+     * descr: Создает или обновляет данные по сменным заданиям на конкретную дату
      * @param Request $request
      * @return string
      */
@@ -80,6 +110,9 @@ class CellFabricTasksDateController extends Controller
                 return EndPointStaticRequestAnswer::ok();
             }
 
+            // Создаем задание или обновляем основное задание на эту дату
+            $tasksDay = $this->createOrUpdateTasksDate($tasksDayData);
+
             // Перебираем все машины
             for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
 
@@ -88,9 +121,6 @@ class CellFabricTasksDateController extends Controller
 
                 // Проверка на наличие данных для данной машины
                 if (count($tasksDayData['machines'][$machineStr]['rolls']) === 0) continue;
-
-                // Создаем задание или обновляем основное задание на эту дату
-                $tasksDay = $this->createOrUpdateTasksDate($tasksDayData);
 
                 // Выносим для меньшей писанины в отдельную переменную
                 $taskData = $tasksDayData['machines'][$machineStr];
@@ -284,21 +314,33 @@ class CellFabricTasksDateController extends Controller
 
         try {
 
-            // Возвращаем результат создания или обновления дня заданий
-            return FabricTasksDate::query()->updateOrCreate(
-                [
-                    'tasks_date' => $tasksDayData['date'],
-                ],
+            // Базовый набор данных, которые всегда заполняем
+            $basicInsertData =
                 [
                     'tasks_date' => $tasksDayData['date'],
                     'tasks_status' => $tasksDayData['common']['status'],
-                    'user_id' => Auth::id(),                                // Текущий пользователь
+                    'user_id' => Auth::id(),                                    // Текущий пользователь
                     'description' => $tasksDayData['common']['description'],
 
                     // todo: сделать проверку на существование бригады и вообще тут продумать сущность
                     'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($tasksDayData['date']),
                     'active' => $tasksDayData['active'],
-                ]
+                ];
+
+            // заполняем моменты начала и окончания группы заданий по стегальным машинам
+            if ($tasksDayData['common']['status'] === FABRIC_TASK_RUNNING_CODE) {
+                $basicInsertData['tasks_start_date'] = now();
+                $basicInsertData['tasks_finish_date'] = null;
+            } else if ($tasksDayData['common']['status'] === FABRIC_TASK_DONE_CODE) {
+                $basicInsertData['tasks_finish_date'] = now();
+            }
+
+            // Возвращаем результат создания или обновления дня заданий
+            return FabricTasksDate::query()->updateOrCreate(
+                [
+                    'tasks_date' => $tasksDayData['date'],
+                ],
+                $basicInsertData
             );
 
         } catch (Exception $e) {

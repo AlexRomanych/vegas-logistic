@@ -4,7 +4,7 @@
 
 
         <!-- attract: Выводим даты + статусы + сервисные кнопки   -->
-        <div class="flex h-[165px]">
+        <div class="flex h-[130px] m-3">
             <div v-for="task in taskData" :key="task.date">
 
                 <!-- attract: Рамка выбора даты -->
@@ -31,29 +31,29 @@
                         width="w-[150px]"
                     />
 
-<!--                    &lt;!&ndash; attract: Первый ряд сервисных кнопок &ndash;&gt;-->
-<!--                    <AppLabel-->
-<!--                        v-if="serviceBtnShowCondition(task.common.status)"-->
-<!--                        :text="serviceBtnTitle(task.common.status)"-->
-<!--                        align="center"-->
-<!--                        class="cursor-pointer"-->
-<!--                        textSize="small"-->
-<!--                        type="info"-->
-<!--                        width="w-[150px]"-->
-<!--                        @click="changeTaskStatus(task)"-->
-<!--                    />-->
+                    <!-- attract: Кнопка "Начать СЗ + Закончить СЗ" (Только для текущего СЗ) -->
+                    <AppLabel
+                        v-if="isToday(task.date) && task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"
+                        :text="getExecuteButtonTitle(task.common.status)"
+                        align="center"
+                        class="cursor-pointer"
+                        textSize="small"
+                        type="info"
+                        width="w-[150px]"
+                        @click="changeTaskExecute(task)"
+                    />
 
-<!--                    &lt;!&ndash; attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") &ndash;&gt;-->
-<!--                    <AppLabel-->
-<!--                        v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"-->
-<!--                        align="center"-->
-<!--                        class="cursor-pointer"-->
-<!--                        text="Удалить"-->
-<!--                        textSize="small"-->
-<!--                        type="danger"-->
-<!--                        width="w-[150px]"-->
-<!--                        @click="changeTaskStatus(task, 2)"-->
-<!--                    />-->
+                    <!--                    &lt;!&ndash; attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") &ndash;&gt;-->
+                    <!--                    <AppLabel-->
+                    <!--                        v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"-->
+                    <!--                        align="center"-->
+                    <!--                        class="cursor-pointer"-->
+                    <!--                        text="Удалить"-->
+                    <!--                        textSize="small"-->
+                    <!--                        type="danger"-->
+                    <!--                        width="w-[150px]"-->
+                    <!--                        @click="changeTaskStatus(task, 2)"-->
+                    <!--                    />-->
 
                 </div>
 
@@ -88,8 +88,8 @@
                 <!--attract: Общее-->
                 <div v-if="tabs.common.shown">
                     <TheTaskCommonInfo
-                        :task="activeTask"
                         :key="rerender[0]"
+                        :task="activeTask"
                     />
                 </div>
 
@@ -175,7 +175,7 @@ import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
-    TEST_FABRICS,
+    FABRIC_TASKS_EXECUTE,
 } from '/resources/js/src/app/constants/fabrics.js'
 
 import {
@@ -227,28 +227,31 @@ console.log('tasksPeriod:', tasksPeriod)
 // attract: Получаем сами сменные задания
 let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 
-// console.log('tasks:', tasks)
-// debugger
+// attract: Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
+tasks = tasks.filter(
+    t =>
+        t.common.status === FABRIC_TASK_STATUS.PENDING.CODE ||
+        t.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
+        t.common.status === FABRIC_TASK_STATUS.DONE.CODE
+)
 
-// // attract: Заполняем поле 'fabric' - название ткани в сменных заданиях
-// tasks = fillFabricsDisplayNames(fabrics, tasks)
+// attract: Проверяем на последнее СЗ со статусом "Выполнено".
+// attract: Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
+if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
+    const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
+    tasks.unshift(lastDoneTask)
+    // console.log('lastDoneTask:', lastDoneTask)
+}
+
+// attract: Формируем данные для отображения
+const taskData = reactive(tasks)
+
+// attract: Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
+let activeTask = reactive(taskData.find(t => isToday(t.date)) || tasks[0])
+activeTask.active = true
+// let activeTask = taskData[0]
 
 console.log('tasks:', tasks)
-
-
-// attract: формируем полный (дополненный) массив сменных заданий
-// let taskData = reactive(tasks)
-// // let taskData = reactive(TEST_FABRICS)
-// taskData = reactive(addEmptyFabricTasks(taskData, tasksPeriod))
-
-// let taskData = reactive(tasks)
-// let taskData = reactive(TEST_FABRICS)
-const taskData = reactive(addEmptyFabricTasks(tasks, tasksPeriod))
-
-
-// attract: Ссылка на активное СЗ
-let activeTask = reactive(taskData.find(t => t.active))
-
 console.log('taskData: ', taskData)
 console.log('activeTask', activeTask)
 
@@ -258,7 +261,13 @@ const modalType = ref('danger')
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
     common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
-    american: {id: 2, shown: false, name: ['Американец', 'LEGACY-4'], typePassive: 'dark', machine: FABRIC_MACHINES.AMERICAN},
+    american: {
+        id: 2,
+        shown: false,
+        name: ['Американец', 'LEGACY-4'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.AMERICAN
+    },
     german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC'], typePassive: 'dark', machine: FABRIC_MACHINES.GERMAN},
     china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW'], typePassive: 'dark', machine: FABRIC_MACHINES.CHINA},
     korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94'], typePassive: 'dark', machine: FABRIC_MACHINES.KOREAN},
@@ -510,6 +519,68 @@ watch(() => taskData, async (newValue) => {
 
 
 }, {deep: true})
+
+
+// warning: ------------------------------------------------------------------------
+
+// attract: Начало выполнения сменного задания
+const changeTaskExecute = async (task) => {
+
+    // attract: Изменить статус с "Готов к стежке" на "Выполняется". Обращаемся к API
+    if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
+
+        modalText.value = ['Начать выполнение сменного задания?', '']
+        modalType.value = 'success'
+        const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+        if (result) {
+            task.common.status = FABRIC_TASK_STATUS.RUNNING.CODE
+            const res = await fabricsStore.changeFabricTaskDateStatus(task)
+            console.log(res)
+
+
+            const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
+            console.log('newTaskDay: ', newTaskDay)
+
+            // task.machines = newTaskDay[0].machines
+            task.common = newTaskDay[0].common
+
+            // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+            await rerender.forEach((_, index, array) => array[index]++)
+
+
+
+
+            // todo: сделать обработку ошибок + callout
+        }
+
+        return
+    }
+
+    // attract: Изменить статус с "Выполняется" на "Выполнено". Обращаемся к API
+    if (task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE) {
+
+        modalText.value = ['Закончить выполнение сменного задания?', '']
+        modalType.value = 'warning'
+        const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+        if (result) {
+            task.common.status = FABRIC_TASK_STATUS.DONE.CODE
+            const res = await fabricsStore.changeFabricTaskDateStatus(task)
+            console.log(res)
+            // todo: сделать обработку ошибок + callout
+        }
+
+        // return
+    }
+}
+
+
+// attract: Возвращает текст для кнопки управления "Старт" или "Стоп" или "Выполнено"
+const getExecuteButtonTitle = (taskStatus) => {
+    if (taskStatus === FABRIC_TASK_STATUS.PENDING.CODE) return FABRIC_TASKS_EXECUTE.START.TITLE
+    if (taskStatus === FABRIC_TASK_STATUS.RUNNING.CODE) return FABRIC_TASKS_EXECUTE.STOP.TITLE
+    return ''
+}
+
 
 </script>
 
