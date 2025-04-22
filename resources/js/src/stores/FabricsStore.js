@@ -68,6 +68,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalTaskProductivity[FABRIC_MACHINES.KOREAN.TITLE] = []
     }
 
+    // attract: Переменная-флаг, которая определяет, какая инфа отображается в элементе выполнения рулонов (полная или сокращенная)
+    const globalExecuteRollsInfo = ref(true)
+
 
     // attract: Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
     let globalRollsIndexes = reactive([])
@@ -256,8 +259,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // attract: Получаем с API номер смены по дате
     const getFabricTeamNumberByDate = async (date = null) => {
         const result = await jwtGet(URL_FABRIC_TEAM_NUMBER, {date})
-        console.log('store', result)
-        // return result.data                                  // все возвращается через Resource с ключем data
+        // console.log('store', result)
+        return result.data                                  // все возвращается через Resource с ключем data
     }
 
 
@@ -271,6 +274,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalFabricsMode,
         globalTaskProductivity, clearTaskGlobalProductivity,
         globalRollsIndexes,
+        globalExecuteRollsInfo,
         getFabrics,
         getFabricById,
         updateFabric,

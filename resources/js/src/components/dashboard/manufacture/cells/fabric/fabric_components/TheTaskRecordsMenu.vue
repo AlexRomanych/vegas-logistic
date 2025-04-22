@@ -85,12 +85,12 @@ const props = defineProps({
         type: Object,
         required: false,
         default: () => FABRIC_MACHINES.AMERICAN,
-        validator: (machine) => [
-            FABRIC_MACHINES.AMERICAN,
-            FABRIC_MACHINES.GERMAN,
-            FABRIC_MACHINES.CHINA,
-            FABRIC_MACHINES.KOREAN,
-        ].includes(machine)
+    //     validator: (machine) => [
+    //         FABRIC_MACHINES.AMERICAN,
+    //         FABRIC_MACHINES.GERMAN,
+    //         FABRIC_MACHINES.CHINA,
+    //         FABRIC_MACHINES.KOREAN,
+    //     ].includes(machine)
     },
     taskStatus: {
         type: Number,
@@ -104,6 +104,8 @@ const props = defineProps({
         ].includes(taskStatus)
     }
 })
+
+// console.log('menu: ', props.machine)
 
 const emits = defineEmits(['addRoll', 'optimizeLabor'])
 

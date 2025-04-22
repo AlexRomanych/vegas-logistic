@@ -67,32 +67,40 @@ export const FABRIC_TASK_STATUS = Object.freeze({
 // descr Тут все константы, касающиеся статусов движения рулона
 export const FABRIC_ROLL_STATUS = Object.freeze({
 
-    // descr Рулон создан (или сохранен)
+    // descr: Рулон создан (или сохранен)
     CREATED: {
         WORD: 'created',
         CODE: 0,
         TITLE: 'Создано',
     },
 
-    // descr Рулон взят на выполнение (находится в процессе выполнения)
+    // descr: Рулон взят на выполнение (находится в процессе выполнения)
     RUNNING: {
         WORD: 'running',
         CODE: 1,
         TITLE: 'Выполняется',
     },
 
-    // descr Рулон выполнен (закрыт)
+    // descr: Рулон был взят на выполнение, но выполнение приостановлено (напрмер, перенос на другую смену)
+    PAUSED: {
+        WORD: 'paused',
+        CODE: 2,
+        TITLE: 'Приостановка',
+    },
+
+    // descr: Рулон выполнен (закрыт)
     DONE: {
         WORD: 'done',
-        CODE: 2,
+        CODE: 3,
         TITLE: 'Выполнено',
     },
 })
 
-// descr Массив (псевдомассив - объект) статусов движения рулона
+// descr: Массив (псевдомассив - объект) статусов движения рулона
 export const FABRIC_ROLL_STATUS_LIST = {
     [FABRIC_ROLL_STATUS.CREATED.CODE]: FABRIC_ROLL_STATUS.CREATED,
     [FABRIC_ROLL_STATUS.RUNNING.CODE]: FABRIC_ROLL_STATUS.RUNNING,
+    [FABRIC_ROLL_STATUS.PAUSED.CODE]: FABRIC_ROLL_STATUS.PAUSED,
     [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
 }
 

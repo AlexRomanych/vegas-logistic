@@ -67,22 +67,28 @@
             <!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
             <!-- attract Выводим табы -->
             <div class="flex flex-row justify-start items-center m-3">
+
                 <div v-for="tab in tabs" :key="tab.id">
 
-                    <AppLabelMultiLine
-                        :bold="true"
-                        :text="tab.name"
-                        :type="getTabType(tab)"
-                        align="center"
-                        class="cursor-pointer"
-                        width="w-[150px]"
-                        @click="changeTab(tab)"
-                    />
+                    <!-- attract: Показываем только те СМ, для которых есть СЗ -->
+                    <div v-if="getMachineShowCondition(activeTask, tab)">
+                        <AppLabelMultiLine
+                            :bold="true"
+                            :text="tab.name"
+                            :type="getTabType(tab)"
+                            align="center"
+                            class="cursor-pointer"
+                            width="w-[150px]"
+                            @click="changeTab(tab)"
+                        />
+                    </div>
 
                 </div>
+
             </div>
 
 
+            <!-- attract: Выводим содержимое табов -->
             <div class="ml-3 mt-3">
 
                 <!--attract: Общее-->
@@ -93,62 +99,80 @@
                     />
                 </div>
 
+                <!--attract: Содержимое каждой СМ-->
+                <div v-for="tab in tabs" :key="tab.id">
 
-                <!-- TODO: Убрать дублирование кода -->
-                <!--attract: Американец-->
-                <!-- warning: key: - для реактивности -->
-                <!-- todo: доработать, потому, что task будем получать в самом компоненте -->
-                <div v-if="tabs.american.shown">
-                    <TheTaskMachine
-                        :key="rerender[FABRIC_MACHINES.AMERICAN.ID]"
-                        :machine="FABRIC_MACHINES.AMERICAN"
-                        :task="activeTask"
-                        @add-roll="addRoll"
-                        @optimize-labor="optimizeLabor"
-                        @save-task-record="saveTasks"
-                        @delete-task-record="deleteTasks"
-                    />
-
+                    <div v-if="tab.hasOwnProperty('machine')">
+                        <TheTaskExecuteMachine
+                            v-if="tab.shown"
+                            :key="rerender[tab.machine.ID]"
+                            :machine="{...tab.machine}"
+                            :task="activeTask"
+                            @add-roll="addRoll"
+                            @optimize-labor="optimizeLabor"
+                            @save-task-record="saveTasks"
+                            @delete-task-record="deleteTasks"
+                        />
+                    </div>
                 </div>
 
-                <!--attract: Немец-->
-                <div v-if="tabs.german.shown">
-                    <TheTaskMachine
-                        :key="rerender[FABRIC_MACHINES.GERMAN.ID]"
-                        :machine="FABRIC_MACHINES.GERMAN"
-                        :task="activeTask"
-                        @add-roll="addRoll"
-                        @optimize-labor="optimizeLabor"
-                        @save-task-record="saveTasks"
-                        @delete-task-record="deleteTasks"
-                    />
-                </div>
 
-                <!--attract: Китаец-->
-                <div v-if="tabs.china.shown">
-                    <TheTaskMachine
-                        :key="rerender[FABRIC_MACHINES.CHINA.ID]"
-                        :machine="FABRIC_MACHINES.CHINA"
-                        :task="activeTask"
-                        @add-roll="addRoll"
-                        @optimize-labor="optimizeLabor"
-                        @save-task-record="saveTasks"
-                        @delete-task-record="deleteTasks"
-                    />
-                </div>
 
-                <!--attract: Китаец-->
-                <div v-if="tabs.korean.shown">
-                    <TheTaskMachine
-                        :key="rerender[FABRIC_MACHINES.KOREAN.ID]"
-                        :machine="FABRIC_MACHINES.KOREAN"
-                        :task="activeTask"
-                        @add-roll="addRoll"
-                        @optimize-labor="optimizeLabor"
-                        @save-task-record="saveTasks"
-                        @delete-task-record="deleteTasks"
-                    />
-                </div>
+<!--                &lt;!&ndash; TODO: Убрать дублирование кода &ndash;&gt;-->
+<!--                &lt;!&ndash;attract: Американец&ndash;&gt;-->
+<!--                &lt;!&ndash; warning: key: - для реактивности &ndash;&gt;-->
+<!--                &lt;!&ndash; todo: доработать, потому, что task будем получать в самом компоненте &ndash;&gt;-->
+<!--                <div v-if="tabs.american.shown">-->
+<!--                    <TheTaskExecuteMachine-->
+<!--                        :key="rerender[FABRIC_MACHINES.AMERICAN.ID]"-->
+<!--                        :machine="FABRIC_MACHINES.AMERICAN"-->
+<!--                        :task="activeTask"-->
+<!--                        @add-roll="addRoll"-->
+<!--                        @optimize-labor="optimizeLabor"-->
+<!--                        @save-task-record="saveTasks"-->
+<!--                        @delete-task-record="deleteTasks"-->
+<!--                    />-->
+
+<!--                </div>-->
+
+<!--                &lt;!&ndash;attract: Немец&ndash;&gt;-->
+<!--                <div v-if="tabs.german.shown">-->
+<!--                    <TheTaskExecuteMachine-->
+<!--                        :key="rerender[FABRIC_MACHINES.GERMAN.ID]"-->
+<!--                        :machine="FABRIC_MACHINES.GERMAN"-->
+<!--                        :task="activeTask"-->
+<!--                        @add-roll="addRoll"-->
+<!--                        @optimize-labor="optimizeLabor"-->
+<!--                        @save-task-record="saveTasks"-->
+<!--                        @delete-task-record="deleteTasks"-->
+<!--                    />-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash;attract: Китаец&ndash;&gt;-->
+<!--                <div v-if="tabs.china.shown">-->
+<!--                    <TheTaskExecuteMachine-->
+<!--                        :key="rerender[FABRIC_MACHINES.CHINA.ID]"-->
+<!--                        :machine="FABRIC_MACHINES.CHINA"-->
+<!--                        :task="activeTask"-->
+<!--                        @add-roll="addRoll"-->
+<!--                        @optimize-labor="optimizeLabor"-->
+<!--                        @save-task-record="saveTasks"-->
+<!--                        @delete-task-record="deleteTasks"-->
+<!--                    />-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash;attract: Китаец&ndash;&gt;-->
+<!--                <div v-if="tabs.korean.shown">-->
+<!--                    <TheTaskExecuteMachine-->
+<!--                        :key="rerender[FABRIC_MACHINES.KOREAN.ID]"-->
+<!--                        :machine="FABRIC_MACHINES.KOREAN"-->
+<!--                        :task="activeTask"-->
+<!--                        @add-roll="addRoll"-->
+<!--                        @optimize-labor="optimizeLabor"-->
+<!--                        @save-task-record="saveTasks"-->
+<!--                        @delete-task-record="deleteTasks"-->
+<!--                    />-->
+<!--                </div>-->
 
             </div>
 
@@ -194,13 +218,13 @@ import {
 
 import TheTaskCommonInfo
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
-
-import TheTaskMachine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskMachine.vue'
+import TheTaskExecuteMachine
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteMachine.vue'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
+
 // import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
 // import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
 // import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
@@ -422,6 +446,12 @@ const changeActiveTask = (task) => {
     // console.log('active_task: ', activeTask)
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
+
+    // // attract: Перерисовываем все табы, чтобы исправить баг с отображением продуктивности общей
+    // rerender.forEach((_, index, array) => array[index]++)
+
+    resetTabs()                                 // сбрасываем все табы
+    tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 }
 
 // attract: Определяем тип таба (цвет) в зависимости от наличия СЗ
@@ -515,7 +545,7 @@ const rerender = reactive([0, 0, 0, 0, 0])
 watch(() => taskData, async (newValue) => {
 
     // rerender.value++
-    console.log('taskData: changed: ', rerender)
+    // console.log('taskData: changed: ', rerender)
 
 
 }, {deep: true})
@@ -537,7 +567,6 @@ const changeTaskExecute = async (task) => {
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
 
-
             const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
             console.log('newTaskDay: ', newTaskDay)
 
@@ -546,9 +575,6 @@ const changeTaskExecute = async (task) => {
 
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             await rerender.forEach((_, index, array) => array[index]++)
-
-
-
 
             // todo: сделать обработку ошибок + callout
         }
@@ -581,6 +607,21 @@ const getExecuteButtonTitle = (taskStatus) => {
     return ''
 }
 
+// attract: Возвращаем условие отображения машины (присутствуют рулоны в СЗ)
+const getMachineShowCondition = (task, tab) => {
+
+    if (tab.hasOwnProperty('machine')) return task.machines[tab.machine.TITLE].rolls.length > 0
+    return true
+
+    console.log('tab: ', tab)
+    console.log('task: ', task)
+
+    // console.log(task.machines[machine.TITLE].rolls.length)
+    //
+    // return task.machines[machine.TITLE].rolls.length > 0
+    //
+}
+// getMachineShowCondition(activeTask, FABRIC_MACHINES.AMERICAN.ID)
 
 </script>
 

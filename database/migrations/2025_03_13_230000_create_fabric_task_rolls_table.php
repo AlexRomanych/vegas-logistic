@@ -7,10 +7,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     private const TABLE_NAME = 'fabric_task_rolls';
     private const ROLL_NUMBER_START = 1;    // начальный номер рулона
+
     /**
      * Run the migrations.
      */
@@ -34,14 +34,14 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            // attract: Постановка рулона на учет в 1С
-            $table->timestamp('registration_1C_at')
-                ->nullable()
-                ->comment('Дата постановки на учет в 1С');
 
-            // attract: Время создания рулона на стежке
+            // attract: Дата и время начала стегания рулона на стежке
+            $table->timestamp('start_at')
+                ->nullable()->comment('Дата и время начала стегания рулона на стежке');
+
+            // attract: Дата и время окончания стегания рулона на стежке
             $table->timestamp('finish_at')
-                ->nullable()->comment('Дата и время завершения стегания рулона');
+                ->nullable()->comment('Дата и время окончания стегания рулона на стежке');
 
             // attract: Ответственный за выпуск рулона на стежке
             $table->ForeignId('finish_by')
@@ -49,8 +49,13 @@ return new class extends Migration
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
 
-            // attract: Статус позиции сменного задания (статус стегания рулона)
+            // attract: Статус стегания рулона
             $table->unsignedTinyInteger('roll_status')->nullable(false)->default(0)->comment('Статус задания');
+
+            // attract: Постановка рулона на учет в 1С
+            $table->timestamp('registration_1C_at')
+                ->nullable()
+                ->comment('Дата постановки на учет в 1С');
 
             // attract: Время перемещения рулона на закрой и ответственный за перемещение на закрой
             $table->timestamp('move_to_cut_at')
@@ -67,6 +72,19 @@ return new class extends Migration
                 ->nullable(false)->default(0)->comment('Ответственный за прием рулона на закрое')
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
+
+            // attract: Переходящий на другую смену рулон или нет
+            $table->unsignedTinyInteger('rolling')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Переходящий на другую смену рулон или нет');
+
+            // attract: Причина невыполнения рулона
+            $table->string('false_reason')->nullable()->comment('Причина невыполнения рулона');
+
+            // attract: История рулона
+            $table->json('history')->nullable()->comment('История рулона');
+
 
             // attract: Привязка к сменному заданию warning: Пока не будем реализовывать эту привязку
 //            $table->ForeignIdFor(FabricTask::class)->nullable(false)->comment('Привязка к сменному заданию')

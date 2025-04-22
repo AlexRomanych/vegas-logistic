@@ -452,8 +452,12 @@ const changeActiveTask = (task) => {
     taskData.forEach((t) => t.active = t.date === task.date)
     activeTask = taskData.find(t => t.active)
     // console.log('active_task: ', activeTask)
+
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
+    // attract: Перерисовываем все табы, чтобы исправить баг с отображением продуктивности общей
+    rerender.forEach((_, index, array) => array[index]++)
+
 }
 
 // attract: Определяем тип таба (цвет) в зависимости от наличия СЗ

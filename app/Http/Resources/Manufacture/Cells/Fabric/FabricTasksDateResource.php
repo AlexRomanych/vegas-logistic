@@ -41,6 +41,7 @@ class FabricTasksDateResource extends JsonResource
                         'fabric_id' => $roll->fabric_id,
                         'position' => $roll->roll_position,
                         'status' => $roll->roll_status,
+                        'start_at' => $roll->start_at,
                         'finish_at' => $roll->finish_at,
                         'finish_by' => $roll->finish_by,
                         'textile_length' => (float)$roll->textile_roll_length,
