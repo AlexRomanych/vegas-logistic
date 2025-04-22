@@ -33,6 +33,8 @@ const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL �
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
 
+const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
+
 export const useFabricsStore = defineStore('fabrics', () => {
 
 
@@ -251,6 +253,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
     }
 
+    // attract: Получаем с API номер смены по дате
+    const getFabricTeamNumberByDate = async (date = null) => {
+        const result = await jwtGet(URL_FABRIC_TEAM_NUMBER, {date})
+        console.log('store', result)
+        // return result.data                                  // все возвращается через Resource с ключем data
+    }
+
 
 
 
@@ -277,7 +286,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         createFabricTask,
         changeFabricTaskStatus,
         changeFabricTaskDateStatus,
-        deleteFabricTaskRollById
+        deleteFabricTaskRollById,
+        getFabricTeamNumberByDate
     }
 
 })

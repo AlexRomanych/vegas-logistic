@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricServiceController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTasksDateController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
@@ -226,12 +227,16 @@ Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machin
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
 
 // attract: Блок Заказов Стежки на производство
-// descr Получаем список СЗ, период в query
+// descr: Получаем список СЗ, период в query
 Route::get('/fabrics/tasks', [CellFabricTasksDateController::class, 'tasks'])->middleware('jwt.auth');
 Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask'])->middleware('jwt.auth');
 Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
 Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
 Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
+
+// descr: Тут просто точки доступа для разных действий
+Route::get('fabrics/tasks/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate'])->middleware('jwt.auth');
+
 
 //Route::get('/fabrics/tasks', [CellFabricTaskController::class, 'tasks'])->middleware('jwt.auth');
 //Route::put('/fabrics/tasks/create/', [CellFabricTaskController::class, 'create'])->middleware('jwt.auth');

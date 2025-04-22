@@ -343,6 +343,8 @@
 
 import {onMounted, onUnmounted, ref, watch} from 'vue'
 
+import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+
 import {
     FABRIC_WORKING_SHIFT_LENGTH,
     FABRIC_TASK_STATUS,
@@ -367,6 +369,7 @@ import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
 
+
 const props = defineProps({
     task: {
         type: Object,
@@ -376,6 +379,8 @@ const props = defineProps({
 })
 
 // console.log('task', props.task)
+
+const fabricsStore = useFabricsStore()
 
 // attract: Получаем длительность СЗ
 const getTaskDuration = (task) => {
@@ -457,6 +462,10 @@ watch(() => props.task, (newTask) => {
 //     const interval = setInterval(() => duration.value = getTaskDuration(props.task), 1000)
 //     console.log('interval', interval)
 // })
+
+// const team = await fabricsStore.getFabricTeamNumberByDate('2025-04-22')
+// const team = await fabricsStore.getFabricTeamNumberByDate('2025-05-27')
+// console.log('team: ', team)
 
 onUnmounted(() => {
     if (intervalId !== null) {

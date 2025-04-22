@@ -197,6 +197,8 @@ final class FabricService
      */
     public static function getFabricTeamChangeNumberByDate(string | Carbon $date): int
     {
+
+        // descr: Дата начала первой смены первой бригады
         $referenceDate = Carbon::parse('2025-03-26');
         $targetDate = Carbon::parse($date);
 
