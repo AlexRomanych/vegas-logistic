@@ -24,10 +24,17 @@ class FabricTasksDate extends Model
         return $this->hasMany(FabricTask::class);
     }
 
-    // Relations Связь со текущий пользователь
+    // Relations Связь с текущим пользователем
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Relations Связь со сменой сотрудников на СМ
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(FabricTeam::class, 'fabric_team_id', 'id', 'fabric_teams');
+//        return $this->belongsTo(FabricTeam::class);   // attract: Не работает, надо разобраться почему
     }
 
 }

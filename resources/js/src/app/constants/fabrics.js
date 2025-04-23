@@ -78,14 +78,14 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
     RUNNING: {
         WORD: 'running',
         CODE: 1,
-        TITLE: 'Выполняется',
+        TITLE: 'В процессе',
     },
 
     // descr: Рулон был взят на выполнение, но выполнение приостановлено (напрмер, перенос на другую смену)
     PAUSED: {
         WORD: 'paused',
         CODE: 2,
-        TITLE: 'Приостановка',
+        TITLE: 'Пауза',
     },
 
     // descr: Рулон выполнен (закрыт)
@@ -94,6 +94,21 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         CODE: 3,
         TITLE: 'Выполнено',
     },
+
+    // descr: Рулон не выполнен (не закрыт)
+    FALSE: {
+        WORD: 'false',
+        CODE: 4,
+        TITLE: 'Не выполнено',
+    },
+
+    // descr: Рулон переходящий (с одной смены на другую)
+    ROLLING: {
+        WORD: 'rolling',
+        CODE: 5,
+        TITLE: 'Переходящий',
+    },
+
 })
 
 // descr: Массив (псевдомассив - объект) статусов движения рулона
@@ -102,6 +117,8 @@ export const FABRIC_ROLL_STATUS_LIST = {
     [FABRIC_ROLL_STATUS.RUNNING.CODE]: FABRIC_ROLL_STATUS.RUNNING,
     [FABRIC_ROLL_STATUS.PAUSED.CODE]: FABRIC_ROLL_STATUS.PAUSED,
     [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
+    [FABRIC_ROLL_STATUS.FALSE.CODE]: FABRIC_ROLL_STATUS.FALSE,
+    [FABRIC_ROLL_STATUS.ROLLING.CODE]: FABRIC_ROLL_STATUS.ROLLING,
 }
 
 // descr Константы статусов выполнения СЗ

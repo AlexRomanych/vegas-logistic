@@ -210,6 +210,26 @@ export function formatDateInFullFormat(dateTimeString) {
     return `${pad(day)} ${months[monthIndex]} ${year} года`;
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в нормальный формат "17.04.2025 20:58:57"
+export function formatDateAndTimeInShortFormat(dateTimeString) {
+    const dateObject = new Date(dateTimeString);
+
+    const day = dateObject.getDate();
+    const month = dateObject.getMonth();
+    const year = dateObject.getFullYear();
+
+    const hours = dateObject.getHours();
+    const minutes = dateObject.getMinutes();
+    const seconds = dateObject.getSeconds();
+
+    const pad = (num) => num.toString().padStart(2, '0')
+
+    return `${pad(day)}.${pad(month + 1)}.${year} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в формат времени "20ч. 58м. 57с."
 export function formatTimeInFullFormat(dateTimeString) {
 
     const dateObject = new Date(dateTimeString);
@@ -228,6 +248,7 @@ export function formatTimeInFullFormat(dateTimeString) {
     console.log(timeString); // Выведет: 20:58:57
 
 }
+
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает день недели в строковом представлении
@@ -355,3 +376,31 @@ export function getDateDiffInDays(inDate1 = new Date(), inDate2 = new Date(), ab
 
     return diffInMs / MS_IN_DAY
 }
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Возвращает длительность периода между двумя датами в формате "10ч. 59м. 59с."
+// attract: если вторая дата не указана, то вычисляется разница между текущей и первой датой
+// attract: если даты не указаны, то результат вычисляется только по смещению в миллисекундах
+// attract: offset - добавляет или отнимает указанное количество миллисекунд к результату
+export function getDuration(startMoment = null, endMoment = null, offset = 0) {
+
+    if (!startMoment && !endMoment && !offset) return ''    // если все параметры не указаны, возвращаем пустую строку
+    if (!startMoment && !offset) return ''                  // если нет начала периода и нет смещения, возвращаем пустую строку
+    if (!offset) offset = 0
+
+    let tempDuration = 0
+
+    if (startMoment && endMoment) {
+        tempDuration = new Date(endMoment).getTime() - new Date(startMoment).getTime()
+    } else if (startMoment && !endMoment) {
+        tempDuration = new Date().getTime() - new Date(startMoment).getTime()
+    }
+
+    tempDuration += offset
+
+    tempDuration = Math.floor(tempDuration / 1000)
+    return formatTimeWithLeadingZeros(tempDuration)
+}
+
+

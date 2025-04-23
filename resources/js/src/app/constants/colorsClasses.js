@@ -6,7 +6,7 @@ const mainColor = 'color'               // основной цвет элеме�
 const textColor = 'text'                // цвет текста
 const effectDirection = 'effect'        // направление изменения основного цвета элемента
 const toLight = 'toLight'               // изменение основного цвета элемента на более светлый
-const toDark = 'toDark'               // изменение основного цвета элемента на более светлый
+const toDark = 'toDark'                 // изменение основного цвета элемента на более светлый
 
 // Задаем классы для каждого цвета
 
@@ -20,6 +20,8 @@ const light = 'light'
 const dark = 'dark'
 
 const slate = 'slate'
+
+const orange = 'orange'
 
 const colorsClasses = {}
 
@@ -70,11 +72,15 @@ colorsClasses[slate] = {
     [textColor]: 'white',
     [effectDirection]: toLight
 }
+colorsClasses[orange] = {
+    [mainColor]: 'orange',
+    [textColor]: 'white',
+    [effectDirection]: toLight
+}
 
 
-
-const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate]
-const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate}
+const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate, orange]
+const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate, orange}
 //
 // const colorsClasses = {
 //     warn: 'yellow-' + colorValue,
@@ -87,6 +93,6 @@ const colorsListObj = {primary, secondary, success, danger, warning, info, light
 export {
     colorsClasses, colorsList, colorsListObj,
     toLight, toDark,
-    primary, secondary, success, danger, warning, info, light, dark, slate,
+    primary, secondary, success, danger, warning, info, light, dark, slate, orange,
     colorIndex, colorIndexLight, colorIndexOffset
 }

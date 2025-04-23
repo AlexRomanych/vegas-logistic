@@ -5,7 +5,9 @@
 
         <TheTaskExecuteControls
             :rolls="rolls"
-            @start-roll-execution="startRollExecution"
+            :machine="machine"
+            @start-execute-roll="startRollExecution"
+
         />
 
         <div v-if="rolls.length">
@@ -37,6 +39,7 @@
                 <!--attract: Список рулонов -->
                 <TheTaskExecuteRolls
                     :rolls="rolls"
+                    :machine="machine"
                 />
 
             </div>
@@ -162,6 +165,8 @@ const deleteTaskRecord = (deleteData) => {
 const startRollExecution = () => {
 
 }
+
+// consfinishRollExecution
 
 
 </script>

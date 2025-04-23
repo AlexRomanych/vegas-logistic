@@ -39,9 +39,22 @@ return new class extends Migration {
             $table->timestamp('start_at')
                 ->nullable()->comment('Дата и время начала стегания рулона на стежке');
 
+            // attract: Дата и время приостановки стегания рулона на стежке
+            $table->timestamp('paused_at')
+                ->nullable()->comment('Дата и время приостановки стегания рулона на стежке');
+
+            // attract: Дата и время возобновления стегания рулона на стежке
+            $table->timestamp('resume_at')
+                ->nullable()->comment('Дата и время возобновления стегания рулона на стежке');
+
             // attract: Дата и время окончания стегания рулона на стежке
             $table->timestamp('finish_at')
                 ->nullable()->comment('Дата и время окончания стегания рулона на стежке');
+
+            // attract: Время стегания рулона на стежке в миллисекундах
+            $table->unsignedBigInteger('duration')
+                ->nullable()->comment('Время стегания рулона на стежке в миллисекундах');
+
 
             // attract: Ответственный за выпуск рулона на стежке
             $table->ForeignId('finish_by')
@@ -74,9 +87,9 @@ return new class extends Migration {
                 ->nullOnDelete();
 
             // attract: Переходящий на другую смену рулон или нет
-            $table->unsignedTinyInteger('rolling')
+            $table->boolean('rolling')
                 ->nullable(false)
-                ->default(0)
+                ->default(false)
                 ->comment('Переходящий на другую смену рулон или нет');
 
             // attract: Причина невыполнения рулона

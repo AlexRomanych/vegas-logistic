@@ -68,8 +68,36 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalTaskProductivity[FABRIC_MACHINES.KOREAN.TITLE] = []
     }
 
+    // info: Блок для обмена информацией между модулями с элементами управления СЗ и самим данными по СЗ
+
+    // attract: Массив с активными рулонами на каждой стегальной машине
+    const globalActiveRolls = reactive({
+        [FABRIC_MACHINES.AMERICAN.TITLE]: null,
+        [FABRIC_MACHINES.GERMAN.TITLE]: null,
+        [FABRIC_MACHINES.CHINA.TITLE]: null,
+        [FABRIC_MACHINES.KOREAN.TITLE]: null,
+    })
+
+
+    // attract: Переменная-флаг нажатия кнопки "Начать выполнение" рулона
+    const globalStartExecuteRoll = ref(false)
+
+    // attract: Переменная-флаг нажатия кнопки "Приостановить выполнение" рулона
+    const globalPauseExecuteRoll = ref(false)
+
+    // attract: Переменная-флаг нажатия кнопки "Возобновить выполнение" рулона
+    const globalResumeExecuteRoll = ref(false)
+
+    // attract: Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
+    const globalFinishExecuteRoll = ref(false)
+
     // attract: Переменная-флаг, которая определяет, какая инфа отображается в элементе выполнения рулонов (полная или сокращенная)
     const globalExecuteRollsInfo = ref(true)
+
+    // attract: Переменная-флаг нажатия кнопки "Переходящий рулон"
+    const globalExecuteMarkRollRolling = ref(false)
+
+    // info----------------------------------------------------------------------------------------
 
 
     // attract: Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
@@ -274,7 +302,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalFabricsMode,
         globalTaskProductivity, clearTaskGlobalProductivity,
         globalRollsIndexes,
-        globalExecuteRollsInfo,
+        globalActiveRolls,
+        globalExecuteRollsInfo, globalExecuteMarkRollRolling,
+        globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         getFabrics,
         getFabricById,
         updateFabric,
@@ -295,3 +325,4 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 })
+

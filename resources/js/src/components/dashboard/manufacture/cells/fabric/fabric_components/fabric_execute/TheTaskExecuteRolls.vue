@@ -30,13 +30,16 @@
 </template>
 
 <script setup>
-import {reactive, watch} from 'vue'
+import {reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '/resources/js/src/app/constants/fabrics.js'
 
-import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
+import {
+    formatTimeWithLeadingZeros,
+    formatDateAndTimeInShortFormat,
+} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import TheTaskExecuteRollsHeader
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollsHeader.vue'
@@ -54,6 +57,11 @@ const props = defineProps({
         required: false,
         default: []
     },
+    machine: {
+        type: Object,
+        required: false,
+        default: () => FABRIC_MACHINES.AMERICAN,
+    },
     execute: {                      // Режим отображения (в режиме демонстрации или в режиме выполнения)
         type: Boolean,
         required: false,
@@ -61,7 +69,9 @@ const props = defineProps({
     }
 })
 
-
+// attract: Получаем данные из хранилища по ПС
+const fabricsStore = useFabricsStore()
+const fabrics = fabricsStore.fabricsMemory
 
 // attract: Сортируем рулоны по позиции
 const sortExecRollsByPosition = () => {
@@ -85,6 +95,7 @@ resetActiveFlag()
 // attract: Устанавливаем активным первый элемент - активный рулон
 let activeRoll = props.rolls[0].rolls_exec[0]
 activeRoll['active'] = true // устанавливаем активным первый элемент
+fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
 
 console.log('props.rolls: ', props.rolls)
 
@@ -92,9 +103,6 @@ console.log('props.rolls: ', props.rolls)
 const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST);
 // console.log(FABRIC_ROLL_STATUS_ARRAY)
 
-// attract: Получаем данные из хранилища по ПС
-const fabricsStore = useFabricsStore()
-const fabrics = fabricsStore.fabricsMemory
 
 // attract: Определяем, что в рулонах будет полная инфа
 fabricsStore.globalExecuteRollsInfo = true
@@ -139,22 +147,22 @@ const rollsRender = reactive({
         data: (roll_exec) => roll_exec.descr
     },
     status: {
-        width: 'w-[70px]',
+        width: 'w-[90px]',
         show: true,
         title: 'Статус',
         data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY[roll_exec.status].TITLE
     },
     startAt: {
-        width: 'w-[110px]',
+        width: 'w-[125px]',
         show: props.execute,
         title: 'Начало стегания рулона',
-        data: (roll_exec) => '16.04.2023 10:59'
+        data: (roll_exec) => roll_exec.start_at ? formatDateAndTimeInShortFormat(roll_exec.start_at) : ''
     },
     finishAt: {
-        width: 'w-[110px]',
+        width: 'w-[125px]',
         show: props.execute,
         title: 'Окончание стегания рулона',
-        data: (roll_exec) => '16.04.2023 12:38'
+        data: (roll_exec) => roll_exec.finish_at ? formatDateAndTimeInShortFormat(roll_exec.finish_at) : ''
     },
     rollTime: {width: 'w-[90px]', show: props.execute, title: 'Время стегания', data: (roll_exec) => '01ч. 59м. 59с.'},
     finishBy: {width: 'w-[110px]', show: props.execute, title: 'Ответственный', data: (roll_exec) => 'Сидорук И.И.'},
@@ -165,16 +173,86 @@ const changeActiveRoll = (roll_exec) => {
     resetActiveFlag()
     activeRoll = roll_exec
     activeRoll.active = true
+    fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
+    // console.log(fabricsStore.globalActiveRolls)
 }
 
+// info: Отслеживание элементов управления состоянием выполнения рулона
 const toggleFabricExecuteInfo = () => {
     rollsRender.description.show = !rollsRender.description.show
     rollsRender.finishBy.show = !rollsRender.finishBy.show
 }
 
+// attract: Отслеживаем изменение значения в хранилище по отображению инфы о рулонах
 watch(()  => fabricsStore.globalExecuteRollsInfo, (newValue) => {
     toggleFabricExecuteInfo(newValue)
 })
+
+
+// attract: Отслеживаем изменение маркировки переходящего рулона
+watch(()  => fabricsStore.globalExecuteMarkRollRolling, (newState) => {
+    if (newState) {     // устанавливаем статус
+        if (activeRoll.status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return   // если статус != "Приостановлено"
+        activeRoll.status = FABRIC_ROLL_STATUS.ROLLING.CODE
+        activeRoll.rolling = true
+    } else {            // снимаем статус
+        if (activeRoll.status !== FABRIC_ROLL_STATUS.ROLLING.CODE) return   // если статус != "Приостановлено"
+        activeRoll.status = FABRIC_ROLL_STATUS.PAUSED.CODE
+        activeRoll.rolling = false
+    }
+})
+
+
+// attract: Переменная-флаг нажатия кнопки "Начать выполнение" рулона
+watch(() => fabricsStore.globalStartExecuteRoll, (newValue) => {
+    if (activeRoll.status !== FABRIC_ROLL_STATUS.CREATED.CODE) return   // если статус != "Создан"
+    fabricsStore.globalStartExecuteRoll = false                         // сбрасываем значение флага
+    activeRoll.status = FABRIC_ROLL_STATUS.RUNNING.CODE                 // меняем статус на "Выполняется"
+    activeRoll.start_at = new Date()
+    activeRoll.paused_at = null
+    activeRoll.resume_at = null
+    activeRoll.finish_at = null
+    activeRoll.duration = 0
+})
+
+// attract: Переменная-флаг нажатия кнопки "Приостановить выполнение" рулона
+watch(() => fabricsStore.globalPauseExecuteRoll, (newValue) => {
+    if (activeRoll.status !== FABRIC_ROLL_STATUS.RUNNING.CODE) return   // если статус != "Выполняется"
+    fabricsStore.globalPauseExecuteRoll = false                         // сбрасываем значение флага
+    activeRoll.status = FABRIC_ROLL_STATUS.PAUSED.CODE                  // меняем статус на "Приостановлено"
+    activeRoll.paused_at = new Date()
+
+    if (activeRoll.resume_at === null) {
+        activeRoll.duration = activeRoll.paused_at.getTime() - activeRoll.start_at.getTime()
+    } else {
+        activeRoll.duration += activeRoll.paused_at.getTime() - activeRoll.resume_at.getTime()
+    }
+})
+
+// attract: Переменная-флаг нажатия кнопки "Возобновить выполнение" рулона
+watch(() => fabricsStore.globalResumeExecuteRoll, (newValue) => {
+    if (activeRoll.status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return   // если статус != "Приостановлено"
+    fabricsStore.globalResumeExecuteRoll = false                       // сбрасываем значение флага
+    activeRoll.status = FABRIC_ROLL_STATUS.RUNNING.CODE                // меняем статус на "Выполняется"
+    activeRoll.resume_at = new Date()
+})
+
+watch(() => fabricsStore.globalFinishExecuteRoll, (newValue) => {
+    if (activeRoll.status !== FABRIC_ROLL_STATUS.RUNNING.CODE) return   // если статус != "Выполняется"
+    fabricsStore.globalFinishExecuteRoll = false                        // сбрасываем значение флага
+    activeRoll.status = FABRIC_ROLL_STATUS.DONE.CODE                    // меняем статус на "Выполнено"
+    activeRoll.finish_at = new Date()
+
+    if (activeRoll.resume_at === null) {
+        activeRoll.duration = activeRoll.finish_at.getTime() - activeRoll.start_at.getTime()
+    } else {
+        activeRoll.duration += activeRoll.finish_at.getTime() - activeRoll.resume_at.getTime()
+    }
+})
+// attract: Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
+
+
+
 
 </script>
 

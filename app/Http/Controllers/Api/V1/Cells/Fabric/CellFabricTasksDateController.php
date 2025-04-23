@@ -48,7 +48,8 @@ class CellFabricTasksDateController extends Controller
                 ->with([
                     'fabricTasks.fabricTaskContexts.fabricTaskRolls',
                     'fabricTasks.fabricTaskContexts.fabric',
-                    'user'
+                    'team',
+                    'user',
                 ])
                 ->orderBy('tasks_date')
                 ->get();
@@ -139,6 +140,7 @@ class CellFabricTasksDateController extends Controller
                             'fabric_tasks_date_id' => $tasksDay->id,
                             'fabric_machine_id' => $i,
                             'task_status' => $tasksDay->tasks_status,             // записываем пока общий статус всего СЗ
+                            'fabric_team_id' => $tasksDay['fabric_team_id'],
                             'active' => $taskData['active'],
                             'task_finish_at' => $taskData['finish_at'],
                             'description' => $taskData['description'],

@@ -100,9 +100,10 @@
         />
 
         <!-- attract: Время стегания -->
+<!--        :text="rollsRender.rollTime.data(roll_exec)"-->
         <AppLabel
             v-if="rollsRender.rollTime.show"
-            :text="rollsRender.rollTime.data(roll_exec)"
+            :text="duration"
             :title="rollsRender.rollTime.title"
             :type="getTypeByStatus(roll_exec)"
             :width="rollsRender.rollTime.width"
@@ -128,6 +129,15 @@
 </template>
 
 <script setup>
+import {onUnmounted, ref, watch} from 'vue'
+
+import {
+    FABRIC_ROLL_STATUS,
+    FABRIC_ROLL_STATUS_LIST,
+    FABRIC_TASK_STATUS
+} from '/resources/js/src/app/constants/fabrics.js'
+
+import {getDuration} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 
@@ -145,8 +155,57 @@ const props = defineProps({
 
 // attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
+
+    if (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE) return 'dark'
+    if (roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE) return 'warning'
+    if (roll_exec.status === FABRIC_ROLL_STATUS.PAUSED.CODE) return 'light'
+    if (roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE) return 'success'
+    if (roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE) return 'danger'
+    if (roll_exec.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return 'orange'
+
     return 'dark'
 }
+
+// attract: Добавляем часики выполнения рулона
+let intervalId = null   // Для очистки интервала, если он будет создан, чтобы убрать утечки памяти
+const duration = ref('')
+
+watch( () => props.roll_exec, (newRoll, oldRoll) => {
+
+    duration.value = getDuration(null, null, newRoll.duration)
+
+    if (newRoll.status === FABRIC_ROLL_STATUS.RUNNING.CODE) {
+
+        if (!intervalId) {
+
+            intervalId = setInterval(() => {
+
+                if (!newRoll.resume_at) {
+                    duration.value = getDuration(newRoll.start_at)
+                } else {
+                    duration.value = getDuration(newRoll.resume_at, null, newRoll.duration)
+                }
+
+            }, 1000)
+        }
+
+    } else if (newRoll.status === FABRIC_ROLL_STATUS.DONE.CODE || newRoll.status === FABRIC_ROLL_STATUS.PAUSED.CODE) {
+
+        if (intervalId !== null) {
+            clearInterval(intervalId);
+            intervalId = null
+            duration.value = getDuration(null, null, newRoll.duration)
+        }
+
+    }
+}, {deep: true, immediate: true})
+
+
+onUnmounted(() => {
+    if (intervalId !== null) {
+        clearInterval(intervalId);
+    }
+});
 
 </script>
 

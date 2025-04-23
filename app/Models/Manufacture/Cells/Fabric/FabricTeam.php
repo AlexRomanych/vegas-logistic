@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class FabricTeam extends Model
 {
-    //
+    protected $guarded = [];
 }

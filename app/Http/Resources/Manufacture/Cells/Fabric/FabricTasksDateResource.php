@@ -42,8 +42,12 @@ class FabricTasksDateResource extends JsonResource
                         'position' => $roll->roll_position,
                         'status' => $roll->roll_status,
                         'start_at' => $roll->start_at,
+                        'paused_at' => $roll->paused_at,
+                        'resume_at' => $roll->resume_at,
                         'finish_at' => $roll->finish_at,
+                        'duration' => $roll->duration,
                         'finish_by' => $roll->finish_by,
+                        'rolling' => $roll->rolling,
                         'textile_length' => (float)$roll->textile_roll_length,
                         'productivity' => (float)$roll->productivity,
                         'descr' => $roll->description,
@@ -58,10 +62,8 @@ class FabricTasksDateResource extends JsonResource
                     'rolls_amount' => $rollContext->rolls_amount,
                     'length_amount' => $rollContext->rolls_amount * $rollContext->average_textile_length,
                     'fabric_id' => $rollContext->fabric_id,
-                    'fabric' =>  $rollContext->fabric->display_name, // Здесь будет название ткани, получим на бэке название ткани
-                    'fabric_rate' =>  (float)$rollContext->fabric->translate_rate, // Здесь будет название ткани, получим на бэке название ткани
-//                    'fabric__' =>  $rollContext->fabric, // Здесь будет название ткани, получим на бэке название ткани
-//                    'fabric' => '', // Здесь будет название ткани, получим на бэке название ткани
+                    'fabric' =>  $rollContext->fabric->display_name,
+                    'fabric_rate' =>  (float)$rollContext->fabric->translate_rate,
                     'fabric_mode' => $rollContext->fabric_mode,
                     'descr' => $rollContext->description,
                     'correct' => true,
@@ -96,7 +98,7 @@ class FabricTasksDateResource extends JsonResource
             'date' => $this->tasks_date,
             'common' => [
                 'active' => $this->active,
-                'team' => 1,
+                'team' => $this->team->team_no,
                 'status' => $this->tasks_status,
                 'start_at' => $this->tasks_start_date ? (new Carbon($this->tasks_start_date))->format('Y-m-d H:i:s') : null,
                 'finish_at' => $this->tasks_finish_date ? (new Carbon($this->tasks_finish_date))->format('Y-m-d H:i:s') : null,
