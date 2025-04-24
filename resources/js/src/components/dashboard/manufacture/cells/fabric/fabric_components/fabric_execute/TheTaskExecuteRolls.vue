@@ -10,8 +10,8 @@
         <div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">
 
             <div
-                class="cursor-pointer"
-                :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''">
+                :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"
+                class="cursor-pointer">
 
                 <!-- attract: Сам рулон  -->
                 <TheTaskExecuteRoll
@@ -147,7 +147,7 @@ const rollsRender = reactive({
         data: (roll_exec) => roll_exec.descr
     },
     status: {
-        width: 'w-[90px]',
+        width: 'w-[100px]',
         show: true,
         title: 'Статус',
         data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY[roll_exec.status].TITLE
@@ -184,27 +184,41 @@ const toggleFabricExecuteInfo = () => {
 }
 
 // attract: Отслеживаем изменение значения в хранилище по отображению инфы о рулонах
-watch(()  => fabricsStore.globalExecuteRollsInfo, (newValue) => {
+watch(() => fabricsStore.globalExecuteRollsInfo, (newValue) => {
     toggleFabricExecuteInfo(newValue)
 })
 
+// attract: Отслеживаем изменение Выполнено/Не выполнено
+watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {
+
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) {
+        activeRoll.status = FABRIC_ROLL_STATUS.FALSE.CODE   // если статус != "Приостановлено"
+    } else if (activeRoll.status === FABRIC_ROLL_STATUS.FALSE.CODE) {
+        activeRoll.status = FABRIC_ROLL_STATUS.CREATED.CODE
+    }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    // console.log(res)
+
+})
 
 // attract: Отслеживаем изменение маркировки переходящего рулона
-watch(()  => fabricsStore.globalExecuteMarkRollRolling, (newState) => {
-    if (newState) {     // устанавливаем статус
-        if (activeRoll.status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return   // если статус != "Приостановлено"
+watch(() => fabricsStore.globalExecuteMarkRollRolling, async (newState) => {
+
+    if (activeRoll.status === FABRIC_ROLL_STATUS.PAUSED.CODE) {
         activeRoll.status = FABRIC_ROLL_STATUS.ROLLING.CODE
         activeRoll.rolling = true
-    } else {            // снимаем статус
-        if (activeRoll.status !== FABRIC_ROLL_STATUS.ROLLING.CODE) return   // если статус != "Приостановлено"
+    } else if (activeRoll.status === FABRIC_ROLL_STATUS.ROLLING.CODE) {
         activeRoll.status = FABRIC_ROLL_STATUS.PAUSED.CODE
         activeRoll.rolling = false
     }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 
 
 // attract: Переменная-флаг нажатия кнопки "Начать выполнение" рулона
-watch(() => fabricsStore.globalStartExecuteRoll, (newValue) => {
+watch(() => fabricsStore.globalStartExecuteRoll, async (newValue) => {
     if (activeRoll.status !== FABRIC_ROLL_STATUS.CREATED.CODE) return   // если статус != "Создан"
     fabricsStore.globalStartExecuteRoll = false                         // сбрасываем значение флага
     activeRoll.status = FABRIC_ROLL_STATUS.RUNNING.CODE                 // меняем статус на "Выполняется"
@@ -213,10 +227,14 @@ watch(() => fabricsStore.globalStartExecuteRoll, (newValue) => {
     activeRoll.resume_at = null
     activeRoll.finish_at = null
     activeRoll.duration = 0
+
+    console.log('activeRoll.start_at: ', activeRoll.start_at)
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 
 // attract: Переменная-флаг нажатия кнопки "Приостановить выполнение" рулона
-watch(() => fabricsStore.globalPauseExecuteRoll, (newValue) => {
+watch(() => fabricsStore.globalPauseExecuteRoll, async (newValue) => {
     if (activeRoll.status !== FABRIC_ROLL_STATUS.RUNNING.CODE) return   // если статус != "Выполняется"
     fabricsStore.globalPauseExecuteRoll = false                         // сбрасываем значение флага
     activeRoll.status = FABRIC_ROLL_STATUS.PAUSED.CODE                  // меняем статус на "Приостановлено"
@@ -227,17 +245,21 @@ watch(() => fabricsStore.globalPauseExecuteRoll, (newValue) => {
     } else {
         activeRoll.duration += activeRoll.paused_at.getTime() - activeRoll.resume_at.getTime()
     }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 
 // attract: Переменная-флаг нажатия кнопки "Возобновить выполнение" рулона
-watch(() => fabricsStore.globalResumeExecuteRoll, (newValue) => {
+watch(() => fabricsStore.globalResumeExecuteRoll, async (newValue) => {
     if (activeRoll.status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return   // если статус != "Приостановлено"
     fabricsStore.globalResumeExecuteRoll = false                       // сбрасываем значение флага
     activeRoll.status = FABRIC_ROLL_STATUS.RUNNING.CODE                // меняем статус на "Выполняется"
     activeRoll.resume_at = new Date()
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 
-watch(() => fabricsStore.globalFinishExecuteRoll, (newValue) => {
+watch(() => fabricsStore.globalFinishExecuteRoll, async (newValue) => {
     if (activeRoll.status !== FABRIC_ROLL_STATUS.RUNNING.CODE) return   // если статус != "Выполняется"
     fabricsStore.globalFinishExecuteRoll = false                        // сбрасываем значение флага
     activeRoll.status = FABRIC_ROLL_STATUS.DONE.CODE                    // меняем статус на "Выполнено"
@@ -248,10 +270,10 @@ watch(() => fabricsStore.globalFinishExecuteRoll, (newValue) => {
     } else {
         activeRoll.duration += activeRoll.finish_at.getTime() - activeRoll.resume_at.getTime()
     }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 // attract: Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
-
-
 
 
 </script>

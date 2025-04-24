@@ -1,7 +1,25 @@
 <?php
 
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+
+
+if (! function_exists('correctTimeZone')) {
+
+    /**
+     * Функция переводит дату из UTC в текущее время зоны
+     * @param string $dateString
+     * @return Carbon
+     */
+    function correctTimeZone(string $dateString = ''): Carbon
+    {
+        $dateInUtc = Carbon::parse($dateString);
+        $currentTimezone = Config::get('app.timezone', 'Europe/Minsk');
+        return $dateInUtc->setTimezone($currentTimezone);
+    }
+}
 
 /**
  * Возвращает преобразованную строку (обычно это название в 1С)

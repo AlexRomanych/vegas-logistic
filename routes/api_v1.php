@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricServiceController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskRollController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTasksDateController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
@@ -233,6 +234,9 @@ Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'g
 Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
 Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
 Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
+
+Route::put('/fabrics/tasks/execute/roll/update/', [CellFabricTaskRollController::class, 'update'])->middleware('jwt.auth');
+//
 
 // descr: Тут просто точки доступа для разных действий
 Route::get('fabrics/tasks/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate'])->middleware('jwt.auth');

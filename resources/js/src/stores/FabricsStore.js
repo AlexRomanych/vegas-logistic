@@ -33,6 +33,10 @@ const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL �
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
 
+const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE = 'fabrics/tasks/execute/roll/update/' // URL для обновления выполняемого рулона (FabricTaskContext)
+
+
+
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
 export const useFabricsStore = defineStore('fabrics', () => {
@@ -96,6 +100,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // attract: Переменная-флаг нажатия кнопки "Переходящий рулон"
     const globalExecuteMarkRollRolling = ref(false)
+
+    // attract: Переменная-флаг нажатия кнопки "Невыполнено"
+    const globalExecuteMarkRollFalse = ref(false)
 
     // info----------------------------------------------------------------------------------------
 
@@ -291,7 +298,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
-
+    // attract: Обновление данных выполняемого рулона
+    const updateExecuteRoll = async (rollData) => {
+        // if (rollId === null) return
+        console.log('st_at', rollData.start_at.toISOString())
+        // rollData.start_at = rollData.start_at.toLocaleString()
+        const result = await jwtPut(URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE, {data: rollData})
+        console.log('store', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
 
 
     return {
@@ -303,7 +318,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalTaskProductivity, clearTaskGlobalProductivity,
         globalRollsIndexes,
         globalActiveRolls,
-        globalExecuteRollsInfo, globalExecuteMarkRollRolling,
+        globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         getFabrics,
         getFabricById,
@@ -321,7 +336,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskStatus,
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
-        getFabricTeamNumberByDate
+        getFabricTeamNumberByDate,
+        updateExecuteRoll
     }
 
 })

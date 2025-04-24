@@ -50,22 +50,23 @@
         <AppLabelMultiLine
             :text="['Редактировать', 'сохранить']"
             align="center"
-            type="warning"
             class="cursor-pointer"
             text-size="mini"
+            type="warning"
             width="w-[100px]"
             @click="toggleInformation()"
         />
 
         <!-- attract: Не выполнено -->
         <AppLabelMultiLine
-            :text="['Не', 'выполнено']"
+            :text="falseLabelText"
+            :type="falseButtonDisabledFlag ? 'dark' : 'danger'"
             align="center"
-            type="danger"
             class="cursor-pointer"
             text-size="mini"
+            type="danger"
             width="w-[100px]"
-            @click="toggleInformation()"
+            @click="toggleFalse()"
         />
 
         <!-- attract: Отметить как переходящий -->
@@ -73,9 +74,9 @@
             :text="rollingMarkLabelText"
             :type="rollingButtonDisabledFlag ? 'dark' : 'orange'"
             align="center"
-            type="orange"
             class="cursor-pointer"
             text-size="mini"
+            type="orange"
             width="w-[100px]"
             @click="toggleRollingMark()"
         />
@@ -84,9 +85,9 @@
         <AppLabelMultiLine
             :text="extendInfoLabelText"
             align="center"
-            type="primary"
             class="cursor-pointer"
             text-size="mini"
+            type="primary"
             width="w-[100px]"
             @click="toggleInformation()"
         />
@@ -204,6 +205,7 @@ const isEndButtonDisabled = () => {
 }
 
 // attract: Возвращает статус кнопки "Переходящий рулон"
+const rollingMarkLabelText = ref(['Отметить', 'переходящим'])
 const isRollingButtonDisabled = () => {
     // if (!isPausedRollPresent()) return true         // если нет рулона на паузе, то не не активируем
     // if (isRollingRollPresent()) return false
@@ -212,8 +214,27 @@ const isRollingButtonDisabled = () => {
     console.log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
 
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
+
+    rollingMarkLabelText.value =
+        fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE ? ['Снять отметку', 'переходящий'] : ['Отметить', 'переходящим']
+
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE) return false
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return true
+}
+
+// attract: Возвращает статус кнопки "Не выполнено"
+const falseLabelText = ref(['Не', 'выполнено'])
+const isFalseButtonDisabled = () => {
+    if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
+
+    falseLabelText.value =
+        fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE ? ['Снять отметку', 'не выполнено'] : ['Не', 'выполнено']
+
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CREATED.CODE) return false
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return false
+
+    return true
+
 }
 
 
@@ -224,6 +245,7 @@ const resumeButtonDisabledFlag = ref(isResumeButtonDisabled())  // нужно д
 const endButtonDisabledFlag = ref(isEndButtonDisabled())        // нужно для реактивности
 
 const rollingButtonDisabledFlag = ref(isRollingButtonDisabled())
+const falseButtonDisabledFlag = ref(isFalseButtonDisabled())
 
 // info: ---------------------------------------------------------
 
@@ -250,26 +272,26 @@ const toggleInformation = () => {
     extendInfoLabelText.value = ['Больше', 'инфы']
 }
 
-// attract: больше/меньше инфы
-const rollingMarkLabelText = ref(['Отметить', 'переходящим'])
+// attract: Переходящий рулон/Снять отметку
 const toggleRollingMark = () => {
 
     if (rollingButtonDisabledFlag.value) return
 
     fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
-    if (fabricsStore.globalExecuteMarkRollRolling) {
-        rollingMarkLabelText.value = ['Снять', 'отметку']
-        return
-    }
-    rollingMarkLabelText.value = ['Отметить', 'переходящим']
+    // if (fabricsStore.globalExecuteMarkRollRolling) {
+    //     rollingMarkLabelText.value = ['Снять отметку', 'переходящий']
+    //     return
+    // }
+    // rollingMarkLabelText.value = ['Отметить', 'переходящим']
 }
 
+// attract: Не выполнено/Снять отметку
+const toggleFalse = () => {
 
+    if (falseButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
 
-
-
-
-
+    fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
+}
 
 
 // attract: Начать выполнение
@@ -347,6 +369,7 @@ watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
     resumeButtonDisabledFlag.value = isResumeButtonDisabled()   // нужно для реактивности
     endButtonDisabledFlag.value = isEndButtonDisabled()         // нужно для реактивности
     rollingButtonDisabledFlag.value = isRollingButtonDisabled()
+    falseButtonDisabledFlag.value = isFalseButtonDisabled()
     // console.log(startButtonDisabledFlag.value)
     // console.log(endButtonDisabledFlag.value)
 
