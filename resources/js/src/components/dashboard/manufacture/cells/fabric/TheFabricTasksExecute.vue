@@ -263,7 +263,7 @@ tasks = tasks.filter(
 // attract: Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
 if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
     const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
-    tasks.unshift(lastDoneTask)
+    if (lastDoneTask) tasks.unshift(lastDoneTask)       // добавляем последнее СЗ в начало массива, если оно есть
     // console.log('lastDoneTask:', lastDoneTask)
 }
 

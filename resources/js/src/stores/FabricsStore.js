@@ -102,7 +102,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalExecuteMarkRollRolling = ref(false)
 
     // attract: Переменная-флаг нажатия кнопки "Невыполнено"
-    const globalExecuteMarkRollFalse = ref(false)
+    const globalExecuteMarkRollFalse = ref(false)               // маяк кнопки
+    const globalExecuteMarkRollFalseReason = ref('')            // причина невыполненного рулона
 
     // info----------------------------------------------------------------------------------------
 
@@ -301,7 +302,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // attract: Обновление данных выполняемого рулона
     const updateExecuteRoll = async (rollData) => {
         // if (rollId === null) return
-        console.log('st_at', rollData.start_at.toISOString())
+        // console.log('st_at', rollData.start_at.toISOString())
         // rollData.start_at = rollData.start_at.toLocaleString()
         const result = await jwtPut(URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE, {data: rollData})
         console.log('store', result)
@@ -318,7 +319,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalTaskProductivity, clearTaskGlobalProductivity,
         globalRollsIndexes,
         globalActiveRolls,
-        globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse,
+        globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse, globalExecuteMarkRollFalseReason,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         getFabrics,
         getFabricById,

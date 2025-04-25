@@ -82,6 +82,8 @@ class CellFabricTasksDateController extends Controller
                 ->orderBy('tasks_date', 'desc')
                 ->first();
 
+            if (!$tasksQuery) {return json_encode(['data' => null]);}
+
             return new FabricTasksDateResource($tasksQuery);
 
         } catch (Exception $e) {

@@ -59,7 +59,7 @@
         <AppLabel
             v-if="rollsRender.description.show"
             :text="rollsRender.description.data(roll_exec)"
-            :title="rollsRender.description.title"
+            :title="rollsRender.description.title(roll_exec)"
             :type="getTypeByStatus(roll_exec)"
             :width="rollsRender.description.width"
             class="truncate"
@@ -121,6 +121,16 @@
             text-size="mini"
         />
 
+        <!-- attract: Причина невыполнения -->
+        <AppLabel
+            v-if="rollsRender.reason.show"
+            :text="rollsRender.reason.data(roll_exec)"
+            :title="rollsRender.reason.title(roll_exec)"
+            :type="getTypeByStatus(roll_exec)"
+            :width="rollsRender.reason.width"
+            class="truncate"
+            text-size="mini"
+        />
 <!--        <div>-->
 <!--            {{roll_exec.position}}-->
 <!--        </div>-->

@@ -5,9 +5,9 @@
 
         <textarea
             :id="id"
-            v-model="areaText"
+            v-model.trim="areaText"
 
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass]"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass, semibold]"
 
             :disabled="disabled"
             :maxlength="maxlength"

@@ -6,10 +6,11 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use \Exception;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+//use Carbon\Carbon;
+//use Illuminate\Support\Facades\DB;
 
 class CellFabricTaskRollController extends Controller
 {
@@ -25,6 +26,7 @@ class CellFabricTaskRollController extends Controller
 
             $updateData = [
                 'roll_status' => $rollData['status'],
+                'roll_status_previous' => $rollData['status_prev'],
                 'start_at' => $this->getUTCDateOrNull($rollData['start_at']),
                 'paused_at' => $this->getUTCDateOrNull($rollData['paused_at']),
                 'resume_at' => $this->getUTCDateOrNull($rollData['resume_at']),
@@ -33,6 +35,8 @@ class CellFabricTaskRollController extends Controller
                 'finish_by' => $rollData['finish_by'],
                 'rolling' => $rollData['rolling'],
                 'description' => $rollData['descr'],
+                'false_reason' => $rollData['false_reason'],
+                'user_id' => Auth::id(),    // Текущий пользователь
             ];
 
 //        if (!is_null($rollData['start_at'])) $updateData['start_at'] = $rollData['start_at'];

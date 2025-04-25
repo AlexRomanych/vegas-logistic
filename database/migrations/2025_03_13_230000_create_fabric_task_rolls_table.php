@@ -58,12 +58,23 @@ return new class extends Migration {
 
             // attract: Ответственный за выпуск рулона на стежке
             $table->ForeignId('finish_by')
-                ->nullable(false)->default(0)->comment('Ответственный за производство рулона')
+                ->nullable()->default(0)->comment('Ответственный за производство рулона')
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
 
+
+            // attract: Id учетной записи пользователя, под записью которого были сделаны последние изменения
+            $table->ForeignId('user_id')
+                ->nullable()->default(0)->comment('Id учетной записи пользователя, под записью которого были сделаны последние изменения')
+                ->constrained('users', 'id')
+                ->nullOnDelete();
+
+
             // attract: Статус стегания рулона
             $table->unsignedTinyInteger('roll_status')->nullable(false)->default(0)->comment('Статус задания');
+
+            // attract: Предыдущий Статус стегания рулона (на будущее, для отслеживания динамики выполнения)
+            $table->unsignedTinyInteger('roll_status_previous')->nullable(false)->default(0)->comment('Статус задания');
 
             // attract: Постановка рулона на учет в 1С
             $table->timestamp('registration_1C_at')

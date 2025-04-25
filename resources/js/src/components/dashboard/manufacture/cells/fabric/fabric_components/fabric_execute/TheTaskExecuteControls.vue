@@ -94,13 +94,24 @@
 
     </div>
 
-    <!-- attract: Модальное окно -->
+    <!-- attract: Модальное окно для подтверждений -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
         :type="modalType"
         mode="confirm"
     />
+
+    <!-- attract: Модальное окно для ввода данных -->
+    <AppModalAsyncArea
+        ref="appModalAsyncArea"
+        :text="modalTextArea"
+        :type="modalTypeArea"
+        mode="confirm"
+        placeholder="Введите текст..."
+
+    />
+
 
 </template>
 
@@ -113,6 +124,7 @@ import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resource
 
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppModalAsyncArea from '/resources/js/src/components/ui/modals/AppModalAsyncArea.vue'
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга
@@ -128,7 +140,7 @@ const props = defineProps({
 })
 
 const emits = defineEmits([
-    'start-execute-roll', 'pause-execute-roll', 'resume-execute-roll', 'finish-execute-roll',
+    'start-execute-roll', 'pause-execute-roll', 'resume-execute-roll', 'finish-execute-roll', 'false-execute-roll',
 ])
 
 // attract: Получаем данные из хранилища по ПС
@@ -251,11 +263,15 @@ const falseButtonDisabledFlag = ref(isFalseButtonDisabled())
 
 //hr--------------------------------------------------------------
 
-// attract: Получаем ссылку на модальное окно с асинхронной функцией
+// attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
 const appModalAsync = ref(null)
 const modalText = ref([])
 const modalType = ref('danger')
 
+// attract: Получаем ссылку на модальное для ввода данных окно с асинхронной функцией
+const appModalAsyncArea = ref(null)
+const modalTextArea = ref([])
+const modalTypeArea = ref('danger')
 
 //hr--------------------------------------------------------------
 
@@ -273,24 +289,71 @@ const toggleInformation = () => {
 }
 
 // attract: Переходящий рулон/Снять отметку
-const toggleRollingMark = () => {
+const toggleRollingMark = async () => {
 
     if (rollingButtonDisabledFlag.value) return
 
-    fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
-    // if (fabricsStore.globalExecuteMarkRollRolling) {
-    //     rollingMarkLabelText.value = ['Снять отметку', 'переходящий']
-    //     return
-    // }
-    // rollingMarkLabelText.value = ['Отметить', 'переходящим']
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE) {   // если уже есть отметка, то удаляем ее
+
+        modalText.value = ['Будет сброшен статус "Переходящий".', 'Продолжить?']
+        modalType.value = 'orange'
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            fabricsStore.globalExecuteMarkRollFalseReason = ''
+            fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
+            emits('resume-execute-roll')
+        }
+
+        return
+    }
+
+    modalTypeArea.value = 'orange'
+    modalTextArea.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
+
+    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+
+        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+        fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
+        emits('resume-execute-roll')
+    }
 }
 
 // attract: Не выполнено/Снять отметку
-const toggleFalse = () => {
+const toggleFalse = async () => {
 
     if (falseButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
 
-    fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) {   // если уже есть отметка, то удаляем ее
+
+        modalText.value = ['Будет изменен статус "Не выполнено".', 'Продолжить?']
+        modalType.value = 'danger'
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            fabricsStore.globalExecuteMarkRollFalseReason = ''
+            fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
+            emits('resume-execute-roll')
+        }
+
+        return
+    }
+
+    modalTypeArea.value = 'danger'
+    modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
+
+    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+
+        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+        fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
+        emits('false-execute-roll')
+    }
 }
 
 

@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->id()->from('1');
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
@@ -42,6 +42,7 @@ return new class extends Migration
         // Добавляем пользователя "Не определено"
         DB::table('users')->insert(
             [
+                'id' => '0',
                 'name' => 'Не определено',
                 'email' => 'none@none.none',
                 'password' => 'none',

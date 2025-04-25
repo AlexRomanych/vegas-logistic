@@ -36,22 +36,26 @@ class FabricTasksDateResource extends JsonResource
 
                 $rolls = [];
                 foreach ($rollContext->fabricTaskRolls as $roll) {
-                    $rolls[] = [
-                        'id' => $roll->id,
-                        'fabric_id' => $roll->fabric_id,
-                        'position' => $roll->roll_position,
-                        'status' => $roll->roll_status,
-                        'start_at' => $roll->start_at,
-                        'paused_at' => $roll->paused_at,
-                        'resume_at' => $roll->resume_at,
-                        'finish_at' => $roll->finish_at,
-                        'duration' => $roll->duration,
-                        'finish_by' => $roll->finish_by,
-                        'rolling' => $roll->rolling,
-                        'textile_length' => (float)$roll->textile_roll_length,
-                        'productivity' => (float)$roll->productivity,
-                        'descr' => $roll->description,
-                    ];
+
+                    $rolls[] = new FabricTaskRollResource($roll);
+
+
+//                    $rolls[] = [
+//                        'id' => $roll->id,
+//                        'fabric_id' => $roll->fabric_id,
+//                        'position' => $roll->roll_position,
+//                        'status' => $roll->roll_status,
+//                        'start_at' => $roll->start_at,
+//                        'paused_at' => $roll->paused_at,
+//                        'resume_at' => $roll->resume_at,
+//                        'finish_at' => $roll->finish_at,
+//                        'duration' => $roll->duration,
+//                        'finish_by' => $roll->finish_by,
+//                        'rolling' => $roll->rolling,
+//                        'textile_length' => (float)$roll->textile_roll_length,
+//                        'productivity' => (float)$roll->productivity,
+//                        'descr' => $roll->description,
+//                    ];
                 }
 
 
@@ -62,8 +66,8 @@ class FabricTasksDateResource extends JsonResource
                     'rolls_amount' => $rollContext->rolls_amount,
                     'length_amount' => $rollContext->rolls_amount * $rollContext->average_textile_length,
                     'fabric_id' => $rollContext->fabric_id,
-                    'fabric' =>  $rollContext->fabric->display_name,
-                    'fabric_rate' =>  (float)$rollContext->fabric->translate_rate,
+                    'fabric' => $rollContext->fabric->display_name,
+                    'fabric_rate' => (float)$rollContext->fabric->translate_rate,
                     'fabric_mode' => $rollContext->fabric_mode,
                     'descr' => $rollContext->description,
                     'correct' => true,

@@ -60,12 +60,12 @@
         <AppLabelMultiLine
             v-if="rollsRender.description.show"
             :text="['Комментарий', '']"
-            :title="rollsRender.description.title"
             :type="getHeaderType()"
             :width="rollsRender.description.width"
             align="center"
             class="truncate"
             text-size="mini"
+            title="Комментарий"
         />
 
         <!-- attract: Статус -->
@@ -122,6 +122,18 @@
             align="center"
             text-size="mini"
         />
+
+        <!-- attract: Причина невыполнения -->
+        <AppLabelMultiLine
+            v-if="rollsRender.reason.show"
+            :text="['Причина', 'невыполнения']"
+            :type="getHeaderType()"
+            :width="rollsRender.reason.width"
+            align="center"
+            text-size="mini"
+            title="Причина невыполнения"
+        />
+
     </div>
 
 </template>
@@ -129,6 +141,7 @@
 <script setup>
 
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppLabel from "@/src/components/ui/labels/AppLabel.vue";
 
 const props = defineProps({
     rollsRender: {

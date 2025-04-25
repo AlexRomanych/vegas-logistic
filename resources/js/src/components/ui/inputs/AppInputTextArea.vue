@@ -94,13 +94,6 @@ const props = defineProps({
         required: false,
         default: 50,
     },
-    textSize: {
-        type: String,
-        required: false,
-        default: 'normal',
-        validator: (size) => fontSizesList.includes(size)
-        // validator: (size) => ['micro', 'mini', 'normal', 'small', 'large', 'huge'].includes(size)
-    },
     bold: {
         type: Boolean,
         required: false,
@@ -126,6 +119,18 @@ const props = defineProps({
         required: false,
         default: 'danger',
         validator: (type) => colorsList.includes(type)
+    },
+    textSize: {
+        type: String,
+        required: false,
+        default: 'normal',
+        validator: (size) => fontSizesList.includes(size)
+    },
+    labelTextSize: {
+        type: String,
+        required: false,
+        default: 'mini',
+        validator: (size) => fontSizesList.includes(size)
     },
 
 })

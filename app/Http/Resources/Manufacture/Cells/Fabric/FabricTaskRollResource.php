@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,7 +20,8 @@ class FabricTaskRollResource extends JsonResource
             'fabric_id' => $this->fabric_id,
             'position' => $this->roll_position,
             'status' => $this->roll_status,
-            'start_at' => $this->start_at,
+            'status_prev' => $this->roll_status_previous,
+            'start_at' => $this->start_at, // ? Carbon::parse($this->start_at)->format('d.m.Y H:i:s') : null,
             'paused_at' => $this->paused_at,
             'resume_at' => $this->resume_at,
             'finish_at' => $this->finish_at,
@@ -28,7 +30,9 @@ class FabricTaskRollResource extends JsonResource
             'rolling' => $this->rolling,
             'textile_length' => (float)$this->textile_roll_length,
             'productivity' => (float)$this->productivity,
+            'false_reason' => $this->false_reason,
             'descr' => $this->description,
+//            'user' => $this->user->name,
         ];
         //        return parent::toArray($request);
     }
