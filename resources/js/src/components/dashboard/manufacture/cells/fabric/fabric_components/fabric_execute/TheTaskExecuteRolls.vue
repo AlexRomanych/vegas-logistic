@@ -133,6 +133,12 @@ const rollsRender = reactive({
         title: 'Средняя длина ткани, м.п.',
         data: (roll_exec) => roll_exec.textile_length.toFixed(2)
     },
+    fabricLength: {
+        width: 'w-[50px]',
+        show: true,
+        title: 'Средняя длина ПС, м.п.',
+        data: (roll_exec) => roll_exec.textile_length/roll_exec.textile_length .toFixed(2)
+    },
     rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
     productivity: {
         width: 'w-[90px]',
@@ -195,6 +201,19 @@ const toggleFabricExecuteInfo = () => {
 watch(() => fabricsStore.globalExecuteRollsInfo, (newValue) => {
     toggleFabricExecuteInfo(newValue)
 })
+
+// attract: Отслеживаем изменение Изменить комментарий
+watch(() => fabricsStore.globalExecuteRollChangeDescription, async (newValue) => {
+    activeRoll.descr = fabricsStore.globalExecuteRollChangeDescriptionText
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+})
+
+// attract: Отслеживаем изменение Изменить длину ткани
+watch(() => fabricsStore.globalExecuteRollChangeTextile, async (newValue) => {
+    activeRoll.textile_length = fabricsStore.globalExecuteRollChangeTextileLength
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+})
+
 
 // attract: Отслеживаем изменение Выполнено/Не выполнено
 watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {

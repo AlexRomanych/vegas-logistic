@@ -28,3 +28,11 @@ export function isEmptyObj(obj) {
     return Object.keys(obj).length === 0
 }
 
+// descr: Строку на числовую валидность
+export function isNumeric(str) {
+    if (typeof str !== 'string' || str.trim() === '') {
+        return false;
+    }
+    return !isNaN(parseFloat(str)) && isFinite(Number(str));
+}
+

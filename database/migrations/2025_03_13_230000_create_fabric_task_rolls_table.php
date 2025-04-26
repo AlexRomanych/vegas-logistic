@@ -11,6 +11,7 @@ return new class extends Migration {
     private const TABLE_NAME = 'fabric_task_rolls';
     private const ROLL_NUMBER_START = 1;    // начальный номер рулона
 
+    private const DEFAULT_TRANSLATE_RATE = 1.044;       // Коэффициент перевода в ткани
     /**
      * Run the migrations.
      */
@@ -133,6 +134,7 @@ return new class extends Migration {
             $table->float('textile_roll_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
             $table->float('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
             $table->float('productivity')->nullable(false)->default(0)->comment('Средняя производительность на момент формирования, м/ч.');     // то, что получилось в результате стегания
+            $table->float('translate_rate')->nullable(false)->default(self::DEFAULT_TRANSLATE_RATE)->comment('Коэффициент перевода');   // Непонятно пока зачем, но он равен 1,044 примерно
             $table->float('defect_length')->nullable(false)->default(0)->comment('Брак, м.п.');
 
 

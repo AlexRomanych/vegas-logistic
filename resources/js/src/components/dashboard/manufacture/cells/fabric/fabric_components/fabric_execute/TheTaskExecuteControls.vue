@@ -46,17 +46,6 @@
             @click="finishExecuteRoll()"
         />
 
-        <!-- attract: Редактировать -->
-        <AppLabelMultiLine
-            :text="['Редактировать', 'сохранить']"
-            align="center"
-            class="cursor-pointer"
-            text-size="mini"
-            type="warning"
-            width="w-[100px]"
-            @click="toggleInformation()"
-        />
-
         <!-- attract: Не выполнено -->
         <AppLabelMultiLine
             :text="falseLabelText"
@@ -79,6 +68,28 @@
             type="orange"
             width="w-[100px]"
             @click="toggleRollingMark()"
+        />
+
+        <!-- attract: Изменить количество ткани -->
+        <AppLabelMultiLine
+            :text="['Изменить', 'метраж ткани']"
+            align="center"
+            class="cursor-pointer"
+            text-size="mini"
+            type="warning"
+            width="w-[100px]"
+            @click="changeTextileLength()"
+        />
+
+        <!-- attract: Изменить комментарий -->
+        <AppLabelMultiLine
+            :text="['Изменить', 'комментарий']"
+            align="center"
+            class="cursor-pointer"
+            text-size="mini"
+            type="warning"
+            width="w-[100px]"
+            @click="changeDescriptionText()"
         />
 
         <!-- attract: Больше/Меньше -->
@@ -107,12 +118,13 @@
         ref="appModalAsyncArea"
         :text="modalTextArea"
         :type="modalTypeArea"
+        :value="modalInitValueArea"
         mode="confirm"
         placeholder="Введите текст..."
 
     />
 
-
+<!--    modalInitValueArea-->
 </template>
 
 <script setup>
@@ -140,7 +152,13 @@ const props = defineProps({
 })
 
 const emits = defineEmits([
-    'start-execute-roll', 'pause-execute-roll', 'resume-execute-roll', 'finish-execute-roll', 'false-execute-roll',
+    'start-execute-roll',
+    'pause-execute-roll',
+    'resume-execute-roll',
+    'finish-execute-roll',
+    'false-execute-roll',
+    'change-description-execute-roll',
+    'change-textile-length-execute-roll'
 ])
 
 // attract: Получаем данные из хранилища по ПС
@@ -272,6 +290,7 @@ const modalType = ref('danger')
 const appModalAsyncArea = ref(null)
 const modalTextArea = ref([])
 const modalTypeArea = ref('danger')
+const modalInitValueArea = ref('')
 
 //hr--------------------------------------------------------------
 
@@ -288,6 +307,42 @@ const toggleInformation = () => {
     extendInfoLabelText.value = ['Больше', 'инфы']
 }
 
+// globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
+// attract: Изменить комментарий
+const changeDescriptionText = async () => {
+
+    modalTypeArea.value = 'warning'
+    modalTextArea.value = ['Измените комментарий:', '']
+    modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].descr ?? ''
+
+    const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].descr ?? '') // показываем модалку и ждем ответ
+    if (answer) {
+        if (!appModalAsyncArea.value.inputText.trim()) return                                     // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteRollChangeDescriptionText = appModalAsyncArea.value.inputText   // текст
+        fabricsStore.globalExecuteRollChangeDescription = !fabricsStore.globalExecuteRollChangeDescription
+        emits('change-description-execute-roll')
+    }
+}
+
+// attract: Изменить длину ткани
+const changeTextileLength = async () => {
+
+    modalTypeArea.value = 'warning'
+    modalTextArea.value = ['Измените длину рулона ткани:', '']
+
+    modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length.toString()
+
+    const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length.toString()) // показываем модалку и ждем ответ
+    if (answer) {
+        if (!appModalAsyncArea.value.inputNumber) return                                    // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteRollChangeTextileLength = appModalAsyncArea.value.inputNumber   // длина ткани
+        fabricsStore.globalExecuteRollChangeTextile = !fabricsStore.globalExecuteRollChangeTextile
+        emits('change-textile-length-execute-roll')
+    }
+}
+
 // attract: Переходящий рулон/Снять отметку
 const toggleRollingMark = async () => {
 
@@ -297,6 +352,7 @@ const toggleRollingMark = async () => {
 
         modalText.value = ['Будет сброшен статус "Переходящий".', 'Продолжить?']
         modalType.value = 'orange'
+
 
         const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
         if (answer) {
@@ -344,11 +400,12 @@ const toggleFalse = async () => {
 
     modalTypeArea.value = 'danger'
     modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
+    modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
 
     const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
     if (answer) {
 
-        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+        if (!appModalAsyncArea.value.inputText.trim('')) return                                   // если ничего нет, то выходим
 
         fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
         fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse

@@ -36,6 +36,7 @@ class CellFabricTaskRollController extends Controller
                 'rolling' => $rollData['rolling'],
                 'description' => $rollData['descr'],
                 'false_reason' => $rollData['false_reason'],
+                'textile_roll_length' => $rollData['textile_length'],
                 'user_id' => Auth::id(),    // Текущий пользователь
             ];
 

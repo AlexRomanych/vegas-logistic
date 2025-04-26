@@ -37,14 +37,25 @@
                 <div class="m-2">
 
                     <AppInputTextAreaSimple
+                        v-if="!isValueNumeric"
                         id="text-area"
+                        v-model.trim="targetText"
                         :placeholder="placeholder"
                         :rows=4
                         :type="type"
                         :value="value"
                         :width="width"
                         height="h-[150px]"
-                        v-model.trim="targetText"
+                    />
+
+                    <AppInputNumber
+                        v-if="isValueNumeric"
+                        id="number"
+                        v-model:input-number="targetNumber"
+                        :type="type"
+                        :value="targetNumber.toString()"
+                        :width="width"
+
                     />
 
                 </div>
@@ -93,11 +104,13 @@
 
 <script setup>
 import {computed, ref, watch,} from 'vue'
+import {isNumeric} from '/resources/js/src/app/helpers/helpers_lib.js'
 import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
 import {getColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
 import AppInputTextAreaSimple from '/resources/js/src/components/ui/inputs/AppInputTextAreaSimple.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
 
 const props = defineProps({
     width: {
@@ -137,8 +150,12 @@ const props = defineProps({
         required: false,
         default: 'inform',
         validator: (mode) => ['inform', 'confirm'].includes(mode)
+    },
+    numeric: {
+        type: Boolean,
+        required: false,
+        default: false
     }
-
 })
 
 const emit = defineEmits(['select'])
@@ -147,15 +164,31 @@ const emit = defineEmits(['select'])
 const getDisplayText = (text) => Array.isArray(text) ? text : [text]
 let displayTextArray = ref(getDisplayText(props.text))
 
+// const getAreaTextValue = (value) => value.trim()
+// const areaTextValue = ref(getAreaTextValue(props.value))
+
 const showModal = ref(false)                    // реактивность видимости модального окна
+
+// attract: Если поле текстовое
 const targetText = ref(props.value)                    // реактивность текста сообщения в area
+
+// attract: Если поле числовое
+const isValueNumeric = computed(() => isNumeric(props.value))
+const targetNumber = ref(isValueNumeric.value ? parseFloat(props.value) : 0)
+
 
 const getSaveButtonState = () => targetText.value.trim() !== ''
 const saveButtonState = ref(getSaveButtonState())      // реактивность состояния кнопки "Сохранить" в зависимости от area
 
 // attract: Обработка асинхронности
 let resolvePromise
-const show = () => {
+const show = (initTextValue = null) => {                  // передаем сюда значение для area, потому что может быть не определен props на момент вызова. Это своего рода подстраховка
+
+    if (initTextValue !== undefined && initTextValue !== null) {
+        targetText.value = initTextValue                                    // для текстовой модели
+        targetNumber.value = isValueNumeric ? parseFloat(initTextValue) : 0  // для числовой модели
+    }
+
     showModal.value = true;
     return new Promise((resolve) => {
         resolvePromise = resolve
@@ -174,7 +207,8 @@ const select = (value) => {
 // attract: даем родителю доступ к методам и свойствам компонента
 defineExpose({
     show,
-    inputText: targetText
+    inputText: targetText,
+    inputNumber: targetNumber,
 })
 
 // attract: Следим за отображением текста в модальном окне
@@ -184,16 +218,22 @@ watch(() => props.text, (value) => {
 
 // attract: Следим за состоянием текста в area
 watch(() => targetText.value, (newValue) => {
-    console.log(newValue)
     saveButtonState.value = getSaveButtonState()
 })
 
+// attract: Следим за состоянием числа в appInputNumber
+watch(() => targetNumber.value, (newValue) => {
+    saveButtonState.value = newValue >= 1
+})
+
+// attract: Следим за инициализирующим значением
+watch(() => props.value, (newValue) => {
+    targetText.value = newValue
+    // console.log(newValue)
+    // areaTextValue.value = getAreaTextValue(newValue)
+})
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
-
-
-
-
 
 </script>
 

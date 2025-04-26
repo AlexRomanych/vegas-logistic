@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     const TABLE_NAME = 'fabric_task_contexts';
 
+    private const DEFAULT_TRANSLATE_RATE = 1.044;       // Коэффициент перевода в ткани
+
     /**
      * Run the migrations.
      */
@@ -46,6 +48,10 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Средняя производительность стегания ПС при выставлении СЗ, м/ч');
+
+            // attract: Средний коэффициент перевода ткани на момент выставления СЗ,
+            // attract: чтобы можно было потом отследить чего-нибудь
+            $table->float('translate_rate')->nullable(false)->default(self::DEFAULT_TRANSLATE_RATE)->comment('Коэффициент перевода');   // Непонятно пока зачем, но он равен 1,044 примерно
 
             // attract: Привязка к сменному заданию
             $table->ForeignIdFor(FabricTask::class)

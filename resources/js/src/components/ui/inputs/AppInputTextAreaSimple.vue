@@ -192,7 +192,10 @@ const emit = defineEmits(['getAreaText'])
 
 const getAreaText = (e) => emit('getAreaText', e.target.value)
 
-
+// watch(() => props.value, (newValue) => {
+//     console.log('props.value: ', newValue)
+//     areaText.value = newValue
+// })
 
 
 </script>
