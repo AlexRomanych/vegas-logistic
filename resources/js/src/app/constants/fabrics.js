@@ -209,7 +209,8 @@ export const FABRICS_NULLABLE = {
         "max_rolls": 0,
         "optimal_party": 0,
         "average_length": 0,
-        "rate": 0,
+        "average_fabric_length": 0,
+        "rate": 1,
         "productivity": 0
     },
     "text": {
@@ -224,7 +225,10 @@ export const FABRICS_NULLABLE = {
 export const NEW_ROLL = {
     id: 0,
     average_textile_length: FABRICS_NULLABLE.buffer.average_length,
+    average_fabric_length: FABRICS_NULLABLE.buffer.average_fabric_length,
     productivity: FABRICS_NULLABLE.buffer.productivity,
+    rate: FABRICS_NULLABLE.buffer.rate,
+    buffer: FABRICS_NULLABLE.buffer.amount,
     rolls_amount: 0,
     length_amount: 0,
     fabric_id: FABRICS_NULLABLE.id,

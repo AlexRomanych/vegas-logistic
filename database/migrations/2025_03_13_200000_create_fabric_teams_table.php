@@ -16,10 +16,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
-            $table->id()->from(1);
+            $table->id()->from(5);
             $table->unsignedTinyInteger('team_no')->nullable(false)->unique()->comment('Номер бригады');
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность записи');
+
             $table->string('name')->nullable()->comment('Название бригады');
+
             $table->string('description')->nullable()->comment('Описание бригады');
             $table->string('comment')->nullable()->comment('Комментарий');
             $table->string('note')->nullable()->comment('Примечание');

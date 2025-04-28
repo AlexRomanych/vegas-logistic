@@ -35,21 +35,21 @@
 
 
                 <div class="m-2">
-
+<!--                    :key="rerenderKey"-->
                     <AppInputTextAreaSimple
-                        v-if="!isValueNumeric"
+                        v-if="!numeric"
                         id="text-area"
                         v-model.trim="targetText"
                         :placeholder="placeholder"
                         :rows=4
                         :type="type"
-                        :value="value"
+                        :value="targetText"
                         :width="width"
                         height="h-[150px]"
                     />
 
                     <AppInputNumber
-                        v-if="isValueNumeric"
+                        v-if="numeric"
                         id="number"
                         v-model:input-number="targetNumber"
                         :type="type"
@@ -155,7 +155,12 @@ const props = defineProps({
         type: Boolean,
         required: false,
         default: false
-    }
+    },
+    // rerenderKey: {
+    //     type: Number,
+    //     required: false,
+    //     default: 0
+    // }
 })
 
 const emit = defineEmits(['select'])
@@ -173,8 +178,9 @@ const showModal = ref(false)                    // реактивность ви
 const targetText = ref(props.value)                    // реактивность текста сообщения в area
 
 // attract: Если поле числовое
-const isValueNumeric = computed(() => isNumeric(props.value))
-const targetNumber = ref(isValueNumeric.value ? parseFloat(props.value) : 0)
+// const isValueNumeric = props.numeric
+// const isValueNumeric = computed(() => isNumeric(props.value))
+const targetNumber = ref(props.numeric ? parseFloat(props.value) : 0)
 
 
 const getSaveButtonState = () => targetText.value.trim() !== ''
@@ -186,7 +192,7 @@ const show = (initTextValue = null) => {                  // передаем с
 
     if (initTextValue !== undefined && initTextValue !== null) {
         targetText.value = initTextValue                                    // для текстовой модели
-        targetNumber.value = isValueNumeric ? parseFloat(initTextValue) : 0  // для числовой модели
+        targetNumber.value = props.numeric ? parseFloat(initTextValue) : 0  // для числовой модели
     }
 
     showModal.value = true;
@@ -231,7 +237,7 @@ watch(() => props.value, (newValue) => {
     targetText.value = newValue
     // console.log(newValue)
     // areaTextValue.value = getAreaTextValue(newValue)
-})
+}, {deep:true, immediate: true})
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 

@@ -33,6 +33,17 @@
             text-size="mini"
         />
 
+        <!-- attract: Средняя длина ПС -->
+        <AppLabel
+            v-if="rollsRender.fabricLength.show"
+            :text="rollsRender.fabricLength.data(roll_exec)"
+            :title="rollsRender.fabricLength.title"
+            :type="getTypeByStatus(roll_exec)"
+            :width="rollsRender.fabricLength.width"
+            align="center"
+            text-size="mini"
+        />
+
         <!-- attract: Количество рулонов (всегда = 1) -->
         <AppLabel
             v-if="rollsRender.rollsAmount.show"

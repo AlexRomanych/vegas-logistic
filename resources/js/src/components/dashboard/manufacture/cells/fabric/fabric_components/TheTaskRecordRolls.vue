@@ -35,6 +35,17 @@
             text-size="mini"
         />
 
+        <!-- attract: Средняя длина ПС -->
+        <AppLabelMultiLine
+            v-if="rollsRender.fabricLength.show"
+            :text="['Длина', 'ПС']"
+            :title="rollsRender.fabricLength.title"
+            :type="getHeaderType()"
+            :width="rollsRender.fabricLength.width"
+            align="center"
+            text-size="mini"
+        />
+
         <!-- attract: Количество рулонов (всегда = 1) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
@@ -61,7 +72,7 @@
         <AppLabelMultiLine
             v-if="rollsRender.description.show"
             :text="['Комментарий', '']"
-            :title="rollsRender.description.title"
+            :title="rollsRender.description.title()"
             :type="getHeaderType()"
             :width="rollsRender.description.width"
             align="center"
@@ -164,6 +175,17 @@
                     text-size="mini"
                 />
 
+                <!-- attract: Средняя длина ПС -->
+                <AppLabel
+                    v-if="rollsRender.fabricLength.show"
+                    :text="rollsRender.fabricLength.data(roll_exec)"
+                    :title="rollsRender.fabricLength.title"
+                    :type="getTypeByStatus(roll_exec)"
+                    :width="rollsRender.fabricLength.width"
+                    align="center"
+                    text-size="mini"
+                />
+
                 <!-- attract: Количество рулонов (всегда = 1) -->
                 <AppLabel
                     v-if="rollsRender.rollsAmount.show"
@@ -190,7 +212,7 @@
                 <AppLabel
                     v-if="rollsRender.description.show"
                     :text="rollsRender.description.data(roll_exec)"
-                    :title="rollsRender.description.title"
+                    :title="rollsRender.description.title(roll_exec)"
                     :type="getTypeByStatus(roll_exec)"
                     :width="rollsRender.description.width"
                     class="truncate"
@@ -316,7 +338,13 @@ const rollsRender = {
         title: 'Средняя длина ткани, м.п.',
         data: (roll_exec) => roll_exec.textile_length.toFixed(2)
     },
-    rollsAmount: {width: 'w-[30px]', show: true, title: 'Кол-во рулонов, шт.', data: () => '1'},
+    fabricLength: {
+        width: 'w-[50px]',
+        show: true,
+        title: 'Средняя длина ПС, м.п.',
+        data: (roll_exec) => (roll_exec.textile_length/roll_exec.rate).toFixed(2)
+    },
+    rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
     productivity: {
         width: 'w-[90px]',
         show: true,
@@ -324,10 +352,10 @@ const rollsRender = {
         data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.textile_length / roll_exec.productivity, 'hour')
     },
     description: {
-        width: props.execute ? 'w-[200px]' : 'w-[100px]',
+        width: props.execute ? 'w-[200px]' : 'w-[300px]',
         show: true,
-        title: 'Комментарий',
-        data: (roll_exec) => roll_exec.descr
+        title: (roll_exec) => roll_exec?.descr ?? 'Комментарий',
+        data: (roll_exec) => roll_exec.descr,
     },
     status: {
         width: 'w-[100px]',

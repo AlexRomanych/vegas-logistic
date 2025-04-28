@@ -35,15 +35,34 @@
             />
         </div>
 
+        <!-- attract: Буфер ПС -->
+        <AppLabelMultiLine
+            :text="!editMode ? buffer.toFixed(2) : [buffer.toFixed(2), '']"
+            :type="buffer ? 'dark' : 'danger'"
+            align="center"
+            height="h-[30px]"
+            text-size="mini"
+            width="w-[70px]"
+        />
+
         <!-- attract: Средняя длина рулона -->
-        <!--        :text="!editMode ? roll.average_length.toFixed(2) : [roll.average_length.toFixed(2), '']"-->
         <AppLabelMultiLine
             :text="!editMode ? averageLength.toFixed(2) : [averageLength.toFixed(2), '']"
             :type="averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            width="w-[100px]"
+            width="w-[70px]"
+        />
+
+        <!-- attract: Средняя длина ПС -->
+        <AppLabelMultiLine
+            :text="!editMode ? averageLengthFabric.toFixed(2) : [averageLengthFabric.toFixed(2), '']"
+            :type="averageLengthFabric ? 'dark' : 'danger'"
+            align="center"
+            height="h-[30px]"
+            text-size="mini"
+            width="w-[70px]"
         />
 
         <!-- attract: Количество в рулонах -->
@@ -74,7 +93,7 @@
             />
         </div>
 
-        <!-- attract: Количество в м.п. -->
+        <!-- attract: Количество ткани в м.п. -->
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="lengthAmount.toFixed(2)"
@@ -105,6 +124,15 @@
             <!-- warning: оставим только событие change  -->
         </div>
 
+        <!-- attract: Количество ПС в м.п. -->
+        <AppLabelMultiLine
+            :text="!editMode ? (averageLengthFabric*rollsAmount).toFixed(2) : [(averageLengthFabric*rollsAmount).toFixed(2), '']"
+            :type="averageLengthFabric ? 'dark' : 'danger'"
+            align="center"
+            height="h-[30px]"
+            text-size="mini"
+            width="w-[70px]"
+        />
 
         <!-- attract: Трудозатраты -->
         <AppLabelMultiLine
@@ -304,12 +332,29 @@ let selectData  // определяем в watch с флагом immediate: true
 const getFuncButtonsConstraints = () => !(fabricsStore.globalFabricsMode && !fabricMode.value) || !workRoll.fabric_id
 const funcButtonsConstraints = ref(getFuncButtonsConstraints())
 
-// attract: Определяем переменные для средней длины
+// attract: Определяем переменные для средней длины ткани
 const getAverageLength = () => {
     const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
     return tempFabric.buffer.average_length
 }
 const averageLength = ref(getAverageLength())
+
+// attract: Определяем переменные для средней длины ПС
+const getAverageLengthFabric = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
+    return tempFabric.buffer.average_length/tempFabric.buffer.rate
+}
+const averageLengthFabric = ref(getAverageLengthFabric())
+
+// attract: Определяем переменные для буфера ПС
+const getBuffer = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
+    return tempFabric.buffer.average_length/tempFabric.buffer.rate
+}
+const buffer = ref(getBuffer())
+
+
+
 
 // attract: Текст модального окна + Получаем ссылку на модальное окно
 const modalText = ref([])
@@ -474,23 +519,30 @@ const isRollsAmountFractional = ref(getIsRollsAmountFractional())
 const reactiveActions = () => {
 
     // warning: Порядок важен
-    selectData = getSelectData()                                                        // Вычисляем данные для селекта ПС
+    selectData = getSelectData()                                                            // Вычисляем данные для селекта ПС
 
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)         // Получаем объект ПС
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)             // Получаем объект ПС
 
-    workRoll.fabric = tempFabric.display_name                                           // Меняем название ПС
-    workRoll.average_textile_length = tempFabric.buffer.average_length                  // Меняем среднюю длину ПС
-    workRoll.productivity = tempFabric.buffer.productivity                              // Меняем производительность
+    workRoll.fabric = tempFabric.display_name                                               // Меняем название ПС
+    workRoll.buffer = tempFabric.buffer.amount                                              // Меняем Буфер
+    workRoll.average_textile_length = tempFabric.buffer.average_length                      // Меняем среднюю длину ткани
+    workRoll.average_fabric_length
+        = tempFabric.buffer.average_length/tempFabric.buffer.rate                           // Меняем среднюю длину ПС
+    workRoll.productivity = tempFabric.buffer.productivity                                  // Меняем производительность
+    workRoll.rate = tempFabric.buffer.rate                                                  // Меняем коэффициент перевода ткани в ПС
     workRoll.descr = description.value
 
-    averageLength.value = workRoll.average_textile_length                               // Получаем среднюю длину ПС
-    productivity.value = workRoll.productivity                                          // Получаем производительность
+    averageLength.value = workRoll.average_textile_length                                   // Получаем среднюю длину ткани
+    averageLengthFabric.value = workRoll.average_fabric_length                              // Получаем среднюю длину ПС
+    buffer.value = tempFabric.buffer.amount                                                 // Меняем Буфер
+
+    productivity.value = workRoll.productivity                                              // Получаем производительность
     lengthAmount.value = workRoll.rolls_amount * workRoll.average_textile_length
     rollsAmount.value = workRoll.rolls_amount
-    productivityAmount.value = getProductivityAmount()                                  // Получаем трудозатраты
-    fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)  // Меняем режим выбора ПС
+    productivityAmount.value = getProductivityAmount()                                      // Получаем трудозатраты
+    fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)      // Меняем режим выбора ПС
 
-    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()// Меняем тип для стилей
+    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()    // Меняем тип для стилей
 
 
     isRollsAmountFractional.value = getIsRollsAmountFractional()
@@ -576,9 +628,10 @@ const saveTaskRecord = () => {
         rolls_amount: rollsAmount.value,
         descr: description.value,
         fabric_mode: fabricMode.value,
+        rate: workRoll.rate,
     }
 
-    console.log(saveRollData)
+    // console.log('saveRollData: ', saveRollData)
 
     emits('saveTaskRecord', {index: props.index, roll: saveRollData})
 }
@@ -642,6 +695,7 @@ const getSaveRollFlag = () => {
         && !isRollsAmountFractional.value
         && averageLength.value
         && productivity.value
+        && workRoll.rate
 }
 
 // attract: Определяем переменную, указывающую, что рулон готов к сохранению

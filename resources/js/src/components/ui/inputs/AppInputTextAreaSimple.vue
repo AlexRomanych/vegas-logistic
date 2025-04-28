@@ -9,16 +9,15 @@
 
             :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass, semibold]"
 
+            :cols="cols"
             :disabled="disabled"
             :maxlength="maxlength"
             :placeholder="placeholder"
-            :readonly="readonly"
 
-            :cols="cols"
+            :readonly="readonly"
             :rows="rows"
 
             @input="getAreaText"
-
         />
 
         <div v-if="errors">
@@ -195,7 +194,7 @@ const getAreaText = (e) => emit('getAreaText', e.target.value)
 // watch(() => props.value, (newValue) => {
 //     console.log('props.value: ', newValue)
 //     areaText.value = newValue
-// })
+// }, {deep: true, immediate: true})
 
 
 </script>

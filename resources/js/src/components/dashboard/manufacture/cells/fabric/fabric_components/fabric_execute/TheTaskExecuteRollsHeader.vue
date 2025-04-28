@@ -34,6 +34,16 @@
             text-size="mini"
         />
 
+        <!-- attract: Средняя длина ПС -->
+        <AppLabelMultiLine
+            v-if="rollsRender.fabricLength.show"
+            :text="['Длина', 'ПС']"
+            :title="rollsRender.fabricLength.title"
+            :type="getHeaderType()"
+            :width="rollsRender.fabricLength.width"
+            align="center"
+            text-size="mini"
+        />
         <!-- attract: Количество рулонов (всегда = 1) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
@@ -141,7 +151,7 @@
 <script setup>
 
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppLabel from "@/src/components/ui/labels/AppLabel.vue";
+// import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 
 const props = defineProps({
     rollsRender: {

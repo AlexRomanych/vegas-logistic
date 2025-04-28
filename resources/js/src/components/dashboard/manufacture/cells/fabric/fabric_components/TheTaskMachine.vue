@@ -158,6 +158,7 @@ const taskDescription = ref(props.task.machines[props.machine.TITLE].description
 
 // Attract: Добавляем новый рулон
 const addRoll = () => {
+    // console.log('NEW_ROLL: ', NEW_ROLL)
 // Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
     emits('addRoll', NEW_ROLL, props.machine, props.task)
 }

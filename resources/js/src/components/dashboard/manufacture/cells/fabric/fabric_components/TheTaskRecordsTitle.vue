@@ -14,32 +14,58 @@
             align="center"
             type="primary"
             width="w-[300px]"
+            text-size="mini"
         />
 
         <AppLabelMultiLine
-            :text="['Ср. длина', 'ткани (м.п.)']"
+            :text="['Буфер', 'ПС, м.п.']"
             align="center"
-            width="w-[100px]"
+            width="w-[70px]"
+            text-size="mini"
         />
 
         <AppLabelMultiLine
-            :text="['Кол-во,', '(рул.)']"
+            :text="['Ср. длина', 'ткани, м.п.']"
+            align="center"
+            width="w-[70px]"
+            text-size="mini"
+        />
+
+        <AppLabelMultiLine
+            :text="['Ср. длина', 'ПС, м.п.']"
+            align="center"
+            width="w-[70px]"
+            text-size="mini"
+        />
+
+        <AppLabelMultiLine
+            :text="['Кол-во,', 'рул.']"
             align="center"
             type="primary"
             width="w-[70px]"
+            text-size="mini"
         />
 
         <AppLabelMultiLine
-            :text="['Кол-во,', '(м.п.)']"
+            :text="['Длина', 'ткани, м.п.']"
             align="center"
             type="primary"
             width="w-[70px]"
+            text-size="mini"
+        />
+
+        <AppLabelMultiLine
+            :text="['Длина ПС,', 'м.п.']"
+            align="center"
+            width="w-[70px]"
+            text-size="mini"
         />
 
         <AppLabelMultiLine
             :text="['Труд-ты', '']"
             align="center"
             width="w-[90px]"
+            text-size="mini"
         />
 
         <AppLabelMultiLine
@@ -47,6 +73,7 @@
             align="center"
             type="primary"
             width="w-[300px]"
+            text-size="mini"
         />
 
     </div>

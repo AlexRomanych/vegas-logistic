@@ -126,6 +126,10 @@ return new class extends Migration {
                 ->constrained()
                 ->cascadeOnDelete();
 
+            // attract: Привязка к старому плановому сменному заданию (будем использовать при закрытии СЗ). Будет хранить
+            // attract: старый id, чтобы можно было найти старое задание по этому id
+            $table->unsignedBigInteger('textile_roll_id_old')->nullable()->comment('Id предыдущего задания, выставленного ООП');
+
 //            $table->ForeignId('responsible_id')->nullable(false)->default(1)->comment('Ответственный')
 //                ->references('id')
 //                ->on('workers')

@@ -100,7 +100,7 @@ class CellFabricTasksDateController extends Controller
     public function create(Request $request)
     {
 
-        try {
+//        try {
             $payload = $request->all();
             $tasksDayData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
 
@@ -165,6 +165,7 @@ class CellFabricTasksDateController extends Controller
                                 'fabric_mode' => $rollData['fabric_mode'],
                                 'rolls_amount' => $rollData['rolls_amount'],
                                 'average_textile_length' => $rollData['average_textile_length'],
+                                'translate_rate' => $rollData['rate'],
                                 'productivity' => $rollData['productivity'],
                                 'description' => $rollData['descr'],
                             ]
@@ -176,9 +177,9 @@ class CellFabricTasksDateController extends Controller
 //        return 'reached';
             return EndPointStaticRequestAnswer::ok();
 
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
+//        } catch (Exception $e) {
+//            return EndPointStaticRequestAnswer::fail(response()->json($e));
+//        }
     }
 
 
@@ -252,6 +253,7 @@ class CellFabricTasksDateController extends Controller
                                             'roll_position' => $j + 1,
                                             'roll_status' => FABRIC_ROLL_UNREADY,
                                             'textile_roll_length' => $taskContext['average_textile_length'],
+                                            'translate_rate' => $taskContext['translate_rate'],
                                             'productivity' => $taskContext['productivity'],
                                             'description' => $taskContext['description'],   // дописываем плановый комментарий
                                         ]

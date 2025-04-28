@@ -137,7 +137,7 @@ const rollsRender = reactive({
         width: 'w-[50px]',
         show: true,
         title: 'Средняя длина ПС, м.п.',
-        data: (roll_exec) => roll_exec.textile_length/roll_exec.textile_length .toFixed(2)
+        data: (roll_exec) => (roll_exec.textile_length/roll_exec.rate).toFixed(2)
     },
     rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
     productivity: {
