@@ -122,7 +122,8 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
                 active: true,
                 finish_at: null,
             },
-        }
+        },
+        workers: [],
     }
 
     // console.log('period: ', period)

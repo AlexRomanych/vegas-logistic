@@ -210,34 +210,41 @@
         <div class="mb-4">
 
             <div class="flex items-start">
+
                 <AppLabel
                     text="Бригада:"
                     type="success"
                     width="w-[100px]"
                 />
+
                 <AppLabel
                     :text="'№ ' + task.common.team.toString()"
                     type="success"
                     width="w-[50px]"
                 />
+
+                <div class="ml-3">
+                    <AppLabel
+                        text="Персонал"
+                        align="center"
+                        :type="task.workers.length ? 'info' : 'danger'"
+                        @click="selectWorkers"
+                    />
+                </div>
+
             </div>
 
             <div class="ml-3">
-                <AppLabel
-                    text="Иванов И. И."
-                    text-size="mini"
-                    width="w-[200px]"
-                />
-                <AppLabel
-                    text="Петров П. П."
-                    text-size="mini"
-                    width="w-[200px]"
-                />
-                <AppLabel
-                    text="Сдоров С. С."
-                    text-size="mini"
-                    width="w-[200px]"
-                />
+
+                <div v-for="worker in task.workers">
+                    <AppLabel
+                        :text="getFormatFIO(worker)"
+                        text-size="mini"
+                        width="w-[200px]"
+                    />
+
+                </div>
+
             </div>
 
         </div>
@@ -343,7 +350,8 @@
 
 import {onMounted, onUnmounted, ref, watch} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useWorkersStore} from '/resources/js/src/stores/WorkersStore.js'
+// import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import {
     FABRIC_WORKING_SHIFT_LENGTH,
@@ -364,10 +372,11 @@ import {
     formatTimeInFullFormat
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
+import {getFormatFIO} from '/resources/js/src/app/helpers/workers/helpers_workers.js'
+
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
-
 
 
 const props = defineProps({
@@ -378,9 +387,10 @@ const props = defineProps({
     },
 })
 
-// console.log('task', props.task)
+console.log('task: ', props.task)
 
-const fabricsStore = useFabricsStore()
+// const fabricsStore = useFabricsStore()
+const workersStore = useWorkersStore()
 
 // attract: Получаем длительность СЗ
 const getTaskDuration = (task) => {
@@ -457,6 +467,41 @@ watch(() => props.task, (newTask) => {
     deep: true,
     immediate: true,
 })
+
+// attract: Выбираем персонал
+
+
+let workers
+let checkboxData
+const selectWorkers = async () => {
+
+    // Получаем персонал, убираем нулевого сотрудника из персонала и сортируем по ФИО
+    workers = await workersStore.getWorkers()
+    workers = workers.filter((worker) => worker.id !== 0)
+    workers.sort((a, b) => (a.surname + a.name + a.patronymic).localeCompare((b.surname + b.name + b.patronymic)))
+
+    // отмечаем сотрудников, которые уже есть в списке
+    let isFind
+    const getCheckedWorkers = workers.map((worker) => {
+        isFind = props.task.workers.some((taskWorker) => taskWorker.id === worker.id)
+        return {
+            id: worker.id,
+            name: `${worker.surname} ${worker.name} ${worker.patronymic}`,
+            checked: isFind,
+        }
+
+    })
+
+    // Подготавливаем данные для отображения в чекбоксе
+    checkboxData = {
+        name: 'workers',
+        data: [getCheckedWorkers]
+    }
+
+    console.log('checkboxData: ', checkboxData)
+
+}
+
 
 // onMounted(() => {
 //     const interval = setInterval(() => duration.value = getTaskDuration(props.task), 1000)

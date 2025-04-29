@@ -1,10 +1,11 @@
 <?php
 
+use App\Models\Manufacture\CellItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Worker\Worker;
+//use App\Models\Worker\Worker;
 
 return new class extends Migration
 {
@@ -26,11 +27,14 @@ return new class extends Migration
             $table->string('comment')->nullable()->comment('Комментарий');
             $table->string('note')->nullable()->comment('Примечание');
 
-            // задаем руководителя бригады
+            // attract: задаем руководителя бригады
             $table->ForeignId('leader_id')->nullable(false)->default(0)->comment('Идентификатор руководителя бригады')
                 ->references('id')
                 ->on('workers')
                 ->nullOnDelete();
+
+            // attract: У каждого бригады может быть привязка к ПЯ
+            $table->foreignIdFor(CellItem::class)->nullable()->constrained()->nullOnDelete();    //Внешний ключ, указывающий на таблицу с ПЯ
 
             $table->timestamps();
         });

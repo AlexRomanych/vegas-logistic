@@ -2,6 +2,7 @@
 
 use App\Models\Manufacture\Cells\Fabric\FabricTeam;
 use App\Models\User;
+use App\Models\Worker\WorkersSet;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -47,10 +48,18 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Дата завершения всех сменных заданий в этом дне');
 
+            // attract: Привязка к бригаде
             $table->ForeignIdFor(FabricTeam::class)
                 ->nullable(false)
                 ->default(1)
                 ->comment('Привязка к бригаде')
+                ->constrained()
+                ->nullOnDelete();
+
+            // attract: Привязка к списку сотрудников
+            $table->ForeignIdFor(WorkersSet::class)
+                ->nullable()
+                ->comment('Привязка к списку сотрудников')
                 ->constrained()
                 ->nullOnDelete();
 

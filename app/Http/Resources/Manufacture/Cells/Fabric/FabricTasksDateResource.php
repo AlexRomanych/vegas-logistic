@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
+use App\Http\Resources\Worker\WorkerCollection;
+use App\Http\Resources\Worker\WorkerResource;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -107,6 +109,14 @@ class FabricTasksDateResource extends JsonResource
             ];
         }
 
+        // Выводим данные о работниках
+        $workersData = ($this->workerRecord);
+        $workers = [];
+
+        foreach ($workersData as $key => $workerData) {
+            $workers[] = new WorkerResource($workerData->worker);
+        }
+
         return [
             'date' => $this->tasks_date,
             'common' => [
@@ -119,6 +129,7 @@ class FabricTasksDateResource extends JsonResource
                 'created_by' => $this->user->name,
                 'description' => $this->description,
             ],
+            'workers' => $workers,
             'machines' => $machines,
 //            'test' => $this->fabricTasks,
         ];

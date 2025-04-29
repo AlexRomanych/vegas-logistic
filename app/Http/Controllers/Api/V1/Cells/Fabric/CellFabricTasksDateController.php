@@ -29,7 +29,7 @@ class CellFabricTasksDateController extends Controller
     public function tasks(Request $request)
     {
 //        return json_encode($request->all());
-        try {
+//        try {
 
             // Если без параметров, возвращаем все заказы
             if (!$request->has('start') || !$request->has('end')) {
@@ -50,15 +50,18 @@ class CellFabricTasksDateController extends Controller
                     'fabricTasks.fabricTaskContexts.fabric',
                     'team',
                     'user',
+                    'workerRecord', 'workerRecord.worker'
                 ])
                 ->orderBy('tasks_date')
                 ->get();
 
+//            return json_encode($tasksQuery);
+
             return new FabricTasksDateCollection($tasksQuery);
 
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
+//        } catch (Exception $e) {
+//            return EndPointStaticRequestAnswer::fail(response()->json($e));
+//        }
 
     }
 

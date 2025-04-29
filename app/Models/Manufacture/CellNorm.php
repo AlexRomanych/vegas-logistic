@@ -11,7 +11,7 @@ class CellNorm extends Norm
 
     public function __construct(int $normID = 0)
     {
-        parent::__construct($normID);    // todo: Разобраться!!! Warning!!! При миграции закомментировать
+//        parent::__construct($normID);    // todo: Разобраться!!! Warning!!! При миграции закомментировать
     }
 
 

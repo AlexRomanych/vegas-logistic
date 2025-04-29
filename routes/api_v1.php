@@ -203,6 +203,8 @@ Route::put('/worker', [WorkerController::class, 'update'])->middleware('jwt.auth
 Route::post('/worker', [WorkerController::class, 'create'])->middleware('jwt.auth');
 Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.auth');
 
+// заполняем таблицу тестовыми данные
+Route::get('/workers/test/fill', [WorkerController::class, 'testFill']);
 
 //hr--------------------------------------------------------------------------------------------------------------------
 

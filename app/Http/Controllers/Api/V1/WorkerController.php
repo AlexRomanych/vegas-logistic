@@ -7,6 +7,7 @@ use App\Http\Resources\Worker\WorkerCollection;
 use App\Http\Resources\Worker\WorkerResource;
 use App\Models\Worker\Worker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class WorkerController extends Controller
 {
@@ -102,4 +103,21 @@ class WorkerController extends Controller
         return FAIL_STATUS_WORD;
 
     }
+
+    /**
+     * descr: Заполняем таблицу тестовыми данными
+     * @return void
+     */
+    public function testFill()
+    {
+        DB::table('workers')->insert([
+            ['surname' => 'Иванов', 'name' => 'Иван', 'patronymic' =>'Иванович'],
+            ['surname' => 'Петров', 'name' => 'Петр', 'patronymic' =>'Петрович'],
+            ['surname' => 'Сидоров', 'name' => 'Сидор', 'patronymic' =>'Сидорович'],
+            ['surname' => 'Никитюк', 'name' => 'Никита', 'patronymic' =>'Никитич'],
+            ['surname' => 'Ананьев', 'name' => 'Ананий', 'patronymic' =>'Ананич'],
+            ['surname' => 'Акакиев', 'name' => 'Акакий', 'patronymic' =>'Акакиевич'],
+        ]);
+    }
+
 }

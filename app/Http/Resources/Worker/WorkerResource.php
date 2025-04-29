@@ -27,8 +27,8 @@ class WorkerResource extends JsonResource
 //            'created_at' => $this->created_at,
 //            'updated_at' => $this->updated_at,
             'name' => $this->name,
-            'cell_item_id' => $this->cellItem->id,
-            'cell_item_name' => $this->cellItem->name
+//            'cell_item_id' => $this->cellItem->id,
+//            'cell_item_name' => $this->cellItem->name
         ];
     }
 }
