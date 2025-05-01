@@ -1,4 +1,5 @@
 <template>
+
     <div v-if="checkboxData.data.length" :class="[width, bgColor, 'check-box-data-container']">
 
         <!-- дополнительное расстояние вверху fieldset, если нет легенды-->
@@ -14,7 +15,7 @@
                     </span>
             </legend>
 
-            <div :class="[dir === 'horizontal' ? 'flex items-center justify-around' : '']">
+            <div :class="[semibold, dir === 'horizontal' ? 'flex items-center justify-around' : '']">
                 <div v-for="item in checkBoxObject" :key="item.uniqID" >
                     <input
                         class="cursor-pointer"
@@ -81,7 +82,7 @@ const props = defineProps({
     checkboxData: {
         type: Object,
         required: false,
-        default: {name: Date.now().toString(), data: []},
+        default: () => ({name: Date.now().toString(), data: []}),
     },
     legend: {
         type: String,
@@ -94,12 +95,20 @@ const props = defineProps({
         default: 'small',
         validator: (size) => fontSizesList.includes(size)
     },
+    bold: {
+        type: Boolean,
+        required: false,
+        default: true
+    },
     disabled: {
         type: Boolean,
         required: false,
         default: false
     }
 })
+
+
+const emit = defineEmits(['checked'])
 
 // добавляем uniqID, чтобы не было коллизий
 // и добавляем checked в зависимости от типа кнопок
@@ -130,7 +139,7 @@ const checkBoxObject = reactive(tempData)
 
 // console.log(checkBoxObject)
 
-const emit = defineEmits(['checked'])
+
 const checked = (e) => {
     const idx = checkBoxObject.findIndex(item => item.uniqID === e.target.value)
 
@@ -152,6 +161,8 @@ const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false)) 
 const textColor = computed(() => getTextColorClassByType(props.type))
 
 const textSizeClass = ref(getFontSizeClass(props.textSize))
+const semibold = props.bold ? 'font-semibold' : ''
+
 </script>
 
 <style scoped>

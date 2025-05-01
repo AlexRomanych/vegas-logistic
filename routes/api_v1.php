@@ -236,6 +236,7 @@ Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'g
 Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
 Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
 Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
+Route::put('/fabrics/tasks/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate'])->middleware('jwt.auth');
 
 Route::put('/fabrics/tasks/execute/roll/update/', [CellFabricTaskRollController::class, 'update'])->middleware('jwt.auth');
 //

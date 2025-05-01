@@ -225,9 +225,9 @@
 
                 <div class="ml-3">
                     <AppLabel
-                        text="Персонал"
-                        align="center"
                         :type="task.workers.length ? 'info' : 'danger'"
+                        align="center"
+                        text="Персонал"
                         @click="selectWorkers"
                     />
                 </div>
@@ -344,11 +344,22 @@
 
     </div>
 
+    <!-- attract: Модальное окно выбора персонала   -->
+<!--    <div v-if="appModalAsyncCheckboxShown">-->
+        <AppModalAsyncCheckbox
+            ref="appModalAsyncCheckbox"
+            :checkboxData="checkboxData"
+            :legend="modalLegendCheckbox"
+            :text="modalTextCheckbox"
+            :type="modalTypeCheckbox"
+        />
+<!--    </div>-->
+
 </template>
 
 <script setup>
 
-import {onMounted, onUnmounted, ref, watch} from 'vue'
+import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 
 import {useWorkersStore} from '/resources/js/src/stores/WorkersStore.js'
 // import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
@@ -377,7 +388,7 @@ import {getFormatFIO} from '/resources/js/src/app/helpers/workers/helpers_worker
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
-
+import AppModalAsyncCheckbox from '/resources/js/src/components/ui/modals/AppModalAsyncCheckbox.vue'
 
 const props = defineProps({
     task: {
@@ -387,7 +398,9 @@ const props = defineProps({
     },
 })
 
-console.log('task: ', props.task)
+const emits = defineEmits(['selectWorkers'])
+
+// console.log('task: ', props.task)
 
 // const fabricsStore = useFabricsStore()
 const workersStore = useWorkersStore()
@@ -468,11 +481,18 @@ watch(() => props.task, (newTask) => {
     immediate: true,
 })
 
+
+// attract: Получаем ссылку на модальное окно для ввода данных о персонале с асинхронной функцией
+const appModalAsyncCheckbox = ref(null)
+const modalTypeCheckbox = ref('success')
+const modalTextCheckbox = ref(['Выберите сотрудников:', ''])
+const modalLegendCheckbox = ref('Список сотрудников:')
+
+
 // attract: Выбираем персонал
 
-
 let workers
-let checkboxData
+const checkboxData = reactive({name: '', data: []})
 const selectWorkers = async () => {
 
     // Получаем персонал, убираем нулевого сотрудника из персонала и сортируем по ФИО
@@ -481,24 +501,32 @@ const selectWorkers = async () => {
     workers.sort((a, b) => (a.surname + a.name + a.patronymic).localeCompare((b.surname + b.name + b.patronymic)))
 
     // отмечаем сотрудников, которые уже есть в списке
-    let isFind
+    let isFind, recordId, currWorkerIdx
     const getCheckedWorkers = workers.map((worker) => {
         isFind = props.task.workers.some((taskWorker) => taskWorker.id === worker.id)
+
+        // Warning: Здесь очень важно. Таскаем за собой запись этого работника в таблице worker_records
+        // warning: чтобы обновлять на сервере эти записи
+        currWorkerIdx = props.task.workers.findIndex((taskWorker) => taskWorker.id === worker.id)
+        recordId = currWorkerIdx !== -1 ? props.task.workers[currWorkerIdx].record_id : 0
+
         return {
             id: worker.id,
+            record_id: recordId,
             name: `${worker.surname} ${worker.name} ${worker.patronymic}`,
             checked: isFind,
         }
-
     })
 
     // Подготавливаем данные для отображения в чекбоксе
-    checkboxData = {
-        name: 'workers',
-        data: [getCheckedWorkers]
-    }
+    checkboxData.name = 'workers'
+    checkboxData.data = getCheckedWorkers
 
-    console.log('checkboxData: ', checkboxData)
+    const answer = await appModalAsyncCheckbox.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+        const newWorkers = appModalAsyncCheckbox.value.checkData
+        emits('selectWorkers', newWorkers)
+    }
 
 }
 

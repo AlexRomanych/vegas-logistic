@@ -29,6 +29,7 @@ class WorkerResource extends JsonResource
             'name' => $this->name,
 //            'cell_item_id' => $this->cellItem->id,
 //            'cell_item_name' => $this->cellItem->name
+            'record_id' => $this->record_id ?? 0,
         ];
     }
 }

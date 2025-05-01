@@ -73,6 +73,9 @@ return new class extends Migration {
                 ->constrained()
                 ->cascadeOnDelete();
 
+            // attract: После закрытия СЗ, те, которые были перенесены - не редактируем
+            $table->boolean('editable')->nullable(false)->default(true)->comment('Возможность редактировать');
+
             $table->boolean('active')
                 ->nullable(false)
                 ->default(true)

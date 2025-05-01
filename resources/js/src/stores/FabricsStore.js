@@ -32,6 +32,7 @@ const URL_FABRIC_TASKS_LAST_DONE = 'fabrics/tasks/last/done/'           // URL �
 const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
+const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
 const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE = 'fabrics/tasks/execute/roll/update/' // URL для обновления выполняемого рулона (FabricTaskContext)
 
@@ -317,6 +318,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    // attract: Обновление списка сотрудников для дня СЗ
+    const updateFabricTaskWorkers = async (taskId = 0, workerIds = []) => {
+        const result = await jwtPut(URL_FABRIC_TASKS_WORKERS_UPDATE, {data: {task: taskId, workers: workerIds}})
+        console.log('store: workers: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
+
+
 
     return {
         fabricsCashe,
@@ -348,7 +358,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll
+        updateExecuteRoll,
+        updateFabricTaskWorkers
     }
 
 })

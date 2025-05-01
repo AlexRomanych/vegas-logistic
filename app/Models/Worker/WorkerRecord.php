@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class WorkerRecord extends Model
 {
+    protected $guarded = [];
 
     // Relations: Привязываемся к Worker
     public function worker(): BelongsTo

@@ -114,11 +114,15 @@ class FabricTasksDateResource extends JsonResource
         $workers = [];
 
         foreach ($workersData as $key => $workerData) {
+            // warning: Отдаем на фронт данных о записи в таблице worker_records, чтобы получить ее обратно
+            // warning: и по ней синхронизировать данные в промежуточной таблице
+            $workerData->worker->record_id = $workerData->id;
             $workers[] = new WorkerResource($workerData->worker);
         }
 
         return [
             'date' => $this->tasks_date,
+            'id' => $this->id,
             'common' => [
                 'active' => $this->active,
                 'team' => $this->team->team_no,

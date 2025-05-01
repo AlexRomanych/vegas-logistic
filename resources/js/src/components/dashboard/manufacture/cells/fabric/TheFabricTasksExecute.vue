@@ -83,6 +83,7 @@
                     <TheTaskCommonInfo
                         :key="rerender[0]"
                         :task="activeTask"
+                        @select-workers="selectWorkers"
                     />
                 </div>
 
@@ -404,6 +405,36 @@ const getTabType = (tab) => {
 
 
 // const taskRecordEditMode = ref(false)
+
+
+// attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
+const selectWorkers = async (workersList) => {
+    console.log('selectWorkers: ', workersList)
+    workersList = workersList.filter(worker => worker.checked)
+    console.log(workersList)
+
+    // Warning: Тут отправляем на сервер ключ-значение вида {"worker_id":1,"record_id":1}
+    // warning: чтобы синхронизировать данные в таблице worker_records
+    const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
+    console.log(workersIds)
+
+    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.id, workersIds)
+    console.log(res)
+
+
+    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
+    console.log('newTaskDay: ', newTaskDay)
+
+    activeTask.workers = newTaskDay[0].workers
+
+    // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+    rerender.forEach((_, index, array) => array[index]++)
+
+
+
+
+}
+
 
 // attract: Поднятое событие при клике на кнопку "Добавить рулон"
 const addRoll = (newRoll, machine, task) => {

@@ -13,7 +13,7 @@ class EndPointStaticRequestAnswer
      */
     public static function ok(string $data = OK_STATUS_WORD): string
     {
-        return $data;
+        return json_encode(['data' => $data]);
     }
 
     /**

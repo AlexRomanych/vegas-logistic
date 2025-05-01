@@ -1,4 +1,5 @@
 <template>
+    I am personal page
 
     <AppModalAsyncArea />
 
