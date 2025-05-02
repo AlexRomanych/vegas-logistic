@@ -384,10 +384,14 @@ class CellFabricTasksDateController extends Controller
                 if ($item['record_id'] !== 0) {
                     $workerRecordsIds[] = $item['record_id'];
                 } else {
+
                     // attract: Создаем не существующие записи в таблице worker_record
-                    $workerRecord = WorkerRecord::query()->create([
+                    $workerRecord = WorkerRecord::query()->firstOrCreate([
                         'worker_id' => $item['worker_id'],
+                        'entity_id' => $taskId,                 // Код группы заданий: FabricTasksDate
+                        'cell_entity_id' => FABRIC_ID           // Код условной ПЯ
                     ]);
+
                     $workerRecordsIds[] = $workerRecord->id;
                 }
             }

@@ -23,12 +23,30 @@ return new class extends Migration
         Schema::create(self::TABLE, function (Blueprint $table) {
             $table->id()->from(1);
 
+
+            // hr------------------------------------------------------
             // attract: Привязка к сотруднику
             $table->ForeignIdFor(Worker::class)
                 ->nullable()
                 ->comment('Привязка к списку сотрудников')
                 ->constrained()
                 ->nullOnDelete();
+
+            // attract: Привязка к Условной ячейке производства
+            // attract: Например, для ПС - это FABRIC_ID=1, причем это не запись в таблице cells_items,
+            // attract: а то, что определяем сами.
+            // attract: Для каждой условной ячейки производства (модуль в ИС) - своя константа.
+            $table->unsignedInteger('cell_entity_id')->nullable()->comment('Условная ячейка производства');
+
+            // attract: Привязка к сущности, которая отражает движение по определенному участку производства
+            // attract: Например, для ПС - это отношение 'fabric_tasks_dates' - сущность, которая объединяет
+            // attract: все СЗ по каждой СМ
+            $table->unsignedInteger('entity_id')->nullable()->comment('Сущность, к которой будем привязываться');
+
+            // attract: Эти три сущности помогут нам определить однозначно запись в этой таблице,
+            // attract: что в свою очередь избавит от дублирования данных.
+            // hr------------------------------------------------------
+
 
             $table->json('history')->nullable()->comment('История работы сотрудника на данном участке');
 
