@@ -1,6 +1,17 @@
 <template>
     <div class="logo-container">
         <div class="w-full flex justify-center">
+
+            <AppLabel
+                text="Назад"
+                align="center"
+                textSize="huge"
+                type="dark"
+                width="w-[70px]"
+                @click="navigateBack"
+                text-size="mini"
+            />
+
             <AppLabel
                 :key="$route.fullPath"
                 :text="pageTitle"
@@ -9,6 +20,18 @@
                 type="dark"
                 width="w-full"
             />
+
+            <AppLabel
+                text="Вперед"
+                align="center"
+                textSize="huge"
+                type="dark"
+                width="w-[70px]"
+                @click="navigateForward"
+                text-size="mini"
+
+            />
+
         </div>
         <div class="h-full flex justify-end items-center">
             <div><span class="chrono-field">{{ formattedTime }}</span><span class="divider">|</span></div>
@@ -26,12 +49,13 @@
 
 <script setup>
 import {computed, watch, ref, onMounted, onUnmounted} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {useUserStore} from "/resources/js/src/stores/UserStore";
 import {getWeekNumber} from "/resources/js/src/app/helpers/helpers_date.js"
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import {UserCircleIcon} from '@heroicons/vue/24/solid'
 
+const router = useRouter()
 const route = useRoute()
 // const pageTitle = computed(() => route.meta.title ? route.meta.title : 'The Page')
 const pageTitle = computed(() => route.meta.title ? route.meta.title : '')
@@ -66,6 +90,14 @@ const getWeek = () => {
     const now = new Date();
     const week = getWeekNumber(now)
     formattedWeek.value = `${week} неделя`;
+}
+
+const navigateBack = () => {
+    router.back()
+}
+
+const navigateForward = () => {
+    router.forward()
 }
 
 onMounted(() => {

@@ -243,7 +243,7 @@ const isRollingButtonDisabled = () => {
     // if (isRollingRollPresent()) return false
     // return true
 
-    console.log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
+    // console.log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
 
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
 
@@ -484,9 +484,8 @@ const finishExecuteRoll = async () => {
 
 watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
 
-    console.log('change state')
-
-    console.log(fabricsStore.globalActiveRolls)
+    // console.log('change state')
+    // console.log(fabricsStore.globalActiveRolls)
 
     // descr: Пересчитываем состояние кнопок управления выполнением
     startButtonDisabledFlag.value = isStartButtonDisabled()     // нужно для реактивности

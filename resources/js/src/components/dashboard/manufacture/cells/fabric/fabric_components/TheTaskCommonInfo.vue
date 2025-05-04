@@ -84,21 +84,59 @@
 
             </div>
 
-            <!-- attract: Общий комментарий к дню -->
-            <div v-if="task.common.description" class="flex items-start ml-3">
-                <AppLabel
-                    text="Общий комментарий:"
-                    text-size="mini"
-                    type="warning"
-                    width="w-[150px]"
-                />
-                <AppLabel
-                    :text="task.common.description"
-                    text-size="mini"
-                    type="warning"
-                    width="w-[570px]"
-                />
+            <!-- attract: Общий комментарий ко дню -->
+            <div
+                v-if="task.common.status === FABRIC_TASK_STATUS.PENDING.CODE || task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE || task.common.status === FABRIC_TASK_STATUS.DONE.CODE">
+
+                <div v-if="task.common.description" class="flex items-start ml-3">
+                    <AppLabel
+                        text="Общий комментарий:"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[150px]"
+                    />
+
+                    <AppLabel
+                        :text="task.common.description"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[570px]"
+                    />
+                </div>
+
             </div>
+
+            <div v-else class="flex items-end">
+
+                <!--attract: Общий комментарий к дню сменных заданий -->
+                <AppInputTextArea
+                    id="comment"
+                    v-model.trim="taskCommonDescription"
+                    :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
+                    :rows=2
+                    :value="taskCommonDescription"
+                    class="cursor-pointer"
+                    height="min-h-[60px]"
+                    label="Общий комментарий:"
+                    placeholder="Введите комментарий"
+                    text-size="normal"
+                    width="w-[740px]"
+                />
+
+                <AppLabel
+                    class="cursor-pointer"
+                    text="V"
+                    text-size="huge"
+                    type="success"
+                    width="w-[50px]"
+                    height="h-[60px]"
+                    align="center"
+                    @click="updateTaskCommonDescription"
+                />
+
+
+            </div>
+
 
             <!-- attract: Если статус СЗ - выполнено или в процессе выполнения, то показываем Дату и Время старта СЗ -->
             <div
@@ -223,6 +261,7 @@
                     width="w-[50px]"
                 />
 
+
                 <div class="ml-3">
                     <AppLabel
                         :type="task.workers.length ? 'info' : 'danger'"
@@ -345,15 +384,15 @@
     </div>
 
     <!-- attract: Модальное окно выбора персонала   -->
-<!--    <div v-if="appModalAsyncCheckboxShown">-->
-        <AppModalAsyncCheckbox
-            ref="appModalAsyncCheckbox"
-            :checkboxData="checkboxData"
-            :legend="modalLegendCheckbox"
-            :text="modalTextCheckbox"
-            :type="modalTypeCheckbox"
-        />
-<!--    </div>-->
+    <!--    <div v-if="appModalAsyncCheckboxShown">-->
+    <AppModalAsyncCheckbox
+        ref="appModalAsyncCheckbox"
+        :checkboxData="checkboxData"
+        :legend="modalLegendCheckbox"
+        :text="modalTextCheckbox"
+        :type="modalTypeCheckbox"
+    />
+    <!--    </div>-->
 
 </template>
 
@@ -362,6 +401,7 @@
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 
 import {useWorkersStore} from '/resources/js/src/stores/WorkersStore.js'
+import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 // import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import {
@@ -374,7 +414,7 @@ import {
 
 import {
     getTitleByFabricTaskStatusCode,
-    getStyleTypeByFabricTaskStatusCode,
+    getStyleTypeByFabricTaskStatusCode, getFunctionalByFabricTaskStatus,
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -383,12 +423,16 @@ import {
     formatTimeInFullFormat
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
-import {getFormatFIO} from '/resources/js/src/app/helpers/workers/helpers_workers.js'
+import {
+    getFormatFIO,
+    getFormatFIOFromFullNameString
+} from '/resources/js/src/app/helpers/workers/helpers_workers.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 import AppModalAsyncCheckbox from '/resources/js/src/components/ui/modals/AppModalAsyncCheckbox.vue'
+import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
 
 const props = defineProps({
     task: {
@@ -398,12 +442,16 @@ const props = defineProps({
     },
 })
 
-const emits = defineEmits(['selectWorkers'])
+const emits = defineEmits(['selectWorkers', 'saveTaskDescription'])
 
 // console.log('task: ', props.task)
 
 // const fabricsStore = useFabricsStore()
 const workersStore = useWorkersStore()
+const fabricsStore = useFabricsStore()
+
+// attract: Определяем модель для Общего комментария к дню СЗ
+const taskCommonDescription = ref(props.task.common.description)
 
 // attract: Получаем длительность СЗ
 const getTaskDuration = (task) => {
@@ -490,15 +538,33 @@ const modalLegendCheckbox = ref('Список сотрудников:')
 
 
 // attract: Выбираем персонал
-
+// attract: --------------------------------------------------
 let workers
 const checkboxData = reactive({name: '', data: []})
-const selectWorkers = async () => {
+const selectData = reactive({name: '', data: []})
 
+// attract: Подготавливаем данные для отображения выбора персонала и ответственного в рулонах
+const prepareWorkersData = async () => {
     // Получаем персонал, убираем нулевого сотрудника из персонала и сортируем по ФИО
     workers = await workersStore.getWorkers()
     workers = workers.filter((worker) => worker.id !== 0)
     workers.sort((a, b) => (a.surname + a.name + a.patronymic).localeCompare((b.surname + b.name + b.patronymic)))
+
+    // console.log('props.task.machines: ', props.task.machines)
+    // console.log(Object.keys(props.task.machines))
+
+    // attract: Получаем список всех сотрудников, которые уже есть в упоминании к ответственному в рулонах
+    // attract: чтобы их сделать не доступными для выбора
+    const workersAlreadyExistsInExecuteRolls = new Set()
+    Object.keys(props.task.machines).forEach((machine) => {
+        props.task.machines[machine].rolls.forEach((roll) => {
+            roll.rolls_exec.forEach((rollExec) => {
+                workersAlreadyExistsInExecuteRolls.add(rollExec.finish_by)
+            })
+        })
+    })
+
+    // console.log('set: ', workersAlreadyExistsInExecuteRolls)
 
     // отмечаем сотрудников, которые уже есть в списке
     let isFind, recordId, currWorkerIdx
@@ -515,12 +581,42 @@ const selectWorkers = async () => {
             record_id: recordId,
             name: `${worker.surname} ${worker.name} ${worker.patronymic}`,
             checked: isFind,
+            disabled: workersAlreadyExistsInExecuteRolls.has(worker.id), // если работник уже есть в упоминании к ответственному в рулонах, то делаем его не доступным для выбора
         }
     })
 
-    // Подготавливаем данные для отображения в чекбоксе
+    // attract: Подготавливаем данные для отображения в чекбоксе выбора персонала
     checkboxData.name = 'workers'
     checkboxData.data = getCheckedWorkers
+
+    // attract: Подготавливаем данные для отображения в селекте выбора ответственного
+    let selectWorkers = getCheckedWorkers.map((worker) => {
+        if (worker.checked) {
+            const tempWorker = {...worker}
+            delete tempWorker.checked
+            tempWorker.name = getFormatFIOFromFullNameString(tempWorker.name)
+            tempWorker.disabled = false
+            return tempWorker
+        }
+    })
+
+    selectWorkers = selectWorkers.filter((worker) => worker)    // убираем элементы, которые не выбраны в персонале
+    selectWorkers.unshift({id: 0, name: 'Не выбран', disabled: true})
+
+
+    selectData.name = 'workers'
+    selectData.data = selectWorkers
+
+    // attract: записываем в глобальный объект данные для чекбокса
+    fabricsStore.globalSelectWorkers = selectData
+
+    // console.log('selectData: ', selectData)
+}
+
+
+const selectWorkers = async () => {
+
+    await prepareWorkersData()
 
     const answer = await appModalAsyncCheckbox.value.show() // показываем модалку и ждем ответ
     if (answer) {
@@ -528,6 +624,23 @@ const selectWorkers = async () => {
         emits('selectWorkers', newWorkers)
     }
 
+}
+
+// attract: Подготавливаем данные для отображения выбора персонала и ответственного в рулонах
+watch(() => props.task, async () => {
+    await prepareWorkersData()
+}, {deep: true, immediate: true})
+
+// attract: --------------------------------------------------
+
+// attract: Обновляем общее описание ко дню СЗ
+const updateTaskCommonDescription = () => {
+
+
+    if (!taskCommonDescription.value) return
+
+    console.log(taskCommonDescription.value)
+    emits('saveTaskDescription', taskCommonDescription.value)
 }
 
 
@@ -540,10 +653,13 @@ const selectWorkers = async () => {
 // const team = await fabricsStore.getFabricTeamNumberByDate('2025-05-27')
 // console.log('team: ', team)
 
-onUnmounted(() => {
+onUnmounted(async () => {
     if (intervalId !== null) {
         clearInterval(intervalId);
     }
+
+    // attract: Вызываем пересчет данных о работниках, чтобы определить все глобальное
+    // await prepareWorkersData()
 });
 
 </script>

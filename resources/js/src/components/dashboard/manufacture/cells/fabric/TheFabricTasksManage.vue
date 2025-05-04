@@ -90,6 +90,8 @@
                     <TheTaskCommonInfo
                         :key="rerender[0]"
                         :task="activeTask"
+                        @select-workers="selectWorkers"
+                        @saveTaskDescription="updateTaskDescription"
                     />
                 </div>
 
@@ -548,6 +550,40 @@ const deleteTasks = async (deleteData) => {
 const optimizeLabor = (machine, task) => {
 
 }
+
+// attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
+const selectWorkers = async (workersList) => {
+
+    workersList = workersList.filter(worker => worker.checked)
+    // console.log('selectWorkers: ', workersList)
+
+    // Warning: Тут отправляем на сервер ключ-значение вида {"worker_id":1,"record_id":1}
+    // warning: чтобы синхронизировать данные в таблице worker_records
+    const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
+    // console.log(workersIds)
+
+    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.id, workersIds)
+    // console.log(res)
+
+    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
+    // console.log('newTaskDay: ', newTaskDay)
+
+    activeTask.workers = newTaskDay[0].workers
+
+    // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+    rerender.forEach((_, index, array) => array[index]++)
+
+}
+
+// attract: Сохраняет общий комментарий ко дню СЗ
+const updateTaskDescription = async (description) => {
+    activeTask.common.description = description
+    const res = await fabricsStore.changeFabricTaskDateStatus(activeTask)
+    // console.log('description: ', description)
+    // console.log(res)
+}
+
+
 
 // attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])

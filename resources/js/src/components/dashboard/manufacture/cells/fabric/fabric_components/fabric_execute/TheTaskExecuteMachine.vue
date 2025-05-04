@@ -40,6 +40,7 @@
                 <TheTaskExecuteRolls
                     :rolls="rolls"
                     :machine="machine"
+                    :workers="task.workers"
                 />
 
             </div>
@@ -96,6 +97,7 @@ const props = defineProps({
 })
 
 
+// console.log('workers: ', props.task.workers)
 // console.log('machine', props.machine)
 // console.log('machine', FABRIC_MACHINES.AMERICAN)
 

@@ -9,7 +9,7 @@
                 <!-- attract: Рамка выбора даты -->
                 <div
                     :class="task.active ? 'bg-blue-200 border-2 border-blue-400 rounded-lg' : ''"
-                    class="flex flex-col p-0.5  h-full">
+                    class="flex flex-col p-0.5 h-full">
 
                     <!-- attract: Дата + день недели -->
                     <AppLabelMultiLine
@@ -84,6 +84,7 @@
                         :key="rerender[0]"
                         :task="activeTask"
                         @select-workers="selectWorkers"
+
                     />
                 </div>
 
@@ -409,9 +410,9 @@ const getTabType = (tab) => {
 
 // attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
 const selectWorkers = async (workersList) => {
-    console.log('selectWorkers: ', workersList)
     workersList = workersList.filter(worker => worker.checked)
-    console.log(workersList)
+    // console.log('selectWorkers: ', workersList)
+    // console.log(workersList)
 
     // Warning: Тут отправляем на сервер ключ-значение вида {"worker_id":1,"record_id":1}
     // warning: чтобы синхронизировать данные в таблице worker_records
@@ -429,9 +430,6 @@ const selectWorkers = async (workersList) => {
 
     // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
     rerender.forEach((_, index, array) => array[index]++)
-
-
-
 
 }
 
@@ -525,6 +523,13 @@ const changeTaskExecute = async (task) => {
     // attract: Изменить статус с "Готов к стежке" на "Выполняется". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
 
+        // attract: Проверки на наличие всех необходимых условий
+        // attract: 1. Не должно быть ни одного задания в процессе выполнения
+        // attract: 2. Не должно быть ни одного задания не со статусом "Выполнено" до текущей даты
+
+
+
+
         modalText.value = ['Начать выполнение сменного задания?', '']
         modalType.value = 'success'
         const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
@@ -579,8 +584,8 @@ const getMachineShowCondition = (task, tab) => {
     if (tab.hasOwnProperty('machine')) return task.machines[tab.machine.TITLE].rolls.length > 0
     return true
 
-    console.log('tab: ', tab)
-    console.log('task: ', task)
+    // console.log('tab: ', tab)
+    // console.log('task: ', task)
 
     // console.log(task.machines[machine.TITLE].rolls.length)
     //

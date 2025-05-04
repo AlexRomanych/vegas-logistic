@@ -15,7 +15,6 @@
 
                 <!-- attract: Сам рулон  -->
                 <TheTaskExecuteRoll
-
                     :roll_exec="roll_exec"
                     :rollsRender="rollsRender"
                     @click="changeActiveRoll(roll_exec)"
@@ -66,12 +65,21 @@ const props = defineProps({
         type: Boolean,
         required: false,
         default: true
+    },
+    workers: {
+        type: Array,
+        required: false,
+        default: () => ([])
     }
 })
 
 // attract: Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
+
+// attract: Получаем список ответственных за выполнение
+const getResponsibleWorkers = () => fabricsStore.globalSelectWorkers
+const responsibleWorkers = ref(getResponsibleWorkers())
 
 // attract: Сортируем рулоны по позиции
 const sortExecRollsByPosition = () => {
@@ -137,7 +145,7 @@ const rollsRender = reactive({
         width: 'w-[50px]',
         show: true,
         title: 'Средняя длина ПС, м.п.',
-        data: (roll_exec) => (roll_exec.textile_length/roll_exec.rate).toFixed(2)
+        data: (roll_exec) => (roll_exec.textile_length / roll_exec.rate).toFixed(2)
     },
     rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
     productivity: {
@@ -171,7 +179,25 @@ const rollsRender = reactive({
         data: (roll_exec) => roll_exec.finish_at ? formatDateAndTimeInShortFormat(roll_exec.finish_at) : ''
     },
     rollTime: {width: 'w-[90px]', show: props.execute, title: 'Время стегания', data: (roll_exec) => 'Not used'},
-    finishBy: {width: 'w-[110px]', show: props.execute, title: 'Ответственный', data: (roll_exec) => 'Сидорук И.И.'},
+    finishBy: {
+        width: 'w-[150px]',
+        show: props.execute,
+        title: 'Ответственный',
+        data: (roll_exec) => {
+            const responsibleWorkersCopy = JSON.parse(JSON.stringify(responsibleWorkers.value))
+
+            // console.log('rol: ', responsibleWorkersCopy)
+
+            const responsibleWorker =
+                responsibleWorkersCopy.data.find((responsibleWorker) => responsibleWorker.id === roll_exec.finish_by)
+            if (responsibleWorker) {
+                responsibleWorker.selected = true
+            } else {
+                responsibleWorkersCopy.data[0].selected = true
+            }
+            return responsibleWorkersCopy
+        }
+    },
     reason: {
         width: props.execute ? 'w-[200px]' : 'w-[100px]',
         show: props.execute,
@@ -313,6 +339,15 @@ watch(() => fabricsStore.globalFinishExecuteRoll, async (newValue) => {
     } else {
         activeRoll.duration += (new Date(activeRoll.finish_at)).getTime() - (new Date(activeRoll.resume_at)).getTime()
     }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+})
+
+// attract: Переменная-флаг нажатия кнопки "Выбрать ответственного" за выполнение рулона
+watch(() => fabricsStore.globalSelectWorkerFlag, async (newValue) => {
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) return  // если статус = "Создан"
+    fabricsStore.globalSelectWorkerFlag = false                        // сбрасываем значение флага
+    activeRoll.finish_by = fabricsStore.globalSelectWorkerId
 
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })

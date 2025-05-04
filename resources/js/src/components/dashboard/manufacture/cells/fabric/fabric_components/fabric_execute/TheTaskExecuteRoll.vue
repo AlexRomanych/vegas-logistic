@@ -111,7 +111,7 @@
         />
 
         <!-- attract: Время стегания -->
-<!--        :text="rollsRender.rollTime.data(roll_exec)"-->
+        <!--        :text="rollsRender.rollTime.data(roll_exec)"-->
         <AppLabel
             v-if="rollsRender.rollTime.show"
             :text="duration"
@@ -123,14 +123,18 @@
         />
 
         <!-- attract: Ответственный -->
-        <AppLabel
+        <AppSelectSimple
             v-if="rollsRender.finishBy.show"
-            :text="rollsRender.finishBy.data(roll_exec)"
+            :multiple="false"
+            :selectData="rollsRender.finishBy.data(roll_exec)"
             :title="rollsRender.finishBy.title"
-            :type="getTypeByStatus(roll_exec)"
+            :type="getTypeByStatusFinishBy(roll_exec)"
             :width="rollsRender.finishBy.width"
             text-size="mini"
+            @change="getSelectedWorker"
+            :disabled="roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE"
         />
+
 
         <!-- attract: Причина невыполнения -->
         <AppLabel
@@ -142,15 +146,16 @@
             class="truncate"
             text-size="mini"
         />
-<!--        <div>-->
-<!--            {{roll_exec.position}}-->
-<!--        </div>-->
+        <!--        <div>-->
+        <!--            {{roll_exec.position}}-->
+        <!--        </div>-->
 
     </div>
 </template>
 
 <script setup>
 import {onUnmounted, ref, watch} from 'vue'
+import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import {
     FABRIC_ROLL_STATUS,
@@ -161,6 +166,7 @@ import {
 import {getDuration} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
 
 const props = defineProps({
     roll_exec: {
@@ -173,6 +179,8 @@ const props = defineProps({
         required: true
     }
 })
+
+const fabricsStore = useFabricsStore()
 
 // attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
@@ -187,11 +195,19 @@ const getTypeByStatus = (roll_exec) => {
     return 'dark'
 }
 
+// attract: Получаем тип раскраски в зависимости от наличия ответственного выполнения рулона
+const getTypeByStatusFinishBy = (roll_exec) => {
+    if (roll_exec.finish_by === 0 && roll_exec.status !== FABRIC_ROLL_STATUS.CREATED.CODE) return 'danger'
+    return getTypeByStatus(roll_exec)
+}
+
+
+
 // attract: Добавляем часики выполнения рулона
 let intervalId = null   // Для очистки интервала, если он будет создан, чтобы убрать утечки памяти
 const duration = ref('')
 
-watch( () => props.roll_exec, (newRoll, oldRoll) => {
+watch(() => props.roll_exec, (newRoll, oldRoll) => {
 
     duration.value = getDuration(null, null, newRoll.duration)
 
@@ -220,6 +236,14 @@ watch( () => props.roll_exec, (newRoll, oldRoll) => {
 
     }
 }, {deep: true, immediate: true})
+
+
+const getSelectedWorker = (workerData) => {
+    console.log(workerData)
+    fabricsStore.globalSelectWorkerFlag = true
+    fabricsStore.globalSelectWorkerId = workerData.id
+
+}
 
 
 onUnmounted(() => {

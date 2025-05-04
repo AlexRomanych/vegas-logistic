@@ -9,3 +9,11 @@ export function getFormatFIO({surname, name, patronymic}) {
 
     return `${normalizedSurname} ${normalizedNameInitial} ${normalizedPatronymicInitial}`
 }
+
+
+// descr: Получить ФИО сотрудника с корректными заглавными буквами
+// descr: из строки: "ИВаноВ ИвАн ИваНОВИЧ" делает следующую строку: "Иванов И. И."
+export function getFormatFIOFromFullNameString(fullNameString) {
+    const [surname, name, patronymic] = fullNameString.split(' ')
+    return getFormatFIO({surname, name, patronymic})
+}

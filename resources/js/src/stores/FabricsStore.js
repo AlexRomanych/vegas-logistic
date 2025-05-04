@@ -114,6 +114,11 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalExecuteRollChangeDescription = ref(false)
     const globalExecuteRollChangeDescriptionText = ref('')      // текст комментария
 
+    // attract: Переменная для хранения данных для select для учета ответственного за стегание рулона
+    const globalSelectWorkers = reactive({})                   // для отображения рабочих в самом выполняемом рулоне
+    const globalSelectWorkerId = ref(0)                         // для записи id ответственного
+    const globalSelectWorkerFlag = ref(false)                   // маяк селекта
+
     // info----------------------------------------------------------------------------------------
 
 
@@ -341,6 +346,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
         globalExecuteRollChangeTextileLength, globalExecuteRollChangeDescriptionText,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
+        globalSelectWorkers, globalSelectWorkerId, globalSelectWorkerFlag,
         getFabrics,
         getFabricById,
         updateFabric,
