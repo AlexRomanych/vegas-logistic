@@ -81,7 +81,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TITLE: 'В процессе',
     },
 
-    // descr: Рулон был взят на выполнение, но выполнение приостановлено (напрмер, перенос на другую смену)
+    // descr: Рулон был взят на выполнение, но выполнение приостановлено (например, перенос на другую смену)
     PAUSED: {
         WORD: 'paused',
         CODE: 2,
@@ -222,60 +222,101 @@ export const FABRICS_NULLABLE = {
 
 
 // descr Нулевой рулон - болванка рулона для добавления
-export const NEW_ROLL = {
-    id: 0,
-    average_textile_length: FABRICS_NULLABLE.buffer.average_length,
-    average_fabric_length: FABRICS_NULLABLE.buffer.average_fabric_length,
-    productivity: FABRICS_NULLABLE.buffer.productivity,
-    rate: FABRICS_NULLABLE.buffer.rate,
-    buffer: FABRICS_NULLABLE.buffer.amount,
-    rolls_amount: 0,
-    length_amount: 0,
-    fabric_id: FABRICS_NULLABLE.id,
-    fabric: FABRICS_NULLABLE.display_name,
-    fabric_rate: 0,
-    fabric_mode: false,
-    descr: '',
-    correct: false,
-}
+export const NEW_ROLL =
+    {
+        id: 0,
+        average_textile_length: FABRICS_NULLABLE.buffer.average_length,
+        average_fabric_length: FABRICS_NULLABLE.buffer.average_fabric_length,
+        productivity: FABRICS_NULLABLE.buffer.productivity,
+        rate: FABRICS_NULLABLE.buffer.rate,
+        buffer: FABRICS_NULLABLE.buffer.amount,
+        rolls_amount: 0,
+        length_amount: 0,
+        fabric_id: FABRICS_NULLABLE.id,
+        fabric: FABRICS_NULLABLE.display_name,
+        fabric_rate: 0,
+        fabric_mode: false,
+        descr: '',
+        correct: false,
+    }
 
 
 // descr Создаем болванку ПС
-export const NEW_FABRIC = {
-    id: 0,
-    code_1C: '',
-    name: '',
-    display_name: '',
-    picture: {
+export const NEW_FABRIC =
+    {
         id: 0,
-        name: ''
-    },
-    textile: '',
-    fillersList: [],
-    active: true,
-    rare: false,
-    machines: [],
-    buffer: {
-        amount: 0,
-        min: 0,
-        max: 0,
-        min_rolls: 0,
-        max_rolls: 0,
-        optimal_party: 0,
-        average_length: 0,
-        rate: 0,
-        productivity: 0
-    },
-    text: {
-        description: null,
-        comment: null,
-        note: null
+        code_1C: '',
+        name: '',
+        display_name: '',
+        picture: {
+            id: 0,
+            name: ''
+        },
+        textile: '',
+        fillersList: [],
+        active: true,
+        rare: false,
+        machines: [],
+        buffer: {
+            amount: 0,
+            min: 0,
+            max: 0,
+            min_rolls: 0,
+            max_rolls: 0,
+            optimal_party: 0,
+            average_length: 0,
+            rate: 0,
+            productivity: 0
+        },
+        text: {
+            description: null,
+            comment: null,
+            note: null
+        }
     }
-}
 
 
+// descr: Скелет объекта сменного задания
+export const TASK_DRAFT =
+    {
+        date: '',
+        common: {
+            team: 1,
+            status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
+            description: '',
+            active: false,
+        },
+        machines: {
+            american: {
+                rolls: [],
+                description: '',
+                active: true,
+                finish_at: null,
+            },
+            german: {
+                rolls: [],
+                description: '',
+                active: true,
+                finish_at: null,
+            },
+            china: {
+                rolls: [],
+                description: '',
+                active: true,
+                finish_at: null,
+            },
+            korean: {
+                rolls: [],
+                description: '',
+                active: true,
+                finish_at: null,
+            },
+        },
+        workers: [],
+    }
 
-// descr Тестовые СЗ для разработки
+
+// descr: Тестовые СЗ для разработки
 export const TEST_FABRICS = [
     {
         date: '2025-04-02',

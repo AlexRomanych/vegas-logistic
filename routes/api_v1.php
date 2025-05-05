@@ -230,20 +230,50 @@ Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machin
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
 
 // attract: Блок Заказов Стежки на производство
-// descr: Получаем список СЗ, период в query
-Route::get('/fabrics/tasks', [CellFabricTasksDateController::class, 'tasks'])->middleware('jwt.auth');
-Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask'])->middleware('jwt.auth');
-Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
-Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
-Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
-Route::put('/fabrics/tasks/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate'])->middleware('jwt.auth');
+Route::prefix('/fabrics/tasks')
+    ->middleware('jwt.auth')
+    ->group(function () {
 
-Route::put('/fabrics/tasks/execute/roll/update/', [CellFabricTaskRollController::class, 'update'])->middleware('jwt.auth');
+        // descr: Получаем список СЗ, период в query
+        Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
+
+        Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
+        Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);
+        Route::put('/create/', [CellFabricTasksDateController::class, 'create']);
+        Route::delete('/context/delete/', [CellFabricTasksDateController::class, 'deleteContext']);
+        Route::put('/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate']);
+        Route::get('/executing/', [CellFabricTasksDateController::class, 'getFabricExecutingTasks']);
+        Route::get('/not-done/', [CellFabricTasksDateController::class, 'getFabricNotDoneTasks']);
+        Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
+
+
+        Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
+
+
+        // descr: Тут просто точки доступа для разных действий
+        Route::get('/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate']);
+
+    });
+
+
+
 //
-
-// descr: Тут просто точки доступа для разных действий
-Route::get('fabrics/tasks/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate'])->middleware('jwt.auth');
-
+//
+//Route::get('/fabrics/tasks', [CellFabricTasksDateController::class, 'tasks'])->middleware('jwt.auth');
+//
+//Route::get('fabrics/tasks/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask'])->middleware('jwt.auth');
+//Route::patch('fabrics/tasks/status/change/', [CellFabricTasksDateController::class, 'statusChange'])->middleware('jwt.auth');
+//Route::put('/fabrics/tasks/create/', [CellFabricTasksDateController::class, 'create'])->middleware('jwt.auth');
+//Route::delete('fabrics/tasks/context/delete/', [CellFabricTasksDateController::class, 'deleteContext'])->middleware('jwt.auth');
+//Route::put('/fabrics/tasks/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate'])->middleware('jwt.auth');
+//
+//Route::put('/fabrics/tasks/execute/roll/update/', [CellFabricTaskRollController::class, 'update'])->middleware('jwt.auth');
+//
+//Route::get('fabrics/tasks/executing/', [CellFabricTaskRollController::class, 'getFabricExecutingTasks'])->middleware('jwt.auth');
+//
+//// descr: Тут просто точки доступа для разных действий
+//Route::get('fabrics/tasks/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate'])->middleware('jwt.auth');
+//
 
 //Route::get('/fabrics/tasks', [CellFabricTaskController::class, 'tasks'])->middleware('jwt.auth');
 //Route::put('/fabrics/tasks/create/', [CellFabricTaskController::class, 'create'])->middleware('jwt.auth');

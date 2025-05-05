@@ -189,8 +189,11 @@ import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
+    TASK_DRAFT,
     TEST_FABRICS,
 } from '/resources/js/src/app/constants/fabrics.js'
+
+import {cloneShallow} from '/resources/js/src/app/helpers/helpers_lib.js'
 
 import {
     getTitleByFabricTaskStatusCode,
@@ -267,6 +270,10 @@ let activeTask = reactive(taskData.find(t => t.active))
 
 console.log('taskData: ', taskData)
 console.log('activeTask', activeTask)
+
+
+
+
 
 // attract: Тип для модального окна
 const modalType = ref('danger')
@@ -355,8 +362,15 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
-        }
 
+            const newTaskDay = cloneShallow(TASK_DRAFT)     // получаем копию нового сменного дня чтобы, почистить всю дату
+            // console.log('newTaskDay: ', newTaskDay)
+            task.common = newTaskDay.common
+            task.machines = newTaskDay.machines
+            task.workers = newTaskDay.workers
+            // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+            rerender.forEach((_, index, array) => array[index]++)
+        }
         return
     }
 

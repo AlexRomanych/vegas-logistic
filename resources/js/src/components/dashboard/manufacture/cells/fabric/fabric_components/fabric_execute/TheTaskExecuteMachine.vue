@@ -3,43 +3,49 @@
 
     <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
 
-        <TheTaskExecuteControls
-            :rolls="rolls"
-            :machine="machine"
-            @start-execute-roll="startRollExecution"
+        <div v-if="task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE">
+            <TheTaskExecuteControls
+                :machine="machine"
+                :rolls="rolls"
+                @start-execute-roll="startRollExecution"
 
-        />
+            />
+
+            <!--attract: Разделительная линия -->
+            <TheDividerLine/>
+
+        </div>
 
         <div v-if="rolls.length">
 
             <!-- attract: Общий комментарий к сменному заданию показываем, если он есть -->
             <div v-if="taskDescription">
 
-                <!--attract: Разделительная линия -->
-                <TheDividerLine/>
-
                 <!--attract: Общий комментарий к сменному заданию -->
-                <div class="ml-2">Общий комментарий:</div>
+                <div class="ml-2 mt-3 font-semibold text-sm">
+                    Комментарий к сменному заданию на этой стегальной машине:
+                </div>
+
                 <AppLabel
                     :text="taskDescription"
-                    text-size="normal"
-                    width="w-[955px]"
                     class="cursor-pointer"
                     height="min-h-[60px]"
+                    text-size="normal"
+                    width="w-[955px]"
                 />
+
+                <!--attract: Разделительная линия -->
+                <TheDividerLine/>
 
             </div>
 
             <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
 
-                <!--attract: Разделительная линия -->
-                <TheDividerLine/>
-
                 <!--attract: Список рулонов -->
                 <TheTaskExecuteRolls
-                    :rolls="rolls"
                     :machine="machine"
+                    :rolls="rolls"
                     :workers="task.workers"
                 />
 
@@ -58,7 +64,7 @@ import {computed, ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, NEW_ROLL,} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, NEW_ROLL, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
 import {
     // filterFabricsByMachineId,
     // getAddFabricMode,
@@ -156,10 +162,6 @@ const saveTaskRecord = (saveData) => {
 const deleteTaskRecord = (deleteData) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
-
-
-
-
 
 
 // hr----------------------------------------------------

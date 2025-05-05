@@ -3,6 +3,7 @@
 import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
+    TASK_DRAFT
 } from '/resources/js/src/app/constants/fabrics.js'
 
 import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
@@ -89,42 +90,45 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     if (!Array.isArray(fabricTasks)) fabricTasks = []
 
     // создаем пустой объект с данными для формы создания сменного задания (болванка)
-    const taskDraft = {
-        date: '',
-        common: {
-            team: 1,
-            status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
-            description: '',
-            active: false,
-        },
-        machines: {
-            american: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-            },
-            german: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-            },
-            china: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-            },
-            korean: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-            },
-        },
-        workers: [],
-    }
+    const taskDraft = TASK_DRAFT
+
+
+    // const taskDraft = {
+    //     date: '',
+    //     common: {
+    //         team: 1,
+    //         status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
+    //         description: '',
+    //         active: false,
+    //     },
+    //     machines: {
+    //         american: {
+    //             rolls: [],
+    //             description: '',
+    //             active: true,
+    //             finish_at: null,
+    //         },
+    //         german: {
+    //             rolls: [],
+    //             description: '',
+    //             active: true,
+    //             finish_at: null,
+    //         },
+    //         china: {
+    //             rolls: [],
+    //             description: '',
+    //             active: true,
+    //             finish_at: null,
+    //         },
+    //         korean: {
+    //             rolls: [],
+    //             description: '',
+    //             active: true,
+    //             finish_at: null,
+    //         },
+    //     },
+    //     workers: [],
+    // }
 
     // console.log('period: ', period)
     // console.log('fabricTasks: ', fabricTasks)

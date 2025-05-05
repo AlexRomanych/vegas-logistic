@@ -22,7 +22,7 @@ const URL_FABRICS_MACHINE = 'fabrics/machine/'                          // URL �
 const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL для загрузки ПС с диска
 const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
 
-const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки hрисунков ПС с диска
+const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки рисунков ПС с диска
 
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
 const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
@@ -36,7 +36,9 @@ const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL �
 
 const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE = 'fabrics/tasks/execute/roll/update/' // URL для обновления выполняемого рулона (FabricTaskContext)
 
-
+const URL_FABRIC_TASKS_EXECUTING_TASKS = 'fabrics/tasks/executing/'     // URL для получения списка выполняемых СЗ
+const URL_FABRIC_TASKS_NOT_DONE_TASKS = 'fabrics/tasks/not-done/'       // URL для получения списка невыполненных СЗ'
+const URL_FABRIC_TASKS_CLOSE = 'fabrics/tasks/close/'                   // URL для закрытия СЗ
 
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
@@ -330,6 +332,32 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    // Attract: Получаем с API список выполняемых СЗ до определенной даты
+    // Descr: Если date = null, получаем весь список
+    // Descr: Если date = '', получаем список до текущей даты
+    // Descr: Если date = '05.05.2025', получаем список до даты '05.05.2025'
+    const getFabricExecutingTasks = async (date = null) => {
+        const result = await jwtGet(URL_FABRIC_TASKS_EXECUTING_TASKS, {date})
+        console.log('store: executing: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
+    // Attract: Получаем с API список СЗ, у которых статус не "Выполнено" до определенной даты
+    // Descr: Если date = null, получаем весь список
+    // Descr: Если date = '', получаем список до текущей даты
+    // Descr: Если date = '05.05.2025', получаем список до даты '05.05.2025'
+    const getFabricNotDoneTasks = async (date = null) => {
+        const result = await jwtGet(URL_FABRIC_TASKS_NOT_DONE_TASKS, {date})
+        console.log('store: not-done: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
+    // Attract: Закрываем СЗ по дате
+    const closeFabricTasks = async (date = null) => {
+        const result = await jwtGet(URL_FABRIC_TASKS_CLOSE, {date})
+        console.log('store: task-close: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
 
 
 
@@ -365,7 +393,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
         updateExecuteRoll,
-        updateFabricTaskWorkers
+        updateFabricTaskWorkers,
+        getFabricExecutingTasks, getFabricNotDoneTasks,
+        closeFabricTasks,
     }
 
 })

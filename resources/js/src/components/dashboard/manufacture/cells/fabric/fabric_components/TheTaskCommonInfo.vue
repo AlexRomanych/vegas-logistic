@@ -558,7 +558,7 @@ const prepareWorkersData = async () => {
     const workersAlreadyExistsInExecuteRolls = new Set()
     Object.keys(props.task.machines).forEach((machine) => {
         props.task.machines[machine].rolls.forEach((roll) => {
-            roll.rolls_exec.forEach((rollExec) => {
+            roll?.rolls_exec.forEach((rollExec) => {
                 workersAlreadyExistsInExecuteRolls.add(rollExec.finish_by)
             })
         })

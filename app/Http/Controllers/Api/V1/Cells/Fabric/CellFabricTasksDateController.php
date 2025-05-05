@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateResource;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
@@ -18,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+//use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
+
 
 class CellFabricTasksDateController extends Controller
 {
@@ -25,7 +26,7 @@ class CellFabricTasksDateController extends Controller
      * descr: Возвращает все заказы за период
      * descr: Если без параметров, то все заказы
      * @param Request $request
-     * @return FabricTaskCollection|FabricTasksDateCollection|string
+     * @return FabricTasksDateCollection
      */
     public function tasks(Request $request)
     {
@@ -34,7 +35,7 @@ class CellFabricTasksDateController extends Controller
 
         // Если без параметров, возвращаем все заказы
         if (!$request->has('start') || !$request->has('end')) {
-            return new FabricTaskCollection(FabricTasksDate::all());
+            return new FabricTasksDateCollection(FabricTasksDate::all());
         }
 
         $validData = $request->validate([
@@ -64,37 +65,6 @@ class CellFabricTasksDateController extends Controller
 //            return EndPointStaticRequestAnswer::fail(response()->json($e));
 //        }
 
-    }
-
-
-    /**
-     * descr: Возвращает последнее выполненное СЗ
-     * @return FabricTasksDateResource|string
-     */
-    public function getLastDoneTask()
-    {
-        try {
-
-            $tasksQuery = FabricTasksDate::query()
-                ->where('tasks_status', FABRIC_TASK_DONE_CODE)
-                // relations добавляем основные + вложенные + user
-                ->with([
-                    'fabricTasks.fabricTaskContexts.fabricTaskRolls',
-                    'fabricTasks.fabricTaskContexts.fabric',
-                    'user'
-                ])
-                ->orderBy('tasks_date', 'desc')
-                ->first();
-
-            if (!$tasksQuery) {
-                return json_encode(['data' => null]);
-            }
-
-            return new FabricTasksDateResource($tasksQuery);
-
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
     }
 
 
@@ -204,6 +174,24 @@ class CellFabricTasksDateController extends Controller
             // todo: сделать валидацию данных
             // todo: сделать проверку при изменении статуса на "Готов к стежке". Должно быть задание хотя бы на одну СМ
 
+            // attract: Если статус от "Готов к стежке" на "Выполняется"
+            // attract: Проверяем наличие running СЗ
+            // attract: и проверяем что СЗ до этой даты имеют статус "Выполнено"
+            if ($tasksDayData['common']['status'] === FABRIC_TASK_RUNNING_CODE) {
+
+                if (count($this->getFabricExecutingTasks($tasksDayData['date'])) !== 0) {
+                    throw new Exception('Есть выполняющиеся задания');
+//                    return EndPointStaticRequestAnswer::fail('Есть выполняющиеся задания');
+                }
+
+                if (count($this->getFabricNotDoneTasks($tasksDayData['date'])) !== 0) {
+                    throw new Exception('Есть задания с непонятным статусом');
+//                    return EndPointStaticRequestAnswer::fail('Есть задания с непонятным статусом');
+                }
+
+            }
+
+            // attract: Манипулируем со СЗ
             $tasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
             // Если создали и обновили успешно, то получили экземпляр даты задания
@@ -216,6 +204,7 @@ class CellFabricTasksDateController extends Controller
 
                     return EndPointStaticRequestAnswer::ok();
                 }
+
 
                 // attract: Если движение статуса от "Создано" на "Готов к стежке",
                 // attract: то запускаем формирование рулона по каждому ПС
@@ -257,7 +246,7 @@ class CellFabricTasksDateController extends Controller
                                             'fabric_task_context_id' => $taskContext['id'],
                                             'fabric_id' => $taskContext['fabric_id'],
                                             'roll_position' => $j + 1,
-                                            'roll_status' => FABRIC_ROLL_UNREADY,
+                                            'roll_status' => FABRIC_ROLL_CREATED_CODE,
                                             'textile_roll_length' => $taskContext['average_textile_length'],
                                             'translate_rate' => $taskContext['translate_rate'],
                                             'productivity' => $taskContext['productivity'],
@@ -370,13 +359,13 @@ class CellFabricTasksDateController extends Controller
 
             $taskId = $request->input('data')['data']['task'];
 
-            if (!$taskId) throw new \Exception('Не найден id группы заданий');
+            if (!$taskId) throw new Exception('Не найден id группы заданий');
 
             // attract: получаем массив сетов: {"worker_id":1,"record_id":1}
             // attract: если record_id == 0, значит записи в таблице worker_record нет
             $workersSet = $request->input('data')['data']['workers'];
 
-            if (!$workersSet) throw new \Exception('Не найден массив сетов {worker_id-record_id}');
+            if (!$workersSet) throw new Exception('Не найден массив сетов {worker_id-record_id}');
 
             // attract: получаем массив id в таблице worker_record
             $workerRecordsIds = [];
@@ -405,181 +394,210 @@ class CellFabricTasksDateController extends Controller
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
 
-
     }
 
-}
 
+    /**
+     * descr: Возвращает последнее выполненное СЗ
+     * @return FabricTasksDateResource|string
+     */
+    public function getLastDoneTask()
+    {
+        try {
 
-/*
-{
-    "date": "2025-04-02",
-    "active": true,
-    "common": {
-        "team": 1,
-        "status": 4
+            $tasksQuery = FabricTasksDate::query()
+                ->where('tasks_status', FABRIC_TASK_DONE_CODE)
+                // relations добавляем основные + вложенные + user
+                ->with([
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls',
+                    'fabricTasks.fabricTaskContexts.fabric',
+                    'user'
+                ])
+                ->orderBy('tasks_date', 'desc')
+                ->first();
 
-    },
-    "machines": {
-    "american": {
-        "description": "description"
-        "rolls": [
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 38001,
-                    "fabric_id": 7,
-                    "fabric": "ПС 218Ж 100С 15С блэк (рис. Ж2)",
-                    "rolls_amount": 1,
-                    "length_amount": 150.5,
-                    "descr": "I am description 1"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 49002,
-                    "fabric_id": 9,
-                    "fabric": "ПС 220Ж 100С 15С М-24 (рис. К2)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description 2"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 51003,
-                    "fabric_id": 11,
-                    "fabric": "ПС 220Ж 100С 220Ж микрофибра (рис. Ж2)",
-                    "rolls_amount": 3,
-                    "length_amount": 150.5,
-                    "descr": "I am description 3"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 51004,
-                    "fabric_id": 12,
-                    "fabric": "ПС 220Ж 200С 220Ж микрофибра (рис. Ж2)",
-                    "rolls_amount": 4,
-                    "length_amount": 150.5,
-                    "descr": "I am description 4"
-                },
-                {
-                    "fabric_id": 101,
-                    "fabric_name": "ПС 230Т 200С 30С стар (рис. Е1)",
-                    "rolls_amount": 1,
-                    "descr": null,
-                    "textile_length": 36.76965318,
-                    "fabric_mode": true
-                }
-            ]
-        },
-        "german": {
-            "description": "description"
-            "rolls": [
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 28004,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 28005,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 28006,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                }
-            ]
-        },
-        "china": {
-            "description": "description"
-            "rolls": [
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 29007,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 29008,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 29009,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                }
-            ]
-        },
-        "korean": {
-            "description": "description"
-            "rolls": [
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 31001,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 32002,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                },
-                {
-                    "average_length": 59.9,
-                    "roll_id": 0,
-                    "num": 33003,
-                    "fabric_id": 0,
-                    "fabric": "ПС 220Ж 100С 200С 220Ж микрофибра (рис. КМ)",
-                    "rolls_amount": 2,
-                    "length_amount": 150.5,
-                    "descr": "I am description"
-                }
-            ]
+            if (!$tasksQuery) {
+                return json_encode(['data' => null]);
+            }
+
+            return new FabricTasksDateResource($tasksQuery);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
+
+
+    // TODO: Переписать код с использованием Scope getFabricExecutingTasks + getFabricNotDoneTasks и может getLastDoneTask
+
+    // Descr: Возвращает список выполняемых СЗ
+    // Descr: Если нет вообще параметра, то просто возвращаем список всех running СЗ
+    // Descr: Если передан параметр date, но он null, то просто возвращаем список всех running СЗ до текущей даты
+    // Descr: Если передан параметр date, то возвращаем список всех running СЗ до переданной даты
+    /**
+     * @param Request $request
+     * @return FabricTasksDateCollection|false|string
+     */
+    public function getFabricExecutingTasks(Request $request)
+    {
+        try {
+
+            // attract: Проверяем есть ли в запросе параметр date
+            if (!$request->has('date')) {
+
+                $tasksQuery = FabricTasksDate::query()
+                    ->where('tasks_status', FABRIC_TASK_RUNNING_CODE)
+                    ->orderBy('tasks_date')
+                    ->get();
+
+            } else {
+
+                // attract: Если есть, то проверяем, не null ли он
+                $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
+                $tasksQuery = FabricTasksDate::query()
+                    ->where('tasks_status', FABRIC_TASK_RUNNING_CODE)
+                    ->where('tasks_date', '<', $payloadDate)
+                    ->orderBy('tasks_date')
+                    ->get();
+
+            }
+
+            if (!$tasksQuery) {
+                return json_encode(['data' => null]);
+            }
+
+            return new FabricTasksDateCollection($tasksQuery);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
+    }
+
+
+    // Descr: Возвращает список СЗ, у которых статус до определенной даты не "Выполнен"
+    // Descr: Если нет вообще параметра, то просто возвращаем список всех СЗ
+    // Descr: Если передан параметр date, но он null, то просто возвращаем список всех СЗ до текущей даты
+    // Descr: Если передан параметр date, то возвращаем список всех СЗ до переданной даты
+    /**
+     * @param Request $request
+     * @return FabricTasksDateCollection|false|string
+     */
+    public function getFabricNotDoneTasks(Request $request)
+    {
+        try {
+
+            // attract: Проверяем есть ли в запросе параметр date
+            if (!$request->has('date')) {
+
+                $tasksQuery = FabricTasksDate::query()
+                    ->whereNot('tasks_status', FABRIC_TASK_DONE_CODE)
+                    ->orderBy('tasks_date')
+                    ->get();
+
+            } else {
+
+                // attract: Если есть, то проверяем, не null ли он
+                $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
+                $tasksQuery = FabricTasksDate::query()
+                    ->whereNot('tasks_status', FABRIC_TASK_DONE_CODE)
+                    ->where('tasks_date', '<', $payloadDate)
+                    ->orderBy('tasks_date')
+                    ->get();
+
+            }
+
+            if (!$tasksQuery) {
+                return json_encode(['data' => null]);
+            }
+
+            return new FabricTasksDateCollection($tasksQuery);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
+    }
+
+    // Descr: Закрываем СЗ
+    // Descr: Если нет вообще параметра, то закрываем текущую дату
+    // Descr: Если передан параметр date, то закрываем СЗ по указанной дате
+    public function closeFabricTasks(Request $request)
+    {
+        $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
+
+        // attract: Проверяем, есть ли еще не завершенные СЗ
+        $runningTasks = $this->getFabricExecutingTasks(new Request(['date' => $payloadDate]));
+        if (count($runningTasks) !== 0) {
+//            throw new \Exception('Сменное задание не существует');
+            return EndPointStaticRequestAnswer::fail('Предыдущие СЗ находятся в процессе выполнения');
+        }
+
+        // attract: Проверяем, есть ли еще не завершенные СЗ
+        $notDoneTasks = $this->getFabricNotDoneTasks(new Request(['date' => $payloadDate]));
+        if (count($notDoneTasks) !== 0) {
+//            throw new \Exception('Сменное задание не существует');
+            return EndPointStaticRequestAnswer::fail('Есть задания с непонятным статусом');
+        }
+
+        // attract: Получаем СЗ по указанной дате
+        $targetTask = $this->tasks(new Request(['start' => $payloadDate, 'end' => $payloadDate]));
+
+        // attract: Проверяем существование СЗ
+        if (!$targetTask) {
+//            throw new \Exception('Сменное задание не существует');
+            return EndPointStaticRequestAnswer::fail('Сменное задание не существует');
+        }
+
+        // attract: Получаем первый элемент массива, т.к. возвращается коллекция и преобразуем в массив
+        $targetTask = $targetTask[0]->resolve();
+
+//        return json_encode(['task' => $targetTask['machines']]);
+//        return json_encode(['task' => get_class($targetTask)]);
+//        return $targetTask;
+
+        // hr---------------------------------------------------------------------
+        // attract: Закрываем СЗ. Вся логика закрытия СЗ находится здесь
+
+            $test = [];
+
+            foreach ($targetTask['machines'] as $machine) {
+                // $machine --> массив
+
+                foreach ($machine['rolls'] as $roll) {
+                    // $roll --> массив
+
+                    foreach ($roll['rolls_exec'] as $roll_exec) {
+                        // $roll_exec --> Resource
+
+                        // attract: Получаем данные из объекта Resource
+                        $roll_exec_array = $roll_exec->resolve();
+
+                        // attract: Если рулон помечен как не выполненный
+                        if ($roll_exec_array['status'] === FABRIC_ROLL_FALSE_CODE) {
+                            $test[] = $roll_exec_array;
+
+                        // attract: Если рулон помечен как переходящий
+                        } else if ($roll_exec_array['status'] === FABRIC_ROLL_ROLLING_CODE) {
+                            $test[] = $roll_exec_array;
+                        }
+
+
+                    }
+
+
+                }
+            }
+
+
+        // hr---------------------------------------------------------------------
+
+
+        return json_encode(['test' => $test]);
+        return $targetTask;
+
+    }
+
+
 }
 
-*/
