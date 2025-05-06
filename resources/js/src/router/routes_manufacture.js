@@ -24,7 +24,7 @@ const manufactureRaw = [
     {
         path: _MANUFACTURE_PREFIX + '/cells/groups',
         name: 'manufacture.cells.groups',
-        component: () => import('@/src/components/dashboard/manufacture/groups/TheCellsGroupsShow.vue'),
+        component: () => import('/resources/js/src/components/dashboard/manufacture/groups/TheCellsGroupsShow.vue'),
         meta: {title: 'Группы ПЯ'},
 
     },
@@ -33,7 +33,8 @@ const manufactureRaw = [
     {
         path: _MANUFACTURE_PREFIX + '/cells',
         name: 'manufacture.cells',
-        component: () => import('@/src/components/dashboard/manufacture/cells/TheCellsShow.vue'),
+        // component: () => import('/resources/js/src/components/dashboard/manufacture/cells/TheCellsShow.vue'),
+        component: () => import('/resources/js/src/components/dashboard/manufacture/tasks/TheCellsTaskShow.vue'),
         meta: {title: 'Производственные ячейки'},
     },
 
@@ -203,7 +204,7 @@ const manufactureRaw = [
         path: _MAIN_PREFIX + 'stitch/china',
         // name: manufacture[0].path,
         // name: getRouteName(_MAIN_PREFIX + 'stitch/china'),
-        component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
     },
     //info Стежка Немец
     {

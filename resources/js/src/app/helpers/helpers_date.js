@@ -1,6 +1,6 @@
 // Здесь все, что касается даты и времени
 
-import {PERIOD_LENGTH} from "@/src/app/constants/dates.js"
+import {PERIOD_LENGTH} from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
 const GMT_0 = ':00Z'

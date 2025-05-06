@@ -31,29 +31,34 @@
                         width="w-[150px]"
                     />
 
-                    <!-- attract: Первый ряд сервисных кнопок -->
-                    <AppLabel
-                        v-if="serviceBtnShowCondition(task.common.status)"
-                        :text="serviceBtnTitle(task.common.status)"
-                        align="center"
-                        class="cursor-pointer"
-                        textSize="small"
-                        type="info"
-                        width="w-[150px]"
-                        @click="changeTaskStatus(task)"
-                    />
+                    <!-- attract: Выводим сервисные кнопки, только если дата больше или равна сегодняшней -->
+                    <div v-if="taskDateConstraint(task.date)">
 
-                    <!-- attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") -->
-                    <AppLabel
-                        v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"
-                        align="center"
-                        class="cursor-pointer"
-                        text="Удалить"
-                        textSize="small"
-                        type="danger"
-                        width="w-[150px]"
-                        @click="changeTaskStatus(task, 2)"
-                    />
+                        <!-- attract: Первый ряд сервисных кнопок -->
+                        <AppLabel
+                            v-if="serviceBtnShowCondition(task.common.status)"
+                            :text="serviceBtnTitle(task.common.status)"
+                            align="center"
+                            class="cursor-pointer"
+                            textSize="small"
+                            type="info"
+                            width="w-[150px]"
+                            @click="changeTaskStatus(task)"
+                        />
+
+                        <!-- attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") -->
+                        <AppLabel
+                            v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"
+                            align="center"
+                            class="cursor-pointer"
+                            text="Удалить"
+                            textSize="small"
+                            type="danger"
+                            width="w-[150px]"
+                            @click="changeTaskStatus(task, 2)"
+                        />
+
+                    </div>
 
                 </div>
 
@@ -90,8 +95,8 @@
                     <TheTaskCommonInfo
                         :key="rerender[0]"
                         :task="activeTask"
-                        @select-workers="selectWorkers"
                         @saveTaskDescription="updateTaskDescription"
+                        @select-workers="selectWorkers"
                     />
                 </div>
 
@@ -165,11 +170,11 @@
         mode="confirm"
     />
 
-<!--    <AppModal-->
-<!--        :show="modalSimpleShow"-->
-<!--        :text="modalSimpleText"-->
-<!--        :type="modalSimpleType"-->
-<!--    />-->
+    <!--    <AppModal-->
+    <!--        :show="modalSimpleShow"-->
+    <!--        :text="modalSimpleText"-->
+    <!--        :type="modalSimpleType"-->
+    <!--    />-->
 
     <AppCallout
         :show="modalSimpleShow"
@@ -206,7 +211,7 @@ import {
     getDayOfWeek,
     formatDate,
     isToday,
-    isWorkingDay,
+    isWorkingDay, compareDatesLogic,
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
 import TheTaskCommonInfo
@@ -272,9 +277,6 @@ console.log('taskData: ', taskData)
 console.log('activeTask', activeTask)
 
 
-
-
-
 // attract: Тип для модального окна
 const modalType = ref('danger')
 
@@ -326,15 +328,21 @@ const dayOfWeekStyle = (date) => {
     return 'danger'
 }
 
-// attract Условие на отображение сервисных кнопок под статусами
+// attract: Условие на отображение сервисных кнопок под статусами
 const serviceBtnShowCondition = (status) => {
     return !(status === FABRIC_TASK_STATUS.DONE.CODE || status === FABRIC_TASK_STATUS.RUNNING.CODE)
 }
 
-// attract Получаем название сервисной кнопки в зависимости от статуса
+// attract: Получаем название сервисной кнопки в зависимости от статуса
 const serviceBtnTitle = (status) => {
     const titles = ['Создать', 'На стежку', 'Вернуть статус', '', '']
     return titles[status]
+}
+
+// attract: Условие на отображение сервисной кнопки в зависимости от даты (больше или равна текущей)
+const taskDateConstraint = (taskDate) => {
+    const result = compareDatesLogic((new Date()).toISOString().slice(0, 10), taskDate)
+    return result || (result === undefined)
 }
 
 // attract: Простое модальное окно для вывода ошибок и предупреждений
@@ -517,6 +525,7 @@ const saveTasks = async (saveData) => {
     // console.groupEnd()
 
     const targetTask = taskData.find(t => t.date === saveData.task.date)
+
     targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll       // рулоны
     targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
@@ -596,7 +605,6 @@ const updateTaskDescription = async (description) => {
     // console.log('description: ', description)
     // console.log(res)
 }
-
 
 
 // attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга

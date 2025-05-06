@@ -74,7 +74,13 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             // attract: После закрытия СЗ, те, которые были перенесены - не редактируем
-            $table->boolean('editable')->nullable(false)->default(true)->comment('Возможность редактировать');
+            $table->boolean('editable')
+                ->nullable(false)
+                ->default(true)
+                ->comment('Возможность редактировать');
+
+            // attract: После закрытия СЗ, для рулонов со статусом "Не выполнено" и "переходящий"
+
 
             $table->boolean('active')
                 ->nullable(false)

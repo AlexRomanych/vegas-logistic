@@ -6,9 +6,10 @@
         </div>
 
         <div>
-            <TheCellBag v-for="cell in cellsGroup.cell_items" :key="cell.id"
-                        :cell="cell"
-
+            <TheCellBag
+                v-for="cell in cellsGroup.cell_items"
+                :key="cell.id"
+                :cell="cell"
             />
         </div>
 
@@ -16,7 +17,8 @@
 </template>
 
 <script setup>
-import TheCellBag from '@/src/components/dashboard/manufacture/groups/TheCellBag.vue'
+
+import TheCellBag from '/resources/js/src/components/dashboard/manufacture/groups/TheCellBag.vue'
 
 const props = defineProps({
     cellsGroup: {

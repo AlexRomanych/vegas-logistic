@@ -45,7 +45,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
     PENDING: {
         WORD: 'pending',
         CODE: 2,
-        TITLE: 'Готов к стежке',
+        TITLE: 'Готово к стежке',
     },
 
     // descr Сменное задание взято на выполнение (находится в процессе выполнения)
@@ -238,6 +238,8 @@ export const NEW_ROLL =
         fabric_mode: false,
         descr: '',
         correct: false,
+        editable: true,
+        rolls_exec: [],
     }
 
 

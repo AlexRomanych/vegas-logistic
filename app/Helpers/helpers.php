@@ -5,11 +5,25 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
+if (! function_exists('getCloneByJSON')) {
+
+    /**
+     * Descr: Функция копирует один объект в другой через JSON
+     * @param mixed $data
+     * @return mixed
+     */
+    function getCloneByJSON(mixed $data = []): mixed
+    {
+        $serialized = serialize($data);
+        return unserialize($serialized);
+    }
+}
+
 
 if (! function_exists('correctTimeZone')) {
 
     /**
-     * Функция переводит дату из UTC в текущее время зоны
+     * Descr: Функция переводит дату из UTC в текущее время зоны
      * @param string $dateString
      * @return Carbon
      */
@@ -18,6 +32,21 @@ if (! function_exists('correctTimeZone')) {
         $dateInUtc = Carbon::parse($dateString);
         $currentTimezone = Config::get('app.timezone', 'Europe/Minsk');
         return $dateInUtc->setTimezone($currentTimezone);
+    }
+}
+
+if (! function_exists('getCorrectDate')) {
+
+    /**
+     * Descr: Функция переводит дату из UTC в текущее время зоны и добавляет 3 часа
+     * @param string $dateString
+     * @return Carbon
+     */
+    function getCorrectDate(string $dateString = ''): Carbon
+    {
+        $dateInUtc = Carbon::parse($dateString);
+        $currentTimezone = Config::get('app.timezone', 'Europe/Minsk');
+        return $dateInUtc->setTimezone($currentTimezone)->addHours(3);
     }
 }
 

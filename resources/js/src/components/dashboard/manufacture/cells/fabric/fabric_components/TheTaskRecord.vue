@@ -178,18 +178,6 @@
             <!-- attract: Управляющие кнопки -->
             <div v-if="!editMode" class="flex">
 
-                <!-- attract: Редактировать -->
-                <AppLabel
-                    v-if="funcButtonsConstraints"
-                    align="center"
-                    class="cursor-pointer font-bold"
-                    height="h-[30px]"
-                    text="Ред."
-                    text-size="mini"
-                    type="warning"
-                    width="w-[50px]"
-                    @click="setEditMode"
-                />
 
                 <!-- attract: Удалить -->
                 <AppLabel
@@ -203,6 +191,20 @@
                     width="w-[50px]"
                     @click="deleteTaskRecord"
                 />
+
+                <!-- attract: Редактировать -->
+                <AppLabel
+                    v-if="funcButtonsConstraints && workRoll.editable"
+                    align="center"
+                    class="cursor-pointer font-bold"
+                    height="h-[30px]"
+                    text="Ред."
+                    text-size="mini"
+                    type="warning"
+                    width="w-[50px]"
+                    @click="setEditMode"
+                />
+
 
             </div>
 
@@ -237,13 +239,27 @@
 
         </div>
 
+        <!-- attract: Комментарий -->
+        <div v-if="workRoll?.rolls_exec[0]?.false_reason">
+            <AppLabel
+                :text="workRoll?.rolls_exec[0]?.false_reason"
+                class="truncate"
+                height="h-[30px]"
+                text-size="mini"
+                :type="typeForErrorsAndConstraintsForLabel"
+                width="w-[300px]"
+                :title="workRoll?.rolls_exec[0]?.false_reason"
+            />
+        </div>
+
+
     </div>
 
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
-        type="danger"
         mode="confirm"
+        type="danger"
     />
 
 </template>
@@ -255,7 +271,7 @@ import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
 
 import {
     filterFabricsByMachineId,
@@ -342,18 +358,16 @@ const averageLength = ref(getAverageLength())
 // attract: Определяем переменные для средней длины ПС
 const getAverageLengthFabric = () => {
     const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.average_length/tempFabric.buffer.rate
+    return tempFabric.buffer.average_length / tempFabric.buffer.rate
 }
 const averageLengthFabric = ref(getAverageLengthFabric())
 
 // attract: Определяем переменные для буфера ПС
 const getBuffer = () => {
     const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.average_length/tempFabric.buffer.rate
+    return tempFabric.buffer.average_length / tempFabric.buffer.rate
 }
 const buffer = ref(getBuffer())
-
-
 
 
 // attract: Текст модального окна + Получаем ссылку на модальное окно
@@ -362,6 +376,12 @@ const appModalAsync = ref(null)
 
 // attract: Получаем тип раскраски ошибки и ограничения для рулона
 const getTypeForErrorsAndConstraintsForLabel = () => {
+    // console.log(workRoll)
+
+    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.FALSE.CODE) return 'danger'
+    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return 'orange'
+    // if (!workRoll.editable) return 'dark'
+
 
     // Проверяем, если выбран рулон с нулевым id, то возвращаем тип ошибки
     if (workRoll.fabric_id === 0) {
@@ -398,7 +418,7 @@ const getSelectData = () => {
     let data = filteredFabrics.map(fabric => {
 
         if (!rollsIndexes.includes(fabric.id) || fabric.id === workRoll.fabric_id) {
-        // if (!rollsIndexes.includes(fabric.id) && rollsIndexes.includes(workRoll.fabric_id)) {
+            // if (!rollsIndexes.includes(fabric.id) && rollsIndexes.includes(workRoll.fabric_id)) {
 
             if ((workRoll.fabric_id !== 0 && fabric.id !== 0) || (workRoll.fabric_id === 0)) {
 
@@ -450,7 +470,6 @@ const getSelectData = () => {
 
     return {name: 'fabrics', data}
 }
-
 
 
 // attract: Обрабатываем событие выбора ПС в компоненте. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
@@ -527,7 +546,7 @@ const reactiveActions = () => {
     workRoll.buffer = tempFabric.buffer.amount                                              // Меняем Буфер
     workRoll.average_textile_length = tempFabric.buffer.average_length                      // Меняем среднюю длину ткани
     workRoll.average_fabric_length
-        = tempFabric.buffer.average_length/tempFabric.buffer.rate                           // Меняем среднюю длину ПС
+        = tempFabric.buffer.average_length / tempFabric.buffer.rate                           // Меняем среднюю длину ПС
     workRoll.productivity = tempFabric.buffer.productivity                                  // Меняем производительность
     workRoll.rate = tempFabric.buffer.rate                                                  // Меняем коэффициент перевода ткани в ПС
     workRoll.descr = description.value
@@ -629,6 +648,8 @@ const saveTaskRecord = () => {
         descr: description.value,
         fabric_mode: fabricMode.value,
         rate: workRoll.rate,
+        rolls_exec: [],             // Нужно для правильной работы компонента
+        editable: true,             // Нужно для правильной работы компонента
     }
 
     // console.log('saveRollData: ', saveRollData)

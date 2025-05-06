@@ -73,7 +73,7 @@
 
 <script setup>
 
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -96,7 +96,7 @@ import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
 import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+// import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
 const props = defineProps({
     task: {
@@ -126,7 +126,11 @@ const fabrics = fabricsStore.fabricsMemory
 fabrics[0].machines[0].id = props.machine.ID                                    // Добавляем ID машины в объект ПС с нулевым рулоном
 
 const rolls = props.task.machines[props.machine.TITLE].rolls                    // Получаем рулоны из задания
-const rollsIndexes = computed(() => rolls.map(roll => roll.fabric_id))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
+
+
+const rollsIndexes = computed(() => rolls.map(roll => roll.editable ? roll.fabric_id : undefined).filter(roll => roll !== undefined))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
+
+
 fabricsStore.globalRollsIndexes = rollsIndexes.value                            // сохраняем индексы рулонов в глобальном хранилище
 
 // rolls.forEach((roll) => {
@@ -143,6 +147,7 @@ fabricsStore.globalEditMode = false                                             
 
 // attract: Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
+    fabricsStore.clearTaskGlobalProductivity()
     rolls.forEach((roll, index, rolls) => {
         const fabric = fabrics.find(fabric => fabric.id === roll.fabric_id)
         // console.log(fabricsStore.globalTaskProductivity)
@@ -184,6 +189,13 @@ const saveTaskRecord = (saveData) => {
 const deleteTaskRecord = (deleteData) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
+
+
+// attract: При изменении самих данных, пересчитываем производительность
+watch(() => props.task, () => {
+    fillGlobalProductivity()
+}, {deep: true})
+
 </script>
 
 <style scoped>

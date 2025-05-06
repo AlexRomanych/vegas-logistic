@@ -114,8 +114,8 @@ const fabrics = fabricsStore.fabricsMemory
 fabrics[0].machines[0].id = props.machine.ID                                    // Добавляем ID машины в объект ПС с нулевым рулоном
 
 const rolls = props.task.machines[props.machine.TITLE].rolls                    // Получаем рулоны из задания
-const rollsIndexes = computed(() => rolls.map(roll => roll.fabric_id))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
-fabricsStore.globalRollsIndexes = rollsIndexes.value                            // сохраняем индексы рулонов в глобальном хранилище
+// const rollsIndexes = computed(() => rolls.map(roll => roll.fabric_id))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
+// fabricsStore.globalRollsIndexes = rollsIndexes.value                            // сохраняем индексы рулонов в глобальном хранилище
 
 
 fabricsStore.globalEditMode = false                                             // устанавливаем в false глобальный режим редактирования

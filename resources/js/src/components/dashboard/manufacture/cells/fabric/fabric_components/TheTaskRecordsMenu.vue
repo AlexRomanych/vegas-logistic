@@ -16,7 +16,7 @@
 
         />
 
-        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
+        <!-- attract: Оптимизировать трудозатраты -->
         <AppLabelMultiLine
             v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             :text="['Оптимизировать', 'трудозатраты']"
@@ -28,7 +28,7 @@
             @click="optimizeLabor"
         />
 
-        <!--  attract: Текущий рисунок. -->
+        <!-- attract: Текущий рисунок -->
         <AppLabelMultiLine
             :text="['Текущий рисунок:', 'Ж25']"
             align="center"
@@ -37,6 +37,7 @@
             width="w-[170px]"
         />
 
+        <!-- attract: Общие трудозатраты -->
         <AppLabelMultiLine
             :text="['Общие трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount, 'hour')]"
             :type="totalProductivityAmount <= FABRIC_WORKING_SHIFT_LENGTH ? 'success' : 'danger'"
@@ -164,6 +165,10 @@ const optimizeLabor = () => {
     emits('optimizeLabor')
     console.log('optimize labor')
 }
+
+
+// watch(() => fabricsStore.globalFabricsMode, () => {})
+
 
 
 </script>

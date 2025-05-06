@@ -128,7 +128,10 @@ return new class extends Migration {
 
             // attract: Привязка к старому плановому сменному заданию (будем использовать при закрытии СЗ). Будет хранить
             // attract: старый id, чтобы можно было найти старое задание по этому id
-            $table->unsignedBigInteger('textile_roll_id_old')->nullable()->comment('Id предыдущего задания, выставленного ООП');
+            $table->unsignedBigInteger('task_context_id_old')->nullable()->comment('Id предыдущего задания, выставленного ООП');
+
+            // attract: Атрибут для перемещения рулона из СЗ в другое СЗ. Если false - то рулон больше не перемещаемый
+            $table->boolean('movable')->nullable(false)->default(true)->comment('Перемещаемый или нет');
 
 //            $table->ForeignId('responsible_id')->nullable(false)->default(1)->comment('Ответственный')
 //                ->references('id')

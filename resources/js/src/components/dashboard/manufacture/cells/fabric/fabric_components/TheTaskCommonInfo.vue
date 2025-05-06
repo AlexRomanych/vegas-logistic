@@ -124,13 +124,13 @@
                 />
 
                 <AppLabel
+                    align="center"
                     class="cursor-pointer"
+                    height="h-[60px]"
                     text="V"
                     text-size="huge"
                     type="success"
                     width="w-[50px]"
-                    height="h-[60px]"
-                    align="center"
                     @click="updateTaskCommonDescription"
                 />
 
@@ -556,14 +556,19 @@ const prepareWorkersData = async () => {
     // attract: Получаем список всех сотрудников, которые уже есть в упоминании к ответственному в рулонах
     // attract: чтобы их сделать не доступными для выбора
     const workersAlreadyExistsInExecuteRolls = new Set()
-    Object.keys(props.task.machines).forEach((machine) => {
-        props.task.machines[machine].rolls.forEach((roll) => {
-            roll?.rolls_exec.forEach((rollExec) => {
-                workersAlreadyExistsInExecuteRolls.add(rollExec.finish_by)
+    // Собираем список сотрудников, которые уже есть в упоминании к ответственному в рулонах только в нужных режимах
+    // потому что в других не доступно
+    if (props.task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
+        props.task.common.status === FABRIC_TASK_STATUS.DONE.CODE ||
+        props.task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
+        Object.keys(props.task.machines).forEach((machine) => {
+            props.task.machines[machine].rolls.forEach((roll) => {
+                roll?.rolls_exec.forEach((rollExec) => {
+                    workersAlreadyExistsInExecuteRolls.add(rollExec.finish_by)
+                })
             })
         })
-    })
-
+    }
     // console.log('set: ', workersAlreadyExistsInExecuteRolls)
 
     // отмечаем сотрудников, которые уже есть в списке

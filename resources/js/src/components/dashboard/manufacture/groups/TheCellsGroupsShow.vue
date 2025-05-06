@@ -9,13 +9,14 @@
 </template>
 
 <script setup>
-import {useCellsGroupsStore} from '@/src/stores/CellsGroupsStore.js'
-import TheGroupBag from '@/src/components/dashboard/manufacture/groups/TheGroupBag.vue'
+
+import {useCellsGroupsStore} from '/resources/js/src/stores/CellsGroupsStore.js'
+import TheGroupBag from '/resources/js/src/components/dashboard/manufacture/groups/TheGroupBag.vue'
 
 const cellsGroupsStore = useCellsGroupsStore()
 const cellsGroups = await cellsGroupsStore.getCellsGroups()
 
-console.log(cellsGroups)
+console.log('cellsGroups: ', cellsGroups)
 
 </script>
 
