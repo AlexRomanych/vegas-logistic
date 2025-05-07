@@ -211,7 +211,7 @@ import {
     getDayOfWeek,
     formatDate,
     isToday,
-    isWorkingDay, compareDatesLogic,
+    isWorkingDay, compareDatesLogic, getISOFromLocaleDate,
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
 import TheTaskCommonInfo
@@ -341,7 +341,7 @@ const serviceBtnTitle = (status) => {
 
 // attract: Условие на отображение сервисной кнопки в зависимости от даты (больше или равна текущей)
 const taskDateConstraint = (taskDate) => {
-    const result = compareDatesLogic((new Date()).toISOString().slice(0, 10), taskDate)
+    const result = compareDatesLogic(new Date(), taskDate)
     return result || (result === undefined)
 }
 
@@ -358,10 +358,32 @@ const modalText = ref([])
 // attract Меняем статус СЗ по сервисной кнопке
 const changeTaskStatus = async (task, btnRow = 1) => {
 
+
+
     if (!task.active) return
 
     // attract: Удалить сменное задание. Обращаемся к API
     if (btnRow === 2 && task.common.status === FABRIC_TASK_STATUS.CREATED.CODE) {
+
+        // attract: Проверяем, чтобы были только правильные статусы (не было не выполненных или переходящих)
+        // считаем общее количество рулонов
+        let isFind = false
+        Object.keys(task.machines).forEach((machine) => {
+
+            // console.log(task.machines[machine].rolls)
+            // console.log(task.machines[machine].rolls.some(roll => !roll.editable))
+
+            isFind ||= task.machines[machine].rolls.some(roll => roll.editable)
+
+        })
+
+        if (!isFind) {
+            modalSimpleType.value = 'danger'
+            modalSimpleText.value = 'Задание не может быть удалено, потому присутствуют не выполненные или переходящие рулоны. Удалите их вручную.'
+            modalSimpleShow.value = true
+            modalSimpleClose()
+            return
+        }
 
         modalText.value = ['Сменное задания и все связанные с', 'ними данные будут удалены.', 'Продолжить?']
         modalType.value = 'danger'
@@ -389,7 +411,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         console.log(res)
 
         const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-        console.log('newTaskDay: ', newTaskDay)
+        console.log('created: newTaskDay: ', newTaskDay)
 
         task.machines = newTaskDay[0].machines
         task.common = newTaskDay[0].common
@@ -411,6 +433,13 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
+
+            const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
+            console.log('newTaskDay: ', newTaskDay)
+
+            task.machines = newTaskDay[0].machines
+            task.common = newTaskDay[0].common
+
             // todo: сделать обработку ошибок + callout
         }
 
@@ -452,6 +481,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             // debugger
 
             task.machines = newTaskDay[0].machines
+            task.common = newTaskDay[0].common
             // // task = newTaskDay
             //
 
@@ -578,21 +608,22 @@ const optimizeLabor = (machine, task) => {
 const selectWorkers = async (workersList) => {
 
     workersList = workersList.filter(worker => worker.checked)
-    // console.log('selectWorkers: ', workersList)
+    console.log('selectWorkers: ', workersList)
+    console.log('activeTask: ', activeTask)
 
     // Warning: Тут отправляем на сервер ключ-значение вида {"worker_id":1,"record_id":1}
     // warning: чтобы синхронизировать данные в таблице worker_records
     const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
     // console.log(workersIds)
 
-    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.id, workersIds)
+    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.common.id, workersIds)
     // console.log(res)
 
     const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
     // console.log('newTaskDay: ', newTaskDay)
 
     activeTask.workers = newTaskDay[0].workers
-
+    activeTask.common = newTaskDay[0].common
     // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
     rerender.forEach((_, index, array) => array[index]++)
 

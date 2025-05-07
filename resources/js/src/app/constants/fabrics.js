@@ -72,6 +72,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'created',
         CODE: 0,
         TITLE: 'Создано',
+        TYPE: 'dark',
     },
 
     // descr: Рулон взят на выполнение (находится в процессе выполнения)
@@ -79,6 +80,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'running',
         CODE: 1,
         TITLE: 'В процессе',
+        TYPE: 'warning',
     },
 
     // descr: Рулон был взят на выполнение, но выполнение приостановлено (например, перенос на другую смену)
@@ -86,6 +88,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'paused',
         CODE: 2,
         TITLE: 'Пауза',
+        TYPE: 'light',
     },
 
     // descr: Рулон выполнен (закрыт)
@@ -93,6 +96,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'done',
         CODE: 3,
         TITLE: 'Выполнено',
+        TYPE: 'success',
     },
 
     // descr: Рулон не выполнен (не закрыт)
@@ -100,6 +104,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'false',
         CODE: 4,
         TITLE: 'Не выполнено',
+        TYPE: 'danger',
     },
 
     // descr: Рулон переходящий (с одной смены на другую)
@@ -107,6 +112,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'rolling',
         CODE: 5,
         TITLE: 'Переходящий',
+        TYPE: 'orange',
     },
 
 })

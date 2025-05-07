@@ -167,6 +167,7 @@ import {getDuration} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
+import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 const props = defineProps({
     roll_exec: {
@@ -184,15 +185,7 @@ const fabricsStore = useFabricsStore()
 
 // attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
-
-    if (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE) return 'dark'
-    if (roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE) return 'warning'
-    if (roll_exec.status === FABRIC_ROLL_STATUS.PAUSED.CODE) return 'light'
-    if (roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE) return 'success'
-    if (roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE) return 'danger'
-    if (roll_exec.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return 'orange'
-
-    return 'dark'
+    return getTypeByRollStatus(roll_exec.status)
 }
 
 // attract: Получаем тип раскраски в зависимости от наличия ответственного выполнения рулона

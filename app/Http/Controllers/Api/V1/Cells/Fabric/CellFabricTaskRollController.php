@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
+use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use Illuminate\Http\Request;
 use \Exception;
@@ -40,16 +41,12 @@ class CellFabricTaskRollController extends Controller
                 'user_id' => Auth::id(),    // Текущий пользователь
             ];
 
-//        if (!is_null($rollData['start_at'])) $updateData['start_at'] = $rollData['start_at'];
-//        if (!is_null($rollData['status'])) {}
 
             $taskRoll = FabricTaskRoll::query()->updateOrCreate(
                 ['id' => $rollData['id']],
                 $updateData
 
             );
-
-//            return json_encode(['raw' => DB::select('SELECT CURRENT_TIMESTAMP')]);
 
             return new FabricTaskRollResource($taskRoll);
 

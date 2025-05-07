@@ -327,6 +327,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // attract: Обновление списка сотрудников для дня СЗ
     const updateFabricTaskWorkers = async (taskId = 0, workerIds = []) => {
+        console.log('debug: ', taskId, workerIds)
         const result = await jwtPut(URL_FABRIC_TASKS_WORKERS_UPDATE, {data: {task: taskId, workers: workerIds}})
         console.log('store: workers: ', result)
         return result.data                                  // все возвращается через Resource с ключем data

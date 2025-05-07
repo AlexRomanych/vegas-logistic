@@ -181,7 +181,7 @@
 
                 <!-- attract: Удалить -->
                 <AppLabel
-                    v-if="funcButtonsConstraints"
+                    v-if="funcButtonsConstraints && workRoll?.rolls_exec[0]?.status !== FABRIC_ROLL_STATUS.ROLLING.CODE"
                     align="center"
                     class="cursor-pointer font-bold"
                     height="h-[30px]"
@@ -240,18 +240,30 @@
         </div>
 
         <!-- attract: Комментарий -->
-        <div v-if="workRoll?.rolls_exec[0]?.false_reason">
+        <div v-if="workRoll.note">
             <AppLabel
-                :text="workRoll?.rolls_exec[0]?.false_reason"
+                :text="workRoll.note"
                 class="truncate"
                 height="h-[30px]"
                 text-size="mini"
                 :type="typeForErrorsAndConstraintsForLabel"
                 width="w-[300px]"
-                :title="workRoll?.rolls_exec[0]?.false_reason"
+                :title="workRoll.note"
             />
         </div>
 
+<!--        &lt;!&ndash; attract: Комментарий &ndash;&gt;-->
+<!--        <div v-if="workRoll?.rolls_exec[0]?.false_reason">-->
+<!--            <AppLabel-->
+<!--                :text="workRoll?.rolls_exec[0]?.false_reason"-->
+<!--                class="truncate"-->
+<!--                height="h-[30px]"-->
+<!--                text-size="mini"-->
+<!--                :type="typeForErrorsAndConstraintsForLabel"-->
+<!--                width="w-[300px]"-->
+<!--                :title="workRoll?.rolls_exec[0]?.false_reason"-->
+<!--            />-->
+<!--        </div>-->
 
     </div>
 
@@ -271,7 +283,12 @@ import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {
+    FABRIC_MACHINES,
+    FABRIC_ROLL_STATUS,
+    FABRIC_ROLL_STATUS_LIST,
+    FABRIC_TASK_STATUS
+} from '/resources/js/src/app/constants/fabrics.js'
 
 import {
     filterFabricsByMachineId,
@@ -378,8 +395,8 @@ const appModalAsync = ref(null)
 const getTypeForErrorsAndConstraintsForLabel = () => {
     // console.log(workRoll)
 
-    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.FALSE.CODE) return 'danger'
-    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return 'orange'
+    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.FALSE.CODE) return FABRIC_ROLL_STATUS.FALSE.TYPE
+    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return FABRIC_ROLL_STATUS.ROLLING.TYPE
     // if (!workRoll.editable) return 'dark'
 
 

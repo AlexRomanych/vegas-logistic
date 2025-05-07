@@ -181,24 +181,69 @@ const fabricsStore = useFabricsStore()
 const tasksPeriod = getFabricTasksPeriod()
 console.log('tasksPeriod:', tasksPeriod)
 
-// attract: Получаем сами сменные задания
-let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+
+
+
+
+// // attract: Получаем сами сменные задания
+// let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+//
+// // attract: Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
+// tasks = tasks.filter(
+//     t =>
+//         t.common.status === FABRIC_TASK_STATUS.PENDING.CODE ||
+//         t.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
+//         t.common.status === FABRIC_TASK_STATUS.DONE.CODE
+// )
+//
+// // attract: Проверяем на последнее СЗ со статусом "Выполнено".
+// // attract: Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
+// if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
+//     const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
+//     if (lastDoneTask) tasks.unshift(lastDoneTask)       // добавляем последнее СЗ в начало массива, если оно есть
+//     // console.log('lastDoneTask:', lastDoneTask)
+// }
+
+
+const prepareTasksData = async () => {
+    // attract: Получаем сами сменные задания
+    let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 
 // attract: Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
-tasks = tasks.filter(
-    t =>
-        t.common.status === FABRIC_TASK_STATUS.PENDING.CODE ||
-        t.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
-        t.common.status === FABRIC_TASK_STATUS.DONE.CODE
-)
+    tasks = tasks.filter(
+        t =>
+            t.common.status === FABRIC_TASK_STATUS.PENDING.CODE ||
+            t.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
+            t.common.status === FABRIC_TASK_STATUS.DONE.CODE
+    )
 
 // attract: Проверяем на последнее СЗ со статусом "Выполнено".
 // attract: Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
-if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
-    const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
-    if (lastDoneTask) tasks.unshift(lastDoneTask)       // добавляем последнее СЗ в начало массива, если оно есть
-    // console.log('lastDoneTask:', lastDoneTask)
+    if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
+        const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
+        if (lastDoneTask) tasks.unshift(lastDoneTask)       // добавляем последнее СЗ в начало массива, если оно есть
+        // console.log('lastDoneTask:', lastDoneTask)
+    }
+
+    return tasks
 }
+
+let tasks = await prepareTasksData()
+
+// attract: Формируем данные для отображения
+const taskData = reactive(tasks)
+
+// attract: Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
+let activeTask = reactive(taskData.find(t => isToday(t.date)) || tasks[0])
+activeTask.active = true
+
+
+console.log('tasks:', tasks)
+console.log('taskData: ', taskData)
+console.log('activeTask', activeTask)
+
+
+// let activeTask = taskData[0]
 
 // const route = useRoute()
 // const router = useRouter()
@@ -209,17 +254,9 @@ fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пус
 fabricsStore.fabricsMemory = fabrics
 // console.log(fabrics)
 
-// attract: Формируем данные для отображения
-const taskData = reactive(tasks)
 
-// attract: Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
-let activeTask = reactive(taskData.find(t => isToday(t.date)) || tasks[0])
-activeTask.active = true
-// let activeTask = taskData[0]
 
-console.log('tasks:', tasks)
-console.log('taskData: ', taskData)
-console.log('activeTask', activeTask)
+
 
 // attract: Тип для модального окна
 const modalType = ref('danger')
@@ -437,7 +474,7 @@ const selectWorkers = async (workersList) => {
     const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
     console.log(workersIds)
 
-    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.id, workersIds)
+    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.common.id, workersIds)
     console.log(res)
 
 
@@ -618,6 +655,7 @@ const changeTaskExecute = async (task) => {
         // attract: 2. Должны быть проставлены правильные статусы для всех рулонов по каждой СМ:
         // attract:     "Выполнено", "Не выполнено", "Переходящий"
         // attract: 3. Должен быть заполнен персонал на каждый рулон по каждой СМ
+        // attract: 4. Не должно быть ни одного рулона, который не может быть перемещен
 
         // attract: 1.
         // console.log(task.workers)
@@ -677,6 +715,9 @@ const changeTaskExecute = async (task) => {
             // const res = await fabricsStore.closeFabricTasks('06/05/2025')
             // console.log(res)
             // todo: сделать обработку ошибок + callout
+
+            tasks = await prepareTasksData() // обновляем список СЗ
+
         }
 
         // return

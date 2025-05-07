@@ -81,6 +81,7 @@ class FabricTasksDateResource extends JsonResource
                     'fabric_rate' => (float)$rollContext->fabric->translate_rate,
                     'fabric_mode' => $rollContext->fabric_mode,
                     'descr' => $rollContext->description,
+                    'note' => $rollContext->note,
                     'correct' => true,
                     'editable' => $rollContext->editable,
                     'rolls_exec' => $rolls,
@@ -125,6 +126,7 @@ class FabricTasksDateResource extends JsonResource
             'date' => $this->tasks_date,
             'id' => $this->id,
             'common' => [
+                'id' => $this->id,
                 'active' => $this->active,
                 'team' => $this->team->team_no,
                 'status' => $this->tasks_status,

@@ -196,6 +196,8 @@ const isRollingRollPresent = () => {
 
 // attract: Возвращает статус кнопки "Начать выполнение"
 const isStartButtonDisabled = () => {
+    console.log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
+
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.DONE.CODE) return true
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE) return true

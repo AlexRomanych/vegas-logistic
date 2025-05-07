@@ -3,12 +3,17 @@
 import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
-    TASK_DRAFT
+    TASK_DRAFT, FABRIC_ROLL_STATUS
 } from '/resources/js/src/app/constants/fabrics.js'
 
 import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
 
-import {addDays, subtractDays, getDateDiffInDays} from '/resources/js/src/app/helpers/helpers_date.js'
+import {
+    addDays,
+    subtractDays,
+    getDateDiffInDays,
+    getISOFromLocaleDate
+} from '/resources/js/src/app/helpers/helpers_date.js'
 
 // descr Получить тип стиля по коду статуса СЗ на стежке
 export const getStyleTypeByFabricTaskStatusCode = function (taskStatusCode = null) {
@@ -77,8 +82,8 @@ export function getFabricTasksPeriod() {
     end = addDays(end, PERIOD_LENGTH - 2)                     // начало + неделя - это танцы с бубнами
 
     return {
-        start: start.toISOString().split('T')[0],
-        end: end.toISOString().split('T')[0]
+        start: getISOFromLocaleDate(start),
+        end: getISOFromLocaleDate(end),
     }
 }
 
@@ -297,8 +302,18 @@ export function getFunctionalByFabricTaskStatus(fabricTask) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// // attract: Получаем статус функций и отображения компонентов в зависимости от статуса СЗ
-// export function getFabricById(fabrics = [], id = -1) {}
+// attract: Возвращает тип расскраски компонента по статусу
+export function getTypeByRollStatus(rollStatus) {
+
+    if (rollStatus === FABRIC_ROLL_STATUS.CREATED.CODE) return FABRIC_ROLL_STATUS.CREATED.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.RUNNING.CODE) return FABRIC_ROLL_STATUS.RUNNING.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.PAUSED.CODE) return FABRIC_ROLL_STATUS.PAUSED.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.DONE.CODE) return FABRIC_ROLL_STATUS.DONE.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.FALSE.CODE) return FABRIC_ROLL_STATUS.FALSE.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.ROLLING.CODE) return FABRIC_ROLL_STATUS.ROLLING.TYPE
+
+    return 'dark'
+}
 
 
 

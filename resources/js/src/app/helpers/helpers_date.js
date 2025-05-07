@@ -1,6 +1,6 @@
 // Здесь все, что касается даты и времени
 
-import {PERIOD_LENGTH} from '/resources/js/src/app/constants/dates.js'
+import {PERIOD_LENGTH, } from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
 const GMT_0 = ':00Z'
@@ -56,7 +56,6 @@ export function getWeekNumber(date) {
     return weekNum;
 }
 
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Определяет, какая дата в текстовом формате больше:
 //      если dateString2 > dateString1, то возвращает true
@@ -67,7 +66,11 @@ export function compareDatesLogic(dateString1, dateString2) {
     const date1 = getDate(dateString1)
     const date2 = getDate(dateString2)
 
-    if (date1.toISOString().slice(0, 10) === date2.toISOString().slice(0, 10)) return undefined
+    // console.log('date1: ', date1)
+    // console.log('date2: ', date2)
+
+    if (getISOFromLocaleDate(date1) === getISOFromLocaleDate(date2)) return undefined
+    // if (date1.toISOString().slice(0, 10) === date2.toISOString().slice(0, 10)) return undefined
     return date2 > date1
 }
 
@@ -404,3 +407,11 @@ export function getDuration(startMoment = null, endMoment = null, offset = 0) {
 }
 
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает дату в формате YYYY-MM-DD, но полученную из локального формата (без -03:00))
+export function getISOFromLocaleDate(inDate) {
+
+    inDate = inDate ? getDate(inDate) : new Date()
+    return inDate.toLocaleDateString().split('.').reverse().join('-')
+
+}

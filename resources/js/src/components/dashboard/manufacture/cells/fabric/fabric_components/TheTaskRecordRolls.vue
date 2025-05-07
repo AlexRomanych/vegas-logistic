@@ -287,6 +287,8 @@ import {FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '/resources/js/src/app
 
 import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
 
+import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
@@ -317,7 +319,7 @@ const fabrics = fabricsStore.fabricsMemory
 
 // attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
-    return 'success'
+    return getTypeByRollStatus(roll_exec.status)
 }
 
 // attract: Получаем тип шапки таблицы

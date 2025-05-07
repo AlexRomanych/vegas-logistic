@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateResource;
+use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
@@ -402,7 +404,6 @@ class CellFabricTasksDateController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
-
     }
 
 
@@ -533,189 +534,216 @@ class CellFabricTasksDateController extends Controller
     // Descr: Если передан параметр date, то закрываем СЗ по указанной дате
     public function closeFabricTasks(Request $request)
     {
-        $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
 
-        // attract: Проверяем, есть ли еще не завершенные СЗ
-        $runningTasks = $this->getFabricExecutingTasks(new Request(['date' => $payloadDate]));
-        if (count($runningTasks) !== 0) {
+        try {
+
+            $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
+
+            // attract: Проверяем, есть ли еще не завершенные СЗ
+            $runningTasks = $this->getFabricExecutingTasks(new Request(['date' => $payloadDate]));
+            if (count($runningTasks) !== 0) {
 //            throw new \Exception('Сменное задание не существует');
-            return EndPointStaticRequestAnswer::fail('Предыдущие СЗ находятся в процессе выполнения');
-        }
+                return EndPointStaticRequestAnswer::fail('Предыдущие СЗ находятся в процессе выполнения');
+            }
 
-        // attract: Проверяем, есть ли еще не завершенные СЗ
-        $notDoneTasks = $this->getFabricNotDoneTasks(new Request(['date' => $payloadDate]));
-        if (count($notDoneTasks) !== 0) {
+            // attract: Проверяем, есть ли еще не завершенные СЗ
+            $notDoneTasks = $this->getFabricNotDoneTasks(new Request(['date' => $payloadDate]));
+            if (count($notDoneTasks) !== 0) {
 //            throw new \Exception('Сменное задание не существует');
-            return EndPointStaticRequestAnswer::fail('Есть задания с непонятным статусом');
-        }
+                return EndPointStaticRequestAnswer::fail('Есть задания с непонятным статусом');
+            }
 
-        // attract: Получаем СЗ по указанной дате
-        $targetTask = $this->tasks(new Request(['start' => $payloadDate, 'end' => $payloadDate]));
+            // attract: Получаем СЗ по указанной дате
+            $targetTask = $this->tasks(new Request(['start' => $payloadDate, 'end' => $payloadDate]));
 
-        // attract: Проверяем существование СЗ
-        if (!$targetTask) {
+            // attract: Проверяем существование СЗ
+            if (!$targetTask) {
 //            throw new \Exception('Сменное задание не существует');
-            return EndPointStaticRequestAnswer::fail('Сменное задание не существует');
-        }
+                return EndPointStaticRequestAnswer::fail('Сменное задание не существует');
+            }
 
-        // attract: Получаем первый элемент массива, т.к. возвращается коллекция и преобразуем в массив
-        $targetTask = $targetTask[0]->resolve();
+            // attract: Получаем первый элемент массива, т.к. возвращается коллекция и преобразуем в массив
+            $targetTask = $targetTask[0]->resolve();
 
 //        return json_encode(['task' => $targetTask['machines']]);
 //        return json_encode(['task' => get_class($targetTask)]);
 //        return $targetTask;
 
-        // hr---------------------------------------------------------------------
-        // attract: Закрываем СЗ. Вся логика закрытия СЗ находится здесь
+            // hr---------------------------------------------------------------------
+            // attract: Закрываем СЗ. Вся логика закрытия СЗ находится здесь
 
 
-        // attract: Получаем массив всех рулонов, которые нужно переместить на следующее СЗ
-        $rollsToMove = [];  // собираем все рулоны, которые нужно переместить
+            // attract: Получаем массив всех рулонов, которые нужно переместить на следующее СЗ и которые нужно добавить в буфер
+            $rollsToMove = [];      // собираем все рулоны, которые нужно переместить
+            $rollsToBuffer = [];    // собираем все рулоны, которые нужно добавить в буфер
 
-        for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
+            for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
 
-            // Получаем название машины
-            $machineStr = FabricService::getFabricMachineNameById($i);
+                // Получаем название машины
+                $machineStr = FabricService::getFabricMachineNameById($i);
 
-            // Проверка на наличие данных для данной стегальной машины
-            if (count($targetTask['machines'][$machineStr]['rolls']) === 0) continue;
+                // Проверка на наличие данных для данной стегальной машины
+                if (count($targetTask['machines'][$machineStr]['rolls']) === 0) continue;
 
-            foreach ($targetTask['machines'][$machineStr]['rolls'] as $roll) {
-                // $roll --> массив
+                foreach ($targetTask['machines'][$machineStr]['rolls'] as $roll) {
+                    // $roll --> массив
 
-                foreach ($roll['rolls_exec'] as $roll_exec) {
-                    // $roll_exec --> Resource
+                    foreach ($roll['rolls_exec'] as $roll_exec) {
+                        // $roll_exec --> Resource
 
-                    // attract: Получаем данные из объекта Resource
-                    $roll_exec_array = $roll_exec->resolve();
+                        // attract: Получаем данные из объекта Resource
+                        $roll_exec_array = $roll_exec->resolve();
 
-                    // attract: Если рулон помечен как не выполненный или помечен как переходящий
-                    if ($roll_exec_array['status'] === FABRIC_ROLL_FALSE_CODE ||
-                        $roll_exec_array['status'] === FABRIC_ROLL_ROLLING_CODE) {
+                        // attract: Если рулон помечен как не выполненный или помечен как переходящий
+                        if ($roll_exec_array['status'] === FABRIC_ROLL_FALSE_CODE ||
+                            $roll_exec_array['status'] === FABRIC_ROLL_ROLLING_CODE) {
 
-                        $rollsToMove[] = [
-                            'roll' => $roll,
-                            'roll_exec' => $roll_exec_array,
-                            'machine_id' => $i,
-                        ];
+                            $rollsToMove[] = [
+                                'roll' => $roll,
+                                'roll_exec' => $roll_exec_array,
+                                'machine_id' => $i,
+                            ];
 
+                        } else if ($roll_exec_array['status'] === FABRIC_ROLL_DONE_CODE) {
+
+                            $rollsToBuffer[] = [
+                                'roll' => $roll,
+                                'roll_exec' => $roll_exec_array,
+                                'machine_id' => $i,
+                            ];
+                        }
                     }
-
                 }
-
             }
-        }
 
 
-        // attract: Если есть рулоны к перемещению - перемещаем
-        if (count($rollsToMove) !== 0) {
+            // attract: Если есть рулоны к перемещению - перемещаем
+            if (count($rollsToMove) !== 0) {
 
-            // attract: Получаем дату следующего СЗ
-            $nextDate = getCorrectDate($payloadDate)->addDay()->format('Y-m-d');
+                // attract: Получаем дату следующего СЗ
+                $nextDate = getCorrectDate($payloadDate)->addDay()->format('Y-m-d');
 
-            // attract: Задаем параметры для Дня СЗ
-            $tasksDayData['date'] = $nextDate;
-            $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
+                // attract: Задаем параметры для Дня СЗ
+                $tasksDayData['date'] = $nextDate;
+                $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
 
-            // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
-            $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
+                // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
+                $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
 //            // attract: Получаем следующее СЗ
 //            $nextTasksDate = FabricTasksDate::query()
 //                ->where('tasks_date', $nextDate)
 //                ->first();
 
-            foreach ($rollsToMove as $rollToMove) {
+                foreach ($rollsToMove as $rollToMove) {
 
-                // attract: Создаем или обновляем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
-                $task = FabricTask::query()->updateOrCreate(
-                    [
-                        'fabric_tasks_date_id' => $nextTasksDate->id,
-                        'fabric_machine_id' => $rollToMove['machine_id'],
-                    ],
-                    [
-                        'fabric_tasks_date_id' => $nextTasksDate->id,
-                        'fabric_machine_id' => $rollToMove['machine_id'],
-                        'task_status' => $nextTasksDate->tasks_status,             // записываем пока общий статус всего СЗ
-                        'fabric_team_id' => $nextTasksDate->fabric_team_id,
+                    // attract: Создаем или обновляем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
+                    $task = FabricTask::query()->updateOrCreate(
+                        [
+                            'fabric_tasks_date_id' => $nextTasksDate->id,
+                            'fabric_machine_id' => $rollToMove['machine_id'],
+                        ],
+                        [
+                            'fabric_tasks_date_id' => $nextTasksDate->id,
+                            'fabric_machine_id' => $rollToMove['machine_id'],
+                            'task_status' => $nextTasksDate->tasks_status,             // записываем пока общий статус всего СЗ
+                            'fabric_team_id' => $nextTasksDate->fabric_team_id,
 //                        'active' => $taskData['active'],
 //                        'task_finish_at' => $taskData['finish_at'],
 //                        'description' => $taskData['description'],
-                    ]
-                );
+                        ]
+                    );
 
-                // attract: Создаем контекст задания
-                $taskContext = FabricTaskContext::query()->create(
-                    [
-                        'fabric_task_id' => $task->id,
-                        'fabric_id' => $rollToMove['roll']['fabric_id'],
-                        'roll_position' => 0,
-                        'fabric_mode' => $rollToMove['roll']['fabric_mode'],
-                        'rolls_amount' => 1,
-                        'average_textile_length' => $rollToMove['roll_exec']['textile_length'],
-                        'translate_rate' => $rollToMove['roll']['rate'],
-                        'productivity' => $rollToMove['roll']['productivity'],
-                        'description' => $rollToMove['roll']['descr'],
-                        'note' => 'Из СЗ от '. $payloadDate . ': ' . $rollToMove['roll_exec']['false_reason'],
-                        'editable' => false, // Делаем задание не редактируемым - признак того, что рулон переходящий
-                    ]
-                );
+                    // attract: Создаем контекст задания
+                    $taskContext = FabricTaskContext::query()->create(
+                        [
+                            'fabric_task_id' => $task->id,
+                            'fabric_id' => $rollToMove['roll']['fabric_id'],
+                            'roll_position' => 0,
+                            'fabric_mode' => $rollToMove['roll']['fabric_mode'],
+                            'rolls_amount' => 1,
+                            'average_textile_length' => $rollToMove['roll_exec']['textile_length'],
+                            'translate_rate' => $rollToMove['roll']['rate'],
+                            'productivity' => $rollToMove['roll']['productivity'],
+                            'description' => $rollToMove['roll']['descr'],
+                            'note' => 'Из СЗ от ' . (Carbon::parse($payloadDate))->format('d.m.Y.') . ': ' . $rollToMove['roll_exec']['false_reason'],
+                            'editable' => false, // Делаем задание не редактируемым - признак того, что рулон переходящий
+                        ]
+                    );
 
 
-                // attract: Создаем рулон под этот контекст задания
-                // attract: Получаем этот рулон из базы данных, для меньшего заполнения полей
-                $fabricTaskContextIdOld = $rollToMove['roll_exec']['id'];
+                    // attract: Создаем рулон под этот контекст задания
+                    // attract: Получаем этот рулон из базы данных, для меньшего заполнения полей
+                    $fabricTaskContextIdOld = $rollToMove['roll_exec']['id'];
 
-                $roll = FabricTaskRoll::query()->find($fabricTaskContextIdOld);
+                    $roll = FabricTaskRoll::query()->find($fabricTaskContextIdOld);
 
-                $roll->task_context_id_old = $rollToMove['roll']['id'];     // Запоминаем старый id
-                $roll->fabric_task_context_id = $taskContext->id;           // Привязываем к новому контексту
-                $roll->movable = false;                                     // Запрещаем перемещение рулона на следующее СЗ
+                    $roll->task_context_id_old = $rollToMove['roll']['id'];     // Запоминаем старый id
+                    $roll->fabric_task_context_id = $taskContext->id;           // Привязываем к новому контексту
+                    $roll->movable = false;                                     // Запрещаем перемещение рулона на следующее СЗ
 
-                $history = json_decode($roll->history, true);
-                $history['previous_responsible_id'] = $rollToMove['roll_exec']['finish_by'];
-                $roll->history = json_encode($history);
-                $roll->finish_by = 0;
+                    $history = json_decode($roll->history, true);
+                    $history['previous_responsible_id'] = $rollToMove['roll_exec']['finish_by'];
+                    $roll->history = json_encode($history);
+                    $roll->finish_by = 0;
 
-                $roll->save();
+                    $roll->save();
 
+
+                }
 
             }
 
+            // attract: Если есть рулоны к добавлению в буфер - добавляем в буфер
+            if (count($rollsToBuffer) !== 0) {
 
-            // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
-            $tasksDayData['date'] = $payloadDate;
-            $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
-            $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
+                foreach ($rollsToBuffer as $rollToBuffer) {
+
+
+                    $fabric = Fabric::query()->find($rollToBuffer['roll_exec']['fabric_id']); // Находим нужную ткань
+
+                    if ($fabric) {
+
+                        if ($fabric->translate_rate === 0) {
+                            throw new Exception('У ' . $fabric->display_name . ' отсутствует коэффициент перевода!');
+                        }
+
+                        $fabric->buffer_amount += $rollToBuffer['roll_exec']['textile_length'] / $fabric->translate_rate;
+                        $fabric->save();
+
+                    } else {
+                        throw new Exception('Не найдена ткань по ID: ' . $rollToBuffer['roll_exec']['fabric_id']);
+                    }
+
+
+                }
+
+                // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
+                $tasksDayData['date'] = $payloadDate;
+                $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
+                $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
+
+            }
 
             return [
-                '$nextTasksDate' => $nextTasksDate,
                 '$targetTask' => $targetTask,
-                'rollsToMove' => $rollsToMove
+                'rollsToMove' => $rollsToMove,
+                'rollsToBuffer' => $rollsToBuffer
 
             ];
 
-
-//            return [
-//                'nextDate' => $nextDate,
-//                'payloadDate' => $payloadDate,
-//            ];
-
-//            return $payloadDate;
-//            return $nextDate;
-
-        }
-
-
-        // hr---------------------------------------------------------------------
+            return EndPointStaticRequestAnswer::ok();
+            // hr---------------------------------------------------------------------
 
 
 //        return json_encode(['test' => $test]);
-        return $targetTask;
+//        return $targetTask;
 
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
     }
-
 
 }
 

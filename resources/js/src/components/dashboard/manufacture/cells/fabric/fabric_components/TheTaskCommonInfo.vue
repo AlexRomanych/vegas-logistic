@@ -261,14 +261,16 @@
                     width="w-[50px]"
                 />
 
+                <!-- attract: Кнопка персонала (неактивно для завершенного СЗ) -->
+                <div v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"  class="ml-3">
 
-                <div class="ml-3">
                     <AppLabel
                         :type="task.workers.length ? 'info' : 'danger'"
                         align="center"
                         text="Персонал"
                         @click="selectWorkers"
                     />
+
                 </div>
 
             </div>
@@ -618,7 +620,7 @@ const prepareWorkersData = async () => {
     // console.log('selectData: ', selectData)
 }
 
-
+// attract: Выбираем персонал
 const selectWorkers = async () => {
 
     await prepareWorkersData()
