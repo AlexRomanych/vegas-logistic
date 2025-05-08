@@ -4,15 +4,27 @@
             <div v-if="shown"
                  :class="[width, height, position, bgColor, borderColor, textColor, 'callout-container']"
                  @click="toggleShow">
-                <span>{{ text }}</span>
+
+                <!--                <span>{{ text }}</span>-->
+
+                <div>
+                    <div v-for="(text, idx) in textArray" :key="idx">
+                        {{ text }}
+                    </div>
+                </div>
+
             </div>
         </Transition>
     </Teleport>
 </template>
 
 <script setup>
-import {colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js"
+
+import {reactive} from 'vue'
+
+import {LINE_SEPARATOR} from '/resources/js/src/app/constants/common.js'
+import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
+import {getColorClassByType, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
 import {computed, ref, watch} from "vue";
 
 const props = defineProps({
@@ -33,9 +45,10 @@ const props = defineProps({
         validator: (type) => colorsList.includes(type)
     },
     text: {
-        type: String,
+        type: [String, Array],
         required: false,
         default: 'This is a callout',
+        validator: (text) => Array.isArray(text) || typeof text === 'string'
     },
     pos_x: {
         type: String,
@@ -90,12 +103,46 @@ const getPositionClass = (pos_x, pos_y) => {
     return `${x_pos} ${y_pos}`
 }
 
+// Преобразуем данные в массив
+// descr: Если первый элемент массива - не пустая строка, а вторая - пустая,
+// descr: и массив из 2-х элементов, то мы получаем массив из одной строки
+// descr: Также возвращаем массив, если есть сепаратор строки - '&nl'
+const getTextArray = (inTextData) => {
+    if (typeof inTextData === 'string') {
+        if (inTextData.toLowerCase().includes(LINE_SEPARATOR.toLowerCase())) {
+            inTextData = inTextData.replaceAll(' ' + LINE_SEPARATOR + ' ', LINE_SEPARATOR)
+            inTextData = inTextData.replaceAll(' ' + LINE_SEPARATOR, LINE_SEPARATOR)
+            inTextData = inTextData.replaceAll(LINE_SEPARATOR + ' ', LINE_SEPARATOR)
+            inTextData = inTextData.replaceAll('  ', ' ')
+            inTextData = inTextData.replaceAll('  ', ' ')
+
+            return inTextData.split(LINE_SEPARATOR)
+        }
+        return [inTextData]
+    }
+
+    if (Array.isArray(inTextData)) {
+        if (inTextData.length === 1) return inTextData
+        if (inTextData.length === 2 && inTextData[1] === '') return [inTextData[0]]
+    }
+    return inTextData
+}
+
+// attract: Получаем массив строк для вывода
+const textArray = ref(getTextArray(props.text))
+
+
 const position = getPositionClass(props.pos_x, props.pos_y)                                     // Получаем класс для позиции
 const bgColor = computed(() => getColorClassByType(props.type, 'bg', 0, false))         // Получаем класс для цвета заднего фона
 const borderColor = computed(() => getColorClassByType(props.type, 'border', 700))      // Получаем класс для цвета границы
 const textColor = computed(() => getTextColorClassByType(props.type))
 
-watch( () => props.show, (newValue) => shown.value = newValue)
+watch(() => props.show, (newValue) => shown.value = newValue)
+watch(() => props.text, (newValue) => {
+    textArray.value = getTextArray(newValue)
+    // console.log('text: ', props.text)
+    // console.log('textArray: ', textArray.value)
+})
 
 </script>
 

@@ -27,7 +27,7 @@
     />
 
     <AppCallout
-        v-if="opResult"
+        :show="opResult"
         :text="opResultText"
         :type="opResultType"
     />
@@ -35,23 +35,23 @@
 </template>
 
 <script setup>
-// import axios from 'axios';
-import {ref} from 'vue'
-import AppInputFile from '/resources/js/src/components/ui/inputs/AppInputFile.vue'
 
-import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
-import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+import {ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
 import {getFileContent} from '/resources/js/src/app/helpers/helpers_file_reader.js'
 import {isJSON} from '/resources/js/src/app/helpers/helpers_checks.js'
 
+import AppInputFile from '/resources/js/src/components/ui/inputs/AppInputFile.vue'
+import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
+import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+
 const selectedFile = ref(null)
 const isDataJson = ref(true)                // Проверка на тип файла для вызова Callout
 const opResult = ref(false)                 // Проверка на результат выполнения операции
 const opResultText = ref('')                // Сообщение результата операции
-const opResultType = ref('')                // Тип результата операции
+const opResultType = ref('danger')          // Тип результата операции
 
 // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 // Получаем данные файла
@@ -83,32 +83,45 @@ const uploadFile = async (buttonId) => {
             const res = await fabricsStore.uploadFabricsOrders(fileData)
             // const res = await ordersStore.uploadOrders(fileData)
 
-            console.log('uploadOrders', res)
+            // console.log('uploadOrders', res)
+            const missingFabrics = [...Object.values(res['missing_fabrics'])].sort((str1, str2) => str1.localeCompare(str2))
+            // console.log(missingFabrics, missingFabrics.length)
 
-            if (res === 'success') {
+            // opResult.value = true
+            // debugger
+
+            if (missingFabrics.length === 0) {
                 opResultText.value = 'Данные успешно загружены'
                 opResultType.value = 'success'
-                setTimeout(() => {
-                    opResult.value = false
-                }, 5000)
+                // setTimeout(() => {
+                //     opResult.value = false
+                // }, 5000)
             } else {
-                opResultText.value = 'Ошибка:' + res
+                // TODO: Доделать красивый многострочный Callout
+                opResultText.value = 'Пропущены:&nl' + missingFabrics.join(',&nl')
                 opResultType.value = 'danger'
             }
 
-
+            opResult.value = true
+            setTimeout(() => {
+                opResult.value = false
+            }, 5000)
         }
+
+    } else {
+
+        isDataJson.value = false
+
+        opResultText.value = 'Ошибка в Json файле'
+        opResultType.value = 'danger'
+
         opResult.value = true
         setTimeout(() => {
             opResult.value = false
-        }, 5000)
-
-    } else {
-        isDataJson.value = false
-        setTimeout(() => {
             isDataJson.value = true
         }, 5000)
     }
+
 }
 
 </script>

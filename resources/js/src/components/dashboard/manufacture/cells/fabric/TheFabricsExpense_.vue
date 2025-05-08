@@ -69,7 +69,7 @@
 
 
             <AppLabel
-                v-for="x in 11"
+                v-for="x in 30"
                 :width="'w-[70px]'"
                 height="h-[50px]"
                 align="center"

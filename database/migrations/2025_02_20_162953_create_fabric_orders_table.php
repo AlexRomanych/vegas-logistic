@@ -22,21 +22,30 @@ return new class extends Migration {
             $table->timestamp('closed_at')->nullable()->comment('Дата закрытия заявки');
             $table->string('raw_text')->nullable()->comment('Оригинальный текст заявки из отчета СВПМ');
 
+            // attract: признак расхода (если заявка закрыта - признак расхода неактуален, если открыта и false - не учитываем в расчетах)
+            $table->boolean('active')->nullable(false)->default(false)->comment('Учитывать расход или нет');
+
             $table->string('description')->nullable()->comment('Описание заявки или дополнительная информация');
             $table->string('comment')->nullable()->comment('Комментарий');
             $table->string('note')->nullable()->comment('Примечание');
             $table->timestamps();
 
-            $table->unsignedBigInteger('closed_by_user_id')->nullable()->comment('Ссылка на закрываемого');    // Объявляем столбец для внешнего ключа юзера, который закрывает заявку
+//            $table->unsignedBigInteger('closed_by_user_id')->nullable()->comment('Ссылка на закрываемого');    // Объявляем столбец для внешнего ключа юзера, который закрывает заявку
 
-            // Ссылка на закрываемого
-            $table->foreign('closed_by_user_id')
+            // attract: Ссылка на закрываемого
+            $table->foreignId('closed_by_user_id')
+                ->nullable()
                 ->references('id')
                 ->on('users')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->foreignIdFor(Client::class)->nullable()->comment('Ссылка на клиента')->constrained()->nullOnDelete();     // Ссылка на клиента
+            // attract: Ссылка на клиента
+            $table->foreignIdFor(Client::class)
+                ->nullable()
+                ->comment('Ссылка на клиента')
+                ->constrained()
+                ->nullOnDelete();
         });
     }
 

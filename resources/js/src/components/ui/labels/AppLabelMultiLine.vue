@@ -15,6 +15,7 @@
 
 <script setup>
 
+import {LINE_SEPARATOR} from '/resources/js/src/app/constants/common.js'
 import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
 import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
 import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
@@ -22,7 +23,7 @@ import {getDigitPart} from "/resources/js/src/app/helpers/helpers_lib.js";
 
 import {computed, reactive, ref, watch, watchEffect} from "vue";
 
-const LINE_SEPARATOR = '&nl'  // new line - разделитель строк в тексте
+// const LINE_SEPARATOR = '&nl'  // new line - разделитель строк в тексте
 
 const props = defineProps({
     text: {

@@ -45,12 +45,14 @@
                     class="cursor-pointer"
                     height="min-h-[60px]"
                     label="Комментарий к сменному заданию на этой стегальной машине:"
-                    placeholder="Введите комментарий"
+                    :placeholder="!getFunctionalByFabricTaskStatus(task.common.status) ? '' : 'Введите комментарий'"
                     text-size="normal"
                     width="w-[955px]"
                 />
 
+                <!--attract: Кнопка сохранения комментария к сменному заданию -->
                 <AppLabel
+                    v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"
                     align="center"
                     class="cursor-pointer"
                     height="h-[60px]"
@@ -89,7 +91,7 @@ import {computed, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, NEW_ROLL,} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_TASK_STATUS, NEW_ROLL,} from '/resources/js/src/app/constants/fabrics.js'
 import {
     // filterFabricsByMachineId,
     // getAddFabricMode,
@@ -97,13 +99,13 @@ import {
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import TheTaskRecordsMenu
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordsMenu.vue'
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsMenu.vue'
 import TheTaskRecordsTitle
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordsTitle.vue'
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsTitle.vue'
 import TheTaskRecord
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecord.vue'
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecord.vue'
 import TheTaskRecordRolls
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskRecordRolls.vue'
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordRolls.vue'
 import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 

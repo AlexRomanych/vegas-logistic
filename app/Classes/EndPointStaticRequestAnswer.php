@@ -24,8 +24,8 @@ class EndPointStaticRequestAnswer
     public static function fail(mixed $data = null): string
     {
         if ($data) {
-            return $data;
-//            return json_encode($data);
+//            return $data;
+            return json_encode($data);
         }
 
         return FAIL_STATUS_WORD;

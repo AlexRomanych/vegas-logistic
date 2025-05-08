@@ -219,7 +219,7 @@ import TheTaskCommonInfo
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
 
 import TheTaskMachine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskMachine.vue'
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskMachine.vue'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
@@ -507,7 +507,6 @@ const addRoll = (newRoll, machine, task) => {
 
     const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
     workTask.machines[machine.TITLE].rolls.push(newRoll)
-
 }
 
 
@@ -523,7 +522,7 @@ const saveTasks = async (saveData) => {
     // console.log('from taskData: ', taskData)
 
     const result = await fabricsStore.createFabricTask(targetTask)
-    console.log('SFC: ', result)
+    // console.log('SFC: ', result)
 
     // rerender[saveData.machine.ID]++
 }
@@ -540,7 +539,7 @@ const saveMachineDescription = async (saveData) => {
     const result = await fabricsStore.createFabricTask(targetTask)
     console.log('SFC: ', result)
 
-    rerender[saveData.machine.ID]++ // Нужно для обновления трудозатрат
+    rerender[saveData.machine.ID]++     // Нужно для обновления трудозатрат
 }
 
 

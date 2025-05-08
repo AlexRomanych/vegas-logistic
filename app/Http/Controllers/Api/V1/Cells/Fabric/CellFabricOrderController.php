@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Models\Manufacture\Cells\Fabric\Fabric;
+//use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricExpense;
 use App\Models\Manufacture\Cells\Fabric\FabricOrder;
 use App\Services\Manufacture\FabricService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class CellFabricOrderController extends Controller
@@ -15,7 +17,7 @@ class CellFabricOrderController extends Controller
     /**
      * Attract Загрузка расхода ПС из отчета СВПМ
      * @param Request $request
-     * @return mixed
+     * @return string
      */
     public function uploadFabricOrders(Request $request)
     {
@@ -24,45 +26,43 @@ class CellFabricOrderController extends Controller
         // todo Сделать проверку на валидность данных в FabricOrders - отчет 1С - СВПМ
 
         $dubs = [];
+        $missingFabrics = [];
 
         foreach ($fabricOrders as $fabricOrder) {
 
-            // проверяем есть ли такой заказ по коду из 1С
+            // attract: проверяем есть ли такой заказ по коду из 1С
             $checkFabricOrder = FabricOrder::query()
                 ->where('code_1C', $fabricOrder['code_1C'])
                 ->first();
 
-//            $checkFabricOrder = FabricOrder::query()
-//                ->where('client_id', $fabricOrder['cl_id'])
-//                ->where('order_no', $fabricOrder['order_no'])
-//                ->first();
-
+            // attract: Если такой заказ уже есть, удаляем его вместе с хвостом
             if ($checkFabricOrder) {
-                $dubs[] = $fabricOrder;
+                $dubs[] = $fabricOrder;                                 // Добавляем в массив дубликатов
+                $checkFabricOrder->delete();
+            }
 
-            } else {
+            // attract: Если нет, создаем новый заказ
+            $newFabricOrder = FabricOrder::query()->create([
+                'client_id' => $fabricOrder['client_id'],
+                'order_no' => $fabricOrder['order_no'],
+                'raw_text' => $fabricOrder['raw'],
+                'code_1C' => $fabricOrder['code_1C'],
+                'time_1C' => $fabricOrder['moment'],
+                'type' => $fabricOrder['type'],
+                'expense_date'=> Carbon::now()->addDay(),               // Добавляем 1 день
+            ]);
 
-                $newFabricOrder = FabricOrder::query()->create([
-                    'client_id' => $fabricOrder['cl_id'],
-                    'order_no' => $fabricOrder['order_no'],
-                    'raw_text' => $fabricOrder['raw'],
-                    'code_1C' => $fabricOrder['code_1C'],
-                    'time_1C' => $fabricOrder['moment'],
-                    'type' => $fabricOrder['type'],
-                    'expense_date'=> now(),
-                ]);
+            $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
+            $newFabricOrderExpenseDate = $newFabricOrder->expense_date;
 
-                $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
-                $newFabricOrderExpenseDate = $fabricOrder->expense_date;
+            // attract: Проходимся по каждому расходу и добавляем его в таблицу FabricExpense
+            foreach ($fabricOrder['fabrics'] as $fabricExpense) {
 
-                foreach ($fabricOrder['fabrics'] as $fabricExpense) {
+                $fabric = FabricService::getFabricByName($fabricExpense['name']);
 
-                    $fabric = FabricService::getFabricByName($fabricExpense['name']);
-
-                    if (is_null($fabric)) {
-                        return 'Не найдено в базе ПС: ' . $fabricExpense['name'];
-                    }
-
+                if (is_null($fabric)) {
+                    $missingFabrics[]  = $fabricExpense['name'];        // Собираем список ПС которых нет в базе
+                } else {
                     $newFabricExpense = FabricExpense::query()->create([
                         'fabric_order_id' => $newFabricOrderId,
                         'fabric_id' => $fabric->id,
@@ -71,15 +71,14 @@ class CellFabricOrderController extends Controller
                         'expense_at' => $newFabricOrderExpenseDate,
                     ]);
                 }
-
             }
-
         }
 
-        if (count($dubs) === 0) {
-            return OK_STATUS_WORD;
+        if (count($dubs) && count($missingFabrics) === 0) {
+            return EndPointStaticRequestAnswer::ok();
         }
-        return ($dubs);
+
+        return EndPointStaticRequestAnswer::fail(['dubs' => $dubs, 'missing_fabrics' => array_unique($missingFabrics)]);
     }
 
 

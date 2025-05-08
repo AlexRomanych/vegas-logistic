@@ -141,7 +141,7 @@ const fabrics = [
         // descr Расход ПС
         path: _MAIN_PREFIX + 'fabrics/expense',
         name: 'manufacture.cell.fabrics.expense',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpensive.vue'),
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpense.vue'),
         meta: {
             title: 'Расход ПС'
         }

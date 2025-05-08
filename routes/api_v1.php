@@ -227,6 +227,7 @@ Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'up
 Route::get('/fabrics/machines', [CellFabricMachineController::class, 'machines'])->middleware('jwt.auth');
 Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machine'])->middleware('jwt.auth');
 
+// attract: Загрузка расхода ПС
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
 
 // attract: Блок Заказов Стежки на производство
