@@ -534,7 +534,6 @@ class CellFabricTasksDateController extends Controller
     // Descr: Если передан параметр date, то закрываем СЗ по указанной дате
     public function closeFabricTasks(Request $request)
     {
-
         try {
 
             $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
@@ -666,7 +665,7 @@ class CellFabricTasksDateController extends Controller
                             'translate_rate' => $rollToMove['roll']['rate'],
                             'productivity' => $rollToMove['roll']['productivity'],
                             'description' => $rollToMove['roll']['descr'],
-                            'note' => 'Из СЗ от ' . (Carbon::parse($payloadDate))->format('d.m.Y.') . ': ' . $rollToMove['roll_exec']['false_reason'],
+                            'note' => 'Из СЗ от ' . (Carbon::parse($payloadDate))->format('d.m.Y') . ': ' . $rollToMove['roll_exec']['false_reason'],
                             'editable' => false, // Делаем задание не редактируемым - признак того, что рулон переходящий
                         ]
                     );
@@ -719,17 +718,20 @@ class CellFabricTasksDateController extends Controller
 
                 }
 
-                // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
-                $tasksDayData['date'] = $payloadDate;
-                $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
-                $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
             }
+
+
+            // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
+            $tasksDayData['date'] = $payloadDate;
+            $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
+            $resultTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
             return [
                 '$targetTask' => $targetTask,
                 'rollsToMove' => $rollsToMove,
-                'rollsToBuffer' => $rollsToBuffer
+                'rollsToBuffer' => $rollsToBuffer,
+                'resultTasksDate' => $resultTasksDate
 
             ];
 

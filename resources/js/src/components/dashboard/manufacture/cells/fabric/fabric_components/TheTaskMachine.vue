@@ -35,20 +35,32 @@
             <TheDividerLine/>
 
             <!--attract: Общий комментарий к сменному заданию -->
-            <AppInputTextArea
-                id="comment"
-                v-model="taskDescription"
-                :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
-                :rows=2
-                :value="taskDescription"
-                class="cursor-pointer"
-                height="min-h-[60px]"
-                label="Общий комментарий к СЗ на данной машине:"
-                placeholder="Введите комментарий"
-                text-size="normal"
-                width="w-[955px]"
-            />
+            <div class="flex items-end">
+                <AppInputTextArea
+                    id="comment"
+                    v-model="taskDescription"
+                    :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
+                    :rows=2
+                    :value="taskDescription"
+                    class="cursor-pointer"
+                    height="min-h-[60px]"
+                    label="Комментарий к сменному заданию на этой стегальной машине:"
+                    placeholder="Введите комментарий"
+                    text-size="normal"
+                    width="w-[955px]"
+                />
 
+                <AppLabel
+                    align="center"
+                    class="cursor-pointer"
+                    height="h-[60px]"
+                    text="V"
+                    text-size="huge"
+                    type="success"
+                    width="w-[50px]"
+                    @click="updateTaskMachineDescription"
+                />
+            </div>
 
             <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
@@ -96,6 +108,7 @@ import TheDividerLine
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
 import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
+import AppLabel from "@/src/components/ui/labels/AppLabel.vue";
 // import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
 const props = defineProps({
@@ -119,7 +132,7 @@ const props = defineProps({
 
 // console.log('machine', props.task)
 
-const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord'])
+const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord', 'saveMachineDescription'])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
@@ -188,6 +201,21 @@ const saveTaskRecord = (saveData) => {
 // attract: Удаляем запись
 const deleteTaskRecord = (deleteData) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
+}
+
+
+// attract: Обновляем общее описание к СМ
+const updateTaskMachineDescription = () => {
+
+    if (!taskDescription.value) return
+
+    console.log(taskDescription.value)
+    emits('saveMachineDescription',
+        {
+            machine: props.machine,
+            task: props.task,
+            taskDescription: taskDescription.value
+        })
 }
 
 

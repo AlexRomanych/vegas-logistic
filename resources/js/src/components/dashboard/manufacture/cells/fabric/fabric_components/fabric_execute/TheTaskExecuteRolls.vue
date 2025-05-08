@@ -102,7 +102,7 @@ resetActiveFlag()
 
 // attract: Устанавливаем активным первый элемент - активный рулон
 let activeRoll = props.rolls[0].rolls_exec[0]
-activeRoll['active'] = true // устанавливаем активным первый элемент
+if (activeRoll !== undefined) activeRoll['active'] = true // устанавливаем активным первый элемент, если массив не пустой
 fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
 
 console.log('props.rolls: ', props.rolls)

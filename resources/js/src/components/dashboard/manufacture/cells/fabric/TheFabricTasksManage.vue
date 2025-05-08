@@ -2,7 +2,6 @@
 
     <div class="mt-2 ml-2">
 
-
         <!-- attract: Выводим даты + статусы + сервисные кнопки   -->
         <div class="flex h-[165px] m-3">
             <div v-for="task in taskData" :key="task.date">
@@ -68,8 +67,6 @@
         <!-- attract: Выводим табы, если есть СЗ -->
         <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
-
-            <!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
             <!-- attract Выводим табы -->
             <div class="flex flex-row justify-start items-center m-3">
                 <div v-for="tab in tabs" :key="tab.id">
@@ -114,6 +111,7 @@
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
+                        @save-machine-description="saveMachineDescription"
                     />
 
                 </div>
@@ -128,6 +126,7 @@
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
+                        @save-machine-description="saveMachineDescription"
                     />
                 </div>
 
@@ -141,6 +140,7 @@
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
+                        @save-machine-description="saveMachineDescription"
                     />
                 </div>
 
@@ -154,6 +154,7 @@
                         @optimize-labor="optimizeLabor"
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
+                        @save-machine-description="saveMachineDescription"
                     />
                 </div>
 
@@ -225,13 +226,6 @@ import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMu
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
 
-// import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
-// import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
-// import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
-// import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
-// import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
-// import AppModalAsync from '/resources/js/src/components/ui/modals/AppModalAsync.vue'
-// import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -358,8 +352,6 @@ const modalText = ref([])
 // attract Меняем статус СЗ по сервисной кнопке
 const changeTaskStatus = async (task, btnRow = 1) => {
 
-
-
     if (!task.active) return
 
     // attract: Удалить сменное задание. Обращаемся к API
@@ -369,12 +361,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         // считаем общее количество рулонов
         let isFind = false
         Object.keys(task.machines).forEach((machine) => {
-
-            // console.log(task.machines[machine].rolls)
-            // console.log(task.machines[machine].rolls.some(roll => !roll.editable))
-
             isFind ||= task.machines[machine].rolls.some(roll => roll.editable)
-
         })
 
         if (!isFind) {
@@ -473,28 +460,16 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             console.log(res)
             // todo: сделать обработку ошибок + callout
 
-            console.log('pending: ', task)
+            // console.log('pending: ', task)
 
             const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-            console.log('newTaskDay: ', newTaskDay)
-
-            // debugger
+            // console.log('newTaskDay: ', newTaskDay)
 
             task.machines = newTaskDay[0].machines
             task.common = newTaskDay[0].common
-            // // task = newTaskDay
-            //
-
-            // console.log(activeTask === task)
-            // console.log('task from server: ', task)
 
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             rerender.forEach((_, index, array) => array[index]++)
-
-            // rerender[FABRIC_MACHINES.AMERICAN.ID]++
-            // rerender[FABRIC_MACHINES.GERMAN.ID]++
-            // rerender[FABRIC_MACHINES.CHINA.ID]++
-            // rerender[FABRIC_MACHINES.KOREAN.ID]++
 
         }
     }
@@ -527,47 +502,47 @@ const getTabType = (tab) => {
     return tab.typePassive
 }
 
-
-// const taskRecordEditMode = ref(false)
-
 // attract: Поднятое событие при клике на кнопку "Добавить рулон"
 const addRoll = (newRoll, machine, task) => {
 
     const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
-
     workTask.machines[machine.TITLE].rolls.push(newRoll)
 
-    // console.log(newRoll)
-    // console.log(machine.TITLE)
-    // console.log(workTask)
-    // console.log(workTask.machines)
 }
 
 
 // attract: Поднятое событие при клике на кнопку "Сохранить рулон"
 const saveTasks = async (saveData) => {
-    // console.group('saveTasks')
-    // console.log(saveData)
-    // // console.log(roll)
-    // // console.log(index)
-    // // console.log(machine)
-    // // console.log(task)
-    // console.groupEnd()
 
     const targetTask = taskData.find(t => t.date === saveData.task.date)
 
     targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll       // рулоны
     targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
-
-    console.log('from saveTask: ', targetTask)
-    console.log('from taskData: ', taskData)
+    // console.log('from saveTask: ', targetTask)
+    // console.log('from taskData: ', taskData)
 
     const result = await fabricsStore.createFabricTask(targetTask)
     console.log('SFC: ', result)
 
-    rerender[saveData.machine.ID]++
+    // rerender[saveData.machine.ID]++
 }
+
+// attract: Поднятое событие при клике на кнопку "Сохранить общее описание к СМ"
+const saveMachineDescription = async (saveData) => {
+
+    const targetTask = taskData.find(t => t.date === saveData.task.date)
+    targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
+
+    // console.log('from updateDescription: ', targetTask)
+    // console.log('from updateDescription: ', taskData)
+
+    const result = await fabricsStore.createFabricTask(targetTask)
+    console.log('SFC: ', result)
+
+    rerender[saveData.machine.ID]++ // Нужно для обновления трудозатрат
+}
+
 
 // attract: Поднятое событие при клике на кнопку "Удалить рулон"
 const deleteTasks = async (deleteData) => {
@@ -579,23 +554,22 @@ const deleteTasks = async (deleteData) => {
     targetTask.machines[deleteData.machine.TITLE].rolls
         = targetTask.machines[deleteData.machine.TITLE].rolls.filter(r => r.id !== deleteData.id)
 
-    console.log(targetTask)
+    // console.log(targetTask)
 
     // activeTask.machines[deleteData.machine.TITLE].rolls = targetTask.machines[deleteData.machine.TITLE].rolls
 
-    // Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
-    // Иначе удаляем его из БД
+    // attract: Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
+    // attract: Иначе удаляем его из БД
     if (deleteData.id) {
-        console.log('НеПустой рулон')
+        // console.log('НеПустой рулон')
 
         const result = await fabricsStore.deleteFabricTaskRollById(deleteData.id)
-        console.log('SFC: ', result)
+        // console.log('SFC: ', result)
     }
 
-
     rerender[deleteData.machine.ID]++
-    console.log(deleteData.machine.ID)
-    console.log(rerender)
+    // console.log(deleteData.machine.ID)
+    // console.log(rerender)
 }
 
 
@@ -644,8 +618,7 @@ const rerender = reactive([0, 0, 0, 0, 0])
 watch(() => taskData, async (newValue) => {
 
     // rerender.value++
-    console.log('taskData: changed: ', rerender)
-
+    // console.log('taskData: changed: ', rerender)
 
 }, {deep: true})
 
