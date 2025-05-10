@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+
 //use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricOrderCollection;
 use App\Models\Manufacture\Cells\Fabric\FabricExpense;
 use App\Models\Manufacture\Cells\Fabric\FabricOrder;
 use App\Services\Manufacture\FabricService;
@@ -49,7 +51,7 @@ class CellFabricOrderController extends Controller
                 'code_1C' => $fabricOrder['code_1C'],
                 'time_1C' => $fabricOrder['moment'],
                 'type' => $fabricOrder['type'],
-                'expense_date'=> Carbon::now()->addDay(),               // Добавляем 1 день
+                'expense_date' => Carbon::now()->addDay(),               // Добавляем 1 день
             ]);
 
             $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
@@ -61,7 +63,7 @@ class CellFabricOrderController extends Controller
                 $fabric = FabricService::getFabricByName($fabricExpense['name']);
 
                 if (is_null($fabric)) {
-                    $missingFabrics[]  = $fabricExpense['name'];        // Собираем список ПС которых нет в базе
+                    $missingFabrics[] = $fabricExpense['name'];        // Собираем список ПС которых нет в базе
                 } else {
                     $newFabricExpense = FabricExpense::query()->create([
                         'fabric_order_id' => $newFabricOrderId,
@@ -79,6 +81,20 @@ class CellFabricOrderController extends Controller
         }
 
         return EndPointStaticRequestAnswer::fail(['dubs' => $dubs, 'missing_fabrics' => array_unique($missingFabrics)]);
+    }
+
+    // Descr: Получить список расходов ПС по активным заказам
+    public function getFabricOrders()
+    {
+        $fabricOrders = FabricOrder::query()
+            ->whereNot('is_closed')
+            ->with(['fabricsExpense', 'client'])
+            ->get();
+
+        return new FabricOrderCollection($fabricOrders);
+
+
+        return ['data' => 'getFabricOrders'];
     }
 
 

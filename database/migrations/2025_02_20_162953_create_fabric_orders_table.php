@@ -6,12 +6,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+
+    const TABLE_NAME = 'fabric_orders';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('fabric_orders', function (Blueprint $table) {
+        Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id()->from(1);
             $table->string('code_1C')->nullable(false)->comment('Код заявки по 1С');
             $table->timestamp('time_1C')->nullable()->comment('Дата внесения заявки в 1С');
@@ -22,8 +25,14 @@ return new class extends Migration {
             $table->timestamp('closed_at')->nullable()->comment('Дата закрытия заявки');
             $table->string('raw_text')->nullable()->comment('Оригинальный текст заявки из отчета СВПМ');
 
+            // attract: Статус заявки, пока не используем
+            $table->unsignedSmallInteger('status')->nullable()->comment('Статус заявки');
+
+            // attract: Отодвигать в конец списка расходов при отображении или нет
+            $table->boolean('display_last')->nullable(false)->default(false)->comment('Показывать в конце списка или нет');
+
             // attract: признак расхода (если заявка закрыта - признак расхода неактуален, если открыта и false - не учитываем в расчетах)
-            $table->boolean('active')->nullable(false)->default(false)->comment('Учитывать расход или нет');
+            $table->boolean('active')->nullable(false)->default(true)->comment('Учитывать расход или нет');
 
             $table->string('description')->nullable()->comment('Описание заявки или дополнительная информация');
             $table->string('comment')->nullable()->comment('Комментарий');
@@ -54,6 +63,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('fabric_orders');
+        Schema::dropIfExists(self::TABLE_NAME);
     }
 };

@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
+    const TABLE_NAME = 'fabric_expenses';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('fabric_expenses', function (Blueprint $table) {
+        Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id()->from(1);
             $table->string('name')->nullable(false)->comment('Название ПС');
             $table->float('expense')->nullable(false)->default(0)->comment('Количество расхода ПС');
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fabric_expenses');
+        Schema::dropIfExists(self::TABLE_NAME);
     }
 };

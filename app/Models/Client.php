@@ -23,9 +23,9 @@ final class Client extends Model
         'active' => 'boolean',
     ];
 
-    protected $with = [
-      'manager'
-    ];
+//    protected $with = [
+//      'manager'
+//    ];
 
     // Attract Связь с менеджером
     public function manager(): BelongsTo

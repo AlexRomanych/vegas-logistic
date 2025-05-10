@@ -24,8 +24,9 @@ const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL �
 
 const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки рисунков ПС с диска
 
+const URL_FABRICS_ORDERS = 'fabrics/orders/'                            // URL для получения списка заказов для ПС
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
-const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
+// const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
 
 const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL для получения списка СЗ для ПС
 const URL_FABRIC_TASKS_LAST_DONE = 'fabrics/tasks/last/done/'           // URL для получения последнего выполненного СЗ
@@ -360,7 +361,12 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
-
+    // Attract: Получаем с API список заказов ПС (расход ПС)
+    const getFabricsOrders = async () => {
+        const result = await jwtGet(URL_FABRICS_ORDERS)
+        console.log('store: fabric-orders: ', result)
+        return result.data
+    }
 
     return {
         fabricsCashe,
@@ -397,6 +403,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         updateFabricTaskWorkers,
         getFabricExecutingTasks, getFabricNotDoneTasks,
         closeFabricTasks,
+        getFabricsOrders,
     }
 
 })

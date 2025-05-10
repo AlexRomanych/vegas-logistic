@@ -2,31 +2,58 @@
 
 /*
  // attract Это из PHP, в ней все названия и значения для статусов
- // descr Сменное задание создано (или сохранено)
+ // descr: Сменное задание создано (или сохранено)
  const FABRIC_TASK_CREATED = 'created';
  const FABRIC_TASK_CREATED_CODE = 1;
 
- // descr Сменное задание отправлено на выполнение
+ // descr: Сменное задание отправлено на выполнение
  const FABRIC_TASK_PENDING = 'pending';
  const FABRIC_TASK_PENDING_CODE = 2;
 
- // descr Сменное задание взято на выполнение (находится в процессе выполнения)
+ // descr: Сменное задание взято на выполнение (находится в процессе выполнения)
  const FABRIC_TASK_RUNNING = 'running';
  const FABRIC_TASK_RUNNING_CODE = 3;
 
- // descr Сменное задание выполнено (закрыто)
+ // descr: Сменное задание выполнено (закрыто)
  const FABRIC_TASK_DONE = 'done';
  const FABRIC_TASK_DONE_CODE = 4;
 */
 
 
-// descr Длина рабочей смены в часах
+// descr: Длина рабочей смены в часах
 export const FABRIC_WORKING_SHIFT_LENGTH = 10.5
+
+
+// descr: Интервалы состояний количества
+// descr: Нижнее количество включается, верхнее - нет
+export const WARNINGS_RANGES = Object.freeze({
+    [0]: {
+        LOW_BOUND: 0.00,
+        HIGH_BOUND: 0.25,
+        TYPE: 'danger',
+    },
+    [1]: {
+        LOW_BOUND: 0.25,
+        HIGH_BOUND: 0.50,
+        TYPE: 'warning',
+    },
+    [2]: {
+        LOW_BOUND: 0.50,
+        HIGH_BOUND: 0.75,
+        TYPE: 'info',
+    },
+    [3]: {
+        LOW_BOUND: 0.75,
+        HIGH_BOUND: 1.00,
+        TYPE: 'success',
+    },
+})
+
 
 
 export const FABRIC_TASK_STATUS = Object.freeze({
 
-    // descr Сменное задание еще не создано (или сохранено)
+    // descr: Сменное задание еще не создано (или сохранено)
     UNKNOWN: {
         WORD: 'unknown',
         CODE: 0,
@@ -34,28 +61,28 @@ export const FABRIC_TASK_STATUS = Object.freeze({
     },
 
 
-    // descr Сменное задание создано (или сохранено)
+    // descr: Сменное задание создано (или сохранено)
     CREATED: {
         WORD: 'created',
         CODE: 1,
         TITLE: 'Создано',
     },
 
-    // descr Сменное задание отправлено на выполнение
+    // descr: Сменное задание отправлено на выполнение
     PENDING: {
         WORD: 'pending',
         CODE: 2,
         TITLE: 'Готово к стежке',
     },
 
-    // descr Сменное задание взято на выполнение (находится в процессе выполнения)
+    // descr: Сменное задание взято на выполнение (находится в процессе выполнения)
     RUNNING: {
         WORD: 'running',
         CODE: 3,
         TITLE: 'Выполняется',
     },
 
-    // descr Сменное задание выполнено (закрыто)
+    // descr: Сменное задание выполнено (закрыто)
     DONE: {
         WORD: 'done',
         CODE: 4,
@@ -64,7 +91,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
 })
 
 
-// descr Тут все константы, касающиеся статусов движения рулона
+// descr: Тут все константы, касающиеся статусов движения рулона
 export const FABRIC_ROLL_STATUS = Object.freeze({
 
     // descr: Рулон создан (или сохранен)
@@ -151,25 +178,35 @@ export const FABRIC_PAGE_MODE = Object.freeze({
 
 // descr Константы ID машин стежки
 export const FABRIC_MACHINES = Object.freeze({
-    UNRNOWN: {
+    UNKNOWN: {
         ID: 0,
         TITLE: 'unknown',
+        NAME: 'Неизвестно',
+        INDEX: 'unknown',
     },
     AMERICAN: {
         ID: 1,
         TITLE: 'american',
+        NAME: 'Американец',
+        INDEX: 'american',
     },
     GERMAN: {
         ID: 2,
         TITLE: 'german',
+        NAME: 'Немец',
+        INDEX: 'german',
     },
     CHINA: {
         ID: 3,
         TITLE: 'china',
+        NAME: 'Китаец',
+        INDEX: 'china',
     },
     KOREAN: {
         ID: 4,
         TITLE: 'korean',
+        NAME: 'Кореец',
+        INDEX: 'korean',
     },
 })
 

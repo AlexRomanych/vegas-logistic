@@ -68,7 +68,7 @@ export function cloneDeep(obj, hash = new WeakMap()) {
 
     // Копируем функции
     if (typeof obj === 'function') {
-        return function(...args) {
+        return function (...args) {
             return obj.apply(this === clonedObj ? originalObject : this, args);
         };
     }
@@ -78,8 +78,14 @@ export function cloneDeep(obj, hash = new WeakMap()) {
 
 const originalObjectWithMethod = {
     name: 'Alice',
-    details: { age: 25 },
-    sayHello: function() {
+    details: {age: 25},
+    sayHello: function () {
         console.log(`Hello, ${this.name}!`);
     }
 };
+
+// descr: округление с точностью
+export function round(number, precision = 0) {
+    const factor = Math.pow(10, precision)
+    return Math.round(number * factor) / factor
+}

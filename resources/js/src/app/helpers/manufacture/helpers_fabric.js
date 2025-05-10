@@ -3,7 +3,8 @@
 import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
-    TASK_DRAFT, FABRIC_ROLL_STATUS
+    TASK_DRAFT, FABRIC_ROLL_STATUS,
+    WARNINGS_RANGES
 } from '/resources/js/src/app/constants/fabrics.js'
 
 import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
@@ -316,4 +317,22 @@ export function getTypeByRollStatus(rollStatus) {
 }
 
 
+// attract: Получить статус предупреждения по количеству
+// attract: Если передано 2 числа, то % = amount / maxAmount
+// attract: Если передано 1 число, то % = amount
+export function getAmountWarningStatus(amount = 0, maxAmount) {
+
+    const percent = (maxAmount) ? amount / maxAmount : amount
+
+    if (percent < 0) return 'danger'
+
+    let warningStatus = 'success'
+    Object.keys(WARNINGS_RANGES).forEach((range) => {
+        if (WARNINGS_RANGES[range].LOW_BOUND <= percent && percent < WARNINGS_RANGES[range].HIGH_BOUND) {
+            warningStatus = WARNINGS_RANGES[range].TYPE
+        }
+    })
+
+    return warningStatus
+}
 
