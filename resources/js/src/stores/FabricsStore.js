@@ -26,6 +26,8 @@ const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL �
 
 const URL_FABRICS_ORDERS = 'fabrics/orders/'                            // URL для получения списка заказов для ПС
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
+const URL_FABRICS_ORDERS_CLOSE = 'fabrics/orders/close/'                // URL для закрытия заказа
+const URL_FABRICS_ORDERS_SET_ACTIVE = 'fabrics/orders/set/active/'      // URL для переключения активности заказа
 // const URL_FABRIC_ORDERS_DELETE = 'fabrics/order/delete/'                // URL для удаления заказа
 
 const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL для получения списка СЗ для ПС
@@ -368,6 +370,20 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data
     }
 
+    // Attract: Меняем статус заказа с расходом ПС для отображения в расчетах
+    const setFabricOrderActive = async (id = 0, active = true) => {
+        const result = await jwtPatch(URL_FABRICS_ORDERS_SET_ACTIVE, {id, active})
+        console.log('store: toggle-active-fabric-order: ', result)
+        return result.data
+    }
+
+    // Attract: Закрываем заказ с расходом ПС
+    const closeFabricOrder = async (id = 0) => {
+        const result = await jwtPatch(URL_FABRICS_ORDERS_CLOSE, {id})
+        console.log('store: close-fabric-order: ', result)
+        return result.data
+    }
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -404,6 +420,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         getFabricExecutingTasks, getFabricNotDoneTasks,
         closeFabricTasks,
         getFabricsOrders,
+        closeFabricOrder, setFabricOrderActive,
     }
 
 })

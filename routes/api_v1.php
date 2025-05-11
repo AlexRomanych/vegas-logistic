@@ -230,7 +230,8 @@ Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machin
 // attract: Загрузка расхода ПС
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
 Route::get('/fabrics/orders', [CellFabricOrderController::class, 'getFabricOrders'])->middleware('jwt.auth');
-
+Route::patch('/fabrics/orders/close', [CellFabricOrderController::class, 'closeFabricOrder'])->middleware('jwt.auth');
+Route::patch('/fabrics/orders/set/active/', [CellFabricOrderController::class, 'setFabricOrderActive'])->middleware('jwt.auth');
 
 
 // attract: Блок Заказов Стежки на производство

@@ -214,6 +214,12 @@ watch(() => props.text, (text) => {
     h-[75px]
     h-[90px]
 
+    h-[106px]
+
+
+
+
+
 }
 
 </style>

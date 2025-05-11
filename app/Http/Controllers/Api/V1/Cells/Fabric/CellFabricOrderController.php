@@ -11,6 +11,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricExpense;
 use App\Models\Manufacture\Cells\Fabric\FabricOrder;
 use App\Services\Manufacture\FabricService;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 
 class CellFabricOrderController extends Controller
@@ -83,18 +84,91 @@ class CellFabricOrderController extends Controller
         return EndPointStaticRequestAnswer::fail(['dubs' => $dubs, 'missing_fabrics' => array_unique($missingFabrics)]);
     }
 
+
     // Descr: Получить список расходов ПС по активным заказам
+
+    /**
+     * @return FabricOrderCollection|string
+     */
     public function getFabricOrders()
     {
-        $fabricOrders = FabricOrder::query()
-            ->whereNot('is_closed')
-            ->with(['fabricsExpense', 'client'])
-            ->get();
+        try {
+            $fabricOrders = FabricOrder::query()
+                ->where('is_closed', false)
+                ->with(['fabricsExpense', 'client'])
+                ->orderBy('expense_date')
+                ->get();
 
-        return new FabricOrderCollection($fabricOrders);
+            return new FabricOrderCollection($fabricOrders);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
 
 
-        return ['data' => 'getFabricOrders'];
+    // Descr: Меняем статус заказа расходов ПС (отображаем в расчетах или нет)
+    /**
+     * @param Request $request
+     * @return string
+     */
+    public function setFabricOrderActive(Request $request)
+    {
+        try {
+            $validData = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|integer',
+                'data.active' => 'required|boolean',
+            ]);
+
+            $data = $request->input('data');
+
+            $fabricOrder = FabricOrder::query()->find($data['id']);
+
+            if ($fabricOrder) {
+                $fabricOrder->active = $data['active'];
+                $fabricOrder->save();
+
+                return EndPointStaticRequestAnswer::ok();
+            } else {
+                throw new Exception('Заказ расходов ПС с id = ' . $data['id'] . ' не найден');
+            }
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+
+    }
+
+
+    // Descr: Закрываем заказ расходов ПС
+    /**
+     * @param Request $request
+     * @return string
+     */
+    public function closeFabricOrder(Request $request)
+    {
+        try {
+            $validData = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|integer',
+            ]);
+
+            $data = $request->input('data');
+
+            $fabricOrder = FabricOrder::query()->find($data['id']);
+
+            if ($fabricOrder) {
+                $fabricOrder->is_closed = true;
+                $fabricOrder->save();
+
+                return EndPointStaticRequestAnswer::ok();
+            } else {
+                throw new Exception('Заказ расходов ПС с id = ' . $data['id'] . ' не найден');
+            }
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
     }
 
 

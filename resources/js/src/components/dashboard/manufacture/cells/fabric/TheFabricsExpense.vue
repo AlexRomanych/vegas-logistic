@@ -1,63 +1,56 @@
 <template>
 
     <div class="m-2 sticky top-0 flex bg-blue-200 border-2 rounded-lg border-blue-700 p-1 max-w-fit">
-        <!--    <div class="ml-2 mt-2 sticky top-0">-->
 
         <div class="flex">
 
-            <!--        <div class="sticky top-0 flex pt-1 pb-1 bg-blue-200 border-2 rounded-lg border-blue-700 p-1 mb-1 max-w-fit">-->
             <div>
                 <div class="flex">
-                    <AppLabel
-                        :width="'w-[250px]'"
+                    <AppLabelMultiLine
+                        :text="['Полотно', 'стеганное']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
-                        text="Полотно стеганное"
                         type="primary"
+                        width="w-[284px]"
+                        height="h-[53px]"
                     />
 
-                    <AppLabel
-                        :width="'w-[60px]'"
+                    <AppLabelMultiLine
+                        :text="['Буф.', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
-                        text="Буф."
                         type="primary"
+                        width="w-[60px]"
+                        height="h-[53px]"
                     />
 
-                    <AppLabel
-                        :width="'w-[60px]'"
+                    <AppLabelMultiLine
+                        :text="['Расх.', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
-                        text="Расх."
                         type="primary"
+                        width="w-[60px]"
+                        height="h-[53px]"
                     />
 
-                    <AppLabel
-                        :width="'w-[60px]'"
+                    <AppLabelMultiLine
+                        :text="['Δ', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
-                        text="Δ"
                         type="primary"
+                        width="w-[60px]"
+                        height="h-[53px]"
                     />
 
-                    <AppLabel
-                        :width="'w-[60px]'"
+                    <AppLabelMultiLine
+                        :text="['СЗ', '']"
+                        width="w-[60px]"
+                        height="h-[53px]"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
-                        text="СЗ"
                         type="primary"
                     />
                 </div>
-
-
-                <AppLabel
-                    :width="'w-[505px]'"
-                    align="center"
-                    class="border-2 rounded-lg border-blue-700"
-                    height="h-[50px]"
-                    text="Заявки:"
-                    type="info"
-                />
 
             </div>
 
@@ -71,144 +64,190 @@
                     width="w-full"
                 />
 
-
+                <!-- attract: Блок с названиями заявок -->
                 <div class="flex">
 
-                    <AppLabelMultiLine
-                        v-for="orderExpense in ordersExpense"
-                        :text="[orderExpense.client.short_name, '№ ' + orderExpense.order_no, orderExpense.expense_date]"
-                        align="center"
-                        class="border-2 rounded-lg border-blue-700"
-                        height="h-[15px]"
-                        textSize="micro"
-                        title="Всплывающая подсказка"
-                        type="warning"
-                        width="w-[100px]"
-                    />
+                    <div v-for="orderExpense in ordersExpense">
 
-                </div>
-            </div>
-
-
-        </div>
-
-
-    </div>
-
-    <!-- Заглушка -->
-    <!--    <div class="flex">-->
-
-    <!--        <AppLabel-->
-    <!--            :width="'w-[512px]'"-->
-    <!--            align="center"-->
-    <!--            class="border-2 rounded-lg border-blue-700"-->
-    <!--            height="h-[50px]"-->
-    <!--            text="Заявки:"-->
-    <!--            type="info"-->
-    <!--        />-->
-
-
-    <!--    </div>-->
-    <div class="m-2">
-
-        <div class="flex">
-
-            <div>
-
-                <div v-for="fabricItem in ordersExpenseMatrix">
-
-                    <div class="flex">
-
-                        <!-- attract: Полотно стеганное -->
-                        <AppLabel
-                            :text="fabricItem.fabric.display_name"
-                            :width="'w-[255px]'"
-                            align="left"
-                            class="cursor-pointer"
+                        <!-- attract: Сама заявка -->
+                        <AppLabelMultiLine
+                            :text="[orderExpense.client.short_name, '№ ' + orderExpense.order_no, orderExpense.expense_date]"
+                            :type="orderExpense.active ? 'warning' : 'dark'"
+                            align="center"
+                            height="h-[15px]"
                             textSize="micro"
                             title="Всплывающая подсказка"
-                            type="primary"
+                            width="w-[100px]"
                         />
 
-                        <!-- attract: Буфер -->
-                        <AppLabel
-                            :text="fabricItem.fabric.buffer.toFixed(3)"
-                            :type="getAmountWarningStatus(fabricItem.fabric.buffer, fabricItem.fabric.maxBuffer)"
-                            :width="'w-[60px]'"
-                            align="center"
-                            textSize="micro"
-                            title="Всплывающая подсказка"
-                        />
+                        <!-- attract: Блок сервисных кнопок -->
+                        <div class="flex">
 
-                        <!-- attract: Расход -->
-                        <AppLabel
-                            :text="fabricItem.expenseTotal.toFixed(3)"
-                            :width="'w-[60px]'"
-                            align="center"
-                            textSize="micro"
-                            title="Всплывающая подсказка"
-                            type="warning"
-                        />
+                            <!-- attract: +/- в расчетах -->
+                            <AppLabel
+                                :text="orderExpense.active ? '-' : '+'"
+                                :type="orderExpense.active ? 'dark' : 'warning'"
+                                align="center"
+                                class="cursor-pointer"
+                                height="h-[20px]"
+                                width="w-full"
+                                @click="addOrRemoveExpenseToCalc(orderExpense)"
+                            />
 
-                        <!-- attract: Δ -->
-                        <AppLabel
-                            :text="fabricItem.delta.toFixed(3)"
-                            :type="getAmountWarningStatus(fabricItem.delta, fabricItem.fabric.maxBuffer)"
-                            :width="'w-[60px]'"
-                            align="center"
-                            textSize="micro"
-                            title="Всплывающая подсказка"
-                        />
-
-                        <!-- attract: СЗ -->
-                        <AppLabel
-
-                            :width="'w-[60px]'"
-                            align="center"
-                            text="СЗ"
-                            textSize="micro"
-                            type="info"
-                        />
-
-                        <!-- attract: СЗ -->
-                        <div class="ml-0.5 flex">
-
-                            <div v-for="fabricExpense in fabricItem.expense" >
-
-                                <AppLabel
-
-
-                                    :text="fabricExpense ? fabricExpense.toFixed(3) : ''"
-                                    :type="fabricExpense ? 'dark' : 'light'"
-                                    :width="'w-[100px]'"
-                                    align="center"
-                                    class="border-2 rounded-lg border-blue-700"
-                                    height="h-[30px]"
-                                    textSize="micro"
-                                    title="Всплывающая подсказка"
-                                />
-
-                            </div>
+                            <!-- attract: Убрать из расчета -->
+                            <AppLabel
+                                align="center"
+                                class="cursor-pointer"
+                                height="h-[20px]"
+                                text="x"
+                                type="danger"
+                                width="w-full"
+                                @click="closeOrderExpense(orderExpense)"
+                            />
                         </div>
+
                     </div>
 
                 </div>
 
             </div>
 
+        </div>
+
+    </div>
+
+    <!-- attract: Начало вывода расчета -->
+    <div class="m-2">
+
+        <!-- attract: Группировка по машинам -->
+        <div v-for="machine in machines">
+
+            <div class="flex">
+
+                <!-- attract: Кнопка раскрытия -->
+                <AppLabel
+                    :text="machine.show ? '-' : '+'"
+                    align="center"
+                    class="cursor-pointer"
+                    type="info"
+                    width="w-[30px]"
+                    @click="toggleMachineVisibility(machine)"
+                />
+
+                <!-- attract: Сама машина -->
+                <AppLabel
+                    :text="machine.name"
+                    class="cursor-pointer"
+                    text-size="normal"
+                    type="info"
+                    width="w-[512px]"
+                    @click="toggleMachineVisibility(machine)"
+                />
+
+            </div>
+
+            <div v-if="machine.show" class="flex ml-[34px]">
+
+                <div>
+                    <div v-for="fabricItem in ordersExpenseMatrix">
+
+                        <div v-if="machine.id === fabricItem.fabric.machine" class="flex">
+
+                            <!-- attract: Полотно стеганное -->
+                            <AppLabel
+                                :text="fabricItem.fabric.display_name"
+                                :width="'w-[255px]'"
+                                align="left"
+                                class="cursor-pointer"
+                                textSize="micro"
+                                title="Всплывающая подсказка"
+                                type="primary"
+                            />
+
+                            <!-- attract: Буфер -->
+                            <AppLabel
+                                :text="fabricItem.fabric.buffer.toFixed(3)"
+                                :type="getAmountWarningStatus(fabricItem.fabric.buffer, fabricItem.fabric.maxBuffer)"
+                                :width="'w-[60px]'"
+                                align="center"
+                                textSize="micro"
+                                title="Всплывающая подсказка"
+                            />
+
+                            <!-- attract: Расход -->
+                            <AppLabel
+                                :text="fabricItem.expenseTotal ? fabricItem.expenseTotal.toFixed(3) : ''"
+                                :type="fabricItem.expenseTotal ? 'warning' : 'light'"
+                                :width="'w-[60px]'"
+                                align="center"
+                                textSize="micro"
+                                title="Всплывающая подсказка"
+                            />
+
+                            <!-- attract: Δ -->
+                            <AppLabel
+                                :text="fabricItem.delta.toFixed(3)"
+                                :type="getAmountWarningStatus(fabricItem.delta, fabricItem.fabric.maxBuffer)"
+                                :width="'w-[60px]'"
+                                align="center"
+                                textSize="micro"
+                                title="Всплывающая подсказка"
+                            />
+
+                            <!-- attract: СЗ -->
+                            <AppLabel
+                                class="cursor-pointer"
+                                :width="'w-[60px]'"
+                                align="center"
+                                text="СЗ"
+                                textSize="micro"
+                                type="info"
+                                title="Всплывающая подсказка"
+                                @click="fabricTaskAdd(fabricItem)"
+                            />
+
+                            <!-- attract: Расход по каждой заявке -->
+                            <div class="ml-0.5 flex">
+
+                                <div v-for="fabricExpense in fabricItem.expense">
+
+                                    <AppLabel
+                                        :text="fabricExpense.expense ? fabricExpense.expense.toFixed(3) : ''"
+                                        :type="fabricExpense.expense ? (fabricExpense.active ? 'warning' : 'dark') : 'light'"
+                                        :width="'w-[100px]'"
+                                        align="center"
+                                        class="border-2 rounded-lg border-blue-700"
+                                        height="h-[30px]"
+                                        textSize="mini"
+                                        title="Всплывающая подсказка"
+                                    />
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
-    <!--    </div>-->
-
+    <!-- attract: Модальное окно для подтверждений -->
+    <AppModalAsyncMultiLine
+        ref="appModalAsync"
+        :text="modalText"
+        :type="modalType"
+        mode="confirm"
+    />
 
 </template>
 
 <script setup>
 
-import {computed, ref, watch} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -219,6 +258,7 @@ import {getAmountWarningStatus} from '/resources/js/src/app/helpers/manufacture/
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 const fabricsStore = useFabricsStore()
@@ -230,39 +270,33 @@ const fabrics = await fabricsStore.getFabrics()
 const getOrdersExpense = async () => await fabricsStore.getFabricsOrders()
 const ordersExpense = ref(await getOrdersExpense())
 
-console.log('fabrics: ', fabrics)
-console.log('ordersExpense: ', ordersExpense.value)
+// console.log('fabrics: ', fabrics)
+// console.log('ordersExpense: ', ordersExpense.value)
 
 // attract: Создаем матрицу отображения расхода по заявкам
 const getOrdersExpenseMatrix = () => {
     const tempMatrix = []
 
-    // Object.keys(FABRIC_MACHINES).forEach((machine) => {
-    //
-    //     console.log(FABRIC_MACHINES[machine].NAME)
-    //
-    // })
-
-    // ordersExpense.value[0].active = false
 
     fabrics.forEach(fabric => {
 
         const tempExpense = []
+        let expenseTotal = 0
 
-        let tempFabricExpenseAmount
         ordersExpense.value.forEach(orderExpense => {
 
-            tempFabricExpenseAmount = 0
+            // формируем массив расходов по каждой заявке для рендеринга в шаблоне
+            const tempFabricExpense = orderExpense.fabricsExpense.find(expense => expense.fabric_id === fabric.id)
+            const tempFabricExpenseAmount = tempFabricExpense ? tempFabricExpense.expense : 0
 
-            if (orderExpense.active) {
-                const tempFabricExpense = orderExpense.fabricsExpense.find(expense => expense.fabric_id === fabric.id)
-                tempFabricExpenseAmount = tempFabricExpense ? tempFabricExpense.expense : 0
-            }
-
-            tempExpense.push(tempFabricExpenseAmount)
+            tempExpense.push({
+                expense: tempFabricExpenseAmount,
+                active: orderExpense.active
+            })
+            expenseTotal += orderExpense.active ? tempFabricExpenseAmount : 0   // суммируем расходы по активным заявкам
         })
 
-
+        // Подготавливаем объект ПС для рендеринга в шаблоне
         const fabricData = {
             fabric: {
                 id: fabric.id,
@@ -273,7 +307,8 @@ const getOrdersExpenseMatrix = () => {
             },
 
             expense: tempExpense,
-            expenseTotal: round(tempExpense.reduce((accumulator, currentValue) => accumulator + currentValue, 0), 3),
+            expenseTotal: round(expenseTotal, 3),
+            // expenseTotal: round(tempExpense.reduce((accumulator, currentValue) => accumulator + (orderExpense.active ? currentValue : 0), 0), 3),
 
             get delta() {
                 return this.fabric.buffer - this.expenseTotal
@@ -283,13 +318,81 @@ const getOrdersExpenseMatrix = () => {
         tempMatrix.push(fabricData)
     })
 
-
     return tempMatrix
+}
+let ordersExpenseMatrix = ref(getOrdersExpenseMatrix())
+
+// console.log('ordersExpenseMatrix: ', ordersExpenseMatrix)
+
+
+// attract: Получаем все машины для отображения и формируем объект для отображения
+const getMachines = () => {
+
+    const tempMachines = []
+
+    Object.keys(FABRIC_MACHINES).forEach((machine) => {
+
+        if (FABRIC_MACHINES[machine].ID !== 0) {
+
+
+            // console.log(FABRIC_MACHINES[machine].NAME)
+            tempMachines.push({
+                id: FABRIC_MACHINES[machine].ID,
+                name: FABRIC_MACHINES[machine].NAME,
+                show: true,
+            })
+
+        }
+
+    })
+
+    console.log(tempMachines)
+
+    return tempMachines
+
 
 }
-const ordersExpenseMatrix = getOrdersExpenseMatrix()
+const machines = ref(getMachines())
 
-console.log('ordersExpenseMatrix: ', ordersExpenseMatrix)
+
+// attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
+const appModalAsync = ref(null)
+const modalText = ref([])
+const modalType = ref('danger')
+
+
+// attract: +/- в расчетах по заявкам. При изменении пересчитываем расходы по заявкам
+// const calcButtonText = ref('')
+const addOrRemoveExpenseToCalc = async (orderExpense) => {
+    orderExpense.active = !orderExpense.active
+    ordersExpenseMatrix.value = getOrdersExpenseMatrix()
+    const res = await fabricsStore.setFabricOrderActive(orderExpense.id, orderExpense.active)
+}
+
+// attract: Закрываем заявку. При изменении пересчитываем расходы по заявкам
+const closeOrderExpense = async (orderExpense) => {
+    modalText.value = ['Заявка будет закрыта.', 'Продолжить?']
+    modalType.value = 'danger'
+
+    const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+        ordersExpense.value = ordersExpense.value.filter(expense => expense !== orderExpense)
+        ordersExpenseMatrix.value = getOrdersExpenseMatrix()
+        const res = await fabricsStore.closeFabricOrder(orderExpense.id)
+    }
+}
+
+// attract: Добавляем СЗ по ПС и его расходу
+const fabricTaskAdd = async (fabricItem) => {
+    console.log(fabricItem)
+}
+
+
+// attract: Управляем видимостью группы машин
+const toggleMachineVisibility = (machine) => {
+    machine.show = !machine.show
+}
+
 
 
 // Получаем ширину ячейки в нужном формате
