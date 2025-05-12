@@ -6,8 +6,11 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
+use Exception;
 use Illuminate\Http\Request;
 
 class CellFabricController extends Controller
@@ -95,19 +98,49 @@ class CellFabricController extends Controller
         return new FabricResource(Fabric::query()->find($id));
     }
 
-    /**
-     * Attract: Возвращаем список ПС
-     * @return FabricCollection
-     */
-    public function fabrics()
-    {
-        return new FabricCollection(
-            Fabric::query()
-                ->orderBy('name')
-                ->with('fabricPicture')
-                ->get()
-        );
 
+    /**
+     *  Attract: Возвращаем список ПС
+     * @param Request $request
+     * @return FabricCollection|false|string
+     */
+    public function fabrics(Request $request)
+    {
+        try {
+
+            // attract: Проверяем есть ли в запросе параметр active
+            if (!$request->has('active')) {
+
+                $fabrics = Fabric::query()
+                    ->orderBy('name')
+                    ->with('fabricPicture')
+//                ->with(['fabricPicture', 'fabricOrder'])
+                    ->get();
+
+            } else {
+
+                // attract: Если есть, то проверяем, не null ли он
+                $payloadStatus = $request->validate(['data.active' => 'boolean']);
+                $payloadStatus = $request->get('active');
+
+                $fabrics = Fabric::query()
+                    ->where('active', $payloadStatus)
+                    ->orderBy('name')
+                    ->with('fabricPicture')
+//                ->with(['fabricPicture', 'fabricOrder'])
+                    ->get();
+
+            }
+
+            if (!$fabrics) {
+                return json_encode(['data' => null]);
+            }
+
+            return new FabricCollection($fabrics);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
     }
 
     /**

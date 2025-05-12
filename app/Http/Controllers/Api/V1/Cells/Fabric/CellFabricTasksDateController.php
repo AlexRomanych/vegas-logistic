@@ -285,31 +285,30 @@ class CellFabricTasksDateController extends Controller
     }
 
 
-    /**
-     * Descr: Удаляем контекст СЗ по id
-     * @param Request $request
-     * @return string
-     */
-    public function deleteContext(Request $request)
-    {
-        try {
-
-            if (!$request->has('id')) return EndPointStaticRequestAnswer::fail();
-
-            $validData = $request->validate([
-                'id' => 'numeric|required',
-            ]);
-
-            $taskContext = FabricTaskContext::query()->find($validData['id']);
-
-            if ($taskContext) $taskContext->delete();
-
-            return EndPointStaticRequestAnswer::ok();
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
-    }
-
+//    /**
+//     * Descr: Удаляем контекст СЗ по id
+//     * @param Request $request
+//     * @return string
+//     */
+//    public function deleteContext(Request $request)
+//    {
+//        try {
+//
+//            if (!$request->has('id')) return EndPointStaticRequestAnswer::fail();
+//
+//            $validData = $request->validate([
+//                'id' => 'numeric|required',
+//            ]);
+//
+//            $taskContext = FabricTaskContext::query()->find($validData['id']);
+//
+//            if ($taskContext) $taskContext->delete();
+//
+//            return EndPointStaticRequestAnswer::ok();
+//        } catch (Exception $e) {
+//            return EndPointStaticRequestAnswer::fail(response()->json($e));
+//        }
+//    }
 
     /**
      * Возвращаем результат создания или обновления дня заданий

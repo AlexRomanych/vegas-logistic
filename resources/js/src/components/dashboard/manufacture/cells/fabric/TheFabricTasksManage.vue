@@ -233,7 +233,7 @@ const router = useRouter()
 const fabricsStore = useFabricsStore()
 
 // attract: Получаем все ткани и запоминаем в хранилище
-const fabrics = await fabricsStore.getFabrics()
+const fabrics = await fabricsStore.getFabrics(true)
 fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
 fabricsStore.fabricsMemory = fabrics
 // console.log(fabrics)

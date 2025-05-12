@@ -78,6 +78,7 @@
                             textSize="micro"
                             title="Всплывающая подсказка"
                             width="w-[100px]"
+                            @click="addOrRemoveExpenseToCalc(orderExpense)"
                         />
 
                         <!-- attract: Блок сервисных кнопок -->
@@ -161,7 +162,7 @@
                                 class="cursor-pointer"
                                 textSize="micro"
                                 title="Всплывающая подсказка"
-                                type="primary"
+                                :type="fabricItem.fabric.correct ? 'primary' : 'danger'"
                             />
 
                             <!-- attract: Буфер -->
@@ -199,9 +200,9 @@
                                 class="cursor-pointer"
                                 :width="'w-[60px]'"
                                 align="center"
-                                text="СЗ"
+                                :text="fabricItem.fabric.correct ? (fabricItem.taskContexts.length ? 'есть СЗ' : '--> СЗ') : ''"
                                 textSize="micro"
-                                type="info"
+                                :type="fabricItem.fabric.correct ? (fabricItem.taskContexts.length ? 'info' : 'warning') : 'danger'"
                                 title="Всплывающая подсказка"
                                 @click="fabricTaskAdd(fabricItem)"
                             />
@@ -254,6 +255,7 @@ import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
 
 import {round} from '/resources/js/src/app/helpers/helpers_lib.js'
+import {getISOFromLocaleDate} from '/resources/js/src/app/helpers/helpers_date.js'
 import {getAmountWarningStatus} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
@@ -261,17 +263,26 @@ import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMu
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
+
 const fabricsStore = useFabricsStore()
 
-// attract: Получаем все полотна с API
-const fabrics = await fabricsStore.getFabrics()
+// attract: Получаем все активные полотна с API
+const fabrics = await fabricsStore.getFabrics(true)
 
 // attract: Получаем расходы на заявки
 const getOrdersExpense = async () => await fabricsStore.getFabricsOrders()
 const ordersExpense = ref(await getOrdersExpense())
 
+// attract: Получаем все незакрытые СЗ, выставленные ОПП (FabricTaskContext)
+const getTaskContexts = async () => await fabricsStore.getFabricTaskContextNotDone()
+const taskContexts = ref(await getTaskContexts())
+
+
 // console.log('fabrics: ', fabrics)
 // console.log('ordersExpense: ', ordersExpense.value)
+console.log('taskContexts: ', taskContexts.value)
+
+// TODO: Сделать проверку на присутствие расхода в расходах и отсутствия ПС в списке активных
 
 // attract: Создаем матрицу отображения расхода по заявкам
 const getOrdersExpenseMatrix = () => {
@@ -280,12 +291,12 @@ const getOrdersExpenseMatrix = () => {
 
     fabrics.forEach(fabric => {
 
+        // attract: формируем массив расходов по каждой заявке для рендеринга в шаблоне
         const tempExpense = []
         let expenseTotal = 0
 
         ordersExpense.value.forEach(orderExpense => {
 
-            // формируем массив расходов по каждой заявке для рендеринга в шаблоне
             const tempFabricExpense = orderExpense.fabricsExpense.find(expense => expense.fabric_id === fabric.id)
             const tempFabricExpenseAmount = tempFabricExpense ? tempFabricExpense.expense : 0
 
@@ -296,7 +307,11 @@ const getOrdersExpenseMatrix = () => {
             expenseTotal += orderExpense.active ? tempFabricExpenseAmount : 0   // суммируем расходы по активным заявкам
         })
 
-        // Подготавливаем объект ПС для рендеринга в шаблоне
+
+        // attract: подготавливаем инфу для кнопки СЗ
+        const tempTaskContexts = taskContexts.value.filter(taskContext => taskContext.fabric_id === fabric.id)
+
+        // attract: Подготавливаем объект ПС для рендеринга в шаблоне
         const fabricData = {
             fabric: {
                 id: fabric.id,
@@ -304,7 +319,10 @@ const getOrdersExpenseMatrix = () => {
                 buffer: fabric.buffer.amount,
                 maxBuffer: fabric.buffer.average_length * fabric.buffer.max_rolls,
                 machine: fabric.machines[0].id,
+                correct: fabric.correct,
             },
+
+            taskContexts: tempTaskContexts,
 
             expense: tempExpense,
             expenseTotal: round(expenseTotal, 3),
@@ -322,7 +340,7 @@ const getOrdersExpenseMatrix = () => {
 }
 let ordersExpenseMatrix = ref(getOrdersExpenseMatrix())
 
-// console.log('ordersExpenseMatrix: ', ordersExpenseMatrix)
+console.log('ordersExpenseMatrix: ', ordersExpenseMatrix.value)
 
 
 // attract: Получаем все машины для отображения и формируем объект для отображения
@@ -334,23 +352,17 @@ const getMachines = () => {
 
         if (FABRIC_MACHINES[machine].ID !== 0) {
 
-
             // console.log(FABRIC_MACHINES[machine].NAME)
             tempMachines.push({
                 id: FABRIC_MACHINES[machine].ID,
                 name: FABRIC_MACHINES[machine].NAME,
                 show: true,
             })
-
         }
-
     })
 
-    console.log(tempMachines)
-
+    // console.log(tempMachines)
     return tempMachines
-
-
 }
 const machines = ref(getMachines())
 
@@ -369,6 +381,7 @@ const addOrRemoveExpenseToCalc = async (orderExpense) => {
     const res = await fabricsStore.setFabricOrderActive(orderExpense.id, orderExpense.active)
 }
 
+
 // attract: Закрываем заявку. При изменении пересчитываем расходы по заявкам
 const closeOrderExpense = async (orderExpense) => {
     modalText.value = ['Заявка будет закрыта.', 'Продолжить?']
@@ -382,9 +395,26 @@ const closeOrderExpense = async (orderExpense) => {
     }
 }
 
+
 // attract: Добавляем СЗ по ПС и его расходу
 const fabricTaskAdd = async (fabricItem) => {
-    console.log(fabricItem)
+    if (!fabricItem.fabric.correct) return      // если ткань неправильная, то выходим
+    if (fabricItem.taskContexts.length) return  // если есть движение по СЗ, то выходим
+
+    const fabricTaskContext = {
+        date: getISOFromLocaleDate(),
+        fabric_id: fabricItem.fabric.id,
+        fabric_delta: fabricItem.delta,
+        // fabric_buffer: fabricItem.fabric.buffer,
+        // fabric_max_buffer: fabricItem.fabric.maxBuffer,
+        // fabric_expense: fabricItem.expenseTotal,
+        // fabric_correct: fabricItem.fabric.correct,
+    }
+
+    console.log(fabricTaskContext)
+
+    const res = await fabricsStore.createContextExpense(fabricTaskContext)
+    console.log('res: ', res)
 }
 
 

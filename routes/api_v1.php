@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricServiceController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskContextController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskRollController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTasksDateController;
@@ -245,12 +246,14 @@ Route::prefix('/fabrics/tasks')
         Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
         Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);
         Route::put('/create/', [CellFabricTasksDateController::class, 'create']);
-        Route::delete('/context/delete/', [CellFabricTasksDateController::class, 'deleteContext']);
         Route::put('/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate']);
         Route::get('/executing/', [CellFabricTasksDateController::class, 'getFabricExecutingTasks']);
         Route::get('/not-done/', [CellFabricTasksDateController::class, 'getFabricNotDoneTasks']);
         Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
 
+        Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
+        Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
+        Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
 
         Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
 

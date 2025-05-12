@@ -130,7 +130,10 @@ const totalProductivityAmount = ref(getTotalProductivityAmount())
 // attract: Отслеживаем изменения в хранилище по трудозатратам
 watch(
     () => fabricsStore.globalTaskProductivity,
-    () => totalProductivityAmount.value = getTotalProductivityAmount(),
+    () => {
+        totalProductivityAmount.value = getTotalProductivityAmount()
+        console.log(totalProductivityAmount.value)
+    },
     {deep: true}
 )
 

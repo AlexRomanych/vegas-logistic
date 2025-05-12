@@ -5,6 +5,8 @@ namespace App\Models\Manufacture\Cells\Fabric;
 use App\Classes\FabricInstance;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 //use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Fabric extends Model
@@ -17,7 +19,8 @@ class Fabric extends Model
     protected $appends = [
         'pic',
         'textile',
-        'fillersList'
+        'fillersList',
+        'fabricCorrect',
     ];
 
     protected $hidden = [
@@ -63,10 +66,39 @@ class Fabric extends Model
     }
 
 
-    //h2 fabricPicture -----------------------------------------------------------------------------------------
+    // attract: Проверяем наличие необходимых заполненных полей данных:
+    // attract: 1. Средняя длина рулона
+    // attract: 2. Производительность
+    // attract: 3. Коэффициент перевода
+    public function getFabricCorrectAttribute()
+    {
+
+            $length = (float)$this->average_roll_length === 0.0;
+            $productivity = (float)$this->productivity === 0.0;
+            $translate = (float)$this->translate_rate === 0.0;
+
+            return !($length || $productivity || $translate);
+
+//        return [
+//            'length' => (float)$this->average_roll_length === 0.0,
+//            'productivity' => (float)$this->productivity === 0.0,
+//            'translate' => (float)$this->translate_rate === 0.0,
+//            ];
+//        return (float)$this->average_roll_length !== 0.0 && (float)$this->productivity !== 0.0 && (float)$this->translate_rate !== 0.0;
+    }
+
+
+    // Relations: FabricPicture
     public function fabricPicture(): BelongsTo
     {
         return $this->belongsTo(FabricPicture::class);
+    }
+
+
+    // Relations: FabricOrder. Используем в Расходе ПС
+    public function fabricOrder(): HasMany
+    {
+        return $this->hasMany(FabricOrder::class);
     }
 
 

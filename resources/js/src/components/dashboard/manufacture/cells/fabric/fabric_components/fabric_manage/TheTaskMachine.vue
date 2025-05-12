@@ -40,12 +40,12 @@
                     id="comment"
                     v-model="taskDescription"
                     :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
+                    :placeholder="!getFunctionalByFabricTaskStatus(task.common.status) ? '' : 'Введите комментарий'"
                     :rows=2
                     :value="taskDescription"
                     class="cursor-pointer"
                     height="min-h-[60px]"
                     label="Комментарий к сменному заданию на этой стегальной машине:"
-                    :placeholder="!getFunctionalByFabricTaskStatus(task.common.status) ? '' : 'Введите комментарий'"
                     text-size="normal"
                     width="w-[955px]"
                 />
@@ -165,13 +165,12 @@ const fillGlobalProductivity = () => {
     fabricsStore.clearTaskGlobalProductivity()
     rolls.forEach((roll, index, rolls) => {
         const fabric = fabrics.find(fabric => fabric.id === roll.fabric_id)
-        // console.log(fabricsStore.globalTaskProductivity)
         fabricsStore.globalTaskProductivity[props.machine.TITLE][index] =
-            fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount : 0
-        // console.log(fabric)
+            fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount / fabric.buffer.productivity : 0
+        // console.log(fabric, roll.rolls_amount)
+        // console.log(fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount : 0)
     })
 }
-fillGlobalProductivity()
 
 // attract: Общий комментарий к сменному заданию
 const taskDescription = ref(props.task.machines[props.machine.TITLE].description)
@@ -224,7 +223,9 @@ const updateTaskMachineDescription = () => {
 // attract: При изменении самих данных, пересчитываем производительность
 watch(() => props.task, () => {
     fillGlobalProductivity()
-}, {deep: true})
+    // console.log('globalProductivity: TheTaskMachine: ', fabricsStore.globalTaskProductivity)
+
+}, {deep: true, immediate: true})
 
 </script>
 

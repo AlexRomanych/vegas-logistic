@@ -35,6 +35,14 @@ const URL_FABRIC_TASKS_LAST_DONE = 'fabrics/tasks/last/done/'           // URL �
 const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
+const URL_FABRIC_TASKS_CONTEXT_EXPENSE_CREATE =
+    'fabrics/tasks/context/expense/create/'                             // URL для создания СЗ, для ОПП (FabricTaskContext)
+const URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE =
+    'fabrics/tasks/context/not-done/'                                   // URL для получения СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
+
+    // /context/expense/create/
+
+
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
 const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE = 'fabrics/tasks/execute/roll/update/' // URL для обновления выполняемого рулона (FabricTaskContext)
@@ -132,11 +140,11 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
 
     // Attract: Получаем с API список ПС
-    const getFabrics = async () => {
+    const getFabrics = async (active = null) => {
 
-        const result = await jwtGet(URL_FABRICS)
+        const result = await jwtGet(URL_FABRICS, {active})
         fabricsCashe.value = result.fabrics             // кэшируем
-        // console.log('store', result)
+        console.log('store', result)
 
         return result.fabrics // все возвращается через Resource с ключем data
     }
@@ -311,6 +319,34 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
     }
 
+    // attract: Получение СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
+    const getFabricTaskContextNotDone = async () => {
+        const result = await jwtGet(URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE)
+        console.log('store: getFabricTaskContextNotDone:', result)
+        return result.data
+        // console.log(result)
+    }
+
+
+    // attract: Создание СЗ из расхода ПС для ОПП (FabricTaskContext)
+    const createContextExpense = async (taskContextData) => {
+        const result = await jwtPut(URL_FABRIC_TASKS_CONTEXT_EXPENSE_CREATE, {data: taskContextData})
+        console.log('store: createContextExpense:', result)
+        return result.data
+        // console.log(result)
+    }
+
+
+    // const createFabricTask = async (task) => {
+    //     const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
+    //     console.log('store', result)
+    //     return result
+    //     debugger
+    // }
+
+
+
+
     // attract: Получаем с API номер смены по дате
     const getFabricTeamNumberByDate = async (date = null) => {
         const result = await jwtGet(URL_FABRIC_TEAM_NUMBER, {date})
@@ -421,6 +457,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         closeFabricTasks,
         getFabricsOrders,
         closeFabricOrder, setFabricOrderActive,
+        getFabricTaskContextNotDone,
+        createContextExpense,
     }
 
 })

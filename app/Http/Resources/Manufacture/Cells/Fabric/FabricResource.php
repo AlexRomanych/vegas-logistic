@@ -32,6 +32,7 @@ class FabricResource extends JsonResource
             'fillersList' => $this->fillersList,                    // вычисляемое поле
             'active' => $this->active,
             'rare' => $this->rare,
+            'correct' => $this->fabricCorrect,
 
             'machines' => [
                 [

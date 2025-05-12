@@ -122,11 +122,12 @@ fabricsStore.globalEditMode = false                                             
 
 // attract: Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
+    fabricsStore.clearTaskGlobalProductivity()
     rolls.forEach((roll, index, rolls) => {
         const fabric = fabrics.find(fabric => fabric.id === roll.fabric_id)
         // console.log(fabricsStore.globalTaskProductivity)
         fabricsStore.globalTaskProductivity[props.machine.TITLE][index] =
-            fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount : 0
+            fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount / fabric.buffer.productivity : 0
         // console.log(fabric)
     })
 }
