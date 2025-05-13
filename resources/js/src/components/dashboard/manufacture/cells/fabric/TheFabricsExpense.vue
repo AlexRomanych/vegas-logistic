@@ -5,54 +5,79 @@
         <div class="flex">
 
             <div>
+
+                <!-- attract: Шапка -->
                 <div class="flex">
+
                     <AppLabelMultiLine
                         :text="['Полотно', 'стеганное']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
+                        height="h-[30px]"
                         type="primary"
                         width="w-[284px]"
-                        height="h-[53px]"
                     />
 
                     <AppLabelMultiLine
                         :text="['Буф.', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
+                        height="h-[30px]"
                         type="primary"
                         width="w-[60px]"
-                        height="h-[53px]"
                     />
 
                     <AppLabelMultiLine
                         :text="['Расх.', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
+                        height="h-[30px]"
                         type="primary"
                         width="w-[60px]"
-                        height="h-[53px]"
                     />
 
                     <AppLabelMultiLine
                         :text="['Δ', 'м.п.']"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
+                        height="h-[30px]"
                         type="primary"
                         width="w-[60px]"
-                        height="h-[53px]"
                     />
 
                     <AppLabelMultiLine
                         :text="['СЗ', '']"
-                        width="w-[60px]"
-                        height="h-[53px]"
                         align="center"
                         class="border-2 rounded-lg border-blue-700"
+                        height="h-[30px]"
                         type="primary"
+                        width="w-[60px]"
                     />
                 </div>
 
+                <!-- attract: Навигация -->
+                <div class="flex">
+
+                    <div v-for="item in navigation" :key="item.link" class="w-full mr-1 cursor-pointer ">
+
+                        <router-link :to="{name: item.link}">
+                            <AppLabel
+                                class="underline"
+                                :text="item.title"
+                                :type="item.type"
+                                align="center"
+                                height="h-[44px]"
+                                text-size="mini"
+                                width="w-full"
+                            />
+                        </router-link>
+
+                    </div>
+
+                </div>
+
             </div>
+
 
             <div>
 
@@ -74,6 +99,7 @@
                             :text="[orderExpense.client.short_name, '№ ' + orderExpense.order_no, orderExpense.expense_date]"
                             :type="orderExpense.active ? 'warning' : 'dark'"
                             align="center"
+                            class="cursor-pointer"
                             height="h-[15px]"
                             textSize="micro"
                             title="Всплывающая подсказка"
@@ -157,53 +183,53 @@
                             <!-- attract: Полотно стеганное -->
                             <AppLabel
                                 :text="fabricItem.fabric.display_name"
-                                :width="'w-[255px]'"
+                                :type="fabricItem.fabric.correct ? 'primary' : 'danger'"
                                 align="left"
                                 class="cursor-pointer"
                                 textSize="micro"
                                 title="Всплывающая подсказка"
-                                :type="fabricItem.fabric.correct ? 'primary' : 'danger'"
+                                width="w-[255px]"
                             />
 
                             <!-- attract: Буфер -->
                             <AppLabel
                                 :text="fabricItem.fabric.buffer.toFixed(3)"
                                 :type="getAmountWarningStatus(fabricItem.fabric.buffer, fabricItem.fabric.maxBuffer)"
-                                :width="'w-[60px]'"
                                 align="center"
                                 textSize="micro"
                                 title="Всплывающая подсказка"
+                                width="w-[60px]"
                             />
 
                             <!-- attract: Расход -->
                             <AppLabel
                                 :text="fabricItem.expenseTotal ? fabricItem.expenseTotal.toFixed(3) : ''"
                                 :type="fabricItem.expenseTotal ? 'warning' : 'light'"
-                                :width="'w-[60px]'"
                                 align="center"
                                 textSize="micro"
                                 title="Всплывающая подсказка"
+                                width="w-[60px]"
                             />
 
                             <!-- attract: Δ -->
                             <AppLabel
                                 :text="fabricItem.delta.toFixed(3)"
                                 :type="getAmountWarningStatus(fabricItem.delta, fabricItem.fabric.maxBuffer)"
-                                :width="'w-[60px]'"
                                 align="center"
                                 textSize="micro"
                                 title="Всплывающая подсказка"
+                                width="w-[60px]"
                             />
 
                             <!-- attract: СЗ -->
                             <AppLabel
-                                class="cursor-pointer"
-                                :width="'w-[60px]'"
-                                align="center"
                                 :text="fabricItem.fabric.correct ? (fabricItem.taskContexts.length ? 'есть СЗ' : '--> СЗ') : ''"
-                                textSize="micro"
                                 :type="fabricItem.fabric.correct ? (fabricItem.taskContexts.length ? 'info' : 'warning') : 'danger'"
+                                align="center"
+                                class="cursor-pointer"
+                                textSize="micro"
                                 title="Всплывающая подсказка"
+                                width="w-[60px]"
                                 @click="fabricTaskAdd(fabricItem)"
                             />
 
@@ -215,19 +241,22 @@
                                     <AppLabel
                                         :text="fabricExpense.expense ? fabricExpense.expense.toFixed(3) : ''"
                                         :type="fabricExpense.expense ? (fabricExpense.active ? 'warning' : 'dark') : 'light'"
-                                        :width="'w-[100px]'"
                                         align="center"
                                         class="border-2 rounded-lg border-blue-700"
                                         height="h-[30px]"
                                         textSize="mini"
                                         title="Всплывающая подсказка"
+                                        width="w-[100px]"
                                     />
 
                                 </div>
+
                             </div>
+
                         </div>
 
                     </div>
+
                 </div>
 
             </div>
@@ -248,7 +277,7 @@
 
 <script setup>
 
-import {computed, reactive, ref, watch} from 'vue'
+import {ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -261,7 +290,6 @@ import {getAmountWarningStatus} from '/resources/js/src/app/helpers/manufacture/
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
-
 
 
 const fabricsStore = useFabricsStore()
@@ -280,14 +308,13 @@ const taskContexts = ref(await getTaskContexts())
 
 // console.log('fabrics: ', fabrics)
 // console.log('ordersExpense: ', ordersExpense.value)
-console.log('taskContexts: ', taskContexts.value)
+// console.log('taskContexts: ', taskContexts.value)
 
 // TODO: Сделать проверку на присутствие расхода в расходах и отсутствия ПС в списке активных
 
 // attract: Создаем матрицу отображения расхода по заявкам
 const getOrdersExpenseMatrix = () => {
     const tempMatrix = []
-
 
     fabrics.forEach(fabric => {
 
@@ -339,8 +366,7 @@ const getOrdersExpenseMatrix = () => {
     return tempMatrix
 }
 let ordersExpenseMatrix = ref(getOrdersExpenseMatrix())
-
-console.log('ordersExpenseMatrix: ', ordersExpenseMatrix.value)
+// console.log('ordersExpenseMatrix: ', ordersExpenseMatrix.value)
 
 
 // attract: Получаем все машины для отображения и формируем объект для отображения
@@ -365,6 +391,15 @@ const getMachines = () => {
     return tempMachines
 }
 const machines = ref(getMachines())
+
+
+// attract: Объект навигации для отображения на странице
+const navigation = [
+    {title: 'Управление СЗ', link: 'manufacture.cell.fabric.tasks.manage', type: 'info'},
+    {title: 'Выполнение СЗ', link: 'manufacture.cell.fabric.tasks.execute', type: 'info'},
+    {title: 'Список ПС', link: 'manufacture.cell.fabrics.show', type: 'info'},
+    {title: 'Учет рулонов', link: 'manufacture.cell.fabrics.movement', type: 'info'},
+]
 
 
 // attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
@@ -398,23 +433,36 @@ const closeOrderExpense = async (orderExpense) => {
 
 // attract: Добавляем СЗ по ПС и его расходу
 const fabricTaskAdd = async (fabricItem) => {
+
     if (!fabricItem.fabric.correct) return      // если ткань неправильная, то выходим
     if (fabricItem.taskContexts.length) return  // если есть движение по СЗ, то выходим
 
-    const fabricTaskContext = {
-        date: getISOFromLocaleDate(),
-        fabric_id: fabricItem.fabric.id,
-        fabric_delta: fabricItem.delta,
-        // fabric_buffer: fabricItem.fabric.buffer,
-        // fabric_max_buffer: fabricItem.fabric.maxBuffer,
-        // fabric_expense: fabricItem.expenseTotal,
-        // fabric_correct: fabricItem.fabric.correct,
+    modalText.value = ['Полотно стеганное', fabricItem.fabric.display_name, 'будет добавлено в СЗ.', 'Продолжить?']
+    modalType.value = 'warning'
+
+    const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+        const fabricTaskContext = {
+            date: getISOFromLocaleDate(),
+            fabric_id: fabricItem.fabric.id,
+            fabric_expense: fabricItem.expenseTotal,
+            // fabric_delta: fabricItem.delta,
+            // fabric_buffer: fabricItem.fabric.buffer,
+            // fabric_max_buffer: fabricItem.fabric.maxBuffer,
+            // fabric_correct: fabricItem.fabric.correct,
+        }
+
+
+        // TODO: Добавить Callout по добавлению СЗ
+        const res = await fabricsStore.createContextExpense(fabricTaskContext)
+        // console.log('res: ', res)
+
+        // attract: Получаем обновленные данные для обновления матрицы
+        taskContexts.value = await getTaskContexts()
+        ordersExpenseMatrix.value = getOrdersExpenseMatrix()
+
     }
 
-    console.log(fabricTaskContext)
-
-    const res = await fabricsStore.createContextExpense(fabricTaskContext)
-    console.log('res: ', res)
 }
 
 
@@ -424,23 +472,19 @@ const toggleMachineVisibility = (machine) => {
 }
 
 
-
 // Получаем ширину ячейки в нужном формате
-const getMachineColWidthCSS = (colWidth) => `w-[${colWidth}px]`
+// const getMachineColWidthCSS = (colWidth) => `w-[${colWidth}px]`
 
-const machineColWidth = ref(getMachineColWidthCSS(378))         // 378 под стегальную машину (указываем динамический стиль в <style> для загрузки)
-
-const dateColWidth = ref(getMachineColWidthCSS(48))             // под дату
-const leftDateColWidth = ref(getMachineColWidthCSS(50))         // под дату слева
-const actionsColWidth = ref(getMachineColWidthCSS(150))          // под действия
-
-const fabricColWidth = ref(getMachineColWidthCSS(250))          // название ПС
-const amountRollsColWidth = ref(getMachineColWidthCSS(30))      // кол-во в рулонах
-const amountMetersColWidth = ref(getMachineColWidthCSS(40))     // кол-во в погонных метрах
-const laborsColWidth = ref(getMachineColWidthCSS(30))           // трудозатраты
-
-
-const roundedRandom = () => Math.round(Math.random() * 10000) / 100
+// const machineColWidth = ref(getMachineColWidthCSS(378))         // 378 под стегальную машину (указываем динамический стиль в <style> для загрузки)
+//
+// const dateColWidth = ref(getMachineColWidthCSS(48))             // под дату
+// const leftDateColWidth = ref(getMachineColWidthCSS(50))         // под дату слева
+// const actionsColWidth = ref(getMachineColWidthCSS(150))          // под действия
+//
+// const fabricColWidth = ref(getMachineColWidthCSS(250))          // название ПС
+// const amountRollsColWidth = ref(getMachineColWidthCSS(30))      // кол-во в рулонах
+// const amountMetersColWidth = ref(getMachineColWidthCSS(40))     // кол-во в погонных метрах
+// const laborsColWidth = ref(getMachineColWidthCSS(30))           // трудозатраты
 
 
 </script>

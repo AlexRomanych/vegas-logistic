@@ -3,13 +3,13 @@
         <div class="w-full flex justify-center">
 
             <AppLabel
-                text="Назад"
                 align="center"
-                textSize="huge"
+                class="cursor-pointer"
+                text="Назад"
+                text-size="mini"
                 type="dark"
                 width="w-[70px]"
                 @click="navigateBack"
-                text-size="mini"
             />
 
             <AppLabel
@@ -22,13 +22,13 @@
             />
 
             <AppLabel
-                text="Вперед"
                 align="center"
-                textSize="huge"
+                class="cursor-pointer"
+                text="Вперед"
+                text-size="mini"
                 type="dark"
                 width="w-[70px]"
                 @click="navigateForward"
-                text-size="mini"
 
             />
 

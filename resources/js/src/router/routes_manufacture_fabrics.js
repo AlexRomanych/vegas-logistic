@@ -25,7 +25,7 @@ const fabrics = [
         name: 'manufacture.cell.fabric.tasks.movement',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksMovement.vue'),
         meta: {
-            title: 'Управление СЗ участка стежки'
+            title: 'Движение СЗ участка стежки'
         }
     },
 
@@ -148,7 +148,7 @@ const fabrics = [
     },
 
     {
-        // descr Учет ПС
+        // descr: Учет ПС
         path: _MAIN_PREFIX + 'fabrics/movement',
         name: 'manufacture.cell.fabrics.movement',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMovement.vue'),

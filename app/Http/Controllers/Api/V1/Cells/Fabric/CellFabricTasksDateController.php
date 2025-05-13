@@ -537,7 +537,7 @@ class CellFabricTasksDateController extends Controller
 
             $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
 
-            // attract: Проверяем, есть ли еще не завершенные СЗ
+            // attract: Проверяем, есть ли запущенные
             $runningTasks = $this->getFabricExecutingTasks(new Request(['date' => $payloadDate]));
             if (count($runningTasks) !== 0) {
 //            throw new \Exception('Сменное задание не существует');
@@ -548,7 +548,7 @@ class CellFabricTasksDateController extends Controller
             $notDoneTasks = $this->getFabricNotDoneTasks(new Request(['date' => $payloadDate]));
             if (count($notDoneTasks) !== 0) {
 //            throw new \Exception('Сменное задание не существует');
-                return EndPointStaticRequestAnswer::fail('Есть задания с непонятным статусом');
+                return EndPointStaticRequestAnswer::fail('Есть задания с непонятным до данной даты статусом');
             }
 
             // attract: Получаем СЗ по указанной дате
@@ -627,6 +627,8 @@ class CellFabricTasksDateController extends Controller
 
                 // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
                 $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
+
+                // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
 
 //            // attract: Получаем следующее СЗ
 //            $nextTasksDate = FabricTasksDate::query()
