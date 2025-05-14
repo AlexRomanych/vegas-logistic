@@ -14,7 +14,7 @@
                         v-model.trim="fabric.code_1C"
                         :value="fabric.code_1C"
                         label="Код по 1С"
-                        placeholder="Введите код по 1С"
+                        placeholder="Код по 1С"
                         width="w-[100px]"
 
                     />
@@ -236,6 +236,7 @@
                             title="К списку ПС"
                             type="primary"
                             width="w-[200px]"
+
                         />
                     </router-link>
 
@@ -261,9 +262,9 @@ import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vu
 import AppInputNumberSimple from '/resources/js/src/components/ui/inputs/AppInputNumberSimple.vue'
 import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
 import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
-import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
 import AppCheckboxLine from '/resources/js/src/components/ui/checkboxes/AppCheckboxLine.vue'
 import AppInputTextAreaSimple from '/resources/js/src/components/ui/inputs/AppInputTextAreaSimple.vue'
+import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
 // import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
 // import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
 // import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'

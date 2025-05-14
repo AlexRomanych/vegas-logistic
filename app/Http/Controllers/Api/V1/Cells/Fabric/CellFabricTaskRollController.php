@@ -9,6 +9,7 @@ use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 
 //use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use Illuminate\Http\Request;
 use \Exception;
@@ -203,21 +204,32 @@ class CellFabricTaskRollController extends Controller
                 return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Статус не соответствует действительности']));
             }
 
+            $delta = $roll->textile_roll_length / $roll->translate_rate; // +/- количество к буферу
             if ($status === FABRIC_ROLL_MOVED_CODE) {
                 $result = $roll->update([
                     'roll_status' => FABRIC_ROLL_MOVED_CODE,
                     'move_to_cut_by' => Auth::id(),
                     'move_to_cut_at' => now(),
                 ]);
+
             } else {
                 $result = $roll->update([
                     'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
                     'move_to_cut_by' => 0,
                     'move_to_cut_at' => null,
                 ]);
+                $delta = -$delta;
             }
 
-            if ($result) throw new Exception('Не удалось обновить статус');
+            if (!$result) throw new Exception('Не удалось обновить статус');
+
+            // attract: Изменяем количество в буфере ткани в зависимости от статуса
+            $fabric = Fabric::query()->find($roll->fabric_id);
+
+            if (!$fabric) throw new Exception('Не удалось найти ткань');
+
+            $fabric->buffer_amount += $delta;
+            $fabric->save();
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
