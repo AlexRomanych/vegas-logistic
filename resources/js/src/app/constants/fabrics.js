@@ -142,6 +142,14 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TYPE: 'orange',
     },
 
+    // descr: Рулон перемещенный на участок закроя
+    MOVED: {
+        WORD: 'moved',
+        CODE: 6,
+        TITLE: 'Перемещенный',
+        TYPE: 'dark',
+    },
+
 })
 
 // descr: Массив (псевдомассив - объект) статусов движения рулона

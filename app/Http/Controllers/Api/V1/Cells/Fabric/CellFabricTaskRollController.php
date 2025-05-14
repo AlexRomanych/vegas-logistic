@@ -4,17 +4,78 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
-use App\Models\Manufacture\Cells\Fabric\Fabric;
+
+//use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use Illuminate\Http\Request;
 use \Exception;
 use Illuminate\Support\Facades\Auth;
+
 //use Carbon\Carbon;
 //use Illuminate\Support\Facades\DB;
 
 class CellFabricTaskRollController extends Controller
 {
+
+    /**
+     * Descr: Возвращает рулоны за период. Если не указан - возвращает все рулоны
+     * @param Request $request
+     * @return FabricTaskRollCollection|string
+     */
+    public function taskRolls(Request $request)
+    {
+        try {
+
+            // Если без параметров, возвращаем все заказы
+            if (!$request->has('start') || !$request->has('end')) {
+                return new FabricTaskRollCollection(FabricTaskRoll::all());
+            }
+
+            $validData = $request->validate([
+                'start' => 'required|date|beforeOrEqual:end',
+                'end' => 'required|date|afterOrEqual:start',
+            ]);
+
+            $rollsQuery = FabricTaskRoll::query()
+                ->whereBetween('created_at', [$validData['start'], $validData['end']])
+                ->orderBy('id')
+                ->get();
+
+            return new FabricTaskRollCollection($rollsQuery);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * Descr: Возвращает список выполненных рулонов
+     * @param Request $request
+     * @return FabricTaskRollMovingCollection
+     */
+    public function getDoneRolls(Request $request)
+    {
+        $rollsQuery = FabricTaskRoll::query()
+            ->where('roll_status', FABRIC_ROLL_DONE_CODE)
+            ->with(['fabric', 'finishBy', 'moveToCutBy', 'receiptToCutBy', 'user'])
+//            ->with(['fabric', 'finishBy', 'registration1CBy', 'moveToCutBy', 'receiptToCutBy', 'user'])     // warning:
+            ->orderBy('id')
+            ->get();
+
+        return new FabricTaskRollMovingCollection($rollsQuery);
+    }
+
+
+
+
+    /**
+     * Descr: Обновляет данные по рулону.
+     * @param Request $request
+     * @return FabricTaskRollResource|string
+     */
     public function update(Request $request)
     {
         try {

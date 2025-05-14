@@ -60,3 +60,6 @@ const FABRIC_ROLL_FALSE_CODE = 4;
 
 // descr: Рулон переходящий (с одной смены на другую)
 const FABRIC_ROLL_ROLLING_CODE = 5;
+
+// descr: Рулон перемещенный на закрой
+const FABRIC_ROLL_MOVED_CODE = 6;

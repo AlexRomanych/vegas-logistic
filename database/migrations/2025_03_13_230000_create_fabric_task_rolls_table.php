@@ -77,16 +77,23 @@ return new class extends Migration {
             // attract: Предыдущий Статус стегания рулона (на будущее, для отслеживания динамики выполнения)
             $table->unsignedTinyInteger('roll_status_previous')->nullable(false)->default(0)->comment('Статус задания');
 
-            // attract: Постановка рулона на учет в 1С
+            // attract: Постановка рулона на учет в 1С и ответственный за постановку
             $table->timestamp('registration_1C_at')
-                ->nullable()
-                ->comment('Дата постановки на учет в 1С');
+                ->nullable()->comment('Дата постановки на учет в 1С');
+            $table->ForeignId('registration_1C_by')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Ответственный за постановку рулона на учет в 1С')
+                ->constrained('workers', 'id')
+                ->nullOnDelete();
 
             // attract: Время перемещения рулона на закрой и ответственный за перемещение на закрой
             $table->timestamp('move_to_cut_at')
                 ->nullable(true)->comment('Дата и время перемещения на закрой');     // маяк того, что рулон перемещен на стежку, а это минус в буфере
             $table->ForeignId('move_to_cut_by')
-                ->nullable(false)->default(0)->comment('Ответственный за перемещение рулона на закрой')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Ответственный за перемещение рулона на закрой')
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
 
@@ -94,7 +101,9 @@ return new class extends Migration {
             $table->timestamp('receipt_to_cut_at')
                 ->nullable(true)->comment('Дата и время перемещения на закрой');     // маяк того, что рулон перемещен на стежку, а это минус в буфере
             $table->ForeignId('receipt_to_cut_by')
-                ->nullable(false)->default(0)->comment('Ответственный за прием рулона на закрое')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Ответственный за прием рулона на закрое')
                 ->constrained('workers', 'id')
                 ->nullOnDelete();
 
@@ -150,7 +159,6 @@ return new class extends Migration {
             $table->string('note')->nullable()->comment('Примечание');
 
             $table->timestamps();
-
 
         });
     }

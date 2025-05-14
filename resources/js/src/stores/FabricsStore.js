@@ -40,16 +40,16 @@ const URL_FABRIC_TASKS_CONTEXT_EXPENSE_CREATE =
 const URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE =
     'fabrics/tasks/context/not-done/'                                   // URL для получения СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
 
-    // /context/expense/create/
-
-
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
-const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE = 'fabrics/tasks/execute/roll/update/' // URL для обновления выполняемого рулона (FabricTaskContext)
+const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE =
+    'fabrics/tasks/execute/roll/update/'                                // URL для обновления выполняемого рулона (FabricTaskContext)
 
 const URL_FABRIC_TASKS_EXECUTING_TASKS = 'fabrics/tasks/executing/'     // URL для получения списка выполняемых СЗ
 const URL_FABRIC_TASKS_NOT_DONE_TASKS = 'fabrics/tasks/not-done/'       // URL для получения списка невыполненных СЗ'
 const URL_FABRIC_TASKS_CLOSE = 'fabrics/tasks/close/'                   // URL для закрытия СЗ
+
+const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
 
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
@@ -337,16 +337,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
-    // const createFabricTask = async (task) => {
-    //     const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
-    //     console.log('store', result)
-    //     return result
-    //     debugger
-    // }
-
-
-
-
     // attract: Получаем с API номер смены по дате
     const getFabricTeamNumberByDate = async (date = null) => {
         const result = await jwtGet(URL_FABRIC_TEAM_NUMBER, {date})
@@ -420,6 +410,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data
     }
 
+    // Attract: Получаем с API список всех выполненных рулонов
+    const getDoneRolls = async () => {
+        const result = await jwtGet(URL_FABRIC_TASKS_ROLLS_GET_DONE)
+        console.log('store: getDoneRolls: ', result)
+        return result.data
+    }
+
+
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -459,6 +458,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         closeFabricOrder, setFabricOrderActive,
         getFabricTaskContextNotDone,
         createContextExpense,
+        getDoneRolls,
     }
 
 })
