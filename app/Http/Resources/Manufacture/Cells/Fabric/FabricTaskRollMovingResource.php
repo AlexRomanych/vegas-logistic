@@ -25,38 +25,65 @@ class FabricTaskRollMovingResource extends JsonResource
 
             'start_at' => $this->start_at, // ? Carbon::parse($this->start_at)->format('d.m.Y H:i:s') : null,
 
+            'finish_at' => $this->finish_at,
             'finish_by' => [
                 'id' => $this->finishBy->id,
                 'name' => $this->finishBy->name,
                 'surname' => $this->finishBy->surname,
                 'patronymic' => $this->finishBy->patronymic,
             ],
-            'finish_at' => $this->finish_at,
 
+            'move_to_cut_at' => $this->move_to_cut_at,
             'move_to_cut_by' => [
                 'id' => $this->moveToCutBy->id,
                 'name' => $this->moveToCutBy->name,
-                'surname' => $this->moveToCutBy->surname,
-                'patronymic' => $this->moveToCutBy->patronymic,
+                'surname' => '',
+                'patronymic' => '',
+//                'surname' => $this->moveToCutBy->surname,
+//                'patronymic' => $this->moveToCutBy->patronymic,
             ],
-            'move_to_cut_at' => $this->move_to_cut_at,
+//            'move_to_cut_by' => [
+//                'id' => $this->moveToCutBy->id,
+//                'name' => $this->moveToCutBy->name,
+//                'surname' => $this->moveToCutBy->surname,
+//                'patronymic' => $this->moveToCutBy->patronymic,
+//            ],
 
+            'receipt_to_cut_at' => $this->receipt_to_cut_at,
             'receipt_to_cut_by' => [
                 'id' => $this->receiptToCutBy->id,
                 'name' => $this->receiptToCutBy->name,
-                'surname' => $this->receiptToCutBy->surname,
-                'patronymic' => $this->receiptToCutBy->patronymic,
+                'surname' => '',
+                'patronymic' => '',
+//                'surname' => $this->receiptToCutBy->surname,
+//                'patronymic' => $this->receiptToCutBy->patronymic,
             ],
-            'receipt_to_cut_at' => $this->receipt_to_cut_at,
+//            'receipt_to_cut_by' => [
+//                'id' => $this->receiptToCutBy->id,
+//                'name' => $this->receiptToCutBy->name,
+//                'surname' => $this->receiptToCutBy->surname,
+//                'patronymic' => $this->receiptToCutBy->patronymic,
+//            ],
 
 
+            'registration_1C_at' => $this->registration_1C_at,
+            'registration_1C_by' => [
+                'id' => $this->registration1CBy->id,
+                'name' => $this->registration1CBy->name,
+                'surname' => '',
+                'patronymic' => '',
+//                'surname' => $this->registration1CBy->surname,
+//                'patronymic' => $this->registration1CBy->patronymic,
+            ],
 //            'registration_1C_by' => [
 //                'id' => $this->registration1CBy->id,
 //                'name' => $this->registration1CBy->name,
 //                'surname' => $this->registration1CBy->surname,
 //                'patronymic' => $this->registration1CBy->patronymic,
 //            ],
-            'registration_1C_at' => $this->registration_1C_at,
+
+
+
 
             'duration' => $this->duration,
             'descr' => $this->description,

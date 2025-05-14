@@ -39,24 +39,24 @@ class FabricTaskRoll extends Model
     }
 
 
-    // Relations: Связь с работягой, ответственного за выпуск рулона
-//    public function registration1CBy(): BelongsTo
-//    {
-//        return $this->belongsTo(Worker::class, 'registration_1C_by', 'id');
-//    }
+    // Relations: Связь с работягой, ответственного за постановку рулона в 1С
+    public function registration1CBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'registration_1C_by', 'id');
+    }
 
 
     // Relations: Связь с работягой, ответственного за перемещение рулона на закрой
     public function moveToCutBy(): BelongsTo
     {
-        return $this->belongsTo(Worker::class, 'move_to_cut_by', 'id');
+        return $this->belongsTo(User::class, 'move_to_cut_by', 'id');
     }
 
 
     // Relations: Связь с работягой, ответственного за принятие рулона на закрой
     public function receiptToCutBy(): BelongsTo
     {
-        return $this->belongsTo(Worker::class, 'receipt_to_cut_by', 'id');
+        return $this->belongsTo(User::class, 'receipt_to_cut_by', 'id');
     }
 
 

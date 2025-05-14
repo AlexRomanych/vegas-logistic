@@ -52,23 +52,28 @@ class CellFabricTaskRollController extends Controller
     }
 
     /**
-     * Descr: Возвращает список выполненных рулонов
+     * Descr: Возвращает список не принятых на закрой рулонов (DONE или REGISTERED_1C или MOVED)
      * @param Request $request
      * @return FabricTaskRollMovingCollection
      */
-    public function getDoneRolls(Request $request)
+    public function getNotAcceptedToCutRolls(Request $request)
     {
         $rollsQuery = FabricTaskRoll::query()
             ->where('roll_status', FABRIC_ROLL_DONE_CODE)
-            ->with(['fabric', 'finishBy', 'moveToCutBy', 'receiptToCutBy', 'user'])
-//            ->with(['fabric', 'finishBy', 'registration1CBy', 'moveToCutBy', 'receiptToCutBy', 'user'])     // warning:
+            ->orWhere('roll_status', FABRIC_ROLL_REGISTERED_1C_CODE)
+            ->orWhere('roll_status', FABRIC_ROLL_MOVED_CODE)
+            ->with([
+                'fabric',
+                'finishBy',
+                'registration1CBy',
+                'moveToCutBy',
+                'receiptToCutBy',
+                'user'])
             ->orderBy('id')
             ->get();
 
         return new FabricTaskRollMovingCollection($rollsQuery);
     }
-
-
 
 
     /**
@@ -114,6 +119,111 @@ class CellFabricTaskRollController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
+    }
+
+    /**
+     * Descr: Задает статус рулона как зарегистрированный в 1С
+     * @param Request $request
+     * @return string
+     */
+    public function setRollRegisteredStatus(Request $request)
+    {
+        try {
+            $result = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|numeric',
+                'data.status' => 'required|numeric'
+            ]);
+
+            $status = $result['data']['status'];
+            if ($status !== FABRIC_ROLL_REGISTERED_1C_CODE && $status !== FABRIC_ROLL_DONE_CODE) {
+                throw new Exception('Неизвестный статус');
+            }
+
+            $roll = FabricTaskRoll::query()->find($result['data']['id']);
+
+            if (!$roll) {
+                return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Рулон не найден']));
+            }
+
+            if ($roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE && $roll->roll_status !== FABRIC_ROLL_DONE_CODE) {
+                return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Статус не соответствует действительности']));
+            }
+
+            if ($status === FABRIC_ROLL_REGISTERED_1C_CODE) {
+                $result = $roll->update([
+                    'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
+                    'registration_1C_by' => Auth::id(),
+                    'registration_1C_at' => now(),
+                ]);
+            } else {
+                $result = $roll->update([
+                    'roll_status' => FABRIC_ROLL_DONE_CODE,
+                    'registration_1C_by' => 0,
+                    'registration_1C_at' => null,
+                ]);
+            }
+
+            if ($result) throw new Exception('Не удалось обновить статус');
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
+    }
+
+
+    /**
+     * Descr: Задает статус рулона как перемещенный на закрой
+     * @param Request $request
+     * @return string
+     */
+    public function setRollMovedStatus(Request $request)
+    {
+        try {
+            $result = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|numeric',
+                'data.status' => 'required|numeric'
+            ]);
+
+            $status = $result['data']['status'];
+            if ($status !== FABRIC_ROLL_REGISTERED_1C_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
+                throw new Exception('Неизвестный статус');
+            }
+
+            $roll = FabricTaskRoll::query()->find($result['data']['id']);
+
+            if (!$roll) {
+                return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Рулон не найден']));
+            }
+
+            if ($roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE && $roll->roll_status !== FABRIC_ROLL_MOVED_CODE) {
+                return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Статус не соответствует действительности']));
+            }
+
+            if ($status === FABRIC_ROLL_MOVED_CODE) {
+                $result = $roll->update([
+                    'roll_status' => FABRIC_ROLL_MOVED_CODE,
+                    'move_to_cut_by' => Auth::id(),
+                    'move_to_cut_at' => now(),
+                ]);
+            } else {
+                $result = $roll->update([
+                    'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
+                    'move_to_cut_by' => 0,
+                    'move_to_cut_at' => null,
+                ]);
+            }
+
+            if ($result) throw new Exception('Не удалось обновить статус');
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
     }
 
 

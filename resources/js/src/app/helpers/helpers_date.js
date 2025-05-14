@@ -215,12 +215,15 @@ export function formatDateInFullFormat(dateTimeString) {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в нормальный формат "17.04.2025 20:58:57"
-export function formatDateAndTimeInShortFormat(dateTimeString) {
+export function formatDateAndTimeInShortFormat(dateTimeString, fullYear = true) {
+
+    if (!dateTimeString) return ''
+
     const dateObject = new Date(dateTimeString);
 
     const day = dateObject.getDate();
     const month = dateObject.getMonth();
-    const year = dateObject.getFullYear();
+    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2);
 
     const hours = dateObject.getHours();
     const minutes = dateObject.getMinutes();

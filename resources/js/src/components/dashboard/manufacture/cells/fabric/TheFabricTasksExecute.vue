@@ -277,7 +277,7 @@ const modalText = ref([])
 const calloutType = ref('danger')
 const calloutText = ref('')
 const calloutShow = ref(false)
-const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем модалку
+const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
 
 
 // attract: Меняем активный день по клику на нем

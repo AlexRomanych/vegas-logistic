@@ -256,7 +256,9 @@ Route::prefix('/fabrics/tasks')
         Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
 
         Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
-        Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getDoneRolls']);
+        Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
+        Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
+        Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
 
 
         // descr: Тут просто точки доступа для разных действий

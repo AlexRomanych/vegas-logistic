@@ -142,15 +142,33 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TYPE: 'orange',
     },
 
+    // descr: Рулон поставленный на учет в 1С
+    REGISTERED_1C: {
+        WORD: 'registered',
+        CODE: 6,
+        TITLE: 'Учет в 1С',
+        TYPE: 'orange',
+    },
+
     // descr: Рулон перемещенный на участок закроя
     MOVED: {
         WORD: 'moved',
-        CODE: 6,
+        CODE: 7,
         TITLE: 'Перемещенный',
-        TYPE: 'dark',
+        TYPE: 'primary',
     },
 
+    // descr: Рулон принятый на закрое
+    ACCEPTED: {
+        WORD: 'accepted',
+        CODE: 8,
+        TITLE: 'Перемещенный',
+        TYPE: 'success',
+    },
 })
+
+
+
 
 // descr: Массив (псевдомассив - объект) статусов движения рулона
 export const FABRIC_ROLL_STATUS_LIST = {

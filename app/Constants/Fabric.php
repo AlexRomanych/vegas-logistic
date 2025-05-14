@@ -61,5 +61,11 @@ const FABRIC_ROLL_FALSE_CODE = 4;
 // descr: Рулон переходящий (с одной смены на другую)
 const FABRIC_ROLL_ROLLING_CODE = 5;
 
+// descr: Рулон поставленный на учет в 1С
+const FABRIC_ROLL_REGISTERED_1C_CODE = 6;
+
 // descr: Рулон перемещенный на закрой
-const FABRIC_ROLL_MOVED_CODE = 6;
+const FABRIC_ROLL_MOVED_CODE = 7;
+
+// descr: Рулон принятый на закрое
+const FABRIC_ROLL_ACCEPTED_CODE = 8;

@@ -42,14 +42,19 @@ const URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE =
 
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
-const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE =
-    'fabrics/tasks/execute/roll/update/'                                // URL для обновления выполняемого рулона (FabricTaskContext)
-
 const URL_FABRIC_TASKS_EXECUTING_TASKS = 'fabrics/tasks/executing/'     // URL для получения списка выполняемых СЗ
 const URL_FABRIC_TASKS_NOT_DONE_TASKS = 'fabrics/tasks/not-done/'       // URL для получения списка невыполненных СЗ'
 const URL_FABRIC_TASKS_CLOSE = 'fabrics/tasks/close/'                   // URL для закрытия СЗ
 
+const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE =
+    'fabrics/tasks/execute/roll/update/'                                // URL для обновления выполняемого рулона (FabricTaskContext)
+const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_REGISTERED =
+    'fabrics/tasks/execute/roll/registered/'                            // URL для регистрации рулона в 1С
+const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED =
+    'fabrics/tasks/execute/roll/moved/'                                 // URL для перемещения рулона на закрой
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
+const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT  =
+    'fabrics/tasks/rolls/done/'                                         // URL для получения всех выполненных рулонов
 
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
@@ -411,9 +416,25 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
     // Attract: Получаем с API список всех выполненных рулонов
-    const getDoneRolls = async () => {
+    const getNotAcceptedToCutRolls = async () => {
         const result = await jwtGet(URL_FABRIC_TASKS_ROLLS_GET_DONE)
         console.log('store: getDoneRolls: ', result)
+        return result.data
+    }
+
+
+    // Attract: Изменить статус регистрации рулона в 1С
+    const setRollRegisteredStatus = async (id = 0, status = 0) => {
+        const result = await jwtPatch(URL_FABRIC_TASKS_EXECUTE_ROLL_SET_REGISTERED, {id, status})
+        console.log('store: set-roll-registered-status: ', result)
+        return result.data
+    }
+
+
+    // Attract: Изменить статус перемещения рулона на закрой
+    const setRollMovedStatus = async (id = 0, status = 0) => {
+        const result = await jwtPatch(URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED, {id, status})
+        console.log('store: set-roll-moved-status: ', result)
         return result.data
     }
 
@@ -458,7 +479,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         closeFabricOrder, setFabricOrderActive,
         getFabricTaskContextNotDone,
         createContextExpense,
-        getDoneRolls,
+        getNotAcceptedToCutRolls,
+        setRollRegisteredStatus, setRollMovedStatus,
     }
 
 })

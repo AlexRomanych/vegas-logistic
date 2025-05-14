@@ -52,7 +52,7 @@
 
                 <!--attract: Кнопка сохранения комментария к сменному заданию -->
                 <AppLabel
-                    v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"
+                    v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE && task.common.status !== FABRIC_TASK_STATUS.PENDING.CODE "
                     align="center"
                     class="cursor-pointer"
                     height="h-[60px]"
