@@ -160,7 +160,6 @@ class CellFabricController extends Controller
             $fabric->optimal_party = $fabricPayload['optimal_party'];
             $fabric->description = $fabricPayload['description'];
             $fabric->active = $fabricPayload['active'];
-            $fabric->fabric_machine_id = $fabricPayload['fabric_machine']['id'];
             $fabric->save();
             return OK_STATUS_WORD;
         }
@@ -181,7 +180,7 @@ class CellFabricController extends Controller
             'optimal_party' => $fabricPayload['optimal_party'],
             'description' => $fabricPayload['description'],
             'active' => $fabricPayload['active'],
-            'fabric_machine_id' => $fabricPayload['fabric_machine']['id']
+
         ]);
 
         if ($fabric) {

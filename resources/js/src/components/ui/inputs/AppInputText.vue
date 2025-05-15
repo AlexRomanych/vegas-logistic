@@ -13,11 +13,18 @@
             @input="getInputText"
 
         >
-        <div v-if="errors">
-            <div v-for="(err, index) in errors" :key="index">
-                <span :class="['input-error', textColor]">
+<!--        <div v-if="errors">-->
+<!--            <div v-for="(err, index) in errors" :key="index">-->
+<!--                <span :class="['input-error', textColor, labelTextSizeClass]">-->
+<!--                    {{ err.$message }}-->
+<!--                </span>-->
+<!--            </div>-->
+<!--        </div>-->
+
+
+        <div v-if="errors" class="mt-0.5">
+            <div v-for="(err, index) in errors" :key="index" :class="['input-error', textColor]">
                     {{ err.$message }}
-                </span>
             </div>
         </div>
 
@@ -137,7 +144,7 @@ const getInputText = (e) => emit('getInputText', e.target.value)
 }
 
 .input-error {
-    @apply text-sm ml-2 font-semibold;
+    @apply ml-2 font-semibold text-red-600 text-mc;
 }
 
 .input-label {

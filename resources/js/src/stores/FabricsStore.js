@@ -157,6 +157,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // Attract: Получаем с API ПС по id
     const getFabricById = async (id) => {
         const result = await jwtGet(URL_FABRIC + id)
+        console.log('store: getFabricById: ', result)
         return result.fabric
     }
 

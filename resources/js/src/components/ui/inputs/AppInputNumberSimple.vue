@@ -12,11 +12,17 @@
             type="number"
             @input="getInputNumber"
         >
-        <div v-if="errors">
-            <div v-for="(err, index) in errors" :key="index">
-                <span :class="['input-error', textColor]">
-                    {{ err.$message }}
-                </span>
+        <!--        <div v-if="errors">-->
+        <!--            <div v-for="(err, index) in errors" :key="index">-->
+        <!--                <span :class="['input-error', textColor]">-->
+        <!--                    {{ err.$message }}-->
+        <!--                </span>-->
+        <!--            </div>-->
+        <!--        </div>-->
+
+        <div v-if="errors" class="mt-0.5">
+            <div v-for="(err, index) in errors" :key="index" :class="['input-error', textColor, labelTextSizeClass]">
+                {{ err.$message }}
             </div>
         </div>
 
@@ -144,7 +150,7 @@ const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 
 // attract: Определяем модель
 // const inputNumber = ref(props.value)
-const inputNumber = defineModel( 'inputNumber', {
+const inputNumber = defineModel('inputNumber', {
     // type: Number,
     default: 0,
 })
@@ -176,7 +182,7 @@ watch(() => props.bold, (newBold) => semibold.value = newBold ? 'font-semibold' 
 }
 
 .input-error {
-    @apply text-sm ml-2 font-semibold;
+    @apply text-mc ml-2 font-semibold text-red-500;
 }
 
 .input-label {
