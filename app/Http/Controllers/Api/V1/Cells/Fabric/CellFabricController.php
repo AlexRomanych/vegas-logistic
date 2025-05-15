@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Classes\FabricInstance;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
@@ -143,50 +144,101 @@ class CellFabricController extends Controller
         }
     }
 
+
     /**
-     * Attract Обновляем ПС
+     * Descr: Обновляем ПС
      * @param Request $request
      * @return string
      */
     public function update(Request $request)
     {
-        // todo Сделать проверку на валидность данных изменяемого ПС
-        $fabricPayload = $request->input('data');           // получаем данные из запроса
-        $fabric = Fabric::query()->find($fabricPayload['id']);   // ищем сотрудника по id в базе
+        try {
 
-        if ($fabric) {
+            // todo Сделать проверку на валидность данных изменяемого ПС
+            $fabricPayload = $request->input('data');           // получаем данные из запроса
+
+            $fabricInstance = new FabricInstance($fabricPayload['name']);
+            $picName = $fabricInstance->getPicture();
+            $picture = FabricService::getFabricPicByName($picName);
+
+            if (!$picture) {
+                throw new Exception('Рисунок стежки не найден!');
+            }
+
+            $fabric = Fabric::query()->find($fabricPayload['id']);
+
+            if (!$fabric) {
+                throw new Exception('ПС не найдено!');
+            }
+
+            $fabric->code_1C = $fabricPayload['code_1C'];
             $fabric->name = $fabricPayload['name'];
-            $fabric->buffer_amount = $fabricPayload['buffer'];
-            $fabric->optimal_party = $fabricPayload['optimal_party'];
-            $fabric->description = $fabricPayload['description'];
+            $fabric->buffer_amount = $fabricPayload['buffer']['amount'];
+            $fabric->average_roll_length = $fabricPayload['buffer']['average_length'];
+            $fabric->buffer_min_rolls = $fabricPayload['buffer']['min_rolls'];
+            $fabric->buffer_max_rolls = $fabricPayload['buffer']['max_rolls'];
+            $fabric->optimal_party = $fabricPayload['buffer']['optimal_party'];
+            $fabric->translate_rate = $fabricPayload['buffer']['rate'];
+            $fabric->productivity = $fabricPayload['buffer']['productivity'];
+            $fabric->description = $fabricPayload['text']['description'];
             $fabric->active = $fabricPayload['active'];
+            $fabric->fabric_picture_id = $picture->id;
             $fabric->save();
-            return OK_STATUS_WORD;
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
-        return FAIL_STATUS_WORD;
+
     }
 
+
     /**
-     * Attract Создаем ПС
+     * Descr: Создание ПС
+     * @param Request $request
+     * @return string
      */
     public function create(Request $request)
     {
-        // todo Сделать проверку на валидность данных создаваемого ПС
-        $fabricPayload = $request->input('data');           // получаем данные из запроса
-        $fabric = Fabric::query()->create([
-            'name' => $fabricPayload['name'],
-            'code_1C' => $fabricPayload['code_1C'],
-            'buffer_amount' => $fabricPayload['buffer'],
-            'optimal_party' => $fabricPayload['optimal_party'],
-            'description' => $fabricPayload['description'],
-            'active' => $fabricPayload['active'],
+        try {
 
-        ]);
+            // todo Сделать проверку на валидность данных создаваемого ПС
+            $fabricPayload = $request->input('data');           // получаем данные из запроса
 
-        if ($fabric) {
-            return OK_STATUS_WORD;
+            $fabricInstance = new FabricInstance($fabricPayload['name']);
+            $picName = $fabricInstance->getPicture();
+            $picture = FabricService::getFabricPicByName($picName);
+
+            if (!$picture) {
+                throw new Exception('Рисунок стежки не найден!');
+            }
+
+            $fabric = Fabric::query()->create([
+
+                'code_1C' => $fabricPayload['code_1C'],
+                'name' => $fabricPayload['name'],
+                'buffer_amount' => $fabricPayload['buffer']['amount'],
+                'average_roll_length' => $fabricPayload['buffer']['average_length'],
+                'buffer_min_rolls' => $fabricPayload['buffer']['min_rolls'],
+                'buffer_max_rolls' => $fabricPayload['buffer']['max_rolls'],
+                'optimal_party' => $fabricPayload['buffer']['optimal_party'],
+                'translate_rate' => $fabricPayload['buffer']['rate'],
+                'productivity' => $fabricPayload['buffer']['productivity'],
+                'description' => $fabricPayload['text']['description'],
+                'active' => $fabricPayload['active'],
+                'fabric_picture_id' => $picture->id,
+
+            ]);
+
+            if (!$fabric) {
+                throw new Exception('Ошибка создания ПС!');
+            }
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
-        return FAIL_STATUS_WORD;
+
     }
 
 

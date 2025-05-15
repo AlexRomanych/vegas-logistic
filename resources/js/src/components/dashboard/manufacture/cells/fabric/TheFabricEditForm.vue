@@ -249,7 +249,7 @@
 </template>
 
 <script setup>
-import {ref, reactive, watch, watchEffect} from 'vue'
+import {ref, reactive, watch, watchEffect, onMounted} from 'vue'
 
 import {useRoute, useRouter} from 'vue-router'
 
@@ -379,6 +379,7 @@ const rules = {
         maxValue: helpers.withMessage(`Макс. значение - ${MAX_TEXTILE_AVERAGE_LENGTH} м.п.`, maxValue(MAX_TEXTILE_AVERAGE_LENGTH)),
     },
     bufferAmount: {
+        required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minValue: helpers.withMessage(`Мин. значение - ${MIN_BUFFER_AMOUNT} м.п.`, minValue(MIN_BUFFER_AMOUNT)),
         // required: helpers.withMessage(REQUIRED_MESSAGE, required),
         // maxValue: helpers.withMessage(`Макс. значение - ${MAX_BUFFER_AMOUNT} м.п.`, maxValue(MAX_BUFFER_AMOUNT)),
@@ -477,10 +478,17 @@ const formSubmit = async () => {
     await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку сотрудников
 }
 
-
+// attract: отслеживаем длину в рулонах
 watchEffect(() => {
     bufferRolls.value = getBufferRolls()
 })
+
+// attract: Запускаем сразу валидацию формы
+onMounted(() => {
+    v$.value.$touch()
+})
+
+
 
 </script>
 

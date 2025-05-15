@@ -165,17 +165,17 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // Attract: Обновление ПС
     const updateFabric = async (fabric) => {
         const result = await jwtUpdate(URL_FABRIC, fabric)
+        console.log('store: updateFabric: ', result)
         fabricsCashe = []
         return result
-        // console.log(result)
     }
 
     // Attract: Создание ПС
     const createFabric = async (fabric) => {
         const result = await jwtPost(URL_FABRIC, {data: fabric})
+        console.log('store: createFabric: ', result)
         fabricsCashe = []
         return result
-        // console.log(result)
     }
 
     // Attract: Загрузка ПС на сервер
