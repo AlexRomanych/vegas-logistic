@@ -19,6 +19,7 @@ const fabrics = [
         }
     },
 
+
     {
         // descr: Движение СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/tasks/movement',
