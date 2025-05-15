@@ -16,9 +16,9 @@ return new class extends Migration
 
             $table->id()->from('1');
 
-            $table->string('name')->comment('имя');;
-            $table->string('surname')->comment('фамилия');
-            $table->string('patronymic')->comment('отчество');
+            $table->string('name')->nullable()->comment('имя');;
+            $table->string('surname')->nullable()->comment('фамилия');
+            $table->string('patronymic')->nullable()->comment('отчество');
 
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
