@@ -45,7 +45,7 @@ const fabrics = [
         name: 'manufacture.cell.fabric.tasks.calendar',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksCalendar.vue'),
         meta: {
-            title: 'Управление ПС'
+            title: 'Календарь ПС'
         }
     },
 

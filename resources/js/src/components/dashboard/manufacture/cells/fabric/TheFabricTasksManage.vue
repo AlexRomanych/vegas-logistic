@@ -14,7 +14,7 @@
                     <!-- attract: Дата + день недели -->
                     <AppLabelMultiLine
                         :text="[formatDate(task.date), getDayOfWeek(task.date, false)]"
-                        :type="dayOfWeekStyle(task.date)"
+                        :type="getDayOfWeekStyle(task.date)"
                         align="center"
                         class="cursor-pointer"
                         width="w-[150px]"
@@ -211,8 +211,11 @@ import {
 import {
     getDayOfWeek,
     formatDate,
-    isToday,
-    isWorkingDay, compareDatesLogic, getISOFromLocaleDate,
+    compareDatesLogic,
+    getDayOfWeekStyle,
+    // isToday,
+    // isWorkingDay,
+    // getISOFromLocaleDate,
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
 import TheTaskCommonInfo
@@ -315,12 +318,12 @@ resetTabs()                                 // сбрасываем все та�
 tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 
 
-// attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
-const dayOfWeekStyle = (date) => {
-    if (isToday(date)) return 'success'
-    if (isWorkingDay(date)) return 'dark'
-    return 'danger'
-}
+// // attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
+// const dayOfWeekStyle = (date) => {
+//     if (isToday(date)) return 'success'
+//     if (isWorkingDay(date)) return 'dark'
+//     return 'danger'
+// }
 
 // attract: Условие на отображение сервисных кнопок под статусами
 const serviceBtnShowCondition = (status) => {

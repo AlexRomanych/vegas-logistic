@@ -451,7 +451,7 @@ const formSubmit = async () => {
     const isFormCorrect = await v$.value.$validate()    // валидируем всю форму
     if (!isFormCorrect) return                          // это показатель ошибки
 
-    // attract: Формируем массив для реактивности
+    // attract: Формируем массив для сохранения
     fabric.code_1C = code1C.value
     fabric.name = name.value
     fabric.buffer.average_length = averageLength.value
@@ -487,8 +487,6 @@ watchEffect(() => {
 onMounted(() => {
     v$.value.$touch()
 })
-
-
 
 </script>
 

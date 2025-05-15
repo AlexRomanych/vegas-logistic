@@ -13,7 +13,7 @@ import {
     addDays,
     subtractDays,
     getDateDiffInDays,
-    getISOFromLocaleDate
+    getISOFromLocaleDate, formatTimeWithLeadingZeros
 } from '/resources/js/src/app/helpers/helpers_date.js'
 
 // descr Получить тип стиля по коду статуса СЗ на стежке
@@ -303,7 +303,7 @@ export function getFunctionalByFabricTaskStatus(fabricTask) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// attract: Возвращает тип расскраски компонента по статусу
+// attract: Возвращает тип расскраски компонента по статусу рулона
 export function getTypeByRollStatus(rollStatus) {
 
     if (rollStatus === FABRIC_ROLL_STATUS.CREATED.CODE) return FABRIC_ROLL_STATUS.CREATED.TYPE
@@ -319,6 +319,19 @@ export function getTypeByRollStatus(rollStatus) {
     return 'dark'
 }
 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Возвращает тип расскраски компонента по статусу СЗ
+export function getTypeByTaskStatus(taskStatus) {
+
+    if (taskStatus === FABRIC_TASK_STATUS.UNKNOWN.CODE) return FABRIC_TASK_STATUS.UNKNOWN.TYPE
+    if (taskStatus === FABRIC_TASK_STATUS.CREATED.CODE) return FABRIC_TASK_STATUS.CREATED.TYPE
+    if (taskStatus === FABRIC_TASK_STATUS.PENDING.CODE) return FABRIC_TASK_STATUS.PENDING.TYPE
+    if (taskStatus === FABRIC_TASK_STATUS.RUNNING.CODE) return FABRIC_TASK_STATUS.RUNNING.TYPE
+    if (taskStatus === FABRIC_TASK_STATUS.DONE.CODE) return FABRIC_TASK_STATUS.DONE.TYPE
+
+    return 'dark'
+}
 
 // attract: Получить статус предупреждения по количеству
 // attract: Если передано 2 числа, то % = amount / maxAmount
@@ -339,3 +352,75 @@ export function getAmountWarningStatus(amount = 0, maxAmount) {
     return warningStatus
 }
 
+
+// attract: Получаем все машины для отображения и формируем объект для отображения
+export function getMachines() {
+
+    const tempMachines = []
+
+    Object.keys(FABRIC_MACHINES).forEach((machine) => {
+
+        if (FABRIC_MACHINES[machine].ID !== 0) {
+
+            // console.log(FABRIC_MACHINES[machine].NAME)
+            tempMachines.push({
+                id: FABRIC_MACHINES[machine].ID,
+                name: FABRIC_MACHINES[machine].NAME,
+                title: FABRIC_MACHINES[machine].TITLE,
+                index: FABRIC_MACHINES[machine].INDEX,
+                show: true,
+            })
+        }
+    })
+
+    // console.log(tempMachines)
+    return tempMachines
+}
+
+
+// attract: Получаем трудозатраты для отображения для рулона ОПП (TaskContext)
+export function getProductivity(roll) {
+
+    if (isEmptyObj(roll)) return ''
+
+    const fabricLength = roll.length_amount / roll.rate
+    // const fabricLength = roll.average_fabric_length * roll.rolls_amount
+
+    const hours = fabricLength / roll.productivity
+    return formatTimeWithLeadingZeros(hours, 'hour')
+}
+
+
+// attract: Получаем трудозатраты для отображения для группы рулонов ОПП (TaskContext)
+export function getProductivityTotal(rolls) {
+
+    if (rolls.lenght === 0) return ''
+
+    const hours = rolls.reduce((acc, roll) => acc + (roll.length_amount / roll.rate / roll.productivity), 0)
+    return formatTimeWithLeadingZeros(hours, 'hour')
+}
+
+
+// attract: Получаем трудозатраты для отображения для дня СЗ (FabricTasksDate)
+export function getProductivityTotalTask(task) {
+
+    if (isEmptyObj(task)) return ''
+
+    let hours = 0
+    Object.keys(task.machines).forEach(machine => {
+        hours += task.machines[machine].rolls.reduce((acc, roll) => acc + (roll.length_amount / roll.rate / roll.productivity), 0)
+    })
+
+
+
+    // const hours = rolls.reduce((acc, roll) => acc + (roll.length_amount / roll.rate / roll.productivity), 0)
+    return formatTimeWithLeadingZeros(hours, 'hour')
+}
+
+
+// attract: Получаем статус СЗ по коду статуса
+export function getFabricTaskStatusByCode(taskCode = 0) {
+    const statusKey = Object.keys(FABRIC_TASK_STATUS).find((key) => FABRIC_TASK_STATUS[key].CODE === taskCode)
+    // console.log(FABRIC_TASK_STATUS[statusKey])
+    return FABRIC_TASK_STATUS[statusKey]
+}

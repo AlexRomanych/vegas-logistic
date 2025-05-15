@@ -115,8 +115,8 @@ class WorkerController extends Controller
             ['surname' => 'Петров', 'name' => 'Петр', 'patronymic' =>'Петрович'],
             ['surname' => 'Сидоров', 'name' => 'Сидор', 'patronymic' =>'Сидорович'],
             ['surname' => 'Никитюк', 'name' => 'Никита', 'patronymic' =>'Никитич'],
-            ['surname' => 'Ананьев', 'name' => 'Ананий', 'patronymic' =>'Ананич'],
-            ['surname' => 'Акакиев', 'name' => 'Акакий', 'patronymic' =>'Акакиевич'],
+            ['surname' => 'Стаханов', 'name' => 'Алексей', 'patronymic' =>'Григорьевич'],
+            ['surname' => 'Мухина', 'name' => 'Вера', 'patronymic' =>'Игнатьевна'],
         ]);
     }
 

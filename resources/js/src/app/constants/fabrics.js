@@ -58,6 +58,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         WORD: 'unknown',
         CODE: 0,
         TITLE: 'Не создано',
+        TYPE: 'danger',
     },
 
 
@@ -66,6 +67,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         WORD: 'created',
         CODE: 1,
         TITLE: 'Создано',
+        TYPE: 'dark',
     },
 
     // descr: Сменное задание отправлено на выполнение
@@ -73,6 +75,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         WORD: 'pending',
         CODE: 2,
         TITLE: 'Готово к стежке',
+        TYPE: 'primary',
     },
 
     // descr: Сменное задание взято на выполнение (находится в процессе выполнения)
@@ -80,6 +83,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         WORD: 'running',
         CODE: 3,
         TITLE: 'Выполняется',
+        TYPE: 'warning',
     },
 
     // descr: Сменное задание выполнено (закрыто)
@@ -87,6 +91,7 @@ export const FABRIC_TASK_STATUS = Object.freeze({
         WORD: 'done',
         CODE: 4,
         TITLE: 'Выполнено',
+        TYPE: 'success',
     },
 })
 

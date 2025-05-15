@@ -335,7 +335,7 @@ export function getDate(inDate = new Date()) {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает дату в формате "10ч. 59м. 59с."
-// attract type - sec, min, hour - входящие данные: секунды, минуты, часы
+// attract type - sec, min, hour - вид входящих данных: секунды, минуты, часы
 export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
 
     let tempTime = inTime
@@ -417,4 +417,12 @@ export function getISOFromLocaleDate(inDate) {
     inDate = inDate ? getDate(inDate) : new Date()
     return inDate.toLocaleDateString().split('.').reverse().join('-')
 
+}
+
+
+// attract Получаем тип раскраски в зависимости от типа дня недели (выходной или рабочий или текущий)
+export function getDayOfWeekStyle(date) {
+    if (isToday(date)) return 'success'         // текущий
+    if (isWorkingDay(date)) return 'dark'       // рабочмй
+    return 'danger'                             // выходной
 }

@@ -137,6 +137,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalSelectWorkerId = ref(0)                         // для записи id ответственного
     const globalSelectWorkerFlag = ref(false)                   // маяк селекта
 
+    // attract: Переменная-флаг, которая определяет, были ли изменения в календаре СЗ
+    const globalCalendarChangeFlag = ref(false)
     // info----------------------------------------------------------------------------------------
 
 
@@ -455,6 +457,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalExecuteRollChangeTextileLength, globalExecuteRollChangeDescriptionText,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         globalSelectWorkers, globalSelectWorkerId, globalSelectWorkerFlag,
+        globalCalendarChangeFlag,
         getFabrics,
         getFabricById,
         updateFabric,

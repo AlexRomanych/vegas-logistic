@@ -3,7 +3,7 @@
     <div class="ml-2 mt-2">
 
         <!-- attract: Шапка таблицы -->
-        <div class="sticky top-0 flex pt-1 pb-1 bg-blue-200 border-2 rounded-lg border-blue-700 p-1 mb-1 max-w-fit">
+        <div class="sticky top-0 flex p-1 mb-1 bg-blue-200 border-2 rounded-lg border-blue-700 max-w-fit">
 
             <!-- attract: № рулона  -->
             <AppLabelMultiline
@@ -152,145 +152,142 @@
 
 
         <!-- attract: Сами данные -->
-        <div class="ml-1">
+        <div class="p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-600 max-w-fit">
 
-            <div v-for="roll in doneRolls">
+            <div v-for="roll in doneRolls" class="flex">
 
-                <div class="flex">
 
-                    <!-- attract: № рулона  -->
-                    <AppLabel
-                        :text="render.rollNumber.data(roll)"
-                        :title="render.rollNumber.title"
-                        :type="render.rollNumber.type(false, roll)"
-                        :width="render.rollNumber.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: № рулона  -->
+                <AppLabel
+                    :text="render.rollNumber.data(roll)"
+                    :title="render.rollNumber.title"
+                    :type="render.rollNumber.type(false, roll)"
+                    :width="render.rollNumber.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: ПС  -->
-                    <AppLabel
-                        :text="render.fabric.data(roll)"
-                        :title="render.fabric.title"
-                        :type="render.fabric.type(false, roll)"
-                        :width="render.fabric.width"
-                        text-size="micro"
-                    />
+                <!-- attract: ПС  -->
+                <AppLabel
+                    :text="render.fabric.data(roll)"
+                    :title="render.fabric.title"
+                    :type="render.fabric.type(false, roll)"
+                    :width="render.fabric.width"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Ткань, м.п. -->
-                    <AppLabel
-                        :text="render.textileLength.data(roll)"
-                        :title="render.textileLength.title"
-                        :type="render.textileLength.type(false, roll)"
-                        :width="render.textileLength.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Ткань, м.п. -->
+                <AppLabel
+                    :text="render.textileLength.data(roll)"
+                    :title="render.textileLength.title"
+                    :type="render.textileLength.type(false, roll)"
+                    :width="render.textileLength.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: ПС, м.п. -->
-                    <AppLabel
-                        :text="render.fabricLength.data(roll)"
-                        :title="render.fabricLength.title"
-                        :type="render.fabricLength.type(false, roll)"
-                        :width="render.fabricLength.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: ПС, м.п. -->
+                <AppLabel
+                    :text="render.fabricLength.data(roll)"
+                    :title="render.fabricLength.title"
+                    :type="render.fabricLength.type(false, roll)"
+                    :width="render.fabricLength.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Дата пр-ва -->
-                    <AppLabel
-                        :text="render.finishAt.data(roll)"
-                        :title="render.finishAt.title"
-                        :type="render.finishAt.type(false, roll)"
-                        :width="render.finishAt.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Дата пр-ва -->
+                <AppLabel
+                    :text="render.finishAt.data(roll)"
+                    :title="render.finishAt.title"
+                    :type="render.finishAt.type(false, roll)"
+                    :width="render.finishAt.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Ответственный за производство -->
-                    <AppLabel
-                        :text="render.finishBy.data(roll)"
-                        :title="render.finishBy.title"
-                        :type="render.finishBy.type(false, roll)"
-                        :width="render.finishBy.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Ответственный за производство -->
+                <AppLabel
+                    :text="render.finishBy.data(roll)"
+                    :title="render.finishBy.title"
+                    :type="render.finishBy.type(false, roll)"
+                    :width="render.finishBy.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Флаг учета в 1С -->
-                    <AppLabel
-                        :text="render.registration_1C_Flag.data(roll)"
-                        :text-size="render.registration_1C_Flag.textSize(roll)"
-                        :title="render.registration_1C_Flag.title"
-                        :type="render.registration_1C_Flag.type(false, roll)"
-                        :width="render.registration_1C_Flag.width"
-                        align="center"
-                        class="cursor-pointer"
-                        @click="changeRegistrationStatus(roll)"
-                    />
+                <!-- attract: Флаг учета в 1С -->
+                <AppLabel
+                    :text="render.registration_1C_Flag.data(roll)"
+                    :text-size="render.registration_1C_Flag.textSize(roll)"
+                    :title="render.registration_1C_Flag.title"
+                    :type="render.registration_1C_Flag.type(false, roll)"
+                    :width="render.registration_1C_Flag.width"
+                    align="center"
+                    class="cursor-pointer"
+                    @click="changeRegistrationStatus(roll)"
+                />
 
-                    <!-- attract: Дата учета в 1С -->
-                    <AppLabel
-                        :text="render.registration_1C_At.data(roll)"
-                        :title="render.registration_1C_At.title"
-                        :type="render.registration_1C_At.type(false, roll)"
-                        :width="render.registration_1C_At.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Дата учета в 1С -->
+                <AppLabel
+                    :text="render.registration_1C_At.data(roll)"
+                    :title="render.registration_1C_At.title"
+                    :type="render.registration_1C_At.type(false, roll)"
+                    :width="render.registration_1C_At.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Ответственный за учет в 1С -->
-                    <AppLabel
-                        :text="render.registration_1C_By.data(roll)"
-                        :title="render.registration_1C_By.title"
-                        :type="render.registration_1C_By.type(false, roll)"
-                        :width="render.registration_1C_By.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Ответственный за учет в 1С -->
+                <AppLabel
+                    :text="render.registration_1C_By.data(roll)"
+                    :title="render.registration_1C_By.title"
+                    :type="render.registration_1C_By.type(false, roll)"
+                    :width="render.registration_1C_By.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Флаг перемещения на закрой -->
-                    <AppLabel
-                        :text="render.moveToCutFlag.data(roll)"
-                        :text-size="render.moveToCutFlag.textSize(roll)"
-                        :title="render.moveToCutFlag.title"
-                        :type="render.moveToCutFlag.type(false, roll)"
-                        :width="render.moveToCutFlag.width"
-                        align="center"
-                        class="cursor-pointer"
-                        @click="changeMovingStatus(roll)"
-                    />
+                <!-- attract: Флаг перемещения на закрой -->
+                <AppLabel
+                    :text="render.moveToCutFlag.data(roll)"
+                    :text-size="render.moveToCutFlag.textSize(roll)"
+                    :title="render.moveToCutFlag.title"
+                    :type="render.moveToCutFlag.type(false, roll)"
+                    :width="render.moveToCutFlag.width"
+                    align="center"
+                    class="cursor-pointer"
+                    @click="changeMovingStatus(roll)"
+                />
 
-                    <!-- attract: Дата перемещения на закрой -->
-                    <AppLabel
-                        :text="render.moveToCutAt.data(roll)"
-                        :title="render.moveToCutAt.title"
-                        :type="render.moveToCutAt.type(false, roll)"
-                        :width="render.moveToCutAt.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Дата перемещения на закрой -->
+                <AppLabel
+                    :text="render.moveToCutAt.data(roll)"
+                    :title="render.moveToCutAt.title"
+                    :type="render.moveToCutAt.type(false, roll)"
+                    :width="render.moveToCutAt.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Ответственный за перемещение на закрой -->
-                    <AppLabel
-                        :text="render.moveToCutBy.data(roll)"
-                        :title="render.moveToCutBy.title"
-                        :type="render.moveToCutBy.type(false, roll)"
-                        :width="render.moveToCutBy.width"
-                        align="center"
-                        text-size="micro"
-                    />
+                <!-- attract: Ответственный за перемещение на закрой -->
+                <AppLabel
+                    :text="render.moveToCutBy.data(roll)"
+                    :title="render.moveToCutBy.title"
+                    :type="render.moveToCutBy.type(false, roll)"
+                    :width="render.moveToCutBy.width"
+                    align="center"
+                    text-size="micro"
+                />
 
-                    <!-- attract: Примечание -->
-                    <AppLabel
-                        :text="render.description.data(roll)"
-                        :title="render.description.title"
-                        :type="render.description.type(false, roll)"
-                        :width="render.description.width"
-                        text-size="micro"
-                    />
-
-                </div>
+                <!-- attract: Примечание -->
+                <AppLabel
+                    :text="render.description.data(roll)"
+                    :title="render.description.title"
+                    :type="render.description.type(false, roll)"
+                    :width="render.description.width"
+                    text-size="micro"
+                />
 
             </div>
 
@@ -567,7 +564,7 @@ const changeMovingStatus = async (roll) => {
 <style scoped>
 
 .header-item {
-    @apply border-2 rounded-lg border-blue-700
+
 }
 
 </style>
