@@ -370,7 +370,7 @@ export function getDateDiffInDays(inDate1 = new Date(), inDate2 = new Date(), ab
     const date1 = getDate(inDate1)
     const date2 = getDate(inDate2)
 
-    const diffInMs = date2 - date1
+    let diffInMs = date2 - date1
 
     // console.log('diffInMs', diffInMs)
 
