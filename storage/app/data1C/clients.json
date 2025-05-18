@@ -1,0 +1,875 @@
+[
+{
+"id":1,
+"nm":"CITA SANTEHNIKA",
+"an":"",
+"sn":"CITA SANTEHNIKA",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":2,
+"nm":"Classica Nova GmbH&Co.KG",
+"an":"",
+"sn":"CLN",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":3,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Rietberg",
+"sn":"MSA_Rietberg",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":4,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Inter Handels GmbH",
+"sn":"MSA_IH",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":5,
+"nm":"Kappmeier Mobel GmbH",
+"an":"",
+"sn":"Kappmeier",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":6,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"MSA",
+"sn":"MSA",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":7,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Nieder",
+"sn":"MSA_Nieder",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":8,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Classica Nova",
+"sn":"MSA_CLN",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":9,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Kappmeier",
+"sn":"MSA_Kappmeier",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":10,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Vertrieb Schwaben",
+"sn":"MSA_VS",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":11,
+"nm":"HanSales",
+"an":"",
+"sn":"HanSales",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":12,
+"nm":"SIA Do it",
+"an":"",
+"sn":"Jysk_LV",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":13,
+"nm":"UAB \"Vegas LT\"",
+"an":"",
+"sn":"Литва",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":14,
+"nm":"Drommerom",
+"an":"",
+"sn":"Drommerom",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":15,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Concord",
+"sn":"MSA_Concord",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":16,
+"nm":"Брест-Интурист",
+"an":"",
+"sn":"Интурист",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":17,
+"nm":"Отдел разработки",
+"an":"",
+"sn":"ОР",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":18,
+"nm":"Pigu UAB",
+"an":"",
+"sn":"Pigu",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":19,
+"nm":"ООО Вегас",
+"an":"",
+"sn":"ООО Вегас",
+"rg":"east",
+"ia":1,
+"mi":100
+},
+{
+"id":20,
+"nm":"Вегас Групп (Словакия)",
+"an":"",
+"sn":"Словакия",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":21,
+"nm":"ВЕГАС ГРУПП РУС",
+"an":"Москва",
+"sn":"ВГР_Москва",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":22,
+"nm":"ВЕГАС ГРУПП РУС",
+"an":"СПб",
+"sn":"ВГР_СПб",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":23,
+"nm":"Вегас Казахстан",
+"an":"",
+"sn":"Казахстан",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":24,
+"nm":"Благотворительный фонд",
+"an":"",
+"sn":"Благ. Фонд",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":25,
+"nm":"Децимус",
+"an":"",
+"sn":"Молдова",
+"rg":"east",
+"ia":0,
+"mi":102
+},
+{
+"id":26,
+"nm":"Дивинский детский дом",
+"an":"",
+"sn":"Див. детдом",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":27,
+"nm":"ИП Головейко А.В.",
+"an":"",
+"sn":"ИП Головейко",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":28,
+"nm":"INDOOR GROUP AS",
+"an":"",
+"sn":"INDOOR",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":29,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"RaumDecor",
+"sn":"MSA_RaumDecor",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":30,
+"nm":"Йуск",
+"an":"",
+"sn":"Jysk_BY",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":31,
+"nm":"Бронь",
+"an":"",
+"sn":"Бронь",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":32,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Минск",
+"sn":"ЛММ_Минск",
+"rg":"east",
+"ia":1,
+"mi":103
+},
+{
+"id":33,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Брест",
+"sn":"ЛММ_Брест",
+"rg":"east",
+"ia":1,
+"mi":103
+},
+{
+"id":34,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Гомель",
+"sn":"ЛММ_Гомель",
+"rg":"east",
+"ia":1,
+"mi":103
+},
+{
+"id":35,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Albatros",
+"sn":"MSA_Albatros",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":36,
+"nm":"Нафтан",
+"an":"",
+"sn":"Нафтан",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":37,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"HappyHartmann",
+"sn":"MSA_HappyHartmann",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":38,
+"nm":"НиккоДом",
+"an":"",
+"sn":"Брест",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":39,
+"nm":"ООО \"Вегас Украина\"",
+"an":"",
+"sn":"Киев",
+"rg":"east",
+"ia":0,
+"mi":102
+},
+{
+"id":40,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Teppichparadies",
+"sn":"MSA_Teppichparadies",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":41,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Jakatex",
+"sn":"MSA_Jеkatex",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":42,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Duedo",
+"sn":"MSA_Duedo",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":43,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Westwing",
+"sn":"MSA_Westwing",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":44,
+"nm":"Семенов В.А.",
+"an":"",
+"sn":"ИП Семенов",
+"rg":"east",
+"ia":0,
+"mi":102
+},
+{
+"id":45,
+"nm":"Софт-Лайн",
+"an":"",
+"sn":"Софт-Лайн",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":46,
+"nm":"Таран А.В.",
+"an":"",
+"sn":"Крым",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":47,
+"nm":"ЦОР по водным видам спорта",
+"an":"",
+"sn":"ЦОР",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":48,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Bibel",
+"sn":"MSA_Bibel",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":49,
+"nm":"МЧС",
+"an":"",
+"sn":"МЧС",
+"rg":"east",
+"ia":0,
+"mi":103
+},
+{
+"id":50,
+"nm":"Свято-Рождественский -Богородицкий женский монастырь",
+"an":"",
+"sn":"Монастырь",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":51,
+"nm":"Наурызбаев Р.Ш.",
+"an":"",
+"sn":"ИП Наурызбаев",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":52,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"OTTO",
+"sn":"MSA_OTTO",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":53,
+"nm":"Шляхно",
+"an":"",
+"sn":"Шляхно",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":54,
+"nm":"ИП Серба",
+"an":"",
+"sn":"ИП Серба",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":55,
+"nm":"Renesans",
+"an":"",
+"sn":"Renesans",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":56,
+"nm":"Olivia Sport and Sport IKE",
+"an":"",
+"sn":"Olivia Sp. & Sp. IKE",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":57,
+"nm":"Материальная помощь",
+"an":"",
+"sn":"Мат. помощь",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":58,
+"nm":"Студенческая деревня",
+"an":"90х200х30 Sample 6",
+"sn":"Тендер СД",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":59,
+"nm":"Студенческая деревня",
+"an":"40х90х30 Sample 6",
+"sn":"Тендер СД",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":60,
+"nm":"Тендер",
+"an":"",
+"sn":"Тендер",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":61,
+"nm":"GBB projekt",
+"an":"",
+"sn":"GBB projekt",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":62,
+"nm":"РУП \"Одиннадцать\"",
+"an":"",
+"sn":"РУП 11",
+"rg":"east",
+"ia":0,
+"mi":103
+},
+{
+"id":63,
+"nm":"RAY",
+"an":"",
+"sn":"RAY",
+"rg":"east",
+"ia":0,
+"mi":103
+},
+{
+"id":64,
+"nm":"HOFF",
+"an":"",
+"sn":"HOFF",
+"rg":"east",
+"ia":0,
+"mi":102
+},
+{
+"id":65,
+"nm":"RB Architects",
+"an":"",
+"sn":"RB Arc",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":66,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Ahaus",
+"sn":"MSA_Ahaus",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":67,
+"nm":"ВЕГАС ГРУПП РУС",
+"an":"Тогас",
+"sn":"ВГР_Тогас",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":68,
+"nm":"ГрГУ им Я. Купалы",
+"an":"",
+"sn":"ГрГУ им Я. Купалы",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":69,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Акция",
+"sn":"ЛММ - Акция",
+"rg":"east",
+"ia":0,
+"mi":103
+},
+{
+"id":70,
+"nm":"ИП Ефремов И.М.",
+"an":"",
+"sn":"EddBess",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":71,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Гродно",
+"sn":"ЛММ_Гродно",
+"rg":"east",
+"ia":0,
+"mi":103
+},
+{
+"id":72,
+"nm":"Lelekka",
+"an":"",
+"sn":"Lelekka",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":73,
+"nm":"УЗ \"Ивацевичская ЦРБ\"",
+"an":"",
+"sn":"УЗ Ивац. ЦРБ",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":74,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Dreameo",
+"sn":"MSA_Dreameo",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":75,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Kunden",
+"sn":"MSA_Kunden",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":76,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Intenza",
+"sn":"MSA Intenza",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":77,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Betten Uhlmann",
+"sn":"MSA_Betten Uhlmann",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":78,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"FMP",
+"sn":"MSA_FMP",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":79,
+"nm":"Новое поколение",
+"an":"",
+"sn":"Новое поколение",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":80,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Mollen",
+"sn":"MSA_Mollen",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":81,
+"nm":"Andreas Uhlig GmbH & Co. KG",
+"an":"",
+"sn":"Uhlig",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":82,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"MFO",
+"sn":"MSA_MFO",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":83,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"B&S",
+"sn":"MSA_B&S",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":84,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"XXXLutz",
+"sn":"MSA_XXXLutz",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":85,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Betten Jung",
+"sn":"MSA_Betten Jung",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":86,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Sandmann",
+"sn":"MSA_Sandmann",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":87,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Vcure",
+"sn":"MSA_Vcure",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":88,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Bader",
+"sn":"MSA_Bader",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":89,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Geodis",
+"sn":"MSA_Geodis",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":90,
+"nm":"ВЕГАС ГРУПП РУС",
+"an":"WB",
+"sn":"ВГР_WB",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":91,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Average",
+"sn":"MSA_Average",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":92,
+"nm":"Обшивка",
+"an":"",
+"sn":"Обшивка",
+"rg":"east",
+"ia":0,
+"mi":100
+},
+{
+"id":93,
+"nm":"Eastblock d.o.o",
+"an":"",
+"sn":"Eastblock",
+"rg":"west",
+"ia":0,
+"mi":102
+},
+{
+"id":94,
+"nm":"ЛидерМатрасМаркет",
+"an":"ЛММ_Триовист",
+"sn":"ЛММ_Триовист",
+"rg":"east",
+"ia":1,
+"mi":103
+},
+{
+"id":95,
+"nm":"ВЕГАС ГРУПП РУС",
+"an":"Озон",
+"sn":"ВГР_Озон",
+"rg":"east",
+"ia":1,
+"mi":102
+},
+{
+"id":96,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"FAFA",
+"sn":"MSA_FAFA",
+"rg":"west",
+"ia":0,
+"mi":101
+},
+{
+"id":97,
+"nm":"Moderne SchlafArt GmbH i.G.",
+"an":"Blanar",
+"sn":"MSA_Blanar",
+"rg":"west",
+"ia":0,
+"mi":101
+}
+]
