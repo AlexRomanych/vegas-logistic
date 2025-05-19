@@ -8,7 +8,7 @@
 
         <div class="sticky top-0 flex pt-1 pb-1 bg-blue-200 border-2 rounded-lg border-blue-700 p-1 mb-1 max-w-fit">
 
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="['Дата', '']"
                 :width="dateColWidth"
                 align="center"
@@ -16,7 +16,7 @@
                 type="primary"
             />
 
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="['Статус', '']"
                 :width="statusColWidth"
                 align="center"
@@ -25,7 +25,7 @@
             />
 
             <router-link :to="{name: 'manufacture.cell.fabrics.task.create'}">
-                <AppLabelMultiline
+                <AppLabelMultiLine
                     :text="['Создать', '']"
                     :width="serviceColWidth"
                     align="center"
@@ -102,7 +102,9 @@ import {
 } from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
+// import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
+import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+
 import CellDatesSelect from '/resources/js/src/components/dashboard/manufacture/cells/components/CellDatesSelect.vue'
 // import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
 // import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
