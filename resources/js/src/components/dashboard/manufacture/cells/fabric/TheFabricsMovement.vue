@@ -6,7 +6,7 @@
         <div class="sticky top-0 flex p-1 mb-1 bg-blue-200 border-2 rounded-lg border-blue-700 max-w-fit">
 
             <!-- attract: № рулона  -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.rollNumber.header"
                 :title="render.rollNumber.title"
                 :type="render.rollNumber.type(true)"
@@ -17,7 +17,7 @@
             />
 
             <!-- attract: ПС  -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.fabric.header"
                 :title="render.fabric.title"
                 :type="render.fabric.type(true)"
@@ -28,7 +28,7 @@
             />
 
             <!-- attract: Ткань, м.п. -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.textileLength.header"
                 :title="render.textileLength.title"
                 :type="render.textileLength.type(true)"
@@ -39,7 +39,7 @@
             />
 
             <!-- attract: ПС, м.п. -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.fabricLength.header"
                 :title="render.fabricLength.title"
                 :type="render.fabricLength.type(true)"
@@ -50,7 +50,7 @@
             />
 
             <!-- attract: Дата пр-ва -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.finishAt.header"
                 :title="render.finishAt.title"
                 :type="render.finishAt.type(true)"
@@ -61,7 +61,7 @@
             />
 
             <!-- attract: Ответственный за производство -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.finishBy.header"
                 :title="render.finishBy.title"
                 :type="render.finishBy.type(true)"
@@ -72,7 +72,7 @@
             />
 
             <!-- attract: Флаг учета в 1С -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.registration_1C_Flag.header"
                 :title="render.registration_1C_Flag.title"
                 :type="render.registration_1C_Flag.type(true)"
@@ -83,7 +83,7 @@
             />
 
             <!-- attract: Дата учета в 1С -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.registration_1C_At.header"
                 :title="render.registration_1C_At.title"
                 :type="render.registration_1C_At.type(true)"
@@ -94,7 +94,7 @@
             />
 
             <!-- attract: Ответственный за учет в 1С -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.registration_1C_By.header"
                 :title="render.registration_1C_By.title"
                 :type="render.registration_1C_By.type(true)"
@@ -105,7 +105,7 @@
             />
 
             <!-- attract: Флаг перемещения на закрой -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.moveToCutFlag.header"
                 :title="render.moveToCutFlag.title"
                 :type="render.moveToCutFlag.type(true)"
@@ -116,7 +116,7 @@
             />
 
             <!-- attract: Дата перемещения на закрой -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.moveToCutAt.header"
                 :title="render.moveToCutAt.title"
                 :type="render.moveToCutAt.type(true)"
@@ -127,7 +127,7 @@
             />
 
             <!-- attract: Ответственный за перемещение на закрой -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.moveToCutBy.header"
                 :title="render.moveToCutBy.title"
                 :type="render.moveToCutBy.type(true)"
@@ -138,7 +138,7 @@
             />
 
             <!-- attract: Примечание -->
-            <AppLabelMultiline
+            <AppLabelMultiLine
                 :text="render.description.header"
                 :title="render.description.title"
                 :type="render.description.type(true)"
@@ -325,7 +325,8 @@ import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/hel
 import {formatDateAndTimeInShortFormat} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
+// import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
+import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
 
