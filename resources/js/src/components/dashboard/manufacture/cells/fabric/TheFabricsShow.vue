@@ -382,6 +382,7 @@ const closeModal = async (answer) => {
 <style scoped>
 .sticky-header {
     position: sticky;
-//top: var(--header-height); top: 0; //padding-top: 10px;
+    /* top: var(--header-height); top: 0; */
+    /* padding-top: 10px; */
 }
 </style>

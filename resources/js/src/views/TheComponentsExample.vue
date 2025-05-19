@@ -262,8 +262,8 @@ const tableData = {
 .content {
     flex: 1;
     overflow-y: auto;
-    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
-    /*   position: relative; */
-    //z-index: 9999;
+    /* margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); */
+    /* position: relative; */
+    /* z-index: 9999; */
 }
 </style>

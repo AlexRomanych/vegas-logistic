@@ -132,7 +132,7 @@ const props = defineProps({
 .container {
     flex: 1;
     position: relative;
-    //overflow-x: hidden;
+    /* overflow-x: hidden; */
 /*
     // min-width: 100vw; // или ширина в пикселях
     // width: auto;
@@ -150,9 +150,9 @@ const props = defineProps({
 .container-auth {
     flex: 1;
     /*
-    //overflow-y: auto;
-    //overflow-x: auto;
-    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
     */
 }
 
@@ -163,14 +163,14 @@ const props = defineProps({
     /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
     height: calc(100% - var(--header-height) - var(--footer-height));
 
-    //margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
+    /* margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); */
 
     top: var(--header-height);
     left: var(--sidebar-width);
     overflow-y: auto;
     overflow-x: auto;
 
-    //overflow-x: auto;
+    /* overflow-x: auto; */
 
     /*
     //min-width: 100vw; // или ширина в пикселях
