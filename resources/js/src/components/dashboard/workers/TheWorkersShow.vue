@@ -4,43 +4,44 @@
 
         <div v-if="workers.length">
 
-            <div v-for="worker in workers" :key="worker.id" class="flex">
+            <div v-for="worker in workers" :key="worker.id" >
 
-                <AppLabel
-                    :text="worker.surname"
-                />
+                <div v-if="worker.id" class="flex">
+                    <AppLabel
+                        :text="worker.surname"
+                    />
 
-                <AppLabel
-                    :text="worker.name"
-                />
+                    <AppLabel
+                        :text="worker.name"
+                    />
 
-                <AppLabel
-                    :text="worker.patronymic"
-                />
+                    <AppLabel
+                        :text="worker.patronymic"
+                    />
 
-                <AppLabel
-                    :text="worker.cell_item_name"
-                />
+                    <AppLabel
+                        :text="worker.cell_item_name"
+                    />
 
-                <router-link :to="{name: 'worker.edit', params: {id: worker.id}}">
+                    <router-link :to="{name: 'worker.edit', params: {id: worker.id}}">
+                        <AppLabel
+                            align="center"
+                            class="cursor-pointer"
+                            text="Ред."
+                            type="primary"
+                            width="w-[50px]"
+                        />
+                    </router-link>
+
                     <AppLabel
                         align="center"
                         class="cursor-pointer"
-                        text="Ред."
-                        type="primary"
-                        width="w-[50px]"
+                        text="Удалить"
+                        type="danger"
+                        width="w-[80px]"
+                        @click="workerDelete(worker.id)"
                     />
-                </router-link>
-
-                <AppLabel
-                    align="center"
-                    class="cursor-pointer"
-                    text="Удалить"
-                    type="danger"
-                    width="w-[80px]"
-                    @click="workerDelete(worker.id)"
-                />
-
+                </div>
             </div>
 
         </div>
@@ -123,7 +124,6 @@ const closeModal = async (answer) => {
         // console.log(result)
     }
 }
-
 
 
 </script>
