@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CellFabricServiceController extends Controller
 {
@@ -46,6 +47,16 @@ class CellFabricServiceController extends Controller
     }
 
 
+    /**
+     * descr: Очистка таблицы всех дат СЗ
+     * descr: Используется только для тестов
+     * @return string
+     */
+    public function clearFabricTasksDateTable()
+    {
+        DB::table('fabric_tasks_dates')->truncate();
+        return 'Manufacture Fabric Tasks Table cleared';
+    }
 
 
 }

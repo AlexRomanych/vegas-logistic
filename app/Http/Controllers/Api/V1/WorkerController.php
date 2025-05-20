@@ -111,13 +111,28 @@ class WorkerController extends Controller
     public function testFill()
     {
         DB::table('workers')->insert([
-            ['surname' => 'Иванов', 'name' => 'Иван', 'patronymic' =>'Иванович'],
-            ['surname' => 'Петров', 'name' => 'Петр', 'patronymic' =>'Петрович'],
-            ['surname' => 'Сидоров', 'name' => 'Сидор', 'patronymic' =>'Сидорович'],
-            ['surname' => 'Никитюк', 'name' => 'Никита', 'patronymic' =>'Никитич'],
-            ['surname' => 'Стаханов', 'name' => 'Алексей', 'patronymic' =>'Григорьевич'],
-            ['surname' => 'Мухина', 'name' => 'Вера', 'patronymic' =>'Игнатьевна'],
+            ['surname' => 'Рудак', 'name' =>  'Игорь', 'patronymic' => 'Алексеевич'],
+            ['surname' => 'Конончик', 'name' =>  'Михаил', 'patronymic' => 'Николаевич'],
+            ['surname' => 'Бык', 'name' =>  'Максим', 'patronymic' => 'Николаевич'],
+            ['surname' => 'Климук', 'name' =>  'Роман', 'patronymic' => 'Андреевич'],
+            ['surname' => 'Галуц', 'name' =>  'Галина', 'patronymic' => 'Владимировна'],
+            ['surname' => 'Макарова', 'name' =>  'Елена', 'patronymic' => 'Гаррьевна'],
+            ['surname' => 'Мятто', 'name' =>  'Роман', 'patronymic' => 'Юрьевич'],
+            ['surname' => 'Шульга', 'name' =>  'Наталья', 'patronymic' => 'Владимировна'],
         ]);
+
+
+//        DB::table('workers')->insert([
+//            ['surname' => 'Иванов', 'name' => 'Иван', 'patronymic' =>'Иванович'],
+//            ['surname' => 'Петров', 'name' => 'Петр', 'patronymic' =>'Петрович'],
+//            ['surname' => 'Сидоров', 'name' => 'Сидор', 'patronymic' =>'Сидорович'],
+//            ['surname' => 'Никитюк', 'name' => 'Никита', 'patronymic' =>'Никитич'],
+//            ['surname' => 'Стаханов', 'name' => 'Алексей', 'patronymic' =>'Григорьевич'],
+//            ['surname' => 'Мухина', 'name' => 'Вера', 'patronymic' =>'Игнатьевна'],
+//        ]);
     }
 
 }
+
+
+

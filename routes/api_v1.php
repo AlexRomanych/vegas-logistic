@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ModelController;
 use App\Http\Controllers\Api\V1\OrderController;
+
 //use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\V1\WorkerController;
 use App\Http\Controllers\UpdateData1CController as Update;
@@ -91,6 +92,7 @@ Route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->nam
 
 
 use App\Http\Controllers\UserController;
+
 //use App\Http\Controllers\AuthController;
 use App\Http\Middleware\GuestMiddleware;
 use App\Http\Middleware\AuthMiddleware;
@@ -194,7 +196,6 @@ Route::group([
 //hr--------------------------------------------------------------------------------------------------------------------
 
 
-
 //hr--------------------------------------------------------------------------------------------------------------------
 // attract: Блок Персонала
 Route::get('/workers', [WorkerController::class, 'workers'])->middleware('jwt.auth');
@@ -264,8 +265,12 @@ Route::prefix('/fabrics/tasks')
         // descr: Тут просто точки доступа для разных действий
         Route::get('/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate']);
 
+
     });
 
+
+//attract: Тесты: Очистка таблицы Заданий Стежки
+Route::get('/fabrics/tasks/clear/', [CellFabricServiceController::class, 'clearFabricTasksDateTable']);
 
 
 //
