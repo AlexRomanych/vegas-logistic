@@ -121,7 +121,7 @@ const menuData = () => {
                 ]
         },
         {
-            group: {name: 'UI', shown: true, isActive: true, icon: 'BookOpenIcon'},
+            group: {name: 'UI', shown: false, isActive: false, icon: 'BookOpenIcon'},
             items:
                 [
                     {name: 'User Interface', path: 'ui.show', shown: true, isActive: true,},
