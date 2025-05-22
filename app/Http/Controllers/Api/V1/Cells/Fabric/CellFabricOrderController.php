@@ -50,7 +50,7 @@ class CellFabricOrderController extends Controller
                 'order_no' => $fabricOrder['order_no'],
                 'raw_text' => $fabricOrder['raw'],
                 'code_1C' => $fabricOrder['code_1C'],
-                'time_1C' => Carbon::parse($fabricOrder['time_1C']),
+                'time_1C' => Carbon::parse($fabricOrder['moment']),
                 'type' => $fabricOrder['type'],
                 'expense_date' => Carbon::now()->addDay(),               // Добавляем 1 день
                 'is_closed' => false,
