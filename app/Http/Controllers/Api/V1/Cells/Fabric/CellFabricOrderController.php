@@ -53,6 +53,8 @@ class CellFabricOrderController extends Controller
                 'time_1C' => Carbon::parse($fabricOrder['time_1C']),
                 'type' => $fabricOrder['type'],
                 'expense_date' => Carbon::now()->addDay(),               // Добавляем 1 день
+                'is_closed' => false,
+                'active' => true,
             ]);
 
             $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
