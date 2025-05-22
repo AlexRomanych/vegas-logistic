@@ -57,6 +57,7 @@ class CellFabricOrderController extends Controller
                 'active' => true,
             ]);
 
+
             $newFabricOrderId = $newFabricOrder->id;                    // Дергаем ID для заполнения FabricExpense
             $newFabricOrderExpenseDate = $newFabricOrder->expense_date;
 
