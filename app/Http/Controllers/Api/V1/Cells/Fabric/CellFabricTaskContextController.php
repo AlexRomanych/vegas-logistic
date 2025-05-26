@@ -171,6 +171,7 @@ class CellFabricTaskContextController extends Controller
 
             // attract: Определяем кол-во в рулонах: если дельта равна нулю, то один рулон, нет - округление вверх
             $expense = abs((float)$contextExpenseData['fabric_expense']);
+            $expense = $fabric->translate_rate === 0.0 ? $expense : $expense * $fabric->translate_rate;   // Переводим ПС в ткань
             $rollsAmount = $expense === 0.0 ? 1 : ceil($expense / $fabric->average_roll_length);
 
             // attract: Создаем контекст для задания
