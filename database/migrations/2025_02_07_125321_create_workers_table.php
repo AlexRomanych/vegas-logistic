@@ -26,6 +26,9 @@ return new class extends Migration
             $table->json('cell_items')->nullable()->comment('привязка к ПЯ');
             $table->timestamps();
 
+            // attract: Создаем ограничение уникальности для поля surname, name и patronymic
+            $table->unique(['surname', 'name', 'patronymic']);
+
             // attract: У каждого рабочего может быть привязка к ПЯ
             $table->foreignIdFor(CellItem::class)->nullable()->constrained()->nullOnDelete();    //Внешний ключ, указывающий на таблицу с ПЯ
         });

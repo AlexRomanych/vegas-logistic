@@ -29,8 +29,10 @@ router.beforeEach(async (to, from, next) => {
     const user = useUserStore()
 
     // debugger
-    // console.log('from:', from.name)
-    // console.log('to:', to.name)
+    console.log('from:', from.name)
+    console.dir(from)
+    console.log('to:', to.name)
+
     //
     // debugger
     let auth = await user.isAuthenticated()

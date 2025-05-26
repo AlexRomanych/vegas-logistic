@@ -698,6 +698,10 @@ class CellFabricTasksDateController extends Controller
             }
 
             // attract: Если есть рулоны к добавлению в буфер - добавляем в буфер
+            // warning: Логика закрытия рулона и добавления в буфер находится в контролере CellFabricTaskRollController
+            // warning: Буфер увеличивается при изменении статуса рулона на 'Выполнено'
+
+            /*
             if (count($rollsToBuffer) !== 0) {
 
 
@@ -724,27 +728,23 @@ class CellFabricTasksDateController extends Controller
 
 
             }
-
+            */
 
             // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
             $tasksDayData['date'] = $payloadDate;
             $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
             $resultTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
-            return [
-                '$targetTask' => $targetTask,
-                'rollsToMove' => $rollsToMove,
-                'rollsToBuffer' => $rollsToBuffer,
-                'resultTasksDate' => $resultTasksDate
-
-            ];
+//            return [
+//                '$targetTask' => $targetTask,
+//                'rollsToMove' => $rollsToMove,
+//                'rollsToBuffer' => $rollsToBuffer,
+//                'resultTasksDate' => $resultTasksDate
+//
+//            ];
 
             return EndPointStaticRequestAnswer::ok();
             // hr---------------------------------------------------------------------
-
-
-//        return json_encode(['test' => $test]);
-//        return $targetTask;
 
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));

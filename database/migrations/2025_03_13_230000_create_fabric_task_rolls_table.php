@@ -146,6 +146,8 @@ return new class extends Migration {
 //                ->references('id')
 //                ->on('workers')
 //                ->nullOnDelete();
+            // attract: Маяк того, что длина рулона была изменена рабочим на стежке
+            $table->boolean('is_length_change')->nullable(false)->default(false)->comment('Изменение длины рулона');
 
             $table->float('textile_roll_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
             $table->float('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания

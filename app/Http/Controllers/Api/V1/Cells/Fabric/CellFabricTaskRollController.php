@@ -115,6 +115,31 @@ class CellFabricTaskRollController extends Controller
 
             );
 
+
+            if (!$taskRoll) {
+                throw new Exception('Не удалось обновить рулон');
+            }
+
+            // attract: Тут логика обновления рулона. Если статус рулона DONE - необходимо обновить буфер ткани
+            if ($taskRoll->roll_status === FABRIC_ROLL_DONE_CODE) {
+
+                $fabric = Fabric::query()->find($taskRoll->fabric_id); // Находим нужную ткань
+
+                if ($fabric) {
+
+                    if ($fabric->translate_rate === 0) {
+                        throw new Exception('У ' . $fabric->display_name . ' отсутствует коэффициент перевода!');
+                    }
+
+                    $fabric->buffer_amount += $taskRoll->textile_roll_length / $fabric->translate_rate;
+                    $fabric->save();
+
+                } else {
+                    throw new Exception('Не найдена ткань по ID: ' . $taskRoll->fabric_id);
+                }
+
+            }
+
             return new FabricTaskRollResource($taskRoll);
 
         } catch (Exception $e) {

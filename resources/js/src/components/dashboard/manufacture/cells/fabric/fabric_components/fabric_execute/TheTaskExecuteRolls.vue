@@ -328,6 +328,7 @@ watch(() => fabricsStore.globalResumeExecuteRoll, async (newValue) => {
 
 // attract: Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
 watch(() => fabricsStore.globalFinishExecuteRoll, async (newValue) => {
+    if (activeRoll.finish_by === 0) return                              // если ответственный за выполнение рулона не назначен
     if (activeRoll.status !== FABRIC_ROLL_STATUS.RUNNING.CODE) return   // если статус != "Выполняется"
     fabricsStore.globalFinishExecuteRoll = false                        // сбрасываем значение флага
     activeRoll.status_prev = activeRoll.status

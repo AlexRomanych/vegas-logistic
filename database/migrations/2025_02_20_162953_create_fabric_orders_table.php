@@ -31,6 +31,9 @@ return new class extends Migration {
             // attract: Отодвигать в конец списка расходов при отображении или нет
             $table->boolean('display_last')->nullable(false)->default(false)->comment('Показывать в конце списка или нет');
 
+            // attract: Список id ПС, которые надо исключить из расчетов расходов
+            $table->json('excluded_fabrics')->nullable()->comment('Список id ПС, которые надо исключить из расчетов расходов');
+
             // attract: признак расхода (если заявка закрыта - признак расхода неактуален, если открыта и false - не учитываем в расчетах)
             $table->boolean('active')->nullable(false)->default(true)->comment('Учитывать расход или нет');
 
