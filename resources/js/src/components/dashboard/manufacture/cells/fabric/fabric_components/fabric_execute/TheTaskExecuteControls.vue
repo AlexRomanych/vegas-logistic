@@ -124,6 +124,16 @@
         placeholder="Введите текст..."
     />
 
+    <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
+    <TheTaskExecuteRollRollingData
+        ref="theTaskExecuteRollRollingData"
+        :text="rollingRollText"
+        :type="rollingRollType"
+        :mode="rollingRollConfirm"
+    />
+
+<!--    :rolling-roll="rollingRoll"-->
+
 <!--    modalInitValueArea-->
 </template>
 
@@ -137,6 +147,8 @@ import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resource
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncArea from '/resources/js/src/components/ui/modals/AppModalAsyncArea.vue'
+import TheTaskExecuteRollRollingData
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга
@@ -307,6 +319,17 @@ const modalTypeArea = ref('danger')
 const modalInitValueArea = ref('')
 const modalNumericArea = ref(false)
 
+// attract: Получаем ссылку на модальное для ввода данных переходящего рулона
+const theTaskExecuteRollRollingData = ref(null)
+const rollingRollText = ref([])
+const rollingRollType = ref('orange')
+const rollingRollInitValue = ref(0)
+const rollingRollNumeric = ref(false)
+const rollingRollConfirm = ref('confirm')
+// const rollingRoll = {}
+const rollingRoll = ref({})
+
+
 //hr--------------------------------------------------------------
 
 
@@ -390,7 +413,25 @@ const toggleRollingMark = async () => {
 
         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
-        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+
+
+        rollingRollText.value = ['Оцените трудозатраты, которые', 'были уже затрачены на', 'выполнение данного рулона.']
+        rollingRollInitValue.value = 150
+        rollingRoll.value = fabricsStore.globalActiveRolls[props.machine.TITLE]
+
+
+
+        const rollingRollLength = await theTaskExecuteRollRollingData.value.show(rollingRoll) // показываем модалку и ждем ответ
+
+        // console.log('123: ', theTaskExecuteRollRollingData.value.rollingLength)
+
+        // console.log('Debug')
+        // return
+
+        const rollingLength = ` (Выполнено ${theTaskExecuteRollRollingData.value.rollingLength} м.п.)`
+
+        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText + rollingLength      // текст
+        // fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
         fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
         emits('rolling-execute-roll')
     }
@@ -438,13 +479,15 @@ const toggleFalse = async () => {
 // attract: Начать выполнение
 const startExecuteRoll = async () => {
 
-    await changeTextileLength()
+    await changeTextileLength()                     // warning: меняем длину ткани, если это надо
 
     if (startButtonDisabledFlag.value) return       // отменяем выполнение, если в задании уже есть активное выполнение
 
     modalText.value = ['Будет начат учет стегания рулона.', 'Продолжить?']
     modalConfirm.value = 'confirm'
     modalType.value = 'warning'
+
+
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {

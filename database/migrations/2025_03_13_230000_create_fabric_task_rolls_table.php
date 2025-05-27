@@ -149,6 +149,9 @@ return new class extends Migration {
             // attract: Маяк того, что длина рулона была изменена рабочим на стежке
             $table->boolean('is_length_change')->nullable(false)->default(false)->comment('Изменение длины рулона');
 
+            $table->float('textile_rolling_length')->nullable(false)->default(0)->comment('Длина, которую отстегали для переходящего на другую смену рулона ткани, м.п.');
+            $table->float('textile_used_length')->nullable(false)->default(0)->comment('Длина, которая была использована на закрое, м.п.');
+
             $table->float('textile_roll_length')->nullable(false)->default(0)->comment('Длина рулона ткани, м.п.');
             $table->float('fabric_roll_length')->nullable(false)->default(0)->comment('Длина рулона ПС, м.п.');     // то, что получилось в результате стегания
             $table->float('productivity')->nullable(false)->default(0)->comment('Средняя производительность на момент формирования, м/ч.');     // то, что получилось в результате стегания

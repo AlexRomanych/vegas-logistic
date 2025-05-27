@@ -34,6 +34,8 @@ class FabricTaskRollResource extends JsonResource
             'movable' => $this->movable,
             'rate' => (float)$this->translate_rate,
             'descr' => $this->description,
+            'rolling_length' => 0,
+//            'rolling_length' => (float)$this->textile_rolling_length,
 //            'user' => $this->user->name,
         ];
         //        return parent::toArray($request);
