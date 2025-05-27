@@ -154,8 +154,7 @@
         <!-- attract: Сами данные -->
         <div class="p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-600 max-w-fit">
 
-            <div v-for="roll in doneRolls" class="flex">
-
+            <div v-for="roll in doneRolls" :key="roll.id" class="flex">
 
                 <!-- attract: № рулона  -->
                 <AppLabel
@@ -314,7 +313,7 @@
 
 <script setup>
 
-import {reactive, ref, watch} from 'vue'
+import {reactive, ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
@@ -325,11 +324,9 @@ import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/hel
 import {formatDateAndTimeInShortFormat} from '/resources/js/src/app/helpers/helpers_date.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-// import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
-
 
 const fabricsStore = useFabricsStore()
 

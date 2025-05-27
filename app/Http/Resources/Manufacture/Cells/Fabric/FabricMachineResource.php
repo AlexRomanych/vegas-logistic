@@ -21,6 +21,9 @@ class FabricMachineResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'short_name' => $this->short_name,
+            'active' => $this->active,
+            'description' => $this->description,
+
         ];
     }
 }

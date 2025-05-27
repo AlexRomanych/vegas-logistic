@@ -18,6 +18,7 @@ const URL_FABRIC = 'fabric/'                                            // URL �
 
 const URL_FABRICS_MACHINES = 'fabrics/machines/'                        // URL для получения списка Стегальных Машин
 const URL_FABRICS_MACHINE = 'fabrics/machine/'                          // URL для получения Стегальной Машины
+const URL_FABRICS_MACHINE_SET_ACTIVE = 'fabrics/machine/set/active/'    // URL для переключения активности Стегальной Машины
 
 const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL для загрузки ПС с диска
 const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
@@ -251,6 +252,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.machine
     }
 
+    // Attract: Меняем статус стегальной машины по id
+    const setFabricsMachineStatusById = async (id, active) => {
+        const result = await jwtPatch(URL_FABRICS_MACHINE_SET_ACTIVE, {id, active})
+
+        console.log('store: setFabricsMachineStatusById: ', result)
+
+        return result.machine
+    }
+
     // Attract: Загрузка расхода ПС на сервер из отчета 1С - СВПМ
     // fileData - данные файла, отправляем в RAW формате
     const uploadFabricsOrders = async (fileData) => {
@@ -465,8 +475,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         uploadFabrics,
         deleteFabric,
         uploadFabricsPictures,
-        getFabricsMachines,
-        getFabricsMachineById,
+        getFabricsMachines, getFabricsMachineById, setFabricsMachineStatusById,
         uploadFabricsOrders,
         getTasksByPeriod,
         getLastDoneFabricTask,

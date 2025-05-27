@@ -67,20 +67,20 @@
         <!-- attract: Выводим табы, если есть СЗ -->
         <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
-            <!-- attract Выводим табы -->
+            <!-- attract Выводим табы, если СМ активна или статус СЗ - "Выполнено" или "Выполняется" -->
             <div class="flex flex-row justify-start items-center m-3">
                 <div v-for="tab in tabs" :key="tab.id">
-
-                    <AppLabelMultiLine
-                        :bold="true"
-                        :text="tab.name"
-                        :type="getTabType(tab)"
-                        align="center"
-                        class="cursor-pointer"
-                        width="w-[150px]"
-                        @click="changeTab(tab)"
-                    />
-
+                    <div v-if="tab.enabled || activeTask.common.status === FABRIC_TASK_STATUS.RUNNING.CODE || activeTask.common.status === FABRIC_TASK_STATUS.DONE.CODE">
+                        <AppLabelMultiLine
+                            :bold="true"
+                            :text="tab.name"
+                            :type="getTabType(tab)"
+                            align="center"
+                            class="cursor-pointer"
+                            width="w-[150px]"
+                            @click="changeTab(tab)"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -235,6 +235,14 @@ const router = useRouter()
 
 const fabricsStore = useFabricsStore()
 
+// attract: Получаем список всех стегальных машин
+const getFabricsMachines = async () => {
+    const machines = await fabricsStore.getFabricsMachines()
+    return machines.filter(machine => machine.id !== 0).sort((a, b) => a.id - b.id) // сортируем по id, без id == 0
+}
+const fabricsMachines = ref(await getFabricsMachines())
+
+
 // attract: Получаем все ткани и запоминаем в хранилище
 const fabrics = await fabricsStore.getFabrics(true)
 fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
@@ -279,20 +287,57 @@ const modalType = ref('danger')
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
-    common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
+    common: {id: 1, shown: false, enabled: true, name: ['Общие', 'данные'], typePassive: 'warning'},
     american: {
         id: 2,
         shown: false,
+        enabled: true,
         name: ['Американец', 'LEGACY-4'],
         typePassive: 'dark',
         machine: FABRIC_MACHINES.AMERICAN
     },
-    german: {id: 3, shown: false, name: ['Немец', 'CHAINTRONIC'], typePassive: 'dark', machine: FABRIC_MACHINES.GERMAN},
-    china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW'], typePassive: 'dark', machine: FABRIC_MACHINES.CHINA},
-    korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94'], typePassive: 'dark', machine: FABRIC_MACHINES.KOREAN},
+    german: {
+        id: 3,
+        shown: false,
+        enabled: true,
+        name: ['Немец', 'CHAINTRONIC'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.GERMAN
+    },
+    china: {
+        id: 4,
+        shown: false,
+        enabled: true,
+        name: ['Китаец', 'HY-W-DGW'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.CHINA
+    },
+    korean: {
+        id: 5,
+        shown: false,
+        enabled: true,
+        name: ['Кореец', 'МТ-94'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.KOREAN
+    },
     // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
     // test: {id: 6, shown: false, name: ['Machine', 'Test']},
 })
+
+
+const setEnabledTabs = () => {
+    Object.keys(tabs).forEach(tab => {
+
+        if (tabs[tab].hasOwnProperty('machine')) {
+            const machine = fabricsMachines.value.find(m => m.id === tabs[tab].machine.ID)
+            console.log(machine.active)
+            tabs[tab].enabled = machine.active
+        }
+
+    })
+}
+setEnabledTabs()
+console.log(tabs)
 
 // переключаем выбранную вкладку
 const changeTab = (selectedTab) => {

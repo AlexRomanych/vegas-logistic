@@ -5,17 +5,16 @@ namespace App\Traits;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-trait CreateSimpleTableTrait
+trait AddCommonColumnsInTableTrait
 {
     /**
      * Создание простой таблицы
      * @param string $table_name
      * @return void
      */
-    protected function createSimpleTable(string $table_name): void
+    protected function addCommonColumns(string $table_name): void
     {
-        Schema::create($table_name, function (Blueprint $table) {
-            $table->id()->from(1);
+        Schema::table($table_name, function (Blueprint $table) {
 
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность');
             $table->unsignedSmallInteger('status')->nullable()->comment('Статус');

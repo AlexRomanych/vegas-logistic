@@ -20,24 +20,28 @@ class FabricTasksDate extends Model
         return Carbon::parse($value)->format('Y-m-d');
     }
 
-    // Relations Связь со сменными заданиями на СМ
+
+    // Relations: Связь со сменными заданиями на СМ
     public function fabricTasks(): HasMany
     {
         return $this->hasMany(FabricTask::class);
     }
 
-    // Relations Связь с текущим пользователем
+
+    // Relations: Связь с текущим пользователем
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relations Связь со сменой сотрудников на СМ
+
+    // Relations: Связь со сменой сотрудников на СМ
     public function team(): BelongsTo
     {
         return $this->belongsTo(FabricTeam::class, 'fabric_team_id', 'id', 'fabric_teams');
 //        return $this->belongsTo(FabricTeam::class);   // attract: Не работает, надо разобраться почему
     }
+
 
     // Relations: Привязываемся к fabric_tasks_date - таблица с днями стегания
     public function workerRecord(): BelongsToMany

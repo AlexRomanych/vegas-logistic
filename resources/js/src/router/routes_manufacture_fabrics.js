@@ -194,6 +194,21 @@ const fabrics = [
         }
     },
 
+    {
+        // descr: Стегальные машины
+        path: _MAIN_PREFIX + 'fabrics/machines',
+        name: 'manufacture.cell.fabrics.machines',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMachines.vue'),
+        meta: {
+            title: 'Стегальные машины'
+        }
+    },
+
+
+
+
+
+
 ]
 
 export default fabrics

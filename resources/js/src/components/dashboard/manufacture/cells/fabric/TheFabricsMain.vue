@@ -55,6 +55,7 @@ let menuItems = [
     {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement'},
     {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
     {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show'},
+    {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines'},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},
     {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload'},
 ]
