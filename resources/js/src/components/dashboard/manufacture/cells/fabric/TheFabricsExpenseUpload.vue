@@ -1,4 +1,6 @@
 <template>
+
+    <!-- attract: Блок загрузки файла -->
     <div class="flex justify-start items-center m-4">
         <div>
             <AppInputFile
@@ -18,6 +20,35 @@
                 @buttonClick="uploadFile"
             />
         </div>
+    </div>
+
+
+    <!-- attract: Пропущенные ПС   -->
+    <div v-if="missingFabrics.length" class="m-5">
+
+
+        <div class="mb-3">
+            <AppLabelMultiLine
+                align="center"
+                height="h-[50px]"
+                :text="['Следующие ПС отсутствуют в базе данных и будут недоступны для расчета.', 'Удалите их из файла или добавьте в базу данных.']"
+                type="danger"
+                width="w-[600px]"
+            />
+
+        </div>
+
+        <div v-for="(item, index) in missingFabrics" :key="index">
+
+            <AppLabel
+                :text="item"
+                text-size="mini"
+                type="danger"
+                width="w-[600px]"
+            />
+
+        </div>
+
     </div>
 
     <AppCallout
@@ -46,12 +77,17 @@ import {isJSON} from '/resources/js/src/app/helpers/helpers_checks.js'
 import AppInputFile from '/resources/js/src/components/ui/inputs/AppInputFile.vue'
 import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 
 const selectedFile = ref(null)
 const isDataJson = ref(true)                // Проверка на тип файла для вызова Callout
 const opResult = ref(false)                 // Проверка на результат выполнения операции
 const opResultText = ref('')                // Сообщение результата операции
 const opResultType = ref('danger')          // Тип результата операции
+
+// attract: Пропущенные ПС
+const missingFabrics = ref([])
 
 // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 // Получаем данные файла
@@ -84,13 +120,13 @@ const uploadFile = async (buttonId) => {
             // const res = await ordersStore.uploadOrders(fileData)
 
             // console.log('uploadOrders', res)
-            const missingFabrics = [...Object.values(res['missing_fabrics'])].sort((str1, str2) => str1.localeCompare(str2))
+            missingFabrics.value = [...Object.values(res['missing_fabrics'])].sort((str1, str2) => str1.localeCompare(str2))
             // console.log(missingFabrics, missingFabrics.length)
 
             // opResult.value = true
             // debugger
 
-            if (missingFabrics.length === 0) {
+            if (missingFabrics.value.length === 0) {
                 opResultText.value = 'Данные успешно загружены'
                 opResultType.value = 'success'
                 // setTimeout(() => {
@@ -98,7 +134,8 @@ const uploadFile = async (buttonId) => {
                 // }, 5000)
             } else {
                 // TODO: Доделать красивый многострочный Callout
-                opResultText.value = 'Пропущены:&nl' + missingFabrics.join(',&nl')
+                opResultText.value = 'В расходе присутствуют пропущенные ПС'
+                // opResultText.value = 'Пропущены:&nl' + missingFabrics.value.join(',&nl')
                 opResultType.value = 'danger'
             }
 

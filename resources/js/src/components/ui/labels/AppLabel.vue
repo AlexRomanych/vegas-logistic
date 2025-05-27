@@ -1,14 +1,14 @@
 <template>
     <div
         :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
-        class="flex flex-col m-0.5 app-label justify-center"
         :title="title"
+        class="flex flex-col justify-center app-label"
         @click="labelClick"
     >
 
-        <div>
-            {{ text }}
-        </div>
+        <!--        <div>-->
+        {{ text }}
+        <!--        </div>-->
     </div>
 </template>
 
@@ -19,7 +19,7 @@ import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
 import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
 import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
 
-import {computed, ref, watch, watchEffect } from "vue";
+import {computed, ref, watch, watchEffect} from "vue";
 
 const props = defineProps({
     text: {
@@ -89,7 +89,7 @@ const currentColorIndex = 500       // задаем основной индек�
 // const itemType = ref(props.type)
 
 const currentTextColor = ref(getTextColorClassByType(props.type))
-const backgroundColor =ref(getColorClassByType(props.type, 'bg', currentColorIndex))
+const backgroundColor = ref(getColorClassByType(props.type, 'bg', currentColorIndex))
 const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
 
 // вычисляем горизонтальное выравнивание
@@ -112,8 +112,6 @@ const getHorizontalAlign = (alignPosition) => {
 const horizontalAlign = ref(getHorizontalAlign(props.align))
 
 
-
-
 // Без этой функции не перерисовывает стили
 watch(() => props.type, (type) => {
     currentTextColor.value = getTextColorClassByType(props.type)
@@ -130,17 +128,14 @@ watch(() => props.textSize, (textSize) => textSizeClass.value = getFontSizeClass
 // watchEffect(() => {})
 
 
-
-
-
 </script>
 
 <style scoped>
 .app-label {
     @apply
-        flex flex-col justify-center
-        p-1 m-0.5
-        border rounded-lg focus:outline-none focus:ring-2;
+        /*flex flex-col justify-center*/
+    p-1 m-0.5
+    border rounded-lg focus:outline-none focus:ring-2;
 }
 
 
