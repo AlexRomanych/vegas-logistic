@@ -252,7 +252,6 @@ defineExpose({
 
 
 watch(() => rollingRoll.value, (newRollingRoll, oldRollingRoll) => {
-    console.log(newRollingRoll)
     rollingLength.value = getRollingLength(newRollingRoll.textile_length)
 
     rollingPart.value = getRollingPart(rollingLength.value, newRollingRoll.textile_length)
@@ -275,13 +274,6 @@ watch(() => rollingPart.value, (newRollingPart, oldRollingPart) => {
     rollingTime.value = getRollingTime(rollingLength.value, rollingRoll.value.productivity)
     saveButtonState.value = rollingLength.value >= 1 && rollingLength.value <= rollingRoll.value.textile_length        // флаг кнопки сохранения
 })
-
-// // attract: Следим за инициализирующим значением
-// watch(() => props.value, (newValue) => {
-//     targetText.value = newValue
-//     // console.log(newValue)
-//     // areaTextValue.value = getAreaTextValue(newValue)
-// }, {deep: true, immediate: true})
 
 
 // attract: Следим за выходом за границы диапазона длины

@@ -4,6 +4,15 @@
         <div v-if="fabrics.length">
 
             <div class="sticky-header top-0 flex pt-1 pb-1 bg-slate-100">
+
+                <AppLabelMultiLine
+                    :text="['Код в 1С', '']"
+                    align="center"
+                    text-size="small"
+                    type="primary"
+                    width="w-[100px]"
+                />
+
                 <AppLabelMultiLine
                     :text="['Название', 'полотна стеганного']"
                     align="center"
@@ -150,6 +159,15 @@
 
             <div v-for="fabric in fabrics" :key="fabric.id">
                 <div class="flex">
+
+                    <AppLabel
+                        :text="fabric.code_1C"
+                        text-size="mini"
+                        width="w-[100px]"
+                        align="center"
+                    />
+
+
                     <AppLabel
                         :text="fabric.display_name"
                         text-size="mini"
