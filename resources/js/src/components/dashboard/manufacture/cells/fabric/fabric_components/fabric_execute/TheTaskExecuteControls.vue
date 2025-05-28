@@ -58,16 +58,16 @@
             @click="toggleFalse()"
         />
 
-        <!-- attract: Не выполнено -->
+        <!-- attract: Отменено -->
         <AppLabelMultiLine
-            :text="falseLabelText"
-            :type="falseButtonDisabledFlag ? 'dark' : 'danger'"
+            :text="cancelLabelText"
+            :type="cancelButtonDisabledFlag ? 'dark' : 'info'"
             align="center"
             class="cursor-pointer"
             text-size="mini"
             type="danger"
             width="w-[100px]"
-            @click="toggleFalse()"
+            @click="toggleCancel()"
         />
 
 
@@ -86,10 +86,10 @@
         <!-- attract: Изменить метраж ткани -->
         <AppLabelMultiLine
             :text="['Изменить', 'метраж ткани']"
+            :type="changeTextileLengthButtonDisabledFlag ? 'dark' : 'warning'"
             align="center"
             class="cursor-pointer"
             text-size="mini"
-            :type="changeTextileLengthButtonDisabledFlag ? 'dark' : 'warning'"
             width="w-[100px]"
             @click="changeTextileLength()"
         />
@@ -121,9 +121,9 @@
     <!-- attract: Модальное окно для подтверждений -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
+        :mode="modalConfirm"
         :text="modalText"
         :type="modalType"
-        :mode="modalConfirm"
     />
 
     <!-- attract: Модальное окно для ввода текстовых данных -->
@@ -138,26 +138,23 @@
     <!-- attract: Модальное окно для ввода числовых данных -->
     <AppModalAsyncNumber
         ref="appModalAsyncNumber"
+        :max-value=300
         :text="modalTextNumber"
         :type="modalTypeNumber"
         :value="modalInitValueNumber"
-        :max-value=300
         mode="confirm"
     />
-
 
 
     <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
     <TheTaskExecuteRollRollingData
         ref="theTaskExecuteRollRollingData"
+        :mode="rollingRollConfirm"
         :text="rollingRollText"
         :type="rollingRollType"
-        :mode="rollingRollConfirm"
     />
 
-<!--    :rolling-roll="rollingRoll"-->
 
-<!--    modalInitValueArea-->
 </template>
 
 <script setup>
@@ -194,6 +191,7 @@ const emits = defineEmits([
     'finish-execute-roll',
     'rolling-execute-roll',
     'false-execute-roll',
+    'cancel-execute-roll',
     'change-description-execute-roll',
     'change-textile-length-execute-roll'
 ])
@@ -232,12 +230,13 @@ const isRollingRollPresent = () => {
 
 // attract: Возвращает статус кнопки "Начать выполнение"
 const isStartButtonDisabled = () => {
-    console.log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
+    // console.log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
 
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.DONE.CODE) return true
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE) return true
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return true
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) return true
     if (isExecuteRollPresent()) return true
     if (isPausedRollPresent()) return true
     if (isRollingRollPresent()) return true
@@ -298,13 +297,31 @@ const isFalseButtonDisabled = () => {
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
 
     falseLabelText.value =
-        fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE ? ['Снять отметку', 'не выполнено'] : ['Не', 'выполнено']
+        fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE ? ['Снять отметку', 'Не выполнено'] : ['Не', 'выполнено']
 
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CREATED.CODE) return false
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return false
+    // if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) return false
 
     return true
 }
+
+
+// attract: Возвращает статус кнопки "Отменено"
+const cancelLabelText = ref(['Отменено', ''])
+const isCancelButtonDisabled = () => {
+    if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
+
+    cancelLabelText.value =
+        fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE ? ['Снять отметку', 'Отменено'] : ['Отменено', '']
+
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CREATED.CODE) return false
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) return false
+    // if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return false
+
+    return true
+}
+
 
 // attract: Возвращает статус кнопки "Изменить метраж ткани"
 const isChangeTextileLengthButtonDisabled = () => {
@@ -313,7 +330,6 @@ const isChangeTextileLengthButtonDisabled = () => {
 
     return false
 }
-
 
 
 // attract: Реактивные переменные для работы кнопок управления выполнением
@@ -325,6 +341,8 @@ const endButtonDisabledFlag = ref(isEndButtonDisabled())        // нужно д
 const rollingButtonDisabledFlag = ref(isRollingButtonDisabled())
 const falseButtonDisabledFlag = ref(isFalseButtonDisabled())
 const changeTextileLengthButtonDisabledFlag = ref(isChangeTextileLengthButtonDisabled())
+const cancelButtonDisabledFlag = ref(isCancelButtonDisabled())
+
 
 // info: ---------------------------------------------------------
 
@@ -400,14 +418,14 @@ const changeTextileLength = async () => {
     const answer = await appModalAsyncNumber.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length) // показываем модалку и ждем ответ
 
     if (answer) {
-        if (!appModalAsyncArea.value.inputNumber) return                                    // если ничего нет, то выходим
 
-        fabricsStore.globalExecuteRollChangeTextileLength = appModalAsyncArea.value.inputNumber   // длина ткани
+        if (!appModalAsyncNumber.value.inputNumber) return                                    // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteRollChangeTextileLength = appModalAsyncNumber.value.inputNumber   // длина ткани
         fabricsStore.globalExecuteRollChangeTextile = !fabricsStore.globalExecuteRollChangeTextile
         emits('change-textile-length-execute-roll')
     }
 }
-
 
 
 // attract: Переходящий рулон/Снять отметку
@@ -441,11 +459,9 @@ const toggleRollingMark = async () => {
         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
 
-
         rollingRollText.value = ['Оцените трудозатраты, которые', 'были уже затрачены на', 'выполнение данного рулона.']
         rollingRollInitValue.value = 150
         rollingRoll.value = fabricsStore.globalActiveRolls[props.machine.TITLE]
-
 
 
         const rollingRollLength = await theTaskExecuteRollRollingData.value.show(rollingRoll) // показываем модалку и ждем ответ
@@ -463,6 +479,7 @@ const toggleRollingMark = async () => {
         emits('rolling-execute-roll')
     }
 }
+
 
 // attract: Не выполнено/Снять отметку
 const toggleFalse = async () => {
@@ -486,6 +503,7 @@ const toggleFalse = async () => {
         return
     }
 
+
     modalTypeArea.value = 'danger'
     modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
     modalInitValueArea.value = ''
@@ -499,6 +517,45 @@ const toggleFalse = async () => {
         fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
         emits('false-execute-roll')
     }
+}
+
+
+// attract: Отменен/Снять отметку
+const toggleCancel = async () => {
+
+    if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
+
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
+
+        modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
+        modalConfirm.value = 'confirm'
+        modalType.value = 'danger'
+        modalInitValueArea.value = ''
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            fabricsStore.globalExecuteMarkRollCancelReason = ''
+            fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+            emits('cancel-execute-roll')
+        }
+
+        return
+    }
+
+    modalTypeArea.value = 'danger'
+    modalTextArea.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
+    modalInitValueArea.value = ''
+
+    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+
+        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteMarkRollCancelReason = appModalAsyncArea.value.inputText       // текст
+        fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+        emits('cancel-execute-roll')
+    }
+
 }
 
 
@@ -593,6 +650,8 @@ watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
     rollingButtonDisabledFlag.value = isRollingButtonDisabled()
     falseButtonDisabledFlag.value = isFalseButtonDisabled()
     changeTextileLengthButtonDisabledFlag.value = isChangeTextileLengthButtonDisabled()
+    cancelButtonDisabledFlag.value = isCancelButtonDisabled()
+
     // console.log(startButtonDisabledFlag.value)
     // console.log(endButtonDisabledFlag.value)
 

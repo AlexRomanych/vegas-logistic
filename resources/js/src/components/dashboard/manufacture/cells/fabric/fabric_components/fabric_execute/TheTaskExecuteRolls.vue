@@ -109,7 +109,7 @@ console.log('props.rolls: ', props.rolls)
 
 
 const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST);
-// console.log(FABRIC_ROLL_STATUS_ARRAY)
+console.log(FABRIC_ROLL_STATUS_ARRAY)
 
 
 // attract: Определяем, что в рулонах будет полная инфа
@@ -164,7 +164,7 @@ const rollsRender = reactive({
         width: 'w-[100px]',
         show: true,
         title: 'Статус',
-        data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY[roll_exec.status].TITLE
+        data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY.find((fabricRollStatus) => fabricRollStatus.CODE === roll_exec.status).TITLE
     },
     startAt: {
         width: 'w-[125px]',
@@ -241,7 +241,7 @@ watch(() => fabricsStore.globalExecuteRollChangeTextile, async (newValue) => {
 })
 
 
-// attract: Отслеживаем изменение Выполнено/Не выполнено
+// attract: Отслеживаем изменение "Не выполнено"/"Создано"
 watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {
 
     if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) {
@@ -260,6 +260,28 @@ watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {
     // console.log(res)
 
 })
+
+
+// attract: Отслеживаем изменение "Отменено"/"Создано"
+watch(() => fabricsStore.globalExecuteMarkRollCancel, async (newState) => {
+
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) {
+        activeRoll.status_prev = activeRoll.status
+        activeRoll.status = FABRIC_ROLL_STATUS.CANCELLED.CODE
+        activeRoll.false_reason = fabricsStore.globalExecuteMarkRollCancelReason
+        fabricsStore.globalExecuteMarkRollCancelReason = ''
+    } else if (activeRoll.status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {
+        activeRoll.status_prev = activeRoll.status
+        activeRoll.status = FABRIC_ROLL_STATUS.CREATED.CODE
+        activeRoll.false_reason = ''
+        fabricsStore.globalExecuteMarkRollCancelReason = ''
+    }
+
+    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    // console.log(res)
+
+})
+
 
 // attract: Отслеживаем изменение маркировки переходящего рулона
 watch(() => fabricsStore.globalExecuteMarkRollRolling, async (newState) => {

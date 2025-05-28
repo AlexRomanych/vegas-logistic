@@ -132,7 +132,7 @@ watch(
     () => fabricsStore.globalTaskProductivity,
     () => {
         totalProductivityAmount.value = getTotalProductivityAmount()
-        console.log(totalProductivityAmount.value)
+        // console.log(totalProductivityAmount.value)
     },
     {deep: true}
 )
@@ -159,7 +159,7 @@ const changeFabricsMode = (item) => {
 const addRoll = () => {
     console.log(fabricsStore.globalRollsIndexes)
     if (fabricsStore.globalRollsIndexes.includes(0)) return
-    console.log('add roll')
+    // console.log('add roll')
     emits('addRoll')
 }
 

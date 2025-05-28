@@ -192,7 +192,13 @@ const select = (value) => {
 // attract: даем родителю доступ к методам и свойствам компонента
 defineExpose({
     show,
-    inputNumber: targetNumber,
+    // inputNumber: () => targetNumber.value,      // работает, нужно вызывать как функцию
+    get inputNumber() {
+        return parseFloat(targetNumber.value)
+    },
+    // inputNumber: ()=>toValue(targetNumber),
+    // inputNumber: parseFloat(targetNumber.value),
+    x: 100,
 })
 
 

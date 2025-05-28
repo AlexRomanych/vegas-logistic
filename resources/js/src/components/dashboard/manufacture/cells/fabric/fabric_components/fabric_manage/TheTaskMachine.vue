@@ -138,25 +138,27 @@ const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'delete
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
-fabrics[0].machines[0].id = props.machine.ID                                    // Добавляем ID машины в объект ПС с нулевым рулоном
 
-const rolls = props.task.machines[props.machine.TITLE].rolls                    // Получаем рулоны из задания
+let rolls
 
+// attract: Тут функционал, который дополняет функционал уникальности выбора ПС из выпадающего списка
+const getRollsIndexes = () => {
 
-const rollsIndexes = computed(() => rolls.map(roll => roll.editable ? roll.fabric_id : undefined).filter(roll => roll !== undefined))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
+    // attract: добавляем в нулевую ПС индекс текущей СМ, для того, чтобы она отображалась в выпадающем списке
+    fabrics[0].machines[0].id = props.machine.ID                // Добавляем ID машины в объект ПС с нулевым рулоном
+    rolls = props.task.machines[props.machine.TITLE].rolls      // Получаем рулоны из задания
 
+    const rollsIndexes = rolls.map(roll => roll.editable ? roll.fabric_id : undefined).filter(roll => roll !== undefined)
 
-fabricsStore.globalRollsIndexes = rollsIndexes.value                            // сохраняем индексы рулонов в глобальном хранилище
+    fabricsStore.globalRollsIndexes = rollsIndexes  // сохраняем индексы рулонов в глобальном хранилище
+    // attract: Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
+    return rollsIndexes
+}
+const rollsIndexes = ref(getRollsIndexes())
+// const rollsIndexes = computed(() => rolls.map(roll => roll.editable ? roll.fabric_id : undefined).filter(roll => roll !== undefined))  // Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
 
-// rolls.forEach((roll) => {
-//     roll.rolls_exec.forEach((roll_exec) => {
-//         console.log(roll_exec)
-//     })
-//
-//     // console.log('rolls', roll)
-// })
+// attract: ---------------------------------------------------------------
 
-// console.log('rolls', rolls.rolls_exec)
 
 fabricsStore.globalEditMode = false                                             // устанавливаем в false глобальный режим редактирования
 
@@ -175,7 +177,7 @@ const fillGlobalProductivity = () => {
 // attract: Общий комментарий к сменному заданию
 const taskDescription = ref(props.task.machines[props.machine.TITLE].description)
 
-// Attract: Добавляем новый рулон
+// attract: Добавляем новый рулон
 const addRoll = () => {
     // console.log('NEW_ROLL: ', NEW_ROLL)
 // Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
@@ -222,8 +224,13 @@ const updateTaskMachineDescription = () => {
 
 // attract: При изменении самих данных, пересчитываем производительность
 watch(() => props.task, () => {
+    console.log('TaskMachine: Task changed: ', fabricsStore.globalRollsIndexes)
+    // console.log('TaskMachine: Task changed: ', props.task)
+
     fillGlobalProductivity()
     // console.log('globalProductivity: TheTaskMachine: ', fabricsStore.globalTaskProductivity)
+
+    rollsIndexes.value = getRollsIndexes()  // Обновляем индексы рулонов, чтобы потом их исключить из выбора ПС в самой записи
 
 }, {deep: true, immediate: true})
 

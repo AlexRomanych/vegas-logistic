@@ -125,6 +125,10 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalExecuteMarkRollFalse = ref(false)               // маяк кнопки
     const globalExecuteMarkRollFalseReason = ref('')            // причина невыполненного рулона
 
+    // attract: Переменная-флаг нажатия кнопки "Отменено"
+    const globalExecuteMarkRollCancel = ref(false)              // маяк кнопки
+    const globalExecuteMarkRollCancelReason = ref('')           // причина отмененного рулона
+
     // attract: Переменная-флаг нажатия кнопки "Изменить метраж ткани" рулона
     const globalExecuteRollChangeTextile = ref(false)
     const globalExecuteRollChangeTextileLength = ref(0)         // новая длина рулона
@@ -463,6 +467,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalRollsIndexes,
         globalActiveRolls,
         globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse, globalExecuteMarkRollFalseReason,
+        globalExecuteMarkRollCancel, globalExecuteMarkRollCancelReason,
         globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
         globalExecuteRollChangeTextileLength, globalExecuteRollChangeDescriptionText,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,

@@ -315,6 +315,7 @@ export function getTypeByRollStatus(rollStatus) {
     if (rollStatus === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE) return FABRIC_ROLL_STATUS.REGISTERED_1C.TYPE
     if (rollStatus === FABRIC_ROLL_STATUS.MOVED.CODE) return FABRIC_ROLL_STATUS.MOVED.TYPE
     if (rollStatus === FABRIC_ROLL_STATUS.ACCEPTED.CODE) return FABRIC_ROLL_STATUS.ACCEPTED.TYPE
+    if (rollStatus === FABRIC_ROLL_STATUS.CANCELLED.CODE) return FABRIC_ROLL_STATUS.CANCELLED.TYPE
 
     return 'dark'
 }

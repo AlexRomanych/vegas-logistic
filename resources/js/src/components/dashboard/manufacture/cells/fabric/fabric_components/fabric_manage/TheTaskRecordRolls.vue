@@ -363,7 +363,7 @@ const rollsRender = {
         width: 'w-[100px]',
         show: true,
         title: 'Статус',
-        data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY[roll_exec.status].TITLE
+        data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY.find((fabricRollStatus) => fabricRollStatus.CODE === roll_exec.status).TITLE
     },
     startAt: {
         width: 'w-[110px]',

@@ -440,7 +440,8 @@ const changeTaskExecute = async (task) => {
                 isError ||= roll.rolls_exec.some((roll_exec) => {
                     return !(roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE ||
                         roll_exec.status === FABRIC_ROLL_STATUS.ROLLING.CODE ||
-                        roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE)
+                        roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE ||
+                        roll_exec.status === FABRIC_ROLL_STATUS.CANCELLED.CODE)
                 })
             })
         })

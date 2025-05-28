@@ -69,3 +69,6 @@ const FABRIC_ROLL_MOVED_CODE = 7;
 
 // descr: Рулон принятый на закрое
 const FABRIC_ROLL_ACCEPTED_CODE = 8;
+
+// descr: Рулон отмененный на закрое
+const FABRIC_ROLL_CANCELLED_CODE = 8;

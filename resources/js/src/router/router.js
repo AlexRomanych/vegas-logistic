@@ -29,9 +29,9 @@ router.beforeEach(async (to, from, next) => {
     const user = useUserStore()
 
     // debugger
-    console.log('from:', from.name)
-    console.dir(from)
-    console.log('to:', to.name)
+    // console.log('from:', from.name)
+    // console.dir(from)
+    // console.log('to:', to.name)
 
     //
     // debugger
@@ -66,7 +66,7 @@ router.beforeEach(async (to, from, next) => {
 
         } else if (to.name === 'menu') {
 
-            console.log('menu')
+            // console.log('menu')
 
             // Здесь определяем заголовки страниц для меню
             to.meta.title = menu[parseInt(to.params.groupId) - 1].group.name

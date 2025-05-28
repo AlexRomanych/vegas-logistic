@@ -167,8 +167,16 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
     ACCEPTED: {
         WORD: 'accepted',
         CODE: 8,
-        TITLE: 'Перемещенный',
+        TITLE: 'Принятый',
         TYPE: 'success',
+    },
+
+    // descr: Рулон отменный на закрое
+    CANCELLED: {
+        WORD: 'cancelled',
+        CODE: 9,
+        TITLE: 'Отмененный',
+        TYPE: 'info',
     },
 })
 
@@ -183,6 +191,7 @@ export const FABRIC_ROLL_STATUS_LIST = {
     [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
     [FABRIC_ROLL_STATUS.FALSE.CODE]: FABRIC_ROLL_STATUS.FALSE,
     [FABRIC_ROLL_STATUS.ROLLING.CODE]: FABRIC_ROLL_STATUS.ROLLING,
+    [FABRIC_ROLL_STATUS.CANCELLED.CODE]: FABRIC_ROLL_STATUS.CANCELLED,
 }
 
 // descr Константы статусов выполнения СЗ

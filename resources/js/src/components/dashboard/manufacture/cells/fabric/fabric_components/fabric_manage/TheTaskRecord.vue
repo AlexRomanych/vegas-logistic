@@ -695,9 +695,9 @@ const amountActions = () => {
     productivityAmount.value = getProductivityAmount()
     workRoll.rolls_amount = rollsAmount.value
 
-    console.log('ln: ', lengthAmount.value)
-    console.log('rolls: ', rollsAmount.value)
-    console.log('isRollsAmountFractional: ', isRollsAmountFractional.value)
+    // console.log('ln: ', lengthAmount.value)
+    // console.log('rolls: ', rollsAmount.value)
+    // console.log('isRollsAmountFractional: ', isRollsAmountFractional.value)
 }
 
 // attract: Пересчитываем количество в рулонах при изменении длины в м.п.

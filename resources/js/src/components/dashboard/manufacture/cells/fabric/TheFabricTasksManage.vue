@@ -330,7 +330,7 @@ const setEnabledTabs = () => {
 
         if (tabs[tab].hasOwnProperty('machine')) {
             const machine = fabricsMachines.value.find(m => m.id === tabs[tab].machine.ID)
-            console.log(machine.active)
+            // console.log(machine.active)
             tabs[tab].enabled = machine.active
         }
 
