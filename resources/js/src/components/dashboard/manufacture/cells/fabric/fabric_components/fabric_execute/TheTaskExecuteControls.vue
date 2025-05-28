@@ -58,6 +58,19 @@
             @click="toggleFalse()"
         />
 
+        <!-- attract: Не выполнено -->
+        <AppLabelMultiLine
+            :text="falseLabelText"
+            :type="falseButtonDisabledFlag ? 'dark' : 'danger'"
+            align="center"
+            class="cursor-pointer"
+            text-size="mini"
+            type="danger"
+            width="w-[100px]"
+            @click="toggleFalse()"
+        />
+
+
         <!-- attract: Отметить как переходящий -->
         <AppLabelMultiLine
             :text="rollingMarkLabelText"
@@ -113,16 +126,26 @@
         :mode="modalConfirm"
     />
 
-    <!-- attract: Модальное окно для ввода данных -->
+    <!-- attract: Модальное окно для ввода текстовых данных -->
     <AppModalAsyncArea
         ref="appModalAsyncArea"
         :text="modalTextArea"
         :type="modalTypeArea"
         :value="modalInitValueArea"
-        :numeric="modalNumericArea"
         mode="confirm"
-        placeholder="Введите текст..."
     />
+
+    <!-- attract: Модальное окно для ввода числовых данных -->
+    <AppModalAsyncNumber
+        ref="appModalAsyncNumber"
+        :text="modalTextNumber"
+        :type="modalTypeNumber"
+        :value="modalInitValueNumber"
+        :max-value=300
+        mode="confirm"
+    />
+
+
 
     <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
     <TheTaskExecuteRollRollingData
@@ -147,6 +170,7 @@ import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resource
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncArea from '/resources/js/src/components/ui/modals/AppModalAsyncArea.vue'
+import AppModalAsyncNumber from '/resources/js/src/components/ui/modals/AppModalAsyncNumber.vue'
 import TheTaskExecuteRollRollingData
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
 
@@ -312,21 +336,24 @@ const modalText = ref([])
 const modalType = ref('danger')
 const modalConfirm = ref('confirm')
 
-// attract: Получаем ссылку на модальное для ввода данных окно с асинхронной функцией
+// attract: Получаем ссылку на модальное для ввода текстовых данных окно с асинхронной функцией
 const appModalAsyncArea = ref(null)
 const modalTextArea = ref([])
 const modalTypeArea = ref('danger')
 const modalInitValueArea = ref('')
-const modalNumericArea = ref(false)
+
+// attract: Получаем ссылку на модальное для ввода числовых данных окно с асинхронной функцией
+const appModalAsyncNumber = ref(null)
+const modalTextNumber = ref([])
+const modalTypeNumber = ref('danger')
+const modalInitValueNumber = ref(0)
 
 // attract: Получаем ссылку на модальное для ввода данных переходящего рулона
 const theTaskExecuteRollRollingData = ref(null)
 const rollingRollText = ref([])
 const rollingRollType = ref('orange')
 const rollingRollInitValue = ref(0)
-const rollingRollNumeric = ref(false)
 const rollingRollConfirm = ref('confirm')
-// const rollingRoll = {}
 const rollingRoll = ref({})
 
 
@@ -351,7 +378,6 @@ const changeDescriptionText = async () => {
 
     modalTypeArea.value = 'warning'
     modalTextArea.value = ['Измените комментарий:', '']
-    modalNumericArea.value = false
     modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].descr ?? ''
 
     const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].descr ?? '') // показываем модалку и ждем ответ
@@ -367,12 +393,12 @@ const changeDescriptionText = async () => {
 // attract: Изменить длину ткани
 const changeTextileLength = async () => {
 
-    modalTypeArea.value = 'warning'
-    modalTextArea.value = ['Измените длину рулона ткани:', '']
-    modalNumericArea.value = true
-    modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length.toString()
+    modalTypeNumber.value = 'warning'
+    modalTextNumber.value = ['Измените длину в рулона ткани (м.п.):', '']
+    modalInitValueNumber.value = fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length
 
-    const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length.toString()) // показываем модалку и ждем ответ
+    const answer = await appModalAsyncNumber.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].textile_length) // показываем модалку и ждем ответ
+
     if (answer) {
         if (!appModalAsyncArea.value.inputNumber) return                                    // если ничего нет, то выходим
 
@@ -381,6 +407,8 @@ const changeTextileLength = async () => {
         emits('change-textile-length-execute-roll')
     }
 }
+
+
 
 // attract: Переходящий рулон/Снять отметку
 const toggleRollingMark = async () => {
@@ -405,7 +433,6 @@ const toggleRollingMark = async () => {
 
     modalTypeArea.value = 'orange'
     modalTextArea.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
-    modalNumericArea.value = false
     modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
 
     const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? '') // показываем модалку и ждем ответ
@@ -444,13 +471,12 @@ const toggleFalse = async () => {
 
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) {   // если уже есть отметка, то удаляем ее
 
-        modalText.value = ['Будет изменен статус "Не выполнено".', 'Продолжить?']
+        modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
         modalConfirm.value = 'confirm'
         modalType.value = 'danger'
-        modalNumericArea.value = false
         modalInitValueArea.value = ''
 
-        const answer = await appModalAsync.value.show('') // показываем модалку и ждем ответ
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
         if (answer) {
             fabricsStore.globalExecuteMarkRollFalseReason = ''
             fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
@@ -464,7 +490,7 @@ const toggleFalse = async () => {
     modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
     modalInitValueArea.value = ''
 
-    const answer = await appModalAsyncArea.value.show('') // показываем модалку и ждем ответ
+    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
     if (answer) {
 
         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
@@ -486,8 +512,6 @@ const startExecuteRoll = async () => {
     modalText.value = ['Будет начат учет стегания рулона.', 'Продолжить?']
     modalConfirm.value = 'confirm'
     modalType.value = 'warning'
-
-
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {

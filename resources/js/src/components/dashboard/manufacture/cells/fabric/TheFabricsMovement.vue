@@ -152,7 +152,7 @@
 
 
         <!-- attract: Сами данные -->
-        <div class="p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-600 max-w-fit">
+        <div v-if="doneRolls.length" class="p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-600 max-w-fit">
 
             <div v-for="roll in doneRolls" :key="roll.id" class="flex">
 
