@@ -84,7 +84,7 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Ответственный за постановку рулона на учет в 1С')
-                ->constrained('workers', 'id')
+                ->constrained('users', 'id')
                 ->nullOnDelete();
 
             // attract: Время перемещения рулона на закрой и ответственный за перемещение на закрой
@@ -94,7 +94,7 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Ответственный за перемещение рулона на закрой')
-                ->constrained('workers', 'id')
+                ->constrained('users', 'id')
                 ->nullOnDelete();
 
             // attract: Время приема рулона на закрой и ответственный за прием на закрой
@@ -104,7 +104,7 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Ответственный за прием рулона на закрое')
-                ->constrained('workers', 'id')
+                ->constrained('users', 'id')
                 ->nullOnDelete();
 
             // attract: Переходящий на другую смену рулон или нет
