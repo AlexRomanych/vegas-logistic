@@ -444,7 +444,8 @@ const changeTaskExecute = async (task) => {
                     //     roll_exec.status === FABRIC_ROLL_STATUS.CANCELLED.CODE)
 
                     return (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE ||
-                            roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE)
+                            roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE ||
+                            roll_exec.status === FABRIC_ROLL_STATUS.PAUSED.CODE)
 
                 })
             })
