@@ -32,7 +32,7 @@
 
                     <!-- attract: Кнопка "Начать СЗ + Закончить СЗ" (Только для текущего СЗ) -->
                     <AppLabel
-                        v-if="isToday(task.date) && task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"
+                        v-if="getStartStopButtonShowCondition(task)"
                         :text="getExecuteButtonTitle(task.common.status)"
                         align="center"
                         class="cursor-pointer"
@@ -509,6 +509,27 @@ const getMachineShowCondition = (task, tab) => {
 
 }
 // getMachineShowCondition(activeTask, FABRIC_MACHINES.AMERICAN.ID)
+
+
+// attract: Возвращаем условие начала/окончания выполнения
+const getStartStopButtonShowCondition = (task) => {
+
+    // если "Готов к стежке"
+    if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
+        return isToday(task.date)
+    }
+
+    // если "Выполняется"
+    if (task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE) {
+        // TODO!!! warning - включить проверку на дату текущего дня окончания выполнения СЗ
+        return true
+        // return isToday(task.date)
+    }
+
+    // Было изначально
+    // return isToday(task.date) && task.common.status !== FABRIC_TASK_STATUS.DONE.CODE
+}
+
 
 
 // attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
