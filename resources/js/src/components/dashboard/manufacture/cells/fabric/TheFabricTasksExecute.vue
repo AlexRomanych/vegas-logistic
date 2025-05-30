@@ -438,10 +438,14 @@ const changeTaskExecute = async (task) => {
         Object.keys(task.machines).forEach((machine) => {
             task.machines[machine].rolls.forEach((roll) => {
                 isError ||= roll.rolls_exec.some((roll_exec) => {
-                    return !(roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE ||
-                        roll_exec.status === FABRIC_ROLL_STATUS.ROLLING.CODE ||
-                        roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE ||
-                        roll_exec.status === FABRIC_ROLL_STATUS.CANCELLED.CODE)
+                    // return !(roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE ||
+                    //     roll_exec.status === FABRIC_ROLL_STATUS.ROLLING.CODE ||
+                    //     roll_exec.status === FABRIC_ROLL_STATUS.FALSE.CODE ||
+                    //     roll_exec.status === FABRIC_ROLL_STATUS.CANCELLED.CODE)
+
+                    return (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE ||
+                            roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE)
+
                 })
             })
         })
