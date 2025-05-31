@@ -73,6 +73,8 @@ const props = defineProps({
     }
 })
 
+const emits = defineEmits(['add-execute-roll'])
+
 // attract: Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
@@ -219,7 +221,7 @@ const changeActiveRoll = (roll_exec) => {
 // info: Отслеживание элементов управления состоянием выполнения рулона
 const toggleFabricExecuteInfo = () => {
     rollsRender.description.show = !rollsRender.description.show
-    rollsRender.finishBy.show = !rollsRender.finishBy.show
+    // rollsRender.finishBy.show = !rollsRender.finishBy.show
     rollsRender.reason.show = !rollsRender.reason.show
 }
 
@@ -375,6 +377,18 @@ watch(() => fabricsStore.globalSelectWorkerFlag, async (newValue) => {
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 
+// attract: Переменная-флаг нажатия кнопки "Добавить рулон"
+watch(() => fabricsStore.globalExecuteRollAdd, async (newValue) => {
+
+    if (!fabricsStore.globalExecuteRollAdd) return                      // для избежания рекурсивного вызова
+
+    fabricsStore.globalExecuteRollAdd = false                           // сбрасываем значение флага
+    const addingRoll = fabricsStore.globalExecuteRollAddData
+    console.log('addingRoll: ', addingRoll)
+
+    emits('add-execute-roll', {...addingRoll, falseReason: fabricsStore.globalExecuteRollAddReason})
+    // const res = await fabricsStore.updateExecuteRoll(activeRoll)
+})
 
 </script>
 

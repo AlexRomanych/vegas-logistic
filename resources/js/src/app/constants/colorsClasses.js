@@ -23,6 +23,10 @@ const slate = 'slate'
 
 const orange = 'orange'
 
+const stone = 'stone'
+
+const indigo = 'indigo'
+
 const colorsClasses = {}
 
 
@@ -77,10 +81,20 @@ colorsClasses[orange] = {
     [textColor]: 'white',
     [effectDirection]: toLight
 }
+colorsClasses[stone] = {
+    [mainColor]: 'stone',
+    [textColor]: 'white',
+    [effectDirection]: toLight
+}
+colorsClasses[indigo] = {
+    [mainColor]: 'indigo',
+    [textColor]: 'white',
+    [effectDirection]: toLight
+}
 
 
-const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate, orange]
-const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate, orange}
+const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo]
+const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo}
 //
 // const colorsClasses = {
 //     warn: 'yellow-' + colorValue,
@@ -93,6 +107,6 @@ const colorsListObj = {primary, secondary, success, danger, warning, info, light
 export {
     colorsClasses, colorsList, colorsListObj,
     toLight, toDark,
-    primary, secondary, success, danger, warning, info, light, dark, slate, orange,
+    primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo,
     colorIndex, colorIndexLight, colorIndexOffset
 }

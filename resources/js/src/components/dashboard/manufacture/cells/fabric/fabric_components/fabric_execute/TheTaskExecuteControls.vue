@@ -61,7 +61,7 @@
         <!-- attract: Отменено -->
         <AppLabelMultiLine
             :text="cancelLabelText"
-            :type="cancelButtonDisabledFlag ? 'dark' : 'info'"
+            :type="cancelButtonDisabledFlag ? 'dark' : 'stone'"
             align="center"
             class="cursor-pointer"
             text-size="mini"
@@ -69,7 +69,6 @@
             width="w-[100px]"
             @click="toggleCancel()"
         />
-
 
         <!-- attract: Отметить как переходящий -->
         <AppLabelMultiLine
@@ -103,6 +102,17 @@
             type="warning"
             width="w-[100px]"
             @click="changeDescriptionText()"
+        />
+
+        <!-- attract: Добавить рулон -->
+        <AppLabelMultiLine
+            :text="['Добавить', 'рулон']"
+            align="center"
+            class="cursor-pointer"
+            text-size="mini"
+            type="indigo"
+            width="w-[100px]"
+            @click="addRoll()"
         />
 
         <!-- attract: Больше/Меньше -->
@@ -145,13 +155,20 @@
         mode="confirm"
     />
 
-
     <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
     <TheTaskExecuteRollRollingData
         ref="theTaskExecuteRollRollingData"
         :mode="rollingRollConfirm"
         :text="rollingRollText"
         :type="rollingRollType"
+    />
+
+    <!-- attract: Добавляем рулон (асинхронно) -->
+    <TheTaskExecuteRollAdd
+        ref="theTaskExecuteRollAdd"
+        :text="addingRollText"
+        :type="addingRollType"
+        :fabrics="fabricsData"
     />
 
 
@@ -170,6 +187,8 @@ import AppModalAsyncArea from '/resources/js/src/components/ui/modals/AppModalAs
 import AppModalAsyncNumber from '/resources/js/src/components/ui/modals/AppModalAsyncNumber.vue'
 import TheTaskExecuteRollRollingData
     from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
+import TheTaskExecuteRollAdd
+    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollAdd.vue'
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга
@@ -192,6 +211,7 @@ const emits = defineEmits([
     'rolling-execute-roll',
     'false-execute-roll',
     'cancel-execute-roll',
+    'add-execute-roll',
     'change-description-execute-roll',
     'change-textile-length-execute-roll'
 ])
@@ -374,7 +394,10 @@ const rollingRollInitValue = ref(0)
 const rollingRollConfirm = ref('confirm')
 const rollingRoll = ref({})
 
-
+// attract: Получаем ссылку на модальное для добавления рулона
+const theTaskExecuteRollAdd = ref(null)
+const addingRollText = ref([])
+const addingRollType = ref('indigo')
 //hr--------------------------------------------------------------
 
 
@@ -634,6 +657,58 @@ const finishExecuteRoll = async () => {
     }
     emits('finish-execute-roll')
 }
+
+
+// attract: Добавить рулон
+const fabricsData = ref([])
+const addRoll = async () => {
+
+    modalTypeArea.value = 'warning'
+    modalTextArea.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
+    modalInitValueArea.value = ''
+
+    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    if (answer) {
+
+
+
+        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+
+
+        // Формируем данные для добавления рулона
+        const fabrics = fabricsStore.fabricsMemory
+
+        fabrics.forEach(fabric => {
+            if (fabric.machines.some(machine => machine.id === props.machine.ID) &&
+                fabric.id !== 0 &&
+                fabric.active) fabricsData.value.push(fabric)
+        })
+
+
+        console.log(fabricsData.value)
+
+        addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
+
+        const answer = await theTaskExecuteRollAdd.value.show(fabricsData.value)
+        if (answer) {
+
+            const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
+
+            console.log(selectedFabricId)
+
+            fabricsStore.globalExecuteRollAddReason = appModalAsyncArea.value.inputText       // текст
+            fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
+            fabricsStore.globalExecuteRollAdd = true
+        }
+
+        emits('add-execute-roll')
+    }
+
+}
+
+
+
+
 
 // info: ---------------------------------------------------------------------
 

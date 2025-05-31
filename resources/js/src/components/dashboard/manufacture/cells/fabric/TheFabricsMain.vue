@@ -13,54 +13,27 @@
 </template>
 
 <script setup>
+
 import NavItemCard from '/resources/js/src/components/dashboard/nav/NavItemCard.vue'
-
-/*
-// attract: Список ПС
-const showFabrics = {
-
-    name: 'Список ПС',
-    path: 'manufacture.cell.fabrics.show',
-    shown: true,
-    isActive: true,
-}
-
-
-// attract: Буффер
-const bufferFabrics = {
-    name: 'Буфер',
-    path: 'manufacture.cell.fabrics.buffer',
-    shown: true,
-    isActive: true,
-}
-
-// attract: Загрузка ПС из 1С
-const uploadFabrics = {
-    name: 'Загрузка ПС из 1С',
-    path: 'manufacture.cell.fabrics.upload',
-    shown: true,
-    isActive: true,
-}
-*/
 
 
 let menuItems = [
-    {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement'},
-    {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage'},
-    {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar'},
-    {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute'},
-    {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense'},
-    {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload'},
+    {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
+    {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute', shown: true, isActive: true},
+    {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar', shown: true, isActive: true},
+    {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense', shown: true, isActive: true},
+    {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload', shown: true, isActive: true},
+    {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement', shown: true, isActive: true},
+    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show', shown: true, isActive: true},
+    {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show', shown: true, isActive: true},
+    {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines', shown: true, isActive: true},
+    {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement', shown: false, isActive: true},
+    {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload', shown: true, isActive: false},
+    {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload', shown: true, isActive: false},
     // {name: 'Буфер', path: 'manufacture.cell.fabrics.buffer'},
-    {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement'},
-    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show'},
-    {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show'},
-    {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines'},
-    {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload'},
-    {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload'},
 ]
 
-menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
+// menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
 
 
 </script>

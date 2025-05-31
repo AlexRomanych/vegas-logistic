@@ -27,7 +27,6 @@
                         :type="type"
                         align="center"
                         height="h-[200px]"
-                        type="danger"
                         width="w-[500px]"
                     />
                 </div>

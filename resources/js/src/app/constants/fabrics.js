@@ -175,8 +175,8 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
     CANCELLED: {
         WORD: 'cancelled',
         CODE: 9,
-        TITLE: 'Отмененный',
-        TYPE: 'info',
+        TITLE: 'Отменено',
+        TYPE: 'stone',
     },
 })
 

@@ -49,10 +49,15 @@ const URL_FABRIC_TASKS_CLOSE = 'fabrics/tasks/close/'                   // URL �
 
 const URL_FABRIC_TASKS_EXECUTE_ROLL_UPDATE =
     'fabrics/tasks/execute/roll/update/'                                // URL для обновления выполняемого рулона (FabricTaskContext)
+const URL_FABRIC_TASKS_EXECUTE_ROLL_ADD =
+    'fabrics/tasks/execute/roll/add/'                                   // URL для добавления нового выполняемого рулона
+
 const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_REGISTERED =
     'fabrics/tasks/execute/roll/registered/'                            // URL для регистрации рулона в 1С
 const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED =
     'fabrics/tasks/execute/roll/moved/'                                 // URL для перемещения рулона на закрой
+
+
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
 const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT  =
     'fabrics/tasks/rolls/done/'                                         // URL для получения всех выполненных рулонов
@@ -128,6 +133,11 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // attract: Переменная-флаг нажатия кнопки "Отменено"
     const globalExecuteMarkRollCancel = ref(false)              // маяк кнопки
     const globalExecuteMarkRollCancelReason = ref('')           // причина отмененного рулона
+
+    // attract: Переменная-флаг нажатия кнопки "Добавить рулон"
+    const globalExecuteRollAdd = ref(false)                     // маяк кнопки
+    const globalExecuteRollAddReason = ref('')                  // причина добавленного рулона
+    const globalExecuteRollAddData = ref(0)                     // объект добавленного рулона
 
     // attract: Переменная-флаг нажатия кнопки "Изменить метраж ткани" рулона
     const globalExecuteRollChangeTextile = ref(false)
@@ -376,6 +386,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+
+    // attract: Добавление нового выполняемого рулона
+    const addExecuteRoll = async (rollData) => {
+        const result = await jwtPost(URL_FABRIC_TASKS_EXECUTE_ROLL_ADD, {data: rollData})
+        console.log('store: addExecuteRoll: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
+
     // attract: Обновление списка сотрудников для дня СЗ
     const updateFabricTaskWorkers = async (taskId = 0, workerIds = []) => {
         console.log('debug: ', taskId, workerIds)
@@ -456,7 +475,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
-
     return {
         fabricsCashe,
         fabricsMemory,
@@ -468,6 +486,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalActiveRolls,
         globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse, globalExecuteMarkRollFalseReason,
         globalExecuteMarkRollCancel, globalExecuteMarkRollCancelReason,
+        globalExecuteRollAdd, globalExecuteRollAddReason, globalExecuteRollAddData,
         globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
         globalExecuteRollChangeTextileLength, globalExecuteRollChangeDescriptionText,
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
@@ -489,7 +508,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll,
+        updateExecuteRoll, addExecuteRoll,
         updateFabricTaskWorkers,
         getFabricExecutingTasks, getFabricNotDoneTasks,
         closeFabricTasks,

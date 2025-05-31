@@ -259,6 +259,7 @@ Route::prefix('/fabrics/tasks')
         Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
 
         Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
+        Route::post('/execute/roll/add/', [CellFabricTaskRollController::class, 'addExecuteRoll']);
         Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
         Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
         Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);

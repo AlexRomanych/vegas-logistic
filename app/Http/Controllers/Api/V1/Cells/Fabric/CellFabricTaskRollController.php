@@ -264,12 +264,28 @@ class CellFabricTaskRollController extends Controller
     }
 
 
+    public function addExecuteRoll(Request $request)
+    {
+        return $request->all();
+    }
+
+
+
+
+
+
+
     // attract: Вспомогалочка. Или Null, или правильная дата (+3 часа)
     private function getUTCDateOrNull($date)
     {
         if (is_null($date)) return null;
         else return correctTimeZone($date);
     }
+
+
+
+
+
 
 }
 

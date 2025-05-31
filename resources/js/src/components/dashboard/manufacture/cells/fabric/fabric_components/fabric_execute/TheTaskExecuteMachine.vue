@@ -47,6 +47,7 @@
                     :machine="machine"
                     :rolls="rolls"
                     :workers="task.workers"
+                    @add-execute-roll="addExecuteRoll"
                 />
 
             </div>
@@ -102,7 +103,7 @@ const props = defineProps({
     }
 })
 
-
+console.log('machine: task: ', props.task)
 // console.log('workers: ', props.task.workers)
 // console.log('machine', props.machine)
 // console.log('machine', FABRIC_MACHINES.AMERICAN)
@@ -164,6 +165,11 @@ const deleteTaskRecord = (deleteData) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
 
+// attract: Всплывающее событие "Добавить рулон" из выполнения СЗ
+const addExecuteRoll = async(addingRollData) => {
+    console.log('addingRollData: ', {...addingRollData, taskId: props.task.common.id})
+    const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: props.task.common.id})
+}
 
 // hr----------------------------------------------------
 // attract: Начинаем выполнение рулона
