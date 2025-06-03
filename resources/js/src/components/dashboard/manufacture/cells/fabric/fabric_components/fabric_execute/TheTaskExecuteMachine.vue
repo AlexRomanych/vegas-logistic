@@ -108,7 +108,7 @@ console.log('machine: task: ', props.task)
 // console.log('machine', props.machine)
 // console.log('machine', FABRIC_MACHINES.AMERICAN)
 
-const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord'])
+const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord', 'addExecuteRoll'])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
@@ -169,6 +169,8 @@ const deleteTaskRecord = (deleteData) => {
 const addExecuteRoll = async(addingRollData) => {
     console.log('addingRollData: ', {...addingRollData, taskId: props.task.common.id})
     const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: props.task.common.id})
+    emits('addExecuteRoll') // Передаем в родительский компонент, что рулон добавлен для обновления списка и перерисовки
+
 }
 
 // hr----------------------------------------------------

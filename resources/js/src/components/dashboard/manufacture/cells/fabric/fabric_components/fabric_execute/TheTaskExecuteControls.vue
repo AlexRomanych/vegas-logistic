@@ -585,9 +585,9 @@ const toggleCancel = async () => {
 // attract: Начать выполнение
 const startExecuteRoll = async () => {
 
-    await changeTextileLength()                     // warning: меняем длину ткани, если это надо
-
     if (startButtonDisabledFlag.value) return       // отменяем выполнение, если в задании уже есть активное выполнение
+
+    await changeTextileLength()                     // warning: Защита от дурака. Меняем длину ткани, если это надо
 
     modalText.value = ['Будет начат учет стегания рулона.', 'Продолжить?']
     modalConfirm.value = 'confirm'
@@ -681,11 +681,14 @@ const addRoll = async () => {
         fabrics.forEach(fabric => {
             if (fabric.machines.some(machine => machine.id === props.machine.ID) &&
                 fabric.id !== 0 &&
-                fabric.active) fabricsData.value.push(fabric)
+                fabric.active &&
+                fabric.correct) {
+                fabricsData.value.push(fabric)
+            }
         })
 
 
-        console.log(fabricsData.value)
+        // console.log(fabricsData.value)
 
         addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
 
@@ -694,7 +697,7 @@ const addRoll = async () => {
 
             const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
 
-            console.log(selectedFabricId)
+            // console.log(selectedFabricId)
 
             fabricsStore.globalExecuteRollAddReason = appModalAsyncArea.value.inputText       // текст
             fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
@@ -705,8 +708,6 @@ const addRoll = async () => {
     }
 
 }
-
-
 
 
 

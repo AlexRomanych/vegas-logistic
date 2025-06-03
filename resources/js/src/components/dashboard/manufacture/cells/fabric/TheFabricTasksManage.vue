@@ -407,12 +407,26 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
         // attract: Проверяем, чтобы были только правильные статусы (не было не выполненных или переходящих)
         // считаем общее количество рулонов
-        let isFind = false
+        let canDelete = true
+
+        console.log('machines: ', task.machines)
+
         Object.keys(task.machines).forEach((machine) => {
-            isFind ||= task.machines[machine].rolls.some(roll => roll.editable)
+
+            // let i = 0
+            // canDelete &&= !task.machines[machine].rolls.some(roll => {
+            //     console.log(i, roll.editable)
+            //     i++
+            //     return !roll.editable
+            // })
+            canDelete &&= !task.machines[machine].rolls.some(roll => !roll.editable)
+            // task.machines[machine].rolls.forEach(roll => {canDelete &&= roll.editable})
         })
 
-        if (!isFind) {
+        // console.log('canDelete: ', canDelete)
+        // return
+
+        if (!canDelete) {
             modalSimpleType.value = 'danger'
             modalSimpleText.value = 'Задание не может быть удалено, потому присутствуют не выполненные или переходящие рулоны. Удалите их вручную.'
             modalSimpleShow.value = true

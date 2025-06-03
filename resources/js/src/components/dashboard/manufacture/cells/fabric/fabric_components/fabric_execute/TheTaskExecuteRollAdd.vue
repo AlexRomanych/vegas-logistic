@@ -132,6 +132,8 @@ const props = defineProps({
 
 })
 
+
+
 const emit = defineEmits(['select'])
 
 // attract: Выбранное ПС
@@ -141,7 +143,8 @@ const selectedFabric = ref(0)
 const getSelectData = (inData = []) => {
     const selectData = {
         name: 'fabrics',
-        data: inData.map(item => ({id: item.id, name: item.display_name})),
+        data: inData
+            .map(item => ({id: item.id, name: item.display_name}))
         // data: [
         //     {id: 3, name: 'Three', selected: true},
         //     {id: 4, name: 'Four', disabled: true},
@@ -166,7 +169,7 @@ let resolvePromise
 const show = (inSelectData) => {                  // Передаем сюда значение для select, потому что может быть не определен props на момент вызова. Это своего рода подстраховка
 
     selectData.value = getSelectData(inSelectData)
-    // console.log('selectData show: ', inSelectData)
+    console.log('selectData show: ', inSelectData)
 
     showModal.value = true;
     return new Promise((resolve) => {

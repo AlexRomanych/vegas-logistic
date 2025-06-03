@@ -97,6 +97,7 @@
                             :key="rerender[tab.machine.ID]"
                             :machine="{...tab.machine}"
                             :task="activeTask"
+                            @add-execute-roll="addExecuteRoll"
                         />
                     </div>
                 </div>
@@ -496,6 +497,17 @@ const changeTaskExecute = async (task) => {
 
         // return
     }
+}
+
+
+// attract: Добавить рулон в СЗ во время выполнения
+const addExecuteRoll = async () => {
+    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
+    // console.log('created: newTaskDay: ', newTaskDay)
+
+    activeTask.machines = newTaskDay[0].machines
+
+    rerender.forEach((_, index, array) => array[index]++)
 }
 
 

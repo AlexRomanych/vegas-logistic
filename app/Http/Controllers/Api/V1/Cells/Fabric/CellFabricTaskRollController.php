@@ -8,9 +8,12 @@ use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 
-//use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\FabricTask;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
+//use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+
 use Illuminate\Http\Request;
 use \Exception;
 use Illuminate\Support\Facades\Auth;
@@ -264,15 +267,69 @@ class CellFabricTaskRollController extends Controller
     }
 
 
+    /**
+     * Descr: Создает рулон во время выполнения СЗ
+     * @param Request $request
+     * @return string
+     */
     public function addExecuteRoll(Request $request)
     {
-        return $request->all();
+        try {
+            // attract: Валидация данных
+            $request->validate([
+                'data' => 'required|array',
+                'data.taskId' => 'required|numeric',
+                'data.machineId' => 'required|numeric',
+                'data.fabricId' => 'required|numeric',
+                'data.falseReason' => 'required|string',
+            ]);
+
+            // attract: Находим СЗ на данной СМ, чтобы добавить контекст - FabricTaskContext
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $request->data['taskId'])
+                ->where('fabric_machine_id', $request->data['machineId'])
+                ->first();
+            if (!$task) throw new Exception('Не найдено СЗ');
+
+            // attract: Находим ПС, для добавления в контекст
+            $fabric = Fabric::query()->find($request->data['fabricId']);
+            if (!$fabric) throw new Exception('Не найдена ПС');
+
+            // attract: Создаем контекст для задания
+            $taskContext = FabricTaskContext::query()->create([
+                'fabric_task_id' => $task->id,
+                'fabric_id' => $fabric->id,
+                'roll_position' => 0,       // TODO: Пока 0, но потом добавить логику по нахождению позиции рулона
+                'average_textile_length' => $fabric->average_roll_length,
+                'translate_rate' => $fabric->translate_rate,
+                'productivity' => $fabric->productivity,
+                'rolls_amount' => 1,
+                'description' => 'Создан в процессе выполнения СЗ.'
+//            'note' => 'Создан в процессе выполнения СЗ. ' . (Carbon::parse($contextDate))->format('d.m.Y'),
+            ]);
+            if (!$taskContext) throw new Exception('Не удалось создать контекст СЗ.');
+
+            // attract: Создаем рулон
+            $roll = FabricTaskRoll::query()->create([
+                'fabric_task_context_id' => $taskContext->id,
+                'fabric_id' => $fabric->id,
+                'roll_position' => 0,
+                'roll_status' => FABRIC_ROLL_CREATED_CODE,
+                'textile_roll_length' => $fabric->average_roll_length,
+                'translate_rate' => $fabric->translate_rate,
+                'productivity' => $fabric->productivity,
+                'description' => 'Создан в процессе выполнения',   // дописываем плановый комментарий
+                'false_reason' => $request->data['falseReason'],
+                'note' => $request->data['falseReason'],
+                'comment' => $request->data['falseReason']
+            ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
     }
-
-
-
-
-
 
 
     // attract: Вспомогалочка. Или Null, или правильная дата (+3 часа)
@@ -281,10 +338,6 @@ class CellFabricTaskRollController extends Controller
         if (is_null($date)) return null;
         else return correctTimeZone($date);
     }
-
-
-
-
 
 
 }
