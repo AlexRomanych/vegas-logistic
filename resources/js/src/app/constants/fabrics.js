@@ -160,7 +160,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         WORD: 'moved',
         CODE: 7,
         TITLE: 'Перемещенный',
-        TYPE: 'primary',
+        TYPE: 'indigo',
     },
 
     // descr: Рулон принятый на закрое

@@ -339,7 +339,7 @@ const setEnabledTabs = () => {
 setEnabledTabs()
 console.log(tabs)
 
-// переключаем выбранную вкладку
+// attract: переключаем выбранную вкладку
 const changeTab = (selectedTab) => {
     for (const tab in tabs) {
         if (tabs.hasOwnProperty(tab)) {
