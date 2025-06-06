@@ -190,7 +190,7 @@
 
                     <AppLabel
                         :text="fabric.buffer.amount.toFixed(2)"
-                        :type="!(!fabric.buffer.amount && fabric.active) ? 'dark' : 'danger'"
+                        :type="!(!round(fabric.buffer.amount, 0) && fabric.active) ? 'dark' : 'danger'"
                         align="center"
                         text-size="mini"
                         width="w-[60px]"
@@ -336,6 +336,8 @@
 import {ref} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+
+import {round} from '/resources/js/src/app/helpers/helpers_lib.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
 import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'

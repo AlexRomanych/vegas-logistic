@@ -239,6 +239,7 @@ class CellFabricTaskRollController extends Controller
                     'move_to_cut_by' => Auth::id(),
                     'move_to_cut_at' => now(),
                 ]);
+                $delta = -$delta;
 
             } else {
                 $result = $roll->update([
@@ -246,7 +247,7 @@ class CellFabricTaskRollController extends Controller
                     'move_to_cut_by' => 0,
                     'move_to_cut_at' => null,
                 ]);
-                $delta = -$delta;
+
             }
 
             if (!$result) throw new Exception('Не удалось обновить статус');

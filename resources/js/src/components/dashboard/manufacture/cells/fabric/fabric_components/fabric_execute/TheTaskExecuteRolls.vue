@@ -370,8 +370,9 @@ watch(() => fabricsStore.globalFinishExecuteRoll, async (newValue) => {
 
 // attract: Переменная-флаг нажатия кнопки "Выбрать ответственного" за выполнение рулона
 watch(() => fabricsStore.globalSelectWorkerFlag, async (newValue) => {
-    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) return  // если статус = "Создан"
-    fabricsStore.globalSelectWorkerFlag = false                        // сбрасываем значение флага
+    if (activeRoll.status === FABRIC_ROLL_STATUS.DONE.CODE) return      // если статус = "Выполнено" - не меняем, потому что будет задвоение буфера
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) return   // если статус = "Создан"
+    fabricsStore.globalSelectWorkerFlag = false                         // сбрасываем значение флага
     activeRoll.finish_by = fabricsStore.globalSelectWorkerId
 
     const res = await fabricsStore.updateExecuteRoll(activeRoll)

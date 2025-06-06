@@ -132,7 +132,7 @@
             :width="rollsRender.finishBy.width"
             text-size="mini"
             @change="getSelectedWorker"
-            :disabled="roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE"
+            :disabled="roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE || roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE"
         />
 
 
