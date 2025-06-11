@@ -1,6 +1,6 @@
 <template>
 
-    <div :class="width" class="flex flex-col ml-0.5 mr-1 mt-2">
+    <div :class="width" class="flex flex-col ml-0.5 mr-0.5 mt-2">
         <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
         <input
             :id="id"

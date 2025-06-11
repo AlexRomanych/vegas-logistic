@@ -103,6 +103,21 @@ const props = defineProps({
 
 })
 
+
+// attract: Формат данных для поля селекта
+// const selectData = {
+//     name: 'numbers',
+//     data: [
+//         {id: 1, name: 'One'},
+//         {id: 2, name: 'Two'},
+//         {id: 3, name: 'Three', selected: true},
+//         {id: 4, name: 'Four', disabled: true},
+//         {id: 5, name: 'Five'},
+//     ]
+// }
+
+
+
 const emit = defineEmits(['change'])
 const onChange = (e) => {
     const idx = props.selectData.data.findIndex(item => item.id.toString() === e.target.value)

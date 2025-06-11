@@ -7,23 +7,47 @@
 
             <div class="flex">
 
-                <!-- attract: Код по 1С -->
-                <AppLabelMultiLine
-                    :text="['Код в 1С', '']"
-                    align="center"
-                    text-size="small"
-                    type="primary"
-                    width="w-[100px]"
-                />
+                <div>
+                    <!-- attract: Код по 1С -->
+                    <AppLabelMultiLine
+                        :text="['Код в 1С', '']"
+                        align="center"
+                        text-size="small"
+                        type="primary"
+                        width="w-[100px]"
+                    />
 
-                <!-- attract: ПС -->
-                <AppLabelMultiLine
-                    :text="['Название', 'полотна стеганного']"
-                    align="center"
-                    text-size="small"
-                    type="primary"
-                    width="w-[310px]"
-                />
+                    <!-- attract: Фильтр: Код 1С -->
+                    <AppInputText
+                        id="contract-search"
+                        v-model.trim="codeFilter"
+                        placeholder="Код 1С"
+                        text-size="mini"
+                        type="primary"
+                        width="w-[100px]"
+                    />
+                </div>
+
+                <div>
+                    <!-- attract: ПС -->
+                    <AppLabelMultiLine
+                        :text="['Название', 'полотна стеганного']"
+                        align="center"
+                        text-size="small"
+                        type="primary"
+                        width="w-[310px]"
+                    />
+
+                    <!-- attract: Фильтр: название ПС -->
+                    <AppInputText
+                        id="name-search"
+                        v-model.trim="nameFilter"
+                        placeholder="Название ПС"
+                        text-size="mini"
+                        type="primary"
+                        width="w-[310px]"
+                    />
+                </div>
 
                 <!-- attract: Рисунок -->
                 <AppLabelMultiLine
@@ -132,15 +156,30 @@
                     width="w-[80px]"
                 />
 
-                <!-- attract: Статус -->
-                <AppLabelMultiLine
-                    :text="['Статус', '']"
-                    align="center"
-                    text-size="small"
-                    tile="Статус"
-                    type="primary"
-                    width="w-[80px]"
-                />
+                <div>
+                    <!-- attract: Статус -->
+                    <AppLabelMultiLine
+                        :text="['Статус', '']"
+                        align="center"
+                        text-size="small"
+                        tile="Статус"
+                        type="primary"
+                        width="w-[80px]"
+                    />
+
+                    <!-- Верстка  -->
+                    <div class="mt-1"></div>
+
+                    <!-- attract: Фильтр: Статус -->
+                    <AppSelectSimple
+                        :select-data="statusSelectData"
+                        text-size="mini"
+                        type="primary"
+                        width="w-[80px]"
+                        @change="filterByStatus"
+                    />
+                </div>
+
 
                 <!-- attract: Коэффициент перевода ткани в ПС -->
                 <AppLabelMultiLine
@@ -173,30 +212,6 @@
                         width="w-[100px]"
                     />
                 </router-link>
-
-            </div>
-
-            <div class="flex">
-
-                <!-- attract: Фильтр: Код 1С -->
-                <AppInputText
-                    id="contract-search"
-                    v-model.trim="codeFilter"
-                    placeholder="Код 1С"
-                    text-size="mini"
-                    type="primary"
-                    width="w-[100px]"
-                />
-
-                <!-- attract: Фильтр: название ПС -->
-                <AppInputText
-                    id="name-search"
-                    v-model.trim="nameFilter"
-                    placeholder="Название ПС"
-                    text-size="mini"
-                    type="primary"
-                    width="w-[310px]"
-                />
 
             </div>
 
@@ -341,15 +356,15 @@
                             />
                         </router-link>
 
-<!--                        <AppLabel-->
-<!--                            align="center"-->
-<!--                            class="cursor-pointer font-bold"-->
-<!--                            text="X"-->
-<!--                            text-size="small"-->
-<!--                            type="danger"-->
-<!--                            width="w-[40px]"-->
-<!--                            @click="fabricDelete(fabric.id)"-->
-<!--                        />-->
+                        <!--                        <AppLabel-->
+                        <!--                            align="center"-->
+                        <!--                            class="cursor-pointer font-bold"-->
+                        <!--                            text="X"-->
+                        <!--                            text-size="small"-->
+                        <!--                            type="danger"-->
+                        <!--                            width="w-[40px]"-->
+                        <!--                            @click="fabricDelete(fabric.id)"-->
+                        <!--                        />-->
 
                     </div>
                 </div>
@@ -397,7 +412,7 @@ import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
 import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
 import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
 import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
-
+import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
 
 const fabricsStore = useFabricsStore()
 
@@ -416,9 +431,19 @@ fabrics.value.sort(fabric => fabric.active, true)
 // attract: Переменные для фильтрации
 const codeFilter = ref('')
 const nameFilter = ref('')
+const statusFilter = ref(1)
 
+// attract: Селект для статуса
+const statusSelectData = {
+    name: 'status',
+    data: [
+        {id: 1, name: 'Все', selected: true, disabled: false},
+        {id: 2, name: 'Активный', selected: true, disabled: false},
+        {id: 3, name: 'Архив', selected: true, disabled: false},
+    ]
+}
 
-console.log('fabrics', fabrics.value)
+// console.log('fabrics', fabrics.value)
 
 const modalShow = ref(false)
 const modalAnswer = ref(false)
@@ -459,16 +484,28 @@ const closeModal = async (answer) => {
     }
 }
 
+const filterByStatus = (status) => {
+    statusFilter.value = status.id
+}
+
 
 // attract: Реализация фильтра
 watch([
     () => codeFilter.value,
-    () => nameFilter.value
-], ([newCodeFilter, newNameFilter]) => {
+    () => nameFilter.value,
+    () => statusFilter.value
+], ([newCodeFilter, newNameFilter, newStatusFilter]) => {
 
     fabrics.value = allFabrics.value
         .filter(fabric => fabric.code_1C.includes(newCodeFilter.toLowerCase()))
         .filter(fabric => fabric.display_name.toLowerCase().includes(newNameFilter.toLowerCase()))
+
+    if (newStatusFilter === 2 || newStatusFilter === 3) {
+
+        newStatusFilter === 2 ?
+            fabrics.value = fabrics.value.filter(fabric => fabric.active) :
+            fabrics.value = fabrics.value.filter(fabric => !fabric.active)
+    }
 
 }, {deep: true})
 
