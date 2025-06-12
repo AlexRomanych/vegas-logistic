@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 
 //use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricOrderCollection;
+use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricExpense;
 use App\Models\Manufacture\Cells\Fabric\FabricOrder;
 use App\Services\Manufacture\FabricService;

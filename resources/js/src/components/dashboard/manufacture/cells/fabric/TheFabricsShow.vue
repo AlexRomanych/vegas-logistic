@@ -58,14 +58,26 @@
                     width="w-[40px]"
                 />
 
-                <!-- attract: Ткань -->
-                <AppLabelMultiLine
-                    :text="['Ткань', '']"
-                    align="center"
-                    text-size="small"
-                    type="primary"
-                    width="w-[90px]"
-                />
+                <div>
+                    <!-- attract: Ткань -->
+                    <AppLabelMultiLine
+                        :text="['Ткань', '']"
+                        align="center"
+                        text-size="small"
+                        type="primary"
+                        width="w-[90px]"
+                    />
+
+                    <!-- attract: Фильтр: Ткань -->
+                    <AppInputText
+                        id="name-search"
+                        v-model.trim="textileFilter"
+                        placeholder="Ткань"
+                        text-size="mini"
+                        type="primary"
+                        width="w-[90px]"
+                    />
+                </div>
 
                 <!-- attract: Буфер -->
                 <AppLabelMultiLine
@@ -126,35 +138,77 @@
                     width="w-[60px]"
                 />
 
-                <!-- attract: Основная СМ -->
-                <AppLabelMultiLine
-                    :text="['Основная', 'СМ']"
-                    align="center"
-                    text-size="small"
-                    title="Основная стегальная машина"
-                    type="success"
-                    width="w-[80px]"
-                />
+                <div>
+                    <!-- attract: Основная СМ -->
+                    <AppLabelMultiLine
+                        :text="['Основная', 'СМ']"
+                        align="center"
+                        text-size="small"
+                        title="Основная стегальная машина"
+                        type="success"
+                        width="w-[80px]"
+                    />
 
-                <!-- attract: Альтернативная СМ 1 -->
-                <AppLabelMultiLine
-                    :text="['Альтернат.', 'СМ 1']"
-                    align="center"
-                    text-size="small"
-                    title="Альтернативная стегальная машина 1"
-                    type="primary"
-                    width="w-[80px]"
-                />
+                    <!-- Верстка  -->
+                    <div class="mt-1"></div>
 
-                <!-- attract: Альтернативная СМ 2 -->
-                <AppLabelMultiLine
-                    :text="['Альтернат.', 'СМ 2']"
-                    align="center"
-                    text-size="small"
-                    title="Альтернативная стегальная машина 2"
-                    type="warning"
-                    width="w-[80px]"
-                />
+                    <!-- attract: Фильтр: Основная СМ -->
+                    <AppSelectSimple
+                        :select-data="mainMachine"
+                        text-size="mini"
+                        type="success"
+                        width="w-[80px]"
+                        @change="filterByMachine($event, 0)"
+                    />
+                </div>
+
+                <div>
+                    <!-- attract: Альтернативная СМ 1 -->
+                    <AppLabelMultiLine
+                        :text="['Альтернат.', 'СМ 1']"
+                        align="center"
+                        text-size="small"
+                        title="Альтернативная стегальная машина 1"
+                        type="indigo"
+                        width="w-[80px]"
+                    />
+
+                    <!-- Верстка  -->
+                    <div class="mt-1"></div>
+
+                    <!-- attract: Альтернативная СМ 1 -->
+                    <AppSelectSimple
+                        :select-data="mainMachine"
+                        text-size="mini"
+                        type="indigo"
+                        width="w-[80px]"
+                        @change="filterByMachine($event, 1)"
+                    />
+                </div>
+
+                <div>
+                    <!-- attract: Альтернативная СМ 2 -->
+                    <AppLabelMultiLine
+                        :text="['Альтернат.', 'СМ 2']"
+                        align="center"
+                        text-size="small"
+                        title="Альтернативная стегальная машина 2"
+                        type="warning"
+                        width="w-[80px]"
+                    />
+
+                    <!-- Верстка  -->
+                    <div class="mt-1"></div>
+
+                    <!-- attract: Альтернативная СМ 2 -->
+                    <AppSelectSimple
+                        :select-data="mainMachine"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[80px]"
+                        @change="filterByMachine($event, 2)"
+                    />
+                </div>
 
                 <div>
                     <!-- attract: Статус -->
@@ -207,11 +261,22 @@
                         :text="['Создать', '']"
                         align="center"
                         class="cursor-pointer"
-                        text-size="normal"
+                        text-size="small"
                         type="success"
-                        width="w-[100px]"
+                        width="w-[70px]"
                     />
                 </router-link>
+
+                <!-- attract: Кнопка Обновить буфер -->
+                <AppLabelMultiLine
+                    :text="['Обновить', 'буфер']"
+                    align="center"
+                    class="cursor-pointer"
+                    text-size="small"
+                    type="danger"
+                    width="w-[70px]"
+                    @click="updateBuffer"
+                />
 
             </div>
 
@@ -308,7 +373,7 @@
 
                         <AppLabel
                             :text="fabric.machines[1].id ? fabric.machines[1].short_name : ''"
-                            :type="fabric.machines[1].id ? 'primary' : 'dark'"
+                            :type="fabric.machines[1].id ? 'indigo' : 'dark'"
                             align="center"
                             text-size="mini"
                             width="w-[80px]"
@@ -324,7 +389,7 @@
 
                         <AppLabel
                             :text="fabric.active ? 'Активный' : 'Архив'"
-                            :type="fabric.active ? 'success' : 'dark'"
+                            :type="fabric.active ? 'success' : 'stone'"
                             align="center"
                             text-size="mini"
                             width="w-[80px]"
@@ -352,7 +417,7 @@
                                 text="Редактировать"
                                 text-size="mini"
                                 type="warning"
-                                width="w-[100px]"
+                                width="w-[144px]"
                             />
                         </router-link>
 
@@ -405,6 +470,8 @@ import {ref, watch} from 'vue'
 
 import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
 
+import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+
 import {round} from '/resources/js/src/app/helpers/helpers_lib.js'
 
 import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
@@ -416,9 +483,16 @@ import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSi
 
 const fabricsStore = useFabricsStore()
 
-const getFabrics = async () => await fabricsStore.getFabrics()
-const allFabrics = ref(await getFabrics())
-const fabrics = ref(allFabrics.value)
+const getAllFabrics = async () => await fabricsStore.getFabrics()
+const allFabrics = ref(await getAllFabrics())
+
+const getFabrics = () => {
+    const tempFabrics = ref(allFabrics.value)
+    tempFabrics.value.sort((fabric1, fabric2) => fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name))
+    tempFabrics.value.sort(fabric => fabric.active, true)
+    return tempFabrics.value
+}
+const fabrics = ref(getFabrics())
 
 // let fabrics = await fabricsStore.getFabrics()
 
@@ -431,7 +505,11 @@ fabrics.value.sort(fabric => fabric.active, true)
 // attract: Переменные для фильтрации
 const codeFilter = ref('')
 const nameFilter = ref('')
+const textileFilter = ref('')
 const statusFilter = ref(1)
+const mainMachineFilter = ref(0)
+const altMachineFilter_1 = ref(0)
+const altMachineFilter_2 = ref(0)
 
 // attract: Селект для статуса
 const statusSelectData = {
@@ -443,7 +521,21 @@ const statusSelectData = {
     ]
 }
 
-// console.log('fabrics', fabrics.value)
+// attract: Селекты для фильтрации СМ
+const machinesData = [
+    {id: 0, name: 'Все', selected: true, disabled: false},
+    {id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false},
+    {id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false},
+    {id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false},
+    {id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false},
+]
+
+const mainMachine = {name: 'mainMachine', data: machinesData,}
+const altMachine_1 = {name: 'altMachine_1', data: machinesData,}
+const altMachine_2 = {name: 'altMachine_2', data: machinesData,}
+
+
+console.log('fabrics', fabrics.value)
 
 const modalShow = ref(false)
 const modalAnswer = ref(false)
@@ -484,8 +576,35 @@ const closeModal = async (answer) => {
     }
 }
 
+// attract: Меняем статус
 const filterByStatus = (status) => {
     statusFilter.value = status.id
+}
+
+// attract: Меняем СМ
+const filterByMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    switch (machineOrder) {
+        case 0:
+            mainMachineFilter.value = event.id
+            break
+        case 1:
+            altMachineFilter_1.value = event.id
+            break
+        case 2:
+            altMachineFilter_2.value = event.id
+            break
+    }
+
+    // console.log('select: ', event)
+    // console.log('machineOrder: ', machineOrder)
+}
+
+
+// attract: Обновляем буфер в соответствии с рулонами (синхронизируем с количеством рулонов)
+const updateBuffer = async () => {
+    await fabricsStore.updateFabricsBuffer()
+    allFabrics.value = await getAllFabrics()
+    fabrics.value = getFabrics()
 }
 
 
@@ -493,19 +612,42 @@ const filterByStatus = (status) => {
 watch([
     () => codeFilter.value,
     () => nameFilter.value,
-    () => statusFilter.value
-], ([newCodeFilter, newNameFilter, newStatusFilter]) => {
+    () => textileFilter.value,
+    () => statusFilter.value,
+    () => mainMachineFilter.value,
+    () => altMachineFilter_1.value,
+    () => altMachineFilter_2.value,
+], ([newCodeFilter, newNameFilter, newTextileFilter, newStatusFilter,
+        newMainMachineFilter, newAltMachineFilter_1, newAltMachineFilter_2]) => {
 
     fabrics.value = allFabrics.value
         .filter(fabric => fabric.code_1C.includes(newCodeFilter.toLowerCase()))
         .filter(fabric => fabric.display_name.toLowerCase().includes(newNameFilter.toLowerCase()))
+        .filter(fabric => fabric.textile.toLowerCase().includes(newTextileFilter.toLowerCase()))
 
+    // Фильтр по статусу
     if (newStatusFilter === 2 || newStatusFilter === 3) {
 
         newStatusFilter === 2 ?
             fabrics.value = fabrics.value.filter(fabric => fabric.active) :
             fabrics.value = fabrics.value.filter(fabric => !fabric.active)
     }
+
+    // Фильтр по основной СМ
+    if (newMainMachineFilter !== 0) {
+        fabrics.value = fabrics.value.filter(fabric => fabric.machines[0].id === newMainMachineFilter)
+    }
+
+    // Фильтр по альт. СМ 1
+    if (newAltMachineFilter_1 !== 0) {
+        fabrics.value = fabrics.value.filter(fabric => fabric.machines[1].id === newAltMachineFilter_1)
+    }
+
+    // Фильтр по альт. СМ 2
+    if (newAltMachineFilter_2 !== 0) {
+        fabrics.value = fabrics.value.filter(fabric => fabric.machines[2].id === newAltMachineFilter_2)
+    }
+
 
 }, {deep: true})
 

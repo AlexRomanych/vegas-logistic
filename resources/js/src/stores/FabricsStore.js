@@ -64,6 +64,9 @@ const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT  =
 
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
+const URL_FABRIC_BUFFER_UPDATE = 'fabrics/buffer/update/'               // URL для обновления буфера ПС
+
+
 export const useFabricsStore = defineStore('fabrics', () => {
 
 
@@ -475,6 +478,14 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
+    // Attract: Обновляем буфер ПС
+    const updateFabricsBuffer = async () => {
+        const result = await jwtGet(URL_FABRIC_BUFFER_UPDATE)
+        console.log('store: updateFabricsBuffer: ', result)
+        return result.data
+    }
+
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -518,6 +529,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         createContextExpense,
         getNotAcceptedToCutRolls,
         setRollRegisteredStatus, setRollMovedStatus,
+        updateFabricsBuffer,
     }
 
 })

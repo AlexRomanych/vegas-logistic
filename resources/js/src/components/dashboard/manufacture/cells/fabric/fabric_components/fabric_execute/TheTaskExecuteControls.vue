@@ -152,6 +152,7 @@
         :text="modalTextNumber"
         :type="modalTypeNumber"
         :value="modalInitValueNumber"
+        step="0.01"
         mode="confirm"
     />
 

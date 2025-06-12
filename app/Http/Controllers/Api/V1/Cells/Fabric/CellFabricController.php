@@ -9,6 +9,7 @@ use App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Exception;
@@ -257,4 +258,35 @@ class CellFabricController extends Controller
         return FAIL_STATUS_WORD;
 
     }
+
+
+    public function updateFabricsBuffer()
+    {
+        try {
+
+            $fabrics = Fabric::query()
+                ->where('active', true)
+                ->get();
+
+            foreach ($fabrics as $fabric) {
+
+                $textileLength =
+                    FabricTaskRoll::query()
+                        ->where('fabric_id', $fabric->id)
+                        ->whereIn('roll_status', [FABRIC_ROLL_DONE_CODE, FABRIC_ROLL_REGISTERED_1C_CODE])
+                        ->sum('textile_roll_length');
+
+
+                $fabric->buffer_amount = $fabric->translate_rate === 0 ? 0 : $textileLength / $fabric->translate_rate;
+
+                $fabric->save();
+            }
+
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
 }

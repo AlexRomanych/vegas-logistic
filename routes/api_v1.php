@@ -219,6 +219,7 @@ Route::get('/fabric/{id}', [CellFabricController::class, 'fabric'])->middleware(
 Route::put('/fabric', [CellFabricController::class, 'update'])->middleware('jwt.auth');
 Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt.auth');
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
+Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabricsBuffer'])->middleware('jwt.auth');
 
 Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
 //Route::post('/fabrics/pictures/upload', function(Request $request){
@@ -236,6 +237,7 @@ Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'upload
 Route::get('/fabrics/orders', [CellFabricOrderController::class, 'getFabricOrders'])->middleware('jwt.auth');
 Route::patch('/fabrics/orders/close', [CellFabricOrderController::class, 'closeFabricOrder'])->middleware('jwt.auth');
 Route::patch('/fabrics/orders/set/active/', [CellFabricOrderController::class, 'setFabricOrderActive'])->middleware('jwt.auth');
+
 
 
 // attract: Блок Заказов Стежки на производство
