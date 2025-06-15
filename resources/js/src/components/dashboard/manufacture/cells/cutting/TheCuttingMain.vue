@@ -17,7 +17,7 @@
 // import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 import NavItemCard from '/resources/js/src/components/dashboard/nav/NavItemCard.vue'
 
-
+g
 let menuItems = [
     {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
     {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute', shown: true, isActive: true},
