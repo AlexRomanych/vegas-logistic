@@ -1,7 +1,5 @@
 <template>
-
     <div :class="width" class="flex flex-col m-1">
-
         <!-- todo доделать и дооформить AppInputFile-->
 
         <!--<label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>-->
@@ -12,27 +10,24 @@
             :disabled="disabled"
             type="file"
             @input="selectFile"
-        >
+        />
         <div><span class="input-label">JSON (*.json)</span></div>
         <div v-if="errors">
             <div v-for="(err, index) in errors" :key="index">
-                    <span :class="['input-error', textColor]">
-                        {{ err.$message }}
-                    </span>
+                <span :class="['input-error', textColor]">
+                    {{ err.$message }}
+                </span>
             </div>
         </div>
-
     </div>
-
 </template>
 
-
 <script setup>
+import { computed, ref } from 'vue'
 
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed, ref} from "vue";
-import AppButton from '@/src/components/ui/buttons/AppButton.vue'
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
+import AppButton from '@/components/ui/buttons/AppButton.vue'
 
 const props = defineProps({
     id: {
@@ -42,7 +37,7 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'primary',
-        validator: (type) => colorsList.includes(type)
+        validator: (type) => colorsList.includes(type),
     },
     label: {
         type: String,
@@ -58,14 +53,12 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[400px]',
-
     },
     errors: {
         type: Array,
         required: false,
         default: null,
-    }
-
+    },
 })
 
 const emit = defineEmits(['selectFile'])
@@ -88,14 +81,12 @@ const selectFile = (e) => emit('selectFile', e.target.files[0])
 //
 // let textColor = 'text' + currentColor
 // textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
-
 </script>
 
 <style scoped>
 .app-input {
     /*@apply p-1 border rounded-lg focus:outline-none focus:ring-2;*/
-    @apply
-    block
+    @apply block
     text-lg text-slate-500 font-semibold
     border-2 rounded-lg border-slate-500
     hover:bg-slate-200
@@ -104,7 +95,7 @@ const selectFile = (e) => emit('selectFile', e.target.files[0])
     file:rounded-l-lg file:border-0 file:border-slate-500
     file:text-lg file:font-semibold
     file:bg-slate-500 file:text-white
-    hover:file:bg-slate-400
+    hover:file:bg-slate-400;
 }
 
 .input-error {
@@ -114,5 +105,4 @@ const selectFile = (e) => emit('selectFile', e.target.files[0])
 .input-label {
     @apply text-sm font-semibold ml-2 mb-0.5 mt-2 text-slate-600;
 }
-
 </style>

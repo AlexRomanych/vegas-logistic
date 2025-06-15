@@ -16,18 +16,13 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
-import AppInputButton from '@/src/components/ui/inputs/AppInputButton.vue'
+import { ref } from 'vue'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
 const emit = defineEmits(['save'])
 const save = (title, id = 0) => {
     emit('save', title, id)
 }
-
 </script>
 
-
-<style scoped>
-
-</style>
-
+<style scoped></style>

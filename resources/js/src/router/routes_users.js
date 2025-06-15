@@ -4,7 +4,7 @@ const users = [
     {
         path: '/users',
         name: 'users',
-        component: () => import('@/src/components/dashboard/users/TheUsers.vue'),
+        component: () => import('@/components/dashboard/users/TheUsers.vue'),
     },
 ]
 

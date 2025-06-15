@@ -1,17 +1,17 @@
 <template>
     <nav class="sidebar">
         <aside class="sidebar-menu">
-            <NavItems :menu="menu"/>
+            <NavItems :menu="menu" />
         </aside>
     </nav>
 </template>
 
 <script>
-import {useMenuStore} from "@/src/stores/MenuStore.js"
-import NavItems from "@/src/components/dashboard/nav/NavItems.vue";
+import { useMenuStore } from '@/stores/MenuStore.js'
+import NavItems from '@/components/dashboard/nav/NavItems.vue'
 
 export default {
-    components: {NavItems},
+    components: { NavItems },
     setup() {
         const menuStore = useMenuStore()
         const menu = menuStore.menu
@@ -21,10 +21,8 @@ export default {
         return {
             menu,
         }
-    }
+    },
 }
-
-
 </script>
 
 <style scoped>

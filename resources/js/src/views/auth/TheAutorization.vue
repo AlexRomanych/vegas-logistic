@@ -1,11 +1,10 @@
 <template>
     <div class="main-container">
         <form @submit.prevent="formSubmit">
-
             <div class="form-container">
                 <div class="container">
                     <div>
-                        <router-link :to="{name: 'login'}">
+                        <router-link :to="{ name: 'login' }">
                             <AppInputButton
                                 id="login_button"
                                 :type="!isRegister ? 'dark' : 'light'"
@@ -15,7 +14,7 @@
                         </router-link>
                     </div>
                     <div>
-                        <router-link :to="{name: 'register'}">
+                        <router-link :to="{ name: 'register' }">
                             <AppInputButton
                                 id="register_button"
                                 :type="isRegister ? 'dark' : 'light'"
@@ -27,7 +26,6 @@
                 </div>
 
                 <div class="m-3">
-
                     <AppInputText
                         :id="login"
                         v-model.trim="v$.loginValue.$model"
@@ -56,8 +54,8 @@
                         v-model.trim="v$.passwordValue.$model"
                         :errors="v$.passwordValue.$errors"
                         func="password"
-                        label='Пароль:'
-                        placeholder='Введите пароль...'
+                        label="Пароль:"
+                        placeholder="Введите пароль..."
                         type="dark"
                         width="100%"
                     />
@@ -68,12 +66,11 @@
                         v-model.trim="v$.passwordСonfirmationValue.$model"
                         :errors="v$.passwordСonfirmationValue.$errors"
                         func="password"
-                        label='Повторите пароль:'
-                        placeholder='Пароль еще раз...'
+                        label="Повторите пароль:"
+                        placeholder="Пароль еще раз..."
                         type="dark"
                         width="100%"
                     />
-
                 </div>
 
                 <div class="m-3 mt-5 flex justify-end">
@@ -85,7 +82,6 @@
                         width="w-[200px]"
                     />
                 </div>
-
             </div>
         </form>
 
@@ -95,57 +91,54 @@
             :type="calloutType"
             @toggleShow="calloutHandler"
         />
-
     </div>
-
-
 </template>
 
 <script setup>
-import {useVuelidate} from '@vuelidate/core'
-import {required, email, minLength, helpers, sameAs} from '@vuelidate/validators'
+import { useVuelidate } from '@vuelidate/core'
+import { required, email, minLength, helpers, sameAs } from '@vuelidate/validators'
 
-import {useUserStore} from "@/src/stores/UserStore.js"
+import { useUserStore } from '@/stores/UserStore.js'
 
-import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
-import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
-import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
+import AppInputText from '@/components/ui/inputs/AppInputText.vue'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
-import ErrorClass from "@/src/app/classes/ErrorClass.js";
-import UserClass from "@/src/app/classes/UserClass.js";
+import ErrorClass from '@/app/classes/ErrorClass.js'
+import UserClass from '@/app/classes/UserClass.js'
 
-import {ref, computed, reactive} from "vue";
-import {useRouter} from "vue-router";
+import { ref, computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
-    isRegister: Boolean
+    isRegister: Boolean,
 })
 
 // определяем id для полей
-const login = ref("login")
-const name = ref("name")
-const password = ref("password")
-const password_confirmation = ref("password_confirmation")
+const login = ref('login')
+const name = ref('name')
+const password = ref('password')
+const password_confirmation = ref('password_confirmation')
 
 // определяем модели
 const loginValue = defineModel('loginValue', {
     type: String,
-    default: ''
+    default: '',
 })
 
 const nameValue = defineModel('nameValue', {
     type: String,
-    default: ''
+    default: '',
 })
 
 const passwordValue = defineModel('passwordValue', {
     type: String,
-    default: ''
+    default: '',
 })
 
 const passwordСonfirmationValue = defineModel('passwordСonfirmationValue', {
     type: String,
-    default: ''
+    default: '',
 })
 
 const user = useUserStore()
@@ -162,62 +155,72 @@ const rulesObject = {
     },
     passwordValue: {
         required: helpers.withMessage('Поле обязательно для заполнения', required),
-        minLength: helpers.withMessage(`Минимальная длина пароля - ${MIN_PASSWORD_LENGTH} символов`, minLength(MIN_PASSWORD_LENGTH)),
+        minLength: helpers.withMessage(
+            `Минимальная длина пароля - ${MIN_PASSWORD_LENGTH} символов`,
+            minLength(MIN_PASSWORD_LENGTH),
+        ),
     },
 }
 
 // добавляем правила, если это форма регистрации
 if (props.isRegister) {
     rulesObject.passwordСonfirmationValue = {}
-    rulesObject.passwordСonfirmationValue.required = helpers.withMessage('Поле обязательно для заполнения', required)
-    rulesObject.passwordСonfirmationValue.sameAsPassword = helpers.withMessage('Пароли не совпадают', sameAs(passwordValue))
+    rulesObject.passwordСonfirmationValue.required = helpers.withMessage(
+        'Поле обязательно для заполнения',
+        required,
+    )
+    rulesObject.passwordСonfirmationValue.sameAsPassword = helpers.withMessage(
+        'Пароли не совпадают',
+        sameAs(passwordValue),
+    )
 
     rulesObject.nameValue = {}
-    rulesObject.nameValue.required = helpers.withMessage('Поле обязательно для заполнения', required)
-    rulesObject.nameValue.minLength = helpers.withMessage(`Минимальная длина имени - ${MIN_NAME_LENGTH} символа`, minLength(MIN_NAME_LENGTH))
+    rulesObject.nameValue.required = helpers.withMessage(
+        'Поле обязательно для заполнения',
+        required,
+    )
+    rulesObject.nameValue.minLength = helpers.withMessage(
+        `Минимальная длина имени - ${MIN_NAME_LENGTH} символа`,
+        minLength(MIN_NAME_LENGTH),
+    )
 }
 
-const rules = computed(() => (rulesObject)) // оборачиваем в computed
+const rules = computed(() => rulesObject) // оборачиваем в computed
 
 // подготавливаем объект валидации
-const verify = props.isRegister ?
-    {
-        loginValue,
-        passwordValue,
-        passwordСonfirmationValue,
-        nameValue
-    } :
-    {
-        loginValue,
-        passwordValue
-    }
+const verify = props.isRegister
+    ? {
+          loginValue,
+          passwordValue,
+          passwordСonfirmationValue,
+          nameValue,
+      }
+    : {
+          loginValue,
+          passwordValue,
+      }
 
 const v$ = useVuelidate(rules, verify)
 
-const loginHandler = (text) => {
-
-}
+const loginHandler = (text) => {}
 
 // для того, чтобы оставить анимацию в callout
 const calloutHandler = (show) => {
-    setInterval((
-        () => confirmClick.value = false
-    ), 500)
+    setInterval(() => (confirmClick.value = false), 500)
 }
 
-
-const currUser = reactive(new UserClass())        // определяем реактивный класс для вызова callout
-const confirmClick = ref(false)            // определяем для вывода этого callout
-const calloutMessage = ref('')             // определяем показываемое сообщение
-const calloutType = ref('danger')          // определяем тип callout
+const currUser = reactive(new UserClass()) // определяем реактивный класс для вызова callout
+const confirmClick = ref(false) // определяем для вывода этого callout
+const calloutMessage = ref('') // определяем показываемое сообщение
+const calloutType = ref('danger') // определяем тип callout
 
 const formSubmit = async (e) => {
+    v$.value.$touch() // валидируем всю форму
 
-    v$.value.$touch()                           // валидируем всю форму
+    if (!v$.value.$error) {
+        // это показатель ошибки
 
-    if (!v$.value.$error) {                     // это показатель ошибки
-
-        let currUserTemp = null                     // для получения данных с сервера
+        let currUserTemp = null // для получения данных с сервера
 
         if (props.isRegister) {
             currUserTemp = await user.registerUser({
@@ -229,7 +232,7 @@ const formSubmit = async (e) => {
         } else {
             currUserTemp = await user.fetchUser({
                 email: loginValue.value,
-                password: passwordValue.value
+                password: passwordValue.value,
             })
         }
 
@@ -240,7 +243,7 @@ const formSubmit = async (e) => {
         if (currUser.status === 200) {
             // router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
             // debugger
-            router.push({name: 'dashboard'})               // переход в сам dashboard todo потом изменить
+            router.push({ name: 'dashboard' }) // переход в сам dashboard todo потом изменить
         } else {
             confirmClick.value = true
             calloutType.value = 'danger'
@@ -264,26 +267,22 @@ const formSubmit = async (e) => {
                     calloutMessage.value = 'Пользователь успешно зарегистрирован'
                     calloutType.value = 'success'
                     break
-
             }
         }
-
     }
-
 }
-
 </script>
 
 <style scoped>
 .main-container {
-    @apply w-screen h-screen flex flex-col justify-center items-center bg-slate-200 z-50
+    @apply w-screen h-screen flex flex-col justify-center items-center bg-slate-200 z-50;
 }
 
 .form-container {
-    @apply w-[500px] border rounded-lg border-slate-500 shadow shadow-slate-700 bg-slate-300
+    @apply w-[500px] border rounded-lg border-slate-500 shadow shadow-slate-700 bg-slate-300;
 }
 
 .container {
-    @apply flex justify-around items-center ml-2 mr-2 mt-2 font-semibold text-xl text-slate-600
+    @apply flex justify-around items-center ml-2 mr-2 mt-2 font-semibold text-xl text-slate-600;
 }
 </style>

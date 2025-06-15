@@ -1,18 +1,15 @@
 <template>
-    <component :is="page" class="size-6 text-blue-500"/>
-    <div>{{ componentInstance}}</div>
-<!--    <UserGroupIcon />-->
+    <component :is="page" class="size-6 text-blue-500" />
+    <div>{{ componentInstance }}</div>
+    <!--    <UserGroupIcon />-->
 </template>
-
-
-/*
 
 <script setup>
 // Todo Переделать на динамический импорт
-import {UserGroupIcon} from '@heroicons/vue/24/solid'
-import {BookOpenIcon} from '@heroicons/vue/24/solid'
+import { UserGroupIcon } from '@heroicons/vue/24/solid'
+import { BookOpenIcon } from '@heroicons/vue/24/solid'
 
-import {computed, ref} from "vue"
+import { computed, ref } from 'vue'
 
 // const props = defineProps({
 //     icon:
@@ -25,7 +22,6 @@ import {computed, ref} from "vue"
 //         },
 // })
 
-
 const props = defineProps(['icon'])
 
 const page = ref('BookOpenIcon')
@@ -36,12 +32,6 @@ const componentInstance = computed(() => {
     console.log(props.icon)
     return ref(props.icon)
 })
-
-
-*/
-
-
-
 
 // import { defineAsyncComponent } from 'vue'
 /*
@@ -70,9 +60,6 @@ export default {
     }
 }
 */
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

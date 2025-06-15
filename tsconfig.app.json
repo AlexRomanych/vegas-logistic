@@ -1,0 +1,17 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+      "env.d.ts",
+      "resources/js/src/**/*",
+      "resources/js/src/**/*.vue",
+      "resources/js/src/**/*.d.ts", // Это важно для shims-vue.d.ts
+  ],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    "paths": {
+      "@/*": ["./resources/js/src/*"]
+    }
+  }
+}

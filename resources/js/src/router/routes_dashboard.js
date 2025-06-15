@@ -7,14 +7,14 @@ const dashboard = [
     {
         path: '/dashboard/start',
         name: 'dashboard',
-        component: () => import('@/src/components/dashboard/start_pages/TheStartFacade.vue'),
-        meta: {title: 'ИС управления производством'}
+        component: () => import('@/components/dashboard/start_pages/TheStartFacade.vue'),
+        meta: { title: 'ИС управления производством' },
     },
 
     // {
     //     path: '/dashboard/menu/:groupId',
     //     name: 'menu',
-    //     component: () => import('@/src/components/dashboard/nav/NavItemMenu.vue'),
+    //     component: () => import('@/components/dashboard/nav/NavItemMenu.vue'),
     //     meta: (route) => ({title: route.params.groupId})
     //
     // },
@@ -22,13 +22,9 @@ const dashboard = [
     {
         path: '/dashboard/menu/:groupId',
         name: 'menu',
-        component: () => import('@/src/components/dashboard/nav/NavItemMenu.vue'),
-        meta: {title: 'Меню'},
-
-
+        component: () => import('@/components/dashboard/nav/NavItemMenu.vue'),
+        meta: { title: 'Меню' },
     },
-
-
 ]
 
 export default dashboard

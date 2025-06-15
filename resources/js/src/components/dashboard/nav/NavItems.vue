@@ -8,35 +8,34 @@
                 <!--                </a>-->
 
                 <div
-                    :class="['nav-item', menuItem.group.isActive ? 'nav-item-hover nav-item-text-active' : 'nav-item-text']"
+                    :class="[
+                        'nav-item',
+                        menuItem.group.isActive
+                            ? 'nav-item-hover nav-item-text-active'
+                            : 'nav-item-text',
+                    ]"
                     :data-group-id="menuItem.group.id"
                     @click.stop="selectMenu(menuItem.group.id, $event)"
                 >
-                    <NavItemIcon :icon="menuItem.group.icon"/>
-                    <span><NavItemName :groupName="menuItem.group.name"/></span>
+                    <NavItemIcon :icon="menuItem.group.icon" />
+                    <span><NavItemName :groupName="menuItem.group.name" /></span>
                 </div>
-
-
             </li>
-
         </ul>
     </div>
 </template>
 
-
 <script setup>
-
-
-import NavItemIcon from "@/src/components/dashboard/nav/NavItemIcon.vue";
-import NavItemName from "@/src/components/dashboard/nav/NavItemName.vue";
-import {useRouter} from "vue-router";
+import NavItemIcon from '@/components/dashboard/nav/NavItemIcon.vue'
+import NavItemName from '@/components/dashboard/nav/NavItemName.vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
     menu: {
         type: Array,
         default: () => [],
         required: true,
-    }
+    },
 })
 
 const emit = defineEmits(['selectMenu'])
@@ -46,31 +45,25 @@ const router = useRouter()
 const selectMenu = (groupId, e) => {
     emit('selectMenu', groupId)
 
-// перекидываем в случае, если менюшка активна
-    const menuItem = props.menu.find(item => item.group.id === groupId)
+    // перекидываем в случае, если менюшка активна
+    const menuItem = props.menu.find((item) => item.group.id === groupId)
 
     if (menuItem.group.isActive) {
-
         router.push({
             name: 'menu',
             params: {
-                groupId: groupId
+                groupId: groupId,
             },
         })
     }
-
 }
 
-
 // console.log(props.menu[0])
-
 </script>
-
 
 <style scoped>
 .nav-item {
-    @apply
-    flex
+    @apply flex
     items-center
     px-4 py-1
     ml-1
@@ -80,18 +73,17 @@ const selectMenu = (groupId, e) => {
 }
 
 .nav-item-hover {
-    @apply
-    hover:bg-slate-300
+    @apply hover:bg-slate-300
     hover:text-slate-800
     hover:border-slate-500
-    cursor-pointer
+    cursor-pointer;
 }
 
 .nav-item-text {
-    @apply text-slate-400
+    @apply text-slate-400;
 }
 
 .nav-item-text-active {
-    @apply text-slate-500
+    @apply text-slate-500;
 }
 </style>

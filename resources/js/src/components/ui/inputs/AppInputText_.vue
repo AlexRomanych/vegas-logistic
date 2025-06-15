@@ -4,32 +4,26 @@
         <input
             :id="id"
             :class="['app-input', borderColor, focusBorderColor, placeholderColor]"
-
             :placeholder="placeholder"
             :disabled="disabled"
             :type="func"
             v-model="inputText"
             @input="getInputText"
-
-        >
+        />
         <div v-if="errors">
             <div v-for="(err, index) in errors" :key="index">
                 <span :class="['input-error', textColor]">
-                    {{ err.$message}}
+                    {{ err.$message }}
                 </span>
             </div>
         </div>
-
     </div>
-
 </template>
 
-
 <script setup>
-
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
-import {computed, ref} from "vue";
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
     id: {
@@ -39,13 +33,13 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'dark',
-        validator: (type) => colorsList.includes(type)
+        validator: (type) => colorsList.includes(type),
     },
     func: {
         type: String,
         required: false,
         default: 'text',
-        validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func)
+        validator: (func) => ['text', 'password', 'email', 'tel', 'number'].includes(func),
     },
     value: {
         type: String,
@@ -71,18 +65,15 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[500px]',
-
     },
     errors: {
         type: Array,
         required: false,
         default: null,
-    }
-
-
+    },
 })
 
-const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
+const currentColorIndex = 600 // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
 const placeholderColor = 'placeholder' + currentColor
@@ -109,8 +100,6 @@ const getInputText = (e) => emit('getInputText', e.target.value)
 // const onInput = function(inputText) {
 //     console.log(inputText.target.value)
 // }
-
-
 </script>
 
 <style scoped>
@@ -123,7 +112,6 @@ const getInputText = (e) => emit('getInputText', e.target.value)
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
+    @apply text-sm font-semibold ml-2 mb-0.5 mt-2;
 }
-
 </style>

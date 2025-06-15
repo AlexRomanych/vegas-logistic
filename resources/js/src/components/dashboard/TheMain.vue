@@ -1,12 +1,25 @@
 <template>
     <Suspense>
-
-        <main :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? 'container-auth upper-layer' : 'container'">
-            <div :class="$route.name === 'login' || $route.name === 'register' || $route.name === 'error.404' ? '' : 'content'">
-<!--                <p>Текущий маршрут: {{ currentRouteName }}</p>-->
+        <main
+            :class="
+                $route.name === 'login' || $route.name === 'register' || $route.name === 'error.404'
+                    ? 'container-auth upper-layer'
+                    : 'container'
+            "
+        >
+            <div
+                :class="
+                    $route.name === 'login' ||
+                    $route.name === 'register' ||
+                    $route.name === 'error.404'
+                        ? ''
+                        : 'content'
+                "
+            >
+                <!--                <p>Текущий маршрут: {{ currentRouteName }}</p>-->
                 <router-view :key="$route.fullPath"></router-view>
                 <!--            {{$route.fullPath}}-->
-<!--                <span>Name__ {{$route.name}}</span>-->
+                <!--                <span>Name__ {{$route.name}}</span>-->
             </div>
         </main>
     </Suspense>
@@ -15,11 +28,10 @@
     <!--    </main>-->
 </template>
 
-
 <script setup>
-import {computed, onMounted, reactive, ref, unref, watch} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-// import {getColorClassByType, getTextColorClassByType} from "@/src/app/helpers/helpers.js";
+import { computed, onMounted, reactive, ref, unref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+// import {getColorClassByType, getTextColorClassByType} from '@/app/helpers/helpers.js'
 //
 //
 const router = useRouter()
@@ -32,11 +44,9 @@ const props = defineProps({
     auth: {
         type: Boolean,
         required: false,
-        default: false
+        default: false,
     },
 })
-
-
 
 // attract Работает!!!
 // warning Работает!!!
@@ -77,19 +87,15 @@ const props = defineProps({
 // const a = unref(router.currentRoute.value)
 // console.log('a', a)
 
-
 // const rt = reactive(router)
 // console.log('rt', rt.currentRoute)
-
 
 // console.log(router.currentRoute.value)
 // const name = route.name
 
-
 // console.log(name.value)
 // console.log(name_.value)
 // console.log(route)
-
 
 // const router = useRouter()
 // console.log(router)
@@ -124,16 +130,14 @@ const props = defineProps({
 //
 // console.log(dashComponent())
 // console.log(data)
-
 </script>
-
 
 <style scoped>
 .container {
     flex: 1;
     position: relative;
     /* overflow-x: hidden; */
-/*
+    /*
     // min-width: 100vw; // или ширина в пикселях
     // width: auto;
     //
@@ -143,9 +147,7 @@ const props = defineProps({
     // margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); //margin: 0 0 var(--footer-height) var(--sidebar-width); //margin-top: var(--header-height);
     // position: relative;
  */
-
 }
-
 
 .container-auth {
     flex: 1;
@@ -156,10 +158,11 @@ const props = defineProps({
     */
 }
 
-
 .content {
     position: absolute;
-    min-width: calc(100vw - var(--sidebar-width)); /* или ширина в пикселях *
+    min-width: calc(
+        100vw - var(--sidebar-width)
+    ); /* или ширина в пикселях *
     /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
     height: calc(100% - var(--header-height) - var(--footer-height));
 
@@ -177,5 +180,4 @@ const props = defineProps({
     //width: auto;
     */
 }
-
 </style>

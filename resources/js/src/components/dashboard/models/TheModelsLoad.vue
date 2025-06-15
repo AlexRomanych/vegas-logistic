@@ -12,25 +12,18 @@
         />
     </div>
 
-    <AppCallout
-        v-if="opStatus"
-        :text="opText"
-        :type="opType"
-    />
-
-
+    <AppCallout v-if="opStatus" :text="opText" :type="opType" />
 </template>
 
 <script setup>
-import {ref} from 'vue'
-import {useModelsStore} from '@/src/stores/ModelsStore'
-import AppInputButton from '@/src/components/ui/inputs/AppInputButton.vue'
-import AppCallout from '@/src/components/ui/callouts/AppCallout.vue'
+import { ref } from 'vue'
+import { useModelsStore } from '@/stores/ModelsStore'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 const opStatus = ref(false)
 const opText = ref('')
 const opType = ref('')
-
 
 const loadFromStorage = async () => {
     const modelsStore = useModelsStore()
@@ -46,12 +39,11 @@ const loadFromStorage = async () => {
         opText.value = 'Упс, что-то пошло не так'
         opType.value = 'danger'
     }
-    setTimeout(() => {opStatus.value =false}, 5000)
+    setTimeout(() => {
+        opStatus.value = false
+    }, 5000)
     // console.log(res)
 }
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

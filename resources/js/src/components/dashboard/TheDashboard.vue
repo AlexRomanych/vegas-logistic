@@ -1,5 +1,4 @@
 <template>
-
     <!--    <div class="container">-->
 
     <!--        <TheNav/>-->
@@ -9,43 +8,40 @@
 
     <!--    </div>-->
 
-
     <!-- Показываем страницу, если пользователь авторизован -->
     <div v-if="isAuthenticated" class="container">
-<!--    <div class="container">-->
+        <!--    <div class="container">-->
 
-        <TheNav/>
-        <TheHeader/>
-        <TheFooter/>
+        <TheNav />
+        <TheHeader />
+        <TheFooter />
         <!--        <router-view></router-view>-->
         <!--        <TheMain-->
         <!--            :isAuthenticated="isAuthenticated"-->
         <!--            :source="source"-->
         <!--        />-->
-        <TheMain/>
+        <TheMain />
     </div>
 
     <div v-else>
-        <TheMain :auth="true"/>
+        <TheMain :auth="true" />
     </div>
 
     <!--    <div v-else>-->
     <!--        <router-view></router-view>-->
     <!--    </div>-->
-
 </template>
 
 <script setup>
-import {ref, computed} from 'vue'
-// import TheHeader from "@/src/components/structure/TheHeader.vue"
-import TheHeader from "/resources/js/src/components/dashboard/TheHeader.vue"
-import TheFooter from "/resources/js/src/components/dashboard/TheFooter.vue";
-import TheNav from "/resources/js/src/components/dashboard/TheNav.vue";
-import TheMain from "/resources/js/src/components/dashboard/TheMain.vue";
+import { ref, computed } from 'vue'
+// import TheHeader from '@/components/structure/TheHeader.vue'
+import TheHeader from '@/components/dashboard/TheHeader.vue'
+import TheFooter from '@/components/dashboard/TheFooter.vue'
+import TheNav from '@/components/dashboard/TheNav.vue'
+import TheMain from '@/components/dashboard/TheMain.vue'
 
-import {useUserStore} from "/resources/js/src/stores/UserStore";
-// import {useRouter} from "vue-router";
-
+import { useUserStore } from '@/stores/UserStore'
+// import {useRouter} from 'vue-router'
 
 const user = useUserStore()
 // const isAuth = await user.isAuthenticated()
@@ -91,18 +87,13 @@ const isAuthenticated = computed(() => user.isAuth)
 //
 //     components: {TheNav, TheFooter, TheHeader, TheMain},
 // }
-
-
 </script>
 
 <style scoped>
-
 .container {
     display: flex;
     min-height: 100vh; /* или высота в пикселях */
     min-width: 100vw; /* или ширина в пикселях */
     width: auto;
 }
-
-
 </style>

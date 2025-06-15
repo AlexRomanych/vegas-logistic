@@ -1,5 +1,4 @@
 <template>
-
     <!--    <div class="container">-->
 
     <!--        <TheNav/>-->
@@ -9,39 +8,30 @@
 
     <!--    </div>-->
 
-
     <!-- Показываем страицу, если пользователь авторизован -->
     <div v-if="isAuthenticated" class="container">
-
-        <TheNav/>
-        <TheHeader/>
-        <TheFooter/>
-        <TheMain
-            :isAuthenticated="isAuthenticated"
-        />
-
+        <TheNav />
+        <TheHeader />
+        <TheFooter />
+        <TheMain :isAuthenticated="isAuthenticated" />
     </div>
 
     <div v-else>
         <router-view></router-view>
     </div>
-
 </template>
 
 <script>
-import {ref} from 'vue'
-// import TheHeader from "@/src/components/structure/TheHeader.vue"
-import TheHeader from "@/src/components/dashboard/TheHeader.vue"
-import TheFooter from "@/src/components/dashboard/TheFooter.vue";
-import TheNav from "@/src/components/dashboard/TheNav.vue";
-import TheMain from "@/src/views/TheMain.vue";
+import { ref } from 'vue'
+// import TheHeader from "@/components/structure/TheHeader.vue"
+import TheHeader from '@/components/dashboard/TheHeader.vue'
+import TheFooter from '@/components/dashboard/TheFooter.vue'
+import TheNav from '@/components/dashboard/TheNav.vue'
+import TheMain from '@/views/TheMain.vue'
 
-import {useUserStore} from "@/src/stores/UserStore";
-
+import { useUserStore } from '@/stores/UserStore'
 
 export default {
-
-
     setup() {
         const user = useUserStore()
         const isAuthenticated = ref(user.isAuthenticated())
@@ -59,19 +49,14 @@ export default {
         }
     },
 
-    components: {TheNav, TheFooter, TheHeader, TheMain},
+    components: { TheNav, TheFooter, TheHeader, TheMain },
 }
-
-
 </script>
 
 <style scoped>
-
 .container {
     display: flex;
     min-height: 100vh; /* или высота в пикселях */
     min-width: 100vw; /* или ширина в пикселях */
 }
-
-
 </style>

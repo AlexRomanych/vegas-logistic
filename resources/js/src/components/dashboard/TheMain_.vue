@@ -5,9 +5,9 @@
         <AppInputText
             :id="newInput"
             :disabled="true"
-            :type='"danger"'
-            label='Введите имя'
-            placeholder='Search'
+            :type="'danger'"
+            label="Введите имя"
+            placeholder="Search"
         />
 
         <AppInputText
@@ -26,7 +26,6 @@
             type="success"
             @getInputText="showText"
         />
-
 
         <AppInputButton
             id="newButton"
@@ -55,7 +54,6 @@
             type="danger"
             @buttonClick="buttonClickHandler"
         />
-
 
         <div>
             <AppInputButton
@@ -87,35 +85,24 @@
             />
         </div>
 
-        <AppCallout
-            type="dark"
+        <AppCallout type="dark" />
 
-        />
+        <AppModal :show="false" text="A am modal" type="info" />
 
-        <AppModal
-            :show="false"
-            text="A am modal"
-            type="info"
-
-        />
-
-<!--        <AppSelect-->
-<!--            :selectData="selectData"-->
-<!--        />-->
-
-
+        <!--        <AppSelect-->
+        <!--            :selectData="selectData"-->
+        <!--        />-->
     </main>
 </template>
 
-
 <script setup>
-import {reactive, ref} from "vue";
-import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
-import ErrorClass from "@/src/app/classes/ErrorClass.js";
-import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
-import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
-import AppModal from "@/src/components/ui/modals/AppModal.vue";
-import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
+import { reactive, ref } from 'vue'
+import AppInputText from '@/components/ui/inputs/AppInputText.vue'
+import ErrorClass from '@/app/classes/ErrorClass.js'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import AppModal from '@/components/ui/modals/AppModal.vue'
+import AppSelect from '@/components/ui/selects/AppSelect.vue'
 
 const newInput = ref('123')
 const newInput_1 = ref('123')
@@ -129,30 +116,25 @@ const showText = function (data) {
     console.log(data)
 }
 
-
 const buttonClickHandler = function (args) {
     console.log(args)
 }
 
-
 const selectData = {
     name: 'numbers',
     data: [
-        {id: 1, name: 'One'},
-        {id: 2, name: 'Two'},
-        {id: 3, name: 'Three', selected: true},
-        {id: 4, name: 'Four'},
-        {id: 5, name: 'Five'},
-    ]
+        { id: 1, name: 'One' },
+        { id: 2, name: 'Two' },
+        { id: 3, name: 'Three', selected: true },
+        { id: 4, name: 'Four' },
+        { id: 5, name: 'Five' },
+    ],
 }
-
 
 // console.log(selectData)
 
 // const selectData = reactive({})
-
 </script>
-
 
 <style scoped>
 .content {

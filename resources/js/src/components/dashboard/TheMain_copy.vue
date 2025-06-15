@@ -5,9 +5,9 @@
         <AppInputText
             :id="newInput"
             :disabled="true"
-            :type='"danger"'
-            label='Введите имя'
-            placeholder='Search'
+            :type="'danger'"
+            label="Введите имя"
+            placeholder="Search"
         />
 
         <AppInputText
@@ -26,7 +26,6 @@
             type="success"
             @getInputText="showText"
         />
-
 
         <AppInputButton
             id="newButton"
@@ -55,7 +54,6 @@
             type="danger"
             @buttonClick="buttonClickHandler"
         />
-
 
         <div>
             <AppInputButton
@@ -87,17 +85,9 @@
             />
         </div>
 
-        <AppCallout
-            type="dark"
+        <AppCallout type="dark" />
 
-        />
-
-        <AppModal
-            :show="false"
-            text="A am modal"
-            type="info"
-
-        />
+        <AppModal :show="false" text="A am modal" type="info" />
 
         <AppSelect
             :multiple="false"
@@ -106,13 +96,7 @@
             @change="changeHandler"
         />
 
-        <AppButton
-            id="newButtonBut_1"
-            type="light"
-            @buttonClick="buttonClickHandler"
-
-        />
-
+        <AppButton id="newButtonBut_1" type="light" @buttonClick="buttonClickHandler" />
 
         <AppCheckbox
             :checkboxData="checkboxData"
@@ -124,45 +108,32 @@
             @checked="checkedHandler"
         />
 
+        <AppTable :tableData="tableData" caption="Table Caption" textSize="small" />
 
-        <AppTable
-            :tableData="tableData"
-            caption="Table Caption"
-            textSize="small"
-        />
+        <AppInputDate :id="newInputDate" label="Введите данные" type="warning" width="w-[150px]" />
 
-        <AppInputDate
-            :id="newInputDate"
-            label="Введите данные"
-            type="warning"
-            width="w-[150px]"
-        />
-
-<!--        <AppInputDate_comp-->
-<!--            :id="newInputDate_"-->
-<!--            label="Введите данные"-->
-<!--            type="warning"-->
-<!--            width="w-[150px]"-->
-<!--        />-->
-
-
+        <!--        <AppInputDate_comp-->
+        <!--            :id="newInputDate_"-->
+        <!--            label="Введите данные"-->
+        <!--            type="warning"-->
+        <!--            width="w-[150px]"-->
+        <!--        />-->
     </main>
 </template>
 
-
 <script setup>
-import {reactive, ref} from "vue";
-import AppInputText from "@/src/components/ui/inputs/AppInputText.vue";
-import ErrorClass from "@/src/app/classes/ErrorClass.js";
-import AppInputButton from "@/src/components/ui/inputs/AppInputButton.vue";
-import AppCallout from "@/src/components/ui/callouts/AppCallout.vue";
-import AppModal from "@/src/components/ui/modals/AppModal.vue";
-import AppSelect from "@/src/components/ui/selects/AppSelect.vue";
-import AppButton from "@/src/components/ui/buttons/AppButton.vue";
-import AppCheckbox from "@/src/components/ui/checkboxes/AppCheckbox.vue";
-import AppTable from "@/src/components/ui/tables/AppTable.vue";
-import AppInputDate from "@/src/components/ui/inputs/AppInputDate.vue";
-import AppInputDate_comp from "@/src/components/ui/inputs/AppInputDate_comp.vue";
+import {reactive, ref} from 'vue'
+import AppInputText from '@/components/ui/inputs/AppInputText.vue'
+import ErrorClass from '@/app/classes/ErrorClass.js'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import AppModal from '@/components/ui/modals/AppModal.vue'
+import AppSelect from '@/components/ui/selects/AppSelect.vue'
+import AppButton from '@/components/ui/buttons/AppButton.vue'
+import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
+import AppTable from '@/components/ui/tables/AppTable.vue'
+import AppInputDate from '@/components/ui/inputs/AppInputDate.vue'
+import AppInputDate_comp from '@/components/ui/inputs/AppInputDate_comp.vue'
 
 
 const newInput = ref('123')
@@ -244,9 +215,7 @@ const tableData = {
 // console.log(selectData)
 
 // const selectData = reactive({})
-
 </script>
-
 
 <style scoped>
 .content {

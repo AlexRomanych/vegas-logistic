@@ -12,20 +12,14 @@
             step="1"
             type="date"
             @change="getInputDate"
-
-        >
+        />
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
-
-
     </div>
-
 </template>
 
-
 <script>
-
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType, getPeriod} from "@/src/app/helpers/helpers.js"
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType, getPeriod } from '@/app/helpers/helpers.js'
 
 export default {
     props: {
@@ -36,7 +30,7 @@ export default {
             type: String,
             required: false,
             default: 'primary',
-            validator: (type) => colorsList.includes(type)
+            validator: (type) => colorsList.includes(type),
         },
         label: {
             type: String,
@@ -52,7 +46,6 @@ export default {
             type: String,
             required: false,
             default: 'w-[500px]',
-
         },
         minDate: {
             type: String,
@@ -77,9 +70,8 @@ export default {
                 type: String,
                 required: false,
                 default: 'Ошибка...',
-            }
-        }
-
+            },
+        },
     },
 
     data() {
@@ -92,27 +84,24 @@ export default {
             periodEnd: '',
             periodStartText: '',
             periodEndText: '',
-
         }
     },
 
     methods: {
         getPeriodData() {
             const period = getPeriod()
-            this.periodStart = period.periodStart,
-            this.periodEnd = period.periodEnd,
-            this.periodStartText = period.periodStartText,
-            this.periodEndText = period.periodEndText
-        }
+            ;(this.periodStart = period.periodStart),
+                (this.periodEnd = period.periodEnd),
+                (this.periodStartText = period.periodStartText),
+                (this.periodEndText = period.periodEndText)
+        },
     },
-    computed: {
-        
-    },
+    computed: {},
 
     watch: {
         value() {
             console.log(this.value)
-        }
+        },
     },
 
     mounted() {
@@ -124,8 +113,7 @@ export default {
         this.getPeriodData()
         console.log(222222222)
         console.log(this)
-    }
-
+    },
 }
 
 // const defaultDate_= defineModel({
@@ -133,7 +121,6 @@ export default {
 //     type: String,
 //     default: '2024-10-05'
 // })
-
 
 // const defaultDate = computed(() => {
 //     // Здесь можно выполнять дополнительные логики для определения даты по умолчанию
@@ -159,9 +146,7 @@ const emit = defineEmits(['getInputDate'])
 */
 // const getInputText = (e) => emit('getInputDate', e.target.value)
 
-
 // const getInputDate = (e) => console.log(e.target.value)
-
 
 // const onInput = function(e) {
 //     console.log(e.target.value)
@@ -169,7 +154,6 @@ const emit = defineEmits(['getInputDate'])
 // const onInput = function(inputText) {
 //     console.log(inputText.target.value)
 // }
-
 </script>
 
 <style scoped>
@@ -182,7 +166,6 @@ const emit = defineEmits(['getInputDate'])
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2
+    @apply text-sm font-semibold ml-2 mb-0.5 mt-2;
 }
-
 </style>

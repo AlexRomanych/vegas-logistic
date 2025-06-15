@@ -11,19 +11,16 @@
             step="1"
             type="date"
             @change="getInputDate"
-        >
+        />
         <span v-if="error" :class="['input-error', textColor]">{{ error.message }}</span>
     </div>
-
 </template>
 
-
 <script setup>
-
-import {colorsClasses, colorsList} from "@/src/app/constants/colorsClasses.js"
-import {getColorClassByType} from "@/src/app/helpers/helpers.js"
-import {getPeriod} from "@/src/app/helpers/helpers_date.js"
-import {computed, ref} from "vue";
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
+import { getPeriod } from '@/app/helpers/helpers_date.js'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
     id: {
@@ -33,7 +30,7 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'primary',
-        validator: (type) => colorsList.includes(type)
+        validator: (type) => colorsList.includes(type),
     },
     label: {
         type: String,
@@ -49,7 +46,6 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'w-[150px]',
-
     },
     minDate: {
         type: String,
@@ -74,10 +70,8 @@ const props = defineProps({
             type: String,
             required: false,
             default: 'Ошибка...',
-        }
-    }
-
-
+        },
+    },
 })
 
 // const defaultDate_= defineModel({
@@ -89,7 +83,7 @@ const props = defineProps({
 const inputDate = defineModel({
     name: 'inputDate',
     type: String,
-    default: ''
+    default: '',
 })
 // console.log(inputDate.value)
 // const inputDate_ = defineModel({
@@ -98,7 +92,7 @@ const inputDate = defineModel({
 //     default: ''
 // })
 
-const selectedDate = new Date().toISOString().slice(0, 10);
+const selectedDate = new Date().toISOString().slice(0, 10)
 const defaultDate = selectedDate
 
 // const selectedDate = ref(new Date().toISOString().slice(0, 10));
@@ -108,7 +102,7 @@ const defaultDate = selectedDate
 //     return selectedDate.value;
 // });
 
-const {periodStart, periodEnd, periodStartText, periodEndText} = getPeriod()
+const { periodStart, periodEnd, periodStartText, periodEndText } = getPeriod()
 // console.log(props.minDate)
 // console.log(props.maxDate)
 
@@ -121,7 +115,7 @@ const maxDateTemp = props.maxDate === '' ? periodEndText : props.maxDate
 
 // const value = ref(periodStartText)
 
-const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
+const currentColorIndex = 600 // задаем основной индекс палитры tailwinds
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
 const placeholderColor = 'placeholder' + currentColor
@@ -131,13 +125,11 @@ const focusBorderColor = 'focus:ring' + currentColor
 let textColor = 'text' + currentColor
 textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
-
 const emit = defineEmits(['getInputDate'])
 
-const getInputDate = (e) => emit('getInputDate', {id: props.id, value: e.target.value}) //todo сделать валидацию ввода даты
+const getInputDate = (e) => emit('getInputDate', { id: props.id, value: e.target.value }) //todo сделать валидацию ввода даты
 
 // const getInputDate = (e) => console.log(e.target.value)
-
 
 // const onInput = function(e) {
 //     console.log(e.target.value)
@@ -145,7 +137,6 @@ const getInputDate = (e) => emit('getInputDate', {id: props.id, value: e.target.
 // const onInput = function(inputText) {
 //     console.log(inputText.target.value)
 // }
-
 </script>
 
 <style scoped>
@@ -158,7 +149,6 @@ const getInputDate = (e) => emit('getInputDate', {id: props.id, value: e.target.
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5
+    @apply text-sm font-semibold ml-2 mb-0.5;
 }
-
 </style>
