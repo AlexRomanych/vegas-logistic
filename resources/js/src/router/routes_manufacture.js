@@ -1,6 +1,7 @@
 // info Manufacture
 
 import fabrics from './routes_manufacture_fabrics.js'
+import cutting from './routes_manufacture_cutting.js'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
@@ -52,8 +53,10 @@ const manufactureRaw = [
     // attract: Производственные ячейки
 
     // attract: Стежка -------------------------------------------------------------------------------------------------
-
     ...fabrics,
+
+    // attract: Раскрой-------------------------------------------------------------------------------------------------
+    ...cutting,
 
     /*
     {
@@ -232,6 +235,8 @@ const manufactureRaw = [
     },
  */
 
+ /*
+
     // attract: Раскрой-------------------------------------------------------------------------------------------------
     //info Раскрой (панели чехла)
     {
@@ -251,6 +256,7 @@ const manufactureRaw = [
         // name: getRouteName(this.path),
         component: () => import('@/src/components/dashboard/manufacture/cells/TheCellStopper.vue'), //Заглушка
     },
+*/
 
     // attract: Швейка -------------------------------------------------------------------------------------------------
     //info Пошив (автоматы) hr ok
