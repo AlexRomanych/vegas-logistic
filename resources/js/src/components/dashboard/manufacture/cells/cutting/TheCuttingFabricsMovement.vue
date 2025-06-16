@@ -179,15 +179,15 @@
                 />
 
                 <!-- attract: Фильтр: Дата учета в 1С -->
-                <!--                <AppInputText-->
-                <!--                    v-if="render.registration_1C_At.show"-->
-                <!--                    id="register-at-search"-->
-                <!--                    v-model.trim="register1CAtFilter"-->
-                <!--                    :width="render.registration_1C_At.width"-->
-                <!--                    placeholder="дд.мм.гггг"-->
-                <!--                    text-size="mini"-->
-                <!--                    type="primary"-->
-                <!--                />-->
+                <AppInputText
+                    v-if="render.registration_1C_At.show"
+                    id="register-at-search"
+                    v-model.trim="register1CAtFilter"
+                    :width="render.registration_1C_At.width"
+                    placeholder="дд.мм.гггг"
+                    text-size="mini"
+                    type="primary"
+                />
             </div>
 
             <!-- attract: Ответственный за учет в 1С -->
@@ -534,7 +534,7 @@ const tabs = reactive({
     done: {
         id: 2,
         shown: false,
-        enabled: true,
+        enabled: false,
         name: ['Учет', 'выполненных рулонов'],
         type: FABRIC_ROLL_STATUS.DONE.TYPE,
         code: FABRIC_ROLL_STATUS.DONE.CODE,
@@ -550,7 +550,7 @@ const tabs = reactive({
     moved: {
         id: 4,
         shown: false,
-        enabled: false,
+        enabled: true,
         name: ['Учет перемещенных', 'на раскрой рулонов'],
         type: FABRIC_ROLL_STATUS.MOVED.TYPE,
         code: FABRIC_ROLL_STATUS.MOVED.CODE,
@@ -620,7 +620,8 @@ const getRollsByStatus = (inRolls = [], status = COMMON_CODE) => {
 const getNotAcceptedToCutRolls = async () => {
     // return await fabricsStore.getNotAcceptedToCutRolls()
     const rolls = await fabricsStore.getNotAcceptedToCutRolls()
-    return rolls.filter((roll) => roll.status !== FABRIC_ROLL_STATUS.MOVED.CODE) //  рулоны в 1С + рулоны на закрой
+    // $rolls.sort((a, b) => a.status - b.status) // сортируем по возрастанию статуса
+    return rolls.filter((roll) => roll.status !== FABRIC_ROLL_STATUS.DONE.CODE) //  рулоны в 1С + рулоны на закрой
 }
 
 const allRolls = ref(await getNotAcceptedToCutRolls()) // получаем все рулоны c API
@@ -685,7 +686,7 @@ const render = reactive({
     finishBy: {
         header: ['Ответственный за', 'производство'],
         width: 'w-[150px]',
-        show: true,
+        show: false,
         title: 'Дата производства',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
         data: (roll) => getFormatFIO(roll.finish_by),
@@ -693,7 +694,7 @@ const render = reactive({
     registration_1C_Flag: {
         header: ['Учет', 'в 1С'],
         width: 'w-[60px]',
-        show: true,
+        show: false,
         title: 'Учет в 1С',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
         textSize: (roll) => (roll.registration_1C_by.id !== 0 ? 'large' : 'mini'),
@@ -721,7 +722,7 @@ const render = reactive({
     moveToCutFlag: {
         header: ['--->', 'закрой'],
         width: 'w-[60px]',
-        show: false,
+        show: true,
         title: 'Перемещение на закрой',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
         textSize: (roll) => (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE ? 'large' : 'mini'),
@@ -730,7 +731,7 @@ const render = reactive({
     moveToCutAt: {
         header: ['Дата', '--->'],
         width: 'w-[100px]',
-        show: false,
+        show: true,
         title: 'Дата перемещения на закрой',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
         data: (roll) => formatDateAndTimeInShortFormat(roll.move_to_cut_at, false),
@@ -738,7 +739,7 @@ const render = reactive({
     moveToCutBy: {
         header: ['Ответственный за', '---> на закрой'],
         width: 'w-[150px]',
-        show: false,
+        show: true,
         title: 'Ответственный за перемещение на закрой',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
         data: (roll) => (roll.move_to_cut_by.id !== 0 ? roll.move_to_cut_by.name : ''),
@@ -759,13 +760,13 @@ const rollStatuses = {
     name: 'statuses',
     data: [
         {id: 0, name: 'Все статусы', selected: true, disabled: false},
-        {id: FABRIC_ROLL_STATUS.DONE.CODE, name: FABRIC_ROLL_STATUS.DONE.TITLE, selected: false, disabled: false},
         {
             id: FABRIC_ROLL_STATUS.REGISTERED_1C.CODE,
             name: FABRIC_ROLL_STATUS.REGISTERED_1C.TITLE,
             selected: false,
             disabled: false,
         },
+        {id: FABRIC_ROLL_STATUS.MOVED.CODE, name: FABRIC_ROLL_STATUS.MOVED.TITLE, selected: false, disabled: false},
     ],
 }
 
@@ -875,7 +876,6 @@ const toggleCollapse = (fabricGroup) => {
     // console.log(fabricGroup)
 }
 
-
 // attract: Обработчик ввода номера рулона для фильтра
 const handleRollNumberInput = (event) => {
     rollNumberFilter.value = event.target.value.replace(/[^0-9]/g, '')  // Оставляем только цифры (0-9)
@@ -895,9 +895,10 @@ const filtersApply = ({fabricFilter, rollNumberFilter, finishAtFilter, statusFil
         .filter(roll => roll.id.toString().includes(rollNumberFilter))
         .filter(roll => roll.fabric.display_name.toLowerCase().includes(fabricFilter.toLowerCase()))
         .filter(roll => getDateFromDateTimeString(roll.finish_at).includes(finishAtFilter))
+        .filter(roll => getDateFromDateTimeString(roll.registration_1C_at).includes(register1CAtFilter))
 
     // prettier-ignore
-    if ([FABRIC_ROLL_STATUS.DONE.CODE, FABRIC_ROLL_STATUS.REGISTERED_1C.CODE].includes(statusFilter)) {
+    if ([FABRIC_ROLL_STATUS.MOVED.CODE, FABRIC_ROLL_STATUS.REGISTERED_1C.CODE].includes(statusFilter)) {
         filteredAllRolls = filteredAllRolls.filter(roll => roll.status === statusFilter)
     }
 
@@ -914,6 +915,7 @@ watch(
             rollNumberFilter: rollNumberFilter.value,
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
+            register1CAtFilter: register1CAtFilter.value,
         })
 
         reformatData(filteredAllRolls, newActiveTabs)
@@ -933,6 +935,7 @@ watch(
             rollNumberFilter: rollNumberFilter.value,
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
+            register1CAtFilter: register1CAtFilter.value,
         })
 
         reformatData(filteredAllRolls, tabs)
@@ -947,14 +950,16 @@ watch(
         () => fabricFilter.value,
         () => rollNumberFilter.value,
         () => finishAtFilter.value,
-        () => statusFilter.value
+        () => statusFilter.value,
+        () => register1CAtFilter.value
     ],
-    ([newFabricFilter, newRollNumberFilter, newFinishAtFilter, newStatusFilter]) => {
+    ([newFabricFilter, newRollNumberFilter, newFinishAtFilter, newStatusFilter, newRegister1CAtFilter]) => {
         const filteredAllRolls = filtersApply({
             fabricFilter: newFabricFilter,
             rollNumberFilter: newRollNumberFilter,
             finishAtFilter: newFinishAtFilter,
             statusFilter: newStatusFilter,
+            register1CAtFilter: newRegister1CAtFilter
         })
 
         reformatData(filteredAllRolls, tabs) // attract: Применяем фильтры, меняем doneRolls.value

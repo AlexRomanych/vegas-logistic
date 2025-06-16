@@ -154,7 +154,7 @@ const fabrics = [
         name: 'manufacture.cell.fabrics.movement',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMovement.vue'),
         meta: {
-            title: 'Учет ПС'
+            title: 'Учет ПС стежки'
         }
     },
 

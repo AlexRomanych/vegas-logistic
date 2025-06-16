@@ -18,6 +18,18 @@ const cutting = [
         }
     },
 
+    {
+        // descr: Учет ПС
+        path: _MAIN_PREFIX + 'fabrics/movement',
+        name: 'manufacture.cell.cutting.fabrics.movement',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/cutting/TheCuttingFabricsMovement.vue'),
+        meta: {
+            title: 'Учет ПС раскроя'
+        }
+    },
+
+
+
 /*
 
 
@@ -149,15 +161,7 @@ const cutting = [
         }
     },
 
-    {
-        // descr: Учет ПС
-        path: _MAIN_PREFIX + 'fabrics/movement',
-        name: 'manufacture.cell.fabrics.movement',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsMovement.vue'),
-        meta: {
-            title: 'Учет ПС'
-        }
-    },
+
 
 
 

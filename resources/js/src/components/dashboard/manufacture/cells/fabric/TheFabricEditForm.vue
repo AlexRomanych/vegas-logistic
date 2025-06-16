@@ -475,7 +475,8 @@ const formSubmit = async () => {
     }
     console.log('res', res)
 
-    await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку сотрудников
+    // Пр-во попросило отключить автоматический переход
+    // await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку ПС
 }
 
 // attract: отслеживаем длину в рулонах

@@ -23,7 +23,7 @@ let menuItems = [
     {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar', shown: true, isActive: true},
     {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense', shown: true, isActive: true},
     {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload', shown: true, isActive: true},
-    {name: 'Учет ПС', path: 'manufacture.cell.fabrics.movement', shown: true, isActive: true},
+    {name: 'Учет ПС на стежке', path: 'manufacture.cell.fabrics.movement', shown: true, isActive: true},
     {name: 'Список ПС', path: 'manufacture.cell.fabrics.show', shown: true, isActive: true},
     {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show', shown: true, isActive: true},
     {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines', shown: true, isActive: true},
