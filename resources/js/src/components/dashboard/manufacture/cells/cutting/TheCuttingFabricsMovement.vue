@@ -909,6 +909,9 @@ const filtersApply = ({fabricFilter, rollNumberFilter, finishAtFilter, statusFil
 watch(
     () => tabs,
     (newActiveTabs) => {
+
+        statusFilter.value = 0  // Сбрасываем фильтр статуса
+
         // attract: Применяем фильтры, меняем doneRolls.value
         const filteredAllRolls = filtersApply({
             fabricFilter: fabricFilter.value,
