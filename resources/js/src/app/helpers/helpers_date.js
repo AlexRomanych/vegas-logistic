@@ -1,6 +1,6 @@
 // Здесь все, что касается даты и времени
 
-import {PERIOD_LENGTH, } from '/resources/js/src/app/constants/dates.js'
+import { PERIOD_LENGTH } from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
 const GMT_0 = ':00Z'
@@ -14,46 +14,63 @@ export function getPeriod() {
     const year = tempDate.getFullYear()
 
     const periodStart = new Date(year, month, '01')
-    periodStart.setMonth(periodStart.getMonth() - 1)        // отнимаем месяц от предыдущего, то есть минус месяц от текущего
+    periodStart.setMonth(periodStart.getMonth() - 1) // отнимаем месяц от предыдущего, то есть минус месяц от текущего
 
     const periodEnd = new Date(year, month, '00')
     periodEnd.setMonth(periodStart.getMonth() + PERIOD_LENGTH)
 
-    const periodStartText_Day = periodStart.getDate() < 10 ? '0' + periodStart.getDate().toString() : periodStart.getDate().toString()
-    const periodStartText_Month = periodStart.getMonth() < 9 ? '0' + (periodStart.getMonth() + 1).toString() : (periodStart.getMonth() + 1).toString()
+    const periodStartText_Day =
+        periodStart.getDate() < 10
+            ? '0' + periodStart.getDate().toString()
+            : periodStart.getDate().toString()
+    const periodStartText_Month =
+        periodStart.getMonth() < 9
+            ? '0' + (periodStart.getMonth() + 1).toString()
+            : (periodStart.getMonth() + 1).toString()
 
-    const periodEndText_Day = periodEnd.getDate() < 10 ? '0' + periodEnd.getDate().toString() : periodEnd.getDate().toString()
-    const periodEndText_Month = periodEnd.getMonth() < 9 ? '0' + (periodEnd.getMonth() + 1).toString() : (periodEnd.getMonth() + 1).toString()
+    const periodEndText_Day =
+        periodEnd.getDate() < 10
+            ? '0' + periodEnd.getDate().toString()
+            : periodEnd.getDate().toString()
+    const periodEndText_Month =
+        periodEnd.getMonth() < 9
+            ? '0' + (periodEnd.getMonth() + 1).toString()
+            : (periodEnd.getMonth() + 1).toString()
 
-    const periodStartText = periodStart.getFullYear().toString() + '-' + periodStartText_Month + '-' + periodStartText_Day
-    const periodEndText = periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
+    const periodStartText =
+        periodStart.getFullYear().toString() +
+        '-' +
+        periodStartText_Month +
+        '-' +
+        periodStartText_Day
+    const periodEndText =
+        periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
 
-    return {periodStart, periodEnd, periodStartText, periodEndText}
+    return { periodStart, periodEnd, periodStartText, periodEndText }
 }
-
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает номер недели для указанной даты
 export function getWeekNumber(date) {
     // Копируем дату, чтобы не изменять исходную
-    const d = new Date(date);
+    const d = new Date(date)
     // Получаем день недели (0 - воскресенье, 6 - суббота)
-    const dayNum = d.getDay();
+    const dayNum = d.getDay()
     // Получаем первый день года
-    d.setMonth(0, 1);
-    const firstDayOfYear = d.getDay();
+    d.setMonth(0, 1)
+    const firstDayOfYear = d.getDay()
 
     // Расчет разницы в днях и округление вверх
-    const diffDays = Math.round((date - d) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round((date - d) / (1000 * 60 * 60 * 24))
 
     // Корректировка номера недели в зависимости от системы подсчета
     // Здесь используется система, где первая неделя начинается с понедельника
-    let weekNum = Math.ceil((diffDays + firstDayOfYear - 1) / 7);
+    let weekNum = Math.ceil((diffDays + firstDayOfYear - 1) / 7)
 
     // Если первая неделя года начинается с воскресенья, то:
     // weekNum = Math.ceil((diffDays + firstDayOfYear) / 7);
 
-    return weekNum;
+    return weekNum
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,8 +105,8 @@ export function compareDates(dateString1, dateString2) {
 // attract Вычитает из даты количество дней
 // inDate - дата, может быть в формате объекта или строки
 export function subtractDays(inDate = new Date(), days = 1) {
-
-    const workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+    const workDate =
+        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
     // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
 
     // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
@@ -104,8 +121,8 @@ export function subtractDays(inDate = new Date(), days = 1) {
 // attract Прибавляет к дате количество дней
 // inDate - дата, может быть в формате объекта или строки
 export function addDays(inDate = new Date(), days = 1) {
-
-    const workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+    const workDate =
+        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
     // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
 
     // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
@@ -120,10 +137,10 @@ export function addDays(inDate = new Date(), days = 1) {
 // attract Возвращает ближайший понедельник до заданной даты
 // inDate - дата, может быть в формате объекта или строки
 export function getMondayBefore(inDate = new Date()) {
+    let workDate =
+        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 
-    let workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
-
-    while ((workDate.getDay()) !== 1) {
+    while (workDate.getDay() !== 1) {
         workDate = subtractDays(workDate)
     }
 
@@ -134,8 +151,8 @@ export function getMondayBefore(inDate = new Date()) {
 // attract Возвращает ближайшее воскресенье после заданной даты
 // inDate - дата, может быть в формате объекта или строки
 export function getSundayAfter(inDate = new Date()) {
-
-    let workDate = (!(inDate instanceof Date) && typeof inDate === 'string') ? new Date(inDate) : inDate
+    let workDate =
+        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 
     while (workDate.getDay() !== 0) {
         workDate = addDays(workDate)
@@ -150,13 +167,13 @@ export function getSundayAfter(inDate = new Date()) {
 //      ближайшим воскресеньем после конечной даты
 // inDate - дата, может быть в формате объекта или строки
 export function getDateIntervalMatrix(startInterval = new Date(), endInterval = new Date()) {
-
     console.log(startInterval, endInterval)
 
     const mondayStart = getMondayBefore(startInterval)
     const sundayEnd = getSundayAfter(endInterval)
 
-    const weeksAmount = (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY)    // добавляем 1 день к разности
+    const weeksAmount =
+        (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY) // добавляем 1 день к разности
 
     // console.log(weeksAmount)
 
@@ -198,36 +215,45 @@ export function formatDate(inDate = new Date()) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в формат "17 апреля 2025 года"
 export function formatDateInFullFormat(dateTimeString) {
-    const date = new Date(dateTimeString);
-    const day = date.getDate();
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
+    const date = new Date(dateTimeString)
+    const day = date.getDate()
+    const monthIndex = date.getMonth()
+    const year = date.getFullYear()
 
     const months = [
-        "января", "февраля", "марта", "апреля", "мая", "июня",
-        "июля", "августа", "сентября", "октября", "ноября", "декабря"
-    ];
+        'января',
+        'февраля',
+        'марта',
+        'апреля',
+        'мая',
+        'июня',
+        'июля',
+        'августа',
+        'сентября',
+        'октября',
+        'ноября',
+        'декабря',
+    ]
 
     const pad = (num) => num.toString().padStart(2, '0')
 
-    return `${pad(day)} ${months[monthIndex]} ${year} года`;
+    return `${pad(day)} ${months[monthIndex]} ${year} года`
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в нормальный формат "17.04.2025 20:58:57"
 export function formatDateAndTimeInShortFormat(dateTimeString, fullYear = true) {
-
     if (!dateTimeString) return ''
 
-    const dateObject = new Date(dateTimeString);
+    const dateObject = new Date(dateTimeString)
 
-    const day = dateObject.getDate();
-    const month = dateObject.getMonth();
-    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2);
+    const day = dateObject.getDate()
+    const month = dateObject.getMonth()
+    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
 
-    const hours = dateObject.getHours();
-    const minutes = dateObject.getMinutes();
-    const seconds = dateObject.getSeconds();
+    const hours = dateObject.getHours()
+    const minutes = dateObject.getMinutes()
+    const seconds = dateObject.getSeconds()
 
     const pad = (num) => num.toString().padStart(2, '0')
 
@@ -235,26 +261,44 @@ export function formatDateAndTimeInShortFormat(dateTimeString, fullYear = true) 
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает дату из формата "2025-04-17 20:58:57" в нормальный формат "17.04.2025"
+export function getDateFromDateTimeString(dateTimeString, fullYear = true) {
+    // dateTimeString = getDate(dateTimeString)
+
+    // const dateObject = new Date(dateTimeString)
+    const dateObject = getDate(dateTimeString)
+
+    const day = dateObject.getDate()
+    const month = dateObject.getMonth()
+    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
+
+    // const hours = dateObject.getHours();
+    // const minutes = dateObject.getMinutes();
+    // const seconds = dateObject.getSeconds();
+
+    const pad = (num) => num.toString().padStart(2, '0')
+
+    return `${pad(day)}.${pad(month + 1)}.${year}`
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в формат времени "20ч. 58м. 57с."
 export function formatTimeInFullFormat(dateTimeString) {
+    const dateObject = new Date(dateTimeString)
 
-    const dateObject = new Date(dateTimeString);
-
-    const hours = dateObject.getHours();        // Получить часы (0-23)
-    const minutes = dateObject.getMinutes();    // Получить минуты (0-59)
-    const seconds = dateObject.getSeconds();    // Получить секунды (0-59)
+    const hours = dateObject.getHours() // Получить часы (0-23)
+    const minutes = dateObject.getMinutes() // Получить минуты (0-59)
+    const seconds = dateObject.getSeconds() // Получить секунды (0-59)
 
     const pad = (num) => num.toString().padStart(2, '0')
 
     // console.log(`Часы: ${hours}, Минуты: ${minutes}, Секунды: ${seconds}`); // Часы: 20, Минуты: 58, Секунды: 57
     return `${pad(hours)}ч. ${pad(minutes)}м. ${pad(seconds)}с.` // Часы: 20, Минуты: 58, Секунды: 57
 
-// Для получения времени в формате HH:MM:SS:
-    const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    console.log(timeString); // Выведет: 20:58:57
-
+    // Для получения времени в формате HH:MM:SS:
+    const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+    console.log(timeString) // Выведет: 20:58:57
 }
-
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает день недели в строковом представлении
@@ -293,23 +337,84 @@ export function getDayOfWeek(inDate = new Date(), short = true) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает, является ли день выходным или рабочим
 export function isWorkingDay(inDate = new Date()) {
-
     const BLACK_DAYS = [
-        "04.01.2020", "04.04.2020",
-        "16.01.2021", "15.05.2021", "15.09.2021",
-        "12.03.2022", "14.05.2022",
-        "29.04.2023", "13.05.2023", "29.04.2023", "11.11.2023",
-        "18.05.2024", "16.11.2024",
-        "11.01.2025", "26.04.2025", "12.07.2025", "20.12.2025"
+        '04.01.2020',
+        '04.04.2020',
+        '16.01.2021',
+        '15.05.2021',
+        '15.09.2021',
+        '12.03.2022',
+        '14.05.2022',
+        '29.04.2023',
+        '13.05.2023',
+        '29.04.2023',
+        '11.11.2023',
+        '18.05.2024',
+        '16.11.2024',
+        '11.01.2025',
+        '26.04.2025',
+        '12.07.2025',
+        '20.12.2025',
     ]
 
     const RED_DAYS = [
-        "01.01.2020", "02.01.2020", "06.01.2020", "07.01.2020", "27.04.2020", "28.04.2020", "01.05.2020", "03.07.2020", "25.12.2020",
-        "01.01.2021", "07.01.2021", "08.01.2021", "08.03.2021", "10.05.2021", "11.05.2021",
-        "07.01.2022", "07.03.2022", "08.03.2022", "02.05.2022", "03.05.2022", "09.05.2022", "07.11.2022",
-        "02.01.2023", "08.03.2023", "24.04.2023", "25.04.2023", "01.05.2023", "08.05.2023", "09.05.2023", "03.07.2023", "06.11.2023", "07.11.2023", "25.12.2023",
-        "01.01.2024", "02.01.2024", "08.03.2024", "01.05.2024", "09.05.2024", "13.05.2024", "14.05.2024", "03.07.2024", "07.11.2024", "08.11.2024", "25.12.2024",
-        "01.01.2025", "02.01.2025", "06.01.2025", "07.01.2025", "28.04.2025", "29.04.2025", "01.05.2025", "09.05.2025", "03.07.2025", "04.07.2025", "07.11.2025", "25.12.2025", "26.12.2025"
+        '01.01.2020',
+        '02.01.2020',
+        '06.01.2020',
+        '07.01.2020',
+        '27.04.2020',
+        '28.04.2020',
+        '01.05.2020',
+        '03.07.2020',
+        '25.12.2020',
+        '01.01.2021',
+        '07.01.2021',
+        '08.01.2021',
+        '08.03.2021',
+        '10.05.2021',
+        '11.05.2021',
+        '07.01.2022',
+        '07.03.2022',
+        '08.03.2022',
+        '02.05.2022',
+        '03.05.2022',
+        '09.05.2022',
+        '07.11.2022',
+        '02.01.2023',
+        '08.03.2023',
+        '24.04.2023',
+        '25.04.2023',
+        '01.05.2023',
+        '08.05.2023',
+        '09.05.2023',
+        '03.07.2023',
+        '06.11.2023',
+        '07.11.2023',
+        '25.12.2023',
+        '01.01.2024',
+        '02.01.2024',
+        '08.03.2024',
+        '01.05.2024',
+        '09.05.2024',
+        '13.05.2024',
+        '14.05.2024',
+        '03.07.2024',
+        '07.11.2024',
+        '08.11.2024',
+        '25.12.2024',
+        '01.01.2025',
+        '02.01.2025',
+        '06.01.2025',
+        '07.01.2025',
+        '28.04.2025',
+        '29.04.2025',
+        '01.05.2025',
+        '09.05.2025',
+        '03.07.2025',
+        '04.07.2025',
+        '07.11.2025',
+        '25.12.2025',
+        '26.12.2025',
     ]
 
     const workDate = getDate(inDate)
@@ -337,7 +442,6 @@ export function getDate(inDate = new Date()) {
 // attract Возвращает дату в формате "10ч. 59м. 59с."
 // attract type - sec, min, hour - вид входящих данных: секунды, минуты, часы
 export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
-
     let tempTime = inTime
 
     if (type === 'min') {
@@ -363,8 +467,12 @@ export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
 // attract: Возвращает разницу между двумя датами в днях
 // attract: absMode - модуль или нет,
 // attract: truncMode - отсекать ли дробную часть или нет
-export function getDateDiffInDays(inDate1 = new Date(), inDate2 = new Date(), absMode = false, truncMode = true) {
-
+export function getDateDiffInDays(
+    inDate1 = new Date(),
+    inDate2 = new Date(),
+    absMode = false,
+    truncMode = true,
+) {
     const MS_IN_DAY = 1000 * 60 * 60 * 24
 
     const date1 = getDate(inDate1)
@@ -383,16 +491,14 @@ export function getDateDiffInDays(inDate1 = new Date(), inDate2 = new Date(), ab
     return diffInMs / MS_IN_DAY
 }
 
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract: Возвращает длительность периода между двумя датами в формате "10ч. 59м. 59с."
 // attract: если вторая дата не указана, то вычисляется разница между текущей и первой датой
 // attract: если даты не указаны, то результат вычисляется только по смещению в миллисекундах
 // attract: offset - добавляет или отнимает указанное количество миллисекунд к результату
 export function getDuration(startMoment = null, endMoment = null, offset = 0) {
-
-    if (!startMoment && !endMoment && !offset) return ''    // если все параметры не указаны, возвращаем пустую строку
-    if (!startMoment && !offset) return ''                  // если нет начала периода и нет смещения, возвращаем пустую строку
+    if (!startMoment && !endMoment && !offset) return '' // если все параметры не указаны, возвращаем пустую строку
+    if (!startMoment && !offset) return '' // если нет начала периода и нет смещения, возвращаем пустую строку
     if (!offset) offset = 0
 
     let tempDuration = 0
@@ -409,20 +515,16 @@ export function getDuration(startMoment = null, endMoment = null, offset = 0) {
     return formatTimeWithLeadingZeros(tempDuration)
 }
 
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает дату в формате YYYY-MM-DD, но полученную из локального формата (без -03:00))
 export function getISOFromLocaleDate(inDate) {
-
     inDate = inDate ? getDate(inDate) : new Date()
     return inDate.toLocaleDateString().split('.').reverse().join('-')
-
 }
-
 
 // attract Получаем тип раскраски в зависимости от типа дня недели (выходной или рабочий или текущий)
 export function getDayOfWeekStyle(date) {
-    if (isToday(date)) return 'success'         // текущий
-    if (isWorkingDay(date)) return 'dark'       // рабочмй
-    return 'danger'                             // выходной
+    if (isToday(date)) return 'success' // текущий
+    if (isWorkingDay(date)) return 'dark' // рабочмй
+    return 'danger' // выходной
 }

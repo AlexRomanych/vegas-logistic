@@ -1,12 +1,7 @@
 <template>
     <div class="ml-2 mt-2">
-
-
         <div class="sticky top-0 pt-1 pb-1 bg-blue-200 border-2 rounded-lg border-blue-700 p-1 mb-1 max-w-fit">
-
-
             <div class="flex">
-
                 <div>
                     <!-- attract: Код по 1С -->
                     <AppLabelMultiLine
@@ -176,7 +171,7 @@
                     <!-- Верстка  -->
                     <div class="mt-1"></div>
 
-                    <!-- attract: Альтернативная СМ 1 -->
+                    <!-- attract: Фильтр: Альтернативная СМ 1 -->
                     <AppSelectSimple
                         :select-data="mainMachine"
                         text-size="mini"
@@ -200,7 +195,7 @@
                     <!-- Верстка  -->
                     <div class="mt-1"></div>
 
-                    <!-- attract: Альтернативная СМ 2 -->
+                    <!-- attract: Фильтр: Альтернативная СМ 2 -->
                     <AppSelectSimple
                         :select-data="mainMachine"
                         text-size="mini"
@@ -234,7 +229,6 @@
                     />
                 </div>
 
-
                 <!-- attract: Коэффициент перевода ткани в ПС -->
                 <AppLabelMultiLine
                     :text="['Коэфф.', 'ткани']"
@@ -256,7 +250,7 @@
                 />
 
                 <!-- attract: Кнопка создать -->
-                <router-link :to="{name: 'manufacture.cell.fabrics.add'}">
+                <router-link :to="{ name: 'manufacture.cell.fabrics.add' }">
                     <AppLabelMultiLine
                         :text="['Создать', '']"
                         align="center"
@@ -277,26 +271,23 @@
                     width="w-[70px]"
                     @click="updateBuffer"
                 />
-
             </div>
-
         </div>
 
         <!-- attract: Сами данные -->
         <div v-if="fabrics.length">
-
             <div class="pt-1 pb-1 bg-slate-200 border-2 rounded-lg border-slate-700 p-1 mb-1 max-w-fit">
-
-                <div v-for="fabric in fabrics" :key="fabric.id">
+                <div
+                    v-for="fabric in fabrics"
+                    :key="fabric.id"
+                >
                     <div class="flex">
-
                         <AppLabel
                             :text="fabric.code_1C"
                             align="center"
                             text-size="mini"
                             width="w-[100px]"
                         />
-
 
                         <AppLabel
                             :text="fabric.display_name"
@@ -410,7 +401,7 @@
                             width="w-[200px]"
                         />
 
-                        <router-link :to="{name: 'manufacture.cell.fabric.edit', params: {id: fabric.id}}">
+                        <router-link :to="{ name: 'manufacture.cell.fabric.edit', params: { id: fabric.id } }">
                             <AppLabel
                                 align="center"
                                 class="cursor-pointer"
@@ -430,24 +421,17 @@
                         <!--                            width="w-[40px]"-->
                         <!--                            @click="fabricDelete(fabric.id)"-->
                         <!--                        />-->
-
                     </div>
                 </div>
-
             </div>
-
         </div>
 
         <div v-else>
-
             <AppLabel
                 text="Нет данных"
                 type="info"
             />
-
         </div>
-
-
     </div>
 
     <AppModal
@@ -458,206 +442,212 @@
         @closeModal="closeModal"
     />
 
-    <AppCallout v-if="calloutShow"
-                :text="calloutText"
-                :type="calloutType"
+    <AppCallout
+        v-if="calloutShow"
+        :text="calloutText"
+        :type="calloutType"
     />
-
 </template>
 
 <script setup>
-import {ref, watch} from 'vue'
+    import { ref, watch } from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+    import { useFabricsStore } from '/resources/js/src/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+    import { FABRIC_MACHINES } from '/resources/js/src/app/constants/fabrics.js'
 
-import {round} from '/resources/js/src/app/helpers/helpers_lib.js'
+    import { round } from '/resources/js/src/app/helpers/helpers_lib.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
-import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
-import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
+    import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+    import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
+    import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+    import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+    import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
+    import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
 
-const fabricsStore = useFabricsStore()
+    const fabricsStore = useFabricsStore()
 
-const getAllFabrics = async () => await fabricsStore.getFabrics()
-const allFabrics = ref(await getAllFabrics())
+    const getAllFabrics = async () => await fabricsStore.getFabrics()
+    const allFabrics = ref(await getAllFabrics())
 
-const getFabrics = () => {
-    const tempFabrics = ref(allFabrics.value)
-    tempFabrics.value.sort((fabric1, fabric2) => fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name))
-    tempFabrics.value.sort(fabric => fabric.active, true)
-    return tempFabrics.value
-}
-const fabrics = ref(getFabrics())
+    const getFabrics = () => {
+        const tempFabrics = ref(allFabrics.value)
+        tempFabrics.value.sort((fabric1, fabric2) =>
+            fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name)
+        )
+        tempFabrics.value.sort((fabric) => fabric.active, true)
+        return tempFabrics.value
+    }
+    const fabrics = ref(getFabrics())
 
-// let fabrics = await fabricsStore.getFabrics()
+    // let fabrics = await fabricsStore.getFabrics()
 
-// attract: Сортируем по основной стегальной машине
-fabrics.value.sort((fabric1, fabric2) => fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name))
-fabrics.value.sort(fabric => fabric.active, true)
+    // attract: Сортируем по основной стегальной машине
+    fabrics.value.sort((fabric1, fabric2) =>
+        fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name)
+    )
+    fabrics.value.sort((fabric) => fabric.active, true)
 
-// union.sort((a, b) => a.element.model.localeCompare(b.element.model))
+    // union.sort((a, b) => a.element.model.localeCompare(b.element.model))
 
-// attract: Переменные для фильтрации
-const codeFilter = ref('')
-const nameFilter = ref('')
-const textileFilter = ref('')
-const statusFilter = ref(1)
-const mainMachineFilter = ref(0)
-const altMachineFilter_1 = ref(0)
-const altMachineFilter_2 = ref(0)
+    // attract: Переменные для фильтрации
+    const codeFilter = ref('')
+    const nameFilter = ref('')
+    const textileFilter = ref('')
+    const statusFilter = ref(1)
+    const mainMachineFilter = ref(0)
+    const altMachineFilter_1 = ref(0)
+    const altMachineFilter_2 = ref(0)
 
-// attract: Селект для статуса
-const statusSelectData = {
-    name: 'status',
-    data: [
-        {id: 1, name: 'Все', selected: true, disabled: false},
-        {id: 2, name: 'Активный', selected: true, disabled: false},
-        {id: 3, name: 'Архив', selected: true, disabled: false},
+    // attract: Селект для статуса
+    const statusSelectData = {
+        name: 'status',
+        data: [
+            { id: 1, name: 'Все', selected: true, disabled: false },
+            { id: 2, name: 'Активный', selected: true, disabled: false },
+            { id: 3, name: 'Архив', selected: true, disabled: false },
+        ],
+    }
+
+    // attract: Селекты для фильтрации СМ
+    const machinesData = [
+        { id: 0, name: 'Все', selected: true, disabled: false },
+        { id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false },
+        { id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false },
+        { id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false },
+        { id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false },
     ]
-}
 
-// attract: Селекты для фильтрации СМ
-const machinesData = [
-    {id: 0, name: 'Все', selected: true, disabled: false},
-    {id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false},
-]
+    const mainMachine = { name: 'mainMachine', data: machinesData }
+    const altMachine_1 = { name: 'altMachine_1', data: machinesData }
+    const altMachine_2 = { name: 'altMachine_2', data: machinesData }
 
-const mainMachine = {name: 'mainMachine', data: machinesData,}
-const altMachine_1 = {name: 'altMachine_1', data: machinesData,}
-const altMachine_2 = {name: 'altMachine_2', data: machinesData,}
+    console.log('fabrics', fabrics.value)
 
+    const modalShow = ref(false)
+    const modalAnswer = ref(false)
+    const calloutShow = ref(false)
+    const calloutText = ref('')
+    const calloutType = ref('')
 
-console.log('fabrics', fabrics.value)
+    let deleteFabricId = 0
+    let fabric = ref(null)
 
-const modalShow = ref(false)
-const modalAnswer = ref(false)
-const calloutShow = ref(false)
-const calloutText = ref('')
-const calloutType = ref('')
+    // Удаляем работника
+    const fabricDelete = (id) => {
+        modalShow.value = true
+        deleteFabricId = id
+        // console.log(id)
+        // console.log(modalShow.value)
+    }
 
-let deleteFabricId = 0
-let fabric = ref(null)
+    // Удаляем рабочего после модального окна
+    const closeModal = async (answer) => {
+        modalAnswer.value = answer
+        modalShow.value = false
+        // console.log('answer', modalAnswer.value)
 
-// Удаляем работника
-const fabricDelete = (id) => {
-    modalShow.value = true
-    deleteFabricId = id
-    // console.log(id)
-    // console.log(modalShow.value)
-}
+        if (answer) {
+            const fabric = fabrics.value.find((fabric) => fabric.id === deleteFabricId)
+            fabrics.value = fabrics.value.filter((fabric) => fabric.id !== deleteFabricId)
+            const result = await fabricsStore.deleteFabric(deleteFabricId)
 
-// Удаляем рабочего после модального окна
-const closeModal = async (answer) => {
-    modalAnswer.value = answer
-    modalShow.value = false
-    // console.log('answer', modalAnswer.value)
-
-    if (answer) {
-        const fabric = fabrics.value.find(fabric => fabric.id === deleteFabricId)
-        fabrics.value = fabrics.value.filter(fabric => fabric.id !== deleteFabricId)
-        const result = await fabricsStore.deleteFabric(deleteFabricId)
-
-        if (result === 'success') {
-            calloutType.value = 'success'
-            calloutText.value = `${fabric.name} успешно удалено`
-        } else {
-            calloutType.value = 'danger'
-            calloutText.value = 'Упс... Что-то пошло не так...'
+            if (result === 'success') {
+                calloutType.value = 'success'
+                calloutText.value = `${fabric.name} успешно удалено`
+            } else {
+                calloutType.value = 'danger'
+                calloutText.value = 'Упс... Что-то пошло не так...'
+            }
+            calloutShow.value = true
         }
-        calloutShow.value = true
-    }
-}
-
-// attract: Меняем статус
-const filterByStatus = (status) => {
-    statusFilter.value = status.id
-}
-
-// attract: Меняем СМ
-const filterByMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
-    switch (machineOrder) {
-        case 0:
-            mainMachineFilter.value = event.id
-            break
-        case 1:
-            altMachineFilter_1.value = event.id
-            break
-        case 2:
-            altMachineFilter_2.value = event.id
-            break
     }
 
-    // console.log('select: ', event)
-    // console.log('machineOrder: ', machineOrder)
-}
-
-
-// attract: Обновляем буфер в соответствии с рулонами (синхронизируем с количеством рулонов)
-const updateBuffer = async () => {
-    await fabricsStore.updateFabricsBuffer()
-    allFabrics.value = await getAllFabrics()
-    fabrics.value = getFabrics()
-}
-
-
-// attract: Реализация фильтра
-watch([
-    () => codeFilter.value,
-    () => nameFilter.value,
-    () => textileFilter.value,
-    () => statusFilter.value,
-    () => mainMachineFilter.value,
-    () => altMachineFilter_1.value,
-    () => altMachineFilter_2.value,
-], ([newCodeFilter, newNameFilter, newTextileFilter, newStatusFilter,
-        newMainMachineFilter, newAltMachineFilter_1, newAltMachineFilter_2]) => {
-
-    fabrics.value = allFabrics.value
-        .filter(fabric => fabric.code_1C.includes(newCodeFilter.toLowerCase()))
-        .filter(fabric => fabric.display_name.toLowerCase().includes(newNameFilter.toLowerCase()))
-        .filter(fabric => fabric.textile.toLowerCase().includes(newTextileFilter.toLowerCase()))
-
-    // Фильтр по статусу
-    if (newStatusFilter === 2 || newStatusFilter === 3) {
-
-        newStatusFilter === 2 ?
-            fabrics.value = fabrics.value.filter(fabric => fabric.active) :
-            fabrics.value = fabrics.value.filter(fabric => !fabric.active)
+    // attract: Меняем статус
+    const filterByStatus = (status) => {
+        statusFilter.value = status.id
     }
 
-    // Фильтр по основной СМ
-    if (newMainMachineFilter !== 0) {
-        fabrics.value = fabrics.value.filter(fabric => fabric.machines[0].id === newMainMachineFilter)
+    // attract: Меняем СМ
+    const filterByMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+        switch (machineOrder) {
+            case 0:
+                mainMachineFilter.value = event.id
+                break
+            case 1:
+                altMachineFilter_1.value = event.id
+                break
+            case 2:
+                altMachineFilter_2.value = event.id
+                break
+        }
+
+        // console.log('select: ', event)
+        // console.log('machineOrder: ', machineOrder)
     }
 
-    // Фильтр по альт. СМ 1
-    if (newAltMachineFilter_1 !== 0) {
-        fabrics.value = fabrics.value.filter(fabric => fabric.machines[1].id === newAltMachineFilter_1)
+    // attract: Обновляем буфер в соответствии с рулонами (синхронизируем с количеством рулонов)
+    const updateBuffer = async () => {
+        await fabricsStore.updateFabricsBuffer()
+        allFabrics.value = await getAllFabrics()
+        fabrics.value = getFabrics()
     }
 
-    // Фильтр по альт. СМ 2
-    if (newAltMachineFilter_2 !== 0) {
-        fabrics.value = fabrics.value.filter(fabric => fabric.machines[2].id === newAltMachineFilter_2)
-    }
+    // attract: Реализация фильтра
+    watch(
+        [
+            () => codeFilter.value,
+            () => nameFilter.value,
+            () => textileFilter.value,
+            () => statusFilter.value,
+            () => mainMachineFilter.value,
+            () => altMachineFilter_1.value,
+            () => altMachineFilter_2.value,
+        ],
+        ([
+            newCodeFilter,
+            newNameFilter,
+            newTextileFilter,
+            newStatusFilter,
+            newMainMachineFilter,
+            newAltMachineFilter_1,
+            newAltMachineFilter_2,
+        ]) => {
+            fabrics.value = allFabrics.value
+                .filter((fabric) => fabric.code_1C.includes(newCodeFilter.toLowerCase()))
+                .filter((fabric) => fabric.display_name.toLowerCase().includes(newNameFilter.toLowerCase()))
+                .filter((fabric) => fabric.textile.toLowerCase().includes(newTextileFilter.toLowerCase()))
 
+            // Фильтр по статусу
+            if (newStatusFilter === 2 || newStatusFilter === 3) {
+                newStatusFilter === 2
+                    ? (fabrics.value = fabrics.value.filter((fabric) => fabric.active))
+                    : (fabrics.value = fabrics.value.filter((fabric) => !fabric.active))
+            }
 
-}, {deep: true})
+            // Фильтр по основной СМ
+            if (newMainMachineFilter !== 0) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[0].id === newMainMachineFilter)
+            }
 
+            // Фильтр по альт. СМ 1
+            if (newAltMachineFilter_1 !== 0) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[1].id === newAltMachineFilter_1)
+            }
 
+            // Фильтр по альт. СМ 2
+            if (newAltMachineFilter_2 !== 0) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[2].id === newAltMachineFilter_2)
+            }
+        },
+        { deep: true }
+    )
 </script>
 
 <style scoped>
-.sticky-header {
-    position: sticky;
-    /* top: var(--header-height); top: 0; */
-    /* padding-top: 10px; */
-}
+    .sticky-header {
+        position: sticky;
+        /* top: var(--header-height); top: 0; */
+        /* padding-top: 10px; */
+    }
 </style>
