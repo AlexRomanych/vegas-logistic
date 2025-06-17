@@ -911,6 +911,7 @@ watch(
     (newActiveTabs) => {
 
         statusFilter.value = 0  // Сбрасываем фильтр статуса
+        statusFilterType.value = 'light'
 
         // attract: Применяем фильтры, меняем doneRolls.value
         const filteredAllRolls = filtersApply({
