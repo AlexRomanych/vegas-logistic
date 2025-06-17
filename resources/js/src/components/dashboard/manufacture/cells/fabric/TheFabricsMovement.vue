@@ -182,15 +182,18 @@
                 />
 
                 <!-- attract: Фильтр: Дата учета в 1С -->
-                <!--                <AppInputText-->
-                <!--                    v-if="render.registration_1C_At.show"-->
-                <!--                    id="register-at-search"-->
-                <!--                    v-model.trim="register1CAtFilter"-->
-                <!--                    :width="render.registration_1C_At.width"-->
-                <!--                    placeholder="дд.мм.гггг"-->
-                <!--                    text-size="mini"-->
-                <!--                    type="primary"-->
-                <!--                />-->
+                <div v-if="tabs.registered_1C.shown || tabs.moved.shown">
+                    <AppInputText
+                        v-if="render.registration_1C_At.show"
+                        id="register-at-search"
+                        v-model.trim="register1CAtFilter"
+                        :width="render.registration_1C_At.width"
+                        placeholder="дд.мм.гггг"
+                        text-size="mini"
+                        type="primary"
+                        @input="handleRegistered1CAtInput"
+                    />
+                </div>
             </div>
 
             <!-- attract: Ответственный за учет в 1С -->
@@ -962,6 +965,19 @@ const handleMovedAtInput = (event) => {
 }
 
 
+// attract: Обработчик ввода даты учета в 1С
+// Объект для манипуляции с вводом и выводом даты
+const handleRegistered1CAtInputObj = {
+    newValue: '',
+    oldValue: '',
+}
+const handleRegistered1CAtInput = (event) => {
+    handleRegistered1CAtInputObj.newValue = event.target.value
+    validateInputDateHelper(handleRegistered1CAtInputObj)  // вся логика изменения объекта будет внутри функции
+    register1CAtFilter.value = handleRegistered1CAtInputObj.newValue
+}
+
+
 // attract: Вспомогалочка: преобразует исходные данные в нужную структуру для отображения в шаблоне
 const reformatData = (rolls, tabs) => {
     const activeTab = Object.values(tabs).find((tab) => tab.shown)
@@ -985,6 +1001,7 @@ const filtersApply = ({
         .filter(roll => roll.descr.toLowerCase().includes(descriptionFilter.toLowerCase()))
         .filter(roll => getDateFromDateTimeString(roll.finish_at).includes(finishAtFilter))
         .filter(roll => getDateFromDateTimeString(roll.move_to_cut_at).includes(movedAtFilter))
+        .filter(roll => getDateFromDateTimeString(roll.registration_1C_at).includes(register1CAtFilter))
 
     // prettier-ignore
     if ([FABRIC_ROLL_STATUS.DONE.CODE, FABRIC_ROLL_STATUS.REGISTERED_1C.CODE].includes(statusFilter)) {
@@ -999,12 +1016,13 @@ watch(
     () => tabs,
     (newActiveTabs) => {
 
-        // attract: Cбрасываем не общие фильтры
+        // attract: Сбрасываем не общие фильтры
 
-        statusFilter.value = 0      // Сбрасываем фильтр статуса
+        statusFilter.value = 0          // Сбрасываем фильтр статуса
         statusFilterType.value = 'light'
 
-        movedAtFilter.value = ''    // Сбрасываем фильтр даты перемещения
+        register1CAtFilter.value = ''   // Сбрасываем фильтр даты регистрации в 1С
+        movedAtFilter.value = ''        // Сбрасываем фильтр даты перемещения
 
         // attract: Применяем фильтры, меняем doneRolls.value
         const filteredAllRolls = filtersApply({
@@ -1014,6 +1032,7 @@ watch(
             statusFilter: statusFilter.value,
             descriptionFilter: descriptionFilter.value,
             movedAtFilter: movedAtFilter.value,
+            register1CAtFilter: register1CAtFilter.value
         })
 
         reformatData(filteredAllRolls, newActiveTabs)
@@ -1035,6 +1054,7 @@ watch(
             statusFilter: statusFilter.value,
             descriptionFilter: descriptionFilter.value,
             movedAtFilter: movedAtFilter.value,
+            register1CAtFilter: register1CAtFilter.value
         })
 
         reformatData(filteredAllRolls, tabs)
@@ -1052,6 +1072,7 @@ watch(
         () => statusFilter.value,
         () => descriptionFilter.value,
         () => movedAtFilter.value,
+        () => register1CAtFilter.value,
     ],
     (
         [
@@ -1061,13 +1082,15 @@ watch(
             newStatusFilter,
             newDescriptionFilter,
             newMovedAtFilter,
+            newRegister1CAtFilter,
         ], [
             oldFabricFilter,
             oldRollNumberFilter,
             oldFinishAtFilter,
             oldStatusFilter,
             oldDescriptionFilter,
-            oldMovedAtFilter
+            oldMovedAtFilter,
+            oldRegister1CAtFilter
         ]) => {
 
         const filteredAllRolls = filtersApply({
@@ -1077,6 +1100,7 @@ watch(
             statusFilter: newStatusFilter,
             descriptionFilter: newDescriptionFilter,
             movedAtFilter: newMovedAtFilter,
+            register1CAtFilter: newRegister1CAtFilter
         })
 
         reformatData(filteredAllRolls, tabs) // attract: Применяем фильтры, меняем doneRolls.value

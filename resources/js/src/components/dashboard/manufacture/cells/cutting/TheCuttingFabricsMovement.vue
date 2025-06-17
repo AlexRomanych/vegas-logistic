@@ -138,6 +138,7 @@
                     placeholder="дд.мм.гггг"
                     text-size="mini"
                     type="primary"
+                    @input="handleFinishAtInput"
                 />
             </div>
 
@@ -187,6 +188,7 @@
                     placeholder="дд.мм.гггг"
                     text-size="mini"
                     type="primary"
+                    @input="handleRegistered1CAtInput"
                 />
             </div>
 
@@ -214,17 +216,33 @@
                 text-size="mini"
             />
 
-            <!-- attract: Дата перемещения на закрой -->
-            <AppLabelMultiLine
-                v-if="render.moveToCutAt.show"
-                :text="render.moveToCutAt.header"
-                :title="render.moveToCutAt.title"
-                :type="render.moveToCutAt.type(true)"
-                :width="render.moveToCutAt.width"
-                align="center"
-                class="header-item"
-                text-size="mini"
-            />
+            <div>
+                <!-- attract: Дата перемещения на закрой -->
+                <AppLabelMultiLine
+                    v-if="render.moveToCutAt.show"
+                    :text="render.moveToCutAt.header"
+                    :title="render.moveToCutAt.title"
+                    :type="render.moveToCutAt.type(true)"
+                    :width="render.moveToCutAt.width"
+                    align="center"
+                    class="header-item"
+                    text-size="mini"
+                />
+
+                <div v-if="tabs.moved.shown">
+                    <!-- attract: Фильтр: Дата перемещения на закрой -->
+                    <AppInputText
+                        v-if="render.moveToCutAt.show"
+                        id="moved-at-search"
+                        v-model.trim="movedAtFilter"
+                        :width="render.moveToCutAt.width"
+                        placeholder="дд.мм.гггг"
+                        text-size="mini"
+                        type="primary"
+                        @input="handleMovedAtInput"
+                    />
+                </div>
+            </div>
 
             <!-- attract: Ответственный за перемещение на закрой -->
             <AppLabelMultiLine
@@ -238,17 +256,31 @@
                 text-size="mini"
             />
 
-            <!-- attract: Примечание -->
-            <AppLabelMultiLine
-                v-if="render.description.show"
-                :text="render.description.header"
-                :title="render.description.title"
-                :type="render.description.type(true)"
-                :width="render.description.width"
-                align="center"
-                class="header-item"
-                text-size="mini"
-            />
+            <div>
+                <!-- attract: Примечание -->
+                <AppLabelMultiLine
+                    v-if="render.description.show"
+                    :text="render.description.header"
+                    :title="render.description.title"
+                    :type="render.description.type(true)"
+                    :width="render.description.width"
+                    align="center"
+                    class="header-item"
+                    text-size="mini"
+                />
+
+                <!-- attract: Фильтр: Примечание -->
+                <AppInputText
+                    v-if="render.description.show"
+                    id="description-search"
+                    v-model.trim="descriptionFilter"
+                    :width="render.description.width"
+                    placeholder="Примечание"
+                    text-size="mini"
+                    type="primary"
+                />
+            </div>
+
         </div>
 
         <!-- attract: Сами данные -->
@@ -509,7 +541,11 @@ import {FABRIC_ROLL_STATUS} from '@/app/constants/fabrics.js'
 
 import {getFormatFIO} from '@/app/helpers/workers/helpers_workers.js'
 import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
-import {formatDateAndTimeInShortFormat, getDateFromDateTimeString} from '@/app/helpers/helpers_date.js'
+import {
+    formatDateAndTimeInShortFormat,
+    getDateFromDateTimeString,
+    validateInputDateHelper
+} from '@/app/helpers/helpers_date.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'
@@ -847,10 +883,12 @@ const changeMovingStatus = async (roll) => {
 // attract: Фильтры
 const fabricFilter = ref('')
 const rollNumberFilter = ref('')
-const finishAtFilter = ref('')
-const register1CAtFilter = ref('')
 const statusFilter = ref(0)
 const statusFilterType = ref('light')
+const descriptionFilter = ref('')
+const finishAtFilter = ref('')
+const movedAtFilter = ref('')
+const register1CAtFilter = ref('')
 
 // attract: Обработка выбора фильтра статуса
 const filterByStatus = (item) => {
@@ -882,6 +920,45 @@ const handleRollNumberInput = (event) => {
 }
 
 
+// attract: Обработчик ввода даты пр-ва
+// Объект для манипуляции с вводом и выводом даты
+const handleFinishAtInputObj = {
+    newValue: '',
+    oldValue: '',
+}
+const handleFinishAtInput = (event) => {
+    handleFinishAtInputObj.newValue = event.target.value
+    validateInputDateHelper(handleFinishAtInputObj)  // вся логика изменения объекта будет внутри функции
+    finishAtFilter.value = handleFinishAtInputObj.newValue
+}
+
+
+// attract: Обработчик ввода даты перемещения на закрой
+// Объект для манипуляции с вводом и выводом даты
+const handleMovedAtInputObj = {
+    newValue: '',
+    oldValue: '',
+}
+const handleMovedAtInput = (event) => {
+    handleMovedAtInputObj.newValue = event.target.value
+    validateInputDateHelper(handleMovedAtInputObj)  // вся логика изменения объекта будет внутри функции
+    movedAtFilter.value = handleMovedAtInputObj.newValue
+}
+
+
+// attract: Обработчик ввода даты учета в 1С
+// Объект для манипуляции с вводом и выводом даты
+const handleRegistered1CAtInputObj = {
+    newValue: '',
+    oldValue: '',
+}
+const handleRegistered1CAtInput = (event) => {
+    handleRegistered1CAtInputObj.newValue = event.target.value
+    validateInputDateHelper(handleRegistered1CAtInputObj)  // вся логика изменения объекта будет внутри функции
+    register1CAtFilter.value = handleRegistered1CAtInputObj.newValue
+}
+
+
 // attract: Вспомогалочка: преобразует исходные данные в нужную структуру для отображения в шаблоне
 const reformatData = (rolls, tabs) => {
     const activeTab = Object.values(tabs).find((tab) => tab.shown)
@@ -889,12 +966,22 @@ const reformatData = (rolls, tabs) => {
 }
 
 //attract: Применяем фильтры
-const filtersApply = ({fabricFilter, rollNumberFilter, finishAtFilter, statusFilter, register1CAtFilter}) => {
+const filtersApply = ({
+                          fabricFilter,
+                          rollNumberFilter,
+                          finishAtFilter,
+                          statusFilter,
+                          descriptionFilter,
+                          movedAtFilter,
+                          register1CAtFilter
+                      }) => {
     // prettier-ignore
     let filteredAllRolls = allRolls.value
         .filter(roll => roll.id.toString().includes(rollNumberFilter))
         .filter(roll => roll.fabric.display_name.toLowerCase().includes(fabricFilter.toLowerCase()))
+        .filter(roll => roll.descr.toLowerCase().includes(descriptionFilter.toLowerCase()))
         .filter(roll => getDateFromDateTimeString(roll.finish_at).includes(finishAtFilter))
+        .filter(roll => getDateFromDateTimeString(roll.move_to_cut_at).includes(movedAtFilter))
         .filter(roll => getDateFromDateTimeString(roll.registration_1C_at).includes(register1CAtFilter))
 
     // prettier-ignore
@@ -910,8 +997,13 @@ watch(
     () => tabs,
     (newActiveTabs) => {
 
-        statusFilter.value = 0  // Сбрасываем фильтр статуса
+        // attract: Сбрасываем не общие фильтры
+
+        statusFilter.value = 0          // Сбрасываем фильтр статуса
         statusFilterType.value = 'light'
+
+        register1CAtFilter.value = ''   // Сбрасываем фильтр даты регистрации в 1С
+        movedAtFilter.value = ''        // Сбрасываем фильтр даты перемещения
 
         // attract: Применяем фильтры, меняем doneRolls.value
         const filteredAllRolls = filtersApply({
@@ -919,7 +1011,9 @@ watch(
             rollNumberFilter: rollNumberFilter.value,
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
-            register1CAtFilter: register1CAtFilter.value,
+            descriptionFilter: descriptionFilter.value,
+            movedAtFilter: movedAtFilter.value,
+            register1CAtFilter: register1CAtFilter.value
         })
 
         reformatData(filteredAllRolls, newActiveTabs)
@@ -939,7 +1033,9 @@ watch(
             rollNumberFilter: rollNumberFilter.value,
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
-            register1CAtFilter: register1CAtFilter.value,
+            descriptionFilter: descriptionFilter.value,
+            movedAtFilter: movedAtFilter.value,
+            register1CAtFilter: register1CAtFilter.value
         })
 
         reformatData(filteredAllRolls, tabs)
@@ -955,14 +1051,36 @@ watch(
         () => rollNumberFilter.value,
         () => finishAtFilter.value,
         () => statusFilter.value,
-        () => register1CAtFilter.value
+        () => descriptionFilter.value,
+        () => movedAtFilter.value,
+        () => register1CAtFilter.value,
     ],
-    ([newFabricFilter, newRollNumberFilter, newFinishAtFilter, newStatusFilter, newRegister1CAtFilter]) => {
+    (
+        [
+            newFabricFilter,
+            newRollNumberFilter,
+            newFinishAtFilter,
+            newStatusFilter,
+            newDescriptionFilter,
+            newMovedAtFilter,
+            newRegister1CAtFilter,
+        ], [
+            oldFabricFilter,
+            oldRollNumberFilter,
+            oldFinishAtFilter,
+            oldStatusFilter,
+            oldDescriptionFilter,
+            oldMovedAtFilter,
+            oldRegister1CAtFilter,
+        ]) => {
+
         const filteredAllRolls = filtersApply({
             fabricFilter: newFabricFilter,
             rollNumberFilter: newRollNumberFilter,
             finishAtFilter: newFinishAtFilter,
             statusFilter: newStatusFilter,
+            descriptionFilter: newDescriptionFilter,
+            movedAtFilter: newMovedAtFilter,
             register1CAtFilter: newRegister1CAtFilter
         })
 
