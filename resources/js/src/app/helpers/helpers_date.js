@@ -1,6 +1,6 @@
 // Здесь все, что касается даты и времени
 
-import { PERIOD_LENGTH } from '/resources/js/src/app/constants/dates.js'
+import {PERIOD_LENGTH} from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
 const GMT_0 = ':00Z'
@@ -46,7 +46,7 @@ export function getPeriod() {
     const periodEndText =
         periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
 
-    return { periodStart, periodEnd, periodStartText, periodEndText }
+    return {periodStart, periodEnd, periodStartText, periodEndText}
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -263,6 +263,9 @@ export function formatDateAndTimeInShortFormat(dateTimeString, fullYear = true) 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает дату из формата "2025-04-17 20:58:57" в нормальный формат "17.04.2025"
 export function getDateFromDateTimeString(dateTimeString, fullYear = true) {
+
+    if (!dateTimeString) return ''
+
     // dateTimeString = getDate(dateTimeString)
 
     // const dateObject = new Date(dateTimeString)
@@ -527,4 +530,163 @@ export function getDayOfWeekStyle(date) {
     if (isToday(date)) return 'success' // текущий
     if (isWorkingDay(date)) return 'dark' // рабочмй
     return 'danger' // выходной
+}
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract: Проверяет реактивный ввод даты на корректность + корректирует формат ввода
+// attract: Получает на вход строку с датой и возвращает проверенную строку с датой
+export function validateInputDateHelper(input = null) {
+
+    if (!input) {
+        return ''
+    }
+
+    const workInput = JSON.parse(JSON.stringify(input))
+
+    // console.log('input: ', workInput.newValue, workInput.newValue.length)
+    // console.log('oldInput: ', workInput.oldValue, workInput.oldValue.length)
+    // console.log()
+
+    const direction = workInput.newValue.length > workInput.oldValue.length    // для проверки на ввод или удаление, true - ввод, false - удаление
+
+    const ifDigit = (char) => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(char)
+
+    if (input.newValue.length === 0) {
+
+        input.newValue = ''
+        input.oldValue = input.newValue
+
+    } else if (input.newValue.length === 1) {  // ?d.mm.yyyy // Если длина строки равна 1, то проверяем, является ли символ цифрой от 0 до 3 (dd)
+
+        if (['0', '1', '2', '3'].includes(input.newValue)) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = ''
+            input.oldValue = input.newValue
+        }
+
+    } else if (input.newValue.length === 2) {   // d?.mm.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.newValue = input.newValue[0]
+            input.oldValue = input.newValue
+            return
+        }
+
+        // добавляем
+        if (ifDigit(input.newValue[1])) {
+            input.newValue += '.'
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 3) {   // dd?mm.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+    } else if (input.newValue.length === 4) {   // dd.?m.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (['0', '1'].includes(input.newValue[3])) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 5) { // dd.m?.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.newValue = input.newValue.substring(0, 4)
+            input.oldValue = input.newValue
+            return
+        }
+
+        if ((input.newValue[3] === '0' && ifDigit(input.newValue[4])) ||
+            (input.newValue[3] === '1' && ['0', '1', '2'].includes(input.newValue[4])) ) {   // mm: 01-12
+            input.newValue += '.'
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 6) { // dd.mm?yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+    } else if (input.newValue.length === 7) { // dd.mm.?yyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (input.newValue[6] === '2') {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 8) { // dd.mm.y?yy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (input.newValue[7] === '0') {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 9) { // dd.mm.yy?y
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (['2', '3'].includes(input.newValue[8])) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 10) { // dd.mm.yy?y
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if ((input.newValue[8] === '2') && ['5', '6', '7', '8', '9'].includes(input.newValue[9]) ||
+            (input.newValue[8] === '3') && ifDigit(input.newValue[9])) { // yyyy: 2025-2039
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+    }
+
+    input.newValue = input.oldValue
 }
