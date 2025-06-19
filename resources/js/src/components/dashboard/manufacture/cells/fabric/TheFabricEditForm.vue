@@ -343,7 +343,7 @@ const MIN_ROLLS_AMOUNT = 1
 const MAX_ROLLS_AMOUNT = 1
 const OPTIMAL_PARTY_MIN_AMOUNT = 10
 const RATE_MIN_AMOUNT = 1
-const RATE_MAX_AMOUNT = 2
+const RATE_MAX_AMOUNT = 3
 const PRODUCTIVITY_MIN_AMOUNT = 10
 
 // attract: Определяем объект валидации
