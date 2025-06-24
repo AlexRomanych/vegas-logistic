@@ -50,7 +50,6 @@ export const WARNINGS_RANGES = Object.freeze({
 })
 
 
-
 export const FABRIC_TASK_STATUS = Object.freeze({
 
     // descr: Сменное задание еще не создано (или сохранено)
@@ -179,8 +178,6 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TYPE: 'stone',
     },
 })
-
-
 
 
 // descr: Массив (псевдомассив - объект) статусов движения рулона
@@ -363,6 +360,27 @@ export const NEW_FABRIC =
             note: null
         }
     }
+
+
+// __ Болванка рисунка стежки
+export const NEW_FABRIC_PICTURE = {
+    id: 0,
+    active: true,
+    name: '',
+    stitch_length: 0,
+    stitch_speed: 0,
+    moment_speed: 0,
+    shuttle_amount: 0,
+    description: '',
+    fabricMainMachineId: 0,
+    fabricMainMachineSchemaId: 0,
+    fabricAltMachineId_1: 0,
+    fabricAltMachineSchemaId_1: 0,
+    fabricAltMachineId_2: 0,
+    fabricAltMachineSchemaId_2: 0,
+    fabricAltMachineId_3: 0,
+    fabricAltMachineSchemaId_3: 0,
+}
 
 
 // descr: Скелет объекта сменного задания

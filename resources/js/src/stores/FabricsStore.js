@@ -23,7 +23,11 @@ const URL_FABRICS_MACHINE_SET_ACTIVE = 'fabrics/machine/set/active/'    // URL �
 const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL для загрузки ПС с диска
 const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
 
+const URL_FABRICS_PICTURES = 'fabrics/pictures'                         // URL для получения списка рисунков ПС
+const URL_FABRICS_PICTURE = 'fabrics/picture/'                          // URL для получения рисунка ПС (/ в конце обязателен!)
 const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки рисунков ПС с диска
+
+const URL_FABRICS_PICTURE_SCHEMAS = 'fabrics/pictures/schemas/'         // URL для получения списка схем рисунков ПС
 
 const URL_FABRICS_ORDERS = 'fabrics/orders/'                            // URL для получения списка заказов для ПС
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
@@ -233,6 +237,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
     }
 
+
     // Attract: Загрузка ПС на сервер
     // fileData - данные файла, отправляем в RAW формате
     const uploadFabricsPictures = async (fileData) => {
@@ -254,6 +259,34 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
 
         return result
+    }
+
+
+
+
+    // Attract: Получаем с API список Рисунков ПС
+    const getFabricPictures = async () => {
+        const result = await jwtGet(URL_FABRICS_PICTURES)
+
+        console.log('store: getFabricPictures: ', result.data)
+
+        return result.data
+    }
+
+
+    // Attract: Получаем с API Рисунок ПС по id
+    const getFabricPictureById = async (id) => {
+        const result = await jwtGet(URL_FABRICS_PICTURE + id)
+        console.log('store: getFabricPictureById: ', result)
+        return result.data
+    }
+
+
+    // Attract: Получаем с API список Схем Рисунков ПС
+    const getFabricPictureSchemas = async () => {
+        const result = await jwtGet(URL_FABRICS_PICTURE_SCHEMAS)
+        console.log('store: getFabricPictureSchemas: ', result)
+        return result.data
     }
 
 
@@ -503,13 +536,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         globalSelectWorkers, globalSelectWorkerId, globalSelectWorkerFlag,
         globalCalendarChangeFlag,
-        getFabrics,
-        getFabricById,
+        getFabrics, getFabricById,
         updateFabric,
         createFabric,
         uploadFabrics,
         deleteFabric,
-        uploadFabricsPictures,
+        getFabricPictureSchemas,
+        getFabricPictures, getFabricPictureById, uploadFabricsPictures,
         getFabricsMachines, getFabricsMachineById, setFabricsMachineStatusById,
         uploadFabricsOrders,
         getTasksByPeriod,

@@ -47,6 +47,6 @@ class FabricOrderResource extends JsonResource
 //            'note' => $this->note,
         ];
 
-        return parent::toArray($request);
+//        return parent::toArray($request);
     }
 }

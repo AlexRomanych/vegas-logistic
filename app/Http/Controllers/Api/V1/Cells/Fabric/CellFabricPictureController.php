@@ -4,12 +4,44 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureResource;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CellFabricPictureController extends Controller
 {
+
+
+    /**
+     * Descr: Получение списка рисунков ПС
+     * @return AnonymousResourceCollection|string
+     */
+    public function getFabricPictures()
+    {
+        try {
+            return FabricPictureResource::collection(FabricPicture::all());
+        } catch (\Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
+
+    /**
+     * Descr: Получение рисунка ПС по id
+     * @param $id
+     * @return FabricPictureResource|string
+     */
+    public function getFabricPicture($id)
+    {
+        try {
+            return new FabricPictureResource(FabricPicture::query()->find($id));
+        } catch (\Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
+
+
 
     /**
      * Загружает в базу данных список рисунков ПС

@@ -1,6 +1,6 @@
 // Info Участок стежки
 
-import {FABRIC_PAGE_MODE} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_PAGE_MODE} from '@/app/constants/fabrics.js'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
@@ -107,18 +107,18 @@ const fabrics = [
     // },
 
     {
-        // descr Добавление ПС
-        path: _MAIN_PREFIX + 'fabrics/add',
-        name: 'manufacture.cell.fabrics.add',
+        // descr: Создание нового ПС
+        path: _MAIN_PREFIX + 'fabrics/create',
+        name: 'manufacture.cell.fabrics.create',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricEditForm.vue'),
         meta: {
-            title: 'Добавление ПС',
-            mode: FABRIC_PAGE_MODE.ADD,
+            title: 'Создание нового ПС',
+            mode: FABRIC_PAGE_MODE.CREATE,
         },
     },
 
     {
-        // descr Редактирование ПС
+        // descr: Редактирование ПС
         path: '/fabric/edit/:id',
         name: 'manufacture.cell.fabric.edit',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricEditForm.vue'),
@@ -129,7 +129,7 @@ const fabrics = [
     },
 
     {
-        // descr Загрузка расхода ПС из 1С из отчета "Сводная ведомость потребности материалов" - СВПМ
+        // descr: Загрузка расхода ПС из 1С из отчета "Сводная ведомость потребности материалов" - СВПМ
         path: '/fabric/expense/upload',
         name: 'manufacture.cell.fabrics.expense.upload',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpenseUpload.vue'),
@@ -139,7 +139,7 @@ const fabrics = [
     },
 
     {
-        // descr Расход ПС
+        // descr: Расход ПС
         path: _MAIN_PREFIX + 'fabrics/expense',
         name: 'manufacture.cell.fabrics.expense',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricsExpense.vue'),
@@ -159,9 +159,8 @@ const fabrics = [
     },
 
 
-
     {
-        // descr Добавление нового СЗ ПС
+        // descr: Добавление нового СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/create',
         name: 'manufacture.cell.fabrics.task.create',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksManage.vue'),
@@ -172,7 +171,7 @@ const fabrics = [
     },
 
     {
-        // descr Редактирование СЗ ПС
+        // descr: Редактирование СЗ ПС
         path: _MAIN_PREFIX + 'fabrics/task/edit/:id',
         name: 'manufacture.cell.fabrics.task.edit',
         component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricTasksManage.vue'),
@@ -193,6 +192,29 @@ const fabrics = [
             title: 'Список рисунков ПС'
         }
     },
+    {
+        // descr: Добавление нового рисунка ПС
+        path: _MAIN_PREFIX + 'fabrics/picture/create',
+        name: 'manufacture.cell.fabrics.picture.create',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricPictureEditForm.vue'),
+        meta: {
+            title: 'Создание нового рисунка ПС',
+            mode: FABRIC_PAGE_MODE.CREATE,
+        }
+    },
+    {
+        // descr: Редактирование рисунка ПС
+        path: _MAIN_PREFIX + 'fabrics/picture/edit/:id',
+        name: 'manufacture.cell.fabrics.picture.edit',
+        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/fabric/TheFabricPictureEditForm.vue'),
+        meta: {
+            title: 'Редактирование рисунка стежки',
+            mode: FABRIC_PAGE_MODE.EDIT,
+        }
+    },
+
+
+
 
     {
         // descr: Стегальные машины

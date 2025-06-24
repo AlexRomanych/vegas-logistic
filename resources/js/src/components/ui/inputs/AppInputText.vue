@@ -6,7 +6,7 @@
             :id="id"
             v-model="inputText"
 
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
+            :class="['app-input', height, borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
             :disabled="disabled"
             :placeholder="placeholder"
             :type="func"
@@ -82,6 +82,11 @@ const props = defineProps({
         required: false,
         default: 'w-[500px]',
 
+    },
+    height: {
+        type: String,
+        required: false,
+        default: 'min-h-[25px]',
     },
     errors: {
         type: Array,

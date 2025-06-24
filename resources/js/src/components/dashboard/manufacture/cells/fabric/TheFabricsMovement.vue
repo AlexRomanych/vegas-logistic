@@ -327,7 +327,7 @@
 
                     <!-- attract: Ткань группы, м.п. -->
                     <AppLabel
-                        :text="fabricRolls.fabric.textileLength.toFixed(3)"
+                        :text="fabricRolls.fabric.textileLength.toFixed(2)"
                         :title="render.textileLength.title"
                         :width="render.textileLength.width"
                         align="center"
@@ -339,7 +339,7 @@
 
                     <!-- attract: ПС группы, м.п. -->
                     <AppLabel
-                        :text="fabricRolls.fabric.fabricLength.toFixed(3)"
+                        :text="fabricRolls.fabric.fabricLength.toFixed(2)"
                         :title="render.fabricLength.title"
                         :width="render.fabricLength.width"
                         align="center"
@@ -728,7 +728,7 @@ const render = reactive({
         show: true,
         title: 'ПС, м.п.',
         type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
-        data: (roll) => (roll.textile_length / roll.rate).toFixed(3),
+        data: (roll) => (roll.textile_length / roll.rate).toFixed(2),
     },
     finishAt: {
         header: ['Дата', 'пр-ва'],

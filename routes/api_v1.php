@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricMachineController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricOrderController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureController;
+use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricPictureSchemaController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricServiceController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskContextController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
@@ -221,12 +222,19 @@ Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
 Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabricsBuffer'])->middleware('jwt.auth');
 
+// __ Рисунки стежки ПС
+Route::get('/fabrics/pictures', [CellFabricPictureController::class, 'getFabricPictures'])->middleware('jwt.auth');
+Route::get('/fabrics/picture/{id}', [CellFabricPictureController::class, 'getFabricPicture'])->middleware('jwt.auth');
 Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
 //Route::post('/fabrics/pictures/upload', function(Request $request){
 //    return json_encode($request->all());
 //})->middleware('jwt.auth');
 
+// __ Схемы рисунков стежки ПС
+Route::get('/fabrics/pictures/schemas', [CellFabricPictureSchemaController::class, 'getFabricPictureSchemas'])->middleware('jwt.auth');
 
+
+// __ Стегальные машины
 Route::get('/fabrics/machines', [CellFabricMachineController::class, 'machines'])->middleware('jwt.auth');
 Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machine'])->middleware('jwt.auth');
 Route::patch('/fabrics/machine/set/active', [CellFabricMachineController::class, 'setMachineActive'])->middleware('jwt.auth');

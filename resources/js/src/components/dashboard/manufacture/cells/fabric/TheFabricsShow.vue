@@ -250,7 +250,7 @@
                 />
 
                 <!-- attract: Кнопка создать -->
-                <router-link :to="{ name: 'manufacture.cell.fabrics.add' }">
+                <router-link :to="{ name: 'manufacture.cell.fabrics.create' }">
                     <AppLabelMultiLine
                         :text="['Создать', '']"
                         align="center"
@@ -452,18 +452,18 @@
 <script setup>
     import { ref, watch } from 'vue'
 
-    import { useFabricsStore } from '/resources/js/src/stores/FabricsStore.js'
+    import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-    import { FABRIC_MACHINES } from '/resources/js/src/app/constants/fabrics.js'
+    import { FABRIC_MACHINES } from '@/app/constants/fabrics.js'
 
-    import { round } from '/resources/js/src/app/helpers/helpers_lib.js'
+    import { round } from '@/app/helpers/helpers_lib.js'
 
-    import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-    import AppModal from '/resources/js/src/components/ui/modals/AppModal.vue'
-    import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
-    import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-    import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
-    import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
+    import AppLabel from '@/components/ui/labels/AppLabel.vue'
+    import AppModal from '@/components/ui/modals/AppModal.vue'
+    import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+    import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+    import AppInputText from '@/components/ui/inputs/AppInputText.vue'
+    import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
 
     const fabricsStore = useFabricsStore()
 

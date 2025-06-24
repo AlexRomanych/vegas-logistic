@@ -125,6 +125,7 @@
                     :type="render.activeChange.type(false, fabricMachine)"
                     :width="render.activeChange.width"
                     align="center"
+                    class="cursor-pointer"
                     text-size="mini"
                     @click="toggleStatus(fabricMachine)"
                 />
