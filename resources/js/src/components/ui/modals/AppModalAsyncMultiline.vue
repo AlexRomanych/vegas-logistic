@@ -58,10 +58,13 @@
 </template>
 
 <script setup>
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import {computed, reactive, ref, watch,} from 'vue'
+
+import {computed, ref, watch,} from 'vue'
+
+import {colorsList} from '@/app/constants/colorsClasses.js'
+import {getColorClassByType} from '@/app/helpers/helpers.js'
+
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
 const props = defineProps({
     width: {

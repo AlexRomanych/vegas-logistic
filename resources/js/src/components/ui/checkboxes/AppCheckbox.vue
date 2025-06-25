@@ -148,7 +148,7 @@ const checked = (e) => {
     } else {
         // сбрасываем все, кроме выбранного элемента
         checkBoxObject.forEach(item => item.checked = item.uniqID === e.target.value)
-        console.log(e.target.value)
+        // console.log(e.target.value)
     }
 
 //    console.log(checkBoxObject[idx].name, checkBoxObject[idx].checked)

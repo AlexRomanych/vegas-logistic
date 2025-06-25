@@ -204,6 +204,10 @@ const getAreaText = (e) => emit('getAreaText', e.target.value)
     @apply p-1 border rounded-lg focus:outline-none focus:ring-2;
 }
 
+.app-input::placeholder {
+    @apply text-xs;
+}
+
 .input-error {
     @apply text-sm ml-2 font-semibold;
 }

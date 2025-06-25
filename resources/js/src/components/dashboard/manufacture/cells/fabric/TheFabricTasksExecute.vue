@@ -123,43 +123,42 @@
         :type="calloutType"
     />
 
-
 </template>
 
 <script setup>
 import {ref, reactive, watch} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
     FABRIC_TASKS_EXECUTE, FABRIC_ROLL_STATUS,
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
     getFabricTasksPeriod,
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
     getDayOfWeek,
     formatDate,
     isToday,
     isWorkingDay,
-} from '/resources/js/src/app/helpers/helpers_date.js'
+} from '@/app/helpers/helpers_date.js'
 
 import TheTaskCommonInfo
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
 import TheTaskExecuteMachine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteMachine.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteMachine.vue'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
-import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 
 const fabricsStore = useFabricsStore()
@@ -406,7 +405,7 @@ const changeTaskExecute = async (task) => {
             task.common = newTaskDay[0].common
 
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
-            await rerender.forEach((_, index, array) => array[index]++)
+            rerender.forEach((_, index, array) => array[index]++)
 
             // todo: сделать обработку ошибок + callout
         }

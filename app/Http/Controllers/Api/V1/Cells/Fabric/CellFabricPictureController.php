@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureResource;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Services\Manufacture\FabricService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -41,6 +42,95 @@ class CellFabricPictureController extends Controller
         }
     }
 
+
+    /**
+     * Descr: Обновление данных рисунка ПС
+     * @param Request $request
+     * @return string
+     */
+    public function updateFabricPictures(Request $request)
+    {
+        try {
+
+            // todo Сделать валидацию данных
+            $fabricPicturePayload = $request->input('data');           // получаем данные из запроса
+
+            $fabricPicture = FabricPicture::query()->find($fabricPicturePayload['id']);
+
+            if (!$fabricPicture) {
+                throw new Exception('Рисунок ПС не найден');
+            }
+
+            $fabricPicture->name = $fabricPicturePayload['name'];
+            $fabricPicture->active = $fabricPicturePayload['active'];
+            $fabricPicture->stitch_length = $fabricPicturePayload['stitch_length'];
+            $fabricPicture->stitch_speed = $fabricPicturePayload['stitch_speed'];
+            $fabricPicture->moment_speed = $fabricPicturePayload['moment_speed'];
+            $fabricPicture->shuttle_amount = $fabricPicturePayload['shuttle_amount'] === 0 ? null : $fabricPicturePayload['shuttle_amount'];
+            $fabricPicture->description = $fabricPicturePayload['description'];
+
+            $fabricPicture->fabric_machine_id = $fabricPicturePayload['fabricMainMachineId'];
+            $fabricPicture->fabric_picture_schema_id = $fabricPicturePayload['fabricMainMachineSchemaId'];
+
+            $fabricPicture->alt_machine_1_id = $fabricPicturePayload['fabricAltMachineId_1'];
+            $fabricPicture->alt_machine_1_schema_id = $fabricPicturePayload['fabricAltMachineSchemaId_1'];
+
+            $fabricPicture->alt_machine_2_id = $fabricPicturePayload['fabricAltMachineId_2'];
+            $fabricPicture->alt_machine_2_schema_id = $fabricPicturePayload['fabricAltMachineSchemaId_2'];
+
+            $fabricPicture->alt_machine_3_id = $fabricPicturePayload['fabricAltMachineId_3'];
+            $fabricPicture->alt_machine_3_schema_id = $fabricPicturePayload['fabricAltMachineSchemaId_3'];
+
+            $fabricPicture->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
+
+
+    /**
+     * Descr: Создание рисунка ПС
+     * @param Request $request
+     * @return string
+     */
+    public function createFabricPictures(Request $request)
+    {
+
+        try {
+
+            // todo Сделать валидацию данных
+            $fabricPicturePayload = $request->input('data');           // получаем данные из запроса
+
+            $fabric = FabricPicture::query()->create(
+                [
+                    'name' => $fabricPicturePayload['name'],
+                    'active' => $fabricPicturePayload['active'],
+                    'stitch_length' => $fabricPicturePayload['stitch_length'],
+                    'stitch_speed' => $fabricPicturePayload['stitch_speed'],
+                    'moment_speed' => $fabricPicturePayload['moment_speed'],
+                    'shuttle_amount' => $fabricPicturePayload['shuttle_amount'] === 0 ? null : $fabricPicturePayload['shuttle_amount'],
+                    'description' => $fabricPicturePayload['description'],
+
+                    'fabric_machine_id' => $fabricPicturePayload['fabricMainMachineId'],
+                    'fabric_picture_schema_id' => $fabricPicturePayload['fabricMainMachineSchemaId'],
+
+                    'alt_machine_1_id' => $fabricPicturePayload['fabricAltMachineId_1'],
+                    'alt_machine_1_schema_id' => $fabricPicturePayload['fabricAltMachineSchemaId_1'],
+
+                    'alt_machine_2_id' => $fabricPicturePayload['fabricAltMachineId_2'],
+                    'alt_machine_2_schema_id' => $fabricPicturePayload['fabricAltMachineSchemaId_2'],
+
+                    'alt_machine_3_id' => $fabricPicturePayload['fabricAltMachineId_3'],
+                    'alt_machine_3_schema_id' => $fabricPicturePayload['fabricAltMachineSchemaId_3'],
+                ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
 
 
     /**

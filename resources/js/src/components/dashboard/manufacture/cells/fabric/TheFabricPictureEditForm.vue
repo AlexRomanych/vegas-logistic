@@ -15,8 +15,9 @@
                         :errors="v$.name.$errors"
                         :value="v$.name.$model"
                         label="Название рисунка"
-                        placeholder="Введите название рисунка ПС"
+                        placeholder="Рисунок ПС"
                         width="w-[120px]"
+                        @input="inputNameHandler"
                     />
 
                     <!-- __ Длина стежка, мм -->
@@ -43,8 +44,6 @@
                         width="w-[200px]"
                     />
 
-
-
                 </div>
 
                 <div class="flex">
@@ -62,25 +61,24 @@
                     />
 
                     <!-- __ Количество челноков для Корейца, шт. -->
-                    <AppInputNumberSimple
-                        id="shuttle_amount"
-                        v-model:inputNumber="v$.shuttleAmount.$model"
-                        :errors="v$.shuttleAmount.$errors"
-                        :value="v$.shuttleAmount.$model"
-                        label="Кол-во челноков для Корейца, шт."
-                        placeholder="Введите кол-во челноков"
-                        step="1"
-                        width="w-[245px]"
-                    />
-
+                    <div v-if="showShuttleAmountField">
+                        <AppInputNumberSimple
+                            id="shuttle_amount"
+                            v-model:inputNumber="v$.shuttleAmount.$model"
+                            :errors="v$.shuttleAmount.$errors"
+                            :value="v$.shuttleAmount.$model"
+                            label="Кол-во челноков для Корейца, шт."
+                            placeholder="Введите кол-во челноков"
+                            step="1"
+                            width="w-[245px]"
+                        />
+                    </div>
 
                 </div>
 
-
                 <div class="flex">
-
                     <div>
-                        <!-- attract: Статус -->
+                        <!-- __ Статус -->
                         <div class="mt-8">
                             <AppCheckbox
                                 id="active"
@@ -94,36 +92,38 @@
                             />
                         </div>
                     </div>
+                </div>
+
+                <div class="mt-4">
+                    <div v-for="(machine, index) in machinesRenderList" :key="index">
+
+                        <div v-if="machine.visible" class="flex mt-2">
+
+                            <!-- __ СМ -->
+                            <AppSelect
+                                :label="machine.machineLabel"
+                                :select-data="getMachineSelect(machine, index)"
+                                :type="machine.type"
+                                text-size="small"
+                                width="w-[230px]"
+                                @change="handleMachine($event, index)"
+                            />
+
+                            <!-- __ Схема игл -->
+                            <AppSelect
+                                :label="machine.schemaLabel"
+                                :select-data="getMachineSchemaSelect(machine, index)"
+                                :type="machine.type"
+                                text-size="small"
+                                width="w-[230px]"
+                                @change="handleMachineSchema($event, index)"
+                            />
+                        </div>
+                    </div>
 
                 </div>
 
-
-                <div class="flex mt-4">
-
-                    <!-- __ Основная СМ -->
-                    <AppSelect
-                        :select-data="mainMachine"
-                        type="dark"
-                        label="Основная СМ"
-                        width="w-[230px]"
-                        text-size="small"
-                        @change="filterByMainMachine($event, 0)"
-                    />
-
-                    <!-- __ Схема стежки основной СМ -->
-                    <AppSelect
-                        :select-data="mainMachine"
-                        type="dark"
-                        label="Основная СМ"
-                        width="w-[230px]"
-                        text-size="small"
-                        @change="filterByMainMachine($event, 0)"
-                    />
-
-                </div>
-
-
-                <!-- attract: Описание ПС -->
+                <!-- __ Описание ПС -->
                 <AppInputTextAreaSimple
                     id="descr"
                     v-model.trim="v$.description.$model"
@@ -158,13 +158,30 @@
                         />
                     </router-link>
 
-
                 </div>
 
             </div>
+
         </form>
 
     </div>
+
+
+    <!-- attract: Асинхронное модальное окно -->
+    <AppModalAsyncMultiLine
+        ref="appModalAsync"
+        :text="modalText"
+        :type="modalType"
+        mode="inform"
+    />
+
+    <!-- attract: Callout -->
+    <AppCallout
+        :show="calloutShow"
+        :text="calloutText"
+        :type="calloutType"
+    />
+
 </template>
 
 <script setup>
@@ -190,43 +207,45 @@ import {useFabricsStore} from '@/stores/FabricsStore.js'
 import {
     NEW_FABRIC_PICTURE,
     FABRIC_PAGE_MODE,
-    FABRIC_MACHINES
+    FABRIC_MACHINES, FABRIC_TASK_STATUS
 } from '@/app/constants/fabrics.js'
 
-import {round} from '@/app/helpers/helpers_lib.js'
+// import {round} from '@/app/helpers/helpers_lib.js'
 
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'
 import AppInputNumberSimple from '@/components/ui/inputs/AppInputNumberSimple.vue'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
-import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
 import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'
-import AppSelectSimple from "@/components/ui/selects/AppSelectSimple.vue";
-import AppSelect from "@/components/ui/selects/AppSelect.vue";
+import AppSelect from '@/components/ui/selects/AppSelect.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+// import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
+// import AppSelectSimple from "@/components/ui/selects/AppSelectSimple.vue";
 
 const fabricStore = useFabricsStore()
 
 const route = useRoute()
+// console.log('route: ', route)
+// console.log('meta', route.meta.mode)
 
 // __ Получаем СМ
-const machines = await fabricStore.getFabricsMachines()
-console.log('machines: ', machines)
+const machines = (await fabricStore.getFabricsMachines()) //.filter(machine => machine.id)
+// console.log('machines: ', machines)
 
 // __ Получаем список схем рисунков ПС
 const schemas = await fabricStore.getFabricPictureSchemas()
-console.log('schemas: ', schemas)
+// console.log('schemas: ', schemas)
 
-// console.log('meta', route.meta.mode)
-
-// attract: Получаем режим работы формы: создание или редактирование
+// __ Получаем режим работы формы: создание или редактирование
 const editMode = route.meta.mode === FABRIC_PAGE_MODE.EDIT
 
-console.log('route: ', route)
+// __ Задаем пустой рисунок ПС для добавления
+const fabricPicture = reactive(JSON.parse(JSON.stringify(NEW_FABRIC_PICTURE)))
+fabricPicture.fabricMainMachineId = 1                   // По умолчанию: СМ, так как убираем нулевое значение
+fabricPicture.fabricMainMachineSchemaId = 1             // По умолчанию: Схема, так как убираем нулевое значение
 
-// attract: Задаем пустой рисунок ПС для добавления
-const fabricPicture = reactive(NEW_FABRIC_PICTURE)
-
-// attract: Получаем ПС
+// __ Получаем ПС
 if (editMode) {
     const fabricPictureServer = reactive(await fabricStore.getFabricPictureById(route.params.id))
 
@@ -238,51 +257,50 @@ if (editMode) {
     fabricPicture.moment_speed = fabricPictureServer.moment_speed
     fabricPicture.shuttle_amount = fabricPictureServer.shuttle_amount
     fabricPicture.description = fabricPictureServer.description
-    fabricPicture.fabricMainMachineId = fabricPictureServer.machines.fabricMainMachine.machine.id
-    fabricPicture.fabricMainMachineSchemaId = fabricPictureServer.machines.fabricMainMachine.schema.id
+    fabricPicture.fabricMainMachineId = fabricPictureServer.machines.fabricMainMachine.machine.id === 0 ? 1 : fabricPictureServer.machines.fabricMainMachine.machine.id
+    fabricPicture.fabricMainMachineSchemaId = fabricPictureServer.machines.fabricMainMachine.schema.id === 0 ? 1 : fabricPictureServer.machines.fabricMainMachine.schema.id
     fabricPicture.fabricAltMachineId_1 = fabricPictureServer.machines.fabricAltMachine_1.machine.id
     fabricPicture.fabricAltMachineSchemaId_1 = fabricPictureServer.machines.fabricAltMachine_1.schema.id
     fabricPicture.fabricAltMachineId_2 = fabricPictureServer.machines.fabricAltMachine_2.machine.id
     fabricPicture.fabricAltMachineSchemaId_2 = fabricPictureServer.machines.fabricAltMachine_2.schema.id
     fabricPicture.fabricAltMachineId_3 = fabricPictureServer.machines.fabricAltMachine_3.machine.id
     fabricPicture.fabricAltMachineSchemaId_3 = fabricPictureServer.machines.fabricAltMachine_3.schema.id
-
 }
 
-console.log('fabricPicture: ', fabricPicture)
+// console.log('fabricPicture: ', fabricPicture)
 
-
-// attract: Формируем массив для реактивности
+// __ Формируем массив для реактивности
 const name = ref(fabricPicture.name)
 const stitchLength = ref(fabricPicture.stitch_length)
 const stitchSpeed = ref(fabricPicture.stitch_speed)
 const momentSpeed = ref(fabricPicture.moment_speed)
 const shuttleAmount = ref(fabricPicture.shuttle_amount)
+const description = ref(fabricPicture.description)
 
-
-// attract: Определяем константы правил валидации
+// __ Определяем константы правил валидации
 const REQUIRED_MESSAGE = 'Поле обязательно'
-const INTEGER_MESSAGE = 'Целое число'
 const MIN_NAME_LENGTH = 2
-const MIN_CODE_1C_LENGTH = 9
-const MIN_TEXTILE_AVERAGE_LENGTH = 10
-const MAX_TEXTILE_AVERAGE_LENGTH = 200
-const MIN_BUFFER_AMOUNT = 0
-const MAX_BUFFER_AMOUNT = 1
-const MIN_ROLLS_AMOUNT = 1
-const MAX_ROLLS_AMOUNT = 1
-const OPTIMAL_PARTY_MIN_AMOUNT = 10
-const RATE_MIN_AMOUNT = 1
-const RATE_MAX_AMOUNT = 3
-const PRODUCTIVITY_MIN_AMOUNT = 10
+// const INTEGER_MESSAGE = 'Целое число'
+// const MIN_CODE_1C_LENGTH = 9
+// const MIN_TEXTILE_AVERAGE_LENGTH = 10
+// const MAX_TEXTILE_AVERAGE_LENGTH = 200
+// const MIN_BUFFER_AMOUNT = 0
+// const MAX_BUFFER_AMOUNT = 1
+// const MIN_ROLLS_AMOUNT = 1
+// const MAX_ROLLS_AMOUNT = 1
+// const OPTIMAL_PARTY_MIN_AMOUNT = 10
+// const RATE_MIN_AMOUNT = 1
+// const RATE_MAX_AMOUNT = 3
+// const PRODUCTIVITY_MIN_AMOUNT = 10
 
-// attract: Определяем объект валидации
+// __ Определяем объект валидации
 const verify = {
     name,
     stitchLength,
     stitchSpeed,
     momentSpeed,
-    shuttleAmount
+    shuttleAmount,
+    description
 }
 
 // Определяем правила валидации
@@ -333,11 +351,11 @@ const rules = {
     // note: {},
 }
 
-// attract: Оборачиваем в объект
+// __ Оборачиваем в объект
 const v$ = useVuelidate(rules, verify)
 
 
-// attract: Формируем данные для отображения статуса
+// __ Формируем данные для отображения статуса
 const checkboxDataStatus = {
     name: 'status',
     data: [
@@ -347,123 +365,271 @@ const checkboxDataStatus = {
 }
 
 
-// __ Селекты для фильтрации СМ
-const machinesData = [
-    {id: 0, name: 'Все', selected: true, disabled: false},
-    {id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false},
-]
+// __ Переменные состояния СМ
+const mainMachine = reactive({
+    machineId: fabricPicture.fabricMainMachineId,
+    schemaId: fabricPicture.fabricMainMachineSchemaId,
+    visible: true,
+    machineLabel: 'Основная СМ',
+    schemaLabel: 'Схема игл основной СМ',
+    type: 'success',
+})
+const altMachine_1 = reactive({
+    machineId: fabricPicture.fabricAltMachineId_1,
+    schemaId: fabricPicture.fabricAltMachineSchemaId_1,
+    visible: true,
+    machineLabel: 'Альтернативная СМ 1',
+    schemaLabel: 'Схема игл альтернативной СМ 1',
+    type: 'indigo',
+})
+const altMachine_2 = reactive({
+    machineId: fabricPicture.fabricAltMachineId_2,
+    schemaId: fabricPicture.fabricAltMachineSchemaId_2,
+    visible: true,
+    machineLabel: 'Альтернативная СМ 2',
+    schemaLabel: 'Схема игл альтернативной СМ 2',
+    type: 'warning',
+})
 
-const mainMachine = {name: 'mainMachine', data: machinesData}
+
+// __ Формируем список СМ для рендера
+const machinesRenderList = ref([mainMachine, altMachine_1, altMachine_2])
 
 
+// __ Формируем селекты для СМ
+const getMachineSelect = (inMachine, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
 
-// const checkboxDataRarity = {
-//     name: 'rarity',
-//     data: [
-//         {id: 1, name: 'Регулярный', checked: fabric.rare},
-//         {id: 2, name: 'Редкий', checked: !fabric.rare},
-//     ]
-// }
+    let data = machines
+        .filter(machine => machine.active)
+        .sort((a, b) => a.id - b.id)
 
-// attract: Меняем статус
-const checkedHandlerStatus = (obj) => {
-    console.log(obj)
-    fabricPicture.active = obj.id === 1
+    if (order === 0) {
+        // Убираем нулевые данные для основной СМ
+        data = data.filter(machine => machine.id)
+    } else if (order === 1) {
+        // Убираем дубликат основной СМ для альтернативной СМ 1
+        data = data.filter(machine => machine.id !== mainMachine.machineId)
+    } else if (order === 2) {
+        // Убираем дубликат основной СМ и альтернативной СМ 1 для альтернативной СМ 2
+        data = data.filter(machine => machine.id !== mainMachine.machineId && machine.id !== altMachine_1.machineId)
+    }
+
+    data = data.map(machine => {
+        return {
+            id: machine.id,
+            name: machine.short_name,
+            selected: machine.id === inMachine.machineId,
+            disabled: false
+        }
+    })
+
+    return {
+        name: 'machine',
+        data
+    }
 }
 
-// // attract: Меняем редкость
-// const checkedHandlerRarity = (obj) => {
-//     console.log(obj)
-//     fabric.rare = obj.id === 1
-// }
+
+// __ Делаем селект для схем игл
+const getMachineSchemaSelect = (machine, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    let data = schemas
+        .sort((a, b) => a.id - b.id)
+        .map(schema => {
+            return {
+                id: schema.id,
+                name: schema.schema_name,
+                selected: schema.id === machine.schemaId,
+                disabled: false
+            }
+        })
+
+    if (order === 0) data = data.filter(schema => schema.id)    // Убираем нулевые данные для основной СМ
+
+    return {
+        name: 'machineSchema',
+        data
+    }
+}
 
 
+// __ Показываем/скрываем СМ
+const handleMachineVisibility = (changeMainMachineFlag = false /*Флаг того, что был изменен выбор основной СМ*/) => {
 
+    // console.log('changeMainMachineFlag: ', changeMainMachineFlag)
+    // console.log('machinesRenderList: ', machinesRenderList.value)
+
+    // Обрабатываем изменение основной СМ, сбрасываем все остальные
+    if (changeMainMachineFlag) {
+        machinesRenderList.value[1].machineId = 0
+        machinesRenderList.value[2].machineId = 0
+        // machinesRenderList.value[1].schemaId = 0
+        // machinesRenderList.value[2].schemaId = 0
+    }
+
+    // Если выбор СМ - "Нет данных", сбрасываем схему игл
+    if (machinesRenderList.value[1].machineId === 0) machinesRenderList.value[1].schemaId = 0
+    if (machinesRenderList.value[2].machineId === 0) machinesRenderList.value[2].schemaId = 0
+
+
+    // Если что-то не так с основной СМ, то скрываем все остальные
+    if (machinesRenderList.value[0].machineId === 0 || machinesRenderList.value[0].schemaId === 0) {
+        machinesRenderList.value[1].visible = false
+        machinesRenderList.value[2].visible = false
+        return
+    }
+
+    if (machinesRenderList.value[1].machineId === 0 || machinesRenderList.value[1].schemaId === 0) {
+        machinesRenderList.value[2].visible = false
+        return
+    }
+
+    machinesRenderList.value[0].visible = true
+    machinesRenderList.value[1].visible = true
+    machinesRenderList.value[2].visible = true
+}
 
 
 // __ Меняем СМ
-const filterByMainMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
-    // switch (machineOrder) {
-    //     case 0:
-    //         mainMachineFilter.value = event.id
-    //         break
-    //     case 1:
-    //         altMachineFilter_1.value = event.id
-    //         break
-    //     case 2:
-    //         altMachineFilter_2.value = event.id
-    //         break
-    // }
+const handleMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    // console.log(event)
+    let changeMainMachineFlag = false   // Флаг того, что был изменен выбор основной СМ
+    if (machineOrder === 0) changeMainMachineFlag = machinesRenderList.value[machineOrder].machineId !== event.id
+    machinesRenderList.value[machineOrder].machineId = event.id
+    handleMachineVisibility(changeMainMachineFlag)
 }
 
 
+// __ Меняем схему игл
+const handleMachineSchema = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    // console.log(event)
+    machinesRenderList.value[machineOrder].schemaId = event.id
+}
 
 
+// __ Меняем статус
+const checkedHandlerStatus = (obj) => {
+    // console.log(obj)
+    fabricPicture.active = obj.id === 1
+}
 
 
-// Отправляем форму на сервер
+// __ Обработка ввода имени рисунка ПС
+const inputNameHandler = (event) => {
+    // console.log(event.target.value)
+    name.value = event.target.value.toUpperCase()
+}
+
+
+// __ Показываем/скрываем поле ввода челноков для Корейца
+const handleShuttleAmount = () => machinesRenderList.value.some(machine => machine.machineId === FABRIC_MACHINES.KOREAN.ID)
+
+// __ Переменная для отображения/скрытия поля ввода челноков для Корейца
+const showShuttleAmountField = ref(handleShuttleAmount())
+
+
+// __ Асинхронная модальное окно
+const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
+const modalText = ref([])
+const modalType = ref('danger')
+
+// __ Callout для вывода ошибок и предупреждений
+const calloutType = ref('danger')
+const calloutText = ref('')
+const calloutShow = ref(false)
+const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
+
+
+// __ Отправляем форму на сервер
 const formSubmit = async () => {
 
+    // v$.value.$touch()                                // валидируем всю форму (обновляет маркеры валидации внутри объекта v$)
+    const isFormCorrect = await v$.value.$validate()    // валидируем всю форму
+    if (!isFormCorrect) return                          // это показатель ошибки
 
-    //
-    //
-    //
-    // // v$.value.$touch()                                // валидируем всю форму (обновляет маркеры валидации внутри объекта v$)
-    // const isFormCorrect = await v$.value.$validate()    // валидируем всю форму
-    // if (!isFormCorrect) return                          // это показатель ошибки
-    //
-    // // attract: Формируем массив для сохранения
-    // fabric.code_1C = code1C.value
-    // fabric.name = name.value
-    // fabric.buffer.average_length = averageLength.value
-    // fabric.buffer.amount = bufferAmount.value
-    // fabric.buffer.min_rolls = minRolls.value
-    // fabric.buffer.max_rolls = maxRolls.value
-    // fabric.buffer.optimal_party = optimalParty.value
-    // fabric.buffer.rate = translateRate.value
-    // fabric.buffer.productivity = productivity.value
-    // fabric.text.description = description.value
-    //
-    // console.log('fabric: ', fabric)
-    //
-    // let res
-    // if (editMode) {
-    //     console.log('update')
-    //     // res = await fabricStore.updateFabric(fabric)
-    // } else {
-    //     console.log('create')
-    //     // res = await fabricStore.createFabric(fabric)
-    // }
+    // console.log('machinesRenderList: ', machinesRenderList.value)
+
+    // __ Проверяем, заполнены ли схемы игл
+    if ((altMachine_1.machineId !== 0 && altMachine_1.schemaId === 0) ||
+        (altMachine_2.machineId !== 0 && altMachine_2.schemaId === 0)) {
+        modalText.value = ['Заполните схему игл для всех СМ.']
+        const result = await appModalAsync.value.show()  // показываем модалку и ждем ответ
+        return
+    }
+
+    // __ Проверяем, заполнены ли челноки на Корейце
+    if (showShuttleAmountField.value && !shuttleAmount.value) {
+        modalText.value = ['В списке стегальных машин присутствует "Кореец".', 'Укажите количество челноков для Корейца.']
+        const result = await appModalAsync.value.show()  // показываем модалку и ждем ответ
+        return
+    }
+
+    // __ Формируем массив для сохранения
+    // fabricPicture.id = id.value
+    // fabricPicture.active = active.value
+
+    fabricPicture.name = name.value
+    fabricPicture.stitch_length = stitchLength.value
+    fabricPicture.stitch_speed = stitchSpeed.value
+    fabricPicture.moment_speed = momentSpeed.value
+    fabricPicture.shuttle_amount = showShuttleAmountField.value ? shuttleAmount.value : 0
+    fabricPicture.description = description.value
+
+    fabricPicture.fabricMainMachineId = mainMachine.machineId
+    fabricPicture.fabricAltMachineId_1 = altMachine_1.machineId
+    fabricPicture.fabricAltMachineId_2 = altMachine_2.machineId
+    fabricPicture.fabricAltMachineId_3 = 0
+    fabricPicture.fabricMainMachineSchemaId = mainMachine.schemaId
+    fabricPicture.fabricAltMachineSchemaId_1 = altMachine_1.schemaId
+    fabricPicture.fabricAltMachineSchemaId_2 = altMachine_2.schemaId
+    fabricPicture.fabricAltMachineSchemaId_3 = 0
+
+    console.log('fabricPicture: ', fabricPicture)
+
+    let res
+    if (editMode) {
+        console.log('update')
+        res = await fabricStore.updateFabricPicture(fabricPicture)
+    } else {
+        console.log('create')
+        res = await fabricStore.createFabricPicture(fabricPicture)
+    }
+
+    if (res === 'success') {
+        calloutType.value = 'success'
+        calloutText.value = 'Сохранено успешно'
+    } else {
+        calloutType.value = 'danger'
+        calloutText.value = 'Упс, что-то пошло не так...'
+    }
+
+    calloutShow.value = true
+    calloutClose()
+
     // console.log('res', res)
-    //
-    //
-
-
 
     // Пр-во попросило отключить автоматический переход
     // await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку ПС
 }
 
 
+watch(
+    [
+        () => mainMachine,
+        () => altMachine_1,
+        () => altMachine_2,
+    ], ([
+            // newMainMachine,
+            // newAltMachine_1,
+            // newAltMachine_2,
+        ]) => {
+
+        handleMachineVisibility()
+        showShuttleAmountField.value = handleShuttleAmount()
+
+    }, {deep: true, immediate: true})
 
 
-
-
-
-
-
-
-
-
-// attract: отслеживаем длину в рулонах
-watchEffect(() => {
-    // bufferRolls.value = getBufferRolls()
-})
-
-// attract: Запускаем сразу валидацию формы
+// __ Запускаем сразу валидацию формы
 onMounted(() => {
     v$.value.$touch()
 })

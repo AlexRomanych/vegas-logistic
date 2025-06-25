@@ -224,6 +224,8 @@ Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabri
 
 // __ Рисунки стежки ПС
 Route::get('/fabrics/pictures', [CellFabricPictureController::class, 'getFabricPictures'])->middleware('jwt.auth');
+Route::put('/fabrics/pictures/update', [CellFabricPictureController::class, 'updateFabricPictures'])->middleware('jwt.auth');
+Route::post('/fabrics/pictures/create', [CellFabricPictureController::class, 'createFabricPictures'])->middleware('jwt.auth');
 Route::get('/fabrics/picture/{id}', [CellFabricPictureController::class, 'getFabricPicture'])->middleware('jwt.auth');
 Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
 //Route::post('/fabrics/pictures/upload', function(Request $request){

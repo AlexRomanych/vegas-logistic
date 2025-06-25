@@ -55,6 +55,9 @@ const a: myObj = {
     name: '',
     value: '1',
 }
+
+
+const b:string = 2
 </script>
 
 <style scoped></style>

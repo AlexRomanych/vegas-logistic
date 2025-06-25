@@ -5,7 +5,7 @@ namespace App\Http\Resources\Manufacture\Cells\Sewing;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CellSewingUniversalResourse extends JsonResource
+class CellSewingUniversalResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

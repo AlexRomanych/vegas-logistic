@@ -458,7 +458,7 @@ const getFabricPictures = async () => {
 
 const allFabricPictures = await getFabricPictures()
 const fabricPictures = ref(allFabricPictures)
-console.log('fabricPictures: ', fabricPictures.value)
+// console.log('fabricPictures: ', fabricPictures.value)
 
 
 // attract: Задаем глобальный объект для унификации отображения рулонов

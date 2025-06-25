@@ -3,10 +3,10 @@
 import {defineStore} from 'pinia'
 import {ref, reactive, computed, watch} from 'vue'
 
-import {FABRIC_MACHINES} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES} from '@/app/constants/fabrics.js'
 
-import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch} from '/resources/js/src/app/utils/jwt_api'
-import {openNewTab} from '/resources/js/src/app/helpers/helpers_service'
+import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch} from '@/app/utils/jwt_api'
+import {openNewTab} from '@/app/helpers/helpers_service'
 
 import axios from 'axios'
 
@@ -23,8 +23,10 @@ const URL_FABRICS_MACHINE_SET_ACTIVE = 'fabrics/machine/set/active/'    // URL �
 const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL для загрузки ПС с диска
 const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
 
-const URL_FABRICS_PICTURES = 'fabrics/pictures'                         // URL для получения списка рисунков ПС
 const URL_FABRICS_PICTURE = 'fabrics/picture/'                          // URL для получения рисунка ПС (/ в конце обязателен!)
+const URL_FABRICS_PICTURES = 'fabrics/pictures'                         // URL для получения списка рисунков ПС
+const URL_FABRICS_PICTURES_UPDATE = 'fabrics/pictures/update/'          // URL для обновления списка рисунков ПС
+const URL_FABRICS_PICTURES_CREATE = 'fabrics/pictures/create/'          // URL для создания нового рисунка ПС
 const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL для загрузки рисунков ПС с диска
 
 const URL_FABRICS_PICTURE_SCHEMAS = 'fabrics/pictures/schemas/'         // URL для получения списка схем рисунков ПС
@@ -280,6 +282,24 @@ export const useFabricsStore = defineStore('fabrics', () => {
         console.log('store: getFabricPictureById: ', result)
         return result.data
     }
+
+
+    // __ Обновление Рисунка ПС
+    const updateFabricPicture = async (fabricPicture) => {
+        const result = await jwtPut(URL_FABRICS_PICTURES_UPDATE, fabricPicture)
+        // const result = await jwtPut(URL_FABRICS_PICTURES_UPDATE, {data: fabricPicture})
+        console.log('store: updateFabricPicture: ', result)
+        return result.data
+    }
+
+
+    // __ Создание Рисунка ПС
+    const createFabricPicture = async (fabricPicture) => {
+        const result = await jwtPost(URL_FABRICS_PICTURES_CREATE, {data: fabricPicture})
+        console.log('store: createFabricPicture: ', result)
+        return result.data
+    }
+
 
 
     // Attract: Получаем с API список Схем Рисунков ПС
@@ -542,7 +562,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         uploadFabrics,
         deleteFabric,
         getFabricPictureSchemas,
-        getFabricPictures, getFabricPictureById, uploadFabricsPictures,
+        getFabricPictures, getFabricPictureById, uploadFabricsPictures, updateFabricPicture, createFabricPicture,
         getFabricsMachines, getFabricsMachineById, setFabricsMachineStatusById,
         uploadFabricsOrders,
         getTasksByPeriod,

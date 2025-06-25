@@ -148,6 +148,14 @@ const getInputText = (e) => emit('getInputText', e.target.value)
     @apply p-1 border rounded-lg focus:outline-none focus:ring-2;
 }
 
+.app-input::placeholder {
+    @apply text-xs
+}
+
+.app-input:focus {
+    @apply outline-none ring-2 ring-black
+}
+
 .input-error {
     @apply ml-2 font-semibold text-red-600 text-mc;
 }
