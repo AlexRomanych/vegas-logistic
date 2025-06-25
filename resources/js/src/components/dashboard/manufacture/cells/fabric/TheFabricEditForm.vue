@@ -42,10 +42,9 @@
                         :value="v$.averageLength.$model"
                         label="Средняя длина рулона ткани, м.п."
                         placeholder="Введите ср. длину рул. ткани"
-                        step="0.001"
+                        step="0.000000000000001"
                         width="w-[230px]"
                     />
-
 
                     <!-- attract: Получать среднюю длину ткани из статистики -->
                     <AppCheckboxLine
@@ -56,7 +55,6 @@
                     />
 
                 </div>
-
 
                 <div class="flex">
 
@@ -246,6 +244,19 @@
         </form>
 
     </div>
+
+
+    <!-- attract: Callout -->
+    <AppCallout
+        :show="calloutShow"
+        :text="calloutText"
+        :type="calloutType"
+    />
+
+
+
+
+
 </template>
 
 <script setup>
@@ -262,15 +273,15 @@ import {
     minValue,
     maxValue,
     between,
-    email,
-    sameAs
+    // email,
+    // sameAs
 } from '@vuelidate/validators'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
-import {NEW_FABRIC} from '/resources/js/src/app/constants/fabrics.js'
+import {NEW_FABRIC} from '@/app/constants/fabrics.js'
 
-import {round} from '/resources/js/src/app/helpers/helpers_lib.js'
+import {round} from '@/app/helpers/helpers_lib.js'
 
 import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
 import AppInputNumberSimple from '/resources/js/src/components/ui/inputs/AppInputNumberSimple.vue'
@@ -278,6 +289,8 @@ import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButto
 import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
 import AppCheckboxLine from '/resources/js/src/components/ui/checkboxes/AppCheckboxLine.vue'
 import AppInputTextAreaSimple from '/resources/js/src/components/ui/inputs/AppInputTextAreaSimple.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import {checkApiAnswer} from '@/app/helpers/helpers_checks.ts'
 
 // import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
 // import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
@@ -444,6 +457,14 @@ const checkedHandlerRarity = (obj) => {
     fabric.rare = obj.id === 1
 }
 
+
+// __ Callout для вывода ошибок и предупреждений
+const calloutType = ref('danger')
+const calloutText = ref('')
+const calloutShow = ref(false)
+const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
+
+
 // Отправляем форму на сервер
 const formSubmit = async () => {
 
@@ -473,7 +494,20 @@ const formSubmit = async () => {
         console.log('create')
         res = await fabricStore.createFabric(fabric)
     }
+
     console.log('res', res)
+
+    if (checkApiAnswer(res).code === 0) {
+        calloutType.value = 'success'
+        calloutText.value = 'Сохранено успешно'
+    } else {
+        calloutType.value = 'danger'
+        calloutText.value = 'Упс, что-то пошло не так...'
+    }
+
+    calloutShow.value = true
+    calloutClose()
+
 
     // Пр-во попросило отключить автоматический переход
     // await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку ПС

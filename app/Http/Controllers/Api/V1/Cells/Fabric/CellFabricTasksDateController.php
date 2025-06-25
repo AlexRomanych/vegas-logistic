@@ -624,19 +624,35 @@ class CellFabricTasksDateController extends Controller
                 // attract: Получаем дату следующего СЗ
                 $nextDate = getCorrectDate($payloadDate)->addDay()->format('Y-m-d');
 
-                // attract: Задаем параметры для Дня СЗ
+
+                // __ Тут реализуем следующую логику:
+                // __ 1. Статус СЗ следующего дня не меняем!!! То есть, если СЗ нет - создаем, иначе статус не меняем
+                // __ 2. Получаем дату следующего СЗ
+                // __ 3. Получаем СЗ по дате
+                // __ 4. Если СЗ не существует - создаем
+
+                // __ Задаем дату следующего СЗ
                 $tasksDayData['date'] = $nextDate;
-                $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
 
-                // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
+                // __ Получаем следующее СЗ
+                $nextTasksDate = FabricTasksDate::query()
+                    ->where('tasks_date', $nextDate)
+                    ->first();
+
+                // __ Задаем статус следующего СЗ. Если СЗ не существует - создаем
+                $tasksDayData['common']['status'] = is_null($nextTasksDate) ? FABRIC_TASK_CREATED_CODE : $nextTasksDate->tasks_status;
+
+
+                // Warning: __ Старая логика
+                // attract: Получаем дату следующего СЗ
+//                $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
+                // Warning: ------------------------------------------
+
+//                // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
                 $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
+//
+//                // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
 
-                // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
-
-//            // attract: Получаем следующее СЗ
-//            $nextTasksDate = FabricTasksDate::query()
-//                ->where('tasks_date', $nextDate)
-//                ->first();
 
                 foreach ($rollsToMove as $rollToMove) {
 

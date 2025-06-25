@@ -213,7 +213,7 @@ Route::get('/workers/test/fill', [WorkerController::class, 'testFill']);
 
 
 //hr--------------------------------------------------------------------------------------------------------------------
-// attract: Блок Стежки
+// attract: Блок Стежки (ПС)
 Route::post('/fabrics/upload', [CellFabricController::class, 'uploadFabrics'])->middleware('jwt.auth');
 Route::get('/fabrics', [CellFabricController::class, 'fabrics'])->middleware('jwt.auth');
 Route::get('/fabric/{id}', [CellFabricController::class, 'fabric'])->middleware('jwt.auth');;

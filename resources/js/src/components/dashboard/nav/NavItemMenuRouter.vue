@@ -10,7 +10,7 @@
 // пототу что будет вызываться хук onMounted()
 import { useRoute } from 'vue-router'
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
-import NavItemMenu from '@/components/dashboard/nav/NavItemCard.vue'
+// import NavItemMenu from '@/components/dashboard/nav/NavItemCard.vue'
 
 const route = useRoute()
 const groupID = route.params.groupId * 1

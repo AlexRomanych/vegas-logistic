@@ -267,6 +267,7 @@
                     <AppLabel
                         :type="task.workers.length ? 'info' : 'danger'"
                         align="center"
+                        class="cursor-pointer"
                         text="Персонал"
                         @click="selectWorkers"
                     />

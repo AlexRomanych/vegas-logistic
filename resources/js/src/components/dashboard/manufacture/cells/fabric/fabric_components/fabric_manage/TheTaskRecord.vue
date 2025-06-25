@@ -281,29 +281,29 @@
 import {reactive, ref, watch} from 'vue'
 import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
     FABRIC_ROLL_STATUS,
     FABRIC_ROLL_STATUS_LIST,
     FABRIC_TASK_STATUS
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 
 import {
     filterFabricsByMachineId,
     getAddFabricMode,
     getFunctionalByFabricTaskStatus,
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
+import {formatTimeWithLeadingZeros} from '@/app/helpers/helpers_date.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
-import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
-import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
-import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
+import AppInputNumber from '@/components/ui/inputs/AppInputNumber.vue'
+import AppSelect from '@/components/ui/selects/AppSelect.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 const props = defineProps({
     roll: {
@@ -767,8 +767,20 @@ watch(() => fabricsStore.globalFabricsMode, () => {
 
 
 // attract: сбрасываем глобальное редактирование
-onBeforeRouteLeave(() => fabricsStore.globalEditMode = false)
-onBeforeRouteUpdate(() => fabricsStore.globalEditMode = false)
+
+// Warning: Этот код не работает (Блокирует переход на другую страницу)
+// onBeforeRouteLeave(() => fabricsStore.globalEditMode = false)
+// onBeforeRouteUpdate(() => fabricsStore.globalEditMode = false)
+
+// Warning: А этот код работает (Не Блокирует переход на другую страницу) Не знаю причин
+onBeforeRouteLeave(() => {
+    // console.log('onBeforeRouteLeave')
+    fabricsStore.globalEditMode = false
+})
+onBeforeRouteUpdate(() => {
+    // console.log('onBeforeRouteUpdate')
+    fabricsStore.globalEditMode = false
+})
 
 </script>
 

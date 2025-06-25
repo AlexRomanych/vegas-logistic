@@ -41,8 +41,6 @@
                         v-model:input-number="targetNumber"
                         :placeholder="placeholder"
                         :step="step"
-                        :min="min"
-                        :max="max"
                         :type="type"
                         :value="targetNumber.toString()"
                         :width="width"
@@ -154,16 +152,6 @@ const props = defineProps({
         type: String,
         required: false,
         default: '1',
-    },
-    min: {
-        type: Number,
-        required: false,
-        default: 0,
-    },
-    max: {
-        type: Number,
-        required: false,
-        default: 1_000_000,
     }
 })
 
@@ -218,23 +206,23 @@ defineExpose({
 const updateNumber = (event) => {
 
     console.log('number: ', event.target.value)
-    // return
+    return
 
-    // targetNumber.value = event.target.value.replace(',', '.')
-    //
-    //
-    // // проверка на отрицательность
-    // if (!props.negative) {
-    //     if (targetNumber.value < 0) {
-    //         targetNumber.value = 0
-    //         return
-    //     }
-    // }
-    //
-    // // проверка на максимальное значение
-    // if (props.maxValue !== -1) {
-    //     if (targetNumber.value > props.maxValue) targetNumber.value = props.maxValue
-    // }
+    targetNumber.value = event.target.value
+
+
+    // проверка на отрицательность
+    if (!props.negative) {
+        if (targetNumber.value < 0) {
+            targetNumber.value = 0
+            return
+        }
+    }
+
+    // проверка на максимальное значение
+    if (props.maxValue !== -1) {
+        if (targetNumber.value > props.maxValue) targetNumber.value = props.maxValue
+    }
 }
 
 
@@ -254,15 +242,15 @@ watch(() => targetNumber.value, (newValue) => {
             return
         }
     }
-    //
-    // // проверка на отрицательность
-    // if (!props.negative) {
-    //     if (targetNumber.value < 0) {
-    //         targetNumber.value = 0
-    //         saveButtonState.value = true
-    //         return
-    //     }
-    // }
+
+    // проверка на отрицательность
+    if (!props.negative) {
+        if (targetNumber.value < 0) {
+            targetNumber.value = 0
+            saveButtonState.value = true
+            return
+        }
+    }
 
     saveButtonState.value = newValue > 0 && newValue <= props.maxValue
 })

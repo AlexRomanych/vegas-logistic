@@ -185,21 +185,21 @@
 </template>
 
 <script setup>
-import {ref, reactive, watch, watchEffect, onMounted} from 'vue'
+import {ref, reactive, watch, onMounted} from 'vue'
 
-import {useRoute, useRouter} from 'vue-router'
+import {useRoute} from 'vue-router'
 
 import {useVuelidate} from '@vuelidate/core'
 import {
     helpers,
     required,
-    integer,
     minLength,
-    minValue,
-    maxValue,
-    between,
-    email,
-    sameAs
+    // integer,
+    // minValue,
+    // maxValue,
+    // between,
+    // email,
+    // sameAs
 } from '@vuelidate/validators'
 
 import {useFabricsStore} from '@/stores/FabricsStore.js'
@@ -207,7 +207,8 @@ import {useFabricsStore} from '@/stores/FabricsStore.js'
 import {
     NEW_FABRIC_PICTURE,
     FABRIC_PAGE_MODE,
-    FABRIC_MACHINES, FABRIC_TASK_STATUS
+    FABRIC_MACHINES,
+    // FABRIC_TASK_STATUS
 } from '@/app/constants/fabrics.js'
 
 // import {round} from '@/app/helpers/helpers_lib.js'

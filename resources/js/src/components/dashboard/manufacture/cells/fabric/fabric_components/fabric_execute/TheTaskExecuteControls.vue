@@ -149,6 +149,7 @@
     <AppModalAsyncNumber
         ref="appModalAsyncNumber"
         :max-value=300
+        :max=300
         :text="modalTextNumber"
         :type="modalTypeNumber"
         :value="modalInitValueNumber"
@@ -178,18 +179,18 @@
 <script setup>
 import {ref, defineEmits, defineProps, watch} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '@/app/constants/fabrics.js'
 
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
-import AppModalAsyncArea from '/resources/js/src/components/ui/modals/AppModalAsyncArea.vue'
-import AppModalAsyncNumber from '/resources/js/src/components/ui/modals/AppModalAsyncNumber.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppModalAsyncArea from '@/components/ui/modals/AppModalAsyncArea.vue'
+import AppModalAsyncNumber from '@/components/ui/modals/AppModalAsyncNumber.vue'
 import TheTaskExecuteRollRollingData
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
 import TheTaskExecuteRollAdd
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollAdd.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollAdd.vue'
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга

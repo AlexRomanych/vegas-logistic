@@ -20,6 +20,7 @@ const dashboard = [
     // },
 
     {
+        // path: '/dashboard/menu/:groupId/:id?',
         path: '/dashboard/menu/:groupId',
         name: 'menu',
         component: () => import('@/components/dashboard/nav/NavItemMenu.vue'),

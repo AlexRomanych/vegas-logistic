@@ -1,34 +1,49 @@
 <template>
     <div>
         <ul v-for="menuItem in menu" :key="menuItem.group.id" class="flex space-x-4">
-            <li v-if="menuItem.group.shown">
-                <!--                <a href="#" class="nav-item">-->
-                <!--                    <NavItemIcon :icon="menu.icon"/>-->
-                <!--                    <span><NavItemName :groupName="menu.groupName"/></span>-->
-                <!--                </a>-->
+<!--            <router-link :to="{name: 'menu', params: {groupId: menuItem.group.id}}">-->
 
-                <div
-                    :class="[
+                <li v-if="menuItem.group.shown"
+                    @click="selectMenu(menuItem.group.id, $event)">
+                    <!--                <a href="#" class="nav-item">-->
+                    <!--                    <NavItemIcon :icon="menu.icon"/>-->
+                    <!--                    <span><NavItemName :groupName="menu.groupName"/></span>-->
+                    <!--                </a>-->
+
+                    <div
+                        :class="[
                         'nav-item',
                         menuItem.group.isActive
                             ? 'nav-item-hover nav-item-text-active'
                             : 'nav-item-text',
                     ]"
-                    :data-group-id="menuItem.group.id"
-                    @click.stop="selectMenu(menuItem.group.id, $event)"
-                >
-                    <NavItemIcon :icon="menuItem.group.icon" />
-                    <span><NavItemName :groupName="menuItem.group.name" /></span>
-                </div>
-            </li>
+                        :data-group-id="menuItem.group.id"
+
+                    >
+                        <NavItemIcon
+                            :icon="menuItem.group.icon"
+                        />
+
+                        <span>
+                        <NavItemName
+                            :groupName="menuItem.group.name"
+                        />
+                    </span>
+
+                    </div>
+                </li>
+<!--            </router-link>-->
         </ul>
     </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
+import {useRouter} from 'vue-router'
+
 import NavItemIcon from '@/components/dashboard/nav/NavItemIcon.vue'
 import NavItemName from '@/components/dashboard/nav/NavItemName.vue'
-import { useRouter } from 'vue-router'
 
 const props = defineProps({
     menu: {
@@ -42,19 +57,55 @@ const emit = defineEmits(['selectMenu'])
 
 // Возвращаем id группы
 const router = useRouter()
-const selectMenu = (groupId, e) => {
+const selectMenu = async (groupId, e) => {
     emit('selectMenu', groupId)
 
     // перекидываем в случае, если менюшка активна
     const menuItem = props.menu.find((item) => item.group.id === groupId)
 
+    // console.log('menuItem: ', menuItem)
+    // console.log('menuItem.group.isActive: ', menuItem.group.isActive)
+
+    const targetId = ref(1)
     if (menuItem.group.isActive) {
-        router.push({
-            name: 'menu',
-            params: {
-                groupId: groupId,
-            },
-        })
+
+        // console.log('router.push')
+        // console.log(router.currentRoute.value)
+
+
+
+
+
+        // const currentPath = router.currentRoute.value.fullPath;
+        // const currentName = router.currentRoute.value.name;
+        //
+        // console.log('Attempting to navigate from:', currentPath, '(', currentName, ')');
+        // console.log('Target route:', { name: 'menu', params: { groupId: groupId, } });
+
+        // router.push({ name: 'menu', params: { id: targetId.value } })
+        router.push({ name: 'menu', params: { groupId: groupId, } })
+        // router.push({ name: 'menu', params: { groupId: groupId, id: targetId.value} })
+            // .then(() => {
+            //     console.log('router.push() resolved successfully.');
+            // })
+            // .catch(err => {
+            //     console.error('router.push() caught error:', err);
+            // });
+
+        // Измените ID для следующего перехода, чтобы он отличался
+        targetId.value++;
+
+
+
+
+
+
+        // await router.push({
+        //     name: 'menu',
+        //     params: {
+        //         groupId: groupId,
+        //     },
+        // })
     }
 }
 

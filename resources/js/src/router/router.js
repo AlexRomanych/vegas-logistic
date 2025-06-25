@@ -26,63 +26,76 @@ const router = createRouter({
 // Это правильное иcпользование, отдельным операндом,
 // так как createRouter() создает router, а возвращает не его экземпляр
 router.beforeEach(async (to, from, next) => {
-    const user = useUserStore()
 
-    // debugger
-    // console.log('from:', from.name)
-    // console.dir(from)
-    // console.log('to:', to.name)
+    try {
 
-    //
-    // debugger
-    let auth = await user.isAuthenticated()
-    // console.log(auth)
-    // debugger
-
-    // debugger
-
-    // if (!user.isAuthenticated()) {
-    if (!auth) {
-
-        if (to.name === 'register' || to.name === 'login' || to.name === 'error.404') {
-            next()
-        } else {
-            next({name: 'login'})
-        }
-
-    } else {
-
-        // если пользователь уже в системе и он зашел на страницу регистрации или авторизации, то выходим из системы
-        if (to.name === 'register' || to.name === 'login') {
-
-            next({name: 'dashboard'})
-            // console.log('logout', from.name)
-
-            // todo Критически важное место! Logout - разобраться!!!
-
-            // user.logout()
-            // auth = false
-            // next({name: 'to.name'})
-
-        } else if (to.name === 'menu') {
-
-            // console.log('menu')
-
-            // Здесь определяем заголовки страниц для меню
-            to.meta.title = menu[parseInt(to.params.groupId) - 1].group.name
-            next()
-
-        } else {
-
-            next()
-        }
-
-        // console.log(to)
-
+        const user = useUserStore()
 
         // debugger
-        // window.location.reload()
-        // next()
+        // console.log('from:', from.name)
+        // console.dir(from)
+        // console.log('to:', to)
+
+        // console.group('Router Navigation Guard: beforeEach');
+        // console.log('To:', to.fullPath, 'Name:', to.name);
+        // console.log('From:', from.fullPath, 'Name:', from.name);
+        // console.groupEnd();
+
+        //
+        // debugger
+        let auth = await user.isAuthenticated()
+        // console.log(auth)
+        // debugger
+
+        // debugger
+
+        // if (!user.isAuthenticated()) {
+        if (!auth) {
+
+            if (to.name === 'register' || to.name === 'login' || to.name === 'error.404') {
+                next()
+            } else {
+                next({name: 'login'})
+            }
+
+        } else {
+
+            // если пользователь уже в системе и он зашел на страницу регистрации или авторизации, то выходим из системы
+            if (to.name === 'register' || to.name === 'login') {
+
+                next({name: 'dashboard'})
+                // console.log('logout', from.name)
+
+                // todo Критически важное место! Logout - разобраться!!!
+
+                // user.logout()
+                // auth = false
+                // next({name: 'to.name'})
+
+            } else if (to.name === 'menu') {
+
+                // console.log('menu')
+                // console.log('to menu:', to)
+
+                // Здесь определяем заголовки страниц для меню
+                to.meta.title = menu[parseInt(to.params.groupId) - 1].group.name
+                next()
+
+            } else {
+
+                next()
+            }
+
+            // console.log(to)
+
+
+            // debugger
+            // window.location.reload()
+            // next()
+        }
+    } catch (e) {
+        console.error('Ошибка в beforeEach:', error);
+        next(false); // Отменить навигацию из-за ошибки
     }
 
 })

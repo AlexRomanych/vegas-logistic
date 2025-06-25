@@ -2,16 +2,24 @@
     <!--    <div>I am Menu {{$route.params.groupId}}</div>-->
     <div class="flex flex-wrap">
         <div v-for="groupMenuItem in group.items" :key="groupMenuItem.id">
-            <NavItemCard :groupMenuItem="groupMenuItem" />
+
+            <NavItemCard
+                :groupMenuItem="groupMenuItem"
+            />
+
         </div>
     </div>
 </template>
 
 <script setup>
-import { useMenuStore } from '@/stores/MenuStore.js'
+
+import {useRouter} from 'vue-router'
+
+import {useMenuStore} from '@/stores/MenuStore.js'
+
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
-import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+
+import {ref} from 'vue'
 
 const menuStore = useMenuStore()
 const menu = menuStore.menu
