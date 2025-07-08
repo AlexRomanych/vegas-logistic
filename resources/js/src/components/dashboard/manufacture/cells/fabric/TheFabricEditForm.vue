@@ -42,7 +42,7 @@
                         :value="v$.averageLength.$model"
                         label="Средняя длина рулона ткани, м.п."
                         placeholder="Введите ср. длину рул. ткани"
-                        step="0.000000000000001"
+                        step="0.0001"
                         width="w-[230px]"
                     />
 
@@ -496,6 +496,8 @@ const formSubmit = async () => {
     }
 
     console.log('res', res)
+
+    console.log(checkApiAnswer(res))
 
     if (checkApiAnswer(res).code === 0) {
         calloutType.value = 'success'

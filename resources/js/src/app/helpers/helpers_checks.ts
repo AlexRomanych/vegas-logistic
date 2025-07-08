@@ -20,6 +20,8 @@ export function isResponseWithError(response: any) {
 // Descr: Проверка ответа API на кореектность
 export function checkApiAnswer(response: any) {
 
+    console.log('response: ', response)
+
     interface CheckResult {
         success: boolean,
         code: number,
@@ -36,7 +38,7 @@ export function checkApiAnswer(response: any) {
         message: null
     }
 
-    if (response == 'success') {
+    if (response.data === 'success') {
         checkResult.success = true
         checkResult.code = 0
     }

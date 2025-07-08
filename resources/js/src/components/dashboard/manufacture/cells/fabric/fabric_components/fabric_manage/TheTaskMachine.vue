@@ -6,28 +6,62 @@
             :task-status="task.common.status"
             @add-roll="addRoll"
             @optimize-labor="optimizeLabor"
+            @save-rolls-order="saveRollsOrder"
         />
 
         <div v-if="rolls.length">
             <!--attract: Разделительная линия -->
-            <TheDividerLine />
+            <TheDividerLine/>
 
             <!--attract: Заголовки таблицы для записей с рулонами -->
-            <TheTaskRecordsTitle />
+            <TheTaskRecordsTitle/>
 
-            <TheTaskRecord
-                v-for="(roll, index) in rolls"
-                :key="index"
-                :index="index"
-                :machine="machine"
-                :roll="roll"
-                :task-status="task.common.status"
-                @save-task-record="saveTaskRecord"
-                @delete-task-record="deleteTaskRecord"
-            />
+
+            <!--            <div v-for="(roll, index) in rolls">-->
+
+            <!--                &lt;!&ndash; __ Строка с рулонами &ndash;&gt;-->
+            <!--                <TheTaskRecord-->
+
+            <!--                    :key="index"-->
+            <!--                    :index="index"-->
+            <!--                    :machine="machine"-->
+            <!--                    :roll="roll"-->
+            <!--                    :task-status="task.common.status"-->
+            <!--                    @save-task-record="saveTaskRecord"-->
+            <!--                    @delete-task-record="deleteTaskRecord"-->
+            <!--                />-->
+            <!--            </div>-->
+
+
+            <draggable
+                :list="rolls"
+                :="dragOptions"
+                :disabled="task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE"
+                item-key="id"
+                tag="div"
+                @end="changeRollsPosition"
+                @start="checkForDrag"
+            >
+                <template #item="{ element, index }">
+
+                    <div>
+                        <TheTaskRecord
+                            :key="index"
+                            :index="index"
+                            :machine="machine"
+                            :roll="element"
+                            :task-status="task.common.status"
+                            @save-task-record="saveTaskRecord"
+                            @delete-task-record="deleteTaskRecord"
+                        />
+                    </div>
+
+                </template>
+            </draggable>
+
 
             <!--attract: Разделительная линия -->
-            <TheDividerLine />
+            <TheDividerLine/>
 
             <!--attract: Общий комментарий к сменному заданию -->
             <div class="flex items-end">
@@ -36,10 +70,7 @@
                     v-model="taskDescription"
                     :disabled="!getFunctionalByFabricTaskStatus(task.common.status)"
                     :placeholder="
-                        !getFunctionalByFabricTaskStatus(task.common.status)
-                            ? ''
-                            : 'Введите комментарий'
-                    "
+                        !getFunctionalByFabricTaskStatus(task.common.status)? '' : 'Введите комментарий'"
                     :rows="2"
                     :value="taskDescription"
                     class="cursor-pointer"
@@ -69,40 +100,47 @@
             <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
                 <!--attract: Разделительная линия -->
-                <TheDividerLine />
+                <TheDividerLine/>
 
                 <!--attract: Список рулонов -->
-                <TheTaskRecordRolls :rolls="rolls" />
+                <TheTaskRecordRolls :rolls="rolls"/>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import {computed, ref, watch} from 'vue'
 
-import { useFabricsStore } from '/resources/js/src/stores/FabricsStore.js'
+import draggable from 'vuedraggable'
+
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
     FABRIC_TASK_STATUS,
     NEW_ROLL,
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 import {
+    getFunctionalByFabricTaskStatus,
     // filterFabricsByMachineId,
     // getAddFabricMode,
-    getFunctionalByFabricTaskStatus,
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import TheTaskRecordsMenu from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsMenu.vue'
-import TheTaskRecordsTitle from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsTitle.vue'
-import TheTaskRecord from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecord.vue'
-import TheTaskRecordRolls from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordRolls.vue'
-import TheDividerLine from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
+import TheTaskRecordsMenu
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsMenu.vue'
+import TheTaskRecordsTitle
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsTitle.vue'
+import TheTaskRecord
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecord.vue'
+import TheTaskRecordRolls
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordRolls.vue'
+import TheDividerLine
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
-import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
+import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
-// import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+// import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 const props = defineProps({
     task: {
@@ -132,20 +170,34 @@ const emits = defineEmits([
     'saveTaskRecord',
     'deleteTaskRecord',
     'saveMachineDescription',
+    'changeRollsPosition',
+    'saveRollsOrder',
 ])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
 
-let rolls
+// __ Опции для draggable
+const dragOptions = computed(() => {
+    return {
+        animation: 300,
+        group: 'description',
+        // disabled: false, // Выносим в отдельное свойство
+        ghostClass: 'ghost',
+        sort: true
+    };
+})
+const isDragging = ref(false);
+
+const rolls = ref([])
 
 // attract: Тут функционал, который дополняет функционал уникальности выбора ПС из выпадающего списка
 const getRollsIndexes = () => {
     // attract: добавляем в нулевую ПС индекс текущей СМ, для того, чтобы она отображалась в выпадающем списке
     fabrics[0].machines[0].id = props.machine.ID // Добавляем ID машины в объект ПС с нулевым рулоном
-    rolls = props.task.machines[props.machine.TITLE].rolls // Получаем рулоны из задания
+    rolls.value = props.task.machines[props.machine.TITLE].rolls // Получаем рулоны из задания
 
-    const rollsIndexes = rolls
+    const rollsIndexes = rolls.value
         .map((roll) => (roll.editable ? roll.fabric_id : undefined))
         .filter((roll) => roll !== undefined)
 
@@ -163,7 +215,7 @@ fabricsStore.globalEditMode = false // устанавливаем в false гл�
 // attract: Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
     fabricsStore.clearTaskGlobalProductivity()
-    rolls.forEach((roll, index, rolls) => {
+    rolls.value.forEach((roll, index, rolls) => {
         const fabric = fabrics.find((fabric) => fabric.id === roll.fabric_id)
         fabricsStore.globalTaskProductivity[props.machine.TITLE][index] = fabric.buffer.productivity
             ? (fabric.buffer.average_length * roll.rolls_amount) / fabric.buffer.productivity
@@ -176,6 +228,19 @@ const fillGlobalProductivity = () => {
 // attract: Общий комментарий к сменному заданию
 const taskDescription = ref(props.task.machines[props.machine.TITLE].description)
 
+
+// __ Начало перетаскивания
+const checkForDrag = () => {
+}
+
+// __ Меняем позицию рулонов в СЗ
+const changeRollsPosition = () => {
+    if (props.task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE) return    // Только для созданных СЗ
+    fabricsStore.globalOrderManageChangeFlag = true // устанавливаем флаг для изменения порядка в глобальном хранилище
+    emits('changeRollsPosition', props.machine, props.task)
+}
+
+
 // attract: Добавляем новый рулон
 const addRoll = () => {
     // console.log('NEW_ROLL: ', NEW_ROLL)
@@ -186,6 +251,12 @@ const addRoll = () => {
 // attract: Оптимизируем трудозатраты
 const optimizeLabor = () => {
     emits('optimizeLabor', props.machine, props.task)
+}
+
+// __ Сохраняем порядок рулонов
+const saveRollsOrder = () => {
+    // console.log('saveRollsOrder: ')
+    emits('saveRollsOrder', props.machine, props.task)
 }
 
 // attract: Сохраняем запись
@@ -201,7 +272,7 @@ const saveTaskRecord = (saveData) => {
 
 // attract: Удаляем запись
 const deleteTaskRecord = (deleteData) => {
-    emits('deleteTaskRecord', { ...deleteData, machine: props.machine, task: props.task })
+    emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
 
 // attract: Обновляем общее описание к СМ
@@ -228,8 +299,15 @@ watch(
 
         rollsIndexes.value = getRollsIndexes() // Обновляем индексы рулонов, чтобы потом их исключить из выбора ПС в самой записи
     },
-    { deep: true, immediate: true },
+    {deep: true, immediate: true},
 )
 </script>
 
-<style scoped></style>
+<style scoped>
+
+.ghost {
+    opacity: 0.5;
+    background: #c8ebfb;
+}
+
+</style>

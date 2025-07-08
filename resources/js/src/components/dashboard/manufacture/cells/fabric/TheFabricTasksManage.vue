@@ -70,7 +70,8 @@
             <!-- attract Выводим табы, если СМ активна или статус СЗ - "Выполнено" или "Выполняется" -->
             <div class="flex flex-row justify-start items-center m-3">
                 <div v-for="tab in tabs" :key="tab.id">
-                    <div v-if="tab.enabled || activeTask.common.status === FABRIC_TASK_STATUS.RUNNING.CODE || activeTask.common.status === FABRIC_TASK_STATUS.DONE.CODE">
+                    <div
+                        v-if="tab.enabled || activeTask.common.status === FABRIC_TASK_STATUS.RUNNING.CODE || activeTask.common.status === FABRIC_TASK_STATUS.DONE.CODE">
                         <AppLabelMultiLine
                             :bold="true"
                             :text="tab.name"
@@ -99,7 +100,7 @@
 
 
                 <!-- TODO: Убрать дублирование кода -->
-                <!--attract: Американец-->
+                <!-- attract: Американец-->
                 <!-- warning: key: - для реактивности -->
                 <!-- todo: доработать, потому, что task будем получать в самом компоненте -->
                 <div v-if="tabs.american.shown">
@@ -112,6 +113,8 @@
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
                         @save-machine-description="saveMachineDescription"
+                        @change-rolls-position="changeRollsPosition"
+                        @save-rolls-order="saveRollsOrder"
                     />
 
                 </div>
@@ -127,6 +130,8 @@
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
                         @save-machine-description="saveMachineDescription"
+                        @change-rolls-position="changeRollsPosition"
+                        @save-rolls-order="saveRollsOrder"
                     />
                 </div>
 
@@ -141,6 +146,8 @@
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
                         @save-machine-description="saveMachineDescription"
+                        @change-rolls-position="changeRollsPosition"
+                        @save-rolls-order="saveRollsOrder"
                     />
                 </div>
 
@@ -155,6 +162,8 @@
                         @save-task-record="saveTasks"
                         @delete-task-record="deleteTasks"
                         @save-machine-description="saveMachineDescription"
+                        @change-rolls-position="changeRollsPosition"
+                        @save-rolls-order="saveRollsOrder"
                     />
                 </div>
 
@@ -189,7 +198,7 @@
 import {ref, reactive, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_TASK_STATUS,
@@ -197,16 +206,17 @@ import {
     FABRICS_NULLABLE,
     TASK_DRAFT,
     TEST_FABRICS,
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 
-import {cloneShallow} from '/resources/js/src/app/helpers/helpers_lib.js'
+import {cloneShallow} from '@/app/helpers/helpers_lib.js'
 
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
     getFabricTasksPeriod,
-    addEmptyFabricTasks, fillFabricsDisplayNames
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+    addEmptyFabricTasks,
+    // fillFabricsDisplayNames
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
     getDayOfWeek,
@@ -216,18 +226,18 @@ import {
     // isToday,
     // isWorkingDay,
     // getISOFromLocaleDate,
-} from '/resources/js/src/app/helpers/helpers_date.js'
+} from '@/app/helpers/helpers_date.js'
 
 import TheTaskCommonInfo
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
 
 import TheTaskMachine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskMachine.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskMachine.vue'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppModalAsyncMultiLine from '/resources/js/src/components/ui/modals/AppModalAsyncMultiline.vue'
-import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 
 const route = useRoute()
@@ -272,7 +282,17 @@ console.log('tasks:', tasks)
 
 // let taskData = reactive(tasks)
 // let taskData = reactive(TEST_FABRICS)
+
+
 const taskData = reactive(addEmptyFabricTasks(tasks, tasksPeriod))
+const sortTaskByPosition = () => {
+    taskData.forEach(task => {
+        Object.keys(task.machines).forEach(machine => {
+            task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+        })
+    })
+}
+sortTaskByPosition()
 
 
 // attract: Ссылка на активное СЗ
@@ -447,6 +467,9 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             task.common = newTaskDay.common
             task.machines = newTaskDay.machines
             task.workers = newTaskDay.workers
+
+            fabricsStore.globalOrderManageChangeFlag = false
+
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             rerender.forEach((_, index, array) => array[index]++)
         }
@@ -464,6 +487,8 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
         task.machines = newTaskDay[0].machines
         task.common = newTaskDay[0].common
+
+        fabricsStore.globalOrderManageChangeFlag = false
 
         // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
         rerender.forEach((_, index, array) => array[index]++)
@@ -488,6 +513,9 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
             task.machines = newTaskDay[0].machines
             task.common = newTaskDay[0].common
+
+            fabricsStore.globalOrderManageChangeFlag = false
+            sortTaskByPosition()
 
             // todo: сделать обработку ошибок + callout
         }
@@ -530,6 +558,8 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             task.machines = newTaskDay[0].machines
             task.common = newTaskDay[0].common
 
+            fabricsStore.globalOrderManageChangeFlag = false
+            sortTaskByPosition()
             // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             rerender.forEach((_, index, array) => array[index]++)
 
@@ -564,30 +594,52 @@ const getTabType = (tab) => {
     return tab.typePassive
 }
 
+// __ Пересчитывает позицию рулонов в массиве
+const changeRollsPosition = (machine, task) => {
+    let workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
+    workTask.machines[machine.TITLE].rolls.forEach((roll, index) => roll.roll_position = index + 1)
+
+    // console.log('workTask: ', workTask)
+}
+
+
 // attract: Поднятое событие при клике на кнопку "Добавить рулон"
 const addRoll = (newRoll, machine, task) => {
 
     const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
     workTask.machines[machine.TITLE].rolls.push(newRoll)
+    changeRollsPosition(machine, task)
+
+    // console.log('workTask addRoll: ', workTask)
 }
 
 
 // attract: Поднятое событие при клике на кнопку "Сохранить рулон"
 const saveTasks = async (saveData) => {
-
+    // console.log('from saveTask: ', targetTask)
     const targetTask = taskData.find(t => t.date === saveData.task.date)
 
     targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll       // рулоны
     targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
-    // console.log('from saveTask: ', targetTask)
-    // console.log('from taskData: ', taskData)
-
     const result = await fabricsStore.createFabricTask(targetTask)
+    // console.log('from saveTask targetTask: ', targetTask)
+    // console.log('from saveTask taskData: ', taskData)
     // console.log('SFC: ', result)
-
     // rerender[saveData.machine.ID]++
 }
+
+
+// __ Поднятое событие при клике на кнопку "Сохранить порядок рулонов"
+const saveRollsOrder = async (machine, task) => {
+    // console.log('from saveRollsOrder: ', machine, task)
+
+    const targetTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
+    const result = await fabricsStore.createFabricTask(targetTask)
+    fabricsStore.globalOrderManageChangeFlag = false
+    // console.log('workTask: ', targetTask)
+}
+
 
 // attract: Поднятое событие при клике на кнопку "Сохранить общее описание к СМ"
 const saveMachineDescription = async (saveData) => {
@@ -615,6 +667,9 @@ const deleteTasks = async (deleteData) => {
     targetTask.machines[deleteData.machine.TITLE].rolls
         = targetTask.machines[deleteData.machine.TITLE].rolls.filter(r => r.id !== deleteData.id)
 
+    // Пересчитываем позиции рулонов и сохраняем в БД
+    changeRollsPosition(deleteData.machine, deleteData.task)
+    const result = await fabricsStore.createFabricTask(targetTask)
     // console.log(targetTask)
 
     // activeTask.machines[deleteData.machine.TITLE].rolls = targetTask.machines[deleteData.machine.TITLE].rolls
@@ -625,6 +680,7 @@ const deleteTasks = async (deleteData) => {
         // console.log('НеПустой рулон')
 
         const result = await fabricsStore.deleteFabricTaskRollById(deleteData.id)
+
         // console.log('SFC: ', result)
     }
 

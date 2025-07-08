@@ -85,6 +85,7 @@ class FabricTasksDateResource extends JsonResource
                     'correct' => true,
                     'editable' => $rollContext->editable,
                     'rolls_exec' => $rolls,
+                    'roll_position' => $rollContext->roll_position,
                 ];
             }
 

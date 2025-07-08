@@ -25,13 +25,13 @@ class FabricTaskContextResource extends JsonResource
             'productivity' => (float)$this->productivity,
             'rolls_amount' => $this->rolls_amount,
             'translate_rate' => (float)$this->translate_rate,
+            'roll_position' => $this->roll_position,
 
 //            'active' => $this->active,
 //            'editable' => $this->editable,
 //            'fabric_mode' => $this->fabric_mode,
 //            'fabric_task' => $this->fabric_task,
 //            'fabric_task_id' => $this->fabric_task_id,
-//            'roll_position' => $this->roll_position,
 //            'created_at' => $this->created_at,
 //            'updated_at' => $this->updated_at,
 

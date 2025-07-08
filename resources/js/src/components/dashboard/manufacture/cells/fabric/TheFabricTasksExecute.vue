@@ -163,15 +163,15 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 const fabricsStore = useFabricsStore()
 
-// attract: Получаем период отображения сменного задания
+// __ Получаем период отображения сменного задания
 const tasksPeriod = getFabricTasksPeriod()
 console.log('tasksPeriod:', tasksPeriod)
 
 const prepareTasksData = async () => {
-    // attract: Получаем сами сменные задания
+    // __ Получаем сами сменные задания
     let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 
-// attract: Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
+    // __ Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
     tasks = tasks.filter(
         t =>
             t.common.status === FABRIC_TASK_STATUS.PENDING.CODE ||
@@ -179,30 +179,46 @@ const prepareTasksData = async () => {
             t.common.status === FABRIC_TASK_STATUS.DONE.CODE
     )
 
-// attract: Проверяем на последнее СЗ со статусом "Выполнено".
-// attract: Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
+    // __ Проверяем на последнее СЗ со статусом "Выполнено".
+    // __ Если его нет - получаем последнее СЗ, которое имеет статус "Выполнено"
     if (tasks[0] === undefined || (tasks[0] !== undefined && tasks[0].common.status !== FABRIC_TASK_STATUS.DONE.CODE)) {
         const lastDoneTask = await fabricsStore.getLastDoneFabricTask()
         if (lastDoneTask) tasks.unshift(lastDoneTask)       // добавляем последнее СЗ в начало массива, если оно есть
         // console.log('lastDoneTask:', lastDoneTask)
     }
 
+    console.log('tasks:', tasks)
+    tasks.forEach(task => {
+        Object.keys(task.machines).forEach(machine => {
+            task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+        })
+    })
+
     return tasks
 }
 
 let tasks = await prepareTasksData()
 
+// __ Сортируем рулоны по порядку
+// const sortTasksByExecuteRollsPosition = () => {
+//     tasks.forEach(task => {
+//         Object.keys(task.machines).forEach(machine => {
+//             task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+//         })
+//     })
+// }
+
 
 // attract: Формируем данные для отображения
-let taskData = reactive(tasks)
+const taskData = ref(tasks)
 
 // attract: Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
-let activeTask = reactive(taskData.find(t => isToday(t.date)) || tasks[0])
-activeTask.active = true
+const activeTask = ref(taskData.value.find(t => isToday(t.date)) || tasks[0])
+activeTask.value.active = true
 
 console.log('tasks:', tasks)
-console.log('taskData: ', taskData)
-console.log('activeTask', activeTask)
+console.log('taskData: ', taskData.value)
+console.log('activeTask', activeTask.value)
 
 
 // attract: Получаем все ткани и запоминаем в хранилище
@@ -231,8 +247,20 @@ const tabs = reactive({
         typePassive: 'dark',
         machine: FABRIC_MACHINES.GERMAN
     },
-    china: {id: 4, shown: false, name: ['Китаец', 'HY-W-DGW'], typePassive: 'dark', machine: FABRIC_MACHINES.CHINA},
-    korean: {id: 5, shown: false, name: ['Кореец', 'МТ-94'], typePassive: 'dark', machine: FABRIC_MACHINES.KOREAN},
+    china: {
+        id: 4,
+        shown: false,
+        name: ['Китаец', 'HY-W-DGW'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.CHINA
+    },
+    korean: {
+        id: 5,
+        shown: false,
+        name: ['Кореец', 'МТ-94'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.KOREAN
+    },
     // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
     // test: {id: 6, shown: false, name: ['Machine', 'Test']},
 })
@@ -282,9 +310,9 @@ const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = fals
 
 // attract: Меняем активный день по клику на нем
 const changeActiveTask = (task) => {
-    taskData.forEach((t) => t.active = t.date === task.date)
-    activeTask = taskData.find(t => t.active)
-    // console.log('active_task: ', activeTask)
+    taskData.value.forEach((t) => t.active = t.date === task.date)
+    activeTask.value = taskData.value.find(t => t.active)
+    // console.log('active_task: ', activeTask.value)
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
 
@@ -303,7 +331,7 @@ const getTabType = (tab) => {
     if (tab.hasOwnProperty('machine')) {
 
         // если неактивна, но есть СЗ
-        if (activeTask.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
+        if (activeTask.value.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
     }
     return tab.typePassive
 }
@@ -320,20 +348,17 @@ const selectWorkers = async (workersList) => {
     const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
     // console.log(workersIds)
 
-    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.common.id, workersIds)
+    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
     // console.log(res)
 
-    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
+    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
     // console.log('newTaskDay: ', newTaskDay)
 
-    activeTask.workers = newTaskDay[0].workers
+    activeTask.value.workers = newTaskDay[0].workers
 
     // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
     rerender.forEach((_, index, array) => array[index]++)
 }
-
-
-
 
 
 // warning: ------------------------------------------------------------------------
@@ -416,14 +441,14 @@ const changeTaskExecute = async (task) => {
     // attract: Изменить статус с "Выполняется" на "Выполнено". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE) {
 
-        // attract: Проверки на наличие всех необходимых условий
-        // attract: 1. Должен быть заполнен персонал общий к дню СЗ
-        // attract: 2. Должны быть проставлены правильные статусы для всех рулонов по каждой СМ:
-        // attract:     "Выполнено", "Не выполнено", "Переходящий"
-        // attract: 3. Должен быть заполнен персонал на каждый рулон по каждой СМ
-        // attract: 4. Не должно быть ни одного рулона, который не может быть перемещен. Пока не реализовано
+        // __ Проверки на наличие всех необходимых условий
+        // __ 1. Должен быть заполнен персонал общий к дню СЗ
+        // __ 2. Должны быть проставлены правильные статусы для всех рулонов по каждой СМ:
+        // __     "Выполнено", "Не выполнено", "Переходящий"
+        // __ 3. Должен быть заполнен персонал на каждый рулон по каждой СМ
+        // __ 4. Не должно быть ни одного рулона, который не может быть перемещен. Пока не реализовано
 
-        // attract: 1.
+        // __ 1.
         // console.log(task.workers)
         if (task.workers.length === 0) {
             calloutType.value = 'danger'
@@ -444,8 +469,8 @@ const changeTaskExecute = async (task) => {
                     //     roll_exec.status === FABRIC_ROLL_STATUS.CANCELLED.CODE)
 
                     return (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE ||
-                            roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE ||
-                            roll_exec.status === FABRIC_ROLL_STATUS.PAUSED.CODE)
+                        roll_exec.status === FABRIC_ROLL_STATUS.RUNNING.CODE ||
+                        roll_exec.status === FABRIC_ROLL_STATUS.PAUSED.CODE)
 
                 })
             })
@@ -501,10 +526,19 @@ const changeTaskExecute = async (task) => {
 
 // attract: Добавить рулон в СЗ во время выполнения
 const addExecuteRoll = async () => {
-    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.date, end: activeTask.date})
+    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
     // console.log('created: newTaskDay: ', newTaskDay)
 
-    activeTask.machines = newTaskDay[0].machines
+    // taskData.value = await prepareTasksData()
+
+
+    newTaskDay.forEach(task => {
+        Object.keys(task.machines).forEach(machine => {
+            task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+        })
+    })
+
+    activeTask.value.machines = newTaskDay[0].machines
 
     rerender.forEach((_, index, array) => array[index]++)
 }
@@ -524,7 +558,7 @@ const getMachineShowCondition = (task, tab) => {
     return true
 
 }
-// getMachineShowCondition(activeTask, FABRIC_MACHINES.AMERICAN.ID)
+// getMachineShowCondition(activeTask.value, FABRIC_MACHINES.AMERICAN.ID)
 
 
 // attract: Возвращаем условие начала/окончания выполнения
@@ -547,11 +581,10 @@ const getStartStopButtonShowCondition = (task) => {
 }
 
 
-
 // attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])
 
-watch(() => taskData, async (newValue) => {
+watch(() => taskData.value, async (newValue) => {
 
     // rerender.value++
     // console.log('taskData: changed: ', rerender)

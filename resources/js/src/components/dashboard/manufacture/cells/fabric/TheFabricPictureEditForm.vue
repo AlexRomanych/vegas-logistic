@@ -136,8 +136,10 @@
                     width="w-[465px]"
                 />
 
+
                 <div class="flex mt-10">
 
+                    <!-- __ Сохранить -->
                     <div>
                         <AppInputButton
                             id="submitButton"
@@ -148,6 +150,7 @@
                         />
                     </div>
 
+                    <!-- __ К списку рисунков -->
                     <router-link :to="{name: 'manufacture.cell.fabric.pictures.show'}">
                         <AppInputButton
                             id="submitButton"

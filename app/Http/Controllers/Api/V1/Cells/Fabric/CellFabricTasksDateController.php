@@ -20,6 +20,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 //use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
 
@@ -83,82 +84,97 @@ class CellFabricTasksDateController extends Controller
     {
 
         try {
+
+            // TODO: сделать валидацию данных
             $payload = $request->all();
-            $tasksDayData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
+            $tasksDayData = $payload['data']['data']; // одна data в axios, вторая data в самом объекте task
 
-//        return $tasksDayData;
-
-            // todo: сделать валидацию данных
+            // return $tasksDayData;
 
             // Проверка статуса задания (если 0 - пропускаем)
             if ($tasksDayData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
                 return EndPointStaticRequestAnswer::ok();
             }
 
-            // Создаем задание или обновляем основное задание на эту дату
-            $tasksDay = $this->createOrUpdateTasksDate($tasksDayData);
+            // __ Начинаем транзакцию
+            DB::transaction(function () use ($tasksDayData) {
 
-            // Перебираем все машины
-            for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
+                // __ Создаем задание или обновляем основное задание на эту дату
+                $tasksDay = $this->createOrUpdateTasksDate($tasksDayData);
 
-                // Получаем название машины
-                $machineStr = FabricService::getFabricMachineNameById($i);
+                // $ret = [];
 
-                // Проверка на наличие данных для данной машины
-                if (count($tasksDayData['machines'][$machineStr]['rolls']) === 0) continue;
+                // __ Перебираем все машины
+                for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
 
-                // Выносим для меньшей писанины в отдельную переменную
-                $taskData = $tasksDayData['machines'][$machineStr];
+                    // __ Получаем название машины
+                    $machineStr = FabricService::getFabricMachineNameById($i);
 
-                // если создали и обновили успешно, то получили экземпляр даты задания
-                // создаем тогда FabricTask - СЗ для СМ
-                if ($tasksDay instanceof Model) {
+                    // $ret[] = [$machineStr => $rollData['roll_position']];
 
-                    // Создаем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
-                    $task = FabricTask::query()->updateOrCreate(
-                        [
-                            'fabric_tasks_date_id' => $tasksDay->id,
-                            'fabric_machine_id' => $i,
-                        ],
-                        [
-                            'fabric_tasks_date_id' => $tasksDay->id,
-                            'fabric_machine_id' => $i,
-                            'task_status' => $tasksDay->tasks_status,             // записываем пока общий статус всего СЗ
-                            'fabric_team_id' => $tasksDay['fabric_team_id'],
-                            'active' => $taskData['active'],
-                            'task_finish_at' => $taskData['finish_at'],
-                            'description' => $taskData['description'],
-                        ]
-                    );
+                    // __ Проверка на наличие данных для данной машины
+                    if (count($tasksDayData['machines'][$machineStr]['rolls']) === 0) continue;
 
-                    // Создаем или обновляем все рулоны, которые пришли с бэка
-                    foreach ($tasksDayData['machines'][$machineStr]['rolls'] as $key => $rollData) {
+                    // __ Выносим для меньшей писанины в отдельную переменную
+                    $taskData = $tasksDayData['machines'][$machineStr];
 
-                        // плановый рулон от ОПП
-                        $taskRollContext = FabricTaskContext::query()->updateOrCreate(
+                    // __ Если создали и обновили успешно, то получили экземпляр даты задания
+                    // __ создаем тогда FabricTask - СЗ для СМ
+                    if ($tasksDay instanceof Model) {
+
+                        // __ Создаем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
+                        $task = FabricTask::query()->updateOrCreate(
                             [
-                                'fabric_task_id' => $task->id,
-                                'fabric_id' => $rollData['fabric_id'],
-                                'editable' => true,                                     // касается только не переходящих рулонов
+                                'fabric_tasks_date_id' => $tasksDay->id,
+                                'fabric_machine_id' => $i,
                             ],
                             [
-                                'roll_position' => $key + 1,
-                                'fabric_task_id' => $task->id,                          // привязка к СЗ
-                                'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                                'fabric_mode' => $rollData['fabric_mode'],
-                                'rolls_amount' => $rollData['rolls_amount'],
-                                'average_textile_length' => $rollData['average_textile_length'],
-                                'translate_rate' => $rollData['rate'],
-                                'productivity' => $rollData['productivity'],
-                                'description' => $rollData['descr'],
+                                'fabric_tasks_date_id' => $tasksDay->id,
+                                'fabric_machine_id' => $i,
+                                'task_status' => $tasksDay->tasks_status,             // записываем пока общий статус всего СЗ
+                                'fabric_team_id' => $tasksDay['fabric_team_id'],
+                                'active' => $taskData['active'],
+                                'task_finish_at' => $taskData['finish_at'],
+                                'description' => $taskData['description'],
                             ]
                         );
+
+                        // __ Создаем или обновляем все рулоны, которые пришли с бэка
+                        foreach ($tasksDayData['machines'][$machineStr]['rolls'] as $key => $rollData) {
+
+
+                            // $ret[] = [$machineStr => $rollData['roll_position']];
+                            // return    ['rollData' => $rollData['roll_position']];
+
+                            // __ плановый рулон от ОПП
+                            $taskRollContext = FabricTaskContext::query()->updateOrCreate(
+                                [
+                                    'fabric_task_id' => $task->id,
+                                    'fabric_id' => $rollData['fabric_id'],
+                                    'editable' => true,                                     // касается только не переходящих рулонов
+                                ],
+                                [
+                                    // 'roll_position' => $key + 1,
+                                    'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                                    'fabric_task_id' => $task->id,                          // привязка к СЗ
+                                    'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                                    'fabric_mode' => $rollData['fabric_mode'],
+                                    'rolls_amount' => $rollData['rolls_amount'],
+                                    'average_textile_length' => $rollData['average_textile_length'],
+                                    'translate_rate' => $rollData['rate'],
+                                    'productivity' => $rollData['productivity'],
+                                    'description' => $rollData['descr'],
+                                ]
+                            );
+                        }
                     }
                 }
-            }
 
-//        return 'reached';
+            });
+
             return EndPointStaticRequestAnswer::ok();
+            // return json_encode($ret);
+            // return 'reached';
 
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
@@ -173,7 +189,7 @@ class CellFabricTasksDateController extends Controller
      */
     public function statusChange(Request $request)
     {
-        try {
+//        try {
 
             $payload = $request->all();
             $tasksDayData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
@@ -233,7 +249,7 @@ class CellFabricTasksDateController extends Controller
                         // Проверка на наличие данных для данной стегальной машины
                         if (count($tasksDayData['machines'][$machineStr]['rolls']) === 0) continue;
 
-                        // Получаем само СЗ
+                        // __ Получаем само СЗ
                         $task = FabricTask::query()
                             ->where('fabric_tasks_date_id', $tasksDate->id)
                             ->where('fabric_machine_id', $i)
@@ -241,7 +257,15 @@ class CellFabricTasksDateController extends Controller
                             ->get()
                             ->toArray();    // warning: Приходит Collection, но вложенные массивы не работают
 
+                        // __ Сортируем по порядку
+                        uasort($task[0]['fabric_task_contexts'], function ($a, $b) {
+                            return $a['roll_position'] <=> $b['roll_position'];
+                        });
+
+//                         return ['task' => $task[0]['fabric_task_contexts']];
+
                         // Создаем  все физические рулоны, на основании плановых
+                        $count = EXEC_ROLL_START_ORDER_INDEX;
                         foreach ($task[0]['fabric_task_contexts'] as $key => $taskContext) {
 
                             // пропускаем рулоны, которые нельзя редактировать
@@ -255,7 +279,8 @@ class CellFabricTasksDateController extends Controller
                                         [
                                             'fabric_task_context_id' => $taskContext['id'],
                                             'fabric_id' => $taskContext['fabric_id'],
-                                            'roll_position' => $j + 1,
+//                                            'roll_position' => $j + 1,
+                                            'roll_position' => $count,
                                             'roll_status' => FABRIC_ROLL_CREATED_CODE,
                                             'textile_roll_length' => $taskContext['average_textile_length'],
                                             'translate_rate' => $taskContext['translate_rate'],
@@ -263,6 +288,8 @@ class CellFabricTasksDateController extends Controller
                                             'description' => $taskContext['description'],   // дописываем плановый комментарий
                                         ]
                                     );
+
+                                    $count++;
                                 }
 
                             } else {
@@ -281,10 +308,10 @@ class CellFabricTasksDateController extends Controller
 
             }
 
-            return EndPointStaticRequestAnswer::ok();
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
+//            return EndPointStaticRequestAnswer::ok();
+//        } catch (Exception $e) {
+//            return EndPointStaticRequestAnswer::fail(response()->json($e));
+//        }
     }
 
 
@@ -531,12 +558,12 @@ class CellFabricTasksDateController extends Controller
 
     }
 
-    // Descr: Закрываем СЗ
-    // Descr: Если нет вообще параметра, то закрываем текущую дату
-    // Descr: Если передан параметр date, то закрываем СЗ по указанной дате
+    // ___ Закрываем СЗ
+    // ___ Если нет вообще параметра, то закрываем текущую дату
+    // ___ Если передан параметр date, то закрываем СЗ по указанной дате
     public function closeFabricTasks(Request $request)
     {
-        try {
+//        try {
 
             $payloadDate = is_null($request->date) ? now() : $request->validate(['date' => 'date_format:Y-m-d'])['date'];
 
@@ -607,6 +634,7 @@ class CellFabricTasksDateController extends Controller
 
                         } else if ($roll_exec_array['status'] === FABRIC_ROLL_DONE_CODE) {
 
+                            // __ Перенесли логику: буфер после выполнения рулона
                             $rollsToBuffer[] = [
                                 'roll' => $roll,
                                 'roll_exec' => $roll_exec_array,
@@ -644,14 +672,16 @@ class CellFabricTasksDateController extends Controller
 
 
                 // Warning: __ Старая логика
-                // attract: Получаем дату следующего СЗ
+                // attract: Задаем статус следующего СЗ
+                // __ При таком подходе нужно дописать код, который в случае перехода от
+                // __ "Готов к стежке" к "Создано" нужно будет удалять все физические рулоны
 //                $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
                 // Warning: ------------------------------------------
 
-//                // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
+                // attract: Создаем новое СЗ или обновляем статус существующего и одновременно получаем его
                 $nextTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
-//
-//                // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
+
+                // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
 
 
                 foreach ($rollsToMove as $rollToMove) {
@@ -673,12 +703,15 @@ class CellFabricTasksDateController extends Controller
                         ]
                     );
 
+//                    return ['rollToMove' => $rollToMove];
+
                     // attract: Создаем контекст задания
                     $taskContext = FabricTaskContext::query()->create(
                         [
                             'fabric_task_id' => $task->id,
                             'fabric_id' => $rollToMove['roll']['fabric_id'],
-                            'roll_position' => 0,
+                            'roll_position' => $rollToMove['roll_exec']['status'] === FABRIC_ROLL_FALSE_CODE ?
+                                EXEC_ROLL_FALSE_ORDER_INDEX : EXEC_ROLL_ROLLING_ORDER_INDEX,
                             'fabric_mode' => $rollToMove['roll']['fabric_mode'],
                             'rolls_amount' => 1,
                             'average_textile_length' => $rollToMove['roll_exec']['textile_length'],
@@ -712,6 +745,58 @@ class CellFabricTasksDateController extends Controller
                 }
 
             }
+
+            // __ Получаем дату следующего СЗ
+            $nextDate = getCorrectDate($payloadDate)->addDay()->format('Y-m-d');
+
+            // __ Получаем следующее СЗ
+            $nextTasksDate = FabricTasksDate::query()
+                ->where('tasks_date', $nextDate)
+                ->first();
+
+            // __ Проверяем, существует ли СЗ, если существует - переиндексируем
+            if ($nextTasksDate) {
+
+                // __ Обновляем порядковые номера выполняемых СЗ
+                for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
+
+                    // __ Получаем само СЗ
+                    $task = FabricTask::query()
+                        ->where('fabric_tasks_date_id', $nextTasksDate->id)
+                        ->where('fabric_machine_id', $i)
+                        ->with('fabricTaskContexts')
+                        ->first();
+
+                    if (!$task) continue; // Если СЗ не существует - пропускаем
+
+                    $task = $task->toArray();
+
+                    // __ Сортируем по порядку
+                    uasort($task['fabric_task_contexts'], function ($a, $b) {
+                        return $a['roll_position'] <=> $b['roll_position'];
+                    });
+
+                    $contextOrderCount = EXEC_ROLL_START_ORDER_INDEX;
+                    foreach ($task['fabric_task_contexts'] as $context) {
+
+                        $contextModel = FabricTaskContext::query()
+                            ->with('fabricTaskRolls')
+                            ->find($context['id']);
+
+
+//                        return ['$contextModel' => $contextModel];
+                        $rollOrderCount = EXEC_ROLL_START_ORDER_INDEX;
+                        foreach ($contextModel->fabricTaskRolls as $execRoll) {
+                            $execRoll->update(['roll_position' => $rollOrderCount++]);
+                        }
+
+                        $contextModel->update(['roll_position' => $contextOrderCount++]);
+                    }
+
+                }
+
+            }
+
 
             // attract: Если есть рулоны к добавлению в буфер - добавляем в буфер
             // warning: Логика закрытия рулона и добавления в буфер находится в контролере CellFabricTaskRollController
@@ -762,9 +847,9 @@ class CellFabricTasksDateController extends Controller
             return EndPointStaticRequestAnswer::ok();
             // hr---------------------------------------------------------------------
 
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
+//        } catch (Exception $e) {
+//            return EndPointStaticRequestAnswer::fail(response()->json($e));
+//        }
     }
 
 }

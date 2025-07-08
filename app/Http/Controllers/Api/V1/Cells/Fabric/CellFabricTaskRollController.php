@@ -292,6 +292,48 @@ class CellFabricTaskRollController extends Controller
                 ->first();
             if (!$task) throw new Exception('Не найдено СЗ');
 
+            // __ Получаем список СЗ на данной СМ, для определения порядка рулонов контекста
+            $taskContexts = FabricTaskContext::query()
+                ->where('fabric_task_id', $task->id)
+                ->orderBy('roll_position')
+                ->with('fabricTaskRolls')
+                ->get();
+            if (!$taskContexts) throw new Exception('Не удалось получить контексты СЗ');
+
+            // attract: Находим позицию для добавления контекстного рулона
+            $insertPosition =  $taskContexts[count($taskContexts) - 1]->roll_position + 1;  // Предположим, что это будет последний рулон
+            $offset = count($taskContexts) + 1;
+
+            // __ Находим тот TaskContext, в котором есть только созданные рулоны и вставляем перед ним
+            foreach ($taskContexts as $index => $taskContext) {
+
+                $allCreatedRolls = true;
+                foreach ($taskContext->fabricTaskRolls as $execRoll) {
+                    if ($execRoll->roll_status !== FABRIC_ROLL_CREATED_CODE) {
+                        $allCreatedRolls = false;
+                        break;
+                    }
+                }
+
+                if ($allCreatedRolls) {
+                    $insertPosition = $taskContext->roll_position;
+                    $offset = $index;
+                    break;
+                }
+            }
+
+
+
+
+            // attract: Перемещаем позицию всех контекстных рулонов вперед
+            for ($i = $offset; $i < count($taskContexts); $i++) {
+                $taskContext = $taskContexts[$i];
+                $taskContext->roll_position += 1;
+                $taskContext->save();
+            }
+
+//            return ['contexsts' => $taskContexts];
+
             // attract: Находим ПС, для добавления в контекст
             $fabric = Fabric::query()->find($request->data['fabricId']);
             if (!$fabric) throw new Exception('Не найдена ПС');
@@ -300,7 +342,7 @@ class CellFabricTaskRollController extends Controller
             $taskContext = FabricTaskContext::query()->create([
                 'fabric_task_id' => $task->id,
                 'fabric_id' => $fabric->id,
-                'roll_position' => 0,       // TODO: Пока 0, но потом добавить логику по нахождению позиции рулона
+                'roll_position' => $insertPosition,       // Вставляем найденную позицию
                 'average_textile_length' => $fabric->average_roll_length,
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
@@ -324,6 +366,22 @@ class CellFabricTaskRollController extends Controller
                 'note' => $request->data['falseReason'],
                 'comment' => $request->data['falseReason']
             ]);
+
+
+            // __ Обновляем позиции в физических рулонах в СЗ
+            // __ Получаем список СЗ на данной СМ, для определения порядка рулонов контекста
+            $taskContexts = FabricTaskContext::query()
+                ->where('fabric_task_id', $task->id)
+                ->orderBy('roll_position')
+                ->with('fabricTaskRolls')
+                ->get();
+
+            $count = EXEC_ROLL_START_ORDER_INDEX;
+            foreach ($taskContexts as $index => $taskContext) {
+                foreach ($taskContext->fabricTaskRolls as $execRoll) {
+                    $execRoll->update(['roll_position' => $count++]);
+                }
+            }
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {

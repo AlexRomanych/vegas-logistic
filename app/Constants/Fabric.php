@@ -1,4 +1,9 @@
 <?php
+// ___ Стартовый индекс порядка физических рулонов
+const EXEC_ROLL_START_ORDER_INDEX = 1;
+const EXEC_ROLL_FALSE_ORDER_INDEX = 0;
+const EXEC_ROLL_ROLLING_ORDER_INDEX = -1;
+
 // descr: Статусы сменного задания
 
 // descr: Сменное задание создано (или сохранено)

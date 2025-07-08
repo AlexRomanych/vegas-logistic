@@ -665,8 +665,9 @@ const saveTaskRecord = () => {
         descr: description.value,
         fabric_mode: fabricMode.value,
         rate: workRoll.rate,
-        rolls_exec: [],             // Нужно для правильной работы компонента
-        editable: true,             // Нужно для правильной работы компонента
+        rolls_exec: [],                         // Нужно для правильной работы компонента
+        editable: true,                         // Нужно для правильной работы компонента
+        roll_position: props.roll.roll_position // Нужно для правильной работы компонента
     }
 
     // console.log('saveRollData: ', saveRollData)
@@ -776,10 +777,12 @@ watch(() => fabricsStore.globalFabricsMode, () => {
 onBeforeRouteLeave(() => {
     // console.log('onBeforeRouteLeave')
     fabricsStore.globalEditMode = false
+    fabricsStore.globalOrderManageChangeFlag = false
 })
 onBeforeRouteUpdate(() => {
     // console.log('onBeforeRouteUpdate')
     fabricsStore.globalEditMode = false
+    fabricsStore.globalOrderManageChangeFlag = false
 })
 
 </script>

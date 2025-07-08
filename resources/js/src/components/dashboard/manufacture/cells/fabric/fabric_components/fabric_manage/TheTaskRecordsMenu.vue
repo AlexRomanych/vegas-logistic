@@ -46,7 +46,7 @@
             width="w-[200px]"
         />
 
-        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
+        <!-- __ Выбор режима ПС: Основной или Все доступные -->
         <AppCheckbox
             v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             id="active"
@@ -59,6 +59,20 @@
             @checked="changeFabricsMode"
         />
 
+        <!-- __ Сохранить состояние порядка рулонов -->
+        <AppLabelMultiLine
+            v-if="fabricsStore.globalOrderManageChangeFlag"
+            :text="['Сохранить', 'порядок рулонов']"
+            align="center"
+            class="cursor-pointer"
+            height="h-[31px]"
+            type="danger"
+            width="w-[170px]"
+            @click="saveRollsOrder"
+        />
+
+
+
     </div>
 
 </template>
@@ -66,20 +80,20 @@
 <script setup>
 import {reactive, ref, watch} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
     FABRIC_TASK_STATUS,
     FABRIC_WORKING_SHIFT_LENGTH
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 
-import {getFunctionalByFabricTaskStatus,} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+import {getFunctionalByFabricTaskStatus,} from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
+import {formatTimeWithLeadingZeros} from '@/app/helpers/helpers_date.js'
 
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
 
 const props = defineProps({
     machine: {
@@ -108,7 +122,7 @@ const props = defineProps({
 
 // console.log('menu: ', props.machine)
 
-const emits = defineEmits(['addRoll', 'optimizeLabor'])
+const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveRollsOrder'])
 
 // attract: Получаем данные из хранилища
 const fabricsStore = useFabricsStore()
@@ -166,7 +180,14 @@ const addRoll = () => {
 // attract: Обрабатываем клик по кнопке "Оптимизировать трудозатраты"
 const optimizeLabor = () => {
     emits('optimizeLabor')
-    console.log('optimize labor')
+    // console.log('optimize labor')
+}
+
+
+// __ Обрабатываем клик по кнопке Сохранить порядок рулонов
+const saveRollsOrder = () => {
+    emits('saveRollsOrder')
+    // console.log('save Rolls Order')
 }
 
 

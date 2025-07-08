@@ -148,13 +148,13 @@
     <!-- attract: Модальное окно для ввода числовых данных -->
     <AppModalAsyncNumber
         ref="appModalAsyncNumber"
-        :max-value=300
         :max=300
+        :max-value=300
         :text="modalTextNumber"
         :type="modalTypeNumber"
         :value="modalInitValueNumber"
-        step="0.01"
         mode="confirm"
+        step="0.01"
     />
 
     <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
@@ -168,9 +168,9 @@
     <!-- attract: Добавляем рулон (асинхронно) -->
     <TheTaskExecuteRollAdd
         ref="theTaskExecuteRollAdd"
+        :fabrics="fabricsData"
         :text="addingRollText"
         :type="addingRollType"
-        :fabrics="fabricsData"
     />
 
 
@@ -262,6 +262,19 @@ const isStartButtonDisabled = () => {
     if (isExecuteRollPresent()) return true
     if (isPausedRollPresent()) return true
     if (isRollingRollPresent()) return true
+
+    // __ Определяем, есть ли в задании рулоны, со статусом "Создано" до текущего (по номеру рулона)
+    let isFind = false
+    const currentRollOrder = fabricsStore.globalActiveRolls[props.machine.TITLE].position
+    props.rolls.forEach((roll) => {
+        roll.rolls_exec.forEach(roll_exec => {
+            isFind ||= (roll_exec.position < currentRollOrder) && (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE)
+        })
+    })
+    if (isFind) return true
+    // console.log('currentRollOrder: ', currentRollOrder)
+    // console.log('isFind: ', isFind)
+
     return false
 }
 
@@ -673,7 +686,6 @@ const addRoll = async () => {
     if (answer) {
 
 
-
         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
 
@@ -710,7 +722,6 @@ const addRoll = async () => {
     }
 
 }
-
 
 
 // info: ---------------------------------------------------------------------

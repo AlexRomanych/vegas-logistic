@@ -128,7 +128,16 @@ const menuData = () => {
                     {name: 'User Interface', path: 'ui.show', shown: true, isActive: true,},
                     {name: 'Test', path: 'test.show', shown: true, isActive: true,},
                 ]
+        },
+        {
+            group: {name: 'Templatest', shown: false, isActive: true, icon: 'BookOpenIcon'},
+            items:
+                [
+                    {name: 'Drag and Drop', path: 'templatest.dragndrop', shown: true, isActive: true,},
+                    {name: 'Test', path: 'test.show', shown: true, isActive: true,},
+                ]
         }
+
 
     ]
 }

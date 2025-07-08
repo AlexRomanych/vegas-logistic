@@ -31,23 +31,23 @@
 <script setup>
 import {reactive, ref, watch} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '@/app/constants/fabrics.js'
 
 import {
     formatTimeWithLeadingZeros,
     formatDateAndTimeInShortFormat,
-} from '/resources/js/src/app/helpers/helpers_date.js'
+} from '@/app/helpers/helpers_date.js'
 
 import TheTaskExecuteRollsHeader
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollsHeader.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollsHeader.vue'
 import TheTaskExecuteRoll
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRoll.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRoll.vue'
 
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 
 const props = defineProps({

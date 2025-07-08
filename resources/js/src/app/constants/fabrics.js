@@ -309,6 +309,7 @@ export const FABRICS_NULLABLE = {
 export const NEW_ROLL =
     {
         id: 0,
+        roll_position: 0,
         average_textile_length: FABRICS_NULLABLE.buffer.average_length,
         average_fabric_length: FABRICS_NULLABLE.buffer.average_fabric_length,
         productivity: FABRICS_NULLABLE.buffer.productivity,

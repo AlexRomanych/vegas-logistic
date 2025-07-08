@@ -163,6 +163,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // attract: Переменная-флаг, которая определяет, были ли изменения в календаре СЗ
     const globalCalendarChangeFlag = ref(false)
+
+    // attract: Переменная-флаг, которая определяет, были ли изменения в порядке СЗ
+    const globalOrderManageChangeFlag = ref(false)
     // info----------------------------------------------------------------------------------------
 
 
@@ -556,6 +559,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
         globalSelectWorkers, globalSelectWorkerId, globalSelectWorkerFlag,
         globalCalendarChangeFlag,
+        globalOrderManageChangeFlag,
         getFabrics, getFabricById,
         updateFabric,
         createFabric,

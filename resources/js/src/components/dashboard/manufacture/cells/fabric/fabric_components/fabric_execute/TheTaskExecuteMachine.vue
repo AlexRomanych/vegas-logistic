@@ -63,26 +63,26 @@
 
 import {computed, reactive, ref} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, NEW_ROLL, FABRIC_TASK_STATUS} from '/resources/js/src/app/constants/fabrics.js'
+import {FABRIC_MACHINES, NEW_ROLL, FABRIC_TASK_STATUS} from '@/app/constants/fabrics.js'
 import {
     // filterFabricsByMachineId,
     // getAddFabricMode,
     getFunctionalByFabricTaskStatus,
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
 
 import TheTaskExecuteControls
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteControls.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteControls.vue'
 import TheTaskExecuteRolls
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRolls.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRolls.vue'
 import TheDividerLine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
 
-import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+// import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
+// import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
 
 const props = defineProps({
     task: {
