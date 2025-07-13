@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import {ref, defineEmits, defineProps, watch} from 'vue'
+import {ref, watch} from 'vue'
 
 import {useFabricsStore} from '@/stores/FabricsStore.js'
 
