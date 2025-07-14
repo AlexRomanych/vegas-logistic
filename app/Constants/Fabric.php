@@ -77,3 +77,18 @@ const FABRIC_ROLL_ACCEPTED_CODE = 8;
 
 // descr: Рулон отмененный на закрое
 const FABRIC_ROLL_CANCELLED_CODE = 8;
+
+
+
+// line ----------------------------------------------------------------
+// ___ Константы Групп ПЯ
+const COMMON_GROUP = 0;      // 'name' => 'Общая'
+const FABRIC_GROUP = 1;      //'name' => 'Стежка'
+const CUTTING_GROUP = 2;     // 'name' => 'Раскрой'
+const SEWING_GROUP = 3;      // 'name' => 'Швейный цех'
+const ASSEMBLY_GROUP = 4;    // 'name' => 'Сборка'
+const PACK_GROUP = 5;        // 'name' => 'Упаковка'
+const BLOCK_GROUP = 6;       //  'name' => 'Участок ПБ'
+
+
+// line ----------------------------------------------------------------
