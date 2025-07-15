@@ -25,6 +25,11 @@ return new class extends Migration {
                 ->unique()
                 ->comment('Отображаемое название причины');
 
+            // __ Номер группы в Категории причин, то есть не сквозная нумерация, а нумерация внутри Категории причин
+            $table->integer('reason_number_in_reason_category')
+                ->nullable(false)
+                ->comment('Номер причины в категории причин');
+
             // __ Связь с категорией
             $table->foreignIdFor(ReasonCategory::class)
                 ->nullable(false)

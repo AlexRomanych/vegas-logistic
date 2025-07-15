@@ -15,9 +15,9 @@
 
 <script setup>
 
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
-import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
+import {colorsList} from '@/app/constants/colorsClasses.js'
+import {fontSizesList} from '@/app/constants/fontSizes.js'
+import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '@/app/helpers/helpers.js'
 
 import {computed, ref, watch, watchEffect} from "vue";
 

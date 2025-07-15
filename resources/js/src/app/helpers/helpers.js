@@ -1,10 +1,10 @@
 import {
     colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
-} from '/resources/js/src/app/constants/colorsClasses.js'
+} from '@/app/constants/colorsClasses.js'
 
 import {
     fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
-} from '/resources/js/src/app/constants/fontSizes.js'
+} from '@/app/constants/fontSizes.js'
 
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
 // prefix - префикс для класса tailwind ('bg', 'text', 'border')

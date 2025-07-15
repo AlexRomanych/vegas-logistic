@@ -14,7 +14,7 @@ class CellsGroupController extends Controller
     {
 //        return json_encode(['cells_groups' => '11111111111111111111']);
         return new CellsGroupsCollection(
-            CellsGroup::all()
+            CellsGroup::query()->with(['cellItems'])->get()
         );
     }
 }

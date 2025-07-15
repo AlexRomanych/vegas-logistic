@@ -10,6 +10,7 @@ import errors from '@/router/routes_errors'
 import service from '@/router/routes_service'
 import workers from '@/router/routes_workers.js'
 import templates from '@/router/routes_templates.js'
+import reasons from '@/router/routes_reasons.js'
 
 const routes = [
     ...auth,
@@ -24,6 +25,7 @@ const routes = [
     ...service,
     ...workers,
     ...templates,
+    ...reasons,
 
     {
         path: '/plan',

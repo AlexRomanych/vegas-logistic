@@ -53,11 +53,12 @@ const menuData = () => {
             group: {name: 'Справочники', shown: true, isActive: true, icon: 'BookOpenIcon'},
             items:
                 [
-                    {name: 'Модели', path: 'models', shown: true, isActive: true,},
                     {name: 'Группы ПЯ', path: 'manufacture.cells.groups', shown: true, isActive: true,},
                     {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
                     {name: 'Список клиентов', path: 'clients', shown: true, isActive: true,},
-                    {name: 'Процедуры расчета', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Причины', path: 'reasons', shown: true, isActive: true,},
+                    {name: 'Модели', path: 'models', shown: false, isActive: true,},
+                    {name: 'Процедуры расчета', path: 'plan', shown: false, isActive: true,},
                 ]
         },
         {
