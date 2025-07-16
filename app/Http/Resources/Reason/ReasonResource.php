@@ -23,6 +23,7 @@ class ReasonResource extends JsonResource
             'active' => $this->active,
             'description' => $this->description,
             'reason_number_in_reason_category' => $this->reason_number_in_reason_category,
+            'reason_category_id' => $this->reason_category_id,
         ];
 
         // return parent::toArray($request);

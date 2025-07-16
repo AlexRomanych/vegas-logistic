@@ -1,10 +1,31 @@
 <template>
-<!--<Suspense>-->
-    <!--    <template #default>-->
     <div class="ml-2 mt-2">
         <div
             class="sticky top-0 flex pt-1 pb-1 bg-blue-200 border-2 rounded-lg border-blue-700 p-1 mb-1 max-w-fit"
         >
+            <!-- __ Заглушка Группы ПЯ-->
+            <AppLabelMultiline
+                v-if="render.plugCellsGroup.show"
+                :align="render.plugCellsGroup.headerAlign"
+                :text="render.plugCellsGroup.header"
+                :text-size="render.plugCellsGroup.headerTextSize"
+                :title="render.plugCellsGroup.title"
+                :type="render.plugCellsGroup.type"
+                :width="render.plugCellsGroup.width"
+                class="header-item"
+            />
+
+            <!-- __ Заглушка Категории причин -->
+            <AppLabelMultiline
+                v-if="render.plugCategoryReason.show"
+                :align="render.plugCategoryReason.headerAlign"
+                :text="render.plugCategoryReason.header"
+                :text-size="render.plugCategoryReason.headerTextSize"
+                :title="render.plugCategoryReason.title"
+                :type="render.plugCategoryReason.type"
+                :width="render.plugCategoryReason.width"
+                class="header-item"
+            />
 
             <!-- __ id Причины -->
             <AppLabelMultiline
@@ -34,12 +55,13 @@
 
                 <!-- __ Фильтр: Название Причины -->
                 <AppInputText
+                    v-if="render.name.show"
                     id="name-search"
                     v-model.trim="nameFilter"
+                    :placeholder="render.name.placeholder"
+                    :text-size="render.name.filterTextSize"
+                    :type="render.name.type"
                     :width="render.name.width"
-                    placeholder="Название причины..."
-                    text-size="mini"
-                    type="primary"
                 />
 
             </div>
@@ -59,12 +81,13 @@
 
                 <!-- __ Фильтр: Причины -->
                 <AppInputText
-                    id="name-search"
+                    v-if="render.displayName.show"
+                    id="display-name-search"
                     v-model.trim="displayNameFilter"
+                    :placeholder="render.displayName.placeholder"
+                    :text-size="render.displayName.filterTextSize"
+                    :type="render.displayName.type"
                     :width="render.displayName.width"
-                    placeholder="Отображаемое название причины..."
-                    text-size="mini"
-                    type="primary"
                 />
             </div>
 
@@ -149,118 +172,191 @@
 
             <div v-for="cellGroup in reasons" :key="cellGroup.id">
 
-                <div v-for="reasonsCategory in cellGroup.reason_categories" :key="reasonsCategory.id">
+                <div class="flex">
 
-                    <div v-for="reason in reasonsCategory.reasons" :key="reason.id">
+                    <!-- __ Стрелки развертывания -->
+                    <AppLabel
+                        v-if="render.plugCellsGroup.show"
+                        :align="render.plugCellsGroup.dataAlign"
+                        :text="render.plugCellsGroup.data?.(cellGroup.collapsed)"
+                        :text-size="render.plugCellsGroup.dataTextSize"
+                        :title="render.plugCellsGroup.title"
+                        :type="render.plugCellsGroup.type"
+                        :width="render.plugCellsGroup.width"
+                        class="header-item cursor-pointer"
+                        @click="toggleCollapse(cellGroup)"
+                    />
 
+                    <!-- __ Название производственной ячейки -->
+                    <AppLabel
+                        v-if="render.cellGroupName.show"
+                        :align="render.cellGroupName.dataAlign"
+                        :text="render.cellGroupName.data?.(cellGroup)"
+                        :text-size="render.cellGroupName.dataTextSize"
+                        :title="render.cellGroupName.title"
+                        :type="render.cellGroupName.type"
+                        :width="render.cellGroupName.width"
+                        class="header-item cursor-pointer"
+                        @click="toggleCollapse(cellGroup)"
+                    />
+
+                </div>
+
+                <!-- __ Разворот Группы ПЯ-->
+                <div v-if="!cellGroup.collapsed">
+
+                    <div v-for="reasonsCategory in cellGroup.reason_categories" :key="reasonsCategory.id">
 
                         <div class="flex">
 
-                            <!-- __ id Стрелка -->
-                            <!--                    <AppLabel-->
-                            <!--                        v-if="render.plug.show"-->
-                            <!--                        :align="render.plug.dataAlign"-->
-                            <!--                        :text="render.plug.data(frequencyTemplate)"-->
-                            <!--                        :text-size="render.plug.dataTextSize"-->
-                            <!--                        :title="render.plug.title"-->
-                            <!--                        :type="render.plug.type"-->
-                            <!--                        :width="render.plug.width"-->
-                            <!--                        class="header-item cursor-pointer"-->
-                            <!--                        @click="toggleCollapse(frequencyTemplate)"-->
-                            <!--                    />-->
+                            <!-- __ Выравнивание -->
+                            <div :class="[render.plugCellsGroup.width, 'ml-1']"></div>
 
-                            <!-- __ id Причины -->
+                            <!-- __ Стрелки развертывания -->
                             <AppLabel
-                                v-if="render.id.show"
-                                :align="render.id.dataAlign"
-                                :text="render.id.data?.(reason)"
-                                :text-size="render.id.dataTextSize"
-                                :title="render.id.title"
-                                :type="render.id.type"
-                                :width="render.id.width"
-                                class="header-item"
-                            />
-
-                            <!-- __ Название Причины -->
-                            <AppLabel
-                                v-if="render.name.show"
-                                :align="render.name.dataAlign"
-                                :text="render.name.data?.(reason)"
-                                :text-size="render.name.dataTextSize"
-                                :title="render.name.title"
-                                :type="render.name.type"
-                                :width="render.name.width"
+                                v-if="render.plugCategoryReason.show"
+                                :align="render.plugCategoryReason.dataAlign"
+                                :text="render.plugCategoryReason.data?.(reasonsCategory.collapsed)"
+                                :text-size="render.plugCategoryReason.dataTextSize"
+                                :title="render.plugCategoryReason.title"
+                                :type="render.plugCategoryReason.type"
+                                :width="render.plugCategoryReason.width"
                                 class="header-item cursor-pointer"
+                                @click="toggleCollapse(reasonsCategory)"
                             />
 
-                            <!-- __ Отображаемое название Причины -->
+                            <!-- __ Название категории причин -->
                             <AppLabel
-                                v-if="render.displayName.show"
-                                :align="render.displayName.dataAlign"
-                                :text="render.displayName.data?.(reason)"
-                                :text-size="render.displayName.dataTextSize"
-                                :title="render.displayName.title"
-                                :type="render.displayName.type"
-                                :width="render.displayName.width"
-                                class="header-item"
+                                v-if="render.reasonCategory.show"
+                                :align="render.reasonCategory.dataAlign"
+                                :text="render.reasonCategory.data?.(reasonsCategory)"
+                                :text-size="render.reasonCategory.dataTextSize"
+                                :title="render.reasonCategory.title"
+                                :type="render.reasonCategory.type"
+                                :width="render.reasonCategory.width"
+                                class="header-item cursor-pointer"
+                                @click="toggleCollapse(reasonsCategory)"
                             />
 
-                            <!-- __ Актуальность Причины -->
-                            <AppLabel
-                                v-if="render.active.show"
-                                :align="render.active.dataAlign"
-                                :text="render.active.data?.(reason)"
-                                :text-size="render.active.dataTextSize"
-                                :title="render.active.title"
-                                :type="render.active.type"
-                                :width="render.active.width"
-                                class="header-item"
-                            />
 
-                            <!-- __ Описание Причины -->
-                            <AppLabel
-                                v-if="render.description.show"
-                                :align="render.description.dataAlign"
-                                :text="render.description.data?.(reason)"
-                                :text-size="render.description.dataTextSize"
-                                :title="render.description.data?.(reason)"
-                                :type="render.description.type"
-                                :width="render.description.width"
-                                class="header-item"
-                            />
+                            <!-- __ Добавить запись -->
+                            <router-link
+                                :to="{ name: 'reasons.create' , query: {category_id: reasonsCategory.id} }"
+                            >
+                                <AppLabel
+                                    align="center"
+                                    class="cursor-pointer"
+                                    text="➕️"
+                                    type="warning"
+                                    width="w-[30px]"
+                                />
+                            </router-link>
 
-                            <!-- __ Редактирование записи -->
-<!--                            <router-link-->
-<!--                                v-if="reason.id !== 0"-->
-<!--                                :to="{ name: 'clients', params: { id: reason.id } }"-->
-<!--                            >-->
-<!--                                <AppLabel-->
-<!--                                    align="center"-->
-<!--                                    text="Редактировать"-->
-<!--                                    text-size="mini"-->
-<!--                                    title="Редактировать запись"-->
-<!--                                    type="warning"-->
-<!--                                    width="w-[100px]"-->
-<!--                                />-->
-<!--                            </router-link>-->
-
-                            <!-- __ Удаление записи -->
-                            <!--                    <AppLabel-->
-                            <!--                        v-if="frequencyTemplate.id !== 0"-->
-                            <!--                        align="center"-->
-                            <!--                        text="Удалить"-->
-                            <!--                        text-size="small"-->
-                            <!--                        title="Удалить запись"-->
-                            <!--                        type="danger"-->
-                            <!--                        width="w-[100px]"-->
-                            <!--                        @click="deleteFrequencyTemplate(frequencyTemplate)"-->
-                            <!--                    />-->
 
                         </div>
 
+                        <!-- __ Разворот Категории причин-->
+                        <div v-if="!reasonsCategory.collapsed">
+
+                            <div v-for="reason in reasonsCategory.reasons" :key="reason.id">
+
+                                <div class="flex">
+
+                                    <!-- __ Выравнивание -->
+                                    <div :class="[render.plugCellsGroup.width, 'ml-1']"></div>
+                                    <div :class="[render.plugCategoryReason.width, 'ml-1']"></div>
+
+                                    <!-- __ id Причины -->
+                                    <AppLabel
+                                        v-if="render.id.show"
+                                        :align="render.id.dataAlign"
+                                        :text="render.id.data?.(reason)"
+                                        :text-size="render.id.dataTextSize"
+                                        :title="render.id.title"
+                                        :type="render.id.type"
+                                        :width="render.id.width"
+                                        class="header-item"
+                                    />
+
+                                    <!-- __ Название Причины -->
+                                    <AppLabel
+                                        v-if="render.name.show"
+                                        :align="render.name.dataAlign"
+                                        :text="render.name.data?.(reason)"
+                                        :text-size="render.name.dataTextSize"
+                                        :title="render.name.title"
+                                        :type="render.name.type"
+                                        :width="render.name.width"
+                                        class="header-item cursor-pointer"
+                                    />
+
+                                    <!-- __ Отображаемое название Причины -->
+                                    <AppLabel
+                                        v-if="render.displayName.show"
+                                        :align="render.displayName.dataAlign"
+                                        :text="render.displayName.data?.(reason)"
+                                        :text-size="render.displayName.dataTextSize"
+                                        :title="render.displayName.title"
+                                        :type="render.displayName.type"
+                                        :width="render.displayName.width"
+                                        class="header-item"
+                                    />
+
+                                    <!-- __ Актуальность Причины -->
+                                    <AppLabel
+                                        v-if="render.active.show"
+                                        :align="render.active.dataAlign"
+                                        :text="render.active.data?.(reason)"
+                                        :text-size="render.active.dataTextSize"
+                                        :title="render.active.title"
+                                        :type="render.active.type"
+                                        :width="render.active.width"
+                                        class="header-item"
+                                    />
+
+                                    <!-- __ Описание Причины -->
+                                    <AppLabel
+                                        v-if="render.description.show"
+                                        :align="render.description.dataAlign"
+                                        :text="render.description.data?.(reason)"
+                                        :text-size="render.description.dataTextSize"
+                                        :title="render.description.data?.(reason)"
+                                        :type="render.description.type"
+                                        :width="render.description.width"
+                                        class="header-item"
+                                    />
+
+                                    <!-- __ Редактировать -->
+                                    <router-link
+                                        v-if="reason.id !== 0"
+                                        :to="{ name: 'reasons.edit', params: { id: reason.id } }"
+                                    >
+                                        <AppLabel
+                                            align="center"
+                                            class="cursor-pointer"
+                                            text="✏️"
+                                            type="warning"
+                                            width="w-[30px]"
+                                        />
+                                    </router-link>
+
+                                    <!-- __ Удалить -->
+                                    <AppLabel
+                                        align="center"
+                                        class="cursor-pointer"
+                                        text="🗑️️"
+                                        type="danger"
+                                        width="w-[30px]"
+                                        @click="deleteReason(reason)"
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
-
 
                 </div>
 
@@ -268,68 +364,158 @@
 
         </div>
         <div v-else class="flex justify-center w-full>">
-            <AppLabel
-                align="center"
-                height="min-h-[50px]"
-                text="Нет данных"
-                text-size="small"
-                type="info"
-                width="w-[300px]"
-            />
+            <div v-if="!isLoading">
+                <AppLabel
+                    align="center"
+                    height="min-h-[50px]"
+                    text="Нет данных"
+                    text-size="small"
+                    type="info"
+                    width="w-[300px]"
+                />
+            </div>
         </div>
 
     </div>
 
     <AppCallout
-        v-if="calloutShow && confirmClick"
+        :show="calloutShow"
         :text="calloutMessage"
         :type="calloutType"
-        @toggleShow="calloutHandler"
+        @toggleShow="calloutClose"
     />
 
-    <AppModalAsync ref="appModalAsync" :text="modalText" mode="confirm" type="danger"/>
-<!--    </template>-->
-<!--    <template #fallback>-->
-<!--        <div>Загрузка причин...</div>-->
-<!--    </template>-->
-<!--</Suspense>-->
+    <AppModalAsyncMultiLine
+        ref="appModalAsync"
+        :text="modalText"
+        :type="modalType"
+        mode="confirm"
+    />
+
 </template>
 
 
 <script lang="ts" setup>
 
-import type { ICellsGroupReasons, IRenderDataItem, IRenderData, IReason } from '@/app/types/index.ts'
-
-// @ts-ignore
-import { useReasonStore } from '@/stores/ReasonsStore.ts'
+import type { ICellsGroupReasons, IRenderData, IReason, IReasonCategory } from '@/app/types/index.ts'
 
 import { ref, onMounted } from 'vue'
 
-import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+import { useReasonStore } from '@/stores/ReasonsStore.ts'
 
-import AppLabelMultiline from '@/components/ui/labels/AppLabelMultiLine.vue'
+import { checkApiAnswer } from '@/app/helpers/helpers_checks.ts'
+
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
-import AppModalAsync from '@/components/ui/modals/AppModalAsync.vue'
 import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
+import AppLabelMultiline from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+// import AppModalAsync from '@/components/ui/modals/AppModalAsync.vue'
 
-const reasonStore = useReasonStore()
+// __ Loader
+import { useLoading } from 'vue-loading-overlay'
+import { loaderHandler } from '@/app/helpers/helpers.ts'
+// import 'vue-loading-overlay/dist/css/index.css'                  // для loader
+// import { LOADER_SETTINGS } from '@/app/constants/common.ts'      // для loader
+
+
+const isLoading = ref(true)
+// __ End Loader
+
+const reasonsStore = useReasonStore()
 
 // __ Получаем список причин в иерархии ПЯ --> Категории причин --> Список причин категории
 const reasons = ref<ICellsGroupReasons[] | []>([])
 
 const getReasons = async () => {
-    try {
-        reasons.value = await reasonStore.getReasons()
-        console.log('reasons', reasons.value)
-    } catch (e: unknown) {
-        catchErrorHandler('Ошибка получения причин выполнения: ', e)
-    }
+
+
+    isLoading.value = true     // Меняем маячок загрузки на true
+    const loadingService = useLoading()
+    reasons.value = await loaderHandler(
+        loadingService,
+        () => reasonsStore.getReasons()
+    )
+    isLoading.value = false     // Меняем маячок загрузки на false
+
+    // Добавляем в каждую группу причин категорий свойство collapsed + Сортируем причины по алфавиту
+    reasons.value.forEach((cellGroup) => {
+        cellGroup.reason_categories.forEach(reasonCategory => {
+            reasonCategory.reasons = reasonCategory.reasons.sort((a, b) => a.name.localeCompare(b.name))
+            reasonCategory.collapsed = true
+        })
+        cellGroup.collapsed = true
+    })
+
+    // Сортируем категории причины по id
+    reasons.value.forEach(cellGroup => {
+        cellGroup.reason_categories = cellGroup.reason_categories.sort((a, b) => a.id - b.id)
+    })
+
+    // Сортируем категории причин по id
+    reasons.value = reasons.value.sort((a, b) => a.id - b.id)
+
+    console.log('reasons', reasons.value)
+
+    // __ Тут старый код до вынесения его в отдельный хелпер
+    // try {
+    //     const $loading = useLoading({...LOADER_SETTINGS})
+    //     const loader = $loading.show()
+    //     reasons.value = await reasonsStore.getReasons()
+    //
+    //     // Добавляем в каждую группу причин категорий свойство collapsed + Сортируем причины по алфавиту
+    //     reasons.value.forEach((cellGroup) => {
+    //         cellGroup.reason_categories.forEach(reasonCategory => {
+    //             reasonCategory.reasons = reasonCategory.reasons.sort((a, b) => a.name.localeCompare(b.name))
+    //             reasonCategory.collapsed = true
+    //         })
+    //         cellGroup.collapsed = true
+    //     })
+    //
+    //     // Сортируем категории причины по id
+    //     reasons.value.forEach(cellGroup => {
+    //         cellGroup.reason_categories = cellGroup.reason_categories.sort((a, b) => a.id - b.id)
+    //     })
+    //
+    //     // Сортируем категории причин по id
+    //     reasons.value = reasons.value.sort((a, b) => a.id - b.id)
+    //
+    //     console.log('reasons', reasons.value)
+    // } catch (e: unknown) {
+    //     catchErrorHandler('Ошибка получения причин выполнения: ', e)
+    // } finally {
+    //     if (loader) loader.hide()   // Прячем лоадер
+    //     isLoading.value = false     // Меняем маячок загрузки на false
+    // }
 }
 
 // __ Определяем объект вывода шаблона
 const render: IRenderData = {
+    plugCellsGroup: {
+        header: ['▲', '▼'],
+        width: 'w-[30px]',
+        show: true,
+        title: '',
+        headerTextSize: 'small',
+        dataTextSize: 'mini',
+        headerAlign: 'center',
+        dataAlign: 'center',
+        type: 'stone',
+        data: (collapsed) => collapsed ? '▲' : '▼',     // Передаем состояние группировки
+    },
+    plugCategoryReason: {
+        header: ['▲', '▼'],
+        width: 'w-[30px]',
+        show: true,
+        title: '',
+        headerTextSize: 'small',
+        dataTextSize: 'mini',
+        headerAlign: 'center',
+        dataAlign: 'center',
+        type: 'warning',
+        data: (collapsed) => collapsed ? '▲' : '▼',     // Передаем состояние группировки
+    },
     id: {
         header: ['ID', ''],
         width: 'w-[50px]',
@@ -344,10 +530,12 @@ const render: IRenderData = {
     },
     name: {
         header: ['Название', 'причины'],
-        width: 'w-[350px]',
+        width: 'w-[500px]',
         show: true,
         title: 'Название причины',
+        placeholder: 'Название причины...',
         headerTextSize: 'small',
+        filterTextSize: 'small',
         dataTextSize: 'mini',
         headerAlign: 'center',
         dataAlign: 'left',
@@ -357,9 +545,11 @@ const render: IRenderData = {
     displayName: {
         header: ['Отображаемое название', 'причины'],
         width: 'w-[350px]',
-        show: true,
+        show: false,
         title: 'Отображаемое название причины',
+        placeholder: 'Отображаемое название причины...',
         headerTextSize: 'small',
+        filterTextSize: 'small',
         dataTextSize: 'mini',
         headerAlign: 'center',
         dataAlign: 'left',
@@ -380,7 +570,7 @@ const render: IRenderData = {
     },
     description: {
         header: ['Описание', ''],
-        width: 'w-[150px]',
+        width: 'w-[400px]',
         show: true,
         title: 'Описание',
         headerTextSize: 'small',
@@ -390,25 +580,57 @@ const render: IRenderData = {
         type: 'primary',
         data: (reason: IReason) => reason.description,
     },
+    cellGroupName: {
+        header: ['Название', 'ПЯ'],
+        width: 'w-[300px]',
+        show: true,
+        title: 'Название производственной ячейки',
+        headerTextSize: 'small',
+        dataTextSize: 'mini',
+        headerAlign: 'center',
+        dataAlign: 'left',
+        type: 'stone',
+        data: (cellGroup: ICellsGroupReasons) => cellGroup.name + ' | ' + cellGroup.reason_categories.length.toString(),
+    },
+    reasonCategory: {
+        header: ['Название', 'категории'],
+        width: 'w-[300px]',
+        show: true,
+        title: 'Название категории причин',
+        headerTextSize: 'small',
+        dataTextSize: 'mini',
+        headerAlign: 'center',
+        dataAlign: 'left',
+        type: 'warning',
+        data: (reasonCategory: IReasonCategory) => reasonCategory.name + ' | ' + reasonCategory.reasons.length.toString(),
+    },
 }
 
 
 // __ Для работы callout
 const calloutShow = ref(false) // состояние окна
-const confirmClick = ref(false) // определяем для вывода этого callout
 const calloutMessage = ref('') // определяем показываемое сообщение
 const calloutType = ref('danger') // определяем тип callout
 
 // для того чтобы оставить анимацию в callout
-const calloutHandler = (delay = 5000) => {
-    setInterval(() => (confirmClick.value = false), delay)
+const calloutClose = (delay = 5000) => {
+    setInterval(() => (calloutShow.value = false), delay)
 }
 // __ End Callout
 
+// __ Модальное окно
 const appModalAsync = ref(null) // Получаем ссылку на модальное окно
-const modalText = ref('Вы уверены?')
+const modalText = ref<string | string[]>()
+const modalType = ref<string>('danger')
 
 
+// __ Функция для разворачивания/сворачивания
+const toggleCollapse = <T extends { collapsed: boolean }>(target: T): void => {
+    target.collapsed = !target.collapsed
+}
+
+
+//line--------------------------------------------------
 // __ Селект для фильтра статуса
 const statusSelectData = {
     name: 'status',
@@ -420,18 +642,53 @@ const statusSelectData = {
 }
 
 
-//line--------------------------------------------------
 // __ Фильтры
 const nameFilter = ref('')
 const displayNameFilter = ref('')
 const descriptionFilter = ref('')
 const statusFilter = ref(1)
-const typeFilter = ref(1)
 
 //line--------------------------------------------------
+
 // __ Меняем статус
 const filterByStatus = (status: { id: number }) => {
     statusFilter.value = status.id
+}
+
+
+// __ Удаление записи
+const deleteReason = async (reason: IReason) => {
+
+    modalText.value = ['Запись будет удалена', 'Продолжить?']
+    modalType.value = 'danger'
+
+    //@ts-ignore
+    const answer = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+    if (answer) {
+
+        const loadingService = useLoading()
+        const result = await loaderHandler(
+            loadingService,
+            () => reasonsStore.deleteReason(reason.id),
+        )
+
+        // console.log('result: ', result)
+        // console.log('checkApiAnswer: ', checkApiAnswer(result))
+
+        if (checkApiAnswer(result).code === 0) {
+            calloutType.value = 'success'
+            calloutMessage.value = 'Запись удалена'
+        } else {
+            calloutType.value = 'danger'
+            calloutMessage.value = 'Упс, что-то пошло не так...'
+        }
+
+        calloutShow.value = true
+        calloutClose()
+
+        await getReasons()  // Обновляемся
+
+    }
 }
 
 

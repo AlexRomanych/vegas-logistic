@@ -425,6 +425,7 @@ export const TASK_DRAFT =
 
 
 // descr: Тестовые СЗ для разработки
+/*
 export const TEST_FABRICS = [
     {
         date: '2025-04-02',
@@ -1490,3 +1491,5 @@ export const TEST_FABRICS = [
         }
     },
 ]
+*/
+

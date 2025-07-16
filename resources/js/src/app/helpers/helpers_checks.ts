@@ -1,5 +1,6 @@
 // Здесь будут функци для проверки чего-либо
 import { DISPLAY_CATCH_ERRORS } from '@/app/constants/common.ts'
+import { isRef } from 'vue'
 
 
 // ___ Проверяет, является ли строка JSON
@@ -19,18 +20,19 @@ export function isResponseWithError(response: any) {
 }
 
 
-// ___ Проверка ответа API на кореектность
-export function checkApiAnswer(response: any) {
+// ___ Проверка ответа API на коректность
+
+interface CheckResult {
+    success: boolean,
+    code: number,
+    error: string | null,
+    data: object | null | undefined | [] | string[],
+    message: string | null | undefined | string[],
+}
+
+export function checkApiAnswer(response: unknown): CheckResult | never {
 
     console.log('response: ', response)
-
-    interface CheckResult {
-        success: boolean,
-        code: number,
-        error: string | null,
-        data: object | null | undefined | [] | string[],
-        message: string | null | undefined | string[],
-    }
 
     const checkResult: CheckResult = {
         success: false,
@@ -40,12 +42,43 @@ export function checkApiAnswer(response: any) {
         message: null
     }
 
-    if (response.data === 'success') {
-        checkResult.success = true
-        checkResult.code = 0
+    if (typeof response === 'string') {
+        if (response === 'success') {
+            checkResult.success = true
+            checkResult.code = 0
+            return checkResult
+        }
     }
 
-    return checkResult
+    // Проверяем, что response - это объект и он не null
+    if (typeof response === 'object' && response !== null) {
+        // Теперь проверяем, что у объекта есть свойство 'data'
+        // и что это свойство равно 'success'
+        if ('data' in response && response.data === 'success') {
+            // TypeScript теперь знает, что response.data существует и является string
+            checkResult.success = true
+            checkResult.code = 0
+            return checkResult
+        }
+    }
+
+
+    // Проверяем, что response - это объект и он не null
+    if (response !== null && isRef(response)) {
+        // Теперь проверяем, что у объекта есть свойство 'data'
+        // и что это свойство равно 'success'
+        if (response.value === 'success') {
+            // TypeScript теперь знает, что response.data существует и является string
+            checkResult.success = true
+            checkResult.code = 0
+            return checkResult
+        }
+    }
+
+
+
+    throw new Error('Неверный тип ответа от сервера!')
+
 }
 
 
@@ -63,14 +96,14 @@ export function catchErrorHandler<T = unknown>(message: string = '', error: T = 
 
     if (error instanceof Error) {
         // В этом блоке e автоматически сужается до типа Error
-        console.error(message, error.message);
-        console.error('Тип ошибки:', error.name);
-        console.error('Стек вызовов:', error.stack);
+        console.error(message, error.message)
+        console.error('Тип ошибки:', error.name)
+        console.error('Стек вызовов:', error.stack)
     } else if (typeof error === 'string') {
         // Если это просто строка
-        console.error(message, error);
+        console.error(message, error)
     } else {
         // Для любых других неизвестных типов
-        console.error(message, error);
+        console.error(message, error)
     }
 }

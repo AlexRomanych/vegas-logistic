@@ -1,3 +1,6 @@
+export * from '@/app/helpers/helpers_render.js'
+
+
 import {
     colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
 } from '@/app/constants/colorsClasses.js'

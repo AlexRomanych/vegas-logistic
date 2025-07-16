@@ -296,6 +296,10 @@ Route::prefix('/reasons')
 
         // ___ Получаем список причин
         Route::get('/', [ReasonController::class, 'reasons']);
+        Route::get('/{reason}', [ReasonController::class, 'reason']);
+        Route::post('/', [ReasonController::class, 'store']);
+        Route::put('/{reason}', [ReasonController::class, 'update']);
+        Route::delete('/{reason}', [ReasonController::class, 'delete']);
 
 
 

@@ -1,7 +1,7 @@
 <template>
     <div :class="[width, height]" class="flex flex-col">
         <!--        <label v-if="label" :class="['input-label', textColor]" :for="id">{{ label }}</label>-->
-        <label v-if="label" :class="['input-label', 'text-slate-600']" :for="id">{{ label }}</label>
+        <label v-if="label" :class="['input-label', 'text-slate-600', labelTextSizeClass]" :for="id">{{ label }}</label>
 
         <textarea
             :id="id"
@@ -36,15 +36,15 @@
 </template>
 
 <script setup>
-import { colorsClasses, colorsList } from '/resources/js/src/app/constants/colorsClasses.js'
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
 // import {colorsClasses, colorsList} from '/js/src/app/constants/colorsClasses.js'
 import {
     getColorClassByType,
     getFontSizeClass,
     getTextColorClassByType,
-} from '/resources/js/src/app/helpers/helpers.js'
+} from '@/app/helpers/helpers.js'
 import { computed, ref, watch } from 'vue'
-import { fontSizesList } from '/resources/js/src/app/constants/fontSizes.js'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {
@@ -99,7 +99,7 @@ const props = defineProps({
     bold: {
         type: Boolean,
         required: false,
-        default: true,
+        default: false,
     },
     readonly: {
         type: Boolean,
@@ -180,6 +180,7 @@ const emit = defineEmits(['getAreaText'])
 const getAreaText = (e) => emit('getAreaText', e.target.value)
 
 const textSizeClass = ref(getFontSizeClass(props.textSize))
+const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 const semibold = props.bold ? 'font-semibold' : ''
 </script>
 
@@ -189,7 +190,7 @@ const semibold = props.bold ? 'font-semibold' : ''
 }
 
 .input-label {
-    @apply text-sm font-semibold ml-2 mb-0.5 mt-2;
+    @apply font-semibold ml-2 mb-0.5 mt-2;
 }
 
 .input-error {

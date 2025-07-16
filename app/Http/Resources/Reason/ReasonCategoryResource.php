@@ -22,6 +22,7 @@ class ReasonCategoryResource extends JsonResource
             'active' => $this->active,
             'description' => $this->description,
             'group_number_in_cell_group' => $this->group_number_in_cell_group,
+            'cells_group_id' => $this->cells_group_id,
             'reasons' => ReasonResource::collection($this->whenLoaded('reasons')),
         ];
 //        return parent::toArray($request);
