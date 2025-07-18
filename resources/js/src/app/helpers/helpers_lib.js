@@ -91,3 +91,38 @@ export function round(number, precision = 0) {
 }
 
 
+// ___ Глубокое копирование (только примитивы, без функций)
+export function deepCopy(obj) {
+    // Обработка примитивных типов и null
+    if (obj === null || typeof obj !== 'object') {
+        return obj
+    }
+
+    // Обработка массивов
+    if (Array.isArray(obj)) {
+        const copy = []
+        for (let i = 0; i < obj.length; i++) {
+            copy[i] = deepCopy(obj[i]) // Рекурсивный вызов для каждого элемента массива
+        }
+        return copy
+    }
+
+    // Обработка обычных объектов
+    if (typeof obj === 'object') {
+        const copy = {};
+        for (const key in obj) {
+            // Проверяем, что свойство принадлежит самому объекту, а не унаследовано
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                //@ts-ignore
+                copy[key] = deepCopy(obj[key]); // Рекурсивный вызов для каждого свойства объекта
+            }
+        }
+        return copy;
+    }
+
+    // На всякий случай, если obj - это какой-то другой сложный тип, который мы не хотим копировать
+    // (например, Date, RegExp, Map, Set, Function - хотя в данном случае функции исключены условием)
+    // В этом сценарии, мы просто возвращаем сам объект, так как глубокое копирование для них не тривиально
+    // и выходит за рамки "простых объектов без функций".
+    return obj;
+}

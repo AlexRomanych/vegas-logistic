@@ -147,8 +147,8 @@ class ReasonController extends Controller
                 'display_name' => $data['name'],
                 'description' => $data['description'],
                 'active' => $data['active'],
-//                'reason_category_id' => $data['reason_category_id'],
-//                'reason_number_in_reason_category' => $data['reason_category_id'],
+                //                'reason_category_id' => $data['reason_category_id'],
+                //                'reason_number_in_reason_category' => $data['reason_category_id'],
             ]);
 
             //            // ✨ Возвращаем успешный ответ ✨
@@ -187,13 +187,12 @@ class ReasonController extends Controller
     function delete(Reason $reason)
     {
         try {
-            //            $reason->delete();
+            $reason->delete();
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             // Обработка ошибок при удалении
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 }

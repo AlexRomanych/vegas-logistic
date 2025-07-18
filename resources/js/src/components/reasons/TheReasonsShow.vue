@@ -12,7 +12,8 @@
                 :title="render.plugCellsGroup.title"
                 :type="render.plugCellsGroup.type"
                 :width="render.plugCellsGroup.width"
-                class="header-item"
+                class="header-item cursor-pointer"
+                @click="toggleCollapseCellsGroup(reasons)"
             />
 
             <!-- __ Заглушка Категории причин -->
@@ -24,7 +25,9 @@
                 :title="render.plugCategoryReason.title"
                 :type="render.plugCategoryReason.type"
                 :width="render.plugCategoryReason.width"
-                class="header-item"
+                class="header-item cursor-pointer"
+                @click="toggleCollapseCategoryReasons(reasons)"
+
             />
 
             <!-- __ id Причины -->
@@ -399,11 +402,14 @@
 
 import type { ICellsGroupReasons, IRenderData, IReason, IReasonCategory } from '@/app/types/index.ts'
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 import { useReasonStore } from '@/stores/ReasonsStore.ts'
 
 import { checkApiAnswer } from '@/app/helpers/helpers_checks.ts'
+
+//@ts-ignore
+import { deepCopy } from '@/app/helpers/helpers_lib.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'
@@ -425,8 +431,23 @@ const isLoading = ref(true)
 
 const reasonsStore = useReasonStore()
 
+
+//line--------------------------------------------------
+
+
+// __ Фильтры
+const nameFilter = ref('')
+const displayNameFilter = ref('')
+const descriptionFilter = ref('')
+const statusFilter = ref(1)
+
+//line--------------------------------------------------
+
+
+
 // __ Получаем список причин в иерархии ПЯ --> Категории причин --> Список причин категории
-const reasons = ref<ICellsGroupReasons[] | []>([])
+const reasons = ref<ICellsGroupReasons[]>([])
+let reasonsSource: ICellsGroupReasons[] = []    // Исходный список причин
 
 const getReasons = async () => {
 
@@ -456,7 +477,18 @@ const getReasons = async () => {
     // Сортируем категории причин по id
     reasons.value = reasons.value.sort((a, b) => a.id - b.id)
 
+    // Делаем копию исходного списка
+    reasonsSource = deepCopy(reasons.value)
+
+    // Сброс фильтров
+    nameFilter.value = ''
+    displayNameFilter.value = ''
+    descriptionFilter.value = ''
+    statusFilter.value = 1
+
+
     console.log('reasons', reasons.value)
+    console.log('reasonsSource', reasonsSource)
 
     // __ Тут старый код до вынесения его в отдельный хелпер
     // try {
@@ -519,7 +551,7 @@ const render: IRenderData = {
     id: {
         header: ['ID', ''],
         width: 'w-[50px]',
-        show: true,
+        show: false,
         title: 'Идентификатор записи',
         headerTextSize: 'small',
         dataTextSize: 'mini',
@@ -606,6 +638,16 @@ const render: IRenderData = {
     },
 }
 
+// __ Селект для фильтра статуса
+const statusSelectData = {
+    name: 'status',
+    data: [
+        {id: 1, name: 'Все', selected: true, disabled: false},
+        {id: 2, name: 'Активный', selected: false, disabled: false},
+        {id: 3, name: 'Архив', selected: false, disabled: false},
+    ],
+}
+
 
 // __ Для работы callout
 const calloutShow = ref(false) // состояние окна
@@ -625,32 +667,43 @@ const modalType = ref<string>('danger')
 
 
 // __ Функция для разворачивания/сворачивания
+// Один элемент (группа или ПЯ)
 const toggleCollapse = <T extends { collapsed: boolean }>(target: T): void => {
     target.collapsed = !target.collapsed
 }
 
-
-//line--------------------------------------------------
-// __ Селект для фильтра статуса
-const statusSelectData = {
-    name: 'status',
-    data: [
-        {id: 1, name: 'Все', selected: true, disabled: false},
-        {id: 2, name: 'Активный', selected: false, disabled: false},
-        {id: 3, name: 'Архив', selected: false, disabled: false},
-    ],
+// Для Всех элементов Группы ПЯ
+let collapseCellsGroup = true
+const toggleCollapseCellsGroup = <T extends {
+    collapsed: boolean,
+    reason_categories: IReasonCategory[]
+}>(target: T[]): void => {
+    collapseCellsGroup = !collapseCellsGroup
+    target.forEach(item => {
+        item.reason_categories.forEach(reasonCategory => {
+            reasonCategory.collapsed = true
+        })
+        item.collapsed = collapseCellsGroup
+    })
 }
 
+// Для Всех элементов Категории причин
+let collapseReasonsCategory = true
+const toggleCollapseCategoryReasons = <T extends {
+    collapsed: boolean,
+    reason_categories: IReasonCategory[]
+}>(target: T[]): void => {
+    collapseReasonsCategory = !collapseReasonsCategory
+    target.forEach(item => {
+        item.reason_categories.forEach(reasonCategory => {
+            reasonCategory.collapsed = collapseReasonsCategory
+        })
+        item.collapsed = false
+    })
+}
+// __ End  Разворачивания/Сворачивания
 
-// __ Фильтры
-const nameFilter = ref('')
-const displayNameFilter = ref('')
-const descriptionFilter = ref('')
-const statusFilter = ref(1)
-
-//line--------------------------------------------------
-
-// __ Меняем статус
+// __ Меняем статус active
 const filterByStatus = (status: { id: number }) => {
     statusFilter.value = status.id
 }
@@ -690,6 +743,85 @@ const deleteReason = async (reason: IReason) => {
 
     }
 }
+
+
+//__ Реализация фильтра
+watch(
+    [
+        () => nameFilter.value,
+        () => displayNameFilter.value,
+        () => statusFilter.value,
+        () => descriptionFilter.value,
+    ],
+    ([
+         newNameFilter,
+         newDisplayNameFilter,
+         newStatusFilter,
+         newDescriptionFilter
+     ]) => {
+
+        // Если все фильтры пустые, то выводим все
+        // обходим ситуацию когда все фильтры пустые, но были применены ранее
+        // и поэтому отображаются не все записи
+        if (newNameFilter === ''
+            && newDisplayNameFilter === ''
+            && newStatusFilter === 1
+            && newDescriptionFilter === '') {
+            reasons.value = reasonsSource
+        } else {
+
+            const cellsGroupsArr: ICellsGroupReasons[] = []
+            let reasonsCategoriesArr: IReasonCategory[] = []
+            let reasonsArr: IReason[] = []
+
+            for (const cellGroup of reasonsSource) {
+
+                reasonsCategoriesArr = []
+                for (const reasonCategory of cellGroup.reason_categories) {
+
+                    reasonsArr = []
+                    for (const reason of reasonCategory.reasons) {
+                        if (
+                            // Текстовые поля
+                            reason.name.toLowerCase().includes(newNameFilter.toLowerCase())
+                            && reason.display_name.toLowerCase().includes(newDisplayNameFilter.toLowerCase())
+                            && reason.description.toLowerCase().includes(newDescriptionFilter.toLowerCase())
+                        ) {
+
+                            // Статус: Active
+                            if (newStatusFilter === 2) {
+                                if (!reason.active) continue
+                            } else if (newStatusFilter === 3) {
+                                if (reason.active) continue
+                            }
+
+                            reasonsArr.push(reason)
+                        }
+                    }
+
+                    if (reasonsArr.length > 0) {
+                        reasonsCategoriesArr.push({
+                            ...reasonCategory,
+                            reasons: reasonsArr
+                        })
+                    }
+                }
+
+                if (reasonsCategoriesArr.length > 0) {
+                    cellsGroupsArr.push({
+                        ...cellGroup,
+                        reason_categories: reasonsCategoriesArr
+                    })
+                }
+
+            }
+
+            reasons.value = cellsGroupsArr
+        }
+
+    },
+    { deep: true }
+)
 
 
 onMounted(() => {
