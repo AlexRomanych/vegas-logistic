@@ -8,14 +8,14 @@ const reasons = [
         path: '/reasons',
         name: 'reasons',
         component: () => import('@/components/reasons/TheReasonsShow.vue'),
-        meta: {title: 'Причины'} as IRouteMeta,
+        meta: {title: 'Причины изменения статуса'} as IRouteMeta,
     },
     {
         path: '/reasons/edit/:id',
         name: 'reasons.edit',
         component: () => import('@/components/reasons/TheReasonEditForm.vue'),
         meta: {
-            title: 'Редактирование причины',
+            title: 'Редактирование причины изменения статуса',
             mode: FABRIC_PAGE_MODE.EDIT,
         } as IRouteMeta,
     },
@@ -24,7 +24,7 @@ const reasons = [
         name: 'reasons.create',
         component: () => import('@/components/reasons/TheReasonEditForm.vue'),
         meta: {
-            title: 'Добавление причины',
+            title: 'Добавление причины изменения статуса',
             mode: FABRIC_PAGE_MODE.CREATE,
         } as IRouteMeta,
     },

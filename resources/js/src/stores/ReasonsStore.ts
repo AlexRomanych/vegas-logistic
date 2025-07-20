@@ -56,8 +56,16 @@ export const useReasonStore = defineStore('reasons', () => {
     }
 
 
+    // __ Получаем список причин по Группе ПЯ и Категории причин
+    const getReasonsByCellsGroupAndReasonCategory = async (cellsGroupId: number, reasonsCategoryID: number) => {
+        const result = await jwtGet(`${URL_REASONS}${cellsGroupId}/${reasonsCategoryID}`)
+        console.log('store: getReasonsByCellsGroupAndReasonCategory: ', result)
+        return apiAnswerCheckDecorator(result).data
+    }
+
+
     return {
-        getReasons, getReasonById, createReason: createReason, updateReason, deleteReason
+        getReasons, getReasonById, createReason, updateReason, deleteReason, getReasonsByCellsGroupAndReasonCategory
     }
 
 })

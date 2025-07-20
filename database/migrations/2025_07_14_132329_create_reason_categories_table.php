@@ -82,7 +82,7 @@ return new class extends Migration {
                 'name' => 'Статус "Приостановка выполнения"',
                 'display_name' => 'Статус "Приостановка выполнения"',
                 self::CELLS_GROUPS_ID_FOREIGN_KEY => CellsGroupConst::FABRIC_GROUP,
-                'group_number_in_cell_group' => ReasonCategoryGroupFabric::REASON_ROLL_ADDING,
+                'group_number_in_cell_group' => ReasonCategoryGroupFabric::REASON_ROLL_PAUSED,
                 'description' => 'Причина статуса "Приостановка выполнения"',
             ],
         ]);

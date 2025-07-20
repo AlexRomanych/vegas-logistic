@@ -10,12 +10,12 @@
         </label>
 
 
-<!-- attract: Убрал пока, так как глюки и надо разбираться :size="multiple ? size : ''"       -->
+        <!-- attract: Убрал пока, так как глюки и надо разбираться :size="multiple ? size : ''"       -->
         <select :id="id"
                 :class="[bgColor, textColor, textSizeClass, semibold, 'select']"
                 :multiple="multiple"
                 :name="selectData.name"
-
+                :disabled="disabled"
                 @change="onChange">
 
             <option v-for="item in selectData.data"
@@ -35,10 +35,10 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue'
+import { computed, ref, watch } from 'vue'
 
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import { colorsList } from '/resources/js/src/app/constants/colorsClasses.js'
+import { fontSizesList } from '/resources/js/src/app/constants/fontSizes.js'
 import {
     getColorClassByType,
     getFontSizeClass,
@@ -99,7 +99,11 @@ const props = defineProps({
         required: false,
         default: true,
     },
-
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false
+    }
 
 })
 
@@ -115,7 +119,6 @@ const props = defineProps({
 //         {id: 5, name: 'Five'},
 //     ]
 // }
-
 
 
 const emit = defineEmits(['change'])
@@ -141,7 +144,7 @@ watch(() => props.type, (newType) => {
 })
 
 // реактивный шрифт
-watch(() => props.textSize, (newSize) =>textSizeClass.value = getFontSizeClass(newSize))
+watch(() => props.textSize, (newSize) => textSizeClass.value = getFontSizeClass(newSize))
 
 
 </script>

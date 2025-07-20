@@ -1,7 +1,8 @@
-import {FABRIC_PAGE_MODE} from '@/app/constants/fabrics.js'
+import { FABRIC_PAGE_MODE } from '@/app/constants/fabrics.js'
 
-export * from './reasons_types.ts'      // Причина невыполнения
-export * from './data_render.ts'        // Элемент вывода датных в шаблон
+export * from './reasons_types.ts'                  // Причина невыполнения
+export * from './data_render.ts'                    // Элемент вывода датных в шаблон
+export * from './components_definitions.ts'         // Элемент вывода датных в шаблон
 
 
 // ___ Константы выравнивания текста

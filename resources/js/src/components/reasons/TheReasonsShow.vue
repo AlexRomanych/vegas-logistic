@@ -290,7 +290,7 @@
                                         :title="render.name.title"
                                         :type="render.name.type"
                                         :width="render.name.width"
-                                        class="header-item cursor-pointer"
+                                        class="header-item cursor-pointer truncate"
                                     />
 
                                     <!-- __ Отображаемое название Причины -->
@@ -302,7 +302,7 @@
                                         :title="render.displayName.title"
                                         :type="render.displayName.type"
                                         :width="render.displayName.width"
-                                        class="header-item"
+                                        class="header-item truncate"
                                     />
 
                                     <!-- __ Актуальность Причины -->
@@ -326,7 +326,7 @@
                                         :title="render.description.data?.(reason)"
                                         :type="render.description.type"
                                         :width="render.description.width"
-                                        class="header-item"
+                                        class="header-item truncate"
                                     />
 
                                     <!-- __ Редактировать -->
@@ -561,10 +561,10 @@ const render: IRenderData = {
         data: (reason: IReason) => reason.id.toString(),
     },
     name: {
-        header: ['Название', 'причины'],
-        width: 'w-[500px]',
+        header: ['Название причины', 'изменения статуса'],
+        width: 'w-[600px]',
         show: true,
-        title: 'Название причины',
+        title: 'Название причины изменения статуса',
         placeholder: 'Название причины...',
         headerTextSize: 'small',
         filterTextSize: 'small',
@@ -602,7 +602,7 @@ const render: IRenderData = {
     },
     description: {
         header: ['Описание', ''],
-        width: 'w-[400px]',
+        width: 'w-[600px]',
         show: true,
         title: 'Описание',
         headerTextSize: 'small',
@@ -616,7 +616,7 @@ const render: IRenderData = {
         header: ['Название', 'ПЯ'],
         width: 'w-[300px]',
         show: true,
-        title: 'Название производственной ячейки',
+        title: 'Название производственной ячейки (ПЯ)',
         headerTextSize: 'small',
         dataTextSize: 'mini',
         headerAlign: 'center',

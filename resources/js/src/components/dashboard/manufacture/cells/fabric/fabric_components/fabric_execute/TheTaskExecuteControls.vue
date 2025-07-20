@@ -145,6 +145,19 @@
         mode="confirm"
     />
 
+
+    <!-- __ Модальное окно для ввода причин изменения статуса -->
+    <ReasonSelect
+        v-if="groupId && categoryId"
+        ref="reasonSelect"
+        :category="categoryId"
+        :group="groupId"
+        :text="reasonSelectText"
+        :type="reasonSelectType"
+        :value="reasonSelectInitValue"
+        mode="confirm"
+    />
+
     <!-- attract: Модальное окно для ввода числовых данных -->
     <AppModalAsyncNumber
         ref="appModalAsyncNumber"
@@ -177,12 +190,13 @@
 </template>
 
 <script setup>
-import {ref, watch} from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS} from '@/app/constants/fabrics.js'
+import { FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
 
+import ReasonSelect from '@/components/dashboard/manufacture/cells/components/ReasonSelect.vue'
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncArea from '@/components/ui/modals/AppModalAsyncArea.vue'
@@ -191,6 +205,7 @@ import TheTaskExecuteRollRollingData
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollRollingData.vue'
 import TheTaskExecuteRollAdd
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollAdd.vue'
+import { REASONS } from '@/app/constants/common.js'
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга
@@ -383,6 +398,16 @@ const cancelButtonDisabledFlag = ref(isCancelButtonDisabled())
 
 //hr--------------------------------------------------------------
 
+
+// __ Получаем ссылку на модальное для ввода текстовых данных окно с асинхронной функцией (новый компонент)
+const reasonSelect = ref(null)
+const reasonSelectText = ref([])
+const reasonSelectType = ref('danger')
+const reasonSelectInitValue = ref('')
+const groupId = ref(null)
+const categoryId = ref(null)
+
+
 // attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
 const appModalAsync = ref(null)
 const modalText = ref([])
@@ -558,8 +583,60 @@ const toggleFalse = async () => {
 }
 
 
-// attract: Отменен/Снять отметку
+// const reasonSelect = ref(null)
+// const reasonSelectText = ref([])
+// const reasonSelectType = ref('danger')
+// const reasonSelectInitValue = ref('')
+
+
+// warn -------------------------------------------------------
+// ___ Отменен/Снять отметку
 const toggleCancel = async () => {
+
+    if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
+
+    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
+
+        modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
+        modalConfirm.value = 'confirm'
+        modalType.value = 'danger'
+        modalInitValueArea.value = ''
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            fabricsStore.globalExecuteMarkRollCancelReason = ''
+            fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+            emits('cancel-execute-roll')
+        }
+
+        return
+    }
+
+    reasonSelectType.value = 'danger'
+    reasonSelectText.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
+    reasonSelectInitValue.value = ''
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                   // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.ROLLING.ID           // Категория
+
+    if (groupId.value && categoryId.value) await nextTick()
+
+    reasonSelect.value.resetState()                                 // сбрасываем состояние
+    const answer = await reasonSelect.value.show()                  // показываем модалку и ждем ответ
+    if (answer) {
+
+        if (!reasonSelect.value.inputText.trim()) return                                   // если ничего нет, то выходим
+
+        fabricsStore.globalExecuteMarkRollCancelReason = reasonSelect.value.inputText       // текст
+        fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+        emits('cancel-execute-roll')
+    }
+
+}
+// warn -------------------------------------------------------
+
+
+// attract: Отменен/Снять отметку
+const toggleCancel_ = async () => {
 
     if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
 

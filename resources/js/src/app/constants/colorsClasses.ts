@@ -32,10 +32,10 @@ const indigo = 'indigo'
 type ColorPropertyKey = typeof mainColor | typeof textColor | typeof effectDirection;
 
 // __ 2. Тип для направлений эффекта (toLight, toDark)
-type EffectDirection = typeof toLight | typeof toDark;
+export type EffectDirection = typeof toLight | typeof toDark;
 
 // __ 3. Тип для названий цветов (primary, secondary, etc.)
-type ColorName =
+export type ColorName =
     | typeof primary
     | typeof secondary
     | typeof success

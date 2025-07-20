@@ -226,10 +226,8 @@ const verify = {
 }
 
 // __ Определяем правила валидации
-const MIN_NAME_LENGTH = 10
+const MIN_NAME_LENGTH = 20
 const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
-// const MIN_DISPLAY_NAME_LENGTH = 10
-
 
 const rules = {
     name: {

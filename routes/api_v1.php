@@ -300,10 +300,11 @@ Route::prefix('/reasons')
         Route::post('/', [ReasonController::class, 'store']);
         Route::put('/{reason}', [ReasonController::class, 'update']);
         Route::delete('/{reason}', [ReasonController::class, 'delete']);
+        Route::get('/{cellsGroupId}/{reasonsCategoryId}', [ReasonController::class, 'getReasonsByCellsGroupAndReasonCategory']);
 
 
 
-//        Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
+        //        Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
 //
 //        Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
 //        Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);

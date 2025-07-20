@@ -1,5 +1,8 @@
 export * from '@/app/helpers/helpers_render.js'
 
+import {DISPLAY_CONSOLE_LOG} from '@/app/constants/common.ts'
+
+import type {ColorName, EffectDirection}  from '@/app/constants/colorsClasses.js'
 
 import {
     colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
@@ -13,7 +16,7 @@ import {
 // prefix - префикс для класса tailwind ('bg', 'text', 'border')
 // colorIndexData - индекс цвета для кнопки
 // hover - менять ли цвет кнопки при наведении
-export function getColorClassByType(type, prefix = '', colorIndexData = 0, hover = true) {
+export function getColorClassByType(type: ColorName, prefix = '', colorIndexData = 0, hover = true) {
 
     if (prefix === '') {
         return '-' + colorsClasses[type].color + '-'
@@ -48,12 +51,12 @@ export function getColorClassByType(type, prefix = '', colorIndexData = 0, hover
 
 }
 
-export function getTextColorClassByType(type) {
+export function getTextColorClassByType(type: ColorName) {
     // console.log(colorsClasses, colorsClasses['danger'].color)
     return 'text-' + colorsClasses[type].text
 }
 
-function getColorSchemeByEffect(effect) {
+function getColorSchemeByEffect(effect: EffectDirection) {
     return effect === toDark
 }
 
@@ -113,3 +116,13 @@ export function getFontSizeClass(param = fontNormal) {
     return textSizeClass
 }
 
+
+
+
+
+// ___ Показывать ли в консоли логи
+export function log(...args: any[]): void {
+    if (DISPLAY_CONSOLE_LOG) {
+        console.log(...args)
+    }
+}
