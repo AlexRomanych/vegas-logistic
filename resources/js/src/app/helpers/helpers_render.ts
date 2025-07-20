@@ -1,6 +1,7 @@
 // Info: Тут хелперы для рендера
 
 import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+// import { log } from '@/app/helpers/helpers.js'
 
 // __ Loader
 // import { useLoading } from 'vue-loading-overlay'
@@ -13,19 +14,22 @@ type ActionType = (data?: any) => void
 
 export async function loaderHandler(
     loadingService: any,                                        // получаем экземпляр лоадера, чтобы сохранить контекст компонента, в которм он вызывается
-    handler: HandlerType,                                       // асинхронная функция
+    handler: HandlerType,                                       // асинхронная функция, для которой нужно вызвать лоадер
     errMessage: string = 'Ошибка асинхронной обработки...',     // сообщение об ошибке
+    loaderShow: boolean = true,                                 // показать ли лоадер
     actions: ActionType = () => {},                             // действия после выполнения, функция без параметров
 ): Promise<any> | never {
 
-    const loader = loadingService.show({...LOADER_SETTINGS})
-    // console.log(loader)
+    let loader = null
+    if (loaderShow) {
+        loader = loadingService.show({...LOADER_SETTINGS})
+    }
 
+    // log(loader)
     // const $loading = useLoading({...LOADER_SETTINGS})
     // const loader = $loading.show()
 
     try {
-
         const result = await handler()
         actions()
 

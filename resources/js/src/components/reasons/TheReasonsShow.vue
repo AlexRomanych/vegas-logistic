@@ -451,12 +451,13 @@ let reasonsSource: ICellsGroupReasons[] = []    // Исходный список
 
 const getReasons = async () => {
 
-
     isLoading.value = true     // Меняем маячок загрузки на true
     const loadingService = useLoading()
     reasons.value = await loaderHandler(
         loadingService,
-        () => reasonsStore.getReasons()
+        () => reasonsStore.getReasons(),
+        undefined,
+        // false,
     )
     isLoading.value = false     // Меняем маячок загрузки на false
 

@@ -259,10 +259,20 @@ const createSelectData = () => {
             return {
                 id: reason.id,
                 name: reason.name,
-                selected: index === 0,  // по умолчанию выделяем первый элемент
+                selected: false,  // по умолчанию выделяем первый элемент
+                // selected: index === 0,  // по умолчанию выделяем первый элемент
                 disabled: false,
             }
         })
+
+        const nullableReason: ISelectDataItem = {
+            id: -1,
+            name: 'Выберите причину...',
+            selected: true,
+            disabled: false
+        }
+
+        selectData.value.data.unshift(nullableReason)
 
         return
     }
@@ -348,7 +358,7 @@ watch(() => props.text, (value) => {
 // __ Следим за состоянием текста в area
 watch(() => targetText.value, (newValue) => {
     saveButtonState.value = getSaveButtonState()
-    log(newValue)
+    // log(newValue)
 })
 
 // __ Следим за инициализирующим значением

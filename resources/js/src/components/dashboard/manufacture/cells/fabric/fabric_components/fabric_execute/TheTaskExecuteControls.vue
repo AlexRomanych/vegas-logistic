@@ -196,6 +196,8 @@ import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import { FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
 
+import { log } from '@/app/helpers/helpers.js'
+
 import ReasonSelect from '@/components/dashboard/manufacture/cells/components/ReasonSelect.vue'
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
@@ -206,6 +208,7 @@ import TheTaskExecuteRollRollingData
 import TheTaskExecuteRollAdd
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollAdd.vue'
 import { REASONS } from '@/app/constants/common.js'
+
 
 const props = defineProps({
     rolls: {                        // для расчета условий рендеринга
@@ -267,7 +270,7 @@ const isRollingRollPresent = () => {
 
 // attract: Возвращает статус кнопки "Начать выполнение"
 const isStartButtonDisabled = () => {
-    // console.log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
+    // log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
 
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.DONE.CODE) return true
@@ -287,8 +290,8 @@ const isStartButtonDisabled = () => {
         })
     })
     if (isFind) return true
-    // console.log('currentRollOrder: ', currentRollOrder)
-    // console.log('isFind: ', isFind)
+    // log('currentRollOrder: ', currentRollOrder)
+    // log('isFind: ', isFind)
 
     return false
 }
@@ -330,7 +333,7 @@ const isRollingButtonDisabled = () => {
     // if (isRollingRollPresent()) return false
     // return true
 
-    // console.log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
+    // log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
 
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
 
@@ -491,7 +494,7 @@ const changeTextileLength = async () => {
 }
 
 
-// attract: Переходящий рулон/Снять отметку
+// __ Переходящий рулон/Снять отметку
 const toggleRollingMark = async () => {
 
     if (rollingButtonDisabledFlag.value) return
@@ -512,39 +515,67 @@ const toggleRollingMark = async () => {
         return
     }
 
-    modalTypeArea.value = 'orange'
-    modalTextArea.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
-    modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
+    // modalTypeArea.value = 'orange'
+    // modalTextArea.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
+    // modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
+    //
+    // const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? '') // показываем модалку и ждем ответ
+    // if (answer) {
+    //
+    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+    //
+    //
+    //     rollingRollText.value = ['Оцените трудозатраты, которые', 'были уже затрачены на', 'выполнение данного рулона.']
+    //     rollingRollInitValue.value = 150
+    //     rollingRoll.value = fabricsStore.globalActiveRolls[props.machine.TITLE]
+    //
+    //
+    //     const rollingRollLength = await theTaskExecuteRollRollingData.value.show(rollingRoll) // показываем модалку и ждем ответ
+    //
+    //     // log('123: ', theTaskExecuteRollRollingData.value.rollingLength)
+    //
+    //     // log('Debug')
+    //     // return
+    //
+    //     const rollingLength = ` (Выполнено ${theTaskExecuteRollRollingData.value.rollingLength} м.п.)`
+    //
+    //     fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText + rollingLength      // текст
+    //     // fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+    //     fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
+    //     emits('rolling-execute-roll')
+    // }
 
-    const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? '') // показываем модалку и ждем ответ
+    reasonSelectType.value = 'orange'
+    reasonSelectText.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
+    reasonSelectInitValue.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
+
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                   // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.ROLLING.ID           // Категория
+
+    if (groupId.value && categoryId.value) await nextTick()
+
+    reasonSelect.value.resetState()                                 // сбрасываем состояние
+    const answer = await reasonSelect.value.show()                  // показываем модалку и ждем ответ
     if (answer) {
-
-        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-
+        if (!reasonSelect.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
         rollingRollText.value = ['Оцените трудозатраты, которые', 'были уже затрачены на', 'выполнение данного рулона.']
         rollingRollInitValue.value = 150
         rollingRoll.value = fabricsStore.globalActiveRolls[props.machine.TITLE]
 
-
         const rollingRollLength = await theTaskExecuteRollRollingData.value.show(rollingRoll) // показываем модалку и ждем ответ
-
-        // console.log('123: ', theTaskExecuteRollRollingData.value.rollingLength)
-
-        // console.log('Debug')
-        // return
 
         const rollingLength = ` (Выполнено ${theTaskExecuteRollRollingData.value.rollingLength} м.п.)`
 
-        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText + rollingLength      // текст
+        fabricsStore.globalExecuteMarkRollFalseReason = reasonSelect.value.inputText + rollingLength      // текст
         // fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
         fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
         emits('rolling-execute-roll')
+
     }
 }
 
-
-// attract: Не выполнено/Снять отметку
+// __ Не выполнено/Снять отметку
 const toggleFalse = async () => {
 
     if (falseButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
@@ -566,19 +597,40 @@ const toggleFalse = async () => {
         return
     }
 
+    // modalTypeArea.value = 'danger'
+    // modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
+    // modalInitValueArea.value = ''
+    //
+    // const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    // if (answer) {
+    //
+    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+    //
+    //     fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+    //     fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
+    //     emits('false-execute-roll')
+    // }
 
-    modalTypeArea.value = 'danger'
-    modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
-    modalInitValueArea.value = ''
 
-    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    reasonSelectType.value = 'danger'
+    reasonSelectText.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
+    reasonSelectInitValue.value = ''
+
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                       // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.FALSE.ID             // Категория
+
+    if (groupId.value && categoryId.value) await nextTick()
+
+    reasonSelect.value.resetState()                                 // сбрасываем состояние
+    const answer = await reasonSelect.value.show()                  // показываем модалку и ждем ответ
     if (answer) {
 
-        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+        if (!reasonSelect.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
-        fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
+        fabricsStore.globalExecuteMarkRollFalseReason = reasonSelect.value.inputText       // текст
         fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
         emits('false-execute-roll')
+
     }
 }
 
@@ -615,8 +667,8 @@ const toggleCancel = async () => {
     reasonSelectType.value = 'danger'
     reasonSelectText.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
     reasonSelectInitValue.value = ''
-    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                   // ПЯ
-    categoryId.value = REASONS.FABRIC.CATEGORY.ROLLING.ID           // Категория
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                       // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.CANCELLED.ID             // Категория
 
     if (groupId.value && categoryId.value) await nextTick()
 
@@ -636,42 +688,42 @@ const toggleCancel = async () => {
 
 
 // attract: Отменен/Снять отметку
-const toggleCancel_ = async () => {
-
-    if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
-
-    if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
-
-        modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
-        modalConfirm.value = 'confirm'
-        modalType.value = 'danger'
-        modalInitValueArea.value = ''
-
-        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
-        if (answer) {
-            fabricsStore.globalExecuteMarkRollCancelReason = ''
-            fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
-            emits('cancel-execute-roll')
-        }
-
-        return
-    }
-
-    modalTypeArea.value = 'danger'
-    modalTextArea.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
-    modalInitValueArea.value = ''
-
-    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
-    if (answer) {
-
-        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-
-        fabricsStore.globalExecuteMarkRollCancelReason = appModalAsyncArea.value.inputText       // текст
-        fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
-        emits('cancel-execute-roll')
-    }
-
-}
+// const toggleCancel_ = async () => {
+//
+//     if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
+//
+//     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
+//
+//         modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
+//         modalConfirm.value = 'confirm'
+//         modalType.value = 'danger'
+//         modalInitValueArea.value = ''
+//
+//         const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+//         if (answer) {
+//             fabricsStore.globalExecuteMarkRollCancelReason = ''
+//             fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+//             emits('cancel-execute-roll')
+//         }
+//
+//         return
+//     }
+//
+//     modalTypeArea.value = 'danger'
+//     modalTextArea.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
+//     modalInitValueArea.value = ''
+//
+//     const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+//     if (answer) {
+//
+//         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+//
+//         fabricsStore.globalExecuteMarkRollCancelReason = appModalAsyncArea.value.inputText       // текст
+//         fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
+//         emits('cancel-execute-roll')
+//     }
+//
+// }
 
 
 // attract: Начать выполнение
@@ -751,20 +803,69 @@ const finishExecuteRoll = async () => {
 }
 
 
-// attract: Добавить рулон
+// __ Добавить рулон
 const fabricsData = ref([])
 const addRoll = async () => {
 
-    modalTypeArea.value = 'warning'
-    modalTextArea.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
-    modalInitValueArea.value = ''
+    // modalTypeArea.value = 'warning'
+    // modalTextArea.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
+    // modalInitValueArea.value = ''
+    //
+    // const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+    // if (answer) {
+    //
+    //
+    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
+    //
+    //
+    //     // Формируем данные для добавления рулона
+    //     const fabrics = fabricsStore.fabricsMemory
+    //
+    //     fabrics.forEach(fabric => {
+    //         if (fabric.machines.some(machine => machine.id === props.machine.ID) &&
+    //             fabric.id !== 0 &&
+    //             fabric.active &&
+    //             fabric.correct) {
+    //             fabricsData.value.push(fabric)
+    //         }
+    //     })
+    //
+    //
+    //     // log(fabricsData.value)
+    //
+    //     addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
+    //
+    //     const answer = await theTaskExecuteRollAdd.value.show(fabricsData.value)
+    //     if (answer) {
+    //
+    //         const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
+    //
+    //         // log(selectedFabricId)
+    //
+    //         fabricsStore.globalExecuteRollAddReason = appModalAsyncArea.value.inputText       // текст
+    //         fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
+    //         fabricsStore.globalExecuteRollAdd = true
+    //     }
+    //
+    //     emits('add-execute-roll')
+    // }
 
-    const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
+
+
+    reasonSelectType.value = 'warning'
+    reasonSelectText.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
+    reasonSelectInitValue.value = ''
+
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                   // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.ADDING.ID            // Категория
+
+    if (groupId.value && categoryId.value) await nextTick()
+
+    reasonSelect.value.resetState()                                 // сбрасываем состояние
+    const answer = await reasonSelect.value.show()                  // показываем модалку и ждем ответ
     if (answer) {
 
-
-        if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-
+        if (!reasonSelect.value.inputText.trim()) return                                   // если ничего нет, то выходим
 
         // Формируем данные для добавления рулона
         const fabrics = fabricsStore.fabricsMemory
@@ -779,8 +880,6 @@ const addRoll = async () => {
         })
 
 
-        // console.log(fabricsData.value)
-
         addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
 
         const answer = await theTaskExecuteRollAdd.value.show(fabricsData.value)
@@ -788,12 +887,13 @@ const addRoll = async () => {
 
             const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
 
-            // console.log(selectedFabricId)
+            // log(selectedFabricId)
 
-            fabricsStore.globalExecuteRollAddReason = appModalAsyncArea.value.inputText       // текст
+            fabricsStore.globalExecuteRollAddReason = reasonSelect.value.inputText       // текст
             fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
             fabricsStore.globalExecuteRollAdd = true
         }
+
 
         emits('add-execute-roll')
     }
@@ -801,12 +901,12 @@ const addRoll = async () => {
 }
 
 
-// info: ---------------------------------------------------------------------
+// line ---------------------------------------------------------------------
 
 watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
 
-    // console.log('change state')
-    // console.log(fabricsStore.globalActiveRolls)
+    // log('change state')
+    // log(fabricsStore.globalActiveRolls)
 
     // descr: Пересчитываем состояние кнопок управления выполнением
     startButtonDisabledFlag.value = isStartButtonDisabled()     // нужно для реактивности
@@ -818,10 +918,10 @@ watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
     changeTextileLengthButtonDisabledFlag.value = isChangeTextileLengthButtonDisabled()
     cancelButtonDisabledFlag.value = isCancelButtonDisabled()
 
-    // console.log(startButtonDisabledFlag.value)
-    // console.log(endButtonDisabledFlag.value)
+    // log(startButtonDisabledFlag.value)
+    // log(endButtonDisabledFlag.value)
 
-    // console.log('isExecuteRollPresent(): ', isExecuteRollPresent())
+    // log('isExecuteRollPresent(): ', isExecuteRollPresent())
 
 }, {deep: true, immediate: true})
 
