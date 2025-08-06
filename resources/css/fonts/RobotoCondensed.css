@@ -1,0 +1,188 @@
+/* ___ Normal */
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Thin.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-ExtraLight.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-ExtraLight.woff') format('woff');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Light.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Regular.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Regular.woff') format('woff');
+    font-weight: 400;
+    /*font-weight: normal;*/
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Medium.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-SemiBold.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Bold.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Bold.woff') format('woff');
+    font-weight: 700;
+    /*font-weight: bold;*/
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-ExtraBold.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-ExtraBold.woff') format('woff');
+    font-weight: 800;
+    /*font-weight: bold;*/
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Normal/woff2/RobotoCondensed-Black.woff2') format('woff2'),
+    url('RobotoCondensed/Normal/woff/RobotoCondensed-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* ___ Italic */
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-ThinItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-ThinItalic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-ExtraLightItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-ExtraLightItalic.woff') format('woff');
+    font-weight: 200;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-LightItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-Italic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-Italic.woff') format('woff');
+    font-weight: 400;
+    /*font-weight: normal;*/
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-MediumItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-MediumItalic.woff') format('woff');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-SemiBoldItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-SemiBoldItalic.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-BoldItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-BoldItalic.woff') format('woff');
+    font-weight: 700;
+    /*font-weight: bold;*/
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-ExtraBoldItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-ExtraBoldItalic.woff') format('woff');
+    font-weight: 800;
+    /*font-weight: bold;*/
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('RobotoCondensed/Italic/woff2/RobotoCondensed-BlackItalic.woff2') format('woff2'),
+    url('RobotoCondensed/Italic/woff/RobotoCondensed-BlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -79,7 +79,8 @@ return new class extends Migration {
 
             // attract: Постановка рулона на учет в 1С и ответственный за постановку
             $table->timestamp('registration_1C_at')
-                ->nullable()->comment('Дата постановки на учет в 1С');
+                ->nullable()
+                ->comment('Дата постановки на учет в 1С');
             $table->ForeignId('registration_1C_by')
                 ->nullable(false)
                 ->default(0)

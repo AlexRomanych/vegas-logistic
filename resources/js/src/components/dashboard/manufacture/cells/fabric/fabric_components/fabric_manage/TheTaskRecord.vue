@@ -12,7 +12,7 @@
         <!--            width="w-[80px]"-->
         <!--        />-->
 
-        <!-- attract: ПС -->
+        <!--__ ПС -->
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="!editMode ? workRoll.fabric : [workRoll.fabric, '']"
@@ -35,37 +35,37 @@
             />
         </div>
 
-        <!-- attract: Буфер ПС -->
+        <!--__ Буфер ПС -->
         <AppLabelMultiLine
             :text="!editMode ? buffer.toFixed(2) : [buffer.toFixed(2), '']"
             :type="buffer ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            width="w-[70px]"
+            width="w-[80px]"
         />
 
-        <!-- attract: Средняя длина рулона -->
+        <!--__ Средняя длина рулона -->
         <AppLabelMultiLine
             :text="!editMode ? averageLength.toFixed(2) : [averageLength.toFixed(2), '']"
             :type="averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            width="w-[70px]"
+            width="w-[80px]"
         />
 
-        <!-- attract: Средняя длина ПС -->
+        <!--__ Средняя длина ПС -->
         <AppLabelMultiLine
             :text="!editMode ? averageLengthFabric.toFixed(2) : [averageLengthFabric.toFixed(2), '']"
             :type="averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            width="w-[70px]"
+            width="w-[80px]"
         />
 
-        <!-- attract: Количество в рулонах -->
+        <!--__ Количество в рулонах -->
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(5)"
@@ -73,7 +73,7 @@
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
-                width="w-[70px]"
+                width="w-[80px]"
             />
         </div>
         <div v-else>
@@ -86,14 +86,14 @@
                 align="center"
                 height="h-[60px]"
                 text-size="mini"
-                width="w-[70px]"
+                width="w-[80px]"
                 @blur="getLengthAmount"
                 @change="getLengthAmount"
                 @input="getLengthAmount"
             />
         </div>
 
-        <!-- attract: Количество ткани в м.п. -->
+        <!--__ Количество ткани в м.п. -->
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="lengthAmount.toFixed(2)"
@@ -102,7 +102,7 @@
                 height="h-[30px]"
                 text-size="mini"
                 type="primary"
-                width="w-[70px]"
+                width="w-[80px]"
             />
         </div>
         <div v-else>
@@ -116,7 +116,7 @@
                 height="h-[60px]"
                 step="0.01"
                 text-size="mini"
-                width="w-[70px]"
+                width="w-[80px]"
                 @blur="getRollsAmount"
                 @change="getRollsAmount"
                 @input="getRollsAmount"
@@ -124,17 +124,17 @@
             <!-- warning: оставим только событие change  -->
         </div>
 
-        <!-- attract: Количество ПС в м.п. -->
+        <!--__ Количество ПС в м.п. -->
         <AppLabelMultiLine
             :text="!editMode ? (averageLengthFabric*rollsAmount).toFixed(2) : [(averageLengthFabric*rollsAmount).toFixed(2), '']"
             :type="averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            width="w-[70px]"
+            width="w-[80px]"
         />
 
-        <!-- attract: Трудозатраты -->
+        <!--__ Трудозатраты -->
         <AppLabelMultiLine
             :text="!editMode ? formatTimeWithLeadingZeros(productivityAmount, 'hour') : [formatTimeWithLeadingZeros(productivityAmount, 'hour'), '']"
             :type="productivityAmount ? 'dark' : 'danger'"
@@ -144,7 +144,7 @@
             width="w-[90px]"
         />
 
-        <!-- attract: Комментарий -->
+        <!--__ Комментарий -->
         <div v-if="!editMode">
             <AppLabel
                 :text="description"
@@ -172,14 +172,14 @@
         </div>
 
 
-        <!-- attract: Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные       -->
+        <!--__ Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные       -->
         <div v-if="getFunctionalByFabricTaskStatus(taskStatus)">
 
-            <!-- attract: Управляющие кнопки -->
+            <!--__ Управляющие кнопки -->
             <div v-if="!editMode" class="flex">
 
 
-                <!-- attract: Удалить -->
+                <!--__ Удалить -->
                 <AppLabel
                     v-if="funcButtonsConstraints && workRoll?.rolls_exec[0]?.status !== FABRIC_ROLL_STATUS.ROLLING.CODE"
                     align="center"
@@ -192,7 +192,7 @@
                     @click="deleteTaskRecord"
                 />
 
-                <!-- attract: Редактировать -->
+                <!--__ Редактировать -->
                 <AppLabel
                     v-if="funcButtonsConstraints && workRoll.editable"
                     align="center"
@@ -210,7 +210,7 @@
 
             <div v-else class="flex">
 
-                <!-- attract: Отменить -->
+                <!--__ Отменить -->
                 <AppLabelMultiLine
                     :text="['Отмена', '']"
                     align="center"
@@ -222,7 +222,7 @@
                     @click="cancelEditMode"
                 />
 
-                <!-- attract: Сохранить -->
+                <!--__ Сохранить -->
                 <AppLabelMultiLine
                     v-if="saveRollFlag"
                     :text="['V', '']"
@@ -239,31 +239,31 @@
 
         </div>
 
-        <!-- attract: Комментарий -->
+        <!--__ Комментарий -->
         <div v-if="workRoll.note">
             <AppLabel
                 :text="workRoll.note"
+                :title="workRoll.note"
+                :type="typeForErrorsAndConstraintsForLabel"
                 class="truncate"
                 height="h-[30px]"
                 text-size="mini"
-                :type="typeForErrorsAndConstraintsForLabel"
                 width="w-[300px]"
-                :title="workRoll.note"
             />
         </div>
 
-<!--        &lt;!&ndash; attract: Комментарий &ndash;&gt;-->
-<!--        <div v-if="workRoll?.rolls_exec[0]?.false_reason">-->
-<!--            <AppLabel-->
-<!--                :text="workRoll?.rolls_exec[0]?.false_reason"-->
-<!--                class="truncate"-->
-<!--                height="h-[30px]"-->
-<!--                text-size="mini"-->
-<!--                :type="typeForErrorsAndConstraintsForLabel"-->
-<!--                width="w-[300px]"-->
-<!--                :title="workRoll?.rolls_exec[0]?.false_reason"-->
-<!--            />-->
-<!--        </div>-->
+        <!--        &lt;!&ndash;__ Комментарий &ndash;&gt;-->
+        <!--        <div v-if="workRoll?.rolls_exec[0]?.false_reason">-->
+        <!--            <AppLabel-->
+        <!--                :text="workRoll?.rolls_exec[0]?.false_reason"-->
+        <!--                class="truncate"-->
+        <!--                height="h-[30px]"-->
+        <!--                text-size="mini"-->
+        <!--                :type="typeForErrorsAndConstraintsForLabel"-->
+        <!--                width="w-[300px]"-->
+        <!--                :title="workRoll?.rolls_exec[0]?.false_reason"-->
+        <!--            />-->
+        <!--        </div>-->
 
     </div>
 
@@ -278,10 +278,10 @@
 
 <script setup>
 
-import {reactive, ref, watch} from 'vue'
-import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
+import { reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
@@ -296,7 +296,7 @@ import {
     getFunctionalByFabricTaskStatus,
 } from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import {formatTimeWithLeadingZeros} from '@/app/helpers/helpers_date.js'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'

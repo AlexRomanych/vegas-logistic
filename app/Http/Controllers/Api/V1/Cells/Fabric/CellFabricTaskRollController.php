@@ -12,14 +12,15 @@ use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
-//use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+
+// use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 
 use Illuminate\Http\Request;
 use \Exception;
 use Illuminate\Support\Facades\Auth;
 
-//use Carbon\Carbon;
-//use Illuminate\Support\Facades\DB;
+// use Carbon\Carbon;
+// use Illuminate\Support\Facades\DB;
 
 class CellFabricTaskRollController extends Controller
 {
@@ -91,7 +92,7 @@ class CellFabricTaskRollController extends Controller
 
             $rollData = $request->data['data'];
 
-//            return $rollData;
+            //            return $rollData;
 
             // TODO: Выполнить жесткую валидацию жестких данных
 
@@ -150,12 +151,54 @@ class CellFabricTaskRollController extends Controller
         }
     }
 
+
+    /**
+     * ___ Задает статус рулона как зарегистрированный в 1С
+     * ___ В новой версии убираем статус регистрации в 1С и оставляем его как признак
+     * @param Request $request
+     * @return string
+     */
+    public function setRollRegisteredStatus(Request $request)
+    {
+        try {
+
+            $result = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|numeric',
+                'data.status' => 'required|boolean'     // Тут ожидаем либо true или false
+            ]);
+
+            $roll = FabricTaskRoll::query()->find($result['data']['id']);
+            if (!$roll) {
+                return EndPointStaticRequestAnswer::fail(response()->json(['message' => 'Рулон не найден']));
+            }
+
+            $status = $roll->roll_status;
+
+            // __ Ставим в 1С только если статус "Выполнен" или "Перемещен на закрой"
+            if ($status !== FABRIC_ROLL_MOVED_CODE && $status !== FABRIC_ROLL_DONE_CODE) {
+                throw new Exception('Некорректный статус');
+            }
+
+            $roll->isRegistered = $result['data']['status'];
+            // $dirtyAttributes = $roll->getDirty();
+
+            $roll->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
+    }
+
+
     /**
      * Descr: Задает статус рулона как зарегистрированный в 1С
      * @param Request $request
      * @return string
      */
-    public function setRollRegisteredStatus(Request $request)
+    public function setRollRegisteredStatus_Old(Request $request)
     {
         try {
             $result = $request->validate([
@@ -218,6 +261,93 @@ class CellFabricTaskRollController extends Controller
             ]);
 
             $status = $result['data']['status'];
+
+
+
+            // __ Перемещенный на закрой в одном направлении
+            if ($status !== FABRIC_ROLL_MOVED_CODE) {
+                throw new Exception('Неверный статус');
+            }
+
+            // __ Перемещенный на закрой в двух направлениях
+            // if ($status !== FABRIC_ROLL_DONE_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
+            //     throw new Exception('Неверный статус');
+            // }
+
+            $roll = FabricTaskRoll::query()->find($result['data']['id']);
+
+            if (!$roll) {
+                throw new Exception('Рулон не найден');
+            }
+
+            // __ Перемещенный на закрой в одном направлении
+            if ($roll->roll_status === FABRIC_ROLL_MOVED_CODE) {
+                throw new Exception('Рулон уже перемещен на закрой');
+            }
+
+            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE) {
+                throw new Exception('Неверный статус');
+            }
+
+            // __ Перемещенный на закрой в двух направлениях
+            // if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_MOVED_CODE) {
+            //     throw new Exception('Неверный статус');
+            // }
+
+            $delta = $roll->textile_roll_length / $roll->translate_rate; // +/- количество к буферу
+
+            // __ Перемещенный на закрой в одном направлении
+            $result = $roll->update([
+                'roll_status' => FABRIC_ROLL_MOVED_CODE,
+                'move_to_cut_by' => Auth::id(),
+                'move_to_cut_at' => now(),
+            ]);
+
+            // __ Перемещенный на закрой в двух направлениях
+            // if ($status === FABRIC_ROLL_MOVED_CODE) {
+            //     $result = $roll->update([
+            //         'roll_status' => FABRIC_ROLL_MOVED_CODE,
+            //         'move_to_cut_by' => Auth::id(),
+            //         'move_to_cut_at' => now(),
+            //     ]);
+            //     $delta = -$delta;
+            //
+            // } else {
+            //     $result = $roll->update([
+            //         'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
+            //         'move_to_cut_by' => 0,
+            //         'move_to_cut_at' => null,
+            //     ]);
+            //
+            // }
+
+            if (!$result) throw new Exception('Не удалось обновить статус');
+
+            // __Изменяем количество в буфере ткани в зависимости от статуса
+            $fabric = Fabric::query()->find($roll->fabric_id);
+
+            if (!$fabric) throw new Exception('Не удалось найти ткань');
+
+            $fabric->buffer_amount += $delta;
+            $fabric->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+
+    }
+
+    public function setRollMovedStatus_Old(Request $request)
+    {
+        try {
+            $result = $request->validate([
+                'data' => 'required|array',
+                'data.id' => 'required|numeric',
+                'data.status' => 'required|numeric'
+            ]);
+
+            $status = $result['data']['status'];
             if ($status !== FABRIC_ROLL_REGISTERED_1C_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
                 throw new Exception('Неизвестный статус');
             }
@@ -267,6 +397,7 @@ class CellFabricTaskRollController extends Controller
 
     }
 
+    // line -----------------------------------------------------------------------------------
 
     /**
      * Descr: Создает рулон во время выполнения СЗ
@@ -301,7 +432,7 @@ class CellFabricTaskRollController extends Controller
             if (!$taskContexts) throw new Exception('Не удалось получить контексты СЗ');
 
             // attract: Находим позицию для добавления контекстного рулона
-            $insertPosition =  $taskContexts[count($taskContexts) - 1]->roll_position + 1;  // Предположим, что это будет последний рулон
+            $insertPosition = $taskContexts[count($taskContexts) - 1]->roll_position + 1;  // Предположим, что это будет последний рулон
             $offset = count($taskContexts) + 1;
 
             // __ Находим тот TaskContext, в котором есть только созданные рулоны и вставляем перед ним
@@ -323,8 +454,6 @@ class CellFabricTaskRollController extends Controller
             }
 
 
-
-
             // attract: Перемещаем позицию всех контекстных рулонов вперед
             for ($i = $offset; $i < count($taskContexts); $i++) {
                 $taskContext = $taskContexts[$i];
@@ -332,7 +461,7 @@ class CellFabricTaskRollController extends Controller
                 $taskContext->save();
             }
 
-//            return ['contexsts' => $taskContexts];
+            //            return ['contexsts' => $taskContexts];
 
             // attract: Находим ПС, для добавления в контекст
             $fabric = Fabric::query()->find($request->data['fabricId']);
@@ -348,7 +477,7 @@ class CellFabricTaskRollController extends Controller
                 'productivity' => $fabric->productivity,
                 'rolls_amount' => 1,
                 'description' => 'Создан в процессе выполнения СЗ.'
-//            'note' => 'Создан в процессе выполнения СЗ. ' . (Carbon::parse($contextDate))->format('d.m.Y'),
+                //            'note' => 'Создан в процессе выполнения СЗ. ' . (Carbon::parse($contextDate))->format('d.m.Y'),
             ]);
             if (!$taskContext) throw new Exception('Не удалось создать контекст СЗ.');
 

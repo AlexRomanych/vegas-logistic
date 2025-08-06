@@ -25,7 +25,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                'sans': ['Raleway', ...defaultTheme.fontFamily.sans],
+                'sans': ['Roboto', ...defaultTheme.fontFamily.sans],
+                // 'sans': ['Raleway', ...defaultTheme.fontFamily.sans],
                 'mono': ['Fira Code', ...defaultTheme.fontFamily.mono],
                 // 'serif': ['"Fira Code"', ...defaultTheme.fontFamily.serif],
 

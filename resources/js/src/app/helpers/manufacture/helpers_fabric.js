@@ -304,7 +304,9 @@ export function getFunctionalByFabricTaskStatus(fabricTask) {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract: Возвращает тип расскраски компонента по статусу рулона
-export function getTypeByRollStatus(rollStatus) {
+export function getTypeByRollStatus(rollStatus, isRegistered_1C = false) {
+
+    // if (isRegistered_1C) rollStatus = FABRIC_ROLL_STATUS.REGISTERED_1C.CODE
 
     if (rollStatus === FABRIC_ROLL_STATUS.CREATED.CODE) return FABRIC_ROLL_STATUS.CREATED.TYPE
     if (rollStatus === FABRIC_ROLL_STATUS.RUNNING.CODE) return FABRIC_ROLL_STATUS.RUNNING.TYPE

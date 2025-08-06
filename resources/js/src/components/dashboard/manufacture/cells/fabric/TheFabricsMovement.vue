@@ -1,11 +1,9 @@
 <template>
     <div class="ml-2 mt-2">
-        <!-- attract Выводим табы, если СМ активна или статус СЗ - "Выполнено" или "Выполняется" -->
+        <!-- __ Выводим табы -->
         <div class="flex flex-row justify-start items-center mb-2">
             <div
-                v-for="tab in tabs"
-                :key="tab.id"
-                class="m-0.5"
+                v-for="tab in tabs" :key="tab.id" class="m-0.5"
             >
                 <div
                     v-if="tab.enabled"
@@ -24,10 +22,10 @@
             </div>
         </div>
 
-        <!-- attract: Шапка таблицы -->
+        <!-- __ Шапка таблицы -->
         <div class="sticky top-0 flex p-1 mb-1 bg-blue-200 border-2 rounded-lg border-blue-700 max-w-fit">
             <div>
-                <!-- attract: № рулона  -->
+                <!-- __ № рулона  -->
                 <AppLabelMultiLine
                     v-if="render.rollNumber.show"
                     :text="render.rollNumber.header"
@@ -39,7 +37,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Фильтр: № рулона -->
+                <!-- __ Фильтр: № рулона -->
                 <AppInputText
                     v-if="render.rollNumber.show"
                     id="roll-number-search"
@@ -53,7 +51,7 @@
             </div>
 
             <div>
-                <!-- attract: ПС  -->
+                <!-- __ ПС  -->
                 <AppLabelMultiLine
                     v-if="render.fabric.show"
                     :text="render.fabric.header"
@@ -65,7 +63,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Фильтр: ПС -->
+                <!-- __ Фильтр: ПС -->
                 <AppInputText
                     v-if="render.fabric.show"
                     id="fabric-search"
@@ -79,7 +77,8 @@
 
             <div>
                 <div class="flex">
-                    <!-- attract: Ткань, м.п. -->
+
+                    <!-- __ Ткань, м.п. -->
                     <AppLabelMultiLine
                         v-if="render.textileLength.show"
                         :text="render.textileLength.header"
@@ -91,7 +90,7 @@
                         text-size="mini"
                     />
 
-                    <!-- attract: ПС, м.п. -->
+                    <!-- __ ПС, м.п. -->
                     <AppLabelMultiLine
                         v-if="render.fabricLength.show"
                         :text="render.fabricLength.header"
@@ -105,7 +104,7 @@
                 </div>
 
                 <div v-if="tabs.common.shown">
-                    <!-- attract: Фильтр: Статус рулонов. Показываем только на общей вкладке -->
+                    <!-- __ Фильтр: Статус рулонов. Показываем только на общей вкладке -->
                     <AppSelectSimple
                         :select-data="rollStatuses"
                         :type="statusFilterType"
@@ -117,7 +116,7 @@
             </div>
 
             <div>
-                <!-- attract: Дата пр-ва -->
+                <!-- __ Дата пр-ва -->
                 <AppLabelMultiLine
                     v-if="render.finishAt.show"
                     :text="render.finishAt.header"
@@ -129,7 +128,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Фильтр: Дата пр-ва -->
+                <!-- __ Фильтр: Дата пр-ва -->
                 <AppInputText
                     v-if="render.finishAt.show"
                     id="finish-at-search"
@@ -142,7 +141,7 @@
                 />
             </div>
 
-            <!-- attract: Ответственный за производство -->
+            <!-- __ Ответственный за производство -->
             <AppLabelMultiLine
                 v-if="render.finishBy.show"
                 :text="render.finishBy.header"
@@ -154,22 +153,22 @@
                 text-size="mini"
             />
 
-            <div v-if="!tabs.moved.shown" class="flex">
-                <!-- attract: Флаг учета в 1С -->
-                <AppLabelMultiLine
-                    v-if="render.registration_1C_Flag.show"
-                    :text="render.registration_1C_Flag.header"
-                    :title="render.registration_1C_Flag.title"
-                    :type="render.registration_1C_Flag.type(true)"
-                    :width="render.registration_1C_Flag.width"
-                    align="center"
-                    class="header-item"
-                    text-size="mini"
-                />
-            </div>
+            <!--<div v-if="!tabs.moved.shown" class="flex">-->
+            <!-- __ Флаг учета в 1С -->
+            <AppLabelMultiLine
+                v-if="render.registration_1C_Flag.show"
+                :text="render.registration_1C_Flag.header"
+                :title="render.registration_1C_Flag.title"
+                :type="render.registration_1C_Flag.type(true)"
+                :width="render.registration_1C_Flag.width"
+                align="center"
+                class="header-item"
+                text-size="mini"
+            />
+            <!--</div>-->
 
             <div>
-                <!-- attract: Дата учета в 1С -->
+                <!-- __ Дата учета в 1С -->
                 <AppLabelMultiLine
                     v-if="render.registration_1C_At.show"
                     :text="render.registration_1C_At.header"
@@ -181,22 +180,22 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Фильтр: Дата учета в 1С -->
-                <div v-if="tabs.registered_1C.shown || tabs.moved.shown">
-                    <AppInputText
-                        v-if="render.registration_1C_At.show"
-                        id="register-at-search"
-                        v-model.trim="register1CAtFilter"
-                        :width="render.registration_1C_At.width"
-                        placeholder="дд.мм.гггг"
-                        text-size="mini"
-                        type="primary"
-                        @input="handleRegistered1CAtInput"
-                    />
-                </div>
+                <!-- __ Фильтр: Дата учета в 1С -->
+                <!--<div v-if="tabs.registered_1C.shown || tabs.moved.shown">-->
+                <AppInputText
+                    v-if="render.registration_1C_At.show"
+                    id="register-at-search"
+                    v-model.trim="register1CAtFilter"
+                    :width="render.registration_1C_At.width"
+                    placeholder="дд.мм.гггг"
+                    text-size="mini"
+                    type="primary"
+                    @input="handleRegistered1CAtInput"
+                />
+                <!--</div>-->
             </div>
 
-            <!-- attract: Ответственный за учет в 1С -->
+            <!-- __ Ответственный за учет в 1С -->
             <AppLabelMultiLine
                 v-if="render.registration_1C_By.show"
                 :text="render.registration_1C_By.header"
@@ -208,63 +207,63 @@
                 text-size="mini"
             />
 
-            <!-- attract: Показываем только на вкладке Перемещенные на закрой -->
-            <div v-if="tabs.moved.shown" class="flex">
+            <!-- __ Сейчас показываем везде, раньше - Показываем только на вкладке Перемещенные на закрой -->
+            <!--<div v-if="tabs.moved.shown" class="flex">-->
 
-                <!-- attract: Флаг перемещения на закрой -->
-                <AppLabelMultiLine
-                    v-if="render.moveToCutFlag.show"
-                    :text="render.moveToCutFlag.header"
-                    :title="render.moveToCutFlag.title"
-                    :type="render.moveToCutFlag.type(true)"
-                    :width="render.moveToCutFlag.width"
-                    align="center"
-                    class="header-item"
-                    text-size="mini"
-                />
-
-                <div>
-                    <!-- attract: Дата перемещения на закрой -->
-                    <AppLabelMultiLine
-                        v-if="render.moveToCutAt.show"
-                        :text="render.moveToCutAt.header"
-                        :title="render.moveToCutAt.title"
-                        :type="render.moveToCutAt.type(true)"
-                        :width="render.moveToCutAt.width"
-                        align="center"
-                        class="header-item"
-                        text-size="mini"
-                    />
-
-                    <!-- attract: Фильтр: Дата перемещения на закрой -->
-                    <AppInputText
-                        v-if="render.moveToCutAt.show"
-                        id="moved-at-search"
-                        v-model.trim="movedAtFilter"
-                        :width="render.moveToCutAt.width"
-                        placeholder="дд.мм.гггг"
-                        text-size="mini"
-                        type="primary"
-                        @input="handleMovedAtInput"
-                    />
-                </div>
-
-                <!-- attract: Ответственный за перемещение на закрой -->
-                <AppLabelMultiLine
-                    v-if="render.moveToCutBy.show"
-                    :text="render.moveToCutBy.header"
-                    :title="render.moveToCutBy.title"
-                    :type="render.moveToCutBy.type(true)"
-                    :width="render.moveToCutBy.width"
-                    align="center"
-                    class="header-item"
-                    text-size="mini"
-                />
-
-            </div>
+            <!-- __ Флаг перемещения на закрой -->
+            <AppLabelMultiLine
+                v-if="render.moveToCutFlag.show"
+                :text="render.moveToCutFlag.header"
+                :title="render.moveToCutFlag.title"
+                :type="render.moveToCutFlag.type(true)"
+                :width="render.moveToCutFlag.width"
+                align="center"
+                class="header-item"
+                text-size="mini"
+            />
 
             <div>
-                <!-- attract: Примечание -->
+                <!-- __ Дата перемещения на закрой -->
+                <AppLabelMultiLine
+                    v-if="render.moveToCutAt.show"
+                    :text="render.moveToCutAt.header"
+                    :title="render.moveToCutAt.title"
+                    :type="render.moveToCutAt.type(true)"
+                    :width="render.moveToCutAt.width"
+                    align="center"
+                    class="header-item"
+                    text-size="mini"
+                />
+
+                <!-- __ Фильтр: Дата перемещения на закрой -->
+                <AppInputText
+                    v-if="render.moveToCutAt.show"
+                    id="moved-at-search"
+                    v-model.trim="movedAtFilter"
+                    :width="render.moveToCutAt.width"
+                    placeholder="дд.мм.гггг"
+                    text-size="mini"
+                    type="primary"
+                    @input="handleMovedAtInput"
+                />
+            </div>
+
+            <!-- __ Ответственный за перемещение на закрой -->
+            <AppLabelMultiLine
+                v-if="render.moveToCutBy.show"
+                :text="render.moveToCutBy.header"
+                :title="render.moveToCutBy.title"
+                :type="render.moveToCutBy.type(true)"
+                :width="render.moveToCutBy.width"
+                align="center"
+                class="header-item"
+                text-size="mini"
+            />
+
+            <!--</div>-->
+
+            <div>
+                <!-- __ Примечание -->
                 <AppLabelMultiLine
                     v-if="render.description.show"
                     :text="render.description.header"
@@ -276,7 +275,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Фильтр: Примечание -->
+                <!-- __ Фильтр: Примечание -->
                 <AppInputText
                     v-if="render.description.show"
                     id="description-search"
@@ -290,7 +289,7 @@
 
         </div>
 
-        <!-- attract: Сами данные -->
+        <!-- __ Сами данные -->
         <div
             v-if="doneRolls.length"
             :key="updateTemplate"
@@ -302,7 +301,7 @@
                 class="mt-2"
             >
                 <div class="flex">
-                    <!-- attract: +/- -->
+                    <!-- __ +/- -->
                     <AppLabel
                         :text="fabricRolls.fabric.collapsed ? '+' : '-'"
                         :width="render.rollNumber.width"
@@ -313,7 +312,7 @@
                         @click="toggleCollapse(fabricRolls)"
                     />
 
-                    <!-- attract: ПС - Название группы -->
+                    <!-- __ ПС - Название группы -->
                     <AppLabel
                         :text="fabricRolls.fabric.displayName"
                         :title="fabricRolls.fabric.displayName"
@@ -325,7 +324,7 @@
                         @click="toggleCollapse(fabricRolls)"
                     />
 
-                    <!-- attract: Ткань группы, м.п. -->
+                    <!-- __ Ткань группы, м.п. -->
                     <AppLabel
                         :text="fabricRolls.fabric.textileLength.toFixed(2)"
                         :title="render.textileLength.title"
@@ -337,7 +336,7 @@
                         @click="toggleCollapse(fabricRolls)"
                     />
 
-                    <!-- attract: ПС группы, м.п. -->
+                    <!-- __ ПС группы, м.п. -->
                     <AppLabel
                         :text="fabricRolls.fabric.fabricLength.toFixed(2)"
                         :title="render.fabricLength.title"
@@ -350,7 +349,7 @@
                     />
                 </div>
 
-                <!-- attract: Показываем группу -->
+                <!-- __ Показываем группу -->
                 <div>
                     <div v-if="!fabricRolls.fabric.collapsed">
                         <div
@@ -358,7 +357,7 @@
                             :key="roll.id"
                             class="flex"
                         >
-                            <!-- attract: № рулона  -->
+                            <!-- __ № рулона  -->
                             <AppLabel
                                 v-if="render.rollNumber.show"
                                 :text="render.rollNumber.data(roll)"
@@ -369,7 +368,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: ПС  -->
+                            <!-- __ ПС  -->
                             <AppLabel
                                 v-if="render.fabric.show"
                                 :text="render.fabric.data(roll)"
@@ -379,7 +378,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: Ткань, м.п. -->
+                            <!-- __ Ткань, м.п. -->
                             <AppLabel
                                 v-if="render.textileLength.show"
                                 :text="render.textileLength.data(roll)"
@@ -390,7 +389,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: ПС, м.п. -->
+                            <!-- __ ПС, м.п. -->
                             <AppLabel
                                 v-if="render.fabricLength.show"
                                 :text="render.fabricLength.data(roll)"
@@ -401,7 +400,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: Дата пр-ва -->
+                            <!-- __ Дата пр-ва -->
                             <AppLabel
                                 v-if="render.finishAt.show"
                                 :text="render.finishAt.data(roll)"
@@ -412,7 +411,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: Ответственный за производство -->
+                            <!-- __ Ответственный за производство -->
                             <AppLabel
                                 v-if="render.finishBy.show"
                                 :text="render.finishBy.data(roll)"
@@ -423,22 +422,22 @@
                                 text-size="micro"
                             />
 
-                            <div v-if="!tabs.moved.shown" class="flex">
-                                <!-- attract: Флаг учета в 1С -->
-                                <AppLabel
-                                    v-if="render.registration_1C_Flag.show"
-                                    :text="render.registration_1C_Flag.data(roll)"
-                                    :text-size="render.registration_1C_Flag.textSize(roll)"
-                                    :title="render.registration_1C_Flag.title"
-                                    :type="render.registration_1C_Flag.type(false, roll)"
-                                    :width="render.registration_1C_Flag.width"
-                                    align="center"
-                                    class="cursor-pointer"
-                                    @click="changeRegistrationStatus(roll)"
-                                />
-                            </div>
+                            <!--<div v-if="!tabs.moved.shown" class="flex">-->
+                            <!-- __ Флаг учета в 1С -->
+                            <AppLabel
+                                v-if="render.registration_1C_Flag.show"
+                                :text="render.registration_1C_Flag.data(roll)"
+                                :text-size="render.registration_1C_Flag.textSize(roll)"
+                                :title="render.registration_1C_Flag.title"
+                                :type="render.registration_1C_Flag.type(false, roll)"
+                                :width="render.registration_1C_Flag.width"
+                                align="center"
+                                class="cursor-pointer"
+                                @click="changeRegistrationStatus(roll)"
+                            />
+                            <!--</div>-->
 
-                            <!-- attract: Дата учета в 1С -->
+                            <!-- __ Дата учета в 1С -->
                             <AppLabel
                                 v-if="render.registration_1C_At.show"
                                 :text="render.registration_1C_At.data(roll)"
@@ -449,7 +448,7 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: Ответственный за учет в 1С -->
+                            <!-- __ Ответственный за учет в 1С -->
                             <AppLabel
                                 v-if="render.registration_1C_By.show"
                                 :text="render.registration_1C_By.data(roll)"
@@ -460,45 +459,45 @@
                                 text-size="micro"
                             />
 
-                            <!-- attract: Показываем только на вкладке Перемещенные на закрой -->
-                            <div v-if="tabs.moved.shown" class="flex">
+                            <!-- __ Сейчас показываем везде. Раньше - Показываем только на вкладке Перемещенные на закрой -->
+                            <!--<div v-if="tabs.moved.shown" class="flex">-->
 
-                                <!-- attract: Флаг перемещения на закрой -->
-                                <AppLabel
-                                    v-if="render.moveToCutFlag.show"
-                                    :text="render.moveToCutFlag.data(roll)"
-                                    :text-size="render.moveToCutFlag.textSize(roll)"
-                                    :title="render.moveToCutFlag.title"
-                                    :type="render.moveToCutFlag.type(false, roll)"
-                                    :width="render.moveToCutFlag.width"
-                                    align="center"
-                                    class="cursor-pointer"
-                                    @click="changeMovingStatus(roll)"
-                                />
+                            <!-- __ Флаг перемещения на закрой -->
+                            <AppLabel
+                                v-if="render.moveToCutFlag.show"
+                                :text="render.moveToCutFlag.data(roll)"
+                                :text-size="render.moveToCutFlag.textSize(roll)"
+                                :title="render.moveToCutFlag.title"
+                                :type="render.moveToCutFlag.type(false, roll)"
+                                :width="render.moveToCutFlag.width"
+                                align="center"
+                                class="cursor-pointer"
+                                @click="changeMovingStatus(roll)"
+                            />
 
-                                <!-- attract: Дата перемещения на закрой -->
-                                <AppLabel
-                                    v-if="render.moveToCutAt.show"
-                                    :text="render.moveToCutAt.data(roll)"
-                                    :title="render.moveToCutAt.title"
-                                    :type="render.moveToCutAt.type(false, roll)"
-                                    :width="render.moveToCutAt.width"
-                                    align="center"
-                                    text-size="micro"
-                                />
+                            <!-- __ Дата перемещения на закрой -->
+                            <AppLabel
+                                v-if="render.moveToCutAt.show"
+                                :text="render.moveToCutAt.data(roll)"
+                                :title="render.moveToCutAt.title"
+                                :type="render.moveToCutAt.type(false, roll)"
+                                :width="render.moveToCutAt.width"
+                                align="center"
+                                text-size="micro"
+                            />
 
-                                <!-- attract: Ответственный за перемещение на закрой -->
-                                <AppLabel
-                                    v-if="render.moveToCutBy.show"
-                                    :text="render.moveToCutBy.data(roll)"
-                                    :title="render.moveToCutBy.title"
-                                    :type="render.moveToCutBy.type(false, roll)"
-                                    :width="render.moveToCutBy.width"
-                                    align="center"
-                                    text-size="micro"
-                                />
+                            <!-- __ Ответственный за перемещение на закрой -->
+                            <AppLabel
+                                v-if="render.moveToCutBy.show"
+                                :text="render.moveToCutBy.data(roll)"
+                                :title="render.moveToCutBy.title"
+                                :type="render.moveToCutBy.type(false, roll)"
+                                :width="render.moveToCutBy.width"
+                                align="center"
+                                text-size="micro"
+                            />
 
-                            </div>
+                            <!--</div>-->
 
                             <!-- attract: Примечание -->
                             <AppLabel
@@ -517,7 +516,7 @@
 
         <div v-else>
             <div class="mt-5">
-                <!-- attract: Примечание -->
+                <!-- __ Примечание -->
                 <AppLabel
                     align="center"
                     height="h-[100px]"
@@ -530,7 +529,7 @@
         </div>
     </div>
 
-    <!-- attract: Модальное окно для подтверждений -->
+    <!-- __ Модальное окно для подтверждений -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
@@ -538,7 +537,7 @@
         mode="confirm"
     />
 
-    <!-- attract: Callout -->
+    <!-- __ Callout -->
     <AppCallout
         :show="calloutShow"
         :text="calloutText"
@@ -547,19 +546,21 @@
 </template>
 
 <script setup>
-import {reactive, ref, watch} from 'vue'
+import { reactive, ref, watch } from 'vue'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {FABRIC_ROLL_STATUS} from '@/app/constants/fabrics.js'
+import { FABRIC_ROLL_STATUS } from '@/app/constants/fabrics.js'
 
-import {getFormatFIO} from '@/app/helpers/workers/helpers_workers.js'
-import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
+import { getFormatFIO } from '@/app/helpers/workers/helpers_workers.js'
+import { getTypeByRollStatus } from '@/app/helpers/manufacture/helpers_fabric.js'
 import {
     formatDateAndTimeInShortFormat,
     getDateFromDateTimeString,
     validateInputDateHelper
 } from '@/app/helpers/helpers_date.js'
+
+import { log } from '@/app/helpers/helpers.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'
@@ -597,8 +598,16 @@ const tabs = reactive({
         type: FABRIC_ROLL_STATUS.REGISTERED_1C.TYPE,
         code: FABRIC_ROLL_STATUS.REGISTERED_1C.CODE,
     },
-    moved: {
+    unregistered_1C: {
         id: 4,
+        shown: false,
+        enabled: true,
+        name: ['Учет не поставленных', 'в 1С рулонов'],
+        type: FABRIC_ROLL_STATUS.UNREGISTERED_1C.TYPE,
+        code: FABRIC_ROLL_STATUS.UNREGISTERED_1C.CODE,
+    },
+    moved: {
+        id: 5,
         shown: false,
         enabled: true,
         name: ['Учет перемещенных', 'на раскрой рулонов'],
@@ -632,12 +641,34 @@ const getRollsByStatus = (inRolls = [], status = COMMON_CODE) => {
     // копируем массив рулонов, чтобы не менять оригинал
     let $rolls = JSON.parse(JSON.stringify(inRolls))
 
-    // attract: если передан статус, то фильтруем массив рулонов по статусу иначе убираем для общей вкладки перемещенные на закрой
-    if (status !== COMMON_CODE) {
-        $rolls = $rolls.filter((roll) => roll.status === status)
-    } else {
-        $rolls = $rolls.filter((roll) => roll.status !== FABRIC_ROLL_STATUS.MOVED.CODE)
+    // __ Учет в 1С - признак
+    // __ если передан признак учета в 1С, то фильтруем массив рулонов по признаку учета в 1С
+    switch (status) {
+        case COMMON_CODE:
+            break
+        case FABRIC_ROLL_STATUS.REGISTERED_1C.CODE:
+            $rolls = $rolls.filter(roll => roll.isRegistered_1C)
+            break
+        case FABRIC_ROLL_STATUS.UNREGISTERED_1C.CODE:
+            $rolls = $rolls.filter(roll => !roll.isRegistered_1C)
+            break
+        default:
+            $rolls = $rolls.filter(roll => roll.status === status)
     }
+
+    // if (status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE) {
+    //     $rolls = $rolls.filter(roll => roll.isRegistered_1C)
+    // } else if (status !== COMMON_CODE) {
+    //     $rolls = $rolls.filter((roll) => roll.status === status)
+    // }
+
+    // __ Старый код, где учет в 1С - статус
+    // __ если передан статус, то фильтруем массив рулонов по статусу иначе убираем для общей вкладки перемещенные на закрой
+    // if (status !== COMMON_CODE) {
+    //     $rolls = $rolls.filter((roll) => roll.status === status)
+    // } else {
+    //     $rolls = $rolls.filter((roll) => roll.status !== FABRIC_ROLL_STATUS.MOVED.CODE)
+    // }
 
     // создаем массив уникальных id ПС
     const uniqueFabricIds = new Set()
@@ -647,7 +678,7 @@ const getRollsByStatus = (inRolls = [], status = COMMON_CODE) => {
 
     // const uniqueFabricIdsArray = Array.from(uniqueFabricIds)
 
-    //attract: создаем массив объектов с рулонами по ПС с группировкой по ПС и сортировкой по id
+    // __ создаем массив объектов с рулонами по ПС с группировкой по ПС и сортировкой по id
     const resultArray = []
 
     for (const fabricId of uniqueFabricIds) {
@@ -695,7 +726,10 @@ const calloutShow = ref(false)
 const calloutClose = (delay = 5000) => setTimeout(() => (calloutShow.value = false), delay) // закрываем callout
 
 // attract: Задаем глобальный объект для унификации отображения рулонов
-const getTypeOfRoll = (rollStatus, flag = false) => (flag ? 'primary' : getTypeByRollStatus(rollStatus))
+const getTypeOfRoll = (roll, flag = false) => {
+    if (flag) return 'primary'
+    return getTypeByRollStatus(roll?.status, roll.isRegistered_1C)
+}
 
 const render = reactive({
     rollNumber: {
@@ -703,7 +737,7 @@ const render = reactive({
         width: 'w-[60px]',
         show: true,
         title: 'Учетный номер рулона',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => roll.id.toString(),
     },
     fabric: {
@@ -711,7 +745,7 @@ const render = reactive({
         width: 'w-[250px]',
         show: true,
         title: 'Полотно стеганное',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => roll.fabric.display_name,
     },
     textileLength: {
@@ -719,7 +753,7 @@ const render = reactive({
         width: 'w-[60px]',
         show: true,
         title: 'Ткань, м.п.',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => roll.textile_length.toFixed(3),
     },
     fabricLength: {
@@ -727,7 +761,7 @@ const render = reactive({
         width: 'w-[60px]',
         show: true,
         title: 'ПС, м.п.',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => (roll.textile_length / roll.rate).toFixed(2),
     },
     finishAt: {
@@ -735,7 +769,7 @@ const render = reactive({
         width: 'w-[100px]',
         show: true,
         title: 'Дата производства',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => formatDateAndTimeInShortFormat(roll.finish_at, false),
     },
     finishBy: {
@@ -743,7 +777,7 @@ const render = reactive({
         width: 'w-[150px]',
         show: true,
         title: 'Дата производства',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => getFormatFIO(roll.finish_by),
     },
     registration_1C_Flag: {
@@ -751,9 +785,10 @@ const render = reactive({
         width: 'w-[60px]',
         show: true,
         title: 'Учет в 1С',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         textSize: (roll) => (roll.registration_1C_by.id !== 0 ? 'large' : 'mini'),
-        data: (roll) => (roll.registration_1C_by.id !== 0 ? '✅' : '❌'),
+        data: (roll) => (roll.isRegistered_1C ? '✅' : '❌'),
+        // data: (roll) => (roll.registration_1C_by.id !== 0 ? '✅' : '❌'),
         // textSize: (roll) => roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE ? 'large' : 'mini',
         // data: (roll) => roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE ? '✅' : '❌',
     },
@@ -762,7 +797,7 @@ const render = reactive({
         width: 'w-[100px]',
         show: true,
         title: 'Дата учета в 1С',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => formatDateAndTimeInShortFormat(roll.registration_1C_at, false),
     },
     registration_1C_By: {
@@ -770,16 +805,16 @@ const render = reactive({
         width: 'w-[150px]',
         show: true,
         title: 'Ответственный за учет в 1С',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => (roll.registration_1C_by.id !== 0 ? roll.registration_1C_by.name : ''),
         // data: (roll) => roll.registration_1C_by.id !== 0 ?  getFormatFIO(roll.registration_1C_by) : '',
     },
     moveToCutFlag: {
         header: ['--->', 'закрой'],
         width: 'w-[60px]',
-        show: false,
+        show: true,
         title: 'Перемещение на закрой',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         textSize: (roll) => (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE ? 'large' : 'mini'),
         data: (roll) => (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE ? '✅' : '❌'),
     },
@@ -788,7 +823,7 @@ const render = reactive({
         width: 'w-[100px]',
         show: true,
         title: 'Дата перемещения на закрой',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => formatDateAndTimeInShortFormat(roll.move_to_cut_at, false),
     },
     moveToCutBy: {
@@ -796,7 +831,7 @@ const render = reactive({
         width: 'w-[150px]',
         show: true,
         title: 'Ответственный за перемещение на закрой',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => (roll.move_to_cut_by.id !== 0 ? roll.move_to_cut_by.name : ''),
         // data: (roll) => roll.move_to_cut_by.id !== 0 ? getFormatFIO(roll.move_to_cut_by) : '',
     },
@@ -805,28 +840,92 @@ const render = reactive({
         width: 'w-[400px]',
         show: true,
         title: 'Примечание',
-        type: (flag = false, roll) => getTypeOfRoll(roll?.status, flag),
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => roll.descr,
     },
 })
 
-// attract: Создаем статусы рулонов для фильтра
+// __ Создаем статусы рулонов для фильтра
 const rollStatuses = {
     name: 'statuses',
     data: [
-        {id: 0, name: 'Все статусы', selected: true, disabled: false},
-        {id: FABRIC_ROLL_STATUS.DONE.CODE, name: FABRIC_ROLL_STATUS.DONE.TITLE, selected: false, disabled: false},
+        {
+            id: 0,
+            name: 'Все статусы',
+            selected: true,
+            disabled: false
+        },
+        {
+            id: FABRIC_ROLL_STATUS.DONE.CODE,
+            name: FABRIC_ROLL_STATUS.DONE.TITLE,
+            selected: false,
+            disabled: false
+        },
+        {
+            id: FABRIC_ROLL_STATUS.MOVED.CODE,
+            name: FABRIC_ROLL_STATUS.MOVED.TITLE,
+            selected: false,
+            disabled: false,
+        },
         {
             id: FABRIC_ROLL_STATUS.REGISTERED_1C.CODE,
             name: FABRIC_ROLL_STATUS.REGISTERED_1C.TITLE,
             selected: false,
             disabled: false,
         },
+        {
+            id: FABRIC_ROLL_STATUS.UNREGISTERED_1C.CODE,
+            name: FABRIC_ROLL_STATUS.UNREGISTERED_1C.TITLE,
+            selected: false,
+            disabled: false,
+        },
+
     ],
 }
 
-// attract: Ставим на учет в 1С
+// __ Ставим на учет в 1С
+// __ Здесь как признак
 const changeRegistrationStatus = async (roll) => {
+
+    log(roll)
+
+    // if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
+    //     calloutType.value = 'danger'
+    //     calloutText.value = 'Рулон уже перемещен на закрой.'
+    //     calloutShow.value = true
+    //     calloutClose()
+    //     return
+    // }
+
+    if (!roll.isRegistered_1C) {
+        modalText.value = ['Будет установлен признак учета рулона в 1С.', 'Продолжить?']
+        modalType.value = FABRIC_ROLL_STATUS.REGISTERED_1C.TYPE
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            roll.status = true
+            // roll.status = FABRIC_ROLL_STATUS.REGISTERED_1C.CODE
+            const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
+            allRolls.value = await getNotAcceptedToCutRolls()
+            // console.log(res)
+        }
+    } else {
+        modalText.value = ['Будет снят признак учета рулона в 1С.', 'Продолжить?']
+        modalType.value = FABRIC_ROLL_STATUS.DONE.TYPE
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            roll.status = false
+            // roll.status = FABRIC_ROLL_STATUS.DONE.CODE
+            const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
+            allRolls.value = await getNotAcceptedToCutRolls()
+            // console.log(res)
+        }
+    }
+}
+
+// Здесь реализован как статус
+const changeRegistrationStatus_Old = async (roll) => {
     // console.log(roll)
     if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
         calloutType.value = 'danger'
@@ -860,9 +959,40 @@ const changeRegistrationStatus = async (roll) => {
         }
     }
 }
+//__ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// attract: Перемещаем на закрой
+
+// __ Перемещаем на закрой
+
 const changeMovingStatus = async (roll) => {
+
+    // log(roll)
+    return
+
+    if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
+        calloutType.value = 'danger'
+        calloutText.value = 'Рулон уже перемещен на закрой.'
+        calloutShow.value = true
+        calloutClose()
+        return
+    }
+
+    if (roll.status === FABRIC_ROLL_STATUS.DONE.CODE) {
+        modalText.value = ['Рулон:', `№ ${roll.id}`, `ПС: ${roll.fabric.display_name}`, 'будет перемещен на закрой.', 'Продолжить?']
+        modalType.value = FABRIC_ROLL_STATUS.MOVED.TYPE
+
+        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+        if (answer) {
+            roll.status = FABRIC_ROLL_STATUS.MOVED.CODE
+            const res = await fabricsStore.setRollMovedStatus(roll.id, roll.status)
+            allRolls.value = await getNotAcceptedToCutRolls()
+            // console.log(res)
+        }
+    }
+}
+
+// __ Здесь реализован как статус
+const changeMovingStatus_Old = async (roll) => {
     // console.log(roll)
 
     // Проверяем что рулон учтен в 1С
@@ -899,6 +1029,9 @@ const changeMovingStatus = async (roll) => {
     }
 }
 
+// __ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 // attract: Фильтры
 const fabricFilter = ref('')
 const rollNumberFilter = ref('')
@@ -912,7 +1045,7 @@ const register1CAtFilter = ref('')
 // attract: Обработка выбора фильтра статуса
 const filterByStatus = (item) => {
     statusFilter.value = item.id
-    console.log(item)
+    log(item)
 
     if (item.id === 0) {
         statusFilterType.value = 'light'
@@ -981,19 +1114,21 @@ const handleRegistered1CAtInput = (event) => {
 // attract: Вспомогалочка: преобразует исходные данные в нужную структуру для отображения в шаблоне
 const reformatData = (rolls, tabs) => {
     const activeTab = Object.values(tabs).find((tab) => tab.shown)
-    doneRolls.value = getRollsByStatus(rolls, activeTab.code) // преобразуем в структуру для отображения
+    doneRolls.value = getRollsByStatus(rolls, activeTab.code)   // преобразуем в структуру для отображения
 }
 
-//attract: Применяем фильтры
-const filtersApply = ({
-                          fabricFilter,
-                          rollNumberFilter,
-                          finishAtFilter,
-                          statusFilter,
-                          descriptionFilter,
-                          movedAtFilter,
-                          register1CAtFilter
-                      }) => {
+// __ Применяем фильтры
+const filtersApply = (
+    {
+        fabricFilter,
+        rollNumberFilter,
+        finishAtFilter,
+        statusFilter,
+        descriptionFilter,
+        movedAtFilter,
+        register1CAtFilter
+    }
+) => {
     // prettier-ignore
     let filteredAllRolls = allRolls.value
         .filter(roll => roll.id.toString().includes(rollNumberFilter))
@@ -1004,8 +1139,24 @@ const filtersApply = ({
         .filter(roll => getDateFromDateTimeString(roll.registration_1C_at).includes(register1CAtFilter))
 
     // prettier-ignore
-    if ([FABRIC_ROLL_STATUS.DONE.CODE, FABRIC_ROLL_STATUS.REGISTERED_1C.CODE].includes(statusFilter)) {
-        filteredAllRolls = filteredAllRolls.filter(roll => roll.status === statusFilter)
+    if (
+        [
+            FABRIC_ROLL_STATUS.DONE.CODE,
+            FABRIC_ROLL_STATUS.REGISTERED_1C.CODE,
+            FABRIC_ROLL_STATUS.UNREGISTERED_1C.CODE,
+            FABRIC_ROLL_STATUS.MOVED.CODE
+        ].includes(statusFilter)) {
+        switch (statusFilter) {
+            case FABRIC_ROLL_STATUS.REGISTERED_1C.CODE:
+                filteredAllRolls = filteredAllRolls.filter(roll => roll.isRegistered_1C)
+                break
+            case FABRIC_ROLL_STATUS.UNREGISTERED_1C.CODE:
+                filteredAllRolls = filteredAllRolls.filter(roll => !roll.isRegistered_1C)
+                break
+            default:
+                filteredAllRolls = filteredAllRolls.filter(roll => roll.status === statusFilter)
+        }
+
     }
 
     return filteredAllRolls

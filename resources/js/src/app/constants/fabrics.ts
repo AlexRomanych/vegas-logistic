@@ -146,7 +146,7 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TYPE: 'orange',
     },
 
-    // descr: Рулон поставленный на учет в 1С
+    // descr: Рулон поставленный на учет в 1С. Не учавствует в движении заявки
     REGISTERED_1C: {
         WORD: 'registered',
         CODE: 6,
@@ -177,6 +177,15 @@ export const FABRIC_ROLL_STATUS = Object.freeze({
         TITLE: 'Отменено',
         TYPE: 'stone',
     },
+
+    // ___ Рулон, без учета в 1С (чисто технический статус). Не учавствует в движении заявки
+    UNREGISTERED_1C: {
+        WORD: 'unregistered',
+        CODE: 100,
+        TITLE: 'Без учета в 1С',
+        TYPE: 'dark',
+    },
+
 })
 
 

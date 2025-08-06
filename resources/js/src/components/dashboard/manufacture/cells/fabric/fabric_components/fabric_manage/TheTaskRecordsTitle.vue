@@ -20,21 +20,21 @@
         <AppLabelMultiLine
             :text="['Буфер', 'ПС, м.п.']"
             align="center"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 
         <AppLabelMultiLine
             :text="['Ср. длина', 'ткани, м.п.']"
             align="center"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 
         <AppLabelMultiLine
             :text="['Ср. длина', 'ПС, м.п.']"
             align="center"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 
@@ -42,7 +42,7 @@
             :text="['Кол-во,', 'рул.']"
             align="center"
             type="primary"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 
@@ -50,14 +50,14 @@
             :text="['Длина', 'ткани, м.п.']"
             align="center"
             type="primary"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 
         <AppLabelMultiLine
             :text="['Длина ПС,', 'м.п.']"
             align="center"
-            width="w-[70px]"
+            width="w-[80px]"
             text-size="mini"
         />
 

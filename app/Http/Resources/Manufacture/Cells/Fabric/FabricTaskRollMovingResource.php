@@ -75,6 +75,8 @@ class FabricTaskRollMovingResource extends JsonResource
 //                'surname' => $this->registration1CBy->surname,
 //                'patronymic' => $this->registration1CBy->patronymic,
             ],
+            'isRegistered_1C' => $this->is_registered,
+            //'isRegistered_1C' => parent::toArray($request),
 //            'registration_1C_by' => [
 //                'id' => $this->registration1CBy->id,
 //                'name' => $this->registration1CBy->name,
