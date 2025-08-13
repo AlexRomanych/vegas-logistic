@@ -270,6 +270,10 @@ Route::prefix('/fabrics/tasks')
         Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
         Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
         Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
+        Route::put('/context/change-order/', [CellFabricTaskContextController::class, 'changeContextOrder']);
+        Route::get('/context/', [CellFabricTaskContextController::class, 'getOrderContext']);
+        Route::post('/context/add/roll', [CellFabricTaskContextController::class, 'addOrderContextRoll']);
+
 
         Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
         Route::post('/execute/roll/add/', [CellFabricTaskRollController::class, 'addExecuteRoll']);

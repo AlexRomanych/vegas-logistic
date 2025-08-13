@@ -29,11 +29,11 @@
 </template>
 
 <script setup>
-import {reactive, ref, watch} from 'vue'
+import { reactive, ref, watch } from 'vue'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '@/app/constants/fabrics.js'
+import { FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST } from '@/app/constants/fabrics.js'
 
 import {
     formatTimeWithLeadingZeros,
@@ -46,8 +46,8 @@ import TheTaskExecuteRoll
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRoll.vue'
 
 
-import AppLabel from '@/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+// import AppLabel from '@/components/ui/labels/AppLabel.vue'
+// import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 
 const props = defineProps({
@@ -110,7 +110,7 @@ fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
 console.log('props.rolls: ', props.rolls)
 
 
-const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST);
+const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST)
 console.log(FABRIC_ROLL_STATUS_ARRAY)
 
 
@@ -130,7 +130,18 @@ const getHeaderType = () => 'primary'
 
 // attract: Задаем глобальный объект для унификации отображения рулонов
 const rollsRender = reactive({
-    rollNumber: {width: 'w-[60px]', show: true, title: '№ рулона', data: (roll_exec) => roll_exec.id.toString()},
+    position: {
+        width: 'w-[60px]',
+        show: true,
+        title: '№ п/п',
+        data: (roll_exec) => roll_exec.position.toString()
+    },
+    rollNumber: {
+        width: 'w-[60px]',
+        show: true,
+        title: '№ рулона',
+        data: (roll_exec) => roll_exec.id.toString()
+    },
     fabricName: {
         width: 'w-[290px]',
         show: true,

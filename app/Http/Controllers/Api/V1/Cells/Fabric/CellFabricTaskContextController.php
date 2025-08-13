@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskContextCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskContextResource;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskContextResourceDate;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
@@ -14,8 +15,12 @@ use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class CellFabricTaskContextController extends Controller
 {
@@ -105,8 +110,8 @@ class CellFabricTaskContextController extends Controller
                 // attract: Обновляем статусы СЗ на 'Создано'
                 for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
 
-//                // Получаем название машины
-//                $machineStr = FabricService::getFabricMachineNameById($i);
+                    //                // Получаем название машины
+                    //                $machineStr = FabricService::getFabricMachineNameById($i);
 
                     // attract: Получаем само СЗ
                     $task = FabricTask::query()
@@ -192,4 +197,153 @@ class CellFabricTaskContextController extends Controller
         }
     }
 
+
+    /**
+     * ___ Меняет порядок рулонов контекста СЗ
+     * @return string
+     * @throws Throwable
+     */
+    public function changeContextOrder(Request $request)
+    {
+
+        try {
+
+            $payload = $request->validate([
+                'data' => 'required|array',
+                'data.task' => 'required|integer',
+                'data.machine' => 'required|integer',
+                'data.context' => 'required|array',
+            ]);
+
+            $data = $payload['data']; // одна data в axios, вторая data в самом объекте task
+
+
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $data['task'])
+                ->with('fabricTaskContexts')
+                ->first();
+
+            if (!$task) {
+                throw new Exception('Task not found');
+            }
+
+            // __ Проверяем на правильность следования рулонов с фронта
+            $contextData = FabricService::checkContextOrder($task, $data['context']);
+
+            DB::transaction(function () use ($contextData, $task) {
+
+                foreach ($contextData as $context) {
+
+                    // __ плановый рулон от ОПП
+                    $taskRollContext = FabricTaskContext::query()
+                        ->where('fabric_task_id', $task->id)
+                        ->where('fabric_id', $context['fabric_id'])
+                        ->where('editable', true)
+                        ->update(
+                            [
+                                'roll_position' => $context['roll_position'],          // порядок рулонов
+                            ]
+                        );
+
+                }
+            });
+
+            return EndPointStaticRequestAnswer::ok();
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * __ Получаем контекст СЗ по СЗ и стегальной машине
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getOrderContext(Request $request)
+    {
+        try {
+            $payload = $request->validate([
+                'task' => 'required|integer',           // task_id
+                'machine' => 'required|integer',        // machine_id
+            ]);
+
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $payload['task'])
+                ->where('fabric_machine_id', $payload['machine'])
+                ->with(['fabricTaskContexts.fabricTaskRolls', 'fabricTaskContexts.fabric'])
+                ->first();
+
+            return FabricTaskContextResourceDate::collection($task->fabricTaskContexts);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    public function addOrderContextRoll(Request $request)
+    {
+        // try {
+        $payload = $request->validate([
+            // 'data' => 'required|array',
+            'task' => 'required|integer',
+            'machine' => 'required|integer',
+            'roll' => 'required|array',
+
+            'roll.fabric_id' => 'required|integer',
+            'roll.average_textile_length' => 'required|numeric',
+            'roll.productivity' => 'required|numeric',
+            'roll.textile_length' => 'required|numeric',
+            'roll.rolls_amount' => 'required|integer|min:1',
+            'roll.fabric_mode' => 'required|boolean',
+            'roll.rate' => 'required|numeric',
+            'roll.editable' => 'required|boolean',
+            'roll.roll_position' => 'required|integer',
+            'roll.descr' => 'nullable|string',
+
+        ]);
+
+        // __ Получаем СЗ на СМ
+        $task = FabricTask::query()
+            ->where('fabric_tasks_date_id', $payload['task'])
+            ->where('fabric_machine_id', $payload['machine'])
+            ->first();
+
+        // __ Проверяем наличие СЗ. Если нет (возможно это первый рулон), то создаем
+        if (!$task) {
+            $task = FabricTask::query()->create(
+                [
+                    'fabric_tasks_date_id' => $payload['task'],
+                    'fabric_machine_id' => $payload['machine'],
+                    'task_status' => FABRIC_TASK_CREATED_CODE,
+                ]
+            );
+        }
+
+        $rollData = $payload['roll'];
+
+        // __ плановый рулон от ОПП
+        $taskRollContext = FabricTaskContext::query()->create(
+            [
+                'fabric_task_id' => $task->id,                          // привязка к СЗ
+                'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                'rolls_amount' => $rollData['rolls_amount'],
+                'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                'fabric_mode' => $rollData['fabric_mode'],
+                'average_textile_length' => $rollData['textile_length'],
+                // 'translate_rate' => $rollData['rate'],
+                'productivity' => $rollData['productivity'],
+                'description' => $rollData['descr'],
+            ]
+        );
+
+
+        return FabricTaskContextResourceDate::collection($task->fabricTaskContexts);
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
+    }
+
+
 }
+

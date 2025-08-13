@@ -1,7 +1,18 @@
 <template>
     <div class="flex">
 
-        <!-- attract: Номер рулона (id записи) -->
+        <!-- __ Позиция (№ по порядку) -->
+        <AppLabel
+            v-if="rollsRender.position.show"
+            :text="rollsRender.position.data(roll_exec)"
+            :title="rollsRender.position.title"
+            :type="getTypeByStatus(roll_exec)"
+            :width="rollsRender.position.width"
+            align="center"
+            text-size="mini"
+        />
+
+        <!-- __ Номер рулона (id записи) -->
         <AppLabel
             v-if="rollsRender.rollNumber.show"
             :text="rollsRender.rollNumber.data(roll_exec)"
@@ -12,7 +23,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Название ПС -->
+        <!-- __ Название ПС -->
         <AppLabel
             v-if="rollsRender.fabricName.show"
             :text="rollsRender.fabricName.data(roll_exec)"
@@ -22,7 +33,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ткани -->
+        <!-- __ Средняя длина ткани -->
         <AppLabel
             v-if="rollsRender.textileLength.show"
             :text="rollsRender.textileLength.data(roll_exec)"
@@ -33,7 +44,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ПС -->
+        <!-- __ Средняя длина ПС -->
         <AppLabel
             v-if="rollsRender.fabricLength.show"
             :text="rollsRender.fabricLength.data(roll_exec)"
@@ -44,7 +55,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Количество рулонов (всегда = 1) -->
+        <!-- __ Количество рулонов (всегда = 1) -->
         <AppLabel
             v-if="rollsRender.rollsAmount.show"
             :text="rollsRender.rollsAmount.data()"
@@ -55,7 +66,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средние трудозатраты на рулон -->
+        <!-- __ Средние трудозатраты на рулон -->
         <AppLabel
             v-if="rollsRender.productivity.show"
             :text="rollsRender.productivity.data(roll_exec)"
@@ -66,7 +77,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Комментарий -->
+        <!-- __ Комментарий -->
         <AppLabel
             v-if="rollsRender.description.show"
             :text="rollsRender.description.data(roll_exec)"
@@ -77,7 +88,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Статус -->
+        <!-- __ Статус -->
         <AppLabel
             v-if="rollsRender.status.show"
             :text="rollsRender.status.data(roll_exec)"
@@ -88,7 +99,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Начало -->
+        <!-- __ Начало -->
         <AppLabel
             v-if="rollsRender.startAt.show"
             :text="rollsRender.startAt.data(roll_exec)"
@@ -99,7 +110,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Окончание -->
+        <!-- __ Окончание -->
         <AppLabel
             v-if="rollsRender.finishAt.show"
             :text="rollsRender.finishAt.data(roll_exec)"
@@ -110,7 +121,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Время стегания -->
+        <!-- __ Время стегания -->
         <!--        :text="rollsRender.rollTime.data(roll_exec)"-->
         <AppLabel
             v-if="rollsRender.rollTime.show"
@@ -122,7 +133,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Ответственный -->
+        <!-- __ Ответственный -->
         <AppSelectSimple
             v-if="rollsRender.finishBy.show"
             :multiple="false"
@@ -136,7 +147,7 @@
         />
 
 
-        <!-- attract: Причина невыполнения -->
+        <!-- __ Причина невыполнения -->
         <AppLabel
             v-if="rollsRender.reason.show"
             :text="rollsRender.reason.data(roll_exec)"
@@ -155,19 +166,19 @@
 
 <script setup>
 import {onUnmounted, ref, watch} from 'vue'
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_ROLL_STATUS,
-    FABRIC_ROLL_STATUS_LIST,
-    FABRIC_TASK_STATUS
-} from '/resources/js/src/app/constants/fabrics.js'
+    // FABRIC_ROLL_STATUS_LIST,
+    // FABRIC_TASK_STATUS
+} from '@/app/constants/fabrics.js'
 
-import {getDuration} from '/resources/js/src/app/helpers/helpers_date.js'
+import {getDuration} from '@/app/helpers/helpers_date.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppSelectSimple from '/resources/js/src/components/ui/selects/AppSelectSimple.vue'
-import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
+import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
 
 const props = defineProps({
     roll_exec: {
@@ -183,12 +194,12 @@ const props = defineProps({
 
 const fabricsStore = useFabricsStore()
 
-// attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
+// __ Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
     return getTypeByRollStatus(roll_exec.status)
 }
 
-// attract: Получаем тип раскраски в зависимости от наличия ответственного выполнения рулона
+// __ Получаем тип раскраски в зависимости от наличия ответственного выполнения рулона
 const getTypeByStatusFinishBy = (roll_exec) => {
     if (roll_exec.finish_by === 0 && roll_exec.status !== FABRIC_ROLL_STATUS.CREATED.CODE) return 'danger'
     return getTypeByStatus(roll_exec)
@@ -196,7 +207,7 @@ const getTypeByStatusFinishBy = (roll_exec) => {
 
 
 
-// attract: Добавляем часики выполнения рулона
+// __ Добавляем часики выполнения рулона
 let intervalId = null   // Для очистки интервала, если он будет создан, чтобы убрать утечки памяти
 const duration = ref('')
 

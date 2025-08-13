@@ -187,17 +187,20 @@ const prepareTasksData = async () => {
         // console.log('lastDoneTask:', lastDoneTask)
     }
 
-    console.log('tasks:', tasks)
+
     tasks.forEach(task => {
         Object.keys(task.machines).forEach(machine => {
             task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
         })
     })
 
+
     return tasks
 }
 
 let tasks = await prepareTasksData()
+
+console.log('execute tasks: ', tasks)
 
 // __ Сортируем рулоны по порядку
 // const sortTasksByExecuteRollsPosition = () => {

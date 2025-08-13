@@ -303,11 +303,11 @@
                 <div class="flex">
                     <!-- __ +/- -->
                     <AppLabel
-                        :text="fabricRolls.fabric.collapsed ? '+' : '-'"
+                        :text="fabricRolls.fabric.collapsed ? '▲' : '▼'"
                         :width="render.rollNumber.width"
                         align="center"
                         class="cursor-pointer"
-                        text-size="large"
+                        text-size="small"
                         type="stone"
                         @click="toggleCollapse(fabricRolls)"
                     />

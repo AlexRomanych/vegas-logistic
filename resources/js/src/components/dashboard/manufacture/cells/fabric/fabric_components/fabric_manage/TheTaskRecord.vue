@@ -12,6 +12,15 @@
         <!--            width="w-[80px]"-->
         <!--        />-->
 
+        <AppLabelMultiLine
+            :text="!editMode ? roll.roll_position.toString() : [roll.roll_position.toString(), '']"
+            align="center"
+            type="primary"
+            width="w-[50px]"
+            height="h-[30px]"
+            text-size="mini"
+        />
+
         <!--__ ПС -->
         <div v-if="!editMode">
             <AppLabelMultiLine
@@ -320,11 +329,11 @@ const props = defineProps({
         required: false,
         default: () => FABRIC_MACHINES.AMERICAN,
         validator: (machine) => [
-            FABRIC_MACHINES.AMERICAN,
-            FABRIC_MACHINES.GERMAN,
-            FABRIC_MACHINES.CHINA,
-            FABRIC_MACHINES.KOREAN,
-        ].includes(machine)
+            FABRIC_MACHINES.AMERICAN.ID,
+            FABRIC_MACHINES.GERMAN.ID,
+            FABRIC_MACHINES.CHINA.ID,
+            FABRIC_MACHINES.KOREAN.ID,
+        ].includes(machine.ID)
     },
     taskStatus: {
         type: Number,

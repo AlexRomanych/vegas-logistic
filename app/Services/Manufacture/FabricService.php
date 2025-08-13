@@ -7,9 +7,10 @@ use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Models\Manufacture\Cells\Fabric\FabricPictureSchema;
+use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use Carbon\Carbon;
 
-//use Illuminate\Support\Collection;
+// use Illuminate\Support\Collection;
 
 final class FabricService
 {
@@ -18,8 +19,8 @@ final class FabricService
     private static array $fabricMachinesNameCache = [];                // Кэш стегальных машин
     private static array $fabricPicSchemasNameCache = [];              // Кэш схем мгл рисунков
 
-// hr-----------------------------------------------------------------------------
-// attract: ПС
+    // hr-----------------------------------------------------------------------------
+    // attract: ПС
     /**
      * Получаем ПС по имени
      * @param string $name
@@ -50,8 +51,8 @@ final class FabricService
 
     }
 
-// hr-----------------------------------------------------------------------------
-// attract: рисунки ПС
+    // hr-----------------------------------------------------------------------------
+    // attract: рисунки ПС
 
     /**
      * Получаем рисунок по имени
@@ -85,8 +86,8 @@ final class FabricService
         }
     }
 
-// hr-----------------------------------------------------------------------------
-// attract: стегальные машины
+    // hr-----------------------------------------------------------------------------
+    // attract: стегальные машины
 
     /**
      * Получаем стегальную машину по сокращенному имени
@@ -120,8 +121,8 @@ final class FabricService
     }
 
 
-// hr-----------------------------------------------------------------------------
-// attract: схемы игл
+    // hr-----------------------------------------------------------------------------
+    // attract: схемы игл
 
     /**
      * Получаем схему по имени
@@ -195,7 +196,7 @@ final class FabricService
      * @param string|Carbon $date
      * @return int
      */
-    public static function getFabricTeamChangeNumberByDate(string | Carbon $date): int
+    public static function getFabricTeamChangeNumberByDate(string|Carbon $date): int
     {
 
         // descr: Дата начала первой смены первой бригады
@@ -208,6 +209,52 @@ final class FabricService
 
         if ($remainsOfDivision === 0 || $remainsOfDivision === 1) return 1;
         return 2;
+    }
+
+
+    /**
+     * ___ Проверяем порядок следования рулонов ОПП (контекста) - в зависимости от статуса
+     * ___ "Переходящий", "Не выполнено" и т.д.
+     * @param FabricTask $task
+     * @param array $inContext
+     * @return array
+     */
+    public static function checkContextOrder(FabricTask $task, array $inContext): array
+    {
+        $a = $inContext;
+        $taskContext = $task->fabricTaskContexts->toArray(request());
+        usort($taskContext, fn($a, $b) => $a['roll_position'] <=> $b['roll_position']);
+        usort($inContext, fn($a, $b) => $a['roll_position'] <=> $b['roll_position']);
+
+
+        $resultArray = [];
+        $count = 1;
+        foreach ($taskContext as $context) {
+
+            // __ Находим неперемещяемые рулоны
+            if (!$context['editable']) {
+                $resultArray[] = $context;
+                $count++;
+
+                foreach ($inContext as $index => $inContextItem) {
+                    if ($inContextItem['id'] === $context['id']) {
+                        $inContext[$index]['id'] = 0;
+                        break;
+                    }
+                }
+
+            };
+        }
+
+        foreach ($inContext as $inContextItem) {
+            if ($inContextItem['id'] !== 0) {
+                $inContextItem['roll_position'] = $count;
+                $count++;
+                $resultArray[] = $inContextItem;
+            }
+        }
+
+        return $resultArray;
     }
 
 }

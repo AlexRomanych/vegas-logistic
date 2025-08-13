@@ -62,7 +62,7 @@
         <!-- __ Сохранить состояние порядка рулонов -->
         <AppLabelMultiLine
             v-if="fabricsStore.globalOrderManageChangeFlag"
-            :text="['Сохранить', 'порядок рулонов']"
+            :text="['Сохранение', 'порядка рулонов']"
             align="center"
             class="cursor-pointer"
             height="h-[31px]"

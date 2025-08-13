@@ -1,6 +1,8 @@
 <template>
+
     <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
-        <!--attract: Меню с кнопками управления записями -->
+
+        <!-- __ Меню с кнопками управления записями -->
         <TheTaskRecordsMenu
             :machine="machine"
             :task-status="task.common.status"
@@ -10,10 +12,10 @@
         />
 
         <div v-if="rolls.length">
-            <!--attract: Разделительная линия -->
+            <!-- __ Разделительная линия -->
             <TheDividerLine/>
 
-            <!--attract: Заголовки таблицы для записей с рулонами -->
+            <!-- __ Заголовки таблицы для записей с рулонами -->
             <TheTaskRecordsTitle/>
 
 
@@ -32,38 +34,38 @@
             <!--                />-->
             <!--            </div>-->
 
+            <div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">
+                <!-- __ Сами рулоны с возможностью перетаскивания -->
+                <draggable
+                    :="dragOptions"
+                    :disabled="!isDragging"
+                    :list="rolls"
+                    item-key="id"
+                    tag="div"
+                    @end="changeRollsPosition"
+                    @start="checkForDrag"
+                >
+                    <template #item="{ element, index }">
 
-            <draggable
-                :list="rolls"
-                :="dragOptions"
-                :disabled="task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE"
-                item-key="id"
-                tag="div"
-                @end="changeRollsPosition"
-                @start="checkForDrag"
-            >
-                <template #item="{ element, index }">
+                        <div>
+                            <TheTaskRecord
+                                :key="index"
+                                :index="index"
+                                :machine="machine"
+                                :roll="element"
+                                :task-status="task.common.status"
+                                @save-task-record="saveTaskRecord"
+                                @delete-task-record="deleteTaskRecord"
+                            />
+                        </div>
 
-                    <div>
-                        <TheTaskRecord
-                            :key="index"
-                            :index="index"
-                            :machine="machine"
-                            :roll="element"
-                            :task-status="task.common.status"
-                            @save-task-record="saveTaskRecord"
-                            @delete-task-record="deleteTaskRecord"
-                        />
-                    </div>
-
-                </template>
-            </draggable>
-
-
-            <!--attract: Разделительная линия -->
+                    </template>
+                </draggable>
+            </div>
+            <!-- __ Разделительная линия -->
             <TheDividerLine/>
 
-            <!--attract: Общий комментарий к сменному заданию -->
+            <!-- __ Общий комментарий к сменному заданию -->
             <div class="flex items-end">
                 <AppInputTextArea
                     id="comment"
@@ -80,7 +82,7 @@
                     width="w-[955px]"
                 />
 
-                <!--attract: Кнопка сохранения комментария к сменному заданию -->
+                <!-- __ Кнопка сохранения комментария к сменному заданию -->
                 <AppLabel
                     v-if="
                         task.common.status !== FABRIC_TASK_STATUS.DONE.CODE &&
@@ -97,12 +99,12 @@
                 />
             </div>
 
-            <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
+            <!-- __ Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
-                <!--attract: Разделительная линия -->
+                <!-- __ Разделительная линия -->
                 <TheDividerLine/>
 
-                <!--attract: Список рулонов -->
+                <!-- __ Список рулонов -->
                 <TheTaskRecordRolls :rolls="rolls"/>
             </div>
         </div>
@@ -110,15 +112,15 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import draggable from 'vuedraggable'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
-    FABRIC_TASK_STATUS,
+    FABRIC_TASK_STATUS, FABRICS_NULLABLE,
     NEW_ROLL,
 } from '@/app/constants/fabrics.js'
 import {
@@ -154,15 +156,16 @@ const props = defineProps({
         default: () => FABRIC_MACHINES.AMERICAN,
         validator: (machine) =>
             [
-                FABRIC_MACHINES.AMERICAN,
-                FABRIC_MACHINES.GERMAN,
-                FABRIC_MACHINES.CHINA,
-                FABRIC_MACHINES.KOREAN,
-            ].includes(machine),
+                FABRIC_MACHINES.AMERICAN.ID,
+                FABRIC_MACHINES.GERMAN.ID,
+                FABRIC_MACHINES.CHINA.ID,
+                FABRIC_MACHINES.KOREAN.ID,
+            ].includes(machine.ID),
     },
 })
 
-// console.log('machine', props.task)
+// console.log('task: ', props.task)
+// console.log('machine: ', props.machine)
 
 const emits = defineEmits([
     'addRoll',
@@ -171,7 +174,7 @@ const emits = defineEmits([
     'deleteTaskRecord',
     'saveMachineDescription',
     'changeRollsPosition',
-    'saveRollsOrder',
+    'saveRollsPosition',
 ])
 
 const fabricsStore = useFabricsStore()
@@ -182,12 +185,28 @@ const dragOptions = computed(() => {
     return {
         animation: 300,
         group: 'description',
-        // disabled: false, // Выносим в отдельное свойство
         ghostClass: 'ghost',
         sort: true
-    };
+        // disabled: false, // Выносим в отдельное свойство
+    }
 })
-const isDragging = ref(false);
+
+// __ Проверяем, можно ли менять порядок рулонов
+const isDragging = ref(false)
+
+const checkDruggable = () => {
+    // console.log('checkDruggable: start')
+
+    if (props.task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE) return false
+
+    const nullRoll = props.task.machines[props.machine.TITLE].rolls.find(roll => roll.fabric_id === FABRICS_NULLABLE.id)
+    if (nullRoll) return false
+
+    if (fabricsStore.globalEditMode) return false// Если режим редактирования, то не меняем порядок рулонов
+
+    return true
+}
+
 
 const rolls = ref([])
 
@@ -235,9 +254,10 @@ const checkForDrag = () => {
 
 // __ Меняем позицию рулонов в СЗ
 const changeRollsPosition = () => {
-    if (props.task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE) return    // Только для созданных СЗ
+    // console.log('from Machine: changeRollsPosition')
     fabricsStore.globalOrderManageChangeFlag = true // устанавливаем флаг для изменения порядка в глобальном хранилище
-    emits('changeRollsPosition', props.machine, props.task)
+    emits('changeRollsPosition', props.machine, props.task)     // Меняем порядок рулонов в СЗ
+    emits('saveRollsPosition', props.machine, props.task)       // Сохраняем порядок рулонов в СЗ
 }
 
 
@@ -287,20 +307,27 @@ const updateTaskMachineDescription = () => {
     })
 }
 
-// attract: При изменении самих данных, пересчитываем производительность
+// __ При изменении самих данных, пересчитываем производительность + возможность перетаскивания
 watch(
     () => props.task,
     () => {
-        console.log('TaskMachine: Task changed: ', fabricsStore.globalRollsIndexes)
-        // console.log('TaskMachine: Task changed: ', props.task)
-
         fillGlobalProductivity()
-        // console.log('globalProductivity: TheTaskMachine: ', fabricsStore.globalTaskProductivity)
-
         rollsIndexes.value = getRollsIndexes() // Обновляем индексы рулонов, чтобы потом их исключить из выбора ПС в самой записи
+
+        isDragging.value = checkDruggable()
+        // console.log('TaskMachine: Task changed: ', fabricsStore.globalRollsIndexes)
+
+        // console.log('TaskMachine: Task changed: ', props.task)
+        // console.log('globalProductivity: TheTaskMachine: ', fabricsStore.globalTaskProductivity)
+        // console.log('isDragging: ', isDragging.value)
+        // console.log('globalEditMode: ', fabricsStore.globalEditMode)
     },
     {deep: true, immediate: true},
 )
+
+// __ Отдельно отслеживаем глобальное редактирование
+watch(() => fabricsStore.globalEditMode, () => isDragging.value = checkDruggable(), {deep: true, immediate: true})
+
 </script>
 
 <style scoped>

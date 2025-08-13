@@ -77,8 +77,8 @@ class CellFabricTasksDateController extends Controller
 
     /**
      * descr: Создает или обновляет данные по сменным заданиям на конкретную дату
-     * @param Request $request
      * @return string
+     * @throws \Throwable
      */
     public function create(Request $request)
     {
@@ -95,6 +95,8 @@ class CellFabricTasksDateController extends Controller
             if ($tasksDayData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
                 return EndPointStaticRequestAnswer::ok();
             }
+
+            $debug = $tasksDayData;
 
             // __ Начинаем транзакцию
             DB::transaction(function () use ($tasksDayData) {
@@ -264,14 +266,26 @@ class CellFabricTasksDateController extends Controller
 
 //                         return ['task' => $task[0]['fabric_task_contexts']];
 
-                        // Создаем  все физические рулоны, на основании плановых
+                        // __ Создаем  все физические рулоны, на основании плановых
                         $count = EXEC_ROLL_START_ORDER_INDEX;
                         foreach ($task[0]['fabric_task_contexts'] as $key => $taskContext) {
 
-                            // пропускаем рулоны, которые нельзя редактировать
-                            if ($taskContext['editable'] === false) continue;
+                            // __ Пропускаем рулоны, которые нельзя редактировать,
+                            // __ но самим физическим рулонам присваиваем порядковый номер
+                            if ($taskContext['editable'] === false) {
+                                $rolls = FabricTaskRoll::query()
+                                    ->where('fabric_task_context_id', $taskContext['id'])
+                                    ->get();
 
-                            // attract: Создаем  все физические рулоны, на основании плановых, или удаляем их
+                                foreach ($rolls as $roll) {
+                                    $roll->roll_position = $count++;
+                                    $roll->save();
+                                }
+
+                                continue;
+                            };
+
+                            // __ Создаем  все физические рулоны, на основании плановых, или удаляем их
                             if ($mode) {
 
                                 for ($j = 0; $j < $taskContext['rolls_amount']; $j++) {
@@ -280,7 +294,7 @@ class CellFabricTasksDateController extends Controller
                                             'fabric_task_context_id' => $taskContext['id'],
                                             'fabric_id' => $taskContext['fabric_id'],
 //                                            'roll_position' => $j + 1,
-                                            'roll_position' => $count,
+                                            'roll_position' => $count++,
                                             'roll_status' => FABRIC_ROLL_CREATED_CODE,
                                             'textile_roll_length' => $taskContext['average_textile_length'],
                                             'translate_rate' => $taskContext['translate_rate'],
@@ -289,7 +303,7 @@ class CellFabricTasksDateController extends Controller
                                         ]
                                     );
 
-                                    $count++;
+                                    // $count++;
                                 }
 
                             } else {
@@ -581,27 +595,22 @@ class CellFabricTasksDateController extends Controller
                 return EndPointStaticRequestAnswer::fail('Есть задания с непонятным до данной даты статусом');
             }
 
-            // attract: Получаем СЗ по указанной дате
+            // __ Получаем СЗ по указанной дате
             $targetTask = $this->tasks(new Request(['start' => $payloadDate, 'end' => $payloadDate]));
 
-            // attract: Проверяем существование СЗ
+            // __ Проверяем существование СЗ
             if (!$targetTask) {
 //            throw new \Exception('Сменное задание не существует');
                 return EndPointStaticRequestAnswer::fail('Сменное задание не существует');
             }
 
-            // attract: Получаем первый элемент массива, т.к. возвращается коллекция и преобразуем в массив
+            // __ Получаем первый элемент массива, т.к. возвращается коллекция и преобразуем в массив
             $targetTask = $targetTask[0]->resolve();
 
-//        return json_encode(['task' => $targetTask['machines']]);
-//        return json_encode(['task' => get_class($targetTask)]);
-//        return $targetTask;
-
             // hr---------------------------------------------------------------------
-            // attract: Закрываем СЗ. Вся логика закрытия СЗ находится здесь
+            // __ Закрываем СЗ. Вся логика закрытия СЗ находится здесь
 
-
-            // attract: Получаем массив всех рулонов, которые нужно переместить на следующее СЗ и которые нужно добавить в буфер
+            // __ Получаем массив всех рулонов, которые нужно переместить на следующее СЗ и которые нужно добавить в буфер
             $rollsToMove = [];      // собираем все рулоны, которые нужно переместить
             $rollsToBuffer = [];    // собираем все рулоны, которые нужно добавить в буфер
 
@@ -616,7 +625,9 @@ class CellFabricTasksDateController extends Controller
                 foreach ($targetTask['machines'][$machineStr]['rolls'] as $roll) {
                     // $roll --> массив
 
-                    foreach ($roll['rolls_exec'] as $roll_exec) {
+                    $resolvedRoll = $roll->resolve();
+
+                    foreach ($resolvedRoll['rolls_exec'] as $roll_exec) {
                         // $roll_exec --> Resource
 
                         // attract: Получаем данные из объекта Resource
@@ -627,7 +638,7 @@ class CellFabricTasksDateController extends Controller
                             $roll_exec_array['status'] === FABRIC_ROLL_ROLLING_CODE) {
 
                             $rollsToMove[] = [
-                                'roll' => $roll,
+                                'roll' => $resolvedRoll,
                                 'roll_exec' => $roll_exec_array,
                                 'machine_id' => $i,
                             ];
@@ -636,7 +647,7 @@ class CellFabricTasksDateController extends Controller
 
                             // __ Перенесли логику: буфер после выполнения рулона
                             $rollsToBuffer[] = [
-                                'roll' => $roll,
+                                'roll' => $resolvedRoll,
                                 'roll_exec' => $roll_exec_array,
                                 'machine_id' => $i,
                             ];
@@ -672,7 +683,7 @@ class CellFabricTasksDateController extends Controller
 
 
                 // Warning: __ Старая логика
-                // attract: Задаем статус следующего СЗ
+                // __ Задаем статус следующего СЗ
                 // __ При таком подходе нужно дописать код, который в случае перехода от
                 // __ "Готов к стежке" к "Создано" нужно будет удалять все физические рулоны
 //                $tasksDayData['common']['status'] = FABRIC_TASK_CREATED_CODE;
@@ -831,9 +842,11 @@ class CellFabricTasksDateController extends Controller
             }
             */
 
-            // attract: Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
+
+            // __ Задаем параметры для Дня СЗ, который нужно закрыть и закрываем
             $tasksDayData['date'] = $payloadDate;
             $tasksDayData['common']['status'] = FABRIC_TASK_DONE_CODE;
+            $tasksDayData['common']['description'] = $targetTask['common']['description'];
             $resultTasksDate = $this->createOrUpdateTasksDate($tasksDayData);
 
 //            return [

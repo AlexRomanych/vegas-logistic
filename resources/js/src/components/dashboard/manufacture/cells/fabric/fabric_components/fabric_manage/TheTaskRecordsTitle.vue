@@ -10,6 +10,14 @@
 <!--        />-->
 
         <AppLabelMultiLine
+            :text="['№', 'п/п']"
+            align="center"
+            type="primary"
+            width="w-[50px]"
+            text-size="mini"
+        />
+
+        <AppLabelMultiLine
             :text="['Полотно', 'стеганное']"
             align="center"
             type="primary"

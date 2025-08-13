@@ -2,7 +2,19 @@
 
     <!-- hr----------------------------------------------------------------------------------------- -->
     <div class="flex">
-        <!-- attract: Номер рулона (id записи) -->
+
+        <!-- __ Позиция (№ по порядку) -->
+        <AppLabelMultiLine
+            v-if="rollsRender.position.show"
+            :text="['№', 'п/п']"
+            :title="rollsRender.position.title"
+            :type="getHeaderType()"
+            :width="rollsRender.position.width"
+            align="center"
+            text-size="mini"
+        />
+
+        <!-- __ Номер рулона (id записи) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollNumber.show"
             :text="['Номер', 'рулона']"
@@ -13,7 +25,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Название ПС -->
+        <!-- __ Название ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.fabricName.show"
             :text="['Полотно', 'стеганное']"
@@ -24,7 +36,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ткани -->
+        <!-- __ Средняя длина ткани -->
         <AppLabelMultiLine
             v-if="rollsRender.textileLength.show"
             :text="['Длина', 'ткани']"
@@ -35,7 +47,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ПС -->
+        <!-- __ Средняя длина ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.fabricLength.show"
             :text="['Длина', 'ПС']"
@@ -46,7 +58,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Количество рулонов (всегда = 1) -->
+        <!-- __ Количество рулонов (всегда = 1) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
             :text="['1', '']"
@@ -57,7 +69,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средние трудозатраты на рулон -->
+        <!-- __ Средние трудозатраты на рулон -->
         <AppLabelMultiLine
             v-if="rollsRender.productivity.show"
             :text="['Плановые', 'трудозатраты']"
@@ -68,7 +80,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Комментарий -->
+        <!-- __ Комментарий -->
         <AppLabelMultiLine
             v-if="rollsRender.description.show"
             :text="['Комментарий', '']"
@@ -80,7 +92,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Статус -->
+        <!-- __ Статус -->
         <AppLabelMultiLine
             v-if="rollsRender.status.show"
             :text="['Статус', '']"
@@ -91,7 +103,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Начало -->
+        <!-- __ Начало -->
         <AppLabelMultiLine
             v-if="rollsRender.startAt.show"
             :text="['Начало', 'стегания']"
@@ -102,7 +114,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Окончание -->
+        <!-- __ Окончание -->
         <AppLabelMultiLine
             v-if="rollsRender.finishAt.show"
             :text="['Окончание', 'стегания']"
@@ -113,7 +125,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Время стегания -->
+        <!-- __ Время стегания -->
         <AppLabelMultiLine
             v-if="rollsRender.rollTime.show"
             :text="['Время', 'стегания']"
@@ -124,7 +136,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Ответственный -->
+        <!-- __ Ответственный -->
         <AppLabelMultiLine
             v-if="rollsRender.finishBy.show"
             :text="['Ответственный', '']"
@@ -143,7 +155,18 @@
         <div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">
             <div class="flex">
 
-                <!-- attract: Номер рулона (id записи) -->
+                <!-- __ Позиция (№ по порядку) -->
+                <AppLabel
+                    v-if="rollsRender.position.show"
+                    :text="rollsRender.position.data(roll_exec)"
+                    :title="rollsRender.position.title"
+                    :type="getTypeByStatus(roll_exec)"
+                    :width="rollsRender.position.width"
+                    align="center"
+                    text-size="mini"
+                />
+
+                <!-- __ Номер рулона (id записи) -->
                 <AppLabel
                     v-if="rollsRender.rollNumber.show"
                     :text="rollsRender.rollNumber.data(roll_exec)"
@@ -154,7 +177,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Название ПС -->
+                <!-- __ Название ПС -->
                 <AppLabel
                     v-if="rollsRender.fabricName.show"
                     :text="rollsRender.fabricName.data(roll_exec)"
@@ -164,7 +187,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Средняя длина ткани -->
+                <!-- __ Средняя длина ткани -->
                 <AppLabel
                     v-if="rollsRender.textileLength.show"
                     :text="rollsRender.textileLength.data(roll_exec)"
@@ -175,7 +198,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Средняя длина ПС -->
+                <!-- __ Средняя длина ПС -->
                 <AppLabel
                     v-if="rollsRender.fabricLength.show"
                     :text="rollsRender.fabricLength.data(roll_exec)"
@@ -186,7 +209,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Количество рулонов (всегда = 1) -->
+                <!-- __ Количество рулонов (всегда = 1) -->
                 <AppLabel
                     v-if="rollsRender.rollsAmount.show"
                     :text="rollsRender.rollsAmount.data()"
@@ -197,7 +220,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Средние трудозатраты на рулон -->
+                <!-- __ Средние трудозатраты на рулон -->
                 <AppLabel
                     v-if="rollsRender.productivity.show"
                     :text="rollsRender.productivity.data(roll_exec)"
@@ -208,7 +231,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Комментарий -->
+                <!-- __ Комментарий -->
                 <AppLabel
                     v-if="rollsRender.description.show"
                     :text="rollsRender.description.data(roll_exec)"
@@ -219,7 +242,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Статус -->
+                <!-- __ Статус -->
                 <AppLabel
                     v-if="rollsRender.status.show"
                     :text="rollsRender.status.data(roll_exec)"
@@ -230,7 +253,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Начало -->
+                <!-- __ Начало -->
                 <AppLabel
                     v-if="rollsRender.startAt.show"
                     :text="rollsRender.startAt.data(roll_exec)"
@@ -241,7 +264,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Окончание -->
+                <!-- __ Окончание -->
                 <AppLabel
                     v-if="rollsRender.finishAt.show"
                     :text="rollsRender.finishAt.data(roll_exec)"
@@ -252,7 +275,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Время стегания -->
+                <!-- __ Время стегания -->
                 <AppLabel
                     v-if="rollsRender.rollTime.show"
                     :text="rollsRender.rollTime.data(roll_exec)"
@@ -263,7 +286,7 @@
                     text-size="mini"
                 />
 
-                <!-- attract: Ответственный -->
+                <!-- __ Ответственный -->
                 <AppLabel
                     v-if="rollsRender.finishBy.show"
                     :text="rollsRender.finishBy.data(roll_exec)"
@@ -281,16 +304,16 @@
 </template>
 
 <script setup>
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST} from '/resources/js/src/app/constants/fabrics.js'
+import { FABRIC_ROLL_STATUS, FABRIC_ROLL_STATUS_LIST } from '@/app/constants/fabrics.js'
 
-import {formatTimeWithLeadingZeros} from '/resources/js/src/app/helpers/helpers_date.js'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date.js'
 
-import {getTypeByRollStatus} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+import { getTypeByRollStatus } from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 const props = defineProps({
     rolls: {
@@ -307,27 +330,38 @@ const props = defineProps({
 
 // console.log(props.rolls)
 
-const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST);
+const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST)
 // console.log(FABRIC_ROLL_STATUS_ARRAY)
 
-// attract: Получаем данные из хранилища по ПС
+// __ Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
 
-// attract: Получаем ПС по ID
+// __ Получаем ПС по ID
 // const getFabricById = (fabric_id) => fabrics.find((fabric) => fabric.id === fabric_id)
 
-// attract: Получаем тип раскраски в зависимости от статуса выполнения рулона
+// __ Получаем тип раскраски в зависимости от статуса выполнения рулона
 const getTypeByStatus = (roll_exec) => {
     return getTypeByRollStatus(roll_exec.status)
 }
 
-// attract: Получаем тип шапки таблицы
+// __ Получаем тип шапки таблицы
 const getHeaderType = () => 'primary'
 
-// attract: Задаем глобальный объект для унификации отображения рулонов
+// __ Задаем глобальный объект для унификации отображения рулонов
 const rollsRender = {
-    rollNumber: {width: 'w-[60px]', show: true, title: '№ рулона', data: (roll_exec) => roll_exec.id.toString()},
+    position: {
+        width: 'w-[60px]',
+        show: true,
+        title: '№ п/п',
+        data: (roll_exec) => roll_exec.position.toString()
+    },
+    rollNumber: {
+        width: 'w-[60px]',
+        show: true,
+        title: '№ рулона',
+        data: (roll_exec) => roll_exec.id.toString()
+    },
     fabricName: {
         width: 'w-[270px]',
         show: true,
@@ -344,7 +378,7 @@ const rollsRender = {
         width: 'w-[50px]',
         show: true,
         title: 'Средняя длина ПС, м.п.',
-        data: (roll_exec) => (roll_exec.textile_length/roll_exec.rate).toFixed(2)
+        data: (roll_exec) => (roll_exec.textile_length / roll_exec.rate).toFixed(2)
     },
     rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
     productivity: {

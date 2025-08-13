@@ -1,7 +1,19 @@
 <template>
 
     <div class="flex">
-        <!-- attract: Номер рулона (id записи) -->
+
+        <!-- __ Позиция (№ по порядку) -->
+        <AppLabelMultiLine
+            v-if="rollsRender.position.show"
+            :text="['№', 'п/п']"
+            :title="rollsRender.position.title"
+            :type="getHeaderType()"
+            :width="rollsRender.position.width"
+            align="center"
+            text-size="mini"
+        />
+
+        <!-- __ Номер рулона (id записи) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollNumber.show"
             :text="['Номер', 'рулона']"
@@ -12,7 +24,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Название ПС -->
+        <!-- __ Название ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.fabricName.show"
             :text="['Полотно', 'стеганное']"
@@ -23,7 +35,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ткани -->
+        <!-- __ Средняя длина ткани -->
         <AppLabelMultiLine
             v-if="rollsRender.textileLength.show"
             :text="['Длина', 'ткани']"
@@ -34,7 +46,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средняя длина ПС -->
+        <!-- __ Средняя длина ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.fabricLength.show"
             :text="['Длина', 'ПС']"
@@ -44,7 +56,7 @@
             align="center"
             text-size="mini"
         />
-        <!-- attract: Количество рулонов (всегда = 1) -->
+        <!-- __ Количество рулонов (всегда = 1) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
             :text="['1', '']"
@@ -55,7 +67,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Средние трудозатраты на рулон -->
+        <!-- __ Средние трудозатраты на рулон -->
         <AppLabelMultiLine
             v-if="rollsRender.productivity.show"
             :text="['Плановые', 'трудозатраты']"
@@ -66,7 +78,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Комментарий -->
+        <!-- __ Комментарий -->
         <AppLabelMultiLine
             v-if="rollsRender.description.show"
             :text="['Комментарий', '']"
@@ -78,7 +90,7 @@
             title="Комментарий"
         />
 
-        <!-- attract: Статус -->
+        <!-- __ Статус -->
         <AppLabelMultiLine
             v-if="rollsRender.status.show"
             :text="['Статус', '']"
@@ -89,7 +101,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Начало -->
+        <!-- __ Начало -->
         <AppLabelMultiLine
             v-if="rollsRender.startAt.show"
             :text="['Начало', 'стегания']"
@@ -100,7 +112,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Окончание -->
+        <!-- __ Окончание -->
         <AppLabelMultiLine
             v-if="rollsRender.finishAt.show"
             :text="['Окончание', 'стегания']"
@@ -111,7 +123,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Время стегания -->
+        <!-- __ Время стегания -->
         <AppLabelMultiLine
             v-if="rollsRender.rollTime.show"
             :text="['Время', 'стегания']"
@@ -122,7 +134,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Ответственный -->
+        <!-- __ Ответственный -->
         <AppLabelMultiLine
             v-if="rollsRender.finishBy.show"
             :text="['Ответственный', '']"
@@ -133,7 +145,7 @@
             text-size="mini"
         />
 
-        <!-- attract: Причина невыполнения -->
+        <!-- __ Причина невыполнения -->
         <AppLabelMultiLine
             v-if="rollsRender.reason.show"
             :text="['Причина', 'невыполнения']"
@@ -150,8 +162,8 @@
 
 <script setup>
 
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-// import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+// import AppLabel from '@/components/ui/labels/AppLabel.vue'
 
 const props = defineProps({
     rollsRender: {
@@ -160,7 +172,7 @@ const props = defineProps({
     }
 })
 
-// attract: Получаем тип шапки таблицы
+// __ Получаем тип шапки таблицы
 const getHeaderType = () => 'primary'
 
 </script>

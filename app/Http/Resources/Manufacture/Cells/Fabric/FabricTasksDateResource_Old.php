@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
 
-class FabricTasksDateResource extends JsonResource
+class FabricTasksDateResource_Old extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,6 +18,10 @@ class FabricTasksDateResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+//        $rollsContext = [];
+//        foreach ($this->fabricTasks->fabricTaskContexts as $rollContext) {
+//            $rollsContext[] = $rollContext;
+//        }
 
         // Заполняем массив с именами стегальных машин
         $machinesNames = [];
@@ -29,13 +33,69 @@ class FabricTasksDateResource extends JsonResource
         $machines = [];
         foreach ($this->fabricTasks as $task) {
 
+            $rollsContext = [];
+            foreach ($task->fabricTaskContexts as $rollContext) {
+
+                $rolls = [];
+                foreach ($rollContext->fabricTaskRolls as $roll) {
+
+                    $rolls[] = new FabricTaskRollResource($roll);
+
+
+//                    $rolls[] = [
+//                        'id' => $roll->id,
+//                        'fabric_id' => $roll->fabric_id,
+//                        'position' => $roll->roll_position,
+//                        'status' => $roll->roll_status,
+//                        'start_at' => $roll->start_at,
+//                        'paused_at' => $roll->paused_at,
+//                        'resume_at' => $roll->resume_at,
+//                        'finish_at' => $roll->finish_at,
+//                        'duration' => $roll->duration,
+//                        'finish_by' => $roll->finish_by,
+//                        'rolling' => $roll->rolling,
+//                        'textile_length' => (float)$roll->textile_roll_length,
+//                        'productivity' => (float)$roll->productivity,
+
+//                        'descr' => $roll->description,
+//                    ];
+                }
+
+
+                $rollsContext[] = [
+                    'id' => $rollContext->id,
+                    'rate' => (float)$rollContext->translate_rate,
+                    'average_textile_length' => (float)$rollContext->average_textile_length,
+                    'average_fabric_length'
+                        => (float)$rollContext->average_textile_length/(float)$rollContext->translate_rate,
+                    'productivity' => (float)$rollContext->productivity,
+                    'buffer' => (float)$rollContext->fabric->buffer_amount,
+                    'buffer_min' => (float)$rollContext->fabric->buffer_min,
+                    'buffer_max' => (float)$rollContext->fabric->buffer_max,
+                    'buffer_min_rolls' => (float)$rollContext->fabric->buffer_min_rolls,
+                    'buffer_max_rolls' => (float)$rollContext->fabric->buffer_max_rolls,
+                    'rolls_amount' => $rollContext->rolls_amount,
+                    'length_amount' => $rollContext->rolls_amount * $rollContext->average_textile_length,
+                    'fabric_id' => $rollContext->fabric_id,
+                    'fabric' => $rollContext->fabric->display_name,
+                    'fabric_rate' => (float)$rollContext->fabric->translate_rate,
+                    'fabric_mode' => $rollContext->fabric_mode,
+                    'descr' => $rollContext->description,
+                    'note' => $rollContext->note,
+                    'correct' => true,
+                    'editable' => $rollContext->editable,
+                    'rolls_exec' => $rolls,
+                    'roll_position' => $rollContext->roll_position,
+                ];
+            }
+
+
             $machineName = FabricService::getFabricMachineNameById($task->fabric_machine_id);
             $machines[$machineName] = [
                 'active' => $task->active,
                 'description' => $task->description,
                 'finish_at' => $task->tasks_finish_at,
-                'rolls' => FabricTaskContextResourceDate::collection($task->fabricTaskContexts),          // Здесь будут все рулончики от ОПП для данной машины
-                // 'rolls' => $rollsContext,          // Здесь будут все рулончики от ОПП для данной машины
+                'rolls' => $rollsContext,          // Здесь будут все рулончики от ОПП для данной машины
             ];
 
             // убираем те данные из массива, которые обработали

@@ -1,12 +1,14 @@
 // Хранилище для заказов
 
-import {defineStore} from 'pinia'
-import {ref, reactive, computed, watch} from 'vue'
+import { defineStore } from 'pinia'
+import { ref, reactive, computed, watch } from 'vue'
 
-import {FABRIC_MACHINES} from '@/app/constants/fabrics.js'
+import { log } from '@/app/helpers/helpers'
 
-import {jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch} from '@/app/utils/jwt_api'
-import {openNewTab} from '@/app/helpers/helpers_service'
+import { FABRIC_MACHINES } from '@/app/constants/fabrics.js'
+
+import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/utils/jwt_api'
+import { openNewTab } from '@/app/helpers/helpers_service'
 
 import axios from 'axios'
 
@@ -41,11 +43,18 @@ const URL_FABRIC_TASKS = 'fabrics/tasks/'                               // URL �
 const URL_FABRIC_TASKS_LAST_DONE = 'fabrics/tasks/last/done/'           // URL для получения последнего выполненного СЗ
 const URL_FABRIC_TASKS_CREATE = 'fabrics/tasks/create/'                 // URL для получения создания или обновления СЗ для ПС
 const URL_FABRIC_TASKS_STATUS_CHANGE = 'fabrics/tasks/status/change/'   // URL для получения создания или обновления СЗ для ПС
+
+const URL_FABRIC_TASKS_CONTEXT = 'fabrics/tasks/context/'               // URL для получения контекста СЗ, созданного ОПП (FabricTaskContext)
+const URL_FABRIC_TASKS_CONTEXT_ROLL_ADD =
+    'fabrics/tasks/context/add/roll'                                    // URL для создания рулона контекста СЗ, созданного ОПП (FabricTaskContext)
 const URL_FABRIC_TASKS_CONTEXT_DELETE = 'fabrics/tasks/context/delete/' // URL для удаления рулона из СЗ, созданного ОПП (FabricTaskContext)
 const URL_FABRIC_TASKS_CONTEXT_EXPENSE_CREATE =
     'fabrics/tasks/context/expense/create/'                             // URL для создания СЗ, для ОПП (FabricTaskContext)
 const URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE =
     'fabrics/tasks/context/not-done/'                                   // URL для получения СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
+const URL_FABRIC_TASKS_CONTEXT_CHANGE_ORDER =
+    'fabrics/tasks/context/change-order/'                               // URL для изменения порядка СЗ, созданного ОПП (FabricTaskContext)
+
 
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
@@ -65,7 +74,7 @@ const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED =
 
 
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
-const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT  =
+const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT =
     'fabrics/tasks/rolls/done/'                                         // URL для получения всех выполненных рулонов
 
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
@@ -267,8 +276,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
-
-
     // Attract: Получаем с API список Рисунков ПС
     const getFabricPictures = async () => {
         const result = await jwtGet(URL_FABRICS_PICTURES)
@@ -302,7 +309,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         console.log('store: createFabricPicture: ', result)
         return result.data
     }
-
 
 
     // Attract: Получаем с API список Схем Рисунков ПС
@@ -391,7 +397,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
     // attract: Изменение статуса СЗ (для всех СМ - для дня)
     const changeFabricTaskDateStatus = async (task) => {
-        // console.log('debug')
         const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
         console.log('store', result)
         return result
@@ -425,6 +430,38 @@ export const useFabricsStore = defineStore('fabrics', () => {
         console.log('store: createContextExpense:', result)
         return result.data
         // console.log(result)
+    }
+
+    // __ Меняем порядок СЗ, созданного ОПП (FabricTaskContext)
+    const changeContextOrder = async (taskId, machineId, contextData) => {
+        const result = await jwtPut(URL_FABRIC_TASKS_CONTEXT_CHANGE_ORDER, {
+            task: taskId,
+            machine: machineId,
+            context: contextData
+        })
+        log('changeContextOrder: ', result)
+        return result
+        debugger
+    }
+
+    // __ Получаем контекст СЗ, созданного ОПП (FabricTaskContext)
+    const getOrderContext = async (taskId, machineId, contextData) => {
+        const result = await jwtGet(URL_FABRIC_TASKS_CONTEXT, {task: taskId, machine: machineId})
+        console.log('getOrderContext: ', result)
+        return result.data
+        debugger
+    }
+
+    // __ Создаем рулон контекста СЗ, созданного ОПП (FabricTaskContext)
+    const addOrderContextRoll = async (taskId, machineId, contextRoll) => {
+        const result = await jwtPost(URL_FABRIC_TASKS_CONTEXT_ROLL_ADD, {
+            task: taskId,
+            machine: machineId,
+            roll: contextRoll
+        })
+        console.log('addOrderContextRoll: ', result)
+        return result.data
+        debugger
     }
 
 
@@ -548,26 +585,47 @@ export const useFabricsStore = defineStore('fabrics', () => {
         fabricsCasheIsChanged,
         globalEditMode,
         globalFabricsMode,
-        globalTaskProductivity, clearTaskGlobalProductivity,
+        globalTaskProductivity,
+        clearTaskGlobalProductivity,
         globalRollsIndexes,
         globalActiveRolls,
-        globalExecuteRollsInfo, globalExecuteMarkRollRolling, globalExecuteMarkRollFalse, globalExecuteMarkRollFalseReason,
-        globalExecuteMarkRollCancel, globalExecuteMarkRollCancelReason,
-        globalExecuteRollAdd, globalExecuteRollAddReason, globalExecuteRollAddData,
-        globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
-        globalExecuteRollChangeTextileLength, globalExecuteRollChangeDescriptionText,
-        globalStartExecuteRoll, globalPauseExecuteRoll, globalResumeExecuteRoll, globalFinishExecuteRoll,
-        globalSelectWorkers, globalSelectWorkerId, globalSelectWorkerFlag,
+        globalExecuteRollsInfo,
+        globalExecuteMarkRollRolling,
+        globalExecuteMarkRollFalse,
+        globalExecuteMarkRollFalseReason,
+        globalExecuteMarkRollCancel,
+        globalExecuteMarkRollCancelReason,
+        globalExecuteRollAdd,
+        globalExecuteRollAddReason,
+        globalExecuteRollAddData,
+        globalExecuteRollChangeTextile,
+        globalExecuteRollChangeDescription,
+        globalExecuteRollChangeTextileLength,
+        globalExecuteRollChangeDescriptionText,
+        globalStartExecuteRoll,
+        globalPauseExecuteRoll,
+        globalResumeExecuteRoll,
+        globalFinishExecuteRoll,
+        globalSelectWorkers,
+        globalSelectWorkerId,
+        globalSelectWorkerFlag,
         globalCalendarChangeFlag,
         globalOrderManageChangeFlag,
-        getFabrics, getFabricById,
+        getFabrics,
+        getFabricById,
         updateFabric,
         createFabric,
         uploadFabrics,
         deleteFabric,
         getFabricPictureSchemas,
-        getFabricPictures, getFabricPictureById, uploadFabricsPictures, updateFabricPicture, createFabricPicture,
-        getFabricsMachines, getFabricsMachineById, setFabricsMachineStatusById,
+        getFabricPictures,
+        getFabricPictureById,
+        uploadFabricsPictures,
+        updateFabricPicture,
+        createFabricPicture,
+        getFabricsMachines,
+        getFabricsMachineById,
+        setFabricsMachineStatusById,
         uploadFabricsOrders,
         getTasksByPeriod,
         getLastDoneFabricTask,
@@ -576,16 +634,21 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll, addExecuteRoll,
+        updateExecuteRoll,
+        addExecuteRoll,
         updateFabricTaskWorkers,
-        getFabricExecutingTasks, getFabricNotDoneTasks,
+        getFabricExecutingTasks,
+        getFabricNotDoneTasks,
         closeFabricTasks,
         getFabricsOrders,
-        closeFabricOrder, setFabricOrderActive,
+        closeFabricOrder,
+        setFabricOrderActive,
         getFabricTaskContextNotDone,
+        changeContextOrder, getOrderContext, addOrderContextRoll,
         createContextExpense,
         getNotAcceptedToCutRolls,
-        setRollRegisteredStatus, setRollMovedStatus,
+        setRollRegisteredStatus,
+        setRollMovedStatus,
         updateFabricsBuffer,
     }
 

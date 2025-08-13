@@ -61,7 +61,7 @@
 
 <script setup>
 
-import {computed, reactive, ref} from 'vue'
+import {reactive, ref} from 'vue'
 
 import {useFabricsStore} from '@/stores/FabricsStore.js'
 
