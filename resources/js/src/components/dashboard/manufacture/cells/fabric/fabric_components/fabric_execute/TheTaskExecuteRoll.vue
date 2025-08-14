@@ -12,6 +12,18 @@
             text-size="mini"
         />
 
+        <!-- __ Маяк Калькулятора -->
+        <AppLabel
+            v-if="rollsRender.isCalc.show"
+            :text="rollsRender.isCalc.data(roll_exec)"
+            :title="rollsRender.isCalc.title"
+            :type="rollsRender.isCalc.type(roll_exec)"
+            :width="rollsRender.isCalc.width"
+            align="center"
+            text-size="small"
+            @click="changeCalcStatus"
+        />
+
         <!-- __ Номер рулона (id записи) -->
         <AppLabel
             v-if="rollsRender.rollNumber.show"
@@ -179,6 +191,7 @@ import {getDuration} from '@/app/helpers/helpers_date.js'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
 import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
+// import { success } from '@/app/constants/colorsClasses.js'
 
 const props = defineProps({
     roll_exec: {
@@ -191,6 +204,12 @@ const props = defineProps({
         required: true
     }
 })
+
+
+const emit = defineEmits(['changeCalcStatus'])
+
+// __ Передаем в родительский компонент событие для изменения статуса калькулятора
+const changeCalcStatus = () => emit('changeCalcStatus')
 
 const fabricsStore = useFabricsStore()
 

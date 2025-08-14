@@ -1,26 +1,30 @@
 <template>
 
-    <!-- attract: Заголовок таблицы выполняемых рулонов -->
+    <!-- __ Заголовок таблицы выполняемых рулонов -->
     <TheTaskExecuteRollsHeader
         :rollsRender="rollsRender"
     />
 
+    <!-- __ Сам список рулонов -->
     <div v-for="(roll, index) in rolls" :key="index">
 
         <div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">
 
-            <div
+            <!--<div-->
+            <!--    :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
+            <!--    class="cursor-pointer">-->
+
+            <!-- __ Сам рулон  -->
+            <TheTaskExecuteRoll
                 :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"
-                class="cursor-pointer">
+                :roll_exec="roll_exec"
+                :rollsRender="rollsRender"
+                class="cursor-pointer"
+                @click="changeActiveRoll(roll_exec)"
+                @change-calc-status="changeCalcStatus(roll_exec)"
+            />
 
-                <!-- attract: Сам рулон  -->
-                <TheTaskExecuteRoll
-                    :roll_exec="roll_exec"
-                    :rollsRender="rollsRender"
-                    @click="changeActiveRoll(roll_exec)"
-                />
-
-            </div>
+            <!--</div>-->
 
         </div>
 
@@ -73,7 +77,13 @@ const props = defineProps({
     }
 })
 
-const emits = defineEmits(['add-execute-roll'])
+const emits = defineEmits(['add-execute-roll', 'changeCalcStatus'])
+
+// __ Передаем в родительский компонент изменение калькулятора
+const changeCalcStatus = (roll_exec) => {
+    emits('changeCalcStatus', roll_exec, props.machine)
+}
+
 
 // attract: Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
@@ -134,42 +144,81 @@ const rollsRender = reactive({
         width: 'w-[60px]',
         show: true,
         title: '№ п/п',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => roll_exec.position.toString()
+    },
+    isCalc: {
+        width: 'w-[60px]',
+        show: true,
+        title: '+ / -',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
+        type: (roll_exec) => roll_exec.isCalc ? 'success' : 'danger',
+        data: (roll_exec) => (roll_exec.isCalc ? '✓' : '✗'),
     },
     rollNumber: {
         width: 'w-[60px]',
         show: true,
         title: '№ рулона',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => roll_exec.id.toString()
     },
     fabricName: {
         width: 'w-[290px]',
         show: true,
         title: 'Название ПС',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => fabrics.find((fabric) => fabric.id === roll_exec.fabric_id).display_name
     },
     textileLength: {
         width: 'w-[50px]',
         show: true,
         title: 'Средняя длина ткани, м.п.',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => roll_exec.textile_length.toFixed(2)
     },
     fabricLength: {
         width: 'w-[50px]',
         show: true,
         title: 'Средняя длина ПС, м.п.',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => (roll_exec.textile_length / roll_exec.rate).toFixed(2)
     },
-    rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
+    rollsAmount: {
+        width: 'w-[30px]',
+        show: false,
+        title: 'Кол-во рулонов, шт.',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
+        data: () => '1'
+    },
     productivity: {
         width: 'w-[90px]',
         show: true,
         title: 'Средние трудозатраты, ч.',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.textile_length / roll_exec.productivity, 'hour')
     },
     description: {
         width: props.execute ? 'w-[200px]' : 'w-[100px]',
         show: true,
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         title: (roll_exec) => roll_exec.descr ?? 'Комментарий',
         data: (roll_exec) => roll_exec.descr
     },
@@ -177,25 +226,45 @@ const rollsRender = reactive({
         width: 'w-[100px]',
         show: true,
         title: 'Статус',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => FABRIC_ROLL_STATUS_ARRAY.find((fabricRollStatus) => fabricRollStatus.CODE === roll_exec.status).TITLE
     },
     startAt: {
         width: 'w-[125px]',
         show: props.execute,
         title: 'Начало стегания рулона',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => roll_exec.start_at ? formatDateAndTimeInShortFormat(roll_exec.start_at) : ''
     },
     finishAt: {
         width: 'w-[125px]',
         show: props.execute,
         title: 'Окончание стегания рулона',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => roll_exec.finish_at ? formatDateAndTimeInShortFormat(roll_exec.finish_at) : ''
     },
-    rollTime: {width: 'w-[90px]', show: props.execute, title: 'Время стегания', data: (roll_exec) => 'Not used'},
+    rollTime: {
+        width: 'w-[90px]',
+        show: props.execute,
+        title: 'Время стегания',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
+        data: (roll_exec) => 'Not used'
+    },
     finishBy: {
         width: 'w-[150px]',
         show: props.execute,
         title: 'Ответственный',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         data: (roll_exec) => {
             const responsibleWorkersCopy = JSON.parse(JSON.stringify(responsibleWorkers.value))
 
@@ -214,6 +283,9 @@ const rollsRender = reactive({
     reason: {
         width: props.execute ? 'w-[200px]' : 'w-[100px]',
         show: props.execute,
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
         title: (roll_exec) => roll_exec.false_reason ?? 'Причина не выполнения',
         data: (roll_exec) => roll_exec.false_reason
     },

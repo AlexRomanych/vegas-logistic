@@ -1,31 +1,40 @@
 <template>
 
-
     <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
 
+        <!-- __ Меню с пунктами действий над рулонами -->
         <div v-if="task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE">
             <TheTaskExecuteControls
                 :machine="machine"
                 :rolls="rolls"
                 @start-execute-roll="startRollExecution"
-
             />
 
-            <!--attract: Разделительная линия -->
+            <!-- __ Разделительная линия -->
             <TheDividerLine/>
-
         </div>
 
         <div v-if="rolls.length">
 
-            <!-- attract: Общий комментарий к сменному заданию показываем, если он есть -->
+            <!-- __ Калькулятор параметров -->
+            <TheTaskExecuteCalculator
+                :machine="machine"
+                :rolls="rolls"
+                @calculator-action-handler="calculatorActionHandler"
+            />
+
+            <!-- __ Разделительная линия -->
+            <TheDividerLine/>
+
+            <!-- __ Общий комментарий к сменному заданию показываем, если он есть -->
             <div v-if="taskDescription">
 
-                <!--attract: Общий комментарий к сменному заданию -->
+                <!-- __ Заголовок -->
                 <div class="ml-2 mt-3 font-semibold text-sm">
                     Комментарий к сменному заданию на этой стегальной машине:
                 </div>
 
+                <!-- __ Комментарий (текст) к сменному заданию -->
                 <AppLabel
                     :text="taskDescription"
                     class="cursor-pointer"
@@ -34,20 +43,21 @@
                     width="w-[955px]"
                 />
 
-                <!--attract: Разделительная линия -->
+                <!-- __ Разделительная линия -->
                 <TheDividerLine/>
 
             </div>
 
-            <!--attract: Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
+            <!-- __ Показываем, если статус "Готов к стежке", "Выполняется" и "Выполнено"-->
             <div v-if="!getFunctionalByFabricTaskStatus(task.common.status)">
 
-                <!--attract: Список рулонов -->
+                <!--__ Список рулонов -->
                 <TheTaskExecuteRolls
                     :machine="machine"
                     :rolls="rolls"
                     :workers="task.workers"
                     @add-execute-roll="addExecuteRoll"
+                    @change-calc-status="changeCalcStatus"
                 />
 
             </div>
@@ -61,11 +71,12 @@
 
 <script setup>
 
-import {reactive, ref} from 'vue'
+import { reactive, ref } from 'vue'
+import draggable from 'vuedraggable'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {FABRIC_MACHINES, NEW_ROLL, FABRIC_TASK_STATUS} from '@/app/constants/fabrics.js'
+import { FABRIC_MACHINES, NEW_ROLL, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
 import {
     // filterFabricsByMachineId,
     // getAddFabricMode,
@@ -83,6 +94,8 @@ import TheDividerLine
 // import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 // import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import TheTaskExecuteCalculator
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteCalculator.vue'
 
 const props = defineProps({
     task: {
@@ -94,12 +107,12 @@ const props = defineProps({
         type: Object,
         required: false,
         default: () => FABRIC_MACHINES.AMERICAN,
-        // validator: (machine) => [
-        //     FABRIC_MACHINES.AMERICAN,
-        //     FABRIC_MACHINES.GERMAN,
-        //     FABRIC_MACHINES.CHINA,
-        //     FABRIC_MACHINES.KOREAN,
-        // ].includes(machine)
+        validator: (machine) => [
+            FABRIC_MACHINES.AMERICAN.ID,
+            FABRIC_MACHINES.GERMAN.ID,
+            FABRIC_MACHINES.CHINA.ID,
+            FABRIC_MACHINES.KOREAN.ID,
+        ].includes(machine.ID)
     }
 })
 
@@ -108,7 +121,15 @@ console.log('machine: task: ', props.task)
 // console.log('machine', props.machine)
 // console.log('machine', FABRIC_MACHINES.AMERICAN)
 
-const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveTaskRecord', 'deleteTaskRecord', 'addExecuteRoll'])
+const emits = defineEmits([
+    'addRoll',
+    'optimizeLabor',
+    'saveTaskRecord',
+    'deleteTaskRecord',
+    'addExecuteRoll',
+    'calculatorActionHandler',
+    'changeCalcStatus'
+])
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
@@ -166,7 +187,7 @@ const deleteTaskRecord = (deleteData) => {
 }
 
 // attract: Всплывающее событие "Добавить рулон" из выполнения СЗ
-const addExecuteRoll = async(addingRollData) => {
+const addExecuteRoll = async (addingRollData) => {
     console.log('addingRollData: ', {...addingRollData, taskId: props.task.common.id})
     const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: props.task.common.id})
     emits('addExecuteRoll') // Передаем в родительский компонент, что рулон добавлен для обновления списка и перерисовки
@@ -178,6 +199,15 @@ const addExecuteRoll = async(addingRollData) => {
 const startRollExecution = () => {
 
 }
+
+
+// __ Калькулятор
+const calculatorActionHandler = (handler, machine) => {
+    emits('calculatorActionHandler', handler, machine)
+}
+
+// __ Всплывающее событие "Изменить статус калькулятора"
+const changeCalcStatus = (exec_roll, machine) => emits('changeCalcStatus', exec_roll, machine)
 
 
 </script>

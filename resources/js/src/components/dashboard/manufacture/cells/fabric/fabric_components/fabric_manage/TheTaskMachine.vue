@@ -41,6 +41,7 @@
                     :disabled="!isDragging"
                     :list="rolls"
                     item-key="id"
+                    :move="evt => evt.draggedContext.element.editable"
                     tag="div"
                     @end="changeRollsPosition"
                     @start="checkForDrag"
@@ -186,7 +187,7 @@ const dragOptions = computed(() => {
         animation: 300,
         group: 'description',
         ghostClass: 'ghost',
-        sort: true
+        sort: true,
         // disabled: false, // Выносим в отдельное свойство
     }
 })

@@ -645,8 +645,8 @@ const resetTabs = () => {
 // tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 
 
-const TASK_TAB_PREFIX = 'TASK_TAB'
 // __ Устанавливаем активное СЗ и вкладку в LocalStorage
+const TASK_TAB_PREFIX = 'TASK_TAB'
 const setActiveTaskAndTab = () => {
     try {
         const findTab = Object.keys(tabs).find(tab => tabs[tab].shown)
@@ -748,6 +748,15 @@ const addRoll = (newRoll, machine, task) => {
 // __ Поднятое событие при клике на кнопку "Сохранить рулон"
 const saveTasks = async (saveData) => {
     const result = await fabricsStore.addOrderContextRoll(saveData.task.id, saveData.machine.ID, saveData.roll)
+
+    await getTasks()
+    setActiveTaskByDate(saveData.task.date)
+    rerender.forEach((_, index, array) => array[index]++)
+
+
+    
+
+
     // console.log('from saveTask: ', saveData)
     // console.log(result)
 

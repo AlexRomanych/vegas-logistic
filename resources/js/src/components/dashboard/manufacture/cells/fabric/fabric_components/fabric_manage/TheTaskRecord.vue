@@ -349,7 +349,7 @@ const props = defineProps({
 })
 
 
-// console.log('props.roll: ', props.roll)
+console.log('props.roll !!!: ', props.roll)
 
 const emits = defineEmits(['saveTaskRecord', 'deleteTaskRecord'])
 

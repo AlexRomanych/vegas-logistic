@@ -1,17 +1,17 @@
 <template>
 
-    <div class="mt-2 ml-2">
+    <div v-if="!isLoading" class="mt-2 ml-2">
 
-        <!-- attract: Выводим даты + статусы + сервисные кнопки   -->
+        <!-- __ Выводим даты + статусы + сервисные кнопки   -->
         <div class="flex h-[130px] m-3">
             <div v-for="task in taskData" :key="task.date">
 
-                <!-- attract: Рамка выбора даты -->
+                <!-- __ Рамка выбора даты -->
                 <div
                     :class="task.active ? 'bg-blue-200 border-2 border-blue-400 rounded-lg' : ''"
                     class="flex flex-col p-0.5 h-full">
 
-                    <!-- attract: Дата + день недели -->
+                    <!-- __ Дата + день недели -->
                     <AppLabelMultiLine
                         :text="[formatDate(task.date), getDayOfWeek(task.date, false)]"
                         :type="dayOfWeekStyle(task.date)"
@@ -21,7 +21,7 @@
                         @click="changeActiveTask(task)"
                     />
 
-                    <!-- attract: Статусы -->
+                    <!-- __ Статусы -->
                     <AppLabel
                         :text="getTitleByFabricTaskStatusCode(task.common.status)"
                         :type="getStyleTypeByFabricTaskStatusCode(task.common.status)"
@@ -30,7 +30,7 @@
                         width="w-[150px]"
                     />
 
-                    <!-- attract: Кнопка "Начать СЗ + Закончить СЗ" (Только для текущего СЗ) -->
+                    <!-- __ Кнопка "Начать СЗ + Закончить СЗ" (Только для текущего СЗ) -->
                     <AppLabel
                         v-if="getStartStopButtonShowCondition(task)"
                         :text="getExecuteButtonTitle(task.common.status)"
@@ -47,17 +47,15 @@
             </div>
         </div>
 
-        <!-- attract: Выводим табы, если есть СЗ -->
+        <!-- __ Выводим табы, если есть СЗ -->
         <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
-
-            <!--            :type="tab.shown ? 'primary' : tab.typePassive"-->
-            <!-- attract Выводим табы -->
+            <!-- __ Выводим табы -->
             <div class="flex flex-row justify-start items-center m-3">
 
                 <div v-for="tab in tabs" :key="tab.id">
 
-                    <!-- attract: Показываем только те СМ, для которых есть СЗ -->
+                    <!-- __ Показываем только те СМ, для которых есть СЗ -->
                     <div v-if="getMachineShowCondition(activeTask, tab)">
                         <AppLabelMultiLine
                             :bold="true"
@@ -74,11 +72,10 @@
 
             </div>
 
-
-            <!-- attract: Выводим содержимое табов -->
+            <!-- __ Выводим содержимое табов -->
             <div class="ml-3 mt-3">
 
-                <!--attract: Общее-->
+                <!-- __ Общее-->
                 <div v-if="tabs.common.shown">
                     <TheTaskCommonInfo
                         :key="rerender[0]"
@@ -88,16 +85,18 @@
                     />
                 </div>
 
-                <!--attract: Содержимое каждой СМ-->
+                <!-- __ Содержимое каждой СМ-->
                 <div v-for="tab in tabs" :key="tab.id">
 
                     <div v-if="tab.hasOwnProperty('machine')">
                         <TheTaskExecuteMachine
                             v-if="tab.shown"
                             :key="rerender[tab.machine.ID]"
-                            :machine="{...tab.machine}"
+                            :machine="tab.machine"
                             :task="activeTask"
                             @add-execute-roll="addExecuteRoll"
+                            @calculator-action-handler="calculatorActionHandler"
+                            @change-calc-status="changeCalcStatus"
                         />
                     </div>
                 </div>
@@ -108,7 +107,7 @@
 
     </div>
 
-    <!-- attract: Асинхронное модальное окно -->
+    <!-- __ Асинхронное модальное окно -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
@@ -116,7 +115,7 @@
         mode="confirm"
     />
 
-    <!-- attract: Callout -->
+    <!-- __ Callout -->
     <AppCallout
         :show="calloutShow"
         :text="calloutText"
@@ -126,9 +125,9 @@
 </template>
 
 <script setup>
-import {ref, reactive, watch} from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_TASK_STATUS,
@@ -160,16 +159,40 @@ import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
+// __ Loader
+import { useLoading } from 'vue-loading-overlay'
+import { loaderHandler } from '@/app/helpers/helpers.ts'
+// import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+
+const isLoading = ref(true)
+// __ End Loader
 
 const fabricsStore = useFabricsStore()
 
-// __ Получаем период отображения сменного задания
-const tasksPeriod = getFabricTasksPeriod()
-console.log('tasksPeriod:', tasksPeriod)
+
+// __ Получаем все ткани и запоминаем в хранилище
+let fabrics = []  // загружаем после монтирования
+const getFabrics = async () => {
+    fabrics = await fabricsStore.getFabrics(true)
+    fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
+    fabricsStore.fabricsMemory = fabrics
+}
+
+
+// __ Подготавливаем данные
+let tasksPeriod = null
+let tasks = []
+const taskData = ref(null)
+const activeTask = ref(null)
+
 
 const prepareTasksData = async () => {
+
+    // __ Получаем период отображения сменного задания
+    tasksPeriod = getFabricTasksPeriod()
+
     // __ Получаем сами сменные задания
-    let tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
+    tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
 
     // __ Выбираем все СЗ, которые имеют статус "Готов к стежке", "Выполняется" и "Выполнено"
     tasks = tasks.filter(
@@ -187,53 +210,41 @@ const prepareTasksData = async () => {
         // console.log('lastDoneTask:', lastDoneTask)
     }
 
-
+    // __ Сортируем массив рулонов ОПП + сортируем массив физических рулонов СМ по позиции
     tasks.forEach(task => {
         Object.keys(task.machines).forEach(machine => {
+            // по ОПП
             task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+            // по позиции
+            task.machines[machine].rolls.forEach(roll => {
+                roll.rolls_exec = roll.rolls_exec.sort((a, b) => a.position - b.position)
+            })
+            // Добавляем маяк "Калькулятора"
+            task.machines[machine].rolls.forEach(roll => {
+                roll.rolls_exec = roll.rolls_exec.map(rollExec => ({...rollExec, isCalc: false}))
+            })
         })
     })
 
+    // __ Формируем данные для отображения
+    taskData.value = tasks
 
-    return tasks
+    // __ Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
+    activeTask.value = taskData.value.find(t => isToday(t.date)) || tasks[0]
+    activeTask.value.active = true
+
+    console.log('tasksPeriod:', tasksPeriod)
+    console.log('execute tasks: ', tasks)
+    console.log('taskData: ', taskData.value)
+    console.log('activeTask', activeTask.value)
+
 }
 
-let tasks = await prepareTasksData()
 
-console.log('execute tasks: ', tasks)
-
-// __ Сортируем рулоны по порядку
-// const sortTasksByExecuteRollsPosition = () => {
-//     tasks.forEach(task => {
-//         Object.keys(task.machines).forEach(machine => {
-//             task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
-//         })
-//     })
-// }
-
-
-// attract: Формируем данные для отображения
-const taskData = ref(tasks)
-
-// attract: Ссылка на активное СЗ (по умолчанию сегодняшнее СЗ, если его нет - первый в массиве)
-const activeTask = ref(taskData.value.find(t => isToday(t.date)) || tasks[0])
-activeTask.value.active = true
-
-console.log('tasks:', tasks)
-console.log('taskData: ', taskData.value)
-console.log('activeTask', activeTask.value)
-
-
-// attract: Получаем все ткани и запоминаем в хранилище
-const fabrics = await fabricsStore.getFabrics()
-fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
-fabricsStore.fabricsMemory = fabrics
-// console.log(fabrics)
-
-// attract: Тип для модального окна
+// __ Тип для модального окна
 const modalType = ref('danger')
 
-// attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
+// __ Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
 const tabs = reactive({
     common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
     american: {
@@ -288,11 +299,11 @@ const resetTabs = () => {
     // console.log(tabs)
 }
 
-resetTabs()                                 // сбрасываем все табы
-tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
+// resetTabs()                                 // сбрасываем все табы
+// tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 
 
-// attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
+// __ Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
 const dayOfWeekStyle = (date) => {
     if (isToday(date)) return 'success'
     if (isWorkingDay(date)) return 'dark'
@@ -300,18 +311,18 @@ const dayOfWeekStyle = (date) => {
 }
 
 
-// attract: Асинхронная модальное окно
+// __ Асинхронная модальное окно
 const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
 const modalText = ref([])
 
-// attract: Callout для вывода ошибок и предупреждений
+// __ Callout для вывода ошибок и предупреждений
 const calloutType = ref('danger')
 const calloutText = ref('')
 const calloutShow = ref(false)
 const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
 
 
-// attract: Меняем активный день по клику на нем
+// __ Меняем активный день по клику на нем
 const changeActiveTask = (task) => {
     taskData.value.forEach((t) => t.active = t.date === task.date)
     activeTask.value = taskData.value.find(t => t.active)
@@ -319,14 +330,14 @@ const changeActiveTask = (task) => {
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
 
-    // // attract: Перерисовываем все табы, чтобы исправить баг с отображением продуктивности общей
+    // // __ Перерисовываем все табы, чтобы исправить баг с отображением продуктивности общей
     // rerender.forEach((_, index, array) => array[index]++)
 
     resetTabs()                                 // сбрасываем все табы
     tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 }
 
-// attract: Определяем тип таба (цвет) в зависимости от наличия СЗ
+// __ Определяем тип таба (цвет) в зависимости от наличия СЗ
 const getTabType = (tab) => {
 
     // если вкладка активна
@@ -340,7 +351,7 @@ const getTabType = (tab) => {
 }
 
 
-// attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
+// __ Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
 const selectWorkers = async (workersList) => {
     workersList = workersList.filter(worker => worker.checked)
     // console.log('selectWorkers: ', workersList)
@@ -585,7 +596,29 @@ const getStartStopButtonShowCondition = (task) => {
 }
 
 
-// attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
+// __ Калькулятор
+const calculatorActionHandler = (handler, machine) => {
+    // console.log(machine)
+    // console.log(activeTask.value.machines[machine.TITLE])
+    // console.log(handler)
+    activeTask.value.machines[machine.TITLE].rolls.forEach(roll => {
+        roll.rolls_exec.forEach(roll_exec => handler(roll_exec))
+    })
+}
+
+
+// __ Изменение статуса калькулятора
+const changeCalcStatus = (rollExec, machine) => {
+    activeTask.value.machines[machine.TITLE].rolls.forEach(roll => {
+        roll.rolls_exec.forEach(roll_exec => {
+            if (roll_exec.id === rollExec.id) {
+                roll_exec.isCalc = !roll_exec.isCalc
+            }
+        })
+    })
+}
+
+// __ Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])
 
 watch(() => taskData.value, async (newValue) => {
@@ -595,6 +628,26 @@ watch(() => taskData.value, async (newValue) => {
 
 
 }, {deep: true})
+
+
+onMounted(async () => {
+    isLoading.value = true
+    const loadingService = useLoading()
+    await loaderHandler(
+        loadingService,
+        async () => {
+            await getFabrics()              // Получаем список СЗ
+            await prepareTasksData()                // Получаем список СЗ
+            resetTabs()                     // сбрасываем все табы
+            tabs.common.shown = true        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
+            // getActiveTaskAndTab()           // Получаем активное СЗ и вкладку из LocalStorage
+            // setActiveTaskAndTab()           // Устанавливаем активное СЗ и вкладку в LocalStorage
+        },
+        undefined,
+        // false,
+    )
+    isLoading.value = false
+})
 
 </script>
 

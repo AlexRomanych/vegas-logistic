@@ -9,8 +9,19 @@
             :title="rollsRender.position.title"
             :type="getHeaderType()"
             :width="rollsRender.position.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.position.align"
+            :text-size="rollsRender.position.headerTextSize"
+        />
+
+        <!-- __ Маяк "Калькулятора" -->
+        <AppLabelMultiLine
+            v-if="rollsRender.isCalc.show"
+            :text="['Кальк.', '+ / -']"
+            :title="rollsRender.isCalc.title"
+            :type="getHeaderType()"
+            :width="rollsRender.isCalc.width"
+            :align="rollsRender.isCalc.align"
+            :text-size="rollsRender.isCalc.headerTextSize"
         />
 
         <!-- __ Номер рулона (id записи) -->
@@ -20,8 +31,8 @@
             :title="rollsRender.rollNumber.title"
             :type="getHeaderType()"
             :width="rollsRender.rollNumber.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.rollNumber.align"
+            :text-size="rollsRender.rollNumber.headerTextSize"
         />
 
         <!-- __ Название ПС -->
@@ -31,8 +42,8 @@
             :title="rollsRender.fabricName.title"
             :type="getHeaderType()"
             :width="rollsRender.fabricName.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.fabricName.align"
+            :text-size="rollsRender.fabricName.headerTextSize"
         />
 
         <!-- __ Средняя длина ткани -->
@@ -42,8 +53,8 @@
             :title="rollsRender.textileLength.title"
             :type="getHeaderType()"
             :width="rollsRender.textileLength.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.textileLength.align"
+            :text-size="rollsRender.textileLength.headerTextSize"
         />
 
         <!-- __ Средняя длина ПС -->
@@ -53,9 +64,10 @@
             :title="rollsRender.fabricLength.title"
             :type="getHeaderType()"
             :width="rollsRender.fabricLength.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.fabricLength.align"
+            :text-size="rollsRender.fabricLength.headerTextSize"
         />
+
         <!-- __ Количество рулонов (всегда = 1) -->
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
@@ -63,8 +75,8 @@
             :title="rollsRender.rollsAmount.title"
             :type="getHeaderType()"
             :width="rollsRender.rollsAmount.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.rollsAmount.align"
+            :text-size="rollsRender.rollsAmount.headerTextSize"
         />
 
         <!-- __ Средние трудозатраты на рулон -->
@@ -74,8 +86,8 @@
             :title="rollsRender.productivity.title"
             :type="getHeaderType()"
             :width="rollsRender.productivity.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.productivity.align"
+            :text-size="rollsRender.productivity.headerTextSize"
         />
 
         <!-- __ Комментарий -->
@@ -84,9 +96,9 @@
             :text="['Комментарий', '']"
             :type="getHeaderType()"
             :width="rollsRender.description.width"
-            align="center"
             class="truncate"
-            text-size="mini"
+            :align="rollsRender.description.align"
+            :text-size="rollsRender.description.headerTextSize"
             title="Комментарий"
         />
 
@@ -97,8 +109,8 @@
             :title="rollsRender.status.title"
             :type="getHeaderType()"
             :width="rollsRender.status.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.status.align"
+            :text-size="rollsRender.status.headerTextSize"
         />
 
         <!-- __ Начало -->
@@ -108,8 +120,8 @@
             :title="rollsRender.startAt.title"
             :type="getHeaderType()"
             :width="rollsRender.startAt.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.startAt.align"
+            :text-size="rollsRender.startAt.headerTextSize"
         />
 
         <!-- __ Окончание -->
@@ -119,8 +131,8 @@
             :title="rollsRender.finishAt.title"
             :type="getHeaderType()"
             :width="rollsRender.finishAt.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.finishAt.align"
+            :text-size="rollsRender.finishAt.headerTextSize"
         />
 
         <!-- __ Время стегания -->
@@ -130,8 +142,8 @@
             :title="rollsRender.rollTime.title"
             :type="getHeaderType()"
             :width="rollsRender.rollTime.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.rollTime.align"
+            :text-size="rollsRender.rollTime.headerTextSize"
         />
 
         <!-- __ Ответственный -->
@@ -141,8 +153,8 @@
             :title="rollsRender.finishBy.title"
             :type="getHeaderType()"
             :width="rollsRender.finishBy.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.finishBy.align"
+            :text-size="rollsRender.finishBy.headerTextSize"
         />
 
         <!-- __ Причина невыполнения -->
@@ -151,8 +163,8 @@
             :text="['Причина', 'невыполнения']"
             :type="getHeaderType()"
             :width="rollsRender.reason.width"
-            align="center"
-            text-size="mini"
+            :align="rollsRender.reason.align"
+            :text-size="rollsRender.reason.headerTextSize"
             title="Причина невыполнения"
         />
 
