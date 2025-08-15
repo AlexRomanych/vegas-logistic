@@ -8,7 +8,8 @@ export interface IRenderDataItem {
     header: string | string[]
     width: string
     show: boolean
-    type: IColorTypes
+    type: (...args: any[]) => string | IColorTypes,
+    class?: string
     placeholder?: string
     title?: string
     headerTextSize?: IFontsType
@@ -17,6 +18,7 @@ export interface IRenderDataItem {
     headerAlign?: IHorizontalAlign
     dataAlign?: IHorizontalAlign
     data?: (...args: any[]) => string,
+    click?: (...args: any[]) => void,
 }
 
 export interface IRenderData {

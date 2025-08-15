@@ -1,6 +1,5 @@
 <template>
 
-
     <div class="flex">
 
         <!-- __ Общая длина ткани -->
@@ -8,8 +7,8 @@
             :text="['Длина ткани:', totalLength().toFixed(2)]"
             :text-size="HEADER_TEXT_SIZE"
             :width="WIDTH"
-            align="center"
-            type="primary"
+            :align="ALIGN"
+            :type="TYPE"
         />
 
         <!-- __ Общая длина ПС -->
@@ -17,8 +16,8 @@
             :text="['Длина ПС:', totalFabricLength().toFixed(2)]"
             :text-size="HEADER_TEXT_SIZE"
             :width="WIDTH"
-            align="center"
-            type="primary"
+            :align="ALIGN"
+            :type="TYPE"
         />
 
         <!-- __ Общие трудозатраты -->
@@ -26,17 +25,16 @@
             :text="['Трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount(), 'hour')]"
             :text-size="HEADER_TEXT_SIZE"
             :width="WIDTH"
-            align="center"
-            type="primary"
+            :align="ALIGN"
+            :type="TYPE"
         />
-
 
         <!-- __ Кнопки калькулятора -->
         <div class="flex">
             <div v-for="(item, index) in render" :key="index">
                 <AppLabelMultiLine
-                    v-if="item.show"
-                    :align="item.align"
+                    v-if="item.show && item.click"
+                    :align="item.headerAlign"
                     :class="item.class"
                     :text="item.header"
                     :text-size="item.headerTextSize"
@@ -49,54 +47,67 @@
         </div>
     </div>
 
-
-    <!--&lt;!&ndash; __ Позиция (№ по порядку) &ndash;&gt;-->
-    <!--<AppLabelMultiLine-->
-    <!--    v-if="render.selectAll.show"-->
-    <!--    :align="render.selectAll.align"-->
-    <!--    :class="render.selectAll.class"-->
-    <!--    :text="render.selectAll.header"-->
-    <!--    :text-size="render.selectAll.headerTextSize"-->
-    <!--    :title="render.selectAll.title"-->
-    <!--    :type="render.selectAll.type()"-->
-    <!--    :width="render.selectAll.width"-->
-    <!--    @click="render.selectAll.click()"-->
-    <!--/>-->
-
 </template>
 
-<script setup>
-import { reactive, ref } from 'vue'
+<script lang="ts" setup>
+// import { ref, /*reactive*/ } from 'vue'
+
+import type { IRenderData, MachineUnionType, /*IFabricMachine*/ } from '@/types'
+
 import { FABRIC_MACHINES, FABRIC_ROLL_STATUS } from '@/app/constants/fabrics.ts'
-import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+
+//@ts-ignore
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date.js'
 
-const props = defineProps({
-    rolls: {
-        type: Array,
-        required: false,
-        default: []
-    },
-    machine: {
-        type: Object,
-        required: false,
-        default: () => FABRIC_MACHINES.AMERICAN,
-        validator: (machine) => [
-            FABRIC_MACHINES.AMERICAN.ID,
-            FABRIC_MACHINES.GERMAN.ID,
-            FABRIC_MACHINES.CHINA.ID,
-            FABRIC_MACHINES.KOREAN.ID,
-        ].includes(machine.ID)
-    },
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+
+
+interface IProps {
+    rolls?: {
+        rolls_exec: {
+            isCalc: boolean
+            status: string
+            textile_length: number
+            rate: number
+            productivity: number
+        }[]
+    }[],
+    machine?: MachineUnionType,
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+    rolls: () => ([]),
+    machine: () => FABRIC_MACHINES.AMERICAN
 })
 
-console.log('props.rolls: ', props.rolls)
+/*
+// const props = defineProps({
+//     rolls: {
+//         type: Array,
+//         required: false,
+//         default: () => ([])
+//     },
+//     machine: {
+//         type: Object,
+//         required: false,
+//         default: () => FABRIC_MACHINES.AMERICAN,
+//         validator: (machine) => [
+//             FABRIC_MACHINES.AMERICAN.ID,
+//             FABRIC_MACHINES.GERMAN.ID,
+//             FABRIC_MACHINES.CHINA.ID,
+//             FABRIC_MACHINES.KOREAN.ID,
+//         ].includes(machine.ID)
+//     },
+// })
+*/
+
+// console.log('props.rolls: ', props.rolls)
 
 // __ Передача событий
 const emit = defineEmits(['calculatorActionHandler'])
 
 // __ Обертка над кликом
-const clickHandler = (handler) => {
+const clickHandler = (handler: (...args: any[]) => {}) => {
     emit('calculatorActionHandler', handler, props.machine)
 }
 
@@ -133,30 +144,19 @@ const WIDTH = 'w-[100px]'
 const HEADER_TEXT_SIZE = 'mini'
 const ALIGN = 'center'
 const CLASS = 'cursor-pointer'
+const TYPE = 'primary'
 
-const render = ref({
-    // totalLength: {
-    //     header: ['Длина ткани:', totalLength().toString()],
-    //     title: 'Выделить все',
-    //     show: true,
-    //     width: WIDTH,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     align: ALIGN,
-    //     class: CLASS,
-    //     type: (roll) => 'primary',
-    //     data: (roll) => 'data',
-    //     click: () => {},
-    // },
+const render: IRenderData = {
     selectAll: {
         header: ['Выделить', 'все'],
         title: 'Выделить все',
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
+        headerAlign: ALIGN,
         class: CLASS,
-        type: (roll) => 'success',
-        data: (roll) => 'data',
+        type: () => 'success',
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = true),
     },
     unSelectAll: {
@@ -165,9 +165,9 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => 'danger',
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => 'danger',
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = false),
     },
     invertSelection: {
@@ -176,9 +176,9 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => 'orange',
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => 'orange',
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = !item.isCalc),
     },
     selectCreated: {
@@ -187,9 +187,9 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => FABRIC_ROLL_STATUS.CREATED.TYPE,
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => FABRIC_ROLL_STATUS.CREATED.TYPE,
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = item.status === FABRIC_ROLL_STATUS.CREATED.CODE),
     },
     selectDone: {
@@ -198,9 +198,9 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => FABRIC_ROLL_STATUS.DONE.TYPE,
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => FABRIC_ROLL_STATUS.DONE.TYPE,
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = item.status === FABRIC_ROLL_STATUS.DONE.CODE),
     },
     selectFalse: {
@@ -209,9 +209,9 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => FABRIC_ROLL_STATUS.FALSE.TYPE,
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => FABRIC_ROLL_STATUS.FALSE.TYPE,
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = item.status === FABRIC_ROLL_STATUS.FALSE.CODE),
     },
     selectCancelled: {
@@ -220,12 +220,12 @@ const render = ref({
         show: true,
         width: WIDTH,
         headerTextSize: HEADER_TEXT_SIZE,
-        align: ALIGN,
-        type: (roll) => FABRIC_ROLL_STATUS.CANCELLED.TYPE,
-        data: (roll) => 'data',
+        headerAlign: ALIGN,
+        type: () => FABRIC_ROLL_STATUS.CANCELLED.TYPE,
+        data: () => 'data',
         click: () => clickHandler(item => item.isCalc = item.status === FABRIC_ROLL_STATUS.CANCELLED.CODE),
     },
-})
+}
 
 
 </script>
