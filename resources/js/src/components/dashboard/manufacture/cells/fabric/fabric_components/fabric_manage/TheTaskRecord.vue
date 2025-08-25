@@ -295,8 +295,8 @@ import { useFabricsStore } from '@/stores/FabricsStore.js'
 import {
     FABRIC_MACHINES,
     FABRIC_ROLL_STATUS,
-    FABRIC_ROLL_STATUS_LIST,
-    FABRIC_TASK_STATUS
+    FABRIC_TASK_STATUS,
+    // FABRIC_ROLL_STATUS_LIST
 } from '@/app/constants/fabrics.js'
 
 import {
@@ -349,7 +349,7 @@ const props = defineProps({
 })
 
 
-console.log('props.roll !!!: ', props.roll)
+// console.log('props.roll !!!: ', props.roll)
 
 const emits = defineEmits(['saveTaskRecord', 'deleteTaskRecord'])
 

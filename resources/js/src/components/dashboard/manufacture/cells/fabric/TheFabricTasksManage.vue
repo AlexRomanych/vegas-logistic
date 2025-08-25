@@ -627,7 +627,7 @@ const changeTab = (selectedTab) => {
             tabs[tab].shown = tabs[tab].id === selectedTab.id
         }
     }
-    log('tabs: ', tabs)
+    // console.log('tabs: ', tabs)
     setActiveTaskAndTab()
 }
 
@@ -754,7 +754,7 @@ const saveTasks = async (saveData) => {
     rerender.forEach((_, index, array) => array[index]++)
 
 
-    
+
 
 
     // console.log('from saveTask: ', saveData)
@@ -867,7 +867,7 @@ onMounted(async () => {
         async () => {
             await getFabricsMachines()      // Получаем список машин
             setEnabledTabs()                // Устанавливаем только активные машины
-            await getFabrics()              // Получаем список СЗ
+            await getFabrics()              // Получаем ПС
             await getTasks()                // Получаем список СЗ
             resetTabs()                     // сбрасываем все табы
             tabs.common.shown = true        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
@@ -877,7 +877,7 @@ onMounted(async () => {
         undefined,
         // false,
     )
-    isLoading.value = false
+    isLoading.value  = false
 })
 
 </script>

@@ -8,17 +8,18 @@ export interface IRenderDataItem {
     header: string | string[]
     width: string
     show: boolean
-    type: (...args: any[]) => string | IColorTypes,
+    type: ((...args: any[]) => string) | IColorTypes
     class?: string
     placeholder?: string
-    title?: string
+    title?: string| ((...args: any[]) => string)
     headerTextSize?: IFontsType
     dataTextSize?: IFontsType
     filterTextSize?: IFontsType
     headerAlign?: IHorizontalAlign
     dataAlign?: IHorizontalAlign
-    data?: (...args: any[]) => string,
-    click?: (...args: any[]) => void,
+    align?: IHorizontalAlign
+    data?: (...args: any[]) => string
+    click?: (...args: any[]) => void
 }
 
 export interface IRenderData {

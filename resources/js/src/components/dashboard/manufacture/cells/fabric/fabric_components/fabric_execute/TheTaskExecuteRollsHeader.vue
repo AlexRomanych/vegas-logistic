@@ -172,17 +172,31 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+
+import type { IRenderData } from '@/types'
+// import { deepCopy } from '@/app/helpers/helpers_lib.js'
+// import { shallowRef } from 'vue'
 // import AppLabel from '@/components/ui/labels/AppLabel.vue'
 
-const props = defineProps({
-    rollsRender: {
-        type: Object,
-        required: true
-    }
-})
+
+interface IProps {
+    rollsRender: IRenderData,
+}
+
+const props = defineProps<IProps>()
+
+// const props = defineProps({
+//     rollsRender: {
+//         type: Object,
+//         required: true
+//     }
+// })
+
+// const localRender = deepCopy(props.rollsRender)
+// const localRender = shallowRef(props.rollsRender)
 
 // __ Получаем тип шапки таблицы
 const getHeaderType = () => 'primary'

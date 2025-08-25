@@ -126,6 +126,19 @@
             @click="toggleInformation()"
         />
 
+        <!-- __ Изменить порядок рулонов -->
+        <AppLabelMultiLine
+            v-if="!changeRollsOrderFlag"
+            :text="['Изменить', 'порядок']"
+            align="center"
+            class="cursor-pointer"
+            text-size="mini"
+            type="danger"
+            width="w-[100px]"
+            @click="changeRollsOrder()"
+        />
+
+
     </div>
 
     <!-- attract: Модальное окно для подтверждений -->
@@ -191,12 +204,12 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import { FABRIC_MACHINES, FABRIC_ROLL_STATUS, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
-
-import { log } from '@/app/helpers/helpers.js'
+// import { log } from '@/app/helpers/helpers.js'
 
 import ReasonSelect from '@/components/dashboard/manufacture/cells/components/ReasonSelect.vue'
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
@@ -236,12 +249,17 @@ const emits = defineEmits([
     'change-textile-length-execute-roll'
 ])
 
-// attract: Получаем данные из хранилища по ПС
+// __ Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
 
+const {
+    globalOrderExecuteChangeFlag: changeRollsOrderFlag,         // __ Флаг изменения порядка рулонов
+    globalOrderExecuteChangeReason,                             // __ Причина изменения порядка рулонов
+    globalExecuteRollsInfo                                      // __ Флаг изменения больше/меньше
+} = storeToRefs(fabricsStore)
 
 // info: Функции-хелперы (логика) для работы с кнопками управления выполнением
-// attract: Возвращает true, если в задании есть активное выполнение
+// __ Возвращает true, если в задании есть активное выполнение
 const isExecuteRollPresent = () => {
     let isFind = false
     props.rolls.forEach((roll) => {
@@ -250,7 +268,7 @@ const isExecuteRollPresent = () => {
     return isFind
 }
 
-// attract: Возвращает true, если в задании есть приостановленное выполнение
+// __ Возвращает true, если в задании есть приостановленное выполнение
 const isPausedRollPresent = () => {
     let isFind = false
     props.rolls.forEach((roll) => {
@@ -259,7 +277,7 @@ const isPausedRollPresent = () => {
     return isFind
 }
 
-// attract: Возвращает true, если в задании есть переходящий рулон
+// __ Возвращает true, если в задании есть переходящий рулон
 const isRollingRollPresent = () => {
     let isFind = false
     props.rolls.forEach((roll) => {
@@ -268,7 +286,25 @@ const isRollingRollPresent = () => {
     return isFind
 }
 
-// attract: Возвращает статус кнопки "Начать выполнение"
+// __ Возвращает true, если в задании есть рулоны с статусом "Создано" до активного
+const isCreatedRollPresent = () => {
+    const rollsExec = []
+    props.rolls.forEach((roll) => {
+        rollsExec.push(...roll.rolls_exec)
+    })
+
+    rollsExec.sort((a, b) => a.position - b.position)
+
+    let isFind = false
+    const currentRollPosition = fabricsStore.globalActiveRolls[props.machine.TITLE].position
+    rollsExec.forEach(roll => {
+        isFind ||= (roll.position < currentRollPosition) && (roll.status === FABRIC_ROLL_STATUS.CREATED.CODE)
+    })
+    return isFind
+}
+
+
+// __ Возвращает статус кнопки "Начать выполнение"
 const isStartButtonDisabled = () => {
     // log('start: ', fabricsStore.globalActiveRolls[props.machine.TITLE]?.status)
 
@@ -280,61 +316,32 @@ const isStartButtonDisabled = () => {
     if (isExecuteRollPresent()) return true
     if (isPausedRollPresent()) return true
     if (isRollingRollPresent()) return true
-
-    // __ Определяем, есть ли в задании рулоны, со статусом "Создано" до текущего (по номеру рулона)
-    let isFind = false
-    const currentRollOrder = fabricsStore.globalActiveRolls[props.machine.TITLE].position
-    props.rolls.forEach((roll) => {
-        roll.rolls_exec.forEach(roll_exec => {
-            isFind ||= (roll_exec.position < currentRollOrder) && (roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE)
-        })
-    })
-    if (isFind) return true
-    // log('currentRollOrder: ', currentRollOrder)
-    // log('isFind: ', isFind)
+    if (isCreatedRollPresent()) return true
 
     return false
 }
 
-// attract: Возвращает статус кнопки "Приостановить выполнение"
+// __ Возвращает статус кнопки "Приостановить выполнение"
 const isPauseButtonDisabled = () => {
-    // if (isExecuteRollPresent()) return false
-    // if (isPausedRollPresent()) return true
-    // return true
-
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     return fabricsStore.globalActiveRolls[props.machine.TITLE].status !== FABRIC_ROLL_STATUS.RUNNING.CODE
 }
 
-// attract: Возвращает статус кнопки "Возобновить выполнение"
+// __ Возвращает статус кнопки "Возобновить выполнение"
 const isResumeButtonDisabled = () => {
-    // if (isExecuteRollPresent()) return false
-    // if (isPausedRollPresent()) return true
-    // return true
-
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     return fabricsStore.globalActiveRolls[props.machine.TITLE].status !== FABRIC_ROLL_STATUS.PAUSED.CODE
 }
 
-// attract: Возвращает статус кнопки "Закончить выполнение"
+// __ Возвращает статус кнопки "Закончить выполнение"
 const isEndButtonDisabled = () => {
-    // if (isExecuteRollPresent()) return false
-    // if (isPausedRollPresent()) return true
-    // return true
-
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     return fabricsStore.globalActiveRolls[props.machine.TITLE].status !== FABRIC_ROLL_STATUS.RUNNING.CODE
 }
 
-// attract: Возвращает статус кнопки "Переходящий рулон"
+// __ Возвращает статус кнопки "Переходящий рулон"
 const rollingMarkLabelText = ref(['Отметить', 'переходящим'])
 const isRollingButtonDisabled = () => {
-    // if (!isPausedRollPresent()) return true         // если нет рулона на паузе, то не не активируем
-    // if (isRollingRollPresent()) return false
-    // return true
-
-    // log('rolling: ', fabricsStore.globalActiveRolls[props.machine.TITLE])
-
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
 
     rollingMarkLabelText.value =
@@ -344,33 +351,35 @@ const isRollingButtonDisabled = () => {
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status !== FABRIC_ROLL_STATUS.PAUSED.CODE) return true
 }
 
-// attract: Возвращает статус кнопки "Не выполнено"
+// __ Возвращает статус кнопки "Не выполнено"
 const falseLabelText = ref(['Не', 'выполнено'])
 const isFalseButtonDisabled = () => {
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
+
+    if (isCreatedRollPresent()) return true
 
     falseLabelText.value =
         fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE ? ['Снять отметку', 'Не выполнено'] : ['Не', 'выполнено']
 
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CREATED.CODE) return false
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return false
-    // if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) return false
 
     return true
 }
 
 
-// attract: Возвращает статус кнопки "Отменено"
+// __ Возвращает статус кнопки "Отменено"
 const cancelLabelText = ref(['Отменено', ''])
 const isCancelButtonDisabled = () => {
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
+
+    if (isCreatedRollPresent()) return true
 
     cancelLabelText.value =
         fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE ? ['Снять отметку', 'Отменено'] : ['Отменено', '']
 
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CREATED.CODE) return false
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) return false
-    // if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) return false
 
     return true
 }
@@ -396,7 +405,6 @@ const falseButtonDisabledFlag = ref(isFalseButtonDisabled())
 const changeTextileLengthButtonDisabledFlag = ref(isChangeTextileLengthButtonDisabled())
 const cancelButtonDisabledFlag = ref(isCancelButtonDisabled())
 
-
 // info: ---------------------------------------------------------
 
 //hr--------------------------------------------------------------
@@ -411,25 +419,25 @@ const groupId = ref(null)
 const categoryId = ref(null)
 
 
-// attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
+// __ Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
 const appModalAsync = ref(null)
 const modalText = ref([])
 const modalType = ref('danger')
 const modalConfirm = ref('confirm')
 
-// attract: Получаем ссылку на модальное для ввода текстовых данных окно с асинхронной функцией
+// __ Получаем ссылку на модальное для ввода текстовых данных окно с асинхронной функцией
 const appModalAsyncArea = ref(null)
 const modalTextArea = ref([])
 const modalTypeArea = ref('danger')
 const modalInitValueArea = ref('')
 
-// attract: Получаем ссылку на модальное для ввода числовых данных окно с асинхронной функцией
+// __ Получаем ссылку на модальное для ввода числовых данных окно с асинхронной функцией
 const appModalAsyncNumber = ref(null)
 const modalTextNumber = ref([])
 const modalTypeNumber = ref('danger')
 const modalInitValueNumber = ref(0)
 
-// attract: Получаем ссылку на модальное для ввода данных переходящего рулона
+// __ Получаем ссылку на модальное для ввода данных переходящего рулона
 const theTaskExecuteRollRollingData = ref(null)
 const rollingRollText = ref([])
 const rollingRollType = ref('orange')
@@ -437,28 +445,40 @@ const rollingRollInitValue = ref(0)
 const rollingRollConfirm = ref('confirm')
 const rollingRoll = ref({})
 
-// attract: Получаем ссылку на модальное для добавления рулона
+// __ Получаем ссылку на модальное для добавления рулона
 const theTaskExecuteRollAdd = ref(null)
 const addingRollText = ref([])
 const addingRollType = ref('indigo')
 //hr--------------------------------------------------------------
 
 
+// line ---------------------------------------------------------------------
+// line ------------------- Обработка кликов кнопок -------------------------
+// line ---------------------------------------------------------------------
 // info: Обрабатываем нажатие кнопок управления выполнением + доп функционал
-// attract: больше/меньше инфы
+
+
+// __ больше/меньше инфы
 const extendInfoLabelText = ref(['Меньше', 'инфы'])
 const toggleInformation = () => {
-    fabricsStore.globalExecuteRollsInfo = !fabricsStore.globalExecuteRollsInfo
-    if (fabricsStore.globalExecuteRollsInfo) {
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
+    globalExecuteRollsInfo.value = !globalExecuteRollsInfo.value
+    if (globalExecuteRollsInfo.value) {
         extendInfoLabelText.value = ['Меньше', 'инфы']
         return
     }
+    // fabricsStore.globalExecuteRollsInfo = !fabricsStore.globalExecuteRollsInfo
+    // if (fabricsStore.globalExecuteRollsInfo) {
+    //     extendInfoLabelText.value = ['Меньше', 'инфы']
+    //     return
+    // }
     extendInfoLabelText.value = ['Больше', 'инфы']
 }
 
-// globalExecuteRollChangeTextile, globalExecuteRollChangeDescription,
-// attract: Изменить комментарий
+
+// __ Изменить комментарий
 const changeDescriptionText = async () => {
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     modalTypeArea.value = 'warning'
     modalTextArea.value = ['Измените комментарий:', '']
@@ -474,8 +494,10 @@ const changeDescriptionText = async () => {
     }
 }
 
-// attract: Изменить длину ткани
+
+// __ Изменить длину ткани
 const changeTextileLength = async () => {
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     modalTypeNumber.value = 'warning'
     modalTextNumber.value = ['Измените длину в рулона ткани (м.п.):', '']
@@ -499,6 +521,8 @@ const toggleRollingMark = async () => {
 
     if (rollingButtonDisabledFlag.value) return
 
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
+
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.ROLLING.CODE) {   // если уже есть отметка, то удаляем ее
 
         modalText.value = ['Будет сброшен статус "Переходящий".', 'Продолжить?']
@@ -514,36 +538,6 @@ const toggleRollingMark = async () => {
 
         return
     }
-
-    // modalTypeArea.value = 'orange'
-    // modalTextArea.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
-    // modalInitValueArea.value = fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? ''
-    //
-    // const answer = await appModalAsyncArea.value.show(fabricsStore.globalActiveRolls[props.machine.TITLE].false_reason ?? '') // показываем модалку и ждем ответ
-    // if (answer) {
-    //
-    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-    //
-    //
-    //     rollingRollText.value = ['Оцените трудозатраты, которые', 'были уже затрачены на', 'выполнение данного рулона.']
-    //     rollingRollInitValue.value = 150
-    //     rollingRoll.value = fabricsStore.globalActiveRolls[props.machine.TITLE]
-    //
-    //
-    //     const rollingRollLength = await theTaskExecuteRollRollingData.value.show(rollingRoll) // показываем модалку и ждем ответ
-    //
-    //     // log('123: ', theTaskExecuteRollRollingData.value.rollingLength)
-    //
-    //     // log('Debug')
-    //     // return
-    //
-    //     const rollingLength = ` (Выполнено ${theTaskExecuteRollRollingData.value.rollingLength} м.п.)`
-    //
-    //     fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText + rollingLength      // текст
-    //     // fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
-    //     fabricsStore.globalExecuteMarkRollRolling = !fabricsStore.globalExecuteMarkRollRolling
-    //     emits('rolling-execute-roll')
-    // }
 
     reasonSelectType.value = 'orange'
     reasonSelectText.value = ['Статус рулона будет изменен на "Переходящий".', 'Укажите, пожалуйста, причину.']
@@ -580,6 +574,8 @@ const toggleFalse = async () => {
 
     if (falseButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
 
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
+
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.FALSE.CODE) {   // если уже есть отметка, то удаляем ее
 
         modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
@@ -596,21 +592,6 @@ const toggleFalse = async () => {
 
         return
     }
-
-    // modalTypeArea.value = 'danger'
-    // modalTextArea.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
-    // modalInitValueArea.value = ''
-    //
-    // const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
-    // if (answer) {
-    //
-    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-    //
-    //     fabricsStore.globalExecuteMarkRollFalseReason = appModalAsyncArea.value.inputText       // текст
-    //     fabricsStore.globalExecuteMarkRollFalse = !fabricsStore.globalExecuteMarkRollFalse
-    //     emits('false-execute-roll')
-    // }
-
 
     reasonSelectType.value = 'danger'
     reasonSelectText.value = ['Статус рулона будет изменен на "Не выполнено".', 'Укажите, пожалуйста, причину.']
@@ -635,17 +616,12 @@ const toggleFalse = async () => {
 }
 
 
-// const reasonSelect = ref(null)
-// const reasonSelectText = ref([])
-// const reasonSelectType = ref('danger')
-// const reasonSelectInitValue = ref('')
-
-
-// warn -------------------------------------------------------
-// ___ Отменен/Снять отметку
+// __ Отменен/Снять отметку
 const toggleCancel = async () => {
 
     if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
+
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
 
@@ -684,52 +660,14 @@ const toggleCancel = async () => {
     }
 
 }
-// warn -------------------------------------------------------
 
 
-// attract: Отменен/Снять отметку
-// const toggleCancel_ = async () => {
-//
-//     if (cancelButtonDisabledFlag.value) return   // если кнопка неактивна, то выходим
-//
-//     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {   // если уже есть отметка, то удаляем ее
-//
-//         modalText.value = ['Будет изменен статус рулона на "Создано".', 'Продолжить?']
-//         modalConfirm.value = 'confirm'
-//         modalType.value = 'danger'
-//         modalInitValueArea.value = ''
-//
-//         const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
-//         if (answer) {
-//             fabricsStore.globalExecuteMarkRollCancelReason = ''
-//             fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
-//             emits('cancel-execute-roll')
-//         }
-//
-//         return
-//     }
-//
-//     modalTypeArea.value = 'danger'
-//     modalTextArea.value = ['Статус рулона будет изменен на "Отменено".', 'Укажите, пожалуйста, причину.']
-//     modalInitValueArea.value = ''
-//
-//     const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
-//     if (answer) {
-//
-//         if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-//
-//         fabricsStore.globalExecuteMarkRollCancelReason = appModalAsyncArea.value.inputText       // текст
-//         fabricsStore.globalExecuteMarkRollCancel = !fabricsStore.globalExecuteMarkRollCancel
-//         emits('cancel-execute-roll')
-//     }
-//
-// }
-
-
-// attract: Начать выполнение
+// __ Начать выполнение
 const startExecuteRoll = async () => {
 
     if (startButtonDisabledFlag.value) return       // отменяем выполнение, если в задании уже есть активное выполнение
+
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     await changeTextileLength()                     // warning: Защита от дурака. Меняем длину ткани, если это надо
 
@@ -744,10 +682,13 @@ const startExecuteRoll = async () => {
     }
 }
 
-// attract: Приостановить выполнение
+
+// __ Приостановить выполнение
 const pauseExecuteRoll = async () => {
 
     if (pauseButtonDisabledFlag.value) return     // отменяем выполнение, если в задании уже есть активное выполнение
+
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     modalText.value = ['Будет приостановлен учет стегания рулона.', 'Продолжить?']
     modalConfirm.value = 'confirm'
@@ -760,10 +701,13 @@ const pauseExecuteRoll = async () => {
     }
 }
 
-// attract: Возобновить выполнение
+
+// __ Возобновить выполнение
 const resumeExecuteRoll = async () => {
 
     if (resumeButtonDisabledFlag.value) return      // отменяем выполнение, если нет приостановки
+
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     modalText.value = ['Будет возобновлен учет стегания рулона.', 'Продолжить?']
     modalConfirm.value = 'confirm'
@@ -776,10 +720,13 @@ const resumeExecuteRoll = async () => {
     }
 }
 
-// attract: Закончить выполнение
+
+// __ Закончить выполнение
 const finishExecuteRoll = async () => {
 
     if (endButtonDisabledFlag.value) return         // отменяем выполнение, если в задании нет выполнения рулона
+
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     // проверка на ответственного
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].finish_by === 0) {
@@ -807,50 +754,7 @@ const finishExecuteRoll = async () => {
 const fabricsData = ref([])
 const addRoll = async () => {
 
-    // modalTypeArea.value = 'warning'
-    // modalTextArea.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
-    // modalInitValueArea.value = ''
-    //
-    // const answer = await appModalAsyncArea.value.show() // показываем модалку и ждем ответ
-    // if (answer) {
-    //
-    //
-    //     if (!appModalAsyncArea.value.inputText.trim()) return                                   // если ничего нет, то выходим
-    //
-    //
-    //     // Формируем данные для добавления рулона
-    //     const fabrics = fabricsStore.fabricsMemory
-    //
-    //     fabrics.forEach(fabric => {
-    //         if (fabric.machines.some(machine => machine.id === props.machine.ID) &&
-    //             fabric.id !== 0 &&
-    //             fabric.active &&
-    //             fabric.correct) {
-    //             fabricsData.value.push(fabric)
-    //         }
-    //     })
-    //
-    //
-    //     // log(fabricsData.value)
-    //
-    //     addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
-    //
-    //     const answer = await theTaskExecuteRollAdd.value.show(fabricsData.value)
-    //     if (answer) {
-    //
-    //         const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
-    //
-    //         // log(selectedFabricId)
-    //
-    //         fabricsStore.globalExecuteRollAddReason = appModalAsyncArea.value.inputText       // текст
-    //         fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
-    //         fabricsStore.globalExecuteRollAdd = true
-    //     }
-    //
-    //     emits('add-execute-roll')
-    // }
-
-
+    changeRollsOrderFlag.value = false // сбрасываем флаг изменения порядка рулонов
 
     reasonSelectType.value = 'warning'
     reasonSelectText.value = ['Будет добавлен новый рулон.', 'Укажите, пожалуйста, причину.']
@@ -879,7 +783,6 @@ const addRoll = async () => {
             }
         })
 
-
         addingRollText.value = ['Будет добавлен один новый рулон.', 'Выберите полотно стеганное для добавления рулона.']
 
         const answer = await theTaskExecuteRollAdd.value.show(fabricsData.value)
@@ -887,13 +790,10 @@ const addRoll = async () => {
 
             const selectedFabricId = theTaskExecuteRollAdd.value.selectedFabric
 
-            // log(selectedFabricId)
-
             fabricsStore.globalExecuteRollAddReason = reasonSelect.value.inputText       // текст
             fabricsStore.globalExecuteRollAddData = {fabricId: selectedFabricId, machineId: props.machine.ID}
             fabricsStore.globalExecuteRollAdd = true
         }
-
 
         emits('add-execute-roll')
     }
@@ -901,14 +801,42 @@ const addRoll = async () => {
 }
 
 
+// __ Изменить порядок рулонов
+const changeRollsOrder = async () => {
+    changeRollsOrderFlag.value = true  // устанавливаем флаг изменения порядка рулонов
+
+    reasonSelectType.value = 'danger'
+    reasonSelectText.value = ['Укажите, пожалуйста, причину', 'изменения порядка рулонов.']
+    reasonSelectInitValue.value = ''
+    groupId.value = REASONS.FABRIC.CELLS_GROUP.ID                       // ПЯ
+    categoryId.value = REASONS.FABRIC.CATEGORY.REORDERED.ID             // Категория
+
+    if (groupId.value && categoryId.value) await nextTick()
+
+    reasonSelect.value.resetState()                                 // сбрасываем состояние
+    const answer = await reasonSelect.value.show()                  // показываем модалку и ждем ответ
+    if (answer) {
+
+        if (!reasonSelect.value.inputText.trim()) {
+            globalOrderExecuteChangeReason.value = ''
+            return
+        }                                   // если ничего нет, то выходим
+
+        changeRollsOrderFlag.value = true  // устанавливаем флаг изменения порядка рулонов
+        globalOrderExecuteChangeReason.value = reasonSelect.value.inputText.trim()
+    }
+
+
+}
+
 // line ---------------------------------------------------------------------
+// line ---------------------------------------------------------------------
+// line ---------------------------------------------------------------------
+
 
 watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
 
-    // log('change state')
-    // log(fabricsStore.globalActiveRolls)
-
-    // descr: Пересчитываем состояние кнопок управления выполнением
+    // ___ Пересчитываем состояние кнопок управления выполнением
     startButtonDisabledFlag.value = isStartButtonDisabled()     // нужно для реактивности
     pauseButtonDisabledFlag.value = isPauseButtonDisabled()     // нужно для реактивности
     resumeButtonDisabledFlag.value = isResumeButtonDisabled()   // нужно для реактивности
@@ -917,11 +845,6 @@ watch([() => props.rolls, () => fabricsStore.globalActiveRolls], () => {
     falseButtonDisabledFlag.value = isFalseButtonDisabled()
     changeTextileLengthButtonDisabledFlag.value = isChangeTextileLengthButtonDisabled()
     cancelButtonDisabledFlag.value = isCancelButtonDisabled()
-
-    // log(startButtonDisabledFlag.value)
-    // log(endButtonDisabledFlag.value)
-
-    // log('isExecuteRollPresent(): ', isExecuteRollPresent())
 
 }, {deep: true, immediate: true})
 

@@ -191,7 +191,6 @@ import {getDuration} from '@/app/helpers/helpers_date.js'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
 import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
-// import { success } from '@/app/constants/colorsClasses.js'
 
 const props = defineProps({
     roll_exec: {

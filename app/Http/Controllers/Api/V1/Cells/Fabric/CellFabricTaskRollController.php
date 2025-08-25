@@ -263,7 +263,6 @@ class CellFabricTaskRollController extends Controller
             $status = $result['data']['status'];
 
 
-
             // __ Перемещенный на закрой в одном направлении
             if ($status !== FABRIC_ROLL_MOVED_CODE) {
                 throw new Exception('Неверный статус');
@@ -399,12 +398,96 @@ class CellFabricTaskRollController extends Controller
 
     // line -----------------------------------------------------------------------------------
 
+
+    // line -----------------------------------------------------------------------------------
+    // line -------------------- Создает рулон во время выполнения СЗ -------------------------
+    // line -----------------------------------------------------------------------------------
     /**
-     * Descr: Создает рулон во время выполнения СЗ
+     * ___ Создает рулон во время выполнения СЗ
      * @param Request $request
      * @return string
      */
     public function addExecuteRoll(Request $request)
+    {
+        try {
+            // __ Валидация данных
+            $request->validate([
+                'data' => 'required|array',
+                'data.taskId' => 'required|numeric',
+                'data.machineId' => 'required|numeric',
+                'data.fabricId' => 'required|numeric',
+                'data.falseReason' => 'required|string',
+            ]);
+
+            // __ Находим СЗ на данной СМ, чтобы добавить контекст - FabricTaskContext
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $request->data['taskId'])
+                ->where('fabric_machine_id', $request->data['machineId'])
+                ->first();
+            if (!$task) throw new Exception('Не найдено СЗ');
+
+
+            // __ Находим максимальный индекс контекстного рулона
+            $maxContextPosition = FabricTaskContext::query()
+                ->where('fabric_task_id', $task->id)
+                ->max('roll_position');
+
+            // __ Получаем список СЗ на данной СМ, для определения порядка рулонов контекста
+            $taskContexts = FabricTaskContext::query()
+                ->where('fabric_task_id', $task->id)
+                ->orderBy('roll_position')
+                ->with('fabricTaskRolls')
+                ->get();
+
+            // __ Находим максимальную позицию рулона в контексте
+            $maxRollPosition = 0;
+
+            foreach ($taskContexts as $taskContext) {
+                foreach ($taskContext->fabricTaskRolls as $execRoll) {
+                    $maxRollPosition = max($maxRollPosition, $execRoll->roll_position);
+                }
+            }
+
+            // __ Находим ПС, для добавления в контекст
+            $fabric = Fabric::query()->find($request->data['fabricId']);
+            if (!$fabric) throw new Exception('Не найдена ПС');
+
+            // __ Создаем контекст для задания
+            $taskContext = FabricTaskContext::query()->create([
+                'fabric_task_id' => $task->id,
+                'fabric_id' => $fabric->id,
+                'roll_position' => ++$maxContextPosition,       // Вставляем найденную позицию
+                'average_textile_length' => $fabric->average_roll_length,
+                'translate_rate' => $fabric->translate_rate,
+                'productivity' => $fabric->productivity,
+                'rolls_amount' => 1,
+                'description' => 'Создан в процессе выполнения СЗ.'
+                // 'note' => 'Создан в процессе выполнения СЗ. ' . (Carbon::parse($contextDate))->format('d.m.Y'),
+            ]);
+
+            // __ Создаем рулон
+            $roll = FabricTaskRoll::query()->create([
+                'fabric_task_context_id' => $taskContext->id,
+                'fabric_id' => $fabric->id,
+                'roll_position' => ++$maxRollPosition,
+                'roll_status' => FABRIC_ROLL_CREATED_CODE,
+                'textile_roll_length' => $fabric->average_roll_length,
+                'translate_rate' => $fabric->translate_rate,
+                'productivity' => $fabric->productivity,
+                'description' => 'Создан в процессе выполнения',   // дописываем плановый комментарий
+                'false_reason' => $request->data['falseReason'],
+                'note' => $request->data['falseReason'],
+                'comment' => $request->data['falseReason']
+            ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    public function addExecuteRoll_Old(Request $request)
     {
         try {
             // attract: Валидация данных
@@ -519,8 +602,48 @@ class CellFabricTaskRollController extends Controller
 
     }
 
+    // line -----------------------------------------------------------------------------------
 
-    // attract: Вспомогалочка. Или Null, или правильная дата (+3 часа)
+
+    /**
+     *  ___ Меняем порядок исполняемых рулонов
+     * @param Request $request
+     * @return string
+     */
+    public function saveExecuteRollsOrder(Request $request)
+    {
+        try {
+            // __ Валидация данных
+            $validData = $request->validate([
+                'rolls' => 'required|array',
+                'reason' => 'required|string'
+            ]);
+
+            foreach ($validData['rolls'] as $roll) {
+
+                // FabricTaskRoll::query()->find($roll['id'])->update(['roll_position' => $roll['position']]);
+
+                $targetRoll = FabricTaskRoll::query()->find($roll['id']);
+
+                if (!$targetRoll) throw new Exception('Не удалось найти рулон c id = ' . $roll['id']);
+
+                if ($targetRoll->roll_position !== $roll['position']) {
+                    $targetRoll->roll_position = $roll['position'];
+                    $targetRoll->save();
+
+                    // TODO: Добавить логирование c указанием причины ($reason)
+
+                }
+            }
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    // __ Вспомогалочка. Или Null, или правильная дата (+3 часа)
     private function getUTCDateOrNull($date)
     {
         if (is_null($date)) return null;

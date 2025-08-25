@@ -97,6 +97,7 @@
                             @add-execute-roll="addExecuteRoll"
                             @calculator-action-handler="calculatorActionHandler"
                             @change-calc-status="changeCalcStatus"
+                            @save-exec-rolls-order="saveExecRollsOrder"
                         />
                     </div>
                 </div>
@@ -126,6 +127,8 @@
 
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
@@ -149,6 +152,8 @@ import {
     isWorkingDay,
 } from '@/app/helpers/helpers_date.js'
 
+import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+
 import TheTaskCommonInfo
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
 import TheTaskExecuteMachine
@@ -162,16 +167,77 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-// import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+
 
 const isLoading = ref(true)
 // __ End Loader
 
 const fabricsStore = useFabricsStore()
+const {globalOrderExecuteChangeFlag} = storeToRefs(fabricsStore)    // __ флаг изменения порядка рулонов
+
+
+// __ Асинхронная модальное окно
+const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
+const modalText = ref([])
+const modalType = ref('danger')
+
+
+// __ Callout для вывода ошибок и предупреждений
+const calloutType = ref('danger')
+const calloutText = ref('')
+const calloutShow = ref(false)
+const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
+
+
+// __ Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
+const rerender = reactive([0, 0, 0, 0, 0])
+
+
+// __ Подготавливаем переменные
+let fabrics = []  // загружаем после монтирования
+let tasksPeriod = null
+let tasks = []
+const taskData = ref(null)
+const activeTask = ref(null)
+
+
+// __ Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
+const tabs = reactive({
+    common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
+    american: {
+        id: 2,
+        shown: false,
+        name: ['Американец', 'LEGACY-4'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.AMERICAN
+    },
+    german: {
+        id: 3,
+        shown: false,
+        name: ['Немец', 'CHAINTRONIC'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.GERMAN
+    },
+    china: {
+        id: 4,
+        shown: false,
+        name: ['Китаец', 'HY-W-DGW'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.CHINA
+    },
+    korean: {
+        id: 5,
+        shown: false,
+        name: ['Кореец', 'МТ-94'],
+        typePassive: 'dark',
+        machine: FABRIC_MACHINES.KOREAN
+    },
+    // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
+    // test: {id: 6, shown: false, name: ['Machine', 'Test']},
+})
 
 
 // __ Получаем все ткани и запоминаем в хранилище
-let fabrics = []  // загружаем после монтирования
 const getFabrics = async () => {
     fabrics = await fabricsStore.getFabrics(true)
     fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
@@ -180,12 +246,6 @@ const getFabrics = async () => {
 
 
 // __ Подготавливаем данные
-let tasksPeriod = null
-let tasks = []
-const taskData = ref(null)
-const activeTask = ref(null)
-
-
 const prepareTasksData = async () => {
 
     // __ Получаем период отображения сменного задания
@@ -233,74 +293,39 @@ const prepareTasksData = async () => {
     activeTask.value = taskData.value.find(t => isToday(t.date)) || tasks[0]
     activeTask.value.active = true
 
-    console.log('tasksPeriod:', tasksPeriod)
-    console.log('execute tasks: ', tasks)
     console.log('taskData: ', taskData.value)
-    console.log('activeTask', activeTask.value)
-
+    // console.log('tasksPeriod:', tasksPeriod)
+    // console.log('execute tasks: ', tasks)
+    // console.log('activeTask', activeTask.value)
 }
 
 
-// __ Тип для модального окна
-const modalType = ref('danger')
+// __ Обновляем данные с сервера
+const updateTaskData = async () => {
+    // isLoading.value = true
+    const activeTaskDate = activeTask.value.date
+    let activeTabId = 0
 
-// __ Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
-const tabs = reactive({
-    common: {id: 1, shown: false, name: ['Общие', 'данные'], typePassive: 'warning'},
-    american: {
-        id: 2,
-        shown: false,
-        name: ['Американец', 'LEGACY-4'],
-        typePassive: 'dark',
-        machine: FABRIC_MACHINES.AMERICAN
-    },
-    german: {
-        id: 3,
-        shown: false,
-        name: ['Немец', 'CHAINTRONIC'],
-        typePassive: 'dark',
-        machine: FABRIC_MACHINES.GERMAN
-    },
-    china: {
-        id: 4,
-        shown: false,
-        name: ['Китаец', 'HY-W-DGW'],
-        typePassive: 'dark',
-        machine: FABRIC_MACHINES.CHINA
-    },
-    korean: {
-        id: 5,
-        shown: false,
-        name: ['Кореец', 'МТ-94'],
-        typePassive: 'dark',
-        machine: FABRIC_MACHINES.KOREAN
-    },
-    // oneNeedle: {id: 6, shown: false, name: ['Одноиголка', '']},
-    // test: {id: 6, shown: false, name: ['Machine', 'Test']},
-})
-
-// переключаем выбранную вкладку
-const changeTab = (selectedTab) => {
     for (const tab in tabs) {
-        if (tabs.hasOwnProperty(tab)) {
-            tabs[tab].shown = tabs[tab].id === selectedTab.id
+        if (tabs[tab].shown) {
+            activeTabId = tabs[tab].id
+            break
         }
     }
-    // console.log(tabs)
-}
 
-// сбрасываем все вкладки в false, потому что в некоторых ситуациях появляется мультивыбор
-const resetTabs = () => {
+    await prepareTasksData()
+
+    activeTask.value = taskData.value.find(t => t.date === activeTaskDate)
+    resetTabs()
+
     for (const tab in tabs) {
-        if (tabs.hasOwnProperty(tab)) {
-            tabs[tab].shown = false
+        if (tabs[tab].id === activeTabId) {
+            tabs[tab].shown = true
+            break
         }
     }
-    // console.log(tabs)
+    // isLoading.value = false
 }
-
-// resetTabs()                                 // сбрасываем все табы
-// tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
 
 
 // __ Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
@@ -311,21 +336,40 @@ const dayOfWeekStyle = (date) => {
 }
 
 
-// __ Асинхронная модальное окно
-const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
-const modalText = ref([])
 
-// __ Callout для вывода ошибок и предупреждений
-const calloutType = ref('danger')
-const calloutText = ref('')
-const calloutShow = ref(false)
-const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
+// __ Переключаем выбранную вкладку
+const changeTab = (selectedTab) => {
+    for (const tab in tabs) {
+        if (tabs.hasOwnProperty(tab)) {
+            tabs[tab].shown = tabs[tab].id === selectedTab.id
+        }
+    }
+
+    globalOrderExecuteChangeFlag.value = false // сбрасываем флаг изменения порядка рулонов
+
+    setActiveTaskAndTab()
+}
+
+// __ Сбрасываем все вкладки в false, потому что в некоторых ситуациях появляется мультивыбор
+const resetTabs = () => {
+    for (const tab in tabs) {
+        if (tabs.hasOwnProperty(tab)) {
+            tabs[tab].shown = false
+        }
+    }
+}
 
 
 // __ Меняем активный день по клику на нем
 const changeActiveTask = (task) => {
+
+    globalOrderExecuteChangeFlag.value = false // сбрасываем флаг изменения порядка рулонов
+
     taskData.value.forEach((t) => t.active = t.date === task.date)
     activeTask.value = taskData.value.find(t => t.active)
+
+    setActiveTaskAndTab()
+
     // console.log('active_task: ', activeTask.value)
     // descr: Обновляем глобальную продуктивность для всех машин, чтобы исправить bug в отображении продуктивности общей
     fabricsStore.clearTaskGlobalProductivity()
@@ -539,22 +583,27 @@ const changeTaskExecute = async (task) => {
 }
 
 
-// attract: Добавить рулон в СЗ во время выполнения
-const addExecuteRoll = async () => {
-    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
-    // console.log('created: newTaskDay: ', newTaskDay)
+// __ Добавить рулон в СЗ во время выполнения
+const addExecuteRoll = async (addingRollData) => {
 
-    // taskData.value = await prepareTasksData()
+    console.log('TaskExec: addExecuteRoll:', addingRollData)
+    const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: activeTask.value.common.id})
+    await updateTaskData() // обновляем данные с сервера
 
-
-    newTaskDay.forEach(task => {
-        Object.keys(task.machines).forEach(machine => {
-            task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
-        })
-    })
-
-    activeTask.value.machines = newTaskDay[0].machines
-
+    // const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
+    // // console.log('created: newTaskDay: ', newTaskDay)
+    //
+    // // taskData.value = await prepareTasksData()
+    //
+    //
+    // newTaskDay.forEach(task => {
+    //     Object.keys(task.machines).forEach(machine => {
+    //         task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
+    //     })
+    // })
+    //
+    // activeTask.value.machines = newTaskDay[0].machines
+    //
     rerender.forEach((_, index, array) => array[index]++)
 }
 
@@ -566,6 +615,7 @@ const getExecuteButtonTitle = (taskStatus) => {
     return ''
 }
 
+
 // attract: Возвращаем условие отображения машины (присутствуют рулоны в СЗ)
 const getMachineShowCondition = (task, tab) => {
 
@@ -573,7 +623,6 @@ const getMachineShowCondition = (task, tab) => {
     return true
 
 }
-// getMachineShowCondition(activeTask.value, FABRIC_MACHINES.AMERICAN.ID)
 
 
 // attract: Возвращаем условие начала/окончания выполнения
@@ -598,9 +647,6 @@ const getStartStopButtonShowCondition = (task) => {
 
 // __ Калькулятор
 const calculatorActionHandler = (handler, machine) => {
-    // console.log(machine)
-    // console.log(activeTask.value.machines[machine.TITLE])
-    // console.log(handler)
     activeTask.value.machines[machine.TITLE].rolls.forEach(roll => {
         roll.rolls_exec.forEach(roll_exec => handler(roll_exec))
     })
@@ -618,16 +664,51 @@ const changeCalcStatus = (rollExec, machine) => {
     })
 }
 
-// __ Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
-const rerender = reactive([0, 0, 0, 0, 0])
 
-watch(() => taskData.value, async (newValue) => {
+// __ Сохранение порядка рулонов
+const saveExecRollsOrder = async (rollsExec, machine) => {
+    rollsExec.value.forEach((rollExec, index) => rollExec.position = index + 1)
+    const res = await fabricsStore.saveExecuteRollsOrder(rollsExec.value, fabricsStore.globalOrderExecuteChangeReason)
+    // console.log('saveExecRollsOrder: ', rollsExec.value)
+    // console.log('machine: ', machine)
+}
 
-    // rerender.value++
-    // console.log('taskData: changed: ', rerender)
+
+// __ Устанавливаем активное СЗ и вкладку в LocalStorage
+const TASK_TAB_PREFIX = 'TASK_EXECUTE_TAB'
+const setActiveTaskAndTab = () => {
+    try {
+        const findTab = Object.keys(tabs).find(tab => tabs[tab].shown)
+        localStorage.setItem(TASK_TAB_PREFIX, JSON.stringify({
+            activeTaskDate: activeTask.value.date,
+            activeTabId: findTab ? tabs[findTab].id : tabs.common.id
+        }))
+    } catch (e) {
+        catchErrorHandler('LocalStorage: ', e)
+    }
+}
 
 
-}, {deep: true})
+// __ Получаем активное СЗ и вкладку из LocalStorage
+const getActiveTaskAndTab = () => {
+    try {
+        const data = JSON.parse(localStorage.getItem(TASK_TAB_PREFIX))
+        if (data) {
+            const findTask = taskData.value.find(t => t.date === data.activeTaskDate)
+            if (findTask) {
+                changeActiveTask(findTask)
+                resetTabs()
+                // const findTab = Object.keys(tabs).find(tab => tabs[tab].id === data.activeTabId)
+                // if (findTab) {
+                //     tabs[findTab].shown = true
+                // }
+                tabs.common.shown = true  // __ делаем вкладку "общие данные" активной, чтобы получить данные по работягам
+            }
+        }
+    } catch (e) {
+        catchErrorHandler('LocalStorage: ', e)
+    }
+}
 
 
 onMounted(async () => {
@@ -636,17 +717,28 @@ onMounted(async () => {
     await loaderHandler(
         loadingService,
         async () => {
-            await getFabrics()              // Получаем список СЗ
-            await prepareTasksData()                // Получаем список СЗ
-            resetTabs()                     // сбрасываем все табы
-            tabs.common.shown = true        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
-            // getActiveTaskAndTab()           // Получаем активное СЗ и вкладку из LocalStorage
-            // setActiveTaskAndTab()           // Устанавливаем активное СЗ и вкладку в LocalStorage
+            await getFabrics()                              // Получаем список ПС
+            await prepareTasksData()                        // Получаем список СЗ
+            resetTabs()                                     // сбрасываем все табы
+            tabs.common.shown = true                        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
+            getActiveTaskAndTab()                           // Получаем активное СЗ и вкладку из LocalStorage
+            setActiveTaskAndTab()                           // Устанавливаем активное СЗ и вкладку в LocalStorage
+            fabrics.globalOrderExecuteChangeFlag = false    // сбрасываем флаг изменения порядка рулонов
         },
         undefined,
         // false,
     )
     isLoading.value = false
+})
+
+
+// __ Сбрасываем состояние флага изменения порядка рулонов
+onBeforeRouteLeave((to, from) => {
+    globalOrderExecuteChangeFlag.value = false
+})
+
+onBeforeRouteUpdate((to, from) => {
+    globalOrderExecuteChangeFlag.value = false
 })
 
 </script>

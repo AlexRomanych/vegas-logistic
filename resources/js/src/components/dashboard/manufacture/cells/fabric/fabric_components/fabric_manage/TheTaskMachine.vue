@@ -63,6 +63,7 @@
                     </template>
                 </draggable>
             </div>
+
             <!-- __ Разделительная линия -->
             <TheDividerLine/>
 

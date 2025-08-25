@@ -280,6 +280,7 @@ Route::prefix('/fabrics/tasks')
         Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
         Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
         Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
+        Route::post('/execute/save/rolls/order/', [CellFabricTaskRollController::class, 'saveExecuteRollsOrder']);
 
 
         // descr: Тут просто точки доступа для разных действий

@@ -1,93 +1,84 @@
 <template>
-    <div v-if="!isLoading">
-        <!-- __ Заголовок таблицы выполняемых рулонов -->
-        <TheTaskExecuteRollsHeader
-            :rollsRender="rollsRender"
-        />
 
-        <!-- __ Сам список рулонов -->
+    <!-- __ Заголовок таблицы выполняемых рулонов -->
+    <TheTaskExecuteRollsHeader
+        :rollsRender="rollsRender"
+    />
 
-
-        <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
-        <!-- __ Сами рулоны с возможностью перетаскивания -->
-        <!--:move="evt => evt.draggedContext.element.editable"-->
-        <draggable
-            :="dragOptions"
-            :disabled="!isDragging"
-            :list="rollsExec"
-            :move="checkForDrag"
-            item-key="id"
-            tag="div"
-            @end="changeRollsPosition"
-            @start="startDrag"
-        >
-            <template #item="{ element, index }">
-
-                <div>
-                    <!--<TheTaskRecord-->
-                    <!--    :key="index"-->
-                    <!--    :index="index"-->
-                    <!--    :machine="machine"-->
-                    <!--    :roll="element"-->
-                    <!--    :task-status="task.common.status"-->
-                    <!--    @save-task-record="saveTaskRecord"-->
-                    <!--    @delete-task-record="deleteTaskRecord"-->
-                    <!--/>-->
+    <!-- __ Сам список рулонов -->
 
 
-                    <!-- __ Сам рулон  -->
-                    <TheTaskExecuteRoll
-                        :key="index"
-                        :class="element.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"
-                        :roll_exec="element"
-                        :rollsRender="rollsRender"
-                        class="cursor-pointer"
-                        @click="changeActiveRoll(element)"
-                        @change-calc-status="changeCalcStatus(element)"
-                    />
 
 
-                </div>
+    <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
+    <!--    &lt;!&ndash; __ Сами рулоны с возможностью перетаскивания &ndash;&gt;-->
+    <!--    <draggable-->
+    <!--        :="dragOptions"-->
+    <!--        :disabled="!isDragging"-->
+    <!--        :list="rolls"-->
+    <!--        item-key="id"-->
+    <!--        :move="evt => evt.draggedContext.element.editable"-->
+    <!--        tag="div"-->
+    <!--        @end="changeRollsPosition"-->
+    <!--        @start="checkForDrag"-->
+    <!--    >-->
+    <!--        <template #item="{ element, index }">-->
 
-            </template>
-        </draggable>
-        <!--</div>-->
+    <!--            <div>-->
+    <!--                <TheTaskRecord-->
+    <!--                    :key="index"-->
+    <!--                    :index="index"-->
+    <!--                    :machine="machine"-->
+    <!--                    :roll="element"-->
+    <!--                    :task-status="task.common.status"-->
+    <!--                    @save-task-record="saveTaskRecord"-->
+    <!--                    @delete-task-record="deleteTaskRecord"-->
+    <!--                />-->
+    <!--            </div>-->
+
+    <!--        </template>-->
+    <!--    </draggable>-->
+    <!--</div>-->
 
 
-        <!--<div v-for="(roll, index) in rolls" :key="index">-->
-
-        <!--<div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">-->
-
-        <!--<div-->
-        <!--    :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
-        <!--    class="cursor-pointer">-->
 
 
-        <!--<div v-for="rollExec of rollsExec" :key="rollExec.id">-->
-
-        <!--    &lt;!&ndash; __ Сам рулон  &ndash;&gt;-->
-        <!--    <TheTaskExecuteRoll-->
-        <!--        :class="rollExec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
-        <!--        :roll_exec="rollExec"-->
-        <!--        :rollsRender="rollsRender"-->
-        <!--        class="cursor-pointer"-->
-        <!--        @click="changeActiveRoll(rollExec)"-->
-        <!--        @change-calc-status="changeCalcStatus(rollExec)"-->
-        <!--    />-->
-        <!--</div>-->
 
 
-        <!--</div>-->
 
-        <!--</div>-->
 
-        <!--</div>-->
+
+
+
+
+    <div v-for="(roll, index) in rolls" :key="index">
+
+        <div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">
+
+            <!--<div-->
+            <!--    :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
+            <!--    class="cursor-pointer">-->
+
+            <!-- __ Сам рулон  -->
+            <TheTaskExecuteRoll
+                :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"
+                :roll_exec="roll_exec"
+                :rollsRender="rollsRender"
+                class="cursor-pointer"
+                @click="changeActiveRoll(roll_exec)"
+                @change-calc-status="changeCalcStatus(roll_exec)"
+            />
+
+            <!--</div>-->
+
+        </div>
+
     </div>
+
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { reactive, ref, watch } from 'vue'
 
 import draggable from 'vuedraggable'
 
@@ -99,12 +90,14 @@ import {
     formatTimeWithLeadingZeros,
     formatDateAndTimeInShortFormat,
 } from '@/app/helpers/helpers_date.js'
+
 import TheTaskExecuteRollsHeader
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRollsHeader.vue'
 import TheTaskExecuteRoll
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteRoll.vue'
-// import TheTaskRecord
-//     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecord.vue'
+import TheTaskRecord
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecord.vue'
+
 
 
 // import AppLabel from '@/components/ui/labels/AppLabel.vue'
@@ -134,37 +127,12 @@ const props = defineProps({
     }
 })
 
-const emits = defineEmits(['addExecuteRoll', 'changeCalcStatus', 'saveExecRollsOrder'])
+const emits = defineEmits(['add-execute-roll', 'changeCalcStatus'])
 
-const fabricsStore = useFabricsStore()
 
-// __ Loader
-const isLoading = ref(true)
 
-// __ Подготавливаем переменные
-const rollsExec = ref([])               // __ Список выполняемых рулонов
-let fabrics = []                               // __ Список ПС
-const responsibleWorkers = ref([])      // __ Список ответственных за выполнение
-let responsibleWorkersCopy = []
 
-// __ Собираем все рулоны в один массив
-const getRollsExec = () => {
-    props.rolls.forEach((roll) => {
-        rollsExec.value.push(...roll.rolls_exec)
-    })
-}
 
-// __ Сортируем рулоны по позиции
-const sortRollsExec = () => rollsExec.value.sort((a, b) => a.position - b.position)
-
-// __ Получаем данные из хранилища по ПС
-const getFabrics = async () => fabrics = fabricsStore.fabricsMemory
-
-// __ Получаем список ответственных за выполнение
-const getResponsibleWorkers = async () => {
-    responsibleWorkers.value = fabricsStore.globalSelectWorkers
-    responsibleWorkersCopy = JSON.parse(JSON.stringify(responsibleWorkers.value))
-}
 
 // __ Передаем в родительский компонент изменение калькулятора
 const changeCalcStatus = (roll_exec) => {
@@ -172,115 +140,43 @@ const changeCalcStatus = (roll_exec) => {
 }
 
 
-// attract: Сортируем рулоны по позиции
-// const sortExecRollsByPosition = () => {
-//     props.rolls.forEach((roll) => {
-//         roll.rolls_exec.sort((a, b) => a.position - b.position)
-//     })
-// }
-// sortExecRollsByPosition()
+// __ Получаем данные из хранилища по ПС
+const fabricsStore = useFabricsStore()
+const fabrics = fabricsStore.fabricsMemory
 
+// __ Получаем список ответственных за выполнение
+const getResponsibleWorkers = () => fabricsStore.globalSelectWorkers
+const responsibleWorkers = ref(getResponsibleWorkers())
+
+// attract: Сортируем рулоны по позиции
+const sortExecRollsByPosition = () => {
+    props.rolls.forEach((roll) => {
+        roll.rolls_exec.sort((a, b) => a.position - b.position)
+    })
+}
+sortExecRollsByPosition()
 
 // console.log(props.rolls)
 // attract: Добавляем флаг активности
 const resetActiveFlag = () => {
-    rollsExec.value.forEach(roll => roll['active'] = false)
+    props.rolls.forEach((roll) => {
+        roll.rolls_exec.forEach((roll_exec) => {
+            roll_exec['active'] = false
+        })
+    })
 }
-// const resetActiveFlag_Old = () => {
-//     props.rolls.forEach((roll) => {
-//         roll.rolls_exec.forEach((roll_exec) => {
-//             roll_exec['active'] = false
-//         })
-//     })
-// }
-
+resetActiveFlag()
 
 // attract: Устанавливаем активным первый элемент - активный рулон
-let activeRoll = rollsExec.value[0]
+let activeRoll = props.rolls[0].rolls_exec[0]
 if (activeRoll !== undefined) activeRoll['active'] = true // устанавливаем активным первый элемент, если массив не пустой
 fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
 
-// let activeRoll = props.rolls[0].rolls_exec[0]
-// if (activeRoll !== undefined) activeRoll['active'] = true // устанавливаем активным первый элемент, если массив не пустой
-// fabricsStore.globalActiveRolls[props.machine.TITLE] = activeRoll
-
-// console.log('props.rolls: ', props.rolls)
+console.log('props.rolls: ', props.rolls)
 
 
 const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST)
-// console.log(FABRIC_ROLL_STATUS_ARRAY)
-
-
-// __ Опции для draggable
-const dragOptions = computed(() => {
-    return {
-        animation: 300,
-        group: 'description',
-        ghostClass: 'ghost',
-        sort: true,
-        // disabled: false, // Выносим в отдельное свойство
-    }
-})
-
-// __ Проверяем, можно ли менять порядок рулонов - isDragging
-// __ Переменная-флаг нажатия кнопки "Изменить порядок рулонов"
-const {globalOrderExecuteChangeFlag: isDragging} = storeToRefs(fabricsStore)
-
-
-// __ Начало перетаскивания
-let rollsExecCopy
-const startDrag = () => {
-    rollsExecCopy = JSON.parse(JSON.stringify(rollsExec.value))
-}
-
-// __ Проверяем, можно ли перетаскивать определенный элемент
-const checkForDrag = (evt /*контекст элемента*/) => {
-    if (evt.draggedContext.element.status !== FABRIC_ROLL_STATUS.CREATED.CODE) return false
-    // console.log(evt.draggedContext.element)
-}
-
-// __ Меняем позицию рулонов в выполнении СЗ с проверкой
-const changeRollsPosition = () => {
-    // const rollsExecCopy = JSON.parse(JSON.stringify(rollsExec.value))
-    let isCorrectOrder = true
-    for (let i = 0; i < rollsExec.value.length; i++) {
-
-        if (rollsExec.value[i].status === FABRIC_ROLL_STATUS.CREATED.CODE) {
-
-            for (let j = i + 1; j < rollsExec.value.length; j++) {
-
-                if (rollsExec.value[j].status !== FABRIC_ROLL_STATUS.CREATED.CODE) {
-                    isCorrectOrder = false
-                    break
-                }
-            }
-
-        }
-
-        if (!isCorrectOrder) break
-
-    }
-
-    // console.log('isCorrectOrder: ', isCorrectOrder)
-
-    // __ Если порядок рулонов не совпадает с правильным, то возвращаем его и выходим
-    if (!isCorrectOrder) {
-        sortRollsExec()
-        fabricsStore.globalOrderExecuteChangeFlag = false // __ Сбрасываем флаг изменения порядка рулонов
-        return
-    }
-
-    // __ Если порядок рулонов совпадает с правильным, то сохраняем его
-    emits('saveExecRollsOrder', rollsExec, props.machine)
-}
-
-// __ Меняем позицию рулонов в после сброса статуса "Не выполнено" и "Отменено" на "Создано"
-// __ Помещаем элемент в конец списка
-const changeRollsPositionAfterFalseReset = () => {
-    activeRoll.position = rollsExec.value.length + 1        // __ Меняем позицию рулонов
-    sortRollsExec()                                         // __ Сортируем рулоны по позиции
-    emits('saveExecRollsOrder', rollsExec, props.machine)   // __ Сохраняем порядок рулонов
-}
+console.log(FABRIC_ROLL_STATUS_ARRAY)
 
 
 // attract: Определяем, что в рулонах будет полная инфа
@@ -425,6 +321,9 @@ const rollsRender = reactive({
         dataTextSize: 'mini',
         align: 'center',
         data: (roll_exec) => {
+            const responsibleWorkersCopy = JSON.parse(JSON.stringify(responsibleWorkers.value))
+
+            // console.log('rol: ', responsibleWorkersCopy)
 
             const responsibleWorker =
                 responsibleWorkersCopy.data.find((responsibleWorker) => responsibleWorker.id === roll_exec.finish_by)
@@ -460,11 +359,11 @@ const changeActiveRoll = (roll_exec) => {
 // info: Отслеживание элементов управления состоянием выполнения рулона
 const toggleFabricExecuteInfo = () => {
     rollsRender.description.show = !rollsRender.description.show
-    rollsRender.reason.show = !rollsRender.reason.show
     // rollsRender.finishBy.show = !rollsRender.finishBy.show
+    rollsRender.reason.show = !rollsRender.reason.show
 }
 
-//__ Отслеживаем изменение значения в хранилище по отображению инфы о рулонах
+// attract: Отслеживаем изменение значения в хранилище по отображению инфы о рулонах
 watch(() => fabricsStore.globalExecuteRollsInfo, (newValue) => {
     toggleFabricExecuteInfo(newValue)
 })
@@ -482,44 +381,45 @@ watch(() => fabricsStore.globalExecuteRollChangeTextile, async (newValue) => {
 })
 
 
-// __ Отслеживаем изменение "Не выполнено"/"Создано"
+// attract: Отслеживаем изменение "Не выполнено"/"Создано"
 watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {
 
-    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) { // __ Установка статуса "Не выполнено"
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) {
         activeRoll.status_prev = activeRoll.status
         activeRoll.status = FABRIC_ROLL_STATUS.FALSE.CODE
         activeRoll.false_reason = fabricsStore.globalExecuteMarkRollFalseReason
         fabricsStore.globalExecuteMarkRollFalseReason = ''
-        const res = await fabricsStore.updateExecuteRoll(activeRoll)
-        emits('saveExecRollsOrder', rollsExec, props.machine)
-    } else if (activeRoll.status === FABRIC_ROLL_STATUS.FALSE.CODE) { // __ Сброс статуса "Не выполнено"
+    } else if (activeRoll.status === FABRIC_ROLL_STATUS.FALSE.CODE) {
         activeRoll.status_prev = activeRoll.status
         activeRoll.status = FABRIC_ROLL_STATUS.CREATED.CODE
         activeRoll.false_reason = ''
         fabricsStore.globalExecuteMarkRollFalseReason = ''
-        changeRollsPositionAfterFalseReset()
     }
 
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    // console.log(res)
+
 })
 
 
-// __ Отслеживаем изменение "Отменено"/"Создано"
+// attract: Отслеживаем изменение "Отменено"/"Создано"
 watch(() => fabricsStore.globalExecuteMarkRollCancel, async (newState) => {
 
-    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) { // __ Установка статуса "Отменено"
+    if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) {
         activeRoll.status_prev = activeRoll.status
         activeRoll.status = FABRIC_ROLL_STATUS.CANCELLED.CODE
         activeRoll.false_reason = fabricsStore.globalExecuteMarkRollCancelReason
         fabricsStore.globalExecuteMarkRollCancelReason = ''
-    } else if (activeRoll.status === FABRIC_ROLL_STATUS.CANCELLED.CODE) { // __ Сброс статуса "Отменено"
+    } else if (activeRoll.status === FABRIC_ROLL_STATUS.CANCELLED.CODE) {
         activeRoll.status_prev = activeRoll.status
         activeRoll.status = FABRIC_ROLL_STATUS.CREATED.CODE
         activeRoll.false_reason = ''
-        changeRollsPositionAfterFalseReset()
+        fabricsStore.globalExecuteMarkRollCancelReason = ''
     }
 
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    // console.log(res)
+
 })
 
 
@@ -625,37 +525,9 @@ watch(() => fabricsStore.globalExecuteRollAdd, async (newValue) => {
     const addingRoll = fabricsStore.globalExecuteRollAddData
     console.log('addingRoll: ', addingRoll)
 
-    emits('addExecuteRoll', {...addingRoll, falseReason: fabricsStore.globalExecuteRollAddReason})
+    emits('add-execute-roll', {...addingRoll, falseReason: fabricsStore.globalExecuteRollAddReason})
     // const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
-
-
-// // __ Переменная-флаг нажатия кнопки "Изменить порядок рулонов"
-// watch(() => fabricsStore.globalOrderExecuteChangeFlag, async (newValue) => {
-//     isDragging.value = newValue
-//     // if (!fabricsStore.globalExecuteRollAdd) return                      // для избежания рекурсивного вызова
-//     //
-//     // fabricsStore.globalExecuteRollAdd = false                           // сбрасываем значение флага
-//     // const addingRoll = fabricsStore.globalExecuteRollAddData
-//     // console.log('addingRoll: ', addingRoll)
-//     //
-//     // emits('addExecuteRoll', {...addingRoll, falseReason: fabricsStore.globalExecuteRollAddReason})
-//     // const res = await fabricsStore.updateExecuteRoll(activeRoll)
-// }, {immediate: true})
-
-
-onMounted(async () => {
-    isLoading.value = true
-    getRollsExec()                  // Формируем список рулонов
-    sortRollsExec()                 // Сортируем рулоны по позиции
-    await getFabrics()                    // Получаем ПС
-    await getResponsibleWorkers()         // Получаем ответственных за выполнение рулонов
-    resetActiveFlag()               // Сбрасываем флаг активного рулона
-    isLoading.value = false
-    // console.log('rollsExec: ', rollsExec.value)
-    // console.log('responsible workers: ', responsibleWorkers.value)
-})
-
 
 </script>
 

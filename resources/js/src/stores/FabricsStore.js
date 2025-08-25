@@ -58,7 +58,7 @@ const URL_FABRIC_TASKS_CONTEXT_CHANGE_ORDER =
 
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
 
-const URL_FABRIC_TASKS_EXECUTING_TASKS = 'fabrics/tasks/executing/'     // URL для получения списка выполняемых СЗ
+const URL_FABRIC_TASKS_EXECUTING = 'fabrics/tasks/executing/'           // URL для получения списка выполняемых СЗ
 const URL_FABRIC_TASKS_NOT_DONE_TASKS = 'fabrics/tasks/not-done/'       // URL для получения списка невыполненных СЗ'
 const URL_FABRIC_TASKS_CLOSE = 'fabrics/tasks/close/'                   // URL для закрытия СЗ
 
@@ -71,7 +71,8 @@ const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_REGISTERED =
     'fabrics/tasks/execute/roll/registered/'                            // URL для регистрации рулона в 1С
 const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED =
     'fabrics/tasks/execute/roll/moved/'                                 // URL для перемещения рулона на закрой
-
+const URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER =
+    'fabrics/tasks/execute/save/rolls/order/'                           // URL для изменения порядка выполняемых рулонов в СЗ
 
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
 const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT =
@@ -173,8 +174,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // attract: Переменная-флаг, которая определяет, были ли изменения в календаре СЗ
     const globalCalendarChangeFlag = ref(false)
 
-    // attract: Переменная-флаг, которая определяет, были ли изменения в порядке СЗ
+    // attract: Переменная-флаг, которая определяет, были ли изменения в порядке СЗ на этапе формирования
     const globalOrderManageChangeFlag = ref(false)
+
+    // attract: Переменная-флаг, которая определяет, были ли изменения в порядке СЗ на этапе выполнения
+    const globalOrderExecuteChangeFlag = ref(false)
+    const globalOrderExecuteChangeReason = ref('')              // причина изменения порядка
+
     // info----------------------------------------------------------------------------------------
 
 
@@ -490,6 +496,21 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
+    // __ Сохранение порядка выполняемых рулонов в СЗ
+    const saveExecuteRollsOrder = async (rollsExec, reason) => {
+        // const saveExecuteRollsOrder = async (taskId, machineId, rollsExec) => {
+        //     const result = await jwtPost(URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER, {
+        //         task: taskId,
+        //         machine: machineId,
+        //         rolls: rollsExec
+        //     })
+
+        const result = await jwtPost(URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER, {rolls: rollsExec, reason})
+
+        console.log('store: saveExecuteRollsOrder: ', result)
+        return result.data                                  // все возвращается через Resource с ключем data
+    }
+
 
     // attract: Обновление списка сотрудников для дня СЗ
     const updateFabricTaskWorkers = async (taskId = 0, workerIds = []) => {
@@ -504,7 +525,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // Descr: Если date = '', получаем список до текущей даты
     // Descr: Если date = '05.05.2025', получаем список до даты '05.05.2025'
     const getFabricExecutingTasks = async (date = null) => {
-        const result = await jwtGet(URL_FABRIC_TASKS_EXECUTING_TASKS, {date})
+        const result = await jwtGet(URL_FABRIC_TASKS_EXECUTING, {date})
         console.log('store: executing: ', result)
         return result.data                                  // все возвращается через Resource с ключем data
     }
@@ -610,7 +631,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalSelectWorkerId,
         globalSelectWorkerFlag,
         globalCalendarChangeFlag,
-        globalOrderManageChangeFlag,
+        globalOrderManageChangeFlag, globalOrderExecuteChangeFlag, globalOrderExecuteChangeReason,
         getFabrics,
         getFabricById,
         updateFabric,
@@ -634,8 +655,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll,
-        addExecuteRoll,
+        updateExecuteRoll, addExecuteRoll, saveExecuteRollsOrder,
         updateFabricTaskWorkers,
         getFabricExecutingTasks,
         getFabricNotDoneTasks,

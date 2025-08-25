@@ -79,6 +79,13 @@ return new class extends Migration {
                 'description' => 'Причина добавления рулона во время выполнения',
             ],
             [
+                'name' => 'Изменен порядок во время выполнения',
+                'display_name' => 'Изменен порядок во время выполнения',
+                self::CELLS_GROUPS_ID_FOREIGN_KEY => CellsGroupConst::FABRIC_GROUP,
+                'group_number_in_cell_group' => ReasonCategoryGroupFabric::REASON_ROLL_REORDERED,
+                'description' => 'Причина изменения порядка рулонов во время выполнения',
+            ],
+            [
                 'name' => 'Статус "Приостановка выполнения"',
                 'display_name' => 'Статус "Приостановка выполнения"',
                 self::CELLS_GROUPS_ID_FOREIGN_KEY => CellsGroupConst::FABRIC_GROUP,

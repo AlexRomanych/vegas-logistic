@@ -4,29 +4,29 @@
 
         <!-- __ Общая длина ткани -->
         <AppLabelMultiLine
+            :align="ALIGN"
             :text="['Длина ткани:', totalLength().toFixed(2)]"
             :text-size="HEADER_TEXT_SIZE"
-            :width="WIDTH"
-            :align="ALIGN"
             :type="TYPE"
+            :width="WIDTH"
         />
 
         <!-- __ Общая длина ПС -->
         <AppLabelMultiLine
+            :align="ALIGN"
             :text="['Длина ПС:', totalFabricLength().toFixed(2)]"
             :text-size="HEADER_TEXT_SIZE"
-            :width="WIDTH"
-            :align="ALIGN"
             :type="TYPE"
+            :width="WIDTH"
         />
 
         <!-- __ Общие трудозатраты -->
         <AppLabelMultiLine
+            :align="ALIGN"
             :text="['Трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount(), 'hour')]"
             :text-size="HEADER_TEXT_SIZE"
-            :width="WIDTH"
-            :align="ALIGN"
             :type="TYPE"
+            :width="WIDTH"
         />
 
         <!-- __ Кнопки калькулятора -->
@@ -104,7 +104,12 @@ const props = withDefaults(defineProps<IProps>(), {
 // console.log('props.rolls: ', props.rolls)
 
 // __ Передача событий
-const emit = defineEmits(['calculatorActionHandler'])
+
+const emit = defineEmits<{
+    (e: 'calculatorActionHandler', handler: (...args: any[]) => {}, machine: MachineUnionType): void
+}>()
+// const emit = defineEmits(['calculatorActionHandler'])
+
 
 // __ Обертка над кликом
 const clickHandler = (handler: (...args: any[]) => {}) => {

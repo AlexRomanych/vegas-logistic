@@ -1,6 +1,7 @@
 <template>
 
-    <div class="bg-slate-200 border-2 rounded-lg border-slate-400 p-2 w-fit">
+    <div :class="changeRollsOrderFlag ? 'bg-red-100' : 'bg-slate-200'"
+         class="border-2 rounded-lg border-slate-400 p-2 w-fit">
 
         <!-- __ Меню с пунктами действий над рулонами -->
         <div v-if="task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE">
@@ -58,6 +59,7 @@
                     :workers="task.workers"
                     @add-execute-roll="addExecuteRoll"
                     @change-calc-status="changeCalcStatus"
+                    @save-exec-rolls-order="saveExecRollsOrder"
                 />
 
             </div>
@@ -72,7 +74,7 @@
 <script setup>
 
 import { reactive, ref } from 'vue'
-import draggable from 'vuedraggable'
+
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
@@ -96,6 +98,7 @@ import TheDividerLine
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import TheTaskExecuteCalculator
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_execute/TheTaskExecuteCalculator.vue'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
     task: {
@@ -116,7 +119,7 @@ const props = defineProps({
     }
 })
 
-console.log('machine: task: ', props.task)
+// console.log('machine: task: ', props.task)
 // console.log('workers: ', props.task.workers)
 // console.log('machine', props.machine)
 // console.log('machine', FABRIC_MACHINES.AMERICAN)
@@ -128,8 +131,11 @@ const emits = defineEmits([
     'deleteTaskRecord',
     'addExecuteRoll',
     'calculatorActionHandler',
-    'changeCalcStatus'
+    'changeCalcStatus',
+    'saveExecRollsOrder',
 ])
+
+
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
@@ -141,6 +147,9 @@ const rolls = reactive(props.task.machines[props.machine.TITLE].rolls)          
 
 
 fabricsStore.globalEditMode = false                                             // устанавливаем в false глобальный режим редактирования
+
+// __ Флаг изменения порядка рулонов
+const {globalOrderExecuteChangeFlag: changeRollsOrderFlag} = storeToRefs(fabricsStore)
 
 // attract: Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
@@ -181,16 +190,16 @@ const saveTaskRecord = (saveData) => {
         })
 }
 
-// attract: Удаляем запись
+//__ Удаляем запись
 const deleteTaskRecord = (deleteData) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
 
-// attract: Всплывающее событие "Добавить рулон" из выполнения СЗ
+// __ Всплывающее событие "Добавить рулон" из выполнения СЗ
 const addExecuteRoll = async (addingRollData) => {
-    console.log('addingRollData: ', {...addingRollData, taskId: props.task.common.id})
-    const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: props.task.common.id})
-    emits('addExecuteRoll') // Передаем в родительский компонент, что рулон добавлен для обновления списка и перерисовки
+    console.log('TaskMachine: addingRollData: ', {...addingRollData, taskId: props.task.common.id})
+    // const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: props.task.common.id})
+    emits('addExecuteRoll', addingRollData) // Передаем в родительский компонент, что рулон добавлен для обновления списка и перерисовки
 
 }
 
@@ -208,6 +217,9 @@ const calculatorActionHandler = (handler, machine) => {
 
 // __ Всплывающее событие "Изменить статус калькулятора"
 const changeCalcStatus = (exec_roll, machine) => emits('changeCalcStatus', exec_roll, machine)
+
+// __ Всплывающее событие "Сохранить порядок выполняемых рулонов"
+const saveExecRollsOrder = (rollsExec, machine) => emits('saveExecRollsOrder', rollsExec, machine)
 
 
 </script>
