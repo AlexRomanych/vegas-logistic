@@ -9,9 +9,10 @@ export interface IRenderDataItem {
     width: string
     show: boolean
     type: ((...args: any[]) => string) | IColorTypes
+    height?: string
     class?: string
     placeholder?: string
-    title?: string| ((...args: any[]) => string)
+    title?: string | ((...args: any[]) => string)
     headerTextSize?: IFontsType
     dataTextSize?: IFontsType
     filterTextSize?: IFontsType

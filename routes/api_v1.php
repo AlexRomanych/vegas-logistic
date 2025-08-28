@@ -214,7 +214,7 @@ Route::get('/workers/test/fill', [WorkerController::class, 'testFill']);
 
 
 //hr--------------------------------------------------------------------------------------------------------------------
-// attract: Блок Стежки (ПС)
+// __ Блок Стежки (ПС)
 Route::post('/fabrics/upload', [CellFabricController::class, 'uploadFabrics'])->middleware('jwt.auth');
 Route::get('/fabrics', [CellFabricController::class, 'fabrics'])->middleware('jwt.auth');
 Route::get('/fabric/{id}', [CellFabricController::class, 'fabric'])->middleware('jwt.auth');;
@@ -243,15 +243,16 @@ Route::get('/fabrics/machine/{id}', [CellFabricMachineController::class, 'machin
 Route::patch('/fabrics/machine/set/active', [CellFabricMachineController::class, 'setMachineActive'])->middleware('jwt.auth');
 
 
-// attract: Загрузка расхода ПС
+// __ Загрузка расхода ПС
 Route::post('/fabrics/orders/upload', [CellFabricOrderController::class, 'uploadFabricOrders'])->middleware('jwt.auth');
 Route::get('/fabrics/orders', [CellFabricOrderController::class, 'getFabricOrders'])->middleware('jwt.auth');
 Route::patch('/fabrics/orders/close', [CellFabricOrderController::class, 'closeFabricOrder'])->middleware('jwt.auth');
 Route::patch('/fabrics/orders/set/active/', [CellFabricOrderController::class, 'setFabricOrderActive'])->middleware('jwt.auth');
+Route::post('/fabrics/orders/order/save', [CellFabricOrderController::class, 'saveFabricsOrdersOrder'])->middleware('jwt.auth');
 
 
 
-// attract: Блок Заказов Стежки на производство
+// __ Блок Заказов Стежки на производство
 Route::prefix('/fabrics/tasks')
     ->middleware('jwt.auth')
     ->group(function () {

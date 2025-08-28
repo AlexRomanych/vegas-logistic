@@ -37,21 +37,25 @@ class FabricTaskContextResource extends JsonResource
 
             'task' => [
                 'id' => $this->fabricTask->id,
-                'task_status' => $this->fabricTask->task_status,
-
-//                'updated_at' => $this->fabricTask->updated_at,
-//                'user_id' => $this->fabricTask->user_id,
-//                'fabric_team_id' => $this->fabricTask->fabric_team_id,
-//                'fabric_tasks_date_id' => $this->fabricTask->fabric_tasks_date_id,
-//                'fabric_machine_id' => $this->fabricTask->fabric_machine_id,
-//                'description' => $this->fabricTask->description,
-//                'created_at' => $this->fabricTask->created_at,
-//                'comment' => $this->fabricTask->comment,
-//                'active' => $this->fabricTask->active,
-//                'task_finish_at' => $this->fabricTask->task_finish_at,
-//                'note' => $this->fabricTask->note,
+                'fabric_machine_id' => $this->fabricTask->fabric_machine_id,
+                'task_status' => $this->fabricTask->fabricTasksDate->tasks_status,
+                'task_date' => $this->fabricTask->fabricTasksDate->tasks_date,
+                // 'task_status' => $this->fabricTask->task_status,
+                // 'updated_at' => $this->fabricTask->updated_at,
+                // 'user_id' => $this->fabricTask->user_id,
+                // 'fabric_team_id' => $this->fabricTask->fabric_team_id,
+                // 'fabric_tasks_date_id' => $this->fabricTask->fabric_tasks_date_id,
+                // 'note' => $this->fabricTask->note,
+                // 'task_finish_at' => $this->fabricTask->task_finish_at,
+                // 'active' => $this->fabricTask->active,
+                // 'comment' => $this->fabricTask->comment,
+                // 'created_at' => $this->fabricTask->created_at,
+                // 'description' => $this->fabricTask->description,
 
             ],
+
+            // 'task_full' => $this->fabricTask,
+
         ];
 //        return parent::toArray($request);
     }

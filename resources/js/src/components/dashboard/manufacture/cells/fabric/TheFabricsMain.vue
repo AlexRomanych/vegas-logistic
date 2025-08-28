@@ -12,12 +12,19 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
+
+interface IMenuItem {
+    name: string,
+    path: string,
+    shown: boolean,
+    isActive: boolean
+}
 
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 
-let menuItems = [
+let menuItems: IMenuItem[] = [
     {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
     {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute', shown: true, isActive: true},
     {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense', shown: true, isActive: true},
@@ -28,6 +35,7 @@ let menuItems = [
     {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines', shown: true, isActive: true},
     {name: 'Причины изменения статуса', path: 'reasons', shown: true, isActive: true,},
     {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement', shown: false, isActive: true},
+    {name: 'Архив СЗ', path: 'manufacture.cell.fabric.tasks.archive', shown: true, isActive: true},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload', shown: true, isActive: false},
     {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload', shown: true, isActive: false},
     // {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar', shown: true, isActive: true},

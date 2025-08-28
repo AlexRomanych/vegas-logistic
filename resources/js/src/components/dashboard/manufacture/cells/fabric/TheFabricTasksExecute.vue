@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, onMounted, /*watch,*/ } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
@@ -137,6 +137,7 @@ import {
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
     FABRIC_TASKS_EXECUTE, FABRIC_ROLL_STATUS,
+    TASK_TAB_PREFIX,
 } from '@/app/constants/fabrics.js'
 
 import {
@@ -336,7 +337,6 @@ const dayOfWeekStyle = (date) => {
 }
 
 
-
 // __ Переключаем выбранную вкладку
 const changeTab = (selectedTab) => {
     for (const tab in tabs) {
@@ -406,7 +406,7 @@ const selectWorkers = async (workersList) => {
     const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
     // console.log(workersIds)
 
-    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
+    /*const res =*/ await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
     // console.log(res)
 
     const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
@@ -566,7 +566,7 @@ const changeTaskExecute = async (task) => {
         const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.DONE.CODE
-            const res = await fabricsStore.closeFabricTasks(task.date)
+            /*const res =*/ await fabricsStore.closeFabricTasks(task.date)
 
             const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
             // console.log('created: newTaskDay: ', newTaskDay)
@@ -587,7 +587,7 @@ const changeTaskExecute = async (task) => {
 const addExecuteRoll = async (addingRollData) => {
 
     console.log('TaskExec: addExecuteRoll:', addingRollData)
-    const res = await fabricsStore.addExecuteRoll({...addingRollData, taskId: activeTask.value.common.id})
+    /*const res =*/ await fabricsStore.addExecuteRoll({...addingRollData, taskId: activeTask.value.common.id})
     await updateTaskData() // обновляем данные с сервера
 
     // const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
@@ -666,16 +666,16 @@ const changeCalcStatus = (rollExec, machine) => {
 
 
 // __ Сохранение порядка рулонов
-const saveExecRollsOrder = async (rollsExec, machine) => {
+const saveExecRollsOrder = async (rollsExec, /*machine*/) => {
     rollsExec.value.forEach((rollExec, index) => rollExec.position = index + 1)
-    const res = await fabricsStore.saveExecuteRollsOrder(rollsExec.value, fabricsStore.globalOrderExecuteChangeReason)
+    /*const res =*/ await fabricsStore.saveExecuteRollsOrder(rollsExec.value, fabricsStore.globalOrderExecuteChangeReason)
     // console.log('saveExecRollsOrder: ', rollsExec.value)
     // console.log('machine: ', machine)
 }
 
 
 // __ Устанавливаем активное СЗ и вкладку в LocalStorage
-const TASK_TAB_PREFIX = 'TASK_EXECUTE_TAB'
+// const TASK_TAB_PREFIX = 'TASK_EXECUTE_TAB'
 const setActiveTaskAndTab = () => {
     try {
         const findTab = Object.keys(tabs).find(tab => tabs[tab].shown)
@@ -733,11 +733,11 @@ onMounted(async () => {
 
 
 // __ Сбрасываем состояние флага изменения порядка рулонов
-onBeforeRouteLeave((to, from) => {
+onBeforeRouteLeave((/*to, from*/) => {
     globalOrderExecuteChangeFlag.value = false
 })
 
-onBeforeRouteUpdate((to, from) => {
+onBeforeRouteUpdate((/*to, from*/) => {
     globalOrderExecuteChangeFlag.value = false
 })
 

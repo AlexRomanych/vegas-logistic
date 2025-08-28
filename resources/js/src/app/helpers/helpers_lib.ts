@@ -19,7 +19,7 @@ export function getDigitPart(inStr = '') {
 }
 
 // descr: Проверяет переменную на пустой объект
-export function isEmptyObj(obj) {
+export function isEmptyObj(obj: object) {
 
     if (typeof obj !== 'object' || obj === null) {
         return true
@@ -29,70 +29,75 @@ export function isEmptyObj(obj) {
 }
 
 // descr: Строку на числовую валидность
-export function isNumeric(str) {
+export function isNumeric(str: string) {
     if (typeof str !== 'string' || str.trim() === '') {
-        return false;
+        return false
     }
-    return !isNaN(parseFloat(str)) && isFinite(Number(str));
+    return !isNaN(parseFloat(str)) && isFinite(Number(str))
 }
 
 // descr: Поверхностное клонирование объекта
-export function cloneShallow(obj) {
-    return JSON.parse(JSON.stringify(obj));
+export function cloneShallow(obj: object) {
+    return JSON.parse(JSON.stringify(obj))
 }
 
-// descr: Глубокое клонирование объекта
-export function cloneDeep(obj, hash = new WeakMap()) {
+// ___ Глубокое клонирование объекта
+export function cloneDeep<T>(obj: T, hash = new WeakMap()): T {
+
+    // __ Примитивы и null возвращаем как есть
     if (obj === null || typeof obj !== 'object') {
-        return obj; // Примитивы и null возвращаем как есть
+        return obj
     }
 
+    // __ Обнаружена циклическая ссылка, возвращаем ранее созданную копию
     if (hash.has(obj)) {
-        return hash.get(obj); // Обнаружена циклическая ссылка, возвращаем ранее созданную копию
+        return hash.get(obj) as T
     }
 
-    const clonedObj = Array.isArray(obj) ? [] : {};
-    hash.set(obj, clonedObj); // Сохраняем ссылку на созданную копию для обнаружения циклов
+    // __ Правильно клонируем массивы и объекты
+    const clonedObj: any = Array.isArray(obj) ? [] : {}
+    hash.set(obj, clonedObj)       // Сохраняем ссылку на созданную копию для обнаружения циклов
 
     for (const key in obj) {
         if (Object.hasOwnProperty.call(obj, key)) {
-            clonedObj[key] = deepClone(obj[key], hash);
+            clonedObj[key] = cloneDeep((obj as any)[key], hash)
         }
     }
 
-    // Копируем Symbol-свойства (если необходимо)
-    const symbols = Object.getOwnPropertySymbols(obj);
+    // __ Копируем Symbol-свойства (если необходимо)
+    const symbols = Object.getOwnPropertySymbols(obj)
     for (const sym of symbols) {
-        clonedObj[sym] = deepClone(obj[sym], hash);
+        clonedObj[sym] = cloneDeep((obj as any)[sym], hash)
     }
 
-    // Копируем функции
+    // __ Копируем функции
     if (typeof obj === 'function') {
-        return function (...args) {
-            return obj.apply(this === clonedObj ? originalObject : this, args);
-        };
+        return obj as T
+        // return function (...args) {
+        //     return obj.apply(this === clonedObj ? originalObject : this, args);
+        // };
     }
 
-    return clonedObj;
+    return clonedObj
 }
 
-const originalObjectWithMethod = {
-    name: 'Alice',
-    details: {age: 25},
-    sayHello: function () {
-        console.log(`Hello, ${this.name}!`);
-    }
-};
+// const originalObjectWithMethod = {
+//     name: 'Alice',
+//     details: {age: 25},
+//     sayHello: function () {
+//         console.log(`Hello, ${this.name}!`)
+//     }
+// }
 
 // descr: округление с точностью
-export function round(number, precision = 0) {
+export function round(number: number, precision = 0) {
     const factor = Math.pow(10, precision)
     return Math.round(number * factor) / factor
 }
 
 
 // ___ Глубокое копирование (только примитивы, без функций)
-export function deepCopy(obj) {
+export function deepCopy<T>(obj: T): T {
     // Обработка примитивных типов и null
     if (obj === null || typeof obj !== 'object') {
         return obj
@@ -104,25 +109,25 @@ export function deepCopy(obj) {
         for (let i = 0; i < obj.length; i++) {
             copy[i] = deepCopy(obj[i]) // Рекурсивный вызов для каждого элемента массива
         }
-        return copy
+        return copy as T
     }
 
     // Обработка обычных объектов
     if (typeof obj === 'object') {
-        const copy = {};
+        const copy = {}
         for (const key in obj) {
             // Проверяем, что свойство принадлежит самому объекту, а не унаследовано
             if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 //@ts-ignore
-                copy[key] = deepCopy(obj[key]); // Рекурсивный вызов для каждого свойства объекта
+                copy[key] = deepCopy(obj[key]) // Рекурсивный вызов для каждого свойства объекта
             }
         }
-        return copy;
+        return copy as T
     }
 
     // На всякий случай, если obj - это какой-то другой сложный тип, который мы не хотим копировать
     // (например, Date, RegExp, Map, Set, Function - хотя в данном случае функции исключены условием)
     // В этом сценарии, мы просто возвращаем сам объект, так как глубокое копирование для них не тривиально
     // и выходит за рамки "простых объектов без функций".
-    return obj;
+    return obj
 }

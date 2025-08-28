@@ -4,17 +4,19 @@ import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     TASK_DRAFT, FABRIC_ROLL_STATUS,
-    WARNINGS_RANGES
-} from '/resources/js/src/app/constants/fabrics.js'
+    WARNINGS_RANGES,
+    FABRIC_MANAGE,
+    FABRIC_EXECUTE,
+} from '@/app/constants/fabrics.js'
 
-import {isEmptyObj} from '/resources/js/src/app/helpers/helpers_lib.js'
+import {isEmptyObj} from '@/app/helpers/helpers_lib.js'
 
 import {
     addDays,
     subtractDays,
     getDateDiffInDays,
     getISOFromLocaleDate, formatTimeWithLeadingZeros
-} from '/resources/js/src/app/helpers/helpers_date.js'
+} from '@/app/helpers/helpers_date.js'
 
 // descr Получить тип стиля по коду статуса СЗ на стежке
 export const getStyleTypeByFabricTaskStatusCode = function (taskStatusCode = null) {
@@ -245,20 +247,20 @@ export function filterFabricsByMachineId(fabrics = [], machineId = -1, onlyBasic
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// attract: Возвращает режим, в котором была добавлена ПС - только основная для этой СМ или только альтернативная
+// __ Возвращает режим, в котором была добавлена ПС - только основная для этой СМ или только альтернативная
 export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
 
-    if (fabrics.length === 0 || machineId === -1 || fabricId === -1) return ''   // страховочка
+    if (fabrics.length === 0 || machineId === -1 || fabricId === -1) return ''              // страховочка
 
     if (fabricId === 0) return false
 
-    const basicFabrics = filterFabricsByMachineId(fabrics, machineId)                     // Все основные ПС для данной СМ
-    const isBasicFabric = basicFabrics.some((fabric) => fabric.id === fabricId)            // Проверяем, является ли ПС основной для данной СМ
+    // const basicFabrics = filterFabricsByMachineId(fabrics, machineId)                       // Все основные ПС для данной СМ
+    // const isBasicFabric = basicFabrics.some((fabric) => fabric.id === fabricId)             // Проверяем, является ли ПС основной для данной СМ
 
-    // console.log(basicFabrics)
+    // console.log('basicFabrics: ', basicFabrics)
     // console.log(isBasicFabric)
 
-    // Выбираем только альтернативные ПС для данной СМ
+    // __ Выбираем только альтернативные ПС для данной СМ
     const result = fabrics.map((fabric) => {
         if ([fabric.machines[1].id, fabric.machines[2].id, fabric.machines[3].id].includes(machineId) && fabric.active) {
             return {...fabric}
@@ -268,12 +270,11 @@ export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
     const nonBasicFabrics = result.filter((fabric) => typeof fabric !== "undefined")         // удаляем пустые объекты
     const isNonBasicFabrics = nonBasicFabrics.some((fabric) => fabric.id === fabricId)       // Проверяем, является ли ПС альтернативной для данной СМ
 
-    // console.log(nonBasicFabrics)
-    // console.log(isNonBasicFabrics)
+    // console.log('nonBasicFabrics: ', nonBasicFabrics)
+    // console.log('isNonBasicFabrics: ', isNonBasicFabrics)
 
     // return isBasicFabric && !isNonBasicFabrics
     return !isNonBasicFabrics
-
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -427,3 +428,42 @@ export function getFabricTaskStatusByCode(taskCode = 0) {
     // console.log(FABRIC_TASK_STATUS[statusKey])
     return FABRIC_TASK_STATUS[statusKey]
 }
+
+
+// __ Получаем активное СЗ и вкладку из LocalStorage
+
+
+// const TASK_TAB_PREFIX = 'TASK_TAB'                      // __ Управление СЗ
+// const TASK_TAB_PREFIX_EXECUTE = 'TASK_EXECUTE_TAB'      // __ Выполнение СЗ
+
+//
+// const getPrefixByFuncType = (funcType) => {
+//     switch (funcType) {
+//         case FABRIC_MANAGE:
+//             workPrefix = TASK_TAB_PREFIX
+//             break
+//         case FABRIC_EXECUTE:
+//             workPrefix = TASK_TAB_PREFIX_EXECUTE
+//     }
+// }
+//
+// const getActiveTaskAndTab = (funcType) => {
+//     const workPrefix = getPrefixByFuncType(funcType)
+//
+//     try {
+//         const data = JSON.parse(localStorage.getItem(workPrefix))
+//         if (data) {
+//             const findTask = taskData.find(t => t.date === data.activeTaskDate)
+//             if (findTask) {
+//                 changeActiveTask(findTask)
+//                 resetTabs()
+//                 const findTab = Object.keys(tabs).find(tab => tabs[tab].id === data.activeTabId)
+//                 if (findTab) {
+//                     tabs[findTab].shown = true
+//                 }
+//             }
+//         }
+//     } catch (e) {
+//         catchErrorHandler('LocalStorage: ', e)
+//     }
+// }

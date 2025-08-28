@@ -52,8 +52,8 @@ class CellFabricTaskContextController extends Controller
     }
 
     /**
-     * Descr: Получаем контекст СЗ (то, что выставлено ООП) со всеми статусами, кроме 'выполнено'
-     * @return FabricTaskContextCollection|string
+     * ___ Получаем контекст СЗ (то, что выставлено ООП) со всеми статусами, кроме 'выполнено'
+     * @return AnonymousResourceCollection|string
      */
     public function getContextNotDone()
     {
@@ -63,10 +63,11 @@ class CellFabricTaskContextController extends Controller
                 ->whereHas('fabricTask', function ($query) {
                     $query->whereNot('task_status', FABRIC_TASK_DONE_CODE);
                 })
-                ->with('fabricTask')
+                ->with('fabricTask.fabricTasksDate')
                 ->get();
 
-            return new FabricTaskContextCollection($taskContexts);
+            return FabricTaskContextResource::collection($taskContexts);
+            // return new FabricTaskContextCollection($taskContexts);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
@@ -281,69 +282,78 @@ class CellFabricTaskContextController extends Controller
     }
 
 
+    /**
+     * ___ Добавляем рулон в контекст СЗ
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function addOrderContextRoll(Request $request)
     {
-        // try {
-        $payload = $request->validate([
-            // 'data' => 'required|array',
-            'task' => 'required|integer',
-            'machine' => 'required|integer',
-            'roll' => 'required|array',
+        try {
+            $payload = $request->validate([
+                // 'data' => 'required|array',
+                'task' => 'required|integer',
+                'machine' => 'required|integer',
+                'roll' => 'required|array',
 
-            'roll.fabric_id' => 'required|integer',
-            'roll.average_textile_length' => 'required|numeric',
-            'roll.productivity' => 'required|numeric',
-            'roll.textile_length' => 'required|numeric',
-            'roll.rolls_amount' => 'required|integer|min:1',
-            'roll.fabric_mode' => 'required|boolean',
-            'roll.rate' => 'required|numeric',
-            'roll.editable' => 'required|boolean',
-            'roll.roll_position' => 'required|integer',
-            'roll.descr' => 'nullable|string',
+                'roll.fabric_id' => 'required|integer',
+                'roll.average_textile_length' => 'required|numeric',
+                'roll.productivity' => 'required|numeric',
+                'roll.textile_length' => 'required|numeric',
+                'roll.rolls_amount' => 'required|integer|min:1',
+                'roll.fabric_mode' => 'required|boolean',
+                'roll.rate' => 'required|numeric',
+                'roll.editable' => 'required|boolean',
+                'roll.roll_position' => 'required|integer',
+                'roll.descr' => 'nullable|string',
 
-        ]);
+            ]);
 
-        // __ Получаем СЗ на СМ
-        $task = FabricTask::query()
-            ->where('fabric_tasks_date_id', $payload['task'])
-            ->where('fabric_machine_id', $payload['machine'])
-            ->first();
+            // __ Получаем СЗ на СМ
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $payload['task'])
+                ->where('fabric_machine_id', $payload['machine'])
+                ->first();
 
-        // __ Проверяем наличие СЗ. Если нет (возможно это первый рулон), то создаем
-        if (!$task) {
-            $task = FabricTask::query()->create(
+            // __ Проверяем наличие СЗ. Если нет (возможно это первый рулон), то создаем
+            if (!$task) {
+                $task = FabricTask::query()->create(
+                    [
+                        'fabric_tasks_date_id' => $payload['task'],
+                        'fabric_machine_id' => $payload['machine'],
+                        'task_status' => FABRIC_TASK_CREATED_CODE,
+                    ]
+                );
+            }
+
+            $rollData = $payload['roll'];
+
+            $fabric = Fabric::query()->find($rollData['fabric_id']);
+            if (!$fabric) throw new Exception('Fabric not found');
+
+            // __ плановый рулон от ОПП
+            $taskRollContext = FabricTaskContext::query()->create(
                 [
-                    'fabric_tasks_date_id' => $payload['task'],
-                    'fabric_machine_id' => $payload['machine'],
-                    'task_status' => FABRIC_TASK_CREATED_CODE,
+                    'fabric_task_id' => $task->id,                          // привязка к СЗ
+                    'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                    'rolls_amount' => $rollData['rolls_amount'],
+                    'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                    'fabric_mode' => $rollData['fabric_mode'],
+                    'average_textile_length' => $rollData['textile_length'],
+                    'translate_rate' => $fabric->translate_rate,
+                    'productivity' => $rollData['productivity'],
+                    'description' => $rollData['descr'],
                 ]
             );
+
+
+            return FabricTaskContextResourceDate::collection($task->fabricTaskContexts);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+            // }
         }
 
-        $rollData = $payload['roll'];
 
-        // __ плановый рулон от ОПП
-        $taskRollContext = FabricTaskContext::query()->create(
-            [
-                'fabric_task_id' => $task->id,                          // привязка к СЗ
-                'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                'rolls_amount' => $rollData['rolls_amount'],
-                'roll_position' => $rollData['roll_position'],          // порядок рулонов
-                'fabric_mode' => $rollData['fabric_mode'],
-                'average_textile_length' => $rollData['textile_length'],
-                // 'translate_rate' => $rollData['rate'],
-                'productivity' => $rollData['productivity'],
-                'description' => $rollData['descr'],
-            ]
-        );
-
-
-        return FabricTaskContextResourceDate::collection($task->fabricTaskContexts);
-        // } catch (Exception $e) {
-        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
-        // }
     }
 
-
 }
-

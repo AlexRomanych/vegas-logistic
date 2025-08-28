@@ -34,6 +34,7 @@ const URL_FABRICS_PICTURES_UPLOAD = 'fabrics/pictures/upload/'          // URL �
 const URL_FABRICS_PICTURE_SCHEMAS = 'fabrics/pictures/schemas/'         // URL для получения списка схем рисунков ПС
 
 const URL_FABRICS_ORDERS = 'fabrics/orders/'                            // URL для получения списка заказов для ПС
+const URL_FABRICS_ORDERS_ORDER = 'fabrics/orders/order/save'            // URL для сохранения порядка списка заказов для ПС
 const URL_FABRICS_ORDERS_UPLOAD = 'fabrics/orders/upload/'              // URL для загрузки расхода ПС с диска из отчета 1С СВПМ
 const URL_FABRICS_ORDERS_CLOSE = 'fabrics/orders/close/'                // URL для закрытия заказа
 const URL_FABRICS_ORDERS_SET_ACTIVE = 'fabrics/orders/set/active/'      // URL для переключения активности заказа
@@ -99,6 +100,19 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalFabricsMode = ref(true)    // Начальное значение - основные
 
     // attract: Массив с трудозатратами по СЗ
+    /*
+    interface ProductivityMap<T> {
+        [key: string]: T[];
+    }
+
+    const globalTaskProductivity: ProductivityMap<number> = reactive({
+        [FABRIC_MACHINES.AMERICAN.TITLE]: [],
+        [FABRIC_MACHINES.GERMAN.TITLE]: [],
+        [FABRIC_MACHINES.CHINA.TITLE]: [],
+        [FABRIC_MACHINES.KOREAN.TITLE]: [],
+    })
+    */
+
     const globalTaskProductivity = reactive({
         [FABRIC_MACHINES.AMERICAN.TITLE]: [],
         [FABRIC_MACHINES.GERMAN.TITLE]: [],
@@ -189,7 +203,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
 
     // Attract: Получаем с API список ПС
-    const getFabrics = async (active = null) => {
+    const getFabrics = async (active = false) => {
 
         const result = await jwtGet(URL_FABRICS, {active})
         fabricsCashe.value = result.fabrics             // кэшируем
@@ -421,7 +435,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // console.log(result)
     }
 
-    // attract: Получение СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
+    // __ Получение СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
     const getFabricTaskContextNotDone = async () => {
         const result = await jwtGet(URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE)
         console.log('store: getFabricTaskContextNotDone:', result)
@@ -467,7 +481,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         })
         console.log('addOrderContextRoll: ', result)
         return result.data
-        debugger
+        // debugger
     }
 
 
@@ -547,12 +561,20 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data                                  // все возвращается через Resource с ключем data
     }
 
-    // Attract: Получаем с API список заказов ПС (расход ПС)
+    // __ Получаем с API список заказов ПС (расход ПС)
     const getFabricsOrders = async () => {
         const result = await jwtGet(URL_FABRICS_ORDERS)
         console.log('store: fabric-orders: ', result)
         return result.data
     }
+
+    // __ Получаем с API список заказов ПС (расход ПС)
+    const saveFabricsOrdersOrder = async (ordersOrder) => {
+        const result = await jwtPost(URL_FABRICS_ORDERS_ORDER, {order: ordersOrder})
+        console.log('store: saveFabricsOrdersOrder: ', result)
+        return result.data
+    }
+
 
     // Attract: Меняем статус заказа с расходом ПС для отображения в расчетах
     const setFabricOrderActive = async (id = 0, active = true) => {
@@ -663,6 +685,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         getFabricsOrders,
         closeFabricOrder,
         setFabricOrderActive,
+        saveFabricsOrdersOrder,
         getFabricTaskContextNotDone,
         changeContextOrder, getOrderContext, addOrderContextRoll,
         createContextExpense,

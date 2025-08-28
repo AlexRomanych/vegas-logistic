@@ -1,7 +1,7 @@
 <template>
 
     <!-- attract: Режим отображения + Режим редактирования -->
-    <div class="flex">
+    <div v-if="!isLoading" class="flex">
 
         <!-- attract: Номер рулона -->
         <!--        <AppLabelMultiLine-->
@@ -12,13 +12,14 @@
         <!--            width="w-[80px]"-->
         <!--        />-->
 
+        <!-- __ Позиция рулона -->
         <AppLabelMultiLine
             :text="!editMode ? roll.roll_position.toString() : [roll.roll_position.toString(), '']"
             align="center"
-            type="primary"
-            width="w-[50px]"
             height="h-[30px]"
             text-size="mini"
+            type="primary"
+            width="w-[50px]"
         />
 
         <!--__ ПС -->
@@ -46,7 +47,7 @@
 
         <!--__ Буфер ПС -->
         <AppLabelMultiLine
-            :text="!editMode ? buffer.toFixed(2) : [buffer.toFixed(2), '']"
+            :text="!editMode ? buffer.toFixed(PRECISION) : [buffer.toFixed(PRECISION), '']"
             :type="buffer ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
@@ -56,7 +57,7 @@
 
         <!--__ Средняя длина рулона -->
         <AppLabelMultiLine
-            :text="!editMode ? averageLength.toFixed(2) : [averageLength.toFixed(2), '']"
+            :text="!editMode ? averageLength.toFixed(PRECISION) : [averageLength.toFixed(PRECISION), '']"
             :type="averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
@@ -66,7 +67,7 @@
 
         <!--__ Средняя длина ПС -->
         <AppLabelMultiLine
-            :text="!editMode ? averageLengthFabric.toFixed(2) : [averageLengthFabric.toFixed(2), '']"
+            :text="!editMode ? averageLengthFabric.toFixed(PRECISION) : [averageLengthFabric.toFixed(PRECISION), '']"
             :type="averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
@@ -105,12 +106,11 @@
         <!--__ Количество ткани в м.п. -->
         <div v-if="!editMode">
             <AppLabelMultiLine
-                :text="lengthAmount.toFixed(2)"
+                :text="lengthAmount.toFixed(PRECISION)"
                 :type="lengthAmount ? 'primary' : 'danger'"
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
-                type="primary"
                 width="w-[80px]"
             />
         </div>
@@ -135,7 +135,7 @@
 
         <!--__ Количество ПС в м.п. -->
         <AppLabelMultiLine
-            :text="!editMode ? (averageLengthFabric*rollsAmount).toFixed(2) : [(averageLengthFabric*rollsAmount).toFixed(2), '']"
+            :text="!editMode ? (averageLengthFabric*rollsAmount).toFixed(PRECISION) : [(averageLengthFabric*rollsAmount).toFixed(PRECISION), '']"
             :type="averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
@@ -181,7 +181,7 @@
         </div>
 
 
-        <!--__ Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные       -->
+        <!--__ Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные -->
         <div v-if="getFunctionalByFabricTaskStatus(taskStatus)">
 
             <!--__ Управляющие кнопки -->
@@ -213,7 +213,6 @@
                     width="w-[50px]"
                     @click="setEditMode"
                 />
-
 
             </div>
 
@@ -279,23 +278,25 @@
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
-        mode="confirm"
-        type="danger"
+        :type="modalType"
+        :mode="modalMode"
     />
 
 </template>
 
-<script setup>
-
-import { reactive, ref, watch } from 'vue'
+<script lang="ts" setup>
+import { computed, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+
+import type { IFabric, IRoll, ISelectData, ISelectDataItem, MachineUnionType, TaskStatusUnionType } from '@/types'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
     FABRIC_ROLL_STATUS,
-    FABRIC_TASK_STATUS,
+    NEW_ROLL,
+    // FABRIC_TASK_STATUS,
     // FABRIC_ROLL_STATUS_LIST
 } from '@/app/constants/fabrics.js'
 
@@ -313,151 +314,221 @@ import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 import AppInputNumber from '@/components/ui/inputs/AppInputNumber.vue'
 import AppSelect from '@/components/ui/selects/AppSelect.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import { storeToRefs } from 'pinia'
 
-const props = defineProps({
-    roll: {
-        type: Object,
-        required: false,
-        default: () => ({})
-    },
-    index: {                            // для расчета и обмена информацией по трудозатратам
-        type: Number,
-        required: true,
-    },
-    machine: {
-        type: Object,
-        required: false,
-        default: () => FABRIC_MACHINES.AMERICAN,
-        validator: (machine) => [
-            FABRIC_MACHINES.AMERICAN.ID,
-            FABRIC_MACHINES.GERMAN.ID,
-            FABRIC_MACHINES.CHINA.ID,
-            FABRIC_MACHINES.KOREAN.ID,
-        ].includes(machine.ID)
-    },
-    taskStatus: {
-        type: Number,
-        required: true,
-        validator: (taskStatus) => [
-            FABRIC_TASK_STATUS.UNKNOWN.CODE,
-            FABRIC_TASK_STATUS.CREATED.CODE,
-            FABRIC_TASK_STATUS.PENDING.CODE,
-            FABRIC_TASK_STATUS.RUNNING.CODE,
-            FABRIC_TASK_STATUS.DONE.CODE,
-        ].includes(taskStatus)
-    }
+
+// line -----------------------------------------------------------------------------------------------------------
+// line ------------- Объявление типов ----------------------------------------------------------------------------
+// line -----------------------------------------------------------------------------------------------------------
+
+interface IProps {
+    index: number
+    taskStatus: TaskStatusUnionType
+    roll?: IRoll
+    machine?: MachineUnionType,
+}
+
+// line -----------------------------------------------------------------------------------------------------------
+
+
+const props = withDefaults(defineProps<IProps>(), {
+    roll: () => NEW_ROLL,
+    machine: () => FABRIC_MACHINES.AMERICAN
 })
+
+
+// const props = defineProps({
+//     roll: {
+//         type: Object,
+//         required: false,
+//         default: () => ({})
+//     },
+//     index: {                            // для расчета и обмена информацией по трудозатратам
+//         type: Number,
+//         required: true,
+//     },
+//     machine: {
+//         type: Object,
+//         required: false,
+//         default: () => FABRIC_MACHINES.AMERICAN,
+//         validator: (machine) => [
+//             FABRIC_MACHINES.AMERICAN.ID,
+//             FABRIC_MACHINES.GERMAN.ID,
+//             FABRIC_MACHINES.CHINA.ID,
+//             FABRIC_MACHINES.KOREAN.ID,
+//         ].includes(machine.ID)
+//     },
+//     taskStatus: {
+//         type: Number,
+//         required: true,
+//         validator: (taskStatus) => [
+//             FABRIC_TASK_STATUS.UNKNOWN.CODE,
+//             FABRIC_TASK_STATUS.CREATED.CODE,
+//             FABRIC_TASK_STATUS.PENDING.CODE,
+//             FABRIC_TASK_STATUS.RUNNING.CODE,
+//             FABRIC_TASK_STATUS.DONE.CODE,
+//         ].includes(taskStatus)
+//     }
+// })
 
 
 // console.log('props.roll !!!: ', props.roll)
 
-const emits = defineEmits(['saveTaskRecord', 'deleteTaskRecord'])
+const emits = defineEmits<{
+    (e: 'saveTaskRecord', payload: { index: number, roll: object }): void
+    (e: 'deleteTaskRecord', workRoll: IRoll): void
+}>()
+// const emits = defineEmits(['saveTaskRecord', 'deleteTaskRecord'])
 
-// attract: Объявляем дублирующую переменную для рулона, потому что state нельзя изменять в дочернем элементе
-let workRoll = reactive({...props.roll})
+const fabricsStore = useFabricsStore()
+const {globalFabricsMode} = storeToRefs(fabricsStore)
+
+const PRECISION = 2 // точность для округления
+
+const isLoading = ref(false)
+
+// __ Объявляем дублирующую переменную для рулона, потому что state нельзя изменять в дочернем элементе
+let workRoll = ref<IRoll>({...props.roll})
 let memRoll = {...props.roll}     // для возврата состояния по кнопке отмены
 
-// attract: Получаем данные из хранилища по ПС
-const fabricsStore = useFabricsStore()
-const fabrics = fabricsStore.fabricsMemory
-const rollsIndexes = fabricsStore.globalRollsIndexes        // для исключения их из selectData
+// __ Подготавливаем переменные
+let selectData: ISelectData                                        // __ Определяем переменную для отображения выбора ПС (selectData), определяем в watch с флагом immediate: true - запуск при монтировании
+let fabrics: IFabric[] = []                                        // __ Получаем данные из хранилища по ПС
+let rollsIndexes: any[] = []                                       // __ Получаем список индексов для исключения их из selectData
+const averageLength = ref(0)                                // __ Определяем переменные для средней длины ткани
+const averageLengthFabric = ref(0)                          // __ Определяем переменные для средней длины ПС
+const buffer = ref(0)                                       // __ Определяем переменные для буфера ПС
+const productivity = ref(0)                                 // __ Определяем переменные для трудозатрат
+const fabricMode = ref(false)                               // __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
+const description = ref(workRoll.value.descr)                      // __ Описание
+const typeForErrorsAndConstraintsForSelect = ref('primary') // __ Определяем переменные для стилей
+const productivityAmount = ref(0)                           // __ Время стегания в часах
+const isRollsAmountFractional = ref(false)                  // __ Флаг дробного количества в рулонах и нулевого количества
 
-// attract: Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
-const fabricMode = ref(getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id))
-// console.log('fabricMode: ', fabricMode.value)
-// console.log('roll: ', props.roll)
+// __ Получаем тип раскраски ошибки и ограничения для рулона
+const typeForErrorsAndConstraintsForLabel = computed(() => {
+    if (workRoll.value?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.FALSE.CODE) return FABRIC_ROLL_STATUS.FALSE.TYPE
+    if (workRoll.value?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return FABRIC_ROLL_STATUS.ROLLING.TYPE
 
-// attract: Определяем переменную для отображения выбора ПС (selectData)
-let selectData  // определяем в watch с флагом immediate: true - запуск при монтировании
+    if (workRoll.value.fabric_id === 0) return 'danger' // Проверяем, если выбран рулон с нулевым id, то возвращаем тип ошибки
 
-// attract: Маячок для отображения сервисных кнопок
-const getFuncButtonsConstraints = () => !(fabricsStore.globalFabricsMode && !fabricMode.value) || !workRoll.fabric_id
-const funcButtonsConstraints = ref(getFuncButtonsConstraints())
-
-// attract: Определяем переменные для средней длины ткани
-const getAverageLength = () => {
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.average_length
-}
-const averageLength = ref(getAverageLength())
-
-// attract: Определяем переменные для средней длины ПС
-const getAverageLengthFabric = () => {
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.average_length / tempFabric.buffer.rate
-}
-const averageLengthFabric = ref(getAverageLengthFabric())
-
-// attract: Определяем переменные для буфера ПС
-const getBuffer = () => {
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.average_length / tempFabric.buffer.rate
-}
-const buffer = ref(getBuffer())
-
-
-// attract: Текст модального окна + Получаем ссылку на модальное окно
-const modalText = ref([])
-const appModalAsync = ref(null)
-
-// attract: Получаем тип раскраски ошибки и ограничения для рулона
-const getTypeForErrorsAndConstraintsForLabel = () => {
-    // console.log(workRoll)
-
-    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.FALSE.CODE) return FABRIC_ROLL_STATUS.FALSE.TYPE
-    if (workRoll?.rolls_exec[0]?.status === FABRIC_ROLL_STATUS.ROLLING.CODE) return FABRIC_ROLL_STATUS.ROLLING.TYPE
-    // if (!workRoll.editable) return 'dark'
-
-
-    // Проверяем, если выбран рулон с нулевым id, то возвращаем тип ошибки
-    if (workRoll.fabric_id === 0) {
-        return 'danger'
-    }
-
-    // Проверяем, если режим выбора ПС не основной, то возвращаем тип предупреждения
-    if (fabricsStore.globalFabricsMode && !fabricMode.value) return 'warning'
+    if (globalFabricsMode && !fabricMode.value) return 'warning'   // Проверяем, если режим выбора ПС не основной, то возвращаем тип предупреждения
 
     return 'primary'
+})
+
+// __ Маячок для отображения сервисных кнопок
+const funcButtonsConstraints = computed(() => !(globalFabricsMode && !fabricMode.value) || !workRoll.value.fabric_id)
+// const getFuncButtonsConstraints = () => !(fabricsStore.globalFabricsMode && !fabricMode.value) || !workRoll.value.fabric_id
+// const funcButtonsConstraints = ref(getFuncButtonsConstraints())
+
+
+// __ Определяем модели для передачи обмена данными
+// __ Длина ткани в рулонах
+const rollsAmount = defineModel('rollsAmount', {
+    // type: Number,
+    required: false,
+    default: 0
+})
+
+// __ Длина ткани в м.п.
+const lengthAmount = defineModel('lengthAmount', {
+    // type: Number,
+    required: false,
+    default: 0
+})
+
+
+// __ Получаем данные из хранилища по ПС
+const getFabrics = () => fabrics = fabricsStore.fabricsMemory
+
+// __ Получаем список индексов для исключения их из selectData
+const getRollsIndexes = () => rollsIndexes = fabricsStore.globalRollsIndexes
+
+// __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
+const getFabricMode = () => fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.value.fabric_id) as boolean
+
+// __ Определяем переменные для средней длины ткани
+const getAverageLength = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.value.fabric_id)
+    averageLength.value = tempFabric ? tempFabric.buffer.average_length : 0
+    // return tempFabric ? tempFabric.buffer.average_length : 0
 }
 
+// __ Определяем переменные для средней длины ПС
+const getAverageLengthFabric = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.value.fabric_id)
+    averageLengthFabric.value = tempFabric ? (tempFabric.buffer.rate ? tempFabric.buffer.average_length / tempFabric.buffer.rate : 0) : 0
+    // return tempFabric.buffer.average_length / tempFabric.buffer.rate
+}
 
-// attract: Определяем переменные для стилей
-const typeForErrorsAndConstraintsForSelect = ref('primary')
-const typeForErrorsAndConstraintsForLabel = ref(getTypeForErrorsAndConstraintsForLabel())
+// __ Определяем переменные для буфера ПС
+const getBuffer = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.value.fabric_id)
+    buffer.value = tempFabric ? tempFabric.buffer.amount : 0
+    // return tempFabric.buffer.average_length / tempFabric.buffer.rate
+}
+
+// __ Определяем переменные для трудозатрат
+const getProductivity = () => {
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.value.fabric_id)
+    productivity.value = tempFabric ? tempFabric.buffer.productivity : 0
+    // return tempFabric.buffer.productivity
+}
+
+// __ Время стегания в часах
+const getProductivityAmount = () => {
+    // console.log('productivity.value: ', productivity.value)
+    // console.log('lengthAmount.value: ', lengthAmount.value)
+
+    const tempProductivityAmount = (productivity.value ? lengthAmount.value / productivity.value : 0) as number
+    (fabricsStore.globalTaskProductivity[props.machine.TITLE] as number[])[props.index] = tempProductivityAmount
+    productivityAmount.value = tempProductivityAmount
+    // return tempProductivityAmount
+}
+
+// __ Флаг дробного количества в рулонах и нулевого количества
+const getIsRollsAmountFractional = () => isRollsAmountFractional.value = !Number.isInteger(rollsAmount.value)
+
+// __ Текст модального окна + Получаем ссылку на модальное окно
+const modalText = ref<string[]>([])
+const modalType = ref('danger')
+const modalMode = ref('confirm')
+const appModalAsync = ref<any>(null)
 
 // todo: Сделать функционал, чтобы нельзя было выбирать на новом рулоне уже существующие ПС и нельзя было бы добавлять новый рулон, если есть незакрытые
 
-// attract: Определяем объект selectData для ПС в зависимости от выбранного рулона
+// __ Определяем объект selectData для ПС в зависимости от выбранного рулона
 const getSelectData = () => {
 
-    // attract: Фильтруем ПС в зависимости от выбранного режима ПС
+    // __ Фильтруем ПС в зависимости от выбранного режима ПС
     const filteredFabrics = filterFabricsByMachineId(fabrics, props.machine.ID, fabricsStore.globalFabricsMode)
 
     // console.log('filteredFabrics: ', filteredFabrics)
 
 
-    // attract: Делаем разные selectData для рулонов (убираем существующие в СЗ ПС) и для остальных
+    // __ Делаем разные selectData для рулонов (убираем существующие в СЗ ПС) и для остальных
 
     // console.log('rollsIndexes: ', rollsIndexes)
     // console.log('workRoll.fabric_id: ', workRoll.fabric_id)
 
     let data = filteredFabrics.map(fabric => {
 
-        if (!rollsIndexes.includes(fabric.id) || fabric.id === workRoll.fabric_id) {
+        if (!rollsIndexes.includes(fabric.id) || fabric.id === workRoll.value.fabric_id) {
             // if (!rollsIndexes.includes(fabric.id) && rollsIndexes.includes(workRoll.fabric_id)) {
 
-            if ((workRoll.fabric_id !== 0 && fabric.id !== 0) || (workRoll.fabric_id === 0)) {
+            if ((workRoll.value.fabric_id !== 0 && fabric.id !== 0) || (workRoll.value.fabric_id === 0)) {
 
                 return {
                     id: fabric.id,
                     name: fabric.display_name,
-                    selected: fabric.id === workRoll.fabric_id
+                    selected: fabric.id === workRoll.value.fabric_id
                 }
             }
         }
     })
 
-    data = data.filter((item) => typeof item !== "undefined")                     // удаляем пустые объекты
+    data = data.filter((item) => typeof item !== 'undefined')                     // удаляем пустые объекты
 
     // console.log('data__: ', data)
 
@@ -493,8 +564,8 @@ const getSelectData = () => {
     //
     //     console.log('data_2: ', data)
     // }
-
-    return {name: 'fabrics', data}
+    selectData = {name: 'fabrics', data: data as ISelectDataItem[]}
+    // return {name: 'fabrics', data} as ISelectData
 }
 
 
@@ -518,88 +589,56 @@ const getSelectData = () => {
 //     // funcButtonsConstraints.value = getFuncButtonsConstraints()
 // }, {deep: true, immediate: true})
 
-// attract: Определяем модели для передачи обмена данными
-// Длина в рулонах
-const rollsAmount = defineModel('rollsAmount', {
-    // type: Number,
-    required: false,
-    default: 0
-})
-rollsAmount.value = workRoll.rolls_amount
-
-// Длина в м.п.
-const lengthAmount = defineModel('lengthAmount', {
-    // type: Number,
-    required: false,
-    default: 0
-})
-lengthAmount.value = rollsAmount.value * averageLength.value
-
-// attract: Описание
-const description = ref(workRoll.descr)
-// const description = defineModel('description', {})
-
-// attract: Определяем переменные для трудозатрат
-const getProductivity = () => {
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)
-    return tempFabric.buffer.productivity
-}
-const productivity = ref(getProductivity())
-
-// attract: Время стегания в часах
-const getProductivityAmount = () => {
-    const tempProductivityAmount = productivity.value ? lengthAmount.value / productivity.value : 0
-    fabricsStore.globalTaskProductivity[props.machine.TITLE][props.index] = tempProductivityAmount
-    return tempProductivityAmount
-}
-const productivityAmount = ref(getProductivityAmount())
 
 
-// attract: Флаг дробного количества в рулонах и нулевого количества
-const getIsRollsAmountFractional = () => !Number.isInteger(rollsAmount.value)
-const isRollsAmountFractional = ref(getIsRollsAmountFractional())
+
+
 
 
 // attract: Выделяем в отдельную функцию все общие реактивные методы
 const reactiveActions = () => {
 
     // warning: Порядок важен
-    selectData = getSelectData()                                                            // Вычисляем данные для селекта ПС
+    getSelectData()                                                            // Вычисляем данные для селекта ПС
+    // selectData = getSelectData()                                                            // Вычисляем данные для селекта ПС
 
-    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.fabric_id)             // Получаем объект ПС
+    const tempFabric = fabrics.find(fabric => fabric.id === workRoll.value.fabric_id)       // Получаем объект ПС
 
-    workRoll.fabric = tempFabric.display_name                                               // Меняем название ПС
-    workRoll.buffer = tempFabric.buffer.amount                                              // Меняем Буфер
-    workRoll.average_textile_length = tempFabric.buffer.average_length                      // Меняем среднюю длину ткани
-    workRoll.average_fabric_length
-        = tempFabric.buffer.average_length / tempFabric.buffer.rate                           // Меняем среднюю длину ПС
-    workRoll.productivity = tempFabric.buffer.productivity                                  // Меняем производительность
-    workRoll.rate = tempFabric.buffer.rate                                                  // Меняем коэффициент перевода ткани в ПС
-    workRoll.descr = description.value
+    if (tempFabric) {
+        workRoll.value.fabric = tempFabric.display_name                                               // Меняем название ПС
+        workRoll.value.buffer = tempFabric.buffer.amount                                              // Меняем Буфер
+        workRoll.value.average_textile_length = tempFabric.buffer.average_length                      // Меняем среднюю длину ткани
+        workRoll.value.average_fabric_length
+            = tempFabric.buffer.average_length / tempFabric.buffer.rate                           // Меняем среднюю длину ПС
+        workRoll.value.productivity = tempFabric.buffer.productivity                                  // Меняем производительность
+        workRoll.value.rate = tempFabric.buffer.rate                                                  // Меняем коэффициент перевода ткани в ПС
+        workRoll.value.descr = description.value
 
-    averageLength.value = workRoll.average_textile_length                                   // Получаем среднюю длину ткани
-    averageLengthFabric.value = workRoll.average_fabric_length                              // Получаем среднюю длину ПС
-    buffer.value = tempFabric.buffer.amount                                                 // Меняем Буфер
+        averageLength.value = workRoll.value.average_textile_length                                   // Получаем среднюю длину ткани
+        averageLengthFabric.value = workRoll.value.average_fabric_length                              // Получаем среднюю длину ПС
+        buffer.value = tempFabric.buffer.amount                                                 // Меняем Буфер
 
-    productivity.value = workRoll.productivity                                              // Получаем производительность
-    lengthAmount.value = workRoll.rolls_amount * workRoll.average_textile_length
-    rollsAmount.value = workRoll.rolls_amount
-    productivityAmount.value = getProductivityAmount()                                      // Получаем трудозатраты
-    fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.fabric_id)      // Меняем режим выбора ПС
+        productivity.value = workRoll.value.productivity                                              // Получаем производительность
+        lengthAmount.value = workRoll.value.rolls_amount * workRoll.value.average_textile_length
+        rollsAmount.value = workRoll.value.rolls_amount
+        getProductivityAmount()                                      // Получаем трудозатраты
+        // productivityAmount.value = getProductivityAmount()                                      // Получаем трудозатраты
+        fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.value.fabric_id) as boolean     // Меняем режим выбора ПС
 
-    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()    // Меняем тип для стилей
+        // typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()    // Меняем тип для стилей
 
 
-    isRollsAmountFractional.value = getIsRollsAmountFractional()
-    // averageLength.value = getAverageLength()                                            // Получаем среднюю длину ПС
-    // productivity.value = getProductivity()                                              // Получаем производительность
-    // productivity.value = getProductivity()                                              // Получаем производительность
+        isRollsAmountFractional.value = getIsRollsAmountFractional()
+        // averageLength.value = getAverageLength()                                            // Получаем среднюю длину ПС
+        // productivity.value = getProductivity()                                              // Получаем производительность
+        // productivity.value = getProductivity()                                              // Получаем производительность
+    }
 }
 
 // attract: Обрабатываем событие выбора ПС
-const selectFabric = (item) => {
+const selectFabric = (item: ISelectDataItem) => {
 
-    workRoll.fabric_id = item.id                                                  // Меняем id ПС
+    workRoll.value.fabric_id = item.id                                                  // Меняем id ПС
 
     console.log('workRoll', workRoll)
 
@@ -648,13 +687,13 @@ const setEditMode = () => {
 // attract: Отменяем редактирование
 const cancelEditMode = () => {
     resetEditMode()
-    workRoll = {...memRoll}     // Возвращаем состояние по кнопке отмены
+    workRoll.value = {...memRoll}     // Возвращаем состояние по кнопке отмены
     // typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()// Меняем тип для стилей
 
     reactiveActions()
 }
 
-// attract: Сохраняем рулон
+// __ Сохраняем рулон
 const saveTaskRecord = () => {
 
     resetEditMode()                                     // Отключаем глобальное редактирование
@@ -668,12 +707,12 @@ const saveTaskRecord = () => {
         average_textile_length: averageLength.value,
         productivity: productivity.value,
         textile_length: lengthAmount.value,
-        fabric_id: workRoll.fabric_id,
-        fabric_name: workRoll.fabric,
+        fabric_id: workRoll.value.fabric_id,
+        fabric_name: workRoll.value.fabric,
         rolls_amount: rollsAmount.value,
         descr: description.value,
         fabric_mode: fabricMode.value,
-        rate: workRoll.rate,
+        rate: workRoll.value.rate,
         rolls_exec: [],                         // Нужно для правильной работы компонента
         editable: true,                         // Нужно для правильной работы компонента
         roll_position: props.roll.roll_position // Нужно для правильной работы компонента
@@ -684,16 +723,16 @@ const saveTaskRecord = () => {
     emits('saveTaskRecord', {index: props.index, roll: saveRollData})
 }
 
-// attract: Удаляем рулон
+// __ Удаляем рулон
 const deleteTaskRecord = async () => {
     resetEditMode()                                     // Отключаем глобальное редактирование
 
     modalText.value = ['Запись будет удалена.', 'Продолжить?']
-    const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+    const result = appModalAsync.value ? await appModalAsync.value.show() : false             // показываем модалку и ждем ответ
 
     if (!result) return
 
-    emits('deleteTaskRecord', workRoll)
+    emits('deleteTaskRecord', workRoll.value)
     // console.log(workRoll)
 }
 
@@ -702,8 +741,9 @@ const amountActions = () => {
     if (rollsAmount.value.toString() === '' || rollsAmount.value < 0) rollsAmount.value = 0
     if (lengthAmount.value.toString() === '' || lengthAmount.value < 0) lengthAmount.value = 0
     isRollsAmountFractional.value = getIsRollsAmountFractional()
-    productivityAmount.value = getProductivityAmount()
-    workRoll.rolls_amount = rollsAmount.value
+    getProductivityAmount()
+    // productivityAmount.value = getProductivityAmount()
+    workRoll.value.rolls_amount = rollsAmount.value
 
     // console.log('ln: ', lengthAmount.value)
     // console.log('rolls: ', rollsAmount.value)
@@ -737,21 +777,20 @@ const getSaveRollFlag = () => {
     // console.log('isRollsAmountFractional.value: ', isRollsAmountFractional.value)
     // console.log('productivity.value: ', productivity.value)
 
-
-    return workRoll.fabric_id
+    return workRoll.value.fabric_id
         && rollsAmount.value
         && !isRollsAmountFractional.value
         && averageLength.value
         && productivity.value
-        && workRoll.rate
+        && workRoll.value.rate
 }
 
-// attract: Определяем переменную, указывающую, что рулон готов к сохранению
+// __ Определяем переменную, указывающую, что рулон готов к сохранению
 const saveRollFlag = ref(getSaveRollFlag())
 
-// attract: Обрабатываем редактирование записи с ПС, чтобы дать доступ к сохранению
+// __ Обрабатываем редактирование записи с ПС, чтобы дать доступ к сохранению
 watch([
-    () => workRoll,
+    () => workRoll.value,
     () => rollsAmount,
     () => averageLength,
     () => productivity,
@@ -760,24 +799,46 @@ watch([
 }, {deep: true})
 
 
-// attract: Обрабатываем событие выбора ПС глобальное. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
+// __ Обрабатываем событие выбора ПС глобальное. Ставим immediate: true, чтобы компонент срабатывал при рендеринге
 // selectData = reactive(getSelectData())
-watch(() => fabricsStore.globalFabricsMode, () => {
-
+watch(() => globalFabricsMode, () => {
     reactiveActions()
-
-    // Вычисляем данные для селекта ПС
-    selectData = getSelectData()
+    getSelectData()     // Вычисляем данные для селекта ПС
     // Вычисляем тип для стилей
-    typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()
+    // typeForErrorsAndConstraintsForLabel.value = getTypeForErrorsAndConstraintsForLabel()
     // Пересчитываем ограничения для сервисных кнопок
-    funcButtonsConstraints.value = getFuncButtonsConstraints()
+    // funcButtonsConstraints.value = getFuncButtonsConstraints()
     // funcButtonsConstraints.value = typeForErrorsAndConstraintsForLabel.value === 'primary'
 }, {deep: true, immediate: true})
 
 
-// attract: сбрасываем глобальное редактирование
+onMounted(() => {
+    isLoading.value = true
 
+    getFabrics()                    // __ Получаем ПС
+    getRollsIndexes()               // __ Получаем список индексов для исключения их из selectData
+    getAverageLength()              // __ Получаем среднюю длину ткани
+    getAverageLengthFabric()        // __ Получаем среднюю длину ПС
+    getBuffer()                     // __ Получаем буфер ПС
+    getFabricMode()                 // __ Получаем режим выбора ПС
+    getProductivity()               // __ Определяем переменные для трудозатрат
+    getSelectData()                 // __ Вычисляем данные для селекта ПС
+    // selectData = getSelectData()
+
+    // __ Задаем начальные значения для моделей
+    rollsAmount.value = workRoll.value.rolls_amount
+    lengthAmount.value = workRoll.value.rolls_amount * averageLength.value
+
+    getIsRollsAmountFractional()    // __ Важен порядок
+    getProductivityAmount()         // __ Важен порядок
+
+    // console.log('fabricsStore.globalFabricsMode: ', fabricsStore.globalFabricsMode)
+    console.log('fabrics: ', fabrics)
+    isLoading.value = false
+})
+
+
+// attract: сбрасываем глобальное редактирование
 // Warning: Этот код не работает (Блокирует переход на другую страницу)
 // onBeforeRouteLeave(() => fabricsStore.globalEditMode = false)
 // onBeforeRouteUpdate(() => fabricsStore.globalEditMode = false)

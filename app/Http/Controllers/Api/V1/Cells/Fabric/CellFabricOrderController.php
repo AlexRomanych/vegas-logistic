@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 
 //use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricOrderCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricOrderResource;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricExpense;
 use App\Models\Manufacture\Cells\Fabric\FabricOrder;
@@ -14,12 +15,13 @@ use App\Services\Manufacture\FabricService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CellFabricOrderController extends Controller
 {
 
     /**
-     * Attract Загрузка расхода ПС из отчета СВПМ
+     * __ Загрузка расхода ПС из отчета СВПМ
      * @param Request $request
      * @return string
      */
@@ -45,7 +47,8 @@ class CellFabricOrderController extends Controller
                 $checkFabricOrder->delete();
             }
 
-            // attract: Если нет, создаем новый заказ
+            // __ Если нет, создаем новый заказ
+            $maxPosition = FabricOrder::query()->max('position');// Получаем максимальную позицию
             $newFabricOrder = FabricOrder::query()->create([
                 'client_id' => $fabricOrder['client_id'],
                 'order_no' => $fabricOrder['order_no'],
@@ -56,6 +59,7 @@ class CellFabricOrderController extends Controller
                 'expense_date' => Carbon::now()->addDay(),               // Добавляем 1 день
                 'is_closed' => false,
                 'active' => true,
+                'position' => $maxPosition + 1,
             ]);
 
 
@@ -89,10 +93,10 @@ class CellFabricOrderController extends Controller
     }
 
 
-    // Descr: Получить список расходов ПС по активным заказам
+    // ___ Получить список расходов ПС по активным заказам
 
     /**
-     * @return FabricOrderCollection|string
+     * @return AnonymousResourceCollection|string
      */
     public function getFabricOrders()
     {
@@ -100,10 +104,12 @@ class CellFabricOrderController extends Controller
             $fabricOrders = FabricOrder::query()
                 ->where('is_closed', false)
                 ->with(['fabricsExpense', 'client'])
-                ->orderBy('expense_date')
+                // ->orderBy('expense_date')
+                ->orderBy('position')                   // сортируем по позиции
                 ->get();
 
-            return new FabricOrderCollection($fabricOrders);
+            return FabricOrderResource::collection($fabricOrders);
+            // return new FabricOrderCollection($fabricOrders);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e->getMessage());
         }
@@ -111,6 +117,7 @@ class CellFabricOrderController extends Controller
 
 
     // Descr: Меняем статус заказа расходов ПС (отображаем в расчетах или нет)
+
     /**
      * @param Request $request
      * @return string
@@ -145,6 +152,7 @@ class CellFabricOrderController extends Controller
 
 
     // Descr: Закрываем заказ расходов ПС
+
     /**
      * @param Request $request
      * @return string
@@ -170,6 +178,37 @@ class CellFabricOrderController extends Controller
                 throw new Exception('Заказ расходов ПС с id = ' . $data['id'] . ' не найден');
             }
 
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
+
+
+    // ___ Сохраняем порядок расходов ПС
+    /**
+     * @param Request $request
+     * @return string
+     */
+    public function saveFabricsOrdersOrder(Request $request)
+    {
+        try {
+            $validData = $request->validate([
+                'order' => 'required|array',
+                'order.*.order_id' => 'required|integer',
+                'order.*.position' => 'required|integer',
+            ]);
+
+            foreach ($validData['order'] as $item) {
+                $expenseOrder = FabricOrder::query()->find($item['order_id']);
+                if ($expenseOrder) {
+                    $expenseOrder->position = $item['position'];
+                    $expenseOrder->save();
+                } else {
+                    throw new Exception('Заказ расходов ПС с id = ' . $item['order_id'] . ' не найден');
+                }
+            }
+
+            return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e->getMessage());
         }

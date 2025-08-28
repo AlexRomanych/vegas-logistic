@@ -17,12 +17,12 @@ class FabricOrderResource extends JsonResource
     public function toArray(Request $request): array
     {
 
-//        $fabricsExpense = $this->fabricsExpense;
-//        $fabricsExpensedData = [];
-//
-//        foreach ($fabricsExpense as $fabricExpense) {
-//            $fabricsExpensedData[] = new FabricOrderExpenseResource($fabricExpense);
-//        }
+        //        $fabricsExpense = $this->fabricsExpense;
+        //        $fabricsExpensedData = [];
+        //
+        //        foreach ($fabricsExpense as $fabricExpense) {
+        //            $fabricsExpensedData[] = new FabricOrderExpenseResource($fabricExpense);
+        //        }
 
         return [
             'active' => $this->active,
@@ -32,21 +32,22 @@ class FabricOrderResource extends JsonResource
             'code_1C' => $this->code_1C,
             'description' => $this->description,
             'expense_date' => Carbon::parse($this->expense_date)->format('d.m.Y'),
-//            'expense_date' =>$this->expense_date,
             'id' => $this->id,
             'is_closed' => $this->is_closed,
             'order_no' => $this->order_no,
             'raw_text' => $this->raw_text,
             'time_1C' => $this->time_1C,
-//            'type' => $this->type,
             'fabricsExpense' => new FabricOrderExpenseCollection($this->fabricsExpense),
-//            'fabricsExpense' => $this->fabricsExpense,
-//            'fabricsExpense' => $fabricsExpensedData,
-//            'comment' => $this->comment,
-//            'expense_date' => $this->expense_date,
-//            'note' => $this->note,
+            'position' => $this->position,
+            // 'expense_date' => $this->expense_date,
+            // 'fabricsExpense' => $this->fabricsExpense,
+            // 'fabricsExpense' => $fabricsExpensedData,
+            // 'comment' => $this->comment,
+            // 'expense_date' => $this->expense_date,
+            // 'note' => $this->note,
+            // 'type' => $this->type,
         ];
 
-//        return parent::toArray($request);
+        //        return parent::toArray($request);
     }
 }

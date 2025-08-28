@@ -13,7 +13,7 @@
         "strict": true,
         "noEmit": true,
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-        //        "allowJs": true,
+        "allowJs": true,        // разрешаем импортировать js файлы. Если false - требует создать файл деклараций .d.ts
         //        "jsx": "preserve",
         "paths": {
             "@/*": [

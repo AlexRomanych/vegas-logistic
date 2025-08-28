@@ -69,16 +69,16 @@
 
 import {ref} from 'vue'
 
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
 
-import {getFileContent} from '/resources/js/src/app/helpers/helpers_file_reader.js'
-import {isJSON} from '/resources/js/src/app/helpers/helpers_checks.js'
+import {getFileContent} from '@/app/helpers/helpers_file_reader.js'
+import {isJSON} from '@/app/helpers/helpers_checks.ts'
 
-import AppInputFile from '/resources/js/src/components/ui/inputs/AppInputFile.vue'
-import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
-import AppCallout from '/resources/js/src/components/ui/callouts/AppCallout.vue'
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppInputFile from '@/components/ui/inputs/AppInputFile.vue'
+import AppButton from '@/components/ui/buttons/AppButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 const selectedFile = ref(null)
 const isDataJson = ref(true)                // Проверка на тип файла для вызова Callout

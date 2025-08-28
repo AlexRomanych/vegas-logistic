@@ -1,6 +1,6 @@
 // Info Тут все константы, касающиеся участка Стежки
 
-import type { IFabricMachine } from '@/types'
+import type { IFabricMachine, ITaskStatus, IRoll } from '@/types'
 
 /*
  // attract Это из PHP, в ней все названия и значения для статусов
@@ -52,42 +52,38 @@ export const WARNINGS_RANGES = Object.freeze({
 })
 
 
-export const FABRIC_TASK_STATUS = Object.freeze({
+// ___ Тут все константы, касающиеся статусов СЗ
+export const FABRIC_TASK_STATUS: Record<string, ITaskStatus> = Object.freeze({
 
-    // descr: Сменное задание еще не создано (или сохранено)
+    // ___ Сменное задание еще не создано (или сохранено)
     UNKNOWN: {
         WORD: 'unknown',
         CODE: 0,
         TITLE: 'Не создано',
         TYPE: 'danger',
     },
-
-
-    // descr: Сменное задание создано (или сохранено)
+    // ___ Сменное задание создано (или сохранено)
     CREATED: {
         WORD: 'created',
         CODE: 1,
         TITLE: 'Создано',
         TYPE: 'dark',
     },
-
-    // descr: Сменное задание отправлено на выполнение
+    // ___ Сменное задание отправлено на выполнение
     PENDING: {
         WORD: 'pending',
         CODE: 2,
         TITLE: 'Готово к стежке',
         TYPE: 'primary',
     },
-
-    // descr: Сменное задание взято на выполнение (находится в процессе выполнения)
+    // ___ Сменное задание взято на выполнение (находится в процессе выполнения)
     RUNNING: {
         WORD: 'running',
         CODE: 3,
         TITLE: 'Выполняется',
         TYPE: 'warning',
     },
-
-    // descr: Сменное задание выполнено (закрыто)
+    // ___ Сменное задание выполнено (закрыто)
     DONE: {
         WORD: 'done',
         CODE: 4,
@@ -317,8 +313,8 @@ export const FABRICS_NULLABLE = {
 }
 
 
-// descr Нулевой рулон - болванка рулона для добавления
-export const NEW_ROLL =
+// ___ Нулевой рулон - болванка рулона для добавления
+export const NEW_ROLL: IRoll =
     {
         id: 0,
         roll_position: 0,
@@ -337,10 +333,11 @@ export const NEW_ROLL =
         correct: false,
         editable: true,
         rolls_exec: [],
+        note: null
     }
 
 
-// descr Создаем болванку ПС
+// ___ Создаем болванку ПС
 export const NEW_FABRIC =
     {
         id: 0,
@@ -396,7 +393,7 @@ export const NEW_FABRIC_PICTURE = {
 }
 
 
-// descr: Скелет объекта сменного задания
+// __ Скелет объекта сменного задания
 export const TASK_DRAFT =
     {
         date: '',
@@ -435,3 +432,10 @@ export const TASK_DRAFT =
         workers: [],
     }
 
+// __ Константы функционала
+export const FABRIC_MANAGE = 'manage'       // __ Управление СЗ
+export const FABRIC_EXECUTE = 'execute'     // __ Выполнение СЗ
+
+// __ Константы для localStorage
+export const TASK_TAB_PREFIX = 'TASK_TAB'                      // __ Управление СЗ
+export const TASK_TAB_PREFIX_EXECUTE = 'TASK_EXECUTE_TAB'      // __ Выполнение СЗ

@@ -6,11 +6,7 @@
         />
 
         <!-- __ Сам список рулонов -->
-
-
-        <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
         <!-- __ Сами рулоны с возможностью перетаскивания -->
-        <!--:move="evt => evt.draggedContext.element.editable"-->
         <draggable
             :="dragOptions"
             :disabled="!isDragging"
@@ -22,19 +18,7 @@
             @start="startDrag"
         >
             <template #item="{ element, index }">
-
                 <div>
-                    <!--<TheTaskRecord-->
-                    <!--    :key="index"-->
-                    <!--    :index="index"-->
-                    <!--    :machine="machine"-->
-                    <!--    :roll="element"-->
-                    <!--    :task-status="task.common.status"-->
-                    <!--    @save-task-record="saveTaskRecord"-->
-                    <!--    @delete-task-record="deleteTaskRecord"-->
-                    <!--/>-->
-
-
                     <!-- __ Сам рулон  -->
                     <TheTaskExecuteRoll
                         :key="index"
@@ -45,43 +29,10 @@
                         @click="changeActiveRoll(element)"
                         @change-calc-status="changeCalcStatus(element)"
                     />
-
-
                 </div>
-
             </template>
         </draggable>
-        <!--</div>-->
 
-
-        <!--<div v-for="(roll, index) in rolls" :key="index">-->
-
-        <!--<div v-for="(roll_exec) in roll.rolls_exec" :key="roll_exec.id">-->
-
-        <!--<div-->
-        <!--    :class="roll_exec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
-        <!--    class="cursor-pointer">-->
-
-
-        <!--<div v-for="rollExec of rollsExec" :key="rollExec.id">-->
-
-        <!--    &lt;!&ndash; __ Сам рулон  &ndash;&gt;-->
-        <!--    <TheTaskExecuteRoll-->
-        <!--        :class="rollExec.active ? 'pt-0.5 pb-0.5 bg-blue-400 rounded-lg' : ''"-->
-        <!--        :roll_exec="rollExec"-->
-        <!--        :rollsRender="rollsRender"-->
-        <!--        class="cursor-pointer"-->
-        <!--        @click="changeActiveRoll(rollExec)"-->
-        <!--        @change-calc-status="changeCalcStatus(rollExec)"-->
-        <!--    />-->
-        <!--</div>-->
-
-
-        <!--</div>-->
-
-        <!--</div>-->
-
-        <!--</div>-->
     </div>
 </template>
 
