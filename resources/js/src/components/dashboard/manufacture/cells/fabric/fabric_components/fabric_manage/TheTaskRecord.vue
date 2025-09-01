@@ -277,9 +277,9 @@
 
     <AppModalAsyncMultiLine
         ref="appModalAsync"
+        :mode="modalMode"
         :text="modalText"
         :type="modalType"
-        :mode="modalMode"
     />
 
 </template>
@@ -590,11 +590,6 @@ const getSelectData = () => {
 // }, {deep: true, immediate: true})
 
 
-
-
-
-
-
 // attract: Выделяем в отдельную функцию все общие реактивные методы
 const reactiveActions = () => {
 
@@ -703,7 +698,8 @@ const saveTaskRecord = () => {
     // console.log(workRoll.fabric_id)
     // console.log(workRoll.descr)
 
-    const saveRollData = {
+    const saveRollData: IRoll = {
+        id: workRoll.value.id,
         average_textile_length: averageLength.value,
         productivity: productivity.value,
         textile_length: lengthAmount.value,
@@ -715,7 +711,15 @@ const saveTaskRecord = () => {
         rate: workRoll.value.rate,
         rolls_exec: [],                         // Нужно для правильной работы компонента
         editable: true,                         // Нужно для правильной работы компонента
-        roll_position: props.roll.roll_position // Нужно для правильной работы компонента
+        roll_position: props.roll.roll_position,// Нужно для правильной работы компонента
+
+        average_fabric_length: workRoll.value.average_fabric_length,
+        buffer: workRoll.value.buffer,
+        length_amount: workRoll.value.length_amount,
+        fabric: workRoll.value.fabric,
+        fabric_rate: workRoll.value.fabric_rate,
+        correct: workRoll.value.correct,
+        note: workRoll.value.note,
     }
 
     // console.log('saveRollData: ', saveRollData)
@@ -833,7 +837,7 @@ onMounted(() => {
     getProductivityAmount()         // __ Важен порядок
 
     // console.log('fabricsStore.globalFabricsMode: ', fabricsStore.globalFabricsMode)
-    console.log('fabrics: ', fabrics)
+    // console.log('fabrics: ', fabrics)
     isLoading.value = false
 })
 

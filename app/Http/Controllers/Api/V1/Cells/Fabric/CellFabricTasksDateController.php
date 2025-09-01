@@ -29,8 +29,8 @@ class CellFabricTasksDateController extends Controller
 {
 
     /**
-     *  descr: Возвращает все заказы за период
-     *  descr: Если без параметров, то все заказы
+     *  ___ Возвращает все заказы за период
+     *  ___ Если без параметров, то все заказы
      * @param Request $request
      * @return FabricTasksDateCollection|string
      */
@@ -59,7 +59,11 @@ class CellFabricTasksDateController extends Controller
                     'fabricTasks.fabricTaskContexts.fabric',
                     'team',
                     'user',
-                    'workerRecord', 'workerRecord.worker'
+                    'workerRecord', 'workerRecord.worker',
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls.finishBy',
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls.registration1CBy',
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls.moveToCutBy',
+                    'fabricTasks.fabricTaskContexts.fabricTaskRolls.receiptToCutBy',
                 ])
                 ->orderBy('tasks_date')
                 ->get();

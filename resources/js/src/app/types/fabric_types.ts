@@ -1,4 +1,58 @@
 import { FABRIC_MACHINES, FABRIC_TASK_STATUS, } from '@/app/constants/fabrics.ts'
+import { getISOFromLocaleDate } from '@/app/helpers/helpers_date'
+
+
+
+// __ Период выборки
+export interface ITaskPeriod {
+    start: string
+    end: string
+}
+
+
+// __ Объект СЗ для отображения в компонентах, который приходит с сервера
+
+// Получаем все названия машин по ключу TITLE
+export type FabricMachineTitles = typeof FABRIC_MACHINES[keyof typeof FABRIC_MACHINES]['TITLE'];
+
+// Здесь все то, что приходит с сервера в объекте machines
+export interface IMachineData {
+    active: boolean
+    description: string | null
+    finish_at: string | null
+    rolls: IRoll[]
+}
+
+// Здесь все то, что приходит с сервера в объекте workers
+export interface IWorkerData {
+    id: number
+    surname: string
+    name: string
+    patronymic: string
+    email: string | null
+    phone: string | null
+    address: string | null
+    record_id: number
+}
+
+export interface ITaskItem {
+    common: {
+        id: number
+        active: boolean
+        status: number
+        created_at: string
+        created_by: string
+        description: string | null
+        start_at: string | null
+        finish_at: string | null
+        team: number
+    }
+    date: string
+    id: number
+    machines: Record<FabricMachineTitles, IMachineData>
+    workers: IWorkerData[]
+}
+
 
 // __ Стегальные машины
 export interface IFabricMachine {
@@ -13,6 +67,8 @@ export type MachineUnionType =
     | typeof FABRIC_MACHINES.GERMAN
     | typeof FABRIC_MACHINES.CHINA
     | typeof FABRIC_MACHINES.KOREAN
+
+
 
 // line --------------------------------------------
 
@@ -54,19 +110,19 @@ export interface IRoll {
     editable: boolean
     note: string | null
     rolls_exec: IRollExec[]
+
+    textile_length?: number
+    fabric_name?: string
 }
 
 // __ Физический (исполняемый) рулон
 export interface IRollExec {
-    descr: string
+    id: number
     duration: number
     fabric_id: number
     false_reason: string
-    finish_at: null | string
-    finish_by: number
-    id: number
-    movable: boolean
-    paused_at: null | string
+    status: number
+    status_prev: number
     position: number
     productivity: number
     rate: number
@@ -74,9 +130,17 @@ export interface IRollExec {
     rolling: boolean
     rolling_length: number
     start_at: null | string
-    status: number
-    status_prev: number
+    paused_at: null | string
+    finish_at: null | string
+    registration_1C_at: null | string
+    move_to_cut_at: null | string
+    receipt_to_cut_at: null | string
+    close_at: null | string
+    finish_by: number
+    movable: boolean
+    descr: string
     textile_length: number
+    responsible: IWorkerData[]
 }
 
 // __ Полотно стеганное

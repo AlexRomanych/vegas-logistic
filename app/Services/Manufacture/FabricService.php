@@ -8,7 +8,10 @@ use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Models\Manufacture\Cells\Fabric\FabricPictureSchema;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // use Illuminate\Support\Collection;
 
@@ -255,6 +258,37 @@ final class FabricService
         }
 
         return $resultArray;
+    }
+
+    /**
+     * __ Обновляем порядок следования рулонов
+     * @param int $taskId
+     * @return void
+     */
+    public static function reindexOrderContexts(int $taskId)
+    {
+        try {
+
+            // __ Получаем контексты по ID задачи
+            $taskContexts = FabricTaskContext::query()
+                ->where('fabric_task_id', $taskId)
+                ->get();
+
+            if ($taskContexts->isEmpty()) return;
+
+            // __ Сортируем по позиции
+            $taskContexts->sortBy('roll_position');
+
+            DB::transaction(function () use ($taskContexts) {
+
+                // __ Обновляем с переиндексированием
+                $taskContexts->each(fn($context, $index) => $context->update(['roll_position' => $index + 1]));
+            });
+
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+        }
+
     }
 
 }

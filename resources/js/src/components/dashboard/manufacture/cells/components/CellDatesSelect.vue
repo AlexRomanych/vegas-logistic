@@ -1,25 +1,30 @@
 <template>
-    <div class="flex justify-start items-end ml-2">
+    <div class="flex justify-start items-end">
 
+        <!-- __ Инициализирующая метка -->
         <div>
             <AppLabel
                 :bold="true"
                 align="center"
                 height="h-[35px]"
-                text="Архив: "
+                :text="labelText"
                 width="w-[100px]"
+                type="dark"
             />
         </div>
 
+        <!-- __ Начало -->
         <div>
             <AppInputDate
                 id="start"
+                class="mr-1 ml-0.5"
                 label="Начало"
                 type="light"
                 @getInputDate="setPeriod"
             />
         </div>
 
+        <!-- __ Окончание -->
         <div>
             <AppInputDate
                 id="end"
@@ -28,6 +33,8 @@
                 @getInputDate="setPeriod"
             />
         </div>
+
+        <!-- __ Кнопка Показать -->
         <div>
             <AppButton
                 id="apply"
@@ -40,34 +47,32 @@
     </div>
 </template>
 
-<script setup>
-// import {ref} from 'vue'
-import {compareDatesLogic} from "/resources/js/src/app/helpers/helpers_date.js"
-// import {isResponseWithError} from "/resources/js/src/app/helpers/helpers_checks.js"
+<script setup lang="ts">
+import type { ITaskPeriod } from '@/types'
 
-// import {CELL_TYPES} from '/resources/js/src/app/constants/sewingTypes.js'
+import { compareDatesLogic } from '@/app/helpers/helpers_date.js'
 
-import AppInputDate from '/resources/js/src/components/ui/inputs/AppInputDate.vue'
-import AppButton from '/resources/js/src/components/ui/buttons/AppButton.vue'
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppInputDate from '@/components/ui/inputs/AppInputDate.vue'
+import AppButton from '@/components/ui/buttons/AppButton.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
 
-// const props = defineProps({
-//     sewingType: {
-//         type: String,
-//         required: true,
-//         validator: (sewingType) => CELL_TYPES.includes(sewingType)
-//     },
-//
-// })
+interface IProps {
+    labelText?: string
+}
 
-const emits = defineEmits(['clickApply'])
+withDefaults(defineProps<IProps>(), {labelText: 'Архив:'})
+
+const emits = defineEmits<{
+    (e: 'clickApply', dateInterval: ITaskPeriod): void
+    (e: 'apply', dateInterval: ITaskPeriod): void
+}>()
 
 // интервал дат в виде объекта
-const dateInterval = {}
+const dateInterval: ITaskPeriod = {start: '', end: ''}
 
-// attract: Устанавливаем интервал
-const setPeriod = (pointDate) => {
-    // console.log(pointDate.id, pointDate.value)
+// __ Устанавливаем интервал
+const setPeriod = (pointDate: {id: string, value: string}) => {
+    console.log('pointDate: ', pointDate)
 
     if (pointDate.id === 'start') {
         dateInterval.start = pointDate.value
@@ -76,14 +81,15 @@ const setPeriod = (pointDate) => {
     }
 }
 
-// attract: Нажимаем Показать
-const clickApply = async (id) => {
-    // подготавливаем данные
+// __ Нажимаем Показать
+const clickApply = () => {
+
+    // __ Подготавливаем данные
     const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
     dateInterval.start = dateInterval.start ?? formattedDate
     dateInterval.end = dateInterval.end ?? formattedDate
 
-    // инвертируем, если дата начала больше даты окончания
+    // __ Инвертируем, если дата начала больше даты окончания
     if (!compareDatesLogic(dateInterval.start, dateInterval.end)) {
         const start = dateInterval.start
         dateInterval.start = dateInterval.end
@@ -91,6 +97,7 @@ const clickApply = async (id) => {
     }
 
     emits('clickApply', dateInterval)
+    emits('apply', dateInterval)
 }
 
 </script>

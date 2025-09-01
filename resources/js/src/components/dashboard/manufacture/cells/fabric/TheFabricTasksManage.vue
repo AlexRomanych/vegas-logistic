@@ -323,8 +323,8 @@ const getTasks = async () => {
 
     console.log('tasksPeriod:', tasksPeriod)
     console.log('tasks:', tasks)
-    console.log('taskData: ', taskData)
-    console.log('activeTask', activeTask.value)
+    // console.log('taskData: ', taskData)
+    // console.log('activeTask', activeTask.value)
 }
 
 // __ Устанавливаем активную вкладку даты по дате
@@ -695,7 +695,7 @@ const getTabType = (tab) => {
 
 // __ Пересчитывает позицию рулонов в массиве + сохраняет по необходимости
 const changeRollsPosition = (machine, task) => {
-    console.log('from changeRollsPosition!!!')
+    // console.log('from changeRollsPosition!!!')
     const findTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
 
     // если не находим СЗ или там нет рулонов, то выходим
@@ -708,7 +708,7 @@ const changeRollsPosition = (machine, task) => {
 
 // __ Поднятое событие при клике на кнопку "Сохранить порядок рулонов"
 const saveRollsPosition = async (machine, task) => {
-    console.log('from saveRollsPosition!!!: ', machine, task)
+    // console.log('from saveRollsPosition!!!: ', machine, task)
 
     // debugger
     fabricsStore.globalOrderManageChangeFlag = true
@@ -718,12 +718,11 @@ const saveRollsPosition = async (machine, task) => {
     const result = await fabricsStore.changeContextOrder(task.id, machine.ID, task.machines[machine.TITLE].rolls)
 
     const orderContext = await fabricsStore.getOrderContext(task.id, machine.ID)
-    console.log('orderContext: ', orderContext)
+    // console.log('orderContext: ', orderContext)
 
     task.machines[machine.TITLE].rolls = orderContext.sort((a, b) => a.roll_position - b.roll_position)
 
     fabricsStore.globalOrderManageChangeFlag = false
-    // log('workTask: ', targetTask)
 }
 
 const saveRollsPosition_Old = async (machine, task) => {

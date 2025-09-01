@@ -41,9 +41,16 @@ class CellFabricTaskContextController extends Controller
                 'id' => 'numeric|required',
             ]);
 
-            $taskContext = FabricTaskContext::query()->find($validData['id']);
+            $taskContext = FabricTaskContext::query()
+                ->with('fabricTask')
+                ->find($validData['id']);
 
-            if ($taskContext) $taskContext->delete();
+            $taskId = $taskContext->fabricTask->id;
+
+            if ($taskContext) {
+                $taskContext->delete();
+                FabricService::reindexOrderContexts($taskId);
+            }
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
@@ -236,17 +243,23 @@ class CellFabricTaskContextController extends Controller
                 foreach ($contextData as $context) {
 
                     // __ плановый рулон от ОПП
-                    $taskRollContext = FabricTaskContext::query()
-                        ->where('fabric_task_id', $task->id)
-                        ->where('fabric_id', $context['fabric_id'])
-                        ->where('editable', true)
-                        ->update(
-                            [
-                                'roll_position' => $context['roll_position'],          // порядок рулонов
-                            ]
-                        );
+                    $workContext = FabricTaskContext::query()->find($context['id']);
 
+                    // $workContext = FabricTaskContext::query()
+                    //     ->where('fabric_task_id', $task->id)
+                    //     ->where('fabric_id', $context['fabric_id'])
+                    //     ->where('editable', true)
+                    //     ->first();
+
+                    $workContext->roll_position = $context['roll_position'];
+                    $workContext->save();
+
+                    $b = $workContext;
+
+                    $b = $b;
                 }
+
+
             });
 
             return EndPointStaticRequestAnswer::ok();
@@ -296,6 +309,7 @@ class CellFabricTaskContextController extends Controller
                 'machine' => 'required|integer',
                 'roll' => 'required|array',
 
+                'roll.id' => 'required|integer',
                 'roll.fabric_id' => 'required|integer',
                 'roll.average_textile_length' => 'required|numeric',
                 'roll.productivity' => 'required|numeric',
@@ -332,7 +346,10 @@ class CellFabricTaskContextController extends Controller
             if (!$fabric) throw new Exception('Fabric not found');
 
             // __ плановый рулон от ОПП
-            $taskRollContext = FabricTaskContext::query()->create(
+            $taskRollContext = FabricTaskContext::query()->updateOrCreate(
+                [
+                    'id' => $rollData['id'],
+                ],
                 [
                     'fabric_task_id' => $task->id,                          // привязка к СЗ
                     'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
@@ -340,9 +357,9 @@ class CellFabricTaskContextController extends Controller
                     'roll_position' => $rollData['roll_position'],          // порядок рулонов
                     'fabric_mode' => $rollData['fabric_mode'],
                     'average_textile_length' => $rollData['textile_length'],
-                    'translate_rate' => $fabric->translate_rate,
                     'productivity' => $rollData['productivity'],
                     'description' => $rollData['descr'],
+                    'translate_rate' => $fabric->translate_rate,            // Берем из ПС
                 ]
             );
 
