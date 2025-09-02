@@ -225,8 +225,14 @@ export const FABRIC_PAGE_MODE = Object.freeze({
 })
 
 // ___ Константы ID машин стежки
+interface IConstFabricMachine {
+    ID: number
+    TITLE: string
+    NAME: string
+    INDEX: string
+}
 
-export const FABRIC_MACHINES: Record<string, IFabricMachine> = Object.freeze({
+export const FABRIC_MACHINES: Record<string, IConstFabricMachine> = Object.freeze({
     UNKNOWN: {
         ID: 0,
         TITLE: 'unknown',
@@ -380,6 +386,7 @@ export const NEW_FABRIC_PICTURE = {
     stitch_length: 0,
     stitch_speed: 0,
     moment_speed: 0,
+    productivity: 0,
     shuttle_amount: 0,
     description: '',
     fabricMainMachineId: 0,

@@ -9,11 +9,10 @@
                 <div class="flex">
 
                     <!-- __ Название Рисунка -->
-                    <AppInputText
+                    <AppInputTextTS
                         id="name"
-                        v-model.trim="v$.name.$model"
+                        v-model:textValue.trim="v$.name.$model as unknown as string"
                         :errors="v$.name.$errors"
-                        :value="v$.name.$model"
                         label="Название рисунка"
                         placeholder="Рисунок ПС"
                         width="w-[120px]"
@@ -21,11 +20,10 @@
                     />
 
                     <!-- __ Длина стежка, мм -->
-                    <AppInputNumberSimple
+                    <AppInputNumberSimpleTS
                         id="stitch_length"
-                        v-model:inputNumber="v$.stitchLength.$model"
+                        v-model:inputNumber.number="v$.stitchLength.$model as unknown as number"
                         :errors="v$.stitchLength.$errors"
-                        :value="v$.stitchLength.$model"
                         label="Длина стежка, мм"
                         placeholder="Введите длину стежка"
                         step="0.5"
@@ -33,11 +31,10 @@
                     />
 
                     <!-- __ Скорость стежков, шт./мин. -->
-                    <AppInputNumberSimple
+                    <AppInputNumberSimpleTS
                         id="stitch_speed"
-                        v-model:inputNumber="v$.stitchSpeed.$model"
+                        v-model:inputNumber.number="v$.stitchSpeed.$model as unknown as number"
                         :errors="v$.stitchSpeed.$errors"
-                        :value="v$.stitchSpeed.$model"
                         label="Скорость стежков, шт./мин."
                         placeholder="Введите скорость стежков"
                         step="1"
@@ -49,11 +46,10 @@
                 <div class="flex">
 
                     <!-- __ Мгновенная скорость, м/ч -->
-                    <AppInputNumberSimple
+                    <AppInputNumberSimpleTS
                         id="moment_speed"
-                        v-model:inputNumber="v$.momentSpeed.$model"
+                        v-model:inputNumber.number="v$.momentSpeed.$model as unknown as number"
                         :errors="v$.momentSpeed.$errors"
-                        :value="v$.momentSpeed.$model"
                         label="Мгновенная скорость, м/ч"
                         placeholder="Введите мгновенную скорость"
                         step="1"
@@ -61,20 +57,34 @@
                     />
 
                     <!-- __ Количество челноков для Корейца, шт. -->
-                    <div v-if="showShuttleAmountField">
-                        <AppInputNumberSimple
-                            id="shuttle_amount"
-                            v-model:inputNumber="v$.shuttleAmount.$model"
-                            :errors="v$.shuttleAmount.$errors"
-                            :value="v$.shuttleAmount.$model"
-                            label="Кол-во челноков для Корейца, шт."
-                            placeholder="Введите кол-во челноков"
-                            step="1"
-                            width="w-[245px]"
-                        />
-                    </div>
+                    <!--<div v-if="showShuttleAmountField">-->
+                    <AppInputNumberSimpleTS
+                        id="shuttle_amount"
+                        v-model:inputNumber.number="v$.shuttleAmount.$model as unknown as number"
+                        :disabled="!showShuttleAmountField"
+                        :errors="v$.shuttleAmount.$errors"
+                        label="Кол-во челноков для Корейца, шт."
+                        placeholder="Введите кол-во челноков"
+                        step="1"
+                        width="w-[245px]"
+                    />
+                    <!--</div>-->
 
                 </div>
+
+                <div class="flex">
+                    <!-- __ Производительность на основной СМ, м.п./час -->
+                    <AppInputNumberSimpleTS
+                        id="productivity"
+                        v-model:inputNumber.number="v$.productivity.$model as unknown as number"
+                        :errors="v$.productivity.$errors"
+                        label="Производительность на основной СМ, м.п./час"
+                        placeholder="Введите производительность"
+                        step="1"
+                        width="w-[453px]"
+                    />
+                </div>
+
 
                 <div class="flex">
                     <div>
@@ -128,7 +138,7 @@
                     id="descr"
                     v-model.trim="v$.description.$model"
                     :rows=2
-                    :value="v$.description.$model"
+                    :value="v$.description.$model as unknown as string"
                     class="cursor-pointer"
                     height="min-h-[60px]"
                     label="Описание рисунка полотна стеганного"
@@ -170,7 +180,7 @@
     </div>
 
 
-    <!-- attract: Асинхронное модальное окно -->
+    <!-- __ Асинхронное модальное окно -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :text="modalText"
@@ -178,7 +188,7 @@
         mode="inform"
     />
 
-    <!-- attract: Callout -->
+    <!-- __ Callout -->
     <AppCallout
         :show="calloutShow"
         :text="calloutText"
@@ -187,45 +197,64 @@
 
 </template>
 
-<script setup>
-import {ref, reactive, watch, onMounted} from 'vue'
+<script lang="ts" setup>
+import { ref, reactive, watch, onMounted } from 'vue'
 
-import {useRoute} from 'vue-router'
+import type {
+    ICheckboxData,
+    IFabricMachine,
+    IFabricSchema,
+    ISelectData,
+    ISelectDataItem
+} from '@/types'
 
-import {useVuelidate} from '@vuelidate/core'
+import { useRoute } from 'vue-router'
+
+import { useVuelidate } from '@vuelidate/core'
 import {
     helpers,
     required,
     minLength,
+    minValue,
     // integer,
-    // minValue,
     // maxValue,
     // between,
     // email,
     // sameAs
 } from '@vuelidate/validators'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     NEW_FABRIC_PICTURE,
     FABRIC_PAGE_MODE,
     FABRIC_MACHINES,
-    // FABRIC_TASK_STATUS
 } from '@/app/constants/fabrics.js'
 
-// import {round} from '@/app/helpers/helpers_lib.js'
-
-import AppInputText from '@/components/ui/inputs/AppInputText.vue'
-import AppInputNumberSimple from '@/components/ui/inputs/AppInputNumberSimple.vue'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
 import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'
 import AppSelect from '@/components/ui/selects/AppSelect.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
-// import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
-// import AppSelectSimple from "@/components/ui/selects/AppSelectSimple.vue";
+import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
+import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
+
+
+// line -----------------------------------------------------------------------------------------------------------
+// line ------------- Объявление типов ----------------------------------------------------------------------------
+// line -----------------------------------------------------------------------------------------------------------
+interface IMachineState {
+    machineId: number
+    schemaId: number
+    visible: boolean
+    machineLabel: string
+    schemaLabel: string
+    type: string
+}
+
+// line -----------------------------------------------------------------------------------------------------------
+
 
 const fabricStore = useFabricsStore()
 
@@ -233,13 +262,17 @@ const route = useRoute()
 // console.log('route: ', route)
 // console.log('meta', route.meta.mode)
 
+// __ Определяем переменные
+const machines = ref<IFabricMachine[]>([])
+const schemas = ref<IFabricSchema[]>([])
+
+
 // __ Получаем СМ
-const machines = (await fabricStore.getFabricsMachines()) //.filter(machine => machine.id)
-// console.log('machines: ', machines)
+const getMachines = async () => (machines.value = await fabricStore.getFabricsMachines()) //.filter(machine => machine.id)
 
 // __ Получаем список схем рисунков ПС
-const schemas = await fabricStore.getFabricPictureSchemas()
-// console.log('schemas: ', schemas)
+const getSchemas = async () => (schemas.value = await fabricStore.getFabricPictureSchemas())
+
 
 // __ Получаем режим работы формы: создание или редактирование
 const editMode = route.meta.mode === FABRIC_PAGE_MODE.EDIT
@@ -260,6 +293,7 @@ if (editMode) {
     fabricPicture.stitch_speed = fabricPictureServer.stitch_speed
     fabricPicture.moment_speed = fabricPictureServer.moment_speed
     fabricPicture.shuttle_amount = fabricPictureServer.shuttle_amount
+    fabricPicture.productivity = fabricPictureServer.productivity
     fabricPicture.description = fabricPictureServer.description
     fabricPicture.fabricMainMachineId = fabricPictureServer.machines.fabricMainMachine.machine.id === 0 ? 1 : fabricPictureServer.machines.fabricMainMachine.machine.id
     fabricPicture.fabricMainMachineSchemaId = fabricPictureServer.machines.fabricMainMachine.schema.id === 0 ? 1 : fabricPictureServer.machines.fabricMainMachine.schema.id
@@ -279,6 +313,7 @@ const stitchLength = ref(fabricPicture.stitch_length)
 const stitchSpeed = ref(fabricPicture.stitch_speed)
 const momentSpeed = ref(fabricPicture.moment_speed)
 const shuttleAmount = ref(fabricPicture.shuttle_amount)
+const productivity = ref(fabricPicture.productivity)
 const description = ref(fabricPicture.description)
 
 // __ Определяем константы правил валидации
@@ -296,6 +331,7 @@ const MIN_NAME_LENGTH = 2
 // const RATE_MIN_AMOUNT = 1
 // const RATE_MAX_AMOUNT = 3
 // const PRODUCTIVITY_MIN_AMOUNT = 10
+const MIN_PRODUCTIVITY = 0.1
 
 // __ Определяем объект валидации
 const verify = {
@@ -304,10 +340,11 @@ const verify = {
     stitchSpeed,
     momentSpeed,
     shuttleAmount,
+    productivity,
     description
 }
 
-// Определяем правила валидации
+// __ Определяем правила валидации
 const rules = {
     name: {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -317,6 +354,10 @@ const rules = {
     stitchSpeed: {},
     momentSpeed: {},
     shuttleAmount: {},
+    productivity: {
+        required: helpers.withMessage(REQUIRED_MESSAGE, required),
+        minValue: helpers.withMessage(`Минимальная значение производительности - ${MIN_PRODUCTIVITY} м.п./час`, minValue(MIN_PRODUCTIVITY)),
+    },
     description: {},
     // averageLength: {
     //     required: helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -360,7 +401,7 @@ const v$ = useVuelidate(rules, verify)
 
 
 // __ Формируем данные для отображения статуса
-const checkboxDataStatus = {
+const checkboxDataStatus: ICheckboxData = {
     name: 'status',
     data: [
         {id: 1, name: 'Активный', checked: fabricPicture.active},
@@ -370,7 +411,7 @@ const checkboxDataStatus = {
 
 
 // __ Переменные состояния СМ
-const mainMachine = reactive({
+const mainMachine: IMachineState = reactive({
     machineId: fabricPicture.fabricMainMachineId,
     schemaId: fabricPicture.fabricMainMachineSchemaId,
     visible: true,
@@ -378,7 +419,7 @@ const mainMachine = reactive({
     schemaLabel: 'Схема игл основной СМ',
     type: 'success',
 })
-const altMachine_1 = reactive({
+const altMachine_1: IMachineState = reactive({
     machineId: fabricPicture.fabricAltMachineId_1,
     schemaId: fabricPicture.fabricAltMachineSchemaId_1,
     visible: true,
@@ -386,7 +427,7 @@ const altMachine_1 = reactive({
     schemaLabel: 'Схема игл альтернативной СМ 1',
     type: 'indigo',
 })
-const altMachine_2 = reactive({
+const altMachine_2: IMachineState = reactive({
     machineId: fabricPicture.fabricAltMachineId_2,
     schemaId: fabricPicture.fabricAltMachineSchemaId_2,
     visible: true,
@@ -401,9 +442,9 @@ const machinesRenderList = ref([mainMachine, altMachine_1, altMachine_2])
 
 
 // __ Формируем селекты для СМ
-const getMachineSelect = (inMachine, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+const getMachineSelect = (inMachine: IMachineState, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
 
-    let data = machines
+    let data = machines.value
         .filter(machine => machine.active)
         .sort((a, b) => a.id - b.id)
 
@@ -418,7 +459,7 @@ const getMachineSelect = (inMachine, order = 0 /* 0 - основная СМ, 1 -
         data = data.filter(machine => machine.id !== mainMachine.machineId && machine.id !== altMachine_1.machineId)
     }
 
-    data = data.map(machine => {
+    const selectData: ISelectDataItem[] = data.map(machine => {
         return {
             id: machine.id,
             name: machine.short_name,
@@ -429,14 +470,14 @@ const getMachineSelect = (inMachine, order = 0 /* 0 - основная СМ, 1 -
 
     return {
         name: 'machine',
-        data
-    }
+        data: selectData
+    } as ISelectData
 }
 
 
 // __ Делаем селект для схем игл
-const getMachineSchemaSelect = (machine, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
-    let data = schemas
+const getMachineSchemaSelect = (machine: IMachineState, order = 0 /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    let data = schemas.value
         .sort((a, b) => a.id - b.id)
         .map(schema => {
             return {
@@ -452,7 +493,7 @@ const getMachineSchemaSelect = (machine, order = 0 /* 0 - основная СМ,
     return {
         name: 'machineSchema',
         data
-    }
+    } as ISelectData
 }
 
 
@@ -494,8 +535,8 @@ const handleMachineVisibility = (changeMainMachineFlag = false /*Флаг тог
 
 
 // __ Меняем СМ
-const handleMachine = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
-    // console.log(event)
+const handleMachine = (event: ISelectDataItem, machineOrder: number /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
+    console.log(event)
     let changeMainMachineFlag = false   // Флаг того, что был изменен выбор основной СМ
     if (machineOrder === 0) changeMainMachineFlag = machinesRenderList.value[machineOrder].machineId !== event.id
     machinesRenderList.value[machineOrder].machineId = event.id
@@ -504,25 +545,25 @@ const handleMachine = (event, machineOrder /* 0 - основная СМ, 1 - а�
 
 
 // __ Меняем схему игл
-const handleMachineSchema = (event, machineOrder /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
-    // console.log(event)
+const handleMachineSchema = (event: ISelectDataItem, machineOrder: number /* 0 - основная СМ, 1 - альт СМ 1, 2 - альт СМ 2 */) => {
     machinesRenderList.value[machineOrder].schemaId = event.id
+    // console.log(event)
 }
 
 
 // __ Меняем статус
-const checkedHandlerStatus = (obj) => {
-    // console.log(obj)
+const checkedHandlerStatus = (obj: { id: number }) => {
+    console.log(obj)
     fabricPicture.active = obj.id === 1
 }
 
 
 // __ Обработка ввода имени рисунка ПС
-const inputNameHandler = (event) => {
-    // console.log(event.target.value)
-    name.value = event.target.value.toUpperCase()
+const inputNameHandler = (event: InputEvent) => {
+    const target = event.target as HTMLInputElement     // Утверждаем, что event.target является HTMLInputElement
+    name.value = target.value.toUpperCase()             // Теперь TypeScript знает, что target имеет свойство 'value'
+    // console.log(name.value)
 }
-
 
 // __ Показываем/скрываем поле ввода челноков для Корейца
 const handleShuttleAmount = () => machinesRenderList.value.some(machine => machine.machineId === FABRIC_MACHINES.KOREAN.ID)
@@ -532,8 +573,8 @@ const showShuttleAmountField = ref(handleShuttleAmount())
 
 
 // __ Асинхронная модальное окно
-const appModalAsync = ref(null)         // Получаем ссылку на модальное окно
-const modalText = ref([])
+const appModalAsync = ref<any>(null)         // Получаем ссылку на модальное окно
+const modalText = ref<string[]>([])
 const modalType = ref('danger')
 
 // __ Callout для вывода ошибок и предупреждений
@@ -556,14 +597,14 @@ const formSubmit = async () => {
     if ((altMachine_1.machineId !== 0 && altMachine_1.schemaId === 0) ||
         (altMachine_2.machineId !== 0 && altMachine_2.schemaId === 0)) {
         modalText.value = ['Заполните схему игл для всех СМ.']
-        const result = await appModalAsync.value.show()  // показываем модалку и ждем ответ
+        /*const result =*/ await appModalAsync.value.show()  // показываем модалку и ждем ответ
         return
     }
 
     // __ Проверяем, заполнены ли челноки на Корейце
     if (showShuttleAmountField.value && !shuttleAmount.value) {
         modalText.value = ['В списке стегальных машин присутствует "Кореец".', 'Укажите количество челноков для Корейца.']
-        const result = await appModalAsync.value.show()  // показываем модалку и ждем ответ
+        /*const result =*/ await appModalAsync.value.show()  // показываем модалку и ждем ответ
         return
     }
 
@@ -576,6 +617,7 @@ const formSubmit = async () => {
     fabricPicture.stitch_speed = stitchSpeed.value
     fabricPicture.moment_speed = momentSpeed.value
     fabricPicture.shuttle_amount = showShuttleAmountField.value ? shuttleAmount.value : 0
+    fabricPicture.productivity = productivity.value
     fabricPicture.description = description.value
 
     fabricPicture.fabricMainMachineId = mainMachine.machineId
@@ -633,9 +675,13 @@ watch(
     }, {deep: true, immediate: true})
 
 
-// __ Запускаем сразу валидацию формы
-onMounted(() => {
-    v$.value.$touch()
+onMounted(async () => {
+    await getMachines()
+    await getSchemas()
+    v$.value.$touch()       // __ Запускаем сразу валидацию формы
+
+    console.log('machines: ', machines.value)
+    console.log('schemas: ', schemas.value)
 })
 
 </script>

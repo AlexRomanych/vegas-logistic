@@ -29,15 +29,15 @@ class Fabric extends Model
     ];
 
     protected $with = [
-//        'fabricMachine'
+        //        'fabricMachine'
         'fabricPicture'         // название как и в процедуре отношений
     ];
 
-//    public function __construct() {
-//        parent::__construct();
-//        $this->fabricInstance = new FabricInstance($this->getAttribute('name'));
-//
-//    }
+    //    public function __construct() {
+    //        parent::__construct();
+    //        $this->fabricInstance = new FabricInstance($this->getAttribute('name'));
+    //
+    //    }
 
     // h2 Определяем атрибуты
     public function getFabricInstanceAttribute(): FabricInstance
@@ -70,21 +70,22 @@ class Fabric extends Model
     // attract: 1. Средняя длина рулона
     // attract: 2. Производительность
     // attract: 3. Коэффициент перевода
-    public function getFabricCorrectAttribute()
+    public function getFabricCorrectAttribute(): bool
     {
 
-            $length = (float)$this->average_roll_length === 0.0;
-            $productivity = (float)$this->productivity === 0.0;
-            $translate = (float)$this->translate_rate === 0.0;
+        $length = (float)$this->average_roll_length === 0.0;
+        $translate = (float)$this->translate_rate === 0.0;
+        $productivity = (float)$this->fabricPicture->productivity === 0.0 && (float)$this->productivity === 0.0;
+        // $productivity = (float)$this->productivity === 0.0;
 
-            return !($length || $productivity || $translate);
+        return !($length || $productivity || $translate);
 
-//        return [
-//            'length' => (float)$this->average_roll_length === 0.0,
-//            'productivity' => (float)$this->productivity === 0.0,
-//            'translate' => (float)$this->translate_rate === 0.0,
-//            ];
-//        return (float)$this->average_roll_length !== 0.0 && (float)$this->productivity !== 0.0 && (float)$this->translate_rate !== 0.0;
+        //        return [
+        //            'length' => (float)$this->average_roll_length === 0.0,
+        //            'productivity' => (float)$this->productivity === 0.0,
+        //            'translate' => (float)$this->translate_rate === 0.0,
+        //            ];
+        //        return (float)$this->average_roll_length !== 0.0 && (float)$this->productivity !== 0.0 && (float)$this->translate_rate !== 0.0;
     }
 
 
@@ -102,10 +103,10 @@ class Fabric extends Model
     }
 
 
-//    //h2 fabricMachine -----------------------------------------------------------------------------------------
-//    public function fabricMachine(): BelongsTo
-//    {
-//        return $this->belongsTo(FabricMachine::class);
-//    }
+    //    //h2 fabricMachine -----------------------------------------------------------------------------------------
+    //    public function fabricMachine(): BelongsTo
+    //    {
+    //        return $this->belongsTo(FabricMachine::class);
+    //    }
 
 }

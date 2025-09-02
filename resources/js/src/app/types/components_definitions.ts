@@ -19,4 +19,17 @@ export interface ISelectData {
 
 
 
+
+
 // line-------------------------------------------------------
+// ___ Данные для компонента AppCheckbox
+export interface ICheckboxDataItem {
+    id: number
+    name: string
+    checked?: boolean
+    disabled?: boolean
+}
+export interface ICheckboxData {
+    name: string
+    data: ICheckboxDataItem[]
+}

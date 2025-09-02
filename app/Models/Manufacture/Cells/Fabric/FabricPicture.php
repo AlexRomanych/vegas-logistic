@@ -15,7 +15,9 @@ class FabricPicture extends Model
 
     protected $casts = [
         'stitch_length' => 'float',
+        'productivity' => 'float',
     ];
+
 
     protected $with = [
         'fabricMainMachine',
@@ -29,9 +31,9 @@ class FabricPicture extends Model
     ];
 
 
-//    protected $attributes = [
-//
-//    ];
+    //    protected $attributes = [
+    //
+    //    ];
 
     //Relations: fabric (ПС) -----------------------------------------------------------------------------------------
     public function fabric(): HasMany

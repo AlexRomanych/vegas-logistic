@@ -62,7 +62,7 @@ class FabricResource extends JsonResource
                 'optimal_party' => (double)$this->optimal_party,
                 'average_length' => (double)$this->average_roll_length,
                 'rate' => (double)$this->translate_rate,
-                'productivity' => (double)$this->productivity,
+                'productivity' => (double)$this->fabricPicture->productivity === 0.0 ? (double)$this->productivity : (double)$this->fabricPicture->productivity,
 
             ],
 

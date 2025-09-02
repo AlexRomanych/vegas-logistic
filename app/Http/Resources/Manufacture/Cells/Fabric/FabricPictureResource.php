@@ -23,6 +23,7 @@ class FabricPictureResource extends JsonResource
             'moment_speed' => $this->moment_speed,
             'shuttle_amount' => $this->shuttle_amount,
             'description' => $this->description ?? '',
+            'productivity' => $this->productivity,
             'machines' =>
                 [
                     'fabricMainMachine' =>
@@ -30,6 +31,7 @@ class FabricPictureResource extends JsonResource
                             'machine' =>
                                 [
                                     'id' => $this->fabricMainMachine->id,
+                                    'active' => $this->fabricMainMachine->active,
                                     'name' => $this->fabricMainMachine->name,
                                     'short_name' => $this->fabricMainMachine->short_name,
                                     'description' => $this->fabricMainMachine->description ?? '',
@@ -49,6 +51,7 @@ class FabricPictureResource extends JsonResource
                             'machine' =>
                                 [
                                     'id' => $this->fabricAltMachine_1->id,
+                                    'active' => $this->fabricAltMachine_1->active,
                                     'name' => $this->fabricAltMachine_1->name,
                                     'short_name' => $this->fabricAltMachine_1->short_name,
                                     'description' => $this->fabricAltMachine_1->description ?? '',
@@ -67,6 +70,7 @@ class FabricPictureResource extends JsonResource
                             'machine' =>
                                 [
                                     'id' => $this->fabricAltMachine_2->id,
+                                    'active' => $this->fabricAltMachine_2->active,
                                     'name' => $this->fabricAltMachine_2->name,
                                     'short_name' => $this->fabricAltMachine_2->short_name,
                                     'description' => $this->fabricAltMachine_2->description ?? '',
@@ -85,6 +89,7 @@ class FabricPictureResource extends JsonResource
                             'machine' =>
                                 [
                                     'id' => $this->fabricAltMachine_3->id,
+                                    'active' => $this->fabricAltMachine_3->active,
                                     'name' => $this->fabricAltMachine_3->name,
                                     'short_name' => $this->fabricAltMachine_3->short_name,
                                     'description' => $this->fabricAltMachine_3->description ?? '',

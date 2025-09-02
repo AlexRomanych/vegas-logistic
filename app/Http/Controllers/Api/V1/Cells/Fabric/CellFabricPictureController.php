@@ -67,6 +67,7 @@ class CellFabricPictureController extends Controller
             $fabricPicture->stitch_speed = $fabricPicturePayload['stitch_speed'];
             $fabricPicture->moment_speed = $fabricPicturePayload['moment_speed'];
             $fabricPicture->shuttle_amount = $fabricPicturePayload['shuttle_amount'] === 0 ? null : $fabricPicturePayload['shuttle_amount'];
+            $fabricPicture->productivity = $fabricPicturePayload['productivity'];
             $fabricPicture->description = $fabricPicturePayload['description'];
 
             $fabricPicture->fabric_machine_id = $fabricPicturePayload['fabricMainMachineId'];
@@ -110,6 +111,8 @@ class CellFabricPictureController extends Controller
                     'stitch_length' => $fabricPicturePayload['stitch_length'],
                     'stitch_speed' => $fabricPicturePayload['stitch_speed'],
                     'moment_speed' => $fabricPicturePayload['moment_speed'],
+                    'productivity' => $fabricPicturePayload['productivity'],
+
                     'shuttle_amount' => $fabricPicturePayload['shuttle_amount'] === 0 ? null : $fabricPicturePayload['shuttle_amount'],
                     'description' => $fabricPicturePayload['description'],
 

@@ -2,7 +2,6 @@ import { FABRIC_MACHINES, FABRIC_TASK_STATUS, } from '@/app/constants/fabrics.ts
 import { getISOFromLocaleDate } from '@/app/helpers/helpers_date'
 
 
-
 // __ Период выборки
 export interface ITaskPeriod {
     start: string
@@ -63,11 +62,10 @@ export interface IFabricMachine {
 }
 
 export type MachineUnionType =
-      typeof FABRIC_MACHINES.AMERICAN
+    typeof FABRIC_MACHINES.AMERICAN
     | typeof FABRIC_MACHINES.GERMAN
     | typeof FABRIC_MACHINES.CHINA
     | typeof FABRIC_MACHINES.KOREAN
-
 
 
 // line --------------------------------------------
@@ -81,13 +79,11 @@ export interface ITaskStatus {
 }
 
 export type TaskStatusUnionType =
-      typeof FABRIC_TASK_STATUS.UNKNOWN
+    typeof FABRIC_TASK_STATUS.UNKNOWN
     | typeof FABRIC_TASK_STATUS.CREATED
     | typeof FABRIC_TASK_STATUS.PENDING
     | typeof FABRIC_TASK_STATUS.RUNNING
     | typeof FABRIC_TASK_STATUS.DONE
-
-
 
 
 // __ Контекстный рулон
@@ -181,6 +177,52 @@ export interface IFabric {
 
 }
 
+// line --------------------------------------------------------------
+// line --------------------- Рисунки ПС -----------------------------
+// line --------------------------------------------------------------
+export interface IFabricPictureItem {
+    active: boolean
+    description: string | null
+    id: number
+    // machines: IMachinesMap
+    machines: { [key in IMachinesNamesUnion]: IFabricMachineItem }
+    moment_speed: number
+    name: string
+    productivity: number
+    shuttle_amount: number | null
+    stitch_length: number
+    stitch_speed: number
+}
+
+export interface IFabricMachineItem {
+    machine: IFabricMachine
+    schema: IFabricSchema
+}
+
+export interface IFabricMachine {
+    id: number
+    active: boolean
+    name: string
+    short_name: string
+    description: string | null
+}
+
+export interface IFabricSchema {
+    id: number
+    schema: string
+    schema_name: string
+    description: string | null
+}
+
+export type IMachinesNamesUnion =
+    'fabricMainMachine'
+    | 'fabricAltMachine_1'
+    | 'fabricAltMachine_2'
+    | 'fabricAltMachine_3'
+
+export type IMachinesMap = {
+    [key in IMachinesNamesUnion]: IFabricMachineItem
+}
 
 // line --------------------------------------------------------------
 // line --------------------- Расход ПС ------------------------------

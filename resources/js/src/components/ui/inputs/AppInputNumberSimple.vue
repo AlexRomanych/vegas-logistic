@@ -34,9 +34,9 @@
 <script setup>
 
 import {computed, ref, watch} from 'vue'
-import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import {colorsClasses, colorsList} from '@/app/constants/colorsClasses.js'
+import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '@/app/helpers/helpers.js'
+import {fontSizesList} from '@/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {
