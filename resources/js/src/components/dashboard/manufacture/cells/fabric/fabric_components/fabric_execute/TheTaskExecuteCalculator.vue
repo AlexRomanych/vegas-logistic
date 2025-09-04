@@ -38,8 +38,7 @@
                     :class="item.class"
                     :text="item.header"
                     :text-size="item.headerTextSize"
-                    :title="item.title"
-                    :type="item.type()"
+                    :type="typeof item.type === 'function' ? item.type() : item.type"
                     :width="item.width"
                     @click="item.click()"
                 />

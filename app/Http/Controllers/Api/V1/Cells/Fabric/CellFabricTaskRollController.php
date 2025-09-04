@@ -15,6 +15,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 
 // use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 
+use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use \Exception;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class CellFabricTaskRollController extends Controller
 {
 
     /**
-     * Descr: Возвращает рулоны за период. Если не указан - возвращает все рулоны
+     * ___ Возвращает рулоны за период. Если не указан - возвращает все рулоны
      * @param Request $request
      * @return FabricTaskRollCollection|string
      */
@@ -82,7 +83,7 @@ class CellFabricTaskRollController extends Controller
 
 
     /**
-     * Descr: Обновляет данные по рулону.
+     * ___ Обновляет данные по рулону.
      * @param Request $request
      * @return FabricTaskRollResource|string
      */
@@ -91,8 +92,6 @@ class CellFabricTaskRollController extends Controller
         try {
 
             $rollData = $request->data['data'];
-
-            //            return $rollData;
 
             // TODO: Выполнить жесткую валидацию жестких данных
 
@@ -109,6 +108,8 @@ class CellFabricTaskRollController extends Controller
                 'description' => $rollData['descr'],
                 'false_reason' => $rollData['false_reason'],
                 'textile_roll_length' => $rollData['textile_length'],
+                'fabric_roll_length' => (float)$rollData['rate'] === 0.0 ? 0.0 : $rollData['textile_length'] / $rollData['rate'],
+
                 'user_id' => Auth::id(),    // Текущий пользователь
             ];
 
@@ -124,7 +125,7 @@ class CellFabricTaskRollController extends Controller
                 throw new Exception('Не удалось обновить рулон');
             }
 
-            // attract: Тут логика обновления рулона. Если статус рулона DONE - необходимо обновить буфер ткани
+            // __ Тут логика обновления рулона. Если статус рулона DONE - необходимо обновить буфер ткани
             if ($taskRoll->roll_status === FABRIC_ROLL_DONE_CODE) {
 
                 $fabric = Fabric::query()->find($taskRoll->fabric_id); // Находим нужную ткань
@@ -136,6 +137,17 @@ class CellFabricTaskRollController extends Controller
                     }
 
                     $fabric->buffer_amount += $taskRoll->textile_roll_length / $fabric->translate_rate;
+
+
+                    // __ Тут обновляем статистику по средней длине ткани, если стоит галка
+                    if ($fabric->average_roll_length_from_statistic) {
+                        $averageLength = FabricService::getFabricAverageLength($fabric->id);
+                        if ($averageLength !== 0.0) {
+                            $fabric->average_roll_length = $averageLength;
+                            $fabric->average_roll_length_statistic = $averageLength;
+                        }
+                    }
+
                     $fabric->save();
 
                 } else {

@@ -3,13 +3,17 @@
 namespace App\Services\Manufacture;
 
 // Сервис для Полотен стеганных
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Models\Manufacture\Cells\Fabric\FabricPictureSchema;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -265,7 +269,7 @@ final class FabricService
      * @param int $taskId
      * @return void
      */
-    public static function reindexOrderContexts(int $taskId)
+    public static function reindexOrderContexts(int $taskId): void
     {
         try {
 
@@ -289,6 +293,103 @@ final class FabricService
             Log::error($e->getMessage());
         }
 
+    }
+
+
+    /**
+     * ___ Возвращаем среднюю длину рулона по периоду
+     * @param int $fabricId
+     * @param int $period
+     * @return float|string
+     */
+    public static function getFabricAverageLength(int $fabricId, int $period = FABRIC_STATISTIC_PERIOD): float|string
+    {
+        try {
+
+            // __ Получаем все статусы рулонов, которые нам интересны
+            $statuses = [
+                FABRIC_ROLL_DONE_CODE,
+                FABRIC_ROLL_MOVED_CODE,
+                FABRIC_ROLL_ACCEPTED_CODE,
+                FABRIC_ROLL_CLOSED_CODE
+            ];
+
+            // __ Находим самый свежий рулон
+            $lastModel = FabricTaskRoll::query()
+                ->where('fabric_id', $fabricId)
+                ->whereIn('roll_status', $statuses)
+                ->latest()
+                ->first();
+
+            // __ Альтернативный подход
+            /*
+            $lastModel = FabricTaskRoll::query()
+                ->where('fabric_id', $fabricId)
+                ->whereIn('status', $statuses)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            */
+
+            if (!$lastModel) return 0.0;
+
+            // __ Находим период
+            $endDate = $lastModel->created_at;
+            $startDate = $endDate->copy()->subMonths($period); // Используем copy() чтобы не изменять оригинальный объект
+
+            // __ Получаем среднее значение по длине рулонов в периоде
+            $averageLength = FabricTaskRoll::query()
+                ->where('fabric_id', $fabricId)
+                ->whereIn('roll_status', $statuses)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->avg('textile_roll_length');
+
+            // __ Если моделей, соответствующих вашим критериям, не найдено, метод avg() вернет null, а не 0.
+            // __ Поэтому важно обрабатывать этот случай.
+            if (!$averageLength) return 0.0;
+
+            return (double)$averageLength;
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Устанавливаем среднюю длину рулона
+     * @param int $fabricId
+     * @param float $averageLength
+     * @return string|void
+     */
+    public static function setFabricAverageLength(int $fabricId, float $averageLength)
+    {
+        try {
+            $fabric = Fabric::query()->find($fabricId);
+            if (!$fabric) return;
+
+            $fabric->average_roll_length_hand = $fabric->average_roll_length;
+            $fabric->average_roll_length = $averageLength;
+            $fabric->save();
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    /**
+     * @param int $fabricId
+     * @param int $period
+     * @return string
+     */
+    public static function updateFabricAverageLength(int $fabricId, int $period = FABRIC_STATISTIC_PERIOD): string
+    {
+        try {
+            $averageLength = self::getFabricAverageLength($fabricId, $period);
+            self::setFabricAverageLength($fabricId, $averageLength);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
     }
 
 }

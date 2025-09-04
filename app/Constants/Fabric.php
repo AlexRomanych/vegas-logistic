@@ -4,31 +4,31 @@ const EXEC_ROLL_START_ORDER_INDEX = 1;
 const EXEC_ROLL_FALSE_ORDER_INDEX = 0;
 const EXEC_ROLL_ROLLING_ORDER_INDEX = -1;
 
-// descr: Статусы сменного задания
+// ___ Статусы сменного задания
 
-// descr: Сменное задание создано (или сохранено)
+// ___ Сменное задание создано (или сохранено)
 const FABRIC_TASK_UNKNOWN = 'unknown';
 const FABRIC_TASK_UNKNOWN_CODE = 0;
 
-// descr: Сменное задание создано (или сохранено)
+// ___ Сменное задание создано (или сохранено)
 const FABRIC_TASK_CREATED = 'created';
 const FABRIC_TASK_CREATED_CODE = 1;
 
-// descr: Сменное задание отправлено на выполнение
+// ___ Сменное задание отправлено на выполнение
 const FABRIC_TASK_PENDING = 'pending';
 const FABRIC_TASK_PENDING_CODE = 2;
 
-// descr: Сменное задание взято на выполнение (находится в процессе выполнения)
+// ___ Сменное задание взято на выполнение (находится в процессе выполнения)
 const FABRIC_TASK_RUNNING = 'running';
 const FABRIC_TASK_RUNNING_CODE = 3;
 
-// descr: Сменное задание выполнено (закрыто)
+// ___ Сменное задание выполнено (закрыто)
 const FABRIC_TASK_DONE = 'done';
 const FABRIC_TASK_DONE_CODE = 4;
 
 //hr---------------------------------------------------------------------
 
-// descr: Константы стегальных машин
+// ___ Константы стегальных машин
 const FABRIC_MACHINE_UNKNOWN_ID = 0;
 const FABRIC_MACHINE_UNKNOWN_TITLE = 'unknown';
 const FABRIC_MACHINE_AMERICAN_ID = 1;
@@ -42,43 +42,44 @@ const FABRIC_MACHINE_KOREAN_TITLE = 'korean';
 
 //hr---------------------------------------------------------------------
 
-// descr: Константы статусов состояния готовности рулона на стежке
+// ___ Константы статусов состояния готовности рулона на стежке
 const FABRIC_ROLL_UNREADY = 0;
 const FABRIC_ROLL_PENDING = 1;
 const FABRIC_ROLL_READY = 2;
 
-// descr: Константы статусов состояния готовности рулона на стежке
-// descr: Рулон создан (или сохранен)
+// ___ Константы статусов состояния готовности рулона на стежке
+// ___ Рулон создан (или сохранен)
 const FABRIC_ROLL_CREATED_CODE = 0;
 
-// descr: Рулон взят на выполнение (находится в процессе выполнения)
+// ___ Рулон взят на выполнение (находится в процессе выполнения)
 const FABRIC_ROLL_RUNNING_CODE = 1;
 
-// descr: Рулон был взят на выполнение, но выполнение приостановлено (например, перенос на другую смену)
+// ___ Рулон был взят на выполнение, но выполнение приостановлено (например, перенос на другую смену)
 const FABRIC_ROLL_PAUSED_CODE = 2;
 
-// descr: Рулон выполнен (закрыт)
+// ___ Рулон выполнен (закрыт)
 const FABRIC_ROLL_DONE_CODE = 3;
 
-// descr: Рулон не выполнен (не закрыт)
+// ___ Рулон не выполнен (не закрыт)
 const FABRIC_ROLL_FALSE_CODE = 4;
 
-// descr: Рулон переходящий (с одной смены на другую)
+// ___ Рулон переходящий (с одной смены на другую)
 const FABRIC_ROLL_ROLLING_CODE = 5;
 
-// descr: Рулон поставленный на учет в 1С
+// ___ Рулон поставленный на учет в 1С
 const FABRIC_ROLL_REGISTERED_1C_CODE = 6;
 
-// descr: Рулон перемещенный на закрой
+// ___ Рулон перемещенный на закрой
 const FABRIC_ROLL_MOVED_CODE = 7;
 
-// descr: Рулон принятый на закрое
+// ___ Рулон принятый на закрое
 const FABRIC_ROLL_ACCEPTED_CODE = 8;
 
-// descr: Рулон отмененный на закрое
+// ___ Рулон отмененный на закрое
 const FABRIC_ROLL_CANCELLED_CODE = 8;
 
-
+// ___ Рулон списанный после закроя
+const FABRIC_ROLL_CLOSED_CODE = 9;
 
 // line ----------------------------------------------------------------
 // ___ Константы Групп ПЯ
@@ -92,3 +93,6 @@ const BLOCK_GROUP = 6;       //  'name' => 'Участок ПБ'
 
 
 // line ----------------------------------------------------------------
+
+// ___ Период, за который считаем статистику по ткани для ПС
+const FABRIC_STATISTIC_PERIOD = 1;

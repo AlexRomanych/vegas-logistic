@@ -113,6 +113,16 @@
                     width="w-[60px]"
                 />
 
+                <!-- __ Средняя длина рулона из статистики -->
+                <AppLabelMultiLine
+                    :text="['Ср. дл.', 'стат.']"
+                    align="center"
+                    text-size="small"
+                    title="Средняя длина рулона"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
                 <!-- attract: Оптимальная партия для запуска -->
                 <AppLabelMultiLine
                     :text="['ОПЗ', 'м.п.']"
@@ -239,6 +249,16 @@
                     width="w-[60px]"
                 />
 
+                <!-- __ Количество рулонов в ПС -->
+                <AppLabelMultiLine
+                    :text="['Кол-во', 'рулонов']"
+                    align="center"
+                    text-size="small"
+                    title="Количество рулонов в ПС"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
                 <!-- attract: Описание -->
                 <AppLabelMultiLine
                     :text="['Описание', '']"
@@ -282,6 +302,15 @@
                     :key="fabric.id"
                 >
                     <div class="flex">
+
+                        <!-- __ id -->
+                        <!--<AppLabel-->
+                        <!--    :text="fabric.id.toString()"-->
+                        <!--    align="center"-->
+                        <!--    text-size="mini"-->
+                        <!--    width="w-[100px]"-->
+                        <!--/>-->
+
                         <AppLabel
                             :text="fabric.code_1C"
                             align="center"
@@ -340,6 +369,14 @@
                         />
 
                         <AppLabel
+                            :text="fabric.statistic ? '✓' : '✗'"
+                            :type="fabric.statistic ? 'success' : 'dark'"
+                            align="center"
+                            text-size="mini"
+                            width="w-[60px]"
+                        />
+
+                        <AppLabel
                             :text="fabric.buffer.optimal_party.toFixed(2)"
                             align="center"
                             text-size="mini"
@@ -389,6 +426,14 @@
                         <AppLabel
                             :text="fabric.buffer.rate.toFixed(3)"
                             :type="!(!fabric.buffer.rate && fabric.active) ? 'dark' : 'danger'"
+                            align="center"
+                            text-size="mini"
+                            width="w-[60px]"
+                        />
+
+                        <AppLabel
+                            :text="fabric.textile_layers_amount.toString()"
+                            :type="fabric.textile_layers_amount === 1 ? 'success' : 'primary'"
                             align="center"
                             text-size="mini"
                             width="w-[60px]"
@@ -479,6 +524,8 @@
         return tempFabrics.value
     }
     const fabrics = ref(getFabrics())
+
+    console.log('allFabrics: ', allFabrics.value)
 
     // let fabrics = await fabricsStore.getFabrics()
 

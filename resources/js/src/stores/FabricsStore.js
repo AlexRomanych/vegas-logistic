@@ -82,6 +82,7 @@ const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT =
 const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL для получения номера смены
 
 const URL_FABRIC_BUFFER_UPDATE = 'fabrics/buffer/update/'               // URL для обновления буфера ПС
+const URL_FABRIC_AVERAGE_LENGTH_GET = 'fabric/average/length/'          // URL для получения среднего метража ткани ПС
 
 
 export const useFabricsStore = defineStore('fabrics', () => {
@@ -203,7 +204,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
 
     // Attract: Получаем с API список ПС
-    const getFabrics = async (active = false) => {
+    const getFabrics = async (active = null) => {
 
         const result = await jwtGet(URL_FABRICS, {active})
         fabricsCashe.value = result.fabrics             // кэшируем
@@ -621,6 +622,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data
     }
 
+    // Attract: Обновляем буфер ПС
+    const getFabricsAverageLength = async (id, periodLength = 1 /*in months*/) => {
+        const result = await jwtGet(URL_FABRIC_AVERAGE_LENGTH_GET, {id, period: periodLength})
+        console.log('store: getFabricsAverageLength: ', result)
+        return result.data
+    }
+
 
     return {
         fabricsCashe,
@@ -693,6 +701,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         setRollRegisteredStatus,
         setRollMovedStatus,
         updateFabricsBuffer,
+        getFabricsAverageLength,
     }
 
 })

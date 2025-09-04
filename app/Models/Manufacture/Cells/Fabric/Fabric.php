@@ -15,6 +15,12 @@ class Fabric extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'average_roll_length' => 'float',
+        'average_roll_length_hand' => 'float',
+        'average_roll_length_statistic' => 'float',
+    ];
+
     // Добавляем новые атрибуты
     protected $appends = [
         'pic',

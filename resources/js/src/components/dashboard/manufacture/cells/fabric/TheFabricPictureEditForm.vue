@@ -1,6 +1,6 @@
 <template>
 
-    <div class="m-2 p-2 w-max-fit">
+    <div v-if="!isLoading" class="m-2 p-2 w-max-fit">
 
         <form @submit.prevent="formSubmit">
 
@@ -261,6 +261,8 @@ const fabricStore = useFabricsStore()
 const route = useRoute()
 // console.log('route: ', route)
 // console.log('meta', route.meta.mode)
+
+const isLoading = ref(false)
 
 // __ Определяем переменные
 const machines = ref<IFabricMachine[]>([])
@@ -676,12 +678,16 @@ watch(
 
 
 onMounted(async () => {
+    isLoading.value = true
+
     await getMachines()
     await getSchemas()
     v$.value.$touch()       // __ Запускаем сразу валидацию формы
 
-    console.log('machines: ', machines.value)
-    console.log('schemas: ', schemas.value)
+    // console.log('machines: ', machines.value)
+    // console.log('schemas: ', schemas.value)
+
+    isLoading.value = false
 })
 
 </script>

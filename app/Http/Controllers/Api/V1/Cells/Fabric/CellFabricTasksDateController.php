@@ -292,18 +292,24 @@ class CellFabricTasksDateController extends Controller
                             // __ Создаем  все физические рулоны, на основании плановых, или удаляем их
                             if ($mode) {
 
+                                $fabric = Fabric::query()->find($taskContext['fabric_id']);
+                                if (!$fabric) throw new Exception('Не найдено ПС');
+
+
                                 for ($j = 0; $j < $taskContext['rolls_amount']; $j++) {
                                     $roll = FabricTaskRoll::query()->create(
                                         [
                                             'fabric_task_context_id' => $taskContext['id'],
                                             'fabric_id' => $taskContext['fabric_id'],
-//                                            'roll_position' => $j + 1,
-                                            'roll_position' => $count++,
-                                            'roll_status' => FABRIC_ROLL_CREATED_CODE,
-                                            'textile_roll_length' => $taskContext['average_textile_length'],
-                                            'translate_rate' => $taskContext['translate_rate'],
                                             'productivity' => $taskContext['productivity'],
                                             'description' => $taskContext['description'],   // дописываем плановый комментарий
+                                            'roll_position' => $count++,
+                                            'roll_status' => FABRIC_ROLL_CREATED_CODE,
+                                            'translate_rate' => $fabric->translate_rate,
+                                            'textile_roll_length' => $fabric->average_roll_length,
+                                            'fabric_roll_length' => $fabric->translate_rate === 0.0 ? 0.0 : $fabric->average_roll_length / $fabric->translate_rate,
+                                            // 'textile_roll_length' => $taskContext['average_textile_length'],
+                                            // 'translate_rate' => $taskContext['translate_rate'],
                                         ]
                                     );
 

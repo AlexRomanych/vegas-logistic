@@ -377,8 +377,10 @@ const rollsRender = reactive({
         align: 'center',
         data: (roll_exec) => {
 
+            responsibleWorkersCopy.data.forEach(worker => worker.selected = false)
+
             const responsibleWorker =
-                responsibleWorkersCopy.data.find((responsibleWorker) => responsibleWorker.id === roll_exec.finish_by)
+                responsibleWorkersCopy.data.find(responsibleWorker => responsibleWorker.id === roll_exec.finish_by)
             if (responsibleWorker) {
                 responsibleWorker.selected = true
             } else {
@@ -424,6 +426,7 @@ watch(() => fabricsStore.globalExecuteRollsInfo, (newValue) => {
 watch(() => fabricsStore.globalExecuteRollChangeDescription, async (newValue) => {
     activeRoll.descr = fabricsStore.globalExecuteRollChangeDescriptionText
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    console.log('update comment: ', activeRoll)
 })
 
 // attract: Отслеживаем изменение Изменить длину ткани

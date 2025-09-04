@@ -21,11 +21,11 @@
 
 <script setup>
 
-import {computed, ref} from 'vue'
+import { computed, ref } from 'vue'
 
-import {colorsClasses, colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType, getFontSizeClass } from '@/app/helpers/helpers.js'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {

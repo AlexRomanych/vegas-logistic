@@ -34,6 +34,11 @@ class FabricResource extends JsonResource
             'rare' => $this->rare,
             'correct' => $this->fabricCorrect,
 
+            'statistic' => $this->average_roll_length_from_statistic,                       // средняя длина из статистики или нет
+            'statistic_length' => $this->average_roll_length_statistic,                     // средняя статистическая длина
+            'hand_length' => $this->average_roll_length_hand,                               // средняя длина, заданная вручную
+
+            'textile_layers_amount' => $this->textile_layers_amount,
             'machines' => [
                 [
                     'id' => $this->fabricPicture->fabricMainMachine->id,                    // Тут дергаем стегальную машину через цепочку отношений ПС->Рисунок ПС->Стегальная машина (Fabric->FabricPicture->FabricMachine)
@@ -63,7 +68,8 @@ class FabricResource extends JsonResource
                 'average_length' => (double)$this->average_roll_length,
                 'rate' => (double)$this->translate_rate,
                 'productivity' => (double)$this->fabricPicture->productivity === 0.0 ? (double)$this->productivity : (double)$this->fabricPicture->productivity,
-
+                'fabric_productivity' => (double)$this->productivity,
+                'picture_productivity' => (double)$this->fabricPicture->productivity,
             ],
 
             'text' => [

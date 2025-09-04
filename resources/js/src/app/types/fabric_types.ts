@@ -1,5 +1,5 @@
 import { FABRIC_MACHINES, FABRIC_TASK_STATUS, } from '@/app/constants/fabrics.ts'
-import { getISOFromLocaleDate } from '@/app/helpers/helpers_date'
+// import { getISOFromLocaleDate } from '@/app/helpers/helpers_date'
 
 
 // __ Период выборки
@@ -143,7 +143,7 @@ export interface IRollExec {
 export interface IFabric {
     id: number
     code_1C: string
-    correct: boolean
+    correct: false
     name: string
     display_name: string
     picture: {
@@ -152,8 +152,12 @@ export interface IFabric {
     },
     textile: string
     fillersList: string[],
-    active: true,
-    rare: false,
+    active: boolean,
+    rare: boolean,
+    statistic: boolean
+    statistic_length: number
+    hand_length: number
+    textile_layers_amount: number
     machines: {
         id: number,
         short_name: string
@@ -168,6 +172,8 @@ export interface IFabric {
         average_length: number
         rate: number
         productivity: number
+        fabric_productivity?: number
+        picture_productivity?: number
     },
     text: {
         description: string | null,

@@ -1,6 +1,6 @@
 // Info Тут все константы, касающиеся участка Стежки
 
-import type { IFabricMachine, ITaskStatus, IRoll } from '@/types'
+import type { IFabricMachine, ITaskStatus, IRoll, IFabric } from '@/types'
 
 /*
  // attract Это из PHP, в ней все названия и значения для статусов
@@ -344,11 +344,12 @@ export const NEW_ROLL: IRoll =
 
 
 // ___ Создаем болванку ПС
-export const NEW_FABRIC =
+export const NEW_FABRIC: IFabric =
     {
         id: 0,
         code_1C: '',
         name: '',
+        correct: false,
         display_name: '',
         picture: {
             id: 0,

@@ -1,6 +1,6 @@
 <template>
 
-    <div class="m-2 p-2 w-max-fit">
+    <div v-if="!isLoading" class="m-2 p-2 w-max-fit">
 
         <form @submit.prevent="formSubmit">
 
@@ -8,75 +8,95 @@
 
                 <div class="flex">
 
-                    <!-- attract: Код по 1С -->
-                    <AppInputText
+                    <!-- __ Код по 1С -->
+                    <AppInputTextTS
                         id="code_1C"
-                        v-model.trim="v$.code1C.$model"
+                        v-model:textValue.trim="v$.code1C.$model as unknown as string"
                         :errors="v$.code1C.$errors"
-                        :value="v$.code1C.$model"
                         label="Код по 1С"
                         placeholder="Код по 1С"
                         width="w-[100px]"
 
                     />
 
-                    <!-- attract: Название ПС -->
-                    <AppInputText
+                    <!-- __ Название ПС -->
+                    <AppInputTextTS
                         id="name"
-                        v-model.trim="v$.name.$model"
+                        v-model:textValue.trim="v$.name.$model as unknown as string"
                         :errors="v$.name.$errors"
-                        :value="v$.name.$model"
                         label="Название ПС"
                         placeholder="Введите название ПС"
-                        width="w-[350px]"
+                        width="w-[364px]"
                     />
                 </div>
 
                 <div class="flex">
 
-                    <!-- attract: Средняя длина рулона ткани, м.п. -->
-                    <AppInputNumberSimple
+                    <!-- __ Средняя длина рулона ткани, м.п. -->
+                    <AppInputNumberSimpleTS
                         id="average_textile_length"
-                        v-model:inputNumber="v$.averageLength.$model"
-                        :errors="v$.averageLength.$errors"
-                        :value="v$.averageLength.$model"
+                        v-model:inputNumber.number="v$.averageTextileLengthHand.$model as unknown as number"
+                        :disabled="statistic"
+                        :errors="v$.averageTextileLengthHand.$errors"
                         label="Средняя длина рулона ткани, м.п."
                         placeholder="Введите ср. длину рул. ткани"
                         step="0.0001"
                         width="w-[230px]"
                     />
 
-                    <!-- attract: Получать среднюю длину ткани из статистики -->
-                    <AppCheckboxLine
-                        id="get_average_textile_length"
-                        :disabled="true"
-                        :width="'w-[300px]'"
-                        label="Получать среднюю длину ткани из статистики"
-                    />
-
                 </div>
 
                 <div class="flex">
 
-                    <!-- attract: Буфер, м.п. -->
-                    <AppInputNumberSimple
+                    <!-- __ Получать среднюю длину ткани из статистики -->
+                    <AppLabelCheckBoxTS
+                        :state="statistic"
+                        align="center"
+                        label="Ср. длина ткани из стат-ки (1 мес.)"
+                        width="w-[230px]"
+                        @label-click="statisticHandler"
+                    />
+
+                    <!--<AppCheckboxLine-->
+                    <!--    id="get_average_textile_length"-->
+                    <!--    :disabled="true"-->
+                    <!--    :width="'w-[300px]'"-->
+                    <!--    label="Получать среднюю длину ткани из статистики"-->
+                    <!--/>-->
+
+                    <!-- __ Средняя длина ткани по статистике -->
+                    <AppInputNumberSimpleTS
+                        id="buffer_rolls"
+                        v-model:inputNumber.number="averageTextileLengthStatistic"
+                        :disabled="true"
+                        label="Ср. длина ткани по статистике (1 мес.)"
+                        placeholder="Нет данных"
+                        step="0.1"
+                        width="w-[230px]"
+                    />
+
+                </div>
+
+
+                <div class="flex">
+
+                    <!-- __ Буфер, м.п. -->
+                    <AppInputNumberSimpleTS
                         id="buffer_meters"
-                        v-model:inputNumber="v$.bufferAmount.$model"
+                        v-model:inputNumber.number="v$.bufferAmount.$model as unknown as number"
                         :errors="v$.bufferAmount.$errors"
-                        :value="v$.bufferAmount.$model"
                         label="Буфер, м.п."
                         placeholder="Введите остаток ПС (буфер)"
                         step="0.001"
                         width="w-[230px]"
                     />
 
-                    <!-- attract: Буфер, рул. -->
-                    <AppInputNumberSimple
+                    <!-- __ Буфер, рул. -->
+                    <AppInputNumberSimpleTS
                         id="buffer_rolls"
-                        v-model:inputNumber="v$.bufferRolls.$model"
+                        v-model:inputNumber.number="v$.bufferRolls.$model as unknown as number"
                         :disabled="true"
                         :errors="v$.bufferRolls.$errors"
-                        :value="v$.bufferRolls.$model"
                         label="Буфер, рул."
                         placeholder="Введите остаток ПС (буфер)"
                         step="0.1"
@@ -87,24 +107,22 @@
 
                 <div class="flex">
 
-                    <!-- attract: Мин. запас ПС, рул. -->
-                    <AppInputNumberSimple
+                    <!-- __ Мин. запас ПС, рул. -->
+                    <AppInputNumberSimpleTS
                         id="min_buffer_rolls"
-                        v-model:inputNumber="v$.minRolls.$model"
+                        v-model:inputNumber.number="v$.minRolls.$model as unknown as number"
                         :errors="v$.minRolls.$errors"
-                        :value="v$.minRolls.$model"
                         label="Минимальный запас ПС, рул."
                         placeholder="Введите мин. запас"
                         step="1"
                         width="w-[230px]"
                     />
 
-                    <!-- attract: Макс. запас ПС, рул. -->
-                    <AppInputNumberSimple
+                    <!-- __ Макс. запас ПС, рул. -->
+                    <AppInputNumberSimpleTS
                         id="max_buffer_rolls"
-                        v-model:inputNumber="v$.maxRolls.$model"
+                        v-model:inputNumber.number="v$.maxRolls.$model as unknown as number"
                         :errors="v$.maxRolls.$errors"
-                        :value="v$.maxRolls.$model"
                         label="Максимальный запас ПС, рул."
                         placeholder="Введите макс. запас"
                         step="1"
@@ -115,24 +133,22 @@
 
                 <div class="flex">
 
-                    <!-- attract: Оптимальная партия для запуска, м.п. (ОПЗ) -->
-                    <AppInputNumberSimple
+                    <!-- __ Оптимальная партия для запуска, м.п. (ОПЗ) -->
+                    <AppInputNumberSimpleTS
                         id="optimal_party"
-                        v-model:inputNumber="v$.optimalParty.$model"
+                        v-model:inputNumber.number="v$.optimalParty.$model as unknown as number"
                         :errors="v$.optimalParty.$errors"
-                        :value="v$.optimalParty.$model"
                         label="Оптим. партия для запуска, м.п."
                         placeholder="Введите ОПЗ"
                         step="1"
                         width="w-[230px]"
                     />
 
-                    <!-- attract: Коэффициент перевода ткани в ПС -->
-                    <AppInputNumberSimple
+                    <!-- __ Коэффициент перевода ткани в ПС -->
+                    <AppInputNumberSimpleTS
                         id="rate"
-                        v-model:inputNumber="v$.translateRate.$model"
+                        v-model:inputNumber.number="v$.translateRate.$model as unknown as number"
                         :errors="v$.translateRate.$errors"
-                        :value="v$.translateRate.$model"
                         label="Коэфф. перевода ткани в ПС"
                         placeholder="Введите коэфф. перевода"
                         step="0.00000000001"
@@ -143,33 +159,46 @@
 
                 <div class="flex">
 
-                    <!-- attract: Производительность, м.п./ч. -->
-                    <AppInputNumberSimple
+                    <!-- __ Производительность, м.п./ч. -->
+                    <AppInputNumberSimpleTS
                         id="productivity"
-                        v-model:inputNumber="v$.productivity.$model"
+                        v-model:inputNumber.number="v$.productivity.$model as unknown as number"
                         :errors="v$.productivity.$errors"
-                        :value="v$.productivity.$model"
                         label="Производительность, м.п./ч."
                         placeholder="Введите производительность"
                         step="0.00000000001"
                         width="w-[230px]"
                     />
 
-                    <!-- attract: Получать среднюю производительность из статистики -->
-                    <AppCheckboxLine
-                        id="get_average_textile_productivity"
-                        :disabled="true"
-                        :width="'w-[300px]'"
-                        label="Получать ср. производительность из статистики"
+                    <!-- __ Количество рулонов ткани в буфере -->
+                    <AppLabelCheckBoxTS
+                        :state="textileLayersAmount === 1"
+                        align="center"
+                        label="Кол-во рулонов ткани в ПС, шт."
+                        stateFalseChar="2"
+                        stateFalseType="primary"
+                        stateTrueChar="1"
+                        stateTrueType="success"
+                        width="w-[230px]"
+                        @label-click="changeTextileLayersAmount"
                     />
+
+                    <!--&lt;!&ndash; __ Получать среднюю производительность из статистики &ndash;&gt;-->
+                    <!--<AppCheckboxLine-->
+                    <!--    id="get_average_textile_productivity"-->
+                    <!--    :disabled="true"-->
+                    <!--    :width="'w-[300px]'"-->
+                    <!--    label="Получать ср. производительность из статистики"-->
+                    <!--/>-->
 
                 </div>
 
                 <div class="flex">
 
                     <div>
-                        <!-- attract: Статус -->
+                        <!-- _ Статус -->
                         <div class="mt-8">
+                            <!--suppress HtmlWrongAttributeValue -->
                             <AppCheckbox
                                 id="active"
                                 :checkboxData="checkboxDataStatus"
@@ -184,8 +213,9 @@
                     </div>
 
                     <div>
-                        <!-- attract: редкость -->
+                        <!-- __ Редкость -->
                         <div class="mt-8">
+                            <!--suppress HtmlWrongAttributeValue -->
                             <AppCheckbox
                                 id="rarity"
                                 :checkboxData="checkboxDataRarity"
@@ -202,11 +232,10 @@
 
                 </div>
 
-                <!-- attract: Описание ПС -->
-                <AppInputTextAreaSimple
+                <!-- __ Описание ПС -->
+                <AppInputTextAreaSimpleTS
                     id="descr"
-                    v-model.trim="v$.description.$model"
-                    :value="v$.description.$model"
+                    v-model:textValue.trim="v$.description.$model as unknown as string"
                     :rows=2
                     class="cursor-pointer"
                     height="min-h-[60px]"
@@ -215,8 +244,9 @@
                     width="w-[465px]"
                 />
 
-                <div class="flex mt-10">
+                <div class="flex mt-10 justify-center">
 
+                    <!-- __ Кнопка Сохранить -->
                     <div>
                         <AppInputButton
                             id="submitButton"
@@ -227,6 +257,7 @@
                         />
                     </div>
 
+                    <!-- __ Кнопка К Списку ПС -->
                     <router-link :to="{name: 'manufacture.cell.fabrics.show'}">
                         <AppInputButton
                             id="submitButton"
@@ -237,7 +268,6 @@
                         />
                     </router-link>
 
-
                 </div>
 
             </div>
@@ -246,7 +276,7 @@
     </div>
 
 
-    <!-- attract: Callout -->
+    <!-- __ Callout -->
     <AppCallout
         :show="calloutShow"
         :text="calloutText"
@@ -254,17 +284,14 @@
     />
 
 
-
-
-
 </template>
 
-<script setup>
-import {ref, reactive, watch, watchEffect, onMounted} from 'vue'
+<script lang="ts" setup>
+import { ref, reactive, watch, watchEffect, onMounted } from 'vue'
+import type { IFabric } from '@/types'
+import { useRoute, useRouter } from 'vue-router'
 
-import {useRoute, useRouter} from 'vue-router'
-
-import {useVuelidate} from '@vuelidate/core'
+import { useVuelidate } from '@vuelidate/core'
 import {
     helpers,
     required,
@@ -277,50 +304,56 @@ import {
     // sameAs
 } from '@vuelidate/validators'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import {NEW_FABRIC} from '@/app/constants/fabrics.js'
+import { NEW_FABRIC } from '@/app/constants/fabrics.js'
 
-import {round} from '@/app/helpers/helpers_lib.js'
+import { checkApiAnswer } from '@/app/helpers/helpers_checks.ts'
+import { round } from '@/app/helpers/helpers_lib.js'
 
-import AppInputText from '/resources/js/src/components/ui/inputs/AppInputText.vue'
-import AppInputNumberSimple from '/resources/js/src/components/ui/inputs/AppInputNumberSimple.vue'
-import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
-import AppCheckboxLine from '/resources/js/src/components/ui/checkboxes/AppCheckboxLine.vue'
-import AppInputTextAreaSimple from '/resources/js/src/components/ui/inputs/AppInputTextAreaSimple.vue'
+
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
-import {checkApiAnswer} from '@/app/helpers/helpers_checks.ts'
+import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
+import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
+import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
+import AppLabelCheckBoxTS from '@/components/ui/labels/AppLabelCheckBoxTS.vue'
 
-// import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
-// import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
-// import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
-// import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
+// import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
+// import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'
+// import AppCheckboxSimple from '@/components/ui/checkboxes/AppCheckboxSimple.vue'
+// import AppInputNumber from '@/components/ui/inputs/AppInputNumber.vue'
+// import AppSelect from '@/components/ui/selects/AppSelect.vue'
+// import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
+// import AppInputText from '@/components/ui/inputs/AppInputText.vue'
+// import AppInputNumberSimple from '@/components/ui/inputs/AppInputNumberSimple.vue'
+
 
 const fabricStore = useFabricsStore()
 
 const route = useRoute()
-const router = useRouter()
+// const router = useRouter()
 
-// console.log('meta', route.meta.mode)
+const isLoading = ref(false)
 
-// attract: Получаем режим работы формы: создание или редактирование
+// __ Получаем режим работы формы: создание или редактирование
 const editMode = route.meta.mode === 'edit'
 
-console.log('route: ', route)
+// __ Задаем пустое ПС для добавления
+const fabric = ref<IFabric>(NEW_FABRIC)
+// let fabric: IFabric = reactive(NEW_FABRIC)
 
-// attract: Задаем пустое ПС для добавления
-let fabric = reactive(NEW_FABRIC)
-
-// attract: Получаем ПС
-if (editMode) {
-    fabric = reactive(await fabricStore.getFabricById(route.params.id))
+// __ Получаем ПС
+const getFabric = async () => {
+    if (editMode) {
+        fabric.value = await fabricStore.getFabricById(route.params.id)
+        fabric.value.hand_length = fabric.value.hand_length === 0 ? fabric.value.buffer.average_length : fabric.value.hand_length
+    }
 }
 
-console.log('fabric: ', fabric)
 
-
-// attract: Количество рулонов в буфере
+// __ Количество рулонов в буфере
 const getBufferRolls = () => {
     if (averageLength.value && translateRate.value) {
         return round(bufferAmount.value / averageLength.value / translateRate.value, 3)
@@ -329,21 +362,25 @@ const getBufferRolls = () => {
 }
 
 
-// attract: Формируем массив для реактивности
-const code1C = ref(fabric.code_1C)
-const name = ref(fabric.name)
-const averageLength = ref(fabric.buffer.average_length)
-const bufferAmount = ref(round(fabric.buffer.amount, 3))
-const minRolls = ref(fabric.buffer.min_rolls)
-const maxRolls = ref(fabric.buffer.max_rolls)
-const optimalParty = ref(fabric.buffer.optimal_party)
-const translateRate = ref(fabric.buffer.rate)
-const productivity = ref(fabric.buffer.productivity)
-const description = ref(fabric.text.description)
+// __ Формируем переменные реактивности
+const code1C = ref(fabric.value.code_1C)
+const name = ref(fabric.value.name)
+const averageLength = ref(fabric.value.buffer.average_length)
+const bufferAmount = ref(round(fabric.value.buffer.amount, 2))
+const minRolls = ref(fabric.value.buffer.min_rolls)
+const maxRolls = ref(fabric.value.buffer.max_rolls)
+const optimalParty = ref(fabric.value.buffer.optimal_party)
+const translateRate = ref(fabric.value.buffer.rate)
+const productivity = ref(fabric.value.buffer.productivity)
+const statistic = ref(fabric.value.statistic)
+const description = ref(fabric.value.text.description ?? '')
 const bufferRolls = ref(getBufferRolls())
+const averageTextileLengthStatistic = ref(0)
+const averageTextileLengthHand = ref(0)
+const textileLayersAmount = ref(fabric.value.textile_layers_amount)
 
 
-// attract: Определяем константы правил валидации
+// __ Определяем константы правил валидации
 const REQUIRED_MESSAGE = 'Поле обязательно'
 const INTEGER_MESSAGE = 'Целое число'
 const MIN_NAME_LENGTH = 25
@@ -359,11 +396,11 @@ const RATE_MIN_AMOUNT = 1
 const RATE_MAX_AMOUNT = 3
 const PRODUCTIVITY_MIN_AMOUNT = 10
 
-// attract: Определяем объект валидации
+// __ Определяем объект валидации
 const verify = {
     code1C,
     name,
-    averageLength,
+    averageTextileLengthHand,
     bufferAmount,
     minRolls,
     maxRolls,
@@ -386,7 +423,7 @@ const rules = {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength: helpers.withMessage(`Минимальная длина названия ПС - ${MIN_NAME_LENGTH} символов`, minLength(MIN_NAME_LENGTH)),
     },
-    averageLength: {
+    averageTextileLengthHand: {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minValue: helpers.withMessage(`Мин. значение - ${MIN_TEXTILE_AVERAGE_LENGTH} м.п.`, minValue(MIN_TEXTILE_AVERAGE_LENGTH)),
         maxValue: helpers.withMessage(`Макс. значение - ${MAX_TEXTILE_AVERAGE_LENGTH} м.п.`, maxValue(MAX_TEXTILE_AVERAGE_LENGTH)),
@@ -431,8 +468,8 @@ const v$ = useVuelidate(rules, verify)
 const checkboxDataStatus = {
     name: 'status',
     data: [
-        {id: 1, name: 'Активный', checked: fabric.active},
-        {id: 2, name: 'Архив', checked: !fabric.active},
+        {id: 1, name: 'Активный', checked: fabric.value.active},
+        {id: 2, name: 'Архив', checked: !fabric.value.active},
     ]
 }
 
@@ -440,21 +477,21 @@ const checkboxDataStatus = {
 const checkboxDataRarity = {
     name: 'rarity',
     data: [
-        {id: 1, name: 'Регулярный', checked: fabric.rare},
-        {id: 2, name: 'Редкий', checked: !fabric.rare},
+        {id: 1, name: 'Регулярный', checked: fabric.value.rare},
+        {id: 2, name: 'Редкий', checked: !fabric.value.rare},
     ]
 }
 
-// attract: Меняем статус
-const checkedHandlerStatus = (obj) => {
+// __ Меняем статус
+const checkedHandlerStatus = (obj: { id: number }) => {
     console.log(obj)
-    fabric.active = obj.id === 1
+    fabric.value.active = obj.id === 1
 }
 
-// attract: Меняем редкость
-const checkedHandlerRarity = (obj) => {
+// __ Меняем редкость
+const checkedHandlerRarity = (obj: { id: number }) => {
     console.log(obj)
-    fabric.rare = obj.id === 1
+    fabric.value.rare = obj.id === 1
 }
 
 
@@ -465,7 +502,49 @@ const calloutShow = ref(false)
 const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
 
 
-// Отправляем форму на сервер
+// __ Обрабатываем маяк получения статистики
+const statisticHandler = async () => {
+    statistic.value = !statistic.value
+}
+
+
+// __ Получаем данные для отображения, выносим в отдельный метод, потому что вызывается после монтирования
+const setVariables = async () => {
+    code1C.value = fabric.value.code_1C
+    name.value = fabric.value.name
+    bufferAmount.value = round(fabric.value.buffer.amount, 2)
+    minRolls.value = fabric.value.buffer.min_rolls
+    maxRolls.value = fabric.value.buffer.max_rolls
+    optimalParty.value = fabric.value.buffer.optimal_party
+    translateRate.value = fabric.value.buffer.rate
+    productivity.value = fabric.value.buffer.productivity
+    statistic.value = fabric.value.statistic
+    description.value = fabric.value.text.description ?? ''
+    bufferRolls.value = getBufferRolls()
+    averageLength.value = fabric.value.buffer.average_length
+    averageTextileLengthStatistic.value = 0
+    averageTextileLengthHand.value = fabric.value.hand_length
+    textileLayersAmount.value = fabric.value.textile_layers_amount
+}
+
+// __ Получаем среднюю длину ткани из статистики
+const getAverageTextileLengthStatistic = async () => {
+    averageTextileLengthStatistic.value = await fabricStore.getFabricsAverageLength(fabric.value.id)
+    console.log('averageTextileLengthStatistic: ', averageTextileLengthStatistic.value)
+}
+
+
+// __ Меняем количество слоев ткани в ПС
+const changeTextileLayersAmount = () => {
+    if (textileLayersAmount.value === 1) {
+        textileLayersAmount.value = 2
+    } else {
+        textileLayersAmount.value = 1
+    }
+}
+
+
+// __ Отправляем форму на сервер
 const formSubmit = async () => {
 
     // v$.value.$touch()                                // валидируем всю форму (обновляет маркеры валидации внутри объекта v$)
@@ -473,26 +552,32 @@ const formSubmit = async () => {
     if (!isFormCorrect) return                          // это показатель ошибки
 
     // attract: Формируем массив для сохранения
-    fabric.code_1C = code1C.value
-    fabric.name = name.value
-    fabric.buffer.average_length = averageLength.value
-    fabric.buffer.amount = bufferAmount.value
-    fabric.buffer.min_rolls = minRolls.value
-    fabric.buffer.max_rolls = maxRolls.value
-    fabric.buffer.optimal_party = optimalParty.value
-    fabric.buffer.rate = translateRate.value
-    fabric.buffer.productivity = productivity.value
-    fabric.text.description = description.value
+    fabric.value.code_1C = code1C.value
+    fabric.value.name = name.value
+    fabric.value.buffer.amount = bufferAmount.value
+    fabric.value.buffer.min_rolls = minRolls.value
+    fabric.value.buffer.max_rolls = maxRolls.value
+    fabric.value.buffer.optimal_party = optimalParty.value
+    fabric.value.buffer.rate = translateRate.value
+    fabric.value.buffer.productivity = productivity.value
+    fabric.value.buffer.fabric_productivity = productivity.value
+    fabric.value.statistic = statistic.value
+    fabric.value.text.description = description.value
+    // fabric.value.buffer.average_length = averageLength.value
+    fabric.value.statistic_length = averageTextileLengthStatistic.value
+    fabric.value.hand_length = averageTextileLengthHand.value
+    fabric.value.textile_layers_amount = textileLayersAmount.value
 
-    console.log('fabric: ', fabric)
+
+    console.log('fabric: ', fabric.value)
 
     let res
     if (editMode) {
         console.log('update')
-        res = await fabricStore.updateFabric(fabric)
+        res = await fabricStore.updateFabric(fabric.value)
     } else {
         console.log('create')
-        res = await fabricStore.createFabric(fabric)
+        res = await fabricStore.createFabric(fabric.value)
     }
 
     console.log('res', res)
@@ -515,14 +600,24 @@ const formSubmit = async () => {
     // await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку ПС
 }
 
-// attract: отслеживаем длину в рулонах
+// __ отслеживаем длину в рулонах
 watchEffect(() => {
     bufferRolls.value = getBufferRolls()
 })
 
-// attract: Запускаем сразу валидацию формы
-onMounted(() => {
-    v$.value.$touch()
+
+onMounted(async () => {
+    isLoading.value = true
+
+    await getFabric()
+    await setVariables()
+    await getAverageTextileLengthStatistic()
+
+    console.log('fabric: ', fabric.value)
+
+    v$.value.$touch()   // __ Запускаем сразу валидацию формы
+
+    isLoading.value = false
 })
 
 </script>

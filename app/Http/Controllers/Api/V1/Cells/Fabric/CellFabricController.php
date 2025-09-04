@@ -77,7 +77,7 @@ class CellFabricController extends Controller
 
                 $fabricPictureId = FabricService::getFabricPicByName($fabric['pic']);
                 $fabricDataSet['fabric_picture_id'] = $fabricPictureId->id ?? 0;
-//
+                //
                 Fabric::query()->create($fabricDataSet);
             }
 
@@ -116,7 +116,7 @@ class CellFabricController extends Controller
                 $fabrics = Fabric::query()
                     ->orderBy('name')
                     ->with('fabricPicture')
-//                ->with(['fabricPicture', 'fabricOrder'])
+                    //                ->with(['fabricPicture', 'fabricOrder'])
                     ->get();
 
             } else {
@@ -129,7 +129,7 @@ class CellFabricController extends Controller
                     ->where('active', $payloadStatus)
                     ->orderBy('name')
                     ->with('fabricPicture')
-//                ->with(['fabricPicture', 'fabricOrder'])
+                    //                ->with(['fabricPicture', 'fabricOrder'])
                     ->get();
 
             }
@@ -147,7 +147,7 @@ class CellFabricController extends Controller
 
 
     /**
-     * Descr: Обновляем ПС
+     * ___ Обновляем ПС
      * @param Request $request
      * @return string
      */
@@ -175,15 +175,38 @@ class CellFabricController extends Controller
             $fabric->code_1C = $fabricPayload['code_1C'];
             $fabric->name = $fabricPayload['name'];
             $fabric->buffer_amount = $fabricPayload['buffer']['amount'];
-            $fabric->average_roll_length = $fabricPayload['buffer']['average_length'];
             $fabric->buffer_min_rolls = $fabricPayload['buffer']['min_rolls'];
             $fabric->buffer_max_rolls = $fabricPayload['buffer']['max_rolls'];
             $fabric->optimal_party = $fabricPayload['buffer']['optimal_party'];
             $fabric->translate_rate = $fabricPayload['buffer']['rate'];
             $fabric->productivity = $fabricPayload['buffer']['productivity'];
             $fabric->description = $fabricPayload['text']['description'];
+            $fabric->average_roll_length_from_statistic = $fabricPayload['statistic'];
             $fabric->active = $fabricPayload['active'];
+            $fabric->textile_layers_amount = $fabricPayload['textile_layers_amount'];
             $fabric->fabric_picture_id = $picture->id;
+
+            $fabric->average_roll_length_hand = $fabricPayload['hand_length'];          // Записываем ручную длину в любом случае
+
+            // __ Тут логика для расчета средней длины рулона
+            if (!$fabricPayload['statistic']) {
+                if ($fabricPayload['hand_length'] !== 0) {
+                    $fabric->average_roll_length = $fabricPayload['hand_length'];
+                    $fabric->average_roll_length_hand = $fabricPayload['hand_length'];
+                } else {
+                    $fabric->average_roll_length_hand = $fabric->average_roll_length;
+                }
+            } else {
+                if ($fabricPayload['statistic_length'] !== 0) {
+                    $fabric->average_roll_length = $fabricPayload['statistic_length'];
+                    $fabric->average_roll_length_statistic = $fabricPayload['statistic_length'];
+                } else {
+                    $fabric->average_roll_length_statistic = $fabric->average_roll_length;
+                }
+            }
+
+            // $fabric->average_roll_length = $fabricPayload['buffer']['average_length'];
+
             $fabric->save();
 
             return EndPointStaticRequestAnswer::ok();
@@ -284,6 +307,26 @@ class CellFabricController extends Controller
 
 
             return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Возвращаем среднюю длину рулона по периоду
+     * @param Request $request
+     * @return false|string
+     */
+    public function getFabricAverageLength(Request $request)
+    {
+        try {
+
+            $validData = $request->validate([
+                'id' => 'required|integer',
+                'period' => 'required|integer'
+            ]);
+
+            return json_encode(['data' => FabricService::getFabricAverageLength($validData['id'], $validData['period'])]);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }

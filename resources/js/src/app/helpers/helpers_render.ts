@@ -7,6 +7,7 @@ import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
 // import { useLoading } from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'                     // Warning: Это нужно обязательно
 import { LOADER_SETTINGS } from '@/app/constants/common.ts'
+import type { IHorizontalAlign } from '@/types'
 
 // ___ Обработчик для лоадера
 type HandlerType = (data?: any) => any
@@ -44,3 +45,24 @@ export async function loaderHandler(
 }
 
 // ___ End Loader
+
+// ___ Возвращает класс для выравнивания по горизонтали
+export function getHorizontalAlign(alignPosition: IHorizontalAlign): string {
+    let horizontalAlign = 'items-'
+    switch (alignPosition) {
+        case 'left':
+            horizontalAlign += 'start'
+            break
+        case 'right':
+            horizontalAlign += 'end'
+            break
+        case 'center':
+            horizontalAlign += 'center'
+            break
+        default:
+            // const _exhaustiveCheck: never = alignPosition
+            // return _exhaustiveCheck
+            throw new Error('Неизвестное значение align');
+    }
+    return horizontalAlign
+}

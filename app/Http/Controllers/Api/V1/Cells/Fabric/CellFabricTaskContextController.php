@@ -345,31 +345,50 @@ class CellFabricTaskContextController extends Controller
             $fabric = Fabric::query()->find($rollData['fabric_id']);
             if (!$fabric) throw new Exception('Fabric not found');
 
-            // __ плановый рулон от ОПП
-            $taskRollContext = FabricTaskContext::query()->updateOrCreate(
-                [
-                    'id' => $rollData['id'],
-                ],
-                [
-                    'fabric_task_id' => $task->id,                          // привязка к СЗ
-                    'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                    'rolls_amount' => $rollData['rolls_amount'],
-                    'roll_position' => $rollData['roll_position'],          // порядок рулонов
-                    'fabric_mode' => $rollData['fabric_mode'],
-                    'average_textile_length' => $rollData['textile_length'],
-                    'productivity' => $rollData['productivity'],
-                    'description' => $rollData['descr'],
-                    'translate_rate' => $fabric->translate_rate,            // Берем из ПС
-                ]
-            );
+            // __ Задаем загрузку модели
+            $payloadData = [
+                'fabric_task_id' => $task->id,                          // привязка к СЗ
+                'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                'rolls_amount' => $rollData['rolls_amount'],
+                'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                'fabric_mode' => $rollData['fabric_mode'],
+                'average_textile_length' => $rollData['textile_length'],
+                'productivity' => $rollData['productivity'],
+                'description' => $rollData['descr'],
+                'translate_rate' => $fabric->translate_rate,            // Берем из ПС
+            ];
 
+            // __ плановый рулон от ОПП
+
+            if ($rollData['id'] === -1) {
+                $taskRollContext = FabricTaskContext::query()->create(
+                    $payloadData
+                );
+            } else {
+
+                $taskRollContext = FabricTaskContext::query()->updateOrCreate(
+                    [
+                        'id' => $rollData['id'],
+                    ],
+                    $payloadData
+                    // [
+                    //     'fabric_task_id' => $task->id,                          // привязка к СЗ
+                    //     'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                    //     'rolls_amount' => $rollData['rolls_amount'],
+                    //     'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                    //     'fabric_mode' => $rollData['fabric_mode'],
+                    //     'average_textile_length' => $rollData['textile_length'],
+                    //     'productivity' => $rollData['productivity'],
+                    //     'description' => $rollData['descr'],
+                    //     'translate_rate' => $fabric->translate_rate,            // Берем из ПС
+                    // ]
+                );
+            }
 
             return FabricTaskContextResourceDate::collection($task->fabricTaskContexts);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
-            // }
         }
-
 
     }
 

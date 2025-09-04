@@ -222,6 +222,7 @@ Route::put('/fabric', [CellFabricController::class, 'update'])->middleware('jwt.
 Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt.auth');
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
 Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabricsBuffer'])->middleware('jwt.auth');
+Route::get('/fabric/average/length/', [CellFabricController::class, 'getFabricAverageLength'])->middleware('jwt.auth');
 
 // __ Рисунки стежки ПС
 Route::get('/fabrics/pictures', [CellFabricPictureController::class, 'getFabricPictures'])->middleware('jwt.auth');
