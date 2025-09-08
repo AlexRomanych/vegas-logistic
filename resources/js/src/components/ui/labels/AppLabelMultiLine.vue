@@ -1,8 +1,8 @@
 <template>
     <div
         :class="[width, labelHeight, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
-        class="flex flex-col m-0.5 app-label justify-center"
         :title="title"
+        class="flex flex-col m-0.5 app-label justify-center"
         @click="labelClick"
     >
         <div v-for="(text, idx) in textArray" :key="idx">
@@ -15,14 +15,13 @@
 
 <script setup>
 
-import {computed, reactive, ref, watch, watchEffect} from 'vue'
+import { reactive, ref, watch } from 'vue'
 
-import {LINE_SEPARATOR} from '/resources/js/src/app/constants/common.js'
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
-import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '/resources/js/src/app/helpers/helpers.js'
-import {getDigitPart} from '/resources/js/src/app/helpers/helpers_lib.js'
-
+import { LINE_SEPARATOR } from '@/app/constants/common.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
+import { getColorClassByType, getTextColorClassByType, getFontSizeClass } from '@/app/helpers/helpers.js'
+import { getDigitPart } from '@/app/helpers/helpers_lib.js'
 
 
 // const LINE_SEPARATOR = '&nl'  // new line - разделитель строк в тексте
@@ -106,13 +105,13 @@ const getHorizontalAlign = (alignPosition) => {
     switch (alignPosition) {
         case 'left':
             horizontalAlign += 'start'
-            break;
+            break
         case 'right':
             horizontalAlign += 'end'
-            break;
+            break
         case 'center':
             horizontalAlign += 'center'
-            break;
+            break
     }
     return horizontalAlign
 }
@@ -217,9 +216,6 @@ watch(() => props.text, (text) => {
     h-[90px]
 
     h-[106px]
-
-
-
 
 
 }

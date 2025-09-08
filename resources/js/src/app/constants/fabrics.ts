@@ -267,7 +267,7 @@ export const FABRIC_MACHINES: Record<string, IConstFabricMachine> = Object.freez
 
 
 // descr Создаем болванку "нулевой" ткани для отображения в сервисе
-export const FABRICS_NULLABLE = {
+export const FABRICS_NULLABLE: IFabric = {
     'id': 0,
     'code_1C': '0',
     'name': 'Нет данных',
@@ -315,7 +315,13 @@ export const FABRICS_NULLABLE = {
         'description': null,
         'comment': null,
         'note': null
-    }
+    },
+    textile_layers_amount: 1,
+    statistic: false,
+    statistic_length: 0,
+    hand_length: 0,
+    correct: false,
+    average_textile_roll_length: 0,
 }
 
 
@@ -339,7 +345,9 @@ export const NEW_ROLL: IRoll =
         correct: false,
         editable: true,
         rolls_exec: [],
-        note: null
+        note: null,
+        textile_layers_amount: 1,
+        average_textile_roll_length: 0,
     }
 
 
@@ -368,14 +376,20 @@ export const NEW_FABRIC: IFabric =
             max_rolls: 0,
             optimal_party: 0,
             average_length: 0,
+            average_fabric_length: 0,
             rate: 0,
-            productivity: 0
+            productivity: 0,
         },
         text: {
             description: null,
             comment: null,
             note: null
-        }
+        },
+        textile_layers_amount: 1,
+        statistic: false,
+        statistic_length: 0,
+        hand_length: 0,
+        average_textile_roll_length: 0,
     }
 
 

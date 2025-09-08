@@ -12,7 +12,7 @@
             :type="func"
             :value="textModel"
             @input="event => (textModel = (event.target as HTMLInputElement).value)"
-
+            @blur="leaveFocus"
         >
 
         <div v-if="errors" class="mt-0.5">
@@ -61,6 +61,10 @@ const props = withDefaults(defineProps<IProps>(), {
     labelTextSize: 'mini',
 })
 
+const emits = defineEmits<{
+    (e: 'leaveFocus'): void
+}>()
+
 // const emits = defineEmits<{
 //     (e: 'update:textValue', payload: string): void
 // }>()
@@ -73,6 +77,7 @@ const currentColor = computed(() => getColorClassByType(props.type)).value + cur
 
 const placeholderColor = 'placeholder' + currentColor
 const borderColor = 'border' + currentColor
+const backgroundColor = 'bg' + currentColor
 const focusBorderColor = 'focus:ring' + currentColor
 
 const textColor = 'text' + currentColor
@@ -88,6 +93,8 @@ const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 //     emits('update:textValue', target.value)
 // }
 
+
+const leaveFocus = () => emits('leaveFocus')
 
 </script>
 

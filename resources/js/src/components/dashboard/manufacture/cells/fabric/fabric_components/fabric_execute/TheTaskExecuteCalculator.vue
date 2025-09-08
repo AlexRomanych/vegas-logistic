@@ -67,6 +67,7 @@ interface IProps {
             isCalc: boolean
             status: string
             textile_length: number
+            fabric_length: number
             rate: number
             productivity: number
         }[]
@@ -128,7 +129,8 @@ const totalLength = () => {
 const totalFabricLength = () => {
     let totalFabricLength = 0
     props.rolls.forEach(roll => {
-        totalFabricLength += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.textile_length / roll_exec.rate : acc, 0)
+        totalFabricLength += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.fabric_length  : acc, 0)
+        // totalFabricLength += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.textile_length / roll_exec.rate : acc, 0)
     })
     return totalFabricLength
 }
@@ -137,7 +139,8 @@ const totalFabricLength = () => {
 const totalProductivityAmount = () => {
     let totalProductivityAmount = 0
     props.rolls.forEach(roll => {
-        totalProductivityAmount += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.textile_length / roll_exec.productivity : acc, 0)
+        totalProductivityAmount += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.fabric_length / roll_exec.productivity : acc, 0)
+        // totalProductivityAmount += roll.rolls_exec.reduce((acc, roll_exec) => roll_exec.isCalc ? acc + roll_exec.textile_length / roll_exec.productivity : acc, 0)
     })
     return totalProductivityAmount
 }

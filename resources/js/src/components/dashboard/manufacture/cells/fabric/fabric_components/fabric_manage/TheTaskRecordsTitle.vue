@@ -9,6 +9,8 @@
 <!--            width="w-[80px]"-->
 <!--        />-->
 
+
+        <!-- __ № п/п-->
         <AppLabelMultiLine
             :text="['№', 'п/п']"
             align="center"
@@ -17,6 +19,7 @@
             text-size="mini"
         />
 
+        <!-- __ ПС -->
         <AppLabelMultiLine
             :text="['Полотно', 'стеганное']"
             align="center"
@@ -25,6 +28,7 @@
             text-size="mini"
         />
 
+        <!-- __ Буфер -->
         <AppLabelMultiLine
             :text="['Буфер', 'ПС, м.п.']"
             align="center"
@@ -32,20 +36,31 @@
             text-size="mini"
         />
 
+        <!-- __ Средняя длина одного рулона ткани -->
         <AppLabelMultiLine
-            :text="['Ср. длина', 'ткани, м.п.']"
+            :text="['Ср. дл. рул.', 'ткани, м.п.']"
             align="center"
             width="w-[80px]"
             text-size="mini"
         />
 
+        <!-- __ Кол-во рулонов ткани в ПС -->
         <AppLabelMultiLine
-            :text="['Ср. длина', 'ПС, м.п.']"
+            :text="['Кол-во рул.', 'в ПС, шт.']"
             align="center"
             width="w-[80px]"
             text-size="mini"
         />
 
+        <!-- __ Длина ткани в ПС -->
+        <AppLabelMultiLine
+            :text="['Ср. дл. рул.', 'ПС, м.п.']"
+            align="center"
+            width="w-[80px]"
+            text-size="mini"
+        />
+
+        <!-- __ Количество рулонов -->
         <AppLabelMultiLine
             :text="['Кол-во,', 'рул.']"
             align="center"
@@ -54,14 +69,16 @@
             text-size="mini"
         />
 
+        <!-- __ Длина ткани -->
         <AppLabelMultiLine
-            :text="['Длина', 'ткани, м.п.']"
+            :text="['Ср. длина', 'ткани, м.п.']"
             align="center"
             type="primary"
             width="w-[80px]"
             text-size="mini"
         />
 
+        <!-- __ Длина ПС -->
         <AppLabelMultiLine
             :text="['Длина ПС,', 'м.п.']"
             align="center"
@@ -69,6 +86,7 @@
             text-size="mini"
         />
 
+        <!-- __ Труд-ты -->
         <AppLabelMultiLine
             :text="['Труд-ты', '']"
             align="center"
@@ -76,6 +94,7 @@
             text-size="mini"
         />
 
+        <!-- __ Комментарий -->
         <AppLabelMultiLine
             :text="['Комментарий', '']"
             align="center"
@@ -88,8 +107,8 @@
 
 </template>
 
-<script setup>
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+<script setup lang="ts">
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
 </script>
 

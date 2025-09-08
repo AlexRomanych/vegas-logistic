@@ -655,6 +655,32 @@ class CellFabricTaskRollController extends Controller
     }
 
 
+    /**
+     * ___ Обновляем комментарий к рулону
+     * @param Request $request
+     * @return string
+     */
+    public function updateRollComment(Request $request)
+    {
+        try {
+            $validDate = $request->validate([
+                'data.id' => 'required|numeric',
+                'data.comment' => 'string|nullable', // Позволяет пустую строку, но ключ 'comment' должен присутствовать
+                // 'data.comment' => 'sometimes|string', // Правило sometimes валидирует поле только в том случае, если оно присутствует в полезной нагрузке запроса.
+                // 'data.comment' => 'required|nullable', // Позволяет пустую строку, но ключ 'comment' должен присутствовать
+            ]);
+
+            $payload = $validDate['data'];
+
+            FabricTaskRoll::query()->find($payload['id'])->update(['comment' => $payload['comment']]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
     // __ Вспомогалочка. Или Null, или правильная дата (+3 часа)
     private function getUTCDateOrNull($date)
     {

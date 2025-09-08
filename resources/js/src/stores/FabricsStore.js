@@ -1,4 +1,4 @@
-// Хранилище для заказов
+// __ Хранилище для заказов
 
 import { defineStore } from 'pinia'
 import { ref, reactive, computed, watch } from 'vue'
@@ -8,9 +8,9 @@ import { log } from '@/app/helpers/helpers'
 import { FABRIC_MACHINES } from '@/app/constants/fabrics.js'
 
 import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/utils/jwt_api'
-import { openNewTab } from '@/app/helpers/helpers_service'
+// import { openNewTab } from '@/app/helpers/helpers_service'
 
-import axios from 'axios'
+// import axios from 'axios'
 
 
 // Устанавливаем глобальные переменные
@@ -74,6 +74,8 @@ const URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED =
     'fabrics/tasks/execute/roll/moved/'                                 // URL для перемещения рулона на закрой
 const URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER =
     'fabrics/tasks/execute/save/rolls/order/'                           // URL для изменения порядка выполняемых рулонов в СЗ
+const URL_FABRIC_TASKS_ROLL_UPDATE_COMMENT =
+    '/fabrics/tasks/roll/update/comment/'                               // URL для обновления комментария к рулону
 
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
 const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT =
@@ -607,6 +609,14 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
+    // __ Обновить комментарий к рулону
+    const updateRollComment = async (id = 0, comment = '') => {
+        const result = await jwtPatch(URL_FABRIC_TASKS_ROLL_UPDATE_COMMENT, {id, comment})
+        console.log('store: updateRollComment: ', result)
+        return result.data
+    }
+
+
     // Attract: Изменить статус перемещения рулона на закрой
     const setRollMovedStatus = async (id = 0, status = 0) => {
         const result = await jwtPatch(URL_FABRIC_TASKS_EXECUTE_ROLL_SET_MOVED, {id, status})
@@ -685,7 +695,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll, addExecuteRoll, saveExecuteRollsOrder,
+        updateExecuteRoll, addExecuteRoll, saveExecuteRollsOrder, updateRollComment,
         updateFabricTaskWorkers,
         getFabricExecutingTasks,
         getFabricNotDoneTasks,

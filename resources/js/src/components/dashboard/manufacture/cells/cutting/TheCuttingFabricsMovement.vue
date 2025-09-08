@@ -287,6 +287,33 @@
                 />
             </div>
 
+
+            <div>
+                <!-- __ Комментарий (пока для данных на стежке) -->
+                <AppLabelMultiLine
+                    v-if="render.comment.show"
+                    :text="render.comment.header"
+                    :title="render.comment.title"
+                    :type="render.comment.type(true)"
+                    :width="render.comment.width"
+                    align="center"
+                    class="header-item"
+                    text-size="mini"
+                />
+
+                <!-- __ Фильтр: Примечание -->
+                <AppInputText
+                    v-if="render.comment.show"
+                    id="comment-search"
+                    v-model.trim="commentFilter"
+                    :width="render.comment.width"
+                    placeholder="Комментарий"
+                    text-size="mini"
+                    type="primary"
+                />
+            </div>
+
+
         </div>
 
         <!-- __ Сами данные -->
@@ -508,6 +535,32 @@
                                 :width="render.description.width"
                                 text-size="micro"
                             />
+
+                            <!-- __ Комментарий -->
+                            <!--<AppLabel-->
+                            <!--    v-if="render.comment.show"-->
+                            <!--    :text="render.comment.data(roll)"-->
+                            <!--    :title="render.comment.title"-->
+                            <!--    :type="render.comment.type(false, roll)"-->
+                            <!--    :width="render.comment.width"-->
+                            <!--    text-size="micro"-->
+                            <!--/>-->
+
+
+                            <!-- __ Комментарий -->
+                            <AppInputTextTS
+                                :id="`comment-label-${roll.id}`"
+                                v-model:textValue.trim="roll.comment"
+                                :type="render.comment.type(false, roll)"
+                                :width="render.comment.width"
+                                class="mt-[2px]"
+                                height="h-[30px]"
+                                placeholder=""
+                                text-size="micro"
+                                @leave-focus="handleComment(roll)"
+                                @keyup.enter="handleComment(roll)"
+                            />
+
                         </div>
                     </div>
                 </div>
@@ -568,6 +621,7 @@ import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 
 const fabricsStore = useFabricsStore()
 
@@ -712,7 +766,7 @@ const getNotAcceptedToCutRolls = async () => {
 
 const allRolls = ref(await getNotAcceptedToCutRolls()) // получаем все рулоны c API
 const doneRolls = ref(getRollsByStatus(allRolls.value)) // преобразуем в структуру для отображения
-// console.log('doneRolls: ', doneRolls.value)
+console.log('doneRolls: ', doneRolls.value)
 
 // attract: Получаем ссылку на модальное для подтверждений окно с асинхронной функцией
 const appModalAsync = ref(null)
@@ -842,6 +896,14 @@ const render = reactive({
         title: 'Примечание',
         type: (flag = false, roll) => getTypeOfRoll(roll, flag),
         data: (roll) => roll.descr,
+    },
+    comment: {
+        header: ['Комментарий', ''],
+        width: 'w-[400px]',
+        show: true,
+        title: 'Комментарий',
+        type: (flag = false, roll) => getTypeOfRoll(roll, flag),
+        data: (roll) => roll.comment,
     },
 })
 
@@ -1035,6 +1097,7 @@ const rollNumberFilter = ref('')
 const statusFilter = ref(0)
 const statusFilterType = ref('light')
 const descriptionFilter = ref('')
+const commentFilter = ref('')
 const finishAtFilter = ref('')
 const movedAtFilter = ref('')
 const register1CAtFilter = ref('')
@@ -1114,6 +1177,12 @@ const reformatData = (rolls, tabs) => {
     doneRolls.value = getRollsByStatus(rolls, activeTab.code)   // преобразуем в структуру для отображения
 }
 
+
+// __ Поле обновляем поле ввода комментария
+const handleComment = async (roll) => {
+    await fabricsStore.updateRollComment(roll.id, roll.comment)
+};
+
 // __ Применяем фильтры
 const filtersApply = (
     {
@@ -1122,6 +1191,7 @@ const filtersApply = (
         finishAtFilter,
         statusFilter,
         descriptionFilter,
+        commentFilter,
         movedAtFilter,
         register1CAtFilter
     }
@@ -1131,6 +1201,7 @@ const filtersApply = (
         .filter(roll => roll.id.toString().includes(rollNumberFilter))
         .filter(roll => roll.fabric.display_name.toLowerCase().includes(fabricFilter.toLowerCase()))
         .filter(roll => roll.descr.toLowerCase().includes(descriptionFilter.toLowerCase()))
+        .filter(roll => roll.comment.toLowerCase().includes(commentFilter.toLowerCase()))
         .filter(roll => getDateFromDateTimeString(roll.finish_at).includes(finishAtFilter))
         .filter(roll => getDateFromDateTimeString(roll.move_to_cut_at).includes(movedAtFilter))
         .filter(roll => getDateFromDateTimeString(roll.registration_1C_at).includes(register1CAtFilter))
@@ -1179,6 +1250,7 @@ watch(
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
             descriptionFilter: descriptionFilter.value,
+            commentFilter: commentFilter.value,
             movedAtFilter: movedAtFilter.value,
             register1CAtFilter: register1CAtFilter.value
         })
@@ -1201,6 +1273,7 @@ watch(
             finishAtFilter: finishAtFilter.value,
             statusFilter: statusFilter.value,
             descriptionFilter: descriptionFilter.value,
+            commentFilter: commentFilter.value,
             movedAtFilter: movedAtFilter.value,
             register1CAtFilter: register1CAtFilter.value
         })
@@ -1219,6 +1292,7 @@ watch(
         () => finishAtFilter.value,
         () => statusFilter.value,
         () => descriptionFilter.value,
+        () => commentFilter.value,
         () => movedAtFilter.value,
         () => register1CAtFilter.value,
     ],
@@ -1229,6 +1303,7 @@ watch(
             newFinishAtFilter,
             newStatusFilter,
             newDescriptionFilter,
+            newCommentFilter,
             newMovedAtFilter,
             newRegister1CAtFilter,
         ], [
@@ -1237,6 +1312,7 @@ watch(
             oldFinishAtFilter,
             oldStatusFilter,
             oldDescriptionFilter,
+            oldCommentFilter,
             oldMovedAtFilter,
             oldRegister1CAtFilter
         ]) => {
@@ -1247,6 +1323,7 @@ watch(
             finishAtFilter: newFinishAtFilter,
             statusFilter: newStatusFilter,
             descriptionFilter: newDescriptionFilter,
+            commentFilter: newCommentFilter,
             movedAtFilter: newMovedAtFilter,
             register1CAtFilter: newRegister1CAtFilter
         })

@@ -106,7 +106,8 @@ export interface IRoll {
     editable: boolean
     note: string | null
     rolls_exec: IRollExec[]
-
+    textile_layers_amount: number
+    average_textile_roll_length: number
     textile_length?: number
     fabric_name?: string
 }
@@ -136,6 +137,7 @@ export interface IRollExec {
     movable: boolean
     descr: string
     textile_length: number
+    fabric_length: number
     responsible: IWorkerData[]
 }
 
@@ -158,6 +160,7 @@ export interface IFabric {
     statistic_length: number
     hand_length: number
     textile_layers_amount: number
+    average_textile_roll_length: number
     machines: {
         id: number,
         short_name: string
@@ -174,6 +177,7 @@ export interface IFabric {
         productivity: number
         fabric_productivity?: number
         picture_productivity?: number
+        average_fabric_length: number
     },
     text: {
         description: string | null,

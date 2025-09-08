@@ -249,6 +249,7 @@ const getTypeByStatus = (roll_exec) => {
 const getHeaderType = () => 'primary'
 
 // attract: Задаем глобальный объект для унификации отображения рулонов
+const PRECISION = 2
 const rollsRender = reactive({
     position: {
         width: 'w-[60px]',
@@ -294,7 +295,7 @@ const rollsRender = reactive({
         headerTextSize: 'mini',
         dataTextSize: 'mini',
         align: 'center',
-        data: (roll_exec) => roll_exec.textile_length.toFixed(2)
+        data: (roll_exec) => roll_exec.textile_length.toFixed(PRECISION)
     },
     fabricLength: {
         width: 'w-[50px]',
@@ -303,7 +304,7 @@ const rollsRender = reactive({
         headerTextSize: 'mini',
         dataTextSize: 'mini',
         align: 'center',
-        data: (roll_exec) => (roll_exec.textile_length / roll_exec.rate).toFixed(2)
+        data: (roll_exec) => roll_exec.fabric_length.toFixed(PRECISION)
     },
     rollsAmount: {
         width: 'w-[30px]',
@@ -321,7 +322,7 @@ const rollsRender = reactive({
         headerTextSize: 'mini',
         dataTextSize: 'mini',
         align: 'center',
-        data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.textile_length / roll_exec.productivity, 'hour')
+        data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.fabric_length / roll_exec.productivity, 'hour')
     },
     description: {
         width: props.execute ? 'w-[200px]' : 'w-[100px]',

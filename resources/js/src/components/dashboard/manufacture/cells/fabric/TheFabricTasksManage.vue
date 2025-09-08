@@ -14,14 +14,14 @@
                     <!-- attract: Дата + день недели -->
                     <AppLabelMultiLine
                         :text="[formatDate(task.date), getDayOfWeek(task.date, false)]"
-                        :type="getDayOfWeekStyle(task.date)"
+                        :type="getDayOfWeekStyle(task.date).toString()"
                         align="center"
                         class="cursor-pointer"
                         width="w-[150px]"
                         @click="changeActiveTask(task)"
                     />
 
-                    <!-- attract: Статусы -->
+                    <!-- __ Статусы -->
                     <AppLabel
                         :text="getTitleByFabricTaskStatusCode(task.common.status)"
                         :type="getStyleTypeByFabricTaskStatusCode(task.common.status)"
@@ -30,10 +30,10 @@
                         width="w-[150px]"
                     />
 
-                    <!-- attract: Выводим сервисные кнопки, только если дата больше или равна сегодняшней -->
+                    <!-- __ Выводим сервисные кнопки, только если дата больше или равна сегодняшней -->
                     <div v-if="taskDateConstraint(task.date)">
 
-                        <!-- attract: Первый ряд сервисных кнопок -->
+                        <!-- __ Первый ряд сервисных кнопок -->
                         <AppLabel
                             v-if="serviceBtnShowCondition(task.common.status)"
                             :text="serviceBtnTitle(task.common.status)"
@@ -45,7 +45,7 @@
                             @click="changeTaskStatus(task)"
                         />
 
-                        <!-- attract: Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") -->
+                        <!-- __ Второй ряд сервисных кнопок - кнопка "Удалить" (Только для статуса "Создано") -->
                         <AppLabel
                             v-if="task.common.status === FABRIC_TASK_STATUS.CREATED.CODE"
                             align="center"
@@ -100,6 +100,7 @@
                 </div>
 
                 <!-- __ Содержимое Стегальной машины -->
+                <!-- warning: key: - для реактивности -->
                 <div v-for="tab in tabs" :key="tab.id">
                     <div v-if="tab.shown && tab.hasOwnProperty('machine')">
                         <TheTaskMachine
@@ -116,75 +117,6 @@
                         />
                     </div>
                 </div>
-
-
-                <!--&lt;!&ndash; TODO: Убрать дублирование кода &ndash;&gt;-->
-                <!--&lt;!&ndash; attract: Американец&ndash;&gt;-->
-                <!--&lt;!&ndash; warning: key: - для реактивности &ndash;&gt;-->
-                <!--&lt;!&ndash; todo: доработать, потому, что task будем получать в самом компоненте &ndash;&gt;-->
-                <!--<div v-if="tabs.american.shown">-->
-                <!--    <TheTaskMachine-->
-                <!--        :key="rerender[FABRIC_MACHINES.AMERICAN.ID]"-->
-                <!--        :machine="FABRIC_MACHINES.AMERICAN"-->
-                <!--        :task="activeTask"-->
-                <!--        @add-roll="addRoll"-->
-                <!--        @optimize-labor="optimizeLabor"-->
-                <!--        @save-task-record="saveTasks"-->
-                <!--        @delete-task-record="deleteTasksRecord"-->
-                <!--        @save-machine-description="saveMachineDescription"-->
-                <!--        @change-rolls-position="changeRollsPosition"-->
-                <!--        @save-rolls-order="saveRollsOrder"-->
-                <!--    />-->
-
-                <!--</div>-->
-
-                <!--&lt;!&ndash;attract: Немец&ndash;&gt;-->
-                <!--<div v-if="tabs.german.shown">-->
-                <!--    <TheTaskMachine-->
-                <!--        :key="rerender[FABRIC_MACHINES.GERMAN.ID]"-->
-                <!--        :machine="FABRIC_MACHINES.GERMAN"-->
-                <!--        :task="activeTask"-->
-                <!--        @add-roll="addRoll"-->
-                <!--        @optimize-labor="optimizeLabor"-->
-                <!--        @save-task-record="saveTasks"-->
-                <!--        @delete-task-record="deleteTasksRecord"-->
-                <!--        @save-machine-description="saveMachineDescription"-->
-                <!--        @change-rolls-position="changeRollsPosition"-->
-                <!--        @save-rolls-order="saveRollsOrder"-->
-                <!--    />-->
-                <!--</div>-->
-
-                <!--&lt;!&ndash;attract: Китаец&ndash;&gt;-->
-                <!--<div v-if="tabs.china.shown">-->
-                <!--    <TheTaskMachine-->
-                <!--        :key="rerender[FABRIC_MACHINES.CHINA.ID]"-->
-                <!--        :machine="FABRIC_MACHINES.CHINA"-->
-                <!--        :task="activeTask"-->
-                <!--        @add-roll="addRoll"-->
-                <!--        @optimize-labor="optimizeLabor"-->
-                <!--        @save-task-record="saveTasks"-->
-                <!--        @delete-task-record="deleteTasksRecord"-->
-                <!--        @save-machine-description="saveMachineDescription"-->
-                <!--        @change-rolls-position="changeRollsPosition"-->
-                <!--        @save-rolls-order="saveRollsOrder"-->
-                <!--    />-->
-                <!--</div>-->
-
-                <!--&lt;!&ndash;attract: Китаец&ndash;&gt;-->
-                <!--<div v-if="tabs.korean.shown">-->
-                <!--    <TheTaskMachine-->
-                <!--        :key="rerender[FABRIC_MACHINES.KOREAN.ID]"-->
-                <!--        :machine="FABRIC_MACHINES.KOREAN"-->
-                <!--        :task="activeTask"-->
-                <!--        @add-roll="addRoll"-->
-                <!--        @optimize-labor="optimizeLabor"-->
-                <!--        @save-task-record="saveTasks"-->
-                <!--        @delete-task-record="deleteTasksRecord"-->
-                <!--        @save-machine-description="saveMachineDescription"-->
-                <!--        @change-rolls-position="changeRollsPosition"-->
-                <!--        @save-rolls-order="saveRollsOrder"-->
-                <!--    />-->
-                <!--</div>-->
 
             </div>
 
@@ -228,7 +160,7 @@ import {
 } from '@/app/constants/fabrics.js'
 
 import { cloneShallow } from '@/app/helpers/helpers_lib.js'
-import { log } from '@/app/helpers/helpers.js'
+// import { log } from '@/app/helpers/helpers.js'
 
 import {
     getTitleByFabricTaskStatusCode,
@@ -264,32 +196,17 @@ import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
 import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
 
+
 const isLoading = ref(true)
 // __ End Loader
 
-// const route = useRoute()
-// const router = useRouter()
+
 
 const fabricsStore = useFabricsStore()
 
-// __ Получаем список всех стегальных машин
-const fabricsMachines = ref([])
-const getFabricsMachines = async () => {
-    const machines = await fabricsStore.getFabricsMachines()
-    fabricsMachines.value = machines.filter(machine => machine.id !== 0).sort((a, b) => a.id - b.id) // сортируем по id, без id == 0
-}
-
-// __ Получаем все ткани и запоминаем в хранилище
-let fabrics = []  // загружаем после монтирования
-const getFabrics = async () => {
-    fabrics = await fabricsStore.getFabrics(true)
-    fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
-    fabricsStore.fabricsMemory = fabrics
-    // log(fabrics)
-}
-
-
 // __ Подготавливаем данные
+let fabrics = []  // загружаем после монтирования
+const fabricsMachines = ref([])
 let tasksPeriod = null
 let tasks = []
 let taskData = null
@@ -325,6 +242,19 @@ const getTasks = async () => {
     console.log('tasks:', tasks)
     // console.log('taskData: ', taskData)
     // console.log('activeTask', activeTask.value)
+}
+
+// __ Получаем все ткани и запоминаем в хранилище
+const getFabrics = async () => {
+    fabrics = await fabricsStore.getFabrics(true)
+    fabrics.unshift(FABRICS_NULLABLE)                   // добавляем пустой элемент в начало массива
+    fabricsStore.fabricsMemory = fabrics
+}
+
+// __ Получаем список всех стегальных машин
+const getFabricsMachines = async () => {
+    const machines = await fabricsStore.getFabricsMachines()
+    fabricsMachines.value = machines.filter(machine => machine.id !== 0).sort((a, b) => a.id - b.id) // сортируем по id, без id == 0
 }
 
 // __ Устанавливаем активную вкладку даты по дате
@@ -400,17 +330,8 @@ const setEnabledTabs = () => {
 
     })
 }
-// setEnabledTabs()
-// log(tabs)
 //__ --------------------------------
 
-
-// // attract Получаем тип метки в зависимости от типа дня недели (выходной или рабочий)
-// const dayOfWeekStyle = (date) => {
-//     if (isToday(date)) return 'success'
-//     if (isWorkingDay(date)) return 'dark'
-//     return 'danger'
-// }
 
 // attract: Условие на отображение сервисных кнопок под статусами
 const serviceBtnShowCondition = (status) => {
@@ -695,15 +616,12 @@ const getTabType = (tab) => {
 
 // __ Пересчитывает позицию рулонов в массиве + сохраняет по необходимости
 const changeRollsPosition = (machine, task) => {
-    // console.log('from changeRollsPosition!!!')
     const findTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
 
     // если не находим СЗ или там нет рулонов, то выходим
     if (!findTask || !findTask.machines[machine.TITLE].rolls) return
 
     findTask.machines[machine.TITLE].rolls.forEach((roll, index) => roll.roll_position = index + 1)
-
-    // console.log('workTask: ', workTask)
 }
 
 // __ Поднятое событие при клике на кнопку "Сохранить порядок рулонов"
@@ -735,7 +653,7 @@ const saveRollsPosition_Old = async (machine, task) => {
 
 // attract: Поднятое событие при клике на кнопку "Добавить рулон"
 const addRoll = (newRoll, machine, task) => {
-
+    // console.log(newRoll)
     const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
     workTask.machines[machine.TITLE].rolls.push(newRoll)
     changeRollsPosition(machine, task)
@@ -786,14 +704,27 @@ const saveMachineDescription = async (saveData) => {
 
 // __ Поднятое событие при клике на кнопку "Удалить рулон"
 const deleteTasksRecord = async (deleteData) => {
-    console.log('deleteTasksRecord: ', deleteData)
+    // console.log('deleteTasksRecord: ', deleteData)
 
     // __ Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
     // __ Иначе удаляем его из БД
     if (deleteData.id) {
         const result = await fabricsStore.deleteFabricTaskRollById(deleteData.id)
+
+        // Удаляем рулон из массива, чтобы верно пересчитать позицию
+        const findTask = taskData.find(t => t.date === deleteData.task.date)     // Получаем ссылку на СЗ на дату контекста
+
+        // если не находим СЗ или там нет рулонов, то выходим
+        if (!findTask || !findTask.machines[deleteData.machine.TITLE].rolls) return
+
+        findTask.machines[deleteData.machine.TITLE].rolls =
+            findTask.machines[deleteData.machine.TITLE].rolls.filter(roll => roll.id !== deleteData.id)
+
+        // console.log(findTask.machines[deleteData.machine.TITLE].rolls)
+
     }
 
+    // debugger
     // __ Пересчитываем позиции рулонов
     changeRollsPosition(deleteData.machine, deleteData.task)
 
@@ -872,6 +803,8 @@ onMounted(async () => {
             tabs.common.shown = true        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
             getActiveTaskAndTab()           // Получаем активное СЗ и вкладку из LocalStorage
             setActiveTaskAndTab()           // Устанавливаем активное СЗ и вкладку в LocalStorage
+
+            // console.log('fabrics: ', fabrics)
         },
         undefined,
         // false,
@@ -884,8 +817,4 @@ onMounted(async () => {
 <style scoped>
 
 </style>
-
-
-
-
 

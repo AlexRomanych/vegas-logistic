@@ -18,22 +18,6 @@
             <!-- __ Заголовки таблицы для записей с рулонами -->
             <TheTaskRecordsTitle/>
 
-
-            <!--            <div v-for="(roll, index) in rolls">-->
-
-            <!--                &lt;!&ndash; __ Строка с рулонами &ndash;&gt;-->
-            <!--                <TheTaskRecord-->
-
-            <!--                    :key="index"-->
-            <!--                    :index="index"-->
-            <!--                    :machine="machine"-->
-            <!--                    :roll="roll"-->
-            <!--                    :task-status="task.common.status"-->
-            <!--                    @save-task-record="saveTaskRecord"-->
-            <!--                    @delete-task-record="deleteTaskRecord"-->
-            <!--                />-->
-            <!--            </div>-->
-
             <div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">
                 <!-- __ Сами рулоны с возможностью перетаскивания -->
                 <draggable

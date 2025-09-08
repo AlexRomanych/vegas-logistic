@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 //use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
 
@@ -82,7 +83,7 @@ class CellFabricTasksDateController extends Controller
     /**
      * descr: Создает или обновляет данные по сменным заданиям на конкретную дату
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function create(Request $request)
     {
@@ -306,7 +307,7 @@ class CellFabricTasksDateController extends Controller
                                             'roll_position' => $count++,
                                             'roll_status' => FABRIC_ROLL_CREATED_CODE,
                                             'translate_rate' => $fabric->translate_rate,
-                                            'textile_roll_length' => $fabric->average_roll_length,
+                                            'textile_roll_length' => $fabric->average_roll_length * $fabric->textile_layers_amount,
                                             'fabric_roll_length' => $fabric->translate_rate === 0.0 ? 0.0 : $fabric->average_roll_length / $fabric->translate_rate,
                                             // 'textile_roll_length' => $taskContext['average_textile_length'],
                                             // 'translate_rate' => $taskContext['translate_rate'],

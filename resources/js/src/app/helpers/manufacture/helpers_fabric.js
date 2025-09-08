@@ -430,6 +430,61 @@ export function getFabricTaskStatusByCode(taskCode = 0) {
 }
 
 
+// __ Получаем среднюю длину ткани для ПС
+export function getTextileLength(
+    length = 0,                 /* длина одного рулона */
+    rollsAmount = 0,            /* количество рулонов */
+    rollsCount = 1              /* количество слоев (рулонов в ПС) */
+) {
+    return length * rollsAmount * rollsCount
+}
+
+// __ Получаем среднюю длину ткани для ПС по рулону
+export function getTextileLengthByRoll(roll)
+{
+    if (isEmptyObj(roll)) return 0
+    return getTextileLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount)
+}
+
+// __ Получаем среднюю ПС
+export function getFabricLength(
+    length = 0,                 /* длина одного рулона */
+    rollsAmount = 0,            /* количество рулонов */
+    rollsCount = 1,             /* количество слоев (рулонов в ПС) */
+    translateRate = 1           /* коэффициент перевода из ткани в ПС */
+) {
+    return translateRate === 0 ? 0 : getTextileLength(length, rollsAmount, 1) / translateRate
+}
+
+// __ Получаем среднюю ПС по рулону
+export function getFabricLengthByRoll(roll)
+{
+    if (isEmptyObj(roll)) return 0
+    return getFabricLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount, roll.rate)
+}
+
+// __ Получаем производительность ПС (время стегания)
+export function getProductivityValue(
+    length = 0,                 /* длина одного рулона */
+    rollsAmount = 0,            /* количество рулонов */
+    rollsCount = 1,             /* количество слоев (рулонов в ПС) */
+    translateRate = 1,          /* коэффициент перевода из ткани в ПС */
+    productivity = 1            /* трудозатраты на 1 рулон */
+) {
+    return productivity === 0 ? 0 : getFabricLength(length, rollsAmount, rollsCount, translateRate) / productivity
+}
+
+// __ Получаем производительность ПС (время стегания) по рулону
+export function getProductivityValueByRoll(roll)
+{
+
+    // console.log('roll: ', roll)
+    if (isEmptyObj(roll)) return 0
+    return getProductivityValue(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount, roll.rate, roll.productivity)
+}
+
+
+
 // __ Получаем активное СЗ и вкладку из LocalStorage
 
 

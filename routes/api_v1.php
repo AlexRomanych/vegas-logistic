@@ -283,6 +283,7 @@ Route::prefix('/fabrics/tasks')
         Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
         Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
         Route::post('/execute/save/rolls/order/', [CellFabricTaskRollController::class, 'saveExecuteRollsOrder']);
+        Route::patch('/roll/update/comment/', [CellFabricTaskRollController::class, 'updateRollComment']);
 
 
         // descr: Тут просто точки доступа для разных действий

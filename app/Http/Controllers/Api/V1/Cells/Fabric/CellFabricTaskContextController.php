@@ -251,12 +251,10 @@ class CellFabricTaskContextController extends Controller
                     //     ->where('editable', true)
                     //     ->first();
 
-                    $workContext->roll_position = $context['roll_position'];
-                    $workContext->save();
-
-                    $b = $workContext;
-
-                    $b = $b;
+                    if ($workContext) {             // если есть (рулон может быть удален), то меняем порядок
+                        $workContext->roll_position = $context['roll_position'];
+                        $workContext->save();
+                    }
                 }
 
 
@@ -371,17 +369,17 @@ class CellFabricTaskContextController extends Controller
                         'id' => $rollData['id'],
                     ],
                     $payloadData
-                    // [
-                    //     'fabric_task_id' => $task->id,                          // привязка к СЗ
-                    //     'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                    //     'rolls_amount' => $rollData['rolls_amount'],
-                    //     'roll_position' => $rollData['roll_position'],          // порядок рулонов
-                    //     'fabric_mode' => $rollData['fabric_mode'],
-                    //     'average_textile_length' => $rollData['textile_length'],
-                    //     'productivity' => $rollData['productivity'],
-                    //     'description' => $rollData['descr'],
-                    //     'translate_rate' => $fabric->translate_rate,            // Берем из ПС
-                    // ]
+                // [
+                //     'fabric_task_id' => $task->id,                          // привязка к СЗ
+                //     'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                //     'rolls_amount' => $rollData['rolls_amount'],
+                //     'roll_position' => $rollData['roll_position'],          // порядок рулонов
+                //     'fabric_mode' => $rollData['fabric_mode'],
+                //     'average_textile_length' => $rollData['textile_length'],
+                //     'productivity' => $rollData['productivity'],
+                //     'description' => $rollData['descr'],
+                //     'translate_rate' => $fabric->translate_rate,            // Берем из ПС
+                // ]
                 );
             }
 

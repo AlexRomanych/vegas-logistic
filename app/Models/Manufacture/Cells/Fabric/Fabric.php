@@ -3,6 +3,7 @@
 namespace App\Models\Manufacture\Cells\Fabric;
 
 use App\Classes\FabricInstance;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,12 +14,13 @@ class Fabric extends Model
 {
     private FabricInstance $fabricInstance;
 
-    protected $guarded = [];
+    protected $guarded = false;
 
     protected $casts = [
         'average_roll_length' => 'float',
         'average_roll_length_hand' => 'float',
         'average_roll_length_statistic' => 'float',
+        'productivity' => 'float',
     ];
 
     // Добавляем новые атрибуты
@@ -72,6 +74,14 @@ class Fabric extends Model
     }
 
 
+    // __ Получаем производительность:
+    // __ Если есть в таблице FabricPicture то берем из нее, иначе берем из fabric
+    public function getProductivityAttribute()
+    {
+        return ((float)$this->fabricPicture->productivity === 0.0) ? (float)$this->attributes['productivity'] : $this->fabricPicture->productivity;
+    }
+
+
     // attract: Проверяем наличие необходимых заполненных полей данных:
     // attract: 1. Средняя длина рулона
     // attract: 2. Производительность
@@ -93,6 +103,9 @@ class Fabric extends Model
         //            ];
         //        return (float)$this->average_roll_length !== 0.0 && (float)$this->productivity !== 0.0 && (float)$this->translate_rate !== 0.0;
     }
+
+
+
 
 
     // Relations: FabricPicture

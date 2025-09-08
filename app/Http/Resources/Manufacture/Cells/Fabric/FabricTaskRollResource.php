@@ -32,6 +32,7 @@ class FabricTaskRollResource extends JsonResource
             'duration' => $this->duration,
             'rolling' => $this->rolling,
             'textile_length' => (float)$this->textile_roll_length,
+            'fabric_length' => (float)$this->fabric_roll_length,
             'productivity' => (float)$this->productivity,
             'false_reason' => $this->false_reason,
             'movable' => $this->movable,

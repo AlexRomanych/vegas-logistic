@@ -314,6 +314,10 @@ final class FabricService
                 FABRIC_ROLL_CLOSED_CODE
             ];
 
+            // __ Находим ПС
+            $fabric = Fabric::query()->find($fabricId);
+            if (!$fabric) throw new Exception("ПС c id = $fabricId не найдено");
+
             // __ Находим самый свежий рулон
             $lastModel = FabricTaskRoll::query()
                 ->where('fabric_id', $fabricId)
@@ -347,7 +351,7 @@ final class FabricService
             // __ Поэтому важно обрабатывать этот случай.
             if (!$averageLength) return 0.0;
 
-            return (double)$averageLength;
+            return (double)$averageLength / $fabric->textile_layers_amount; // С учетом количества рулонов ткани на рулон ПС
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
