@@ -379,8 +379,6 @@ const rollsRender: IRenderData = reactive({
         dataAlign: DATA_ALIGN,
         align: 'center',
         data: (roll_exec) => {
-            // console.log(roll_exec)
-            // return ''
             if (!roll_exec.responsible.moveToCutBy.id) return ''
             return getFormatFIO(roll_exec.responsible.moveToCutBy)
         }
@@ -475,7 +473,7 @@ const rollsRender: IRenderData = reactive({
 
 // __ Получаем все ткани
 const getFabrics = async () => {
-    fabrics = await fabricsStore.getFabrics(true)
+    fabrics = await fabricsStore.getFabrics()
 }
 
 // __ Получаем период отображения сменного задания
@@ -535,8 +533,8 @@ const selectDates = async (period: ITaskPeriod) => {
     await getTasks()
     prepareTasksData()                              // Подготавливаем СЗ для отображения
 
-    console.log('tasks: ', tasks)
-    console.log('taskData: ', tasksData.value)
+    // console.log('tasks: ', tasks)
+    // console.log('taskData: ', tasksData.value)
 }
 
 
@@ -551,8 +549,10 @@ onMounted(async () => {
             await getTasks()
             prepareTasksData()                              // Подготавливаем СЗ для отображения
 
-            console.log('tasks: ', tasks)
-            console.log('taskData: ', tasksData.value)
+            // console.log('tasks: ', tasks)
+            // console.log('taskData: ', tasksData.value)
+            // console.log('tasksPeriod: ', tasksPeriod)
+            // console.log('fabrics: ', fabrics)
 
         },
         undefined,

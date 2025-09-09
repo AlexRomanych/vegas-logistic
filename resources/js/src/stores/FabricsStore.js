@@ -212,7 +212,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
 
         const result = await jwtGet(URL_FABRICS, {active})
         fabricsCashe.value = result.fabrics             // кэшируем
-        console.log('store', result)
+        // console.log('store', result)
 
         return result.fabrics // все возвращается через Resource с ключем data
     }
