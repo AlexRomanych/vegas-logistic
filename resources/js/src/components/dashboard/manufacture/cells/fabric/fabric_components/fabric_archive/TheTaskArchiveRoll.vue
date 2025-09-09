@@ -200,7 +200,9 @@ interface IProps {
     roll: IRollExecExtended
 }
 
-/*const props =*/ defineProps<IProps>()
+const props = defineProps<IProps>()
+
+console.log('props.roll: ', props.roll)
 
 </script>
 

@@ -90,6 +90,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+console.log('props.machine: ', props.machine)
+
 /*
 const emit = defineEmits<{
     (e: 'toggleMachine'): void

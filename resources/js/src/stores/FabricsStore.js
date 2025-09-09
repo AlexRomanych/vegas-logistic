@@ -85,6 +85,8 @@ const URL_FABRIC_TEAM_NUMBER = 'fabrics/tasks/team/number/'             // URL �
 
 const URL_FABRIC_BUFFER_UPDATE = 'fabrics/buffer/update/'               // URL для обновления буфера ПС
 const URL_FABRIC_AVERAGE_LENGTH_GET = 'fabric/average/length/'          // URL для получения среднего метража ткани ПС
+const URL_FABRIC_PICTURES_TUNING_TIME_GET =
+    'fabrics/pictures/tuning/time/'                                     // URL для получения времени переналадки рисунков ПС
 
 
 export const useFabricsStore = defineStore('fabrics', () => {
@@ -632,12 +634,21 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data
     }
 
-    // Attract: Обновляем буфер ПС
+    // __ Получаем среднюю длину рулона по ПС
     const getFabricsAverageLength = async (id, periodLength = 1 /*in months*/) => {
         const result = await jwtGet(URL_FABRIC_AVERAGE_LENGTH_GET, {id, period: periodLength})
         console.log('store: getFabricsAverageLength: ', result)
         return result.data
     }
+
+    // __ Получаем среднюю длину рулона по ПС
+    const getFabricsPicturesTuningTime = async () => {
+        const result = await jwtGet(URL_FABRIC_PICTURES_TUNING_TIME_GET )
+        console.log('store: getFabricsPicturesTuningTime: ', result)
+        return result.data
+    }
+
+
 
 
     return {
@@ -712,6 +723,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         setRollMovedStatus,
         updateFabricsBuffer,
         getFabricsAverageLength,
+        getFabricsPicturesTuningTime,
     }
 
 })

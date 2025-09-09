@@ -6,11 +6,14 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Classes\FabricInstance;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureTuningTimeResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
+use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+use App\Models\Manufacture\Cells\Fabric\FabricTuningTime;
 use App\Services\Manufacture\FabricService;
 use Exception;
 use Illuminate\Http\Request;
@@ -102,7 +105,7 @@ class CellFabricController extends Controller
 
 
     /**
-     *  Attract: Возвращаем список ПС
+     *  __ Возвращаем список ПС
      * @param Request $request
      * @return FabricCollection|false|string
      */
@@ -331,5 +334,34 @@ class CellFabricController extends Controller
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
+
+
+    public function getFabricsPicturesTuningTime()
+    {
+        // try {
+
+        // $tuningTime = FabricTuningTime::query()
+        //     ->with(['picturesFrom', 'picturesTo'])
+        //     ->get();
+
+        $tuningTime = FabricPicture::query()
+            ->with(['picturesFrom', 'picturesTo'])
+            ->get();
+
+        $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime);
+
+        $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
+
+        // $arrayOfData = $a->toArray(request());
+
+        return FabricPictureTuningTimeResource::collection($tuningTime);
+
+
+
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
+    }
+
 
 }

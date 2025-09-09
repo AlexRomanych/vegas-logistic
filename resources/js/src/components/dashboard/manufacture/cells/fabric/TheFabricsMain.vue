@@ -36,6 +36,7 @@ let menuItems: IMenuItem[] = [
     {name: 'Причины изменения статуса', path: 'reasons', shown: true, isActive: true,},
     {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement', shown: false, isActive: true},
     {name: 'Архив СЗ', path: 'manufacture.cell.fabric.tasks.archive', shown: true, isActive: true},
+    {name: 'Время переналадки', path: 'manufacture.cell.fabrics.pictures.tuning.time', shown: false, isActive: false},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload', shown: true, isActive: false},
     {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload', shown: true, isActive: false},
     // {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar', shown: true, isActive: true},

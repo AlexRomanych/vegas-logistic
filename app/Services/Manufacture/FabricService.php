@@ -14,6 +14,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -395,5 +396,15 @@ final class FabricService
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
+
+
+    public static function getPicturesTuningTimeMatrix(AnonymousResourceCollection $arrayOfData): array
+    {
+
+
+
+        return [];
+    }
+
 
 }

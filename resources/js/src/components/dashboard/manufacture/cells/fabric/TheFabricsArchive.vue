@@ -93,7 +93,7 @@ import CellDatesSelect from '@/components/dashboard/manufacture/cells/components
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
-import { loaderHandler } from '@/app/helpers/helpers.ts'
+import { loaderHandler, log } from '@/app/helpers/helpers.ts'
 
 
 // line -----------------------------------------------------------------------------------------------------------
@@ -379,6 +379,8 @@ const rollsRender: IRenderData = reactive({
         dataAlign: DATA_ALIGN,
         align: 'center',
         data: (roll_exec) => {
+            // console.log(roll_exec)
+            // return ''
             if (!roll_exec.responsible.moveToCutBy.id) return ''
             return getFormatFIO(roll_exec.responsible.moveToCutBy)
         }
@@ -533,8 +535,8 @@ const selectDates = async (period: ITaskPeriod) => {
     await getTasks()
     prepareTasksData()                              // Подготавливаем СЗ для отображения
 
-    // console.log('tasks: ', tasks)
-    // console.log('taskData: ', tasksData.value)
+    console.log('tasks: ', tasks)
+    console.log('taskData: ', tasksData.value)
 }
 
 
@@ -549,8 +551,8 @@ onMounted(async () => {
             await getTasks()
             prepareTasksData()                              // Подготавливаем СЗ для отображения
 
-            // console.log('tasks: ', tasks)
-            // console.log('taskData: ', tasksData.value)
+            console.log('tasks: ', tasks)
+            console.log('taskData: ', tasksData.value)
 
         },
         undefined,

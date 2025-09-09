@@ -226,7 +226,6 @@ const fabrics = [
         }
     },
 
-
     {
         // ___ Архив СЗ
         path: _MAIN_PREFIX + 'fabrics/archive',
@@ -237,7 +236,15 @@ const fabrics = [
         }
     },
 
-
+    {
+        // ___ Архив СЗ
+        path: _MAIN_PREFIX + 'fabrics/pictures/tuning/time',
+        name: 'manufacture.cell.fabrics.pictures.tuning.time',
+        component: () => import('@/components/dashboard/manufacture/cells/fabric/TheFabricsTuningTime.vue'),
+        meta: {
+            title: 'Время переналадки СМ'
+        }
+    },
 
 
 
