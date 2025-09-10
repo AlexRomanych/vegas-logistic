@@ -276,9 +276,9 @@ class CellFabricTaskRollController extends Controller
 
 
             // __ Перемещенный на закрой в одном направлении
-            if ($status !== FABRIC_ROLL_MOVED_CODE) {
-                throw new Exception('Неверный статус');
-            }
+            // if ($status !== FABRIC_ROLL_MOVED_CODE) {
+            //     throw new Exception('Неверный статус');
+            // }
 
             // __ Перемещенный на закрой в двух направлениях
             // if ($status !== FABRIC_ROLL_DONE_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
@@ -296,7 +296,7 @@ class CellFabricTaskRollController extends Controller
                 throw new Exception('Рулон уже перемещен на закрой');
             }
 
-            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE) {
+            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE || $roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE) {
                 throw new Exception('Неверный статус');
             }
 
