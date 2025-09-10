@@ -99,15 +99,15 @@ import {reactive, ref} from 'vue'
 import {
     getStyleTypeByFabricTaskStatusCode,
     getTitleByFabricTaskStatusCode
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
-// import AppLabelMultiline from '/resources/js/src/components/ui/labels/AppLabelMultiline.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
+// import AppLabelMultiline from '@/components/ui/labels/AppLabelMultiline.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
-import CellDatesSelect from '/resources/js/src/components/dashboard/manufacture/cells/components/CellDatesSelect.vue'
-// import AppCheckboxSimple from '/resources/js/src/components/ui/checkboxes/AppCheckboxSimple.vue'
-// import AppCheckbox from '/resources/js/src/components/ui/checkboxes/AppCheckbox.vue'
+import CellDatesSelect from '@/components/dashboard/manufacture/cells/components/CellDatesSelect.vue'
+// import AppCheckboxSimple from '@/components/ui/checkboxes/AppCheckboxSimple.vue'
+// import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
 
 // Получаем ширину ячейки в нужном формате
 const getMachineColWidthCSS = (colWidth) => `w-[${colWidth}px]`

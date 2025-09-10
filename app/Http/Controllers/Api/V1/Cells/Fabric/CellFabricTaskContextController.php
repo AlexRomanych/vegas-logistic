@@ -68,10 +68,20 @@ class CellFabricTaskContextController extends Controller
 
             $taskContexts = FabricTaskContext::query()
                 ->whereHas('fabricTask', function ($query) {
-                    $query->whereNot('task_status', FABRIC_TASK_DONE_CODE);
+                    $query->whereHas('fabricTasksDate', function ($query) {
+                        $query->whereNot('tasks_status', FABRIC_TASK_DONE_CODE);
+                    });
                 })
                 ->with('fabricTask.fabricTasksDate')
                 ->get();
+
+
+            // $taskContexts = FabricTaskContext::query()
+            //     ->whereHas('fabricTask', function ($query) {
+            //         $query->whereNot('task_status', FABRIC_TASK_DONE_CODE);
+            //     })
+            //     ->with('fabricTask.fabricTasksDate')
+            //     ->get();
 
             return FabricTaskContextResource::collection($taskContexts);
             // return new FabricTaskContextCollection($taskContexts);
