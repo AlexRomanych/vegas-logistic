@@ -265,7 +265,7 @@ class CellFabricTaskRollController extends Controller
      */
     public function setRollMovedStatus(Request $request)
     {
-        try {
+        // try {
             $result = $request->validate([
                 'data' => 'required|array',
                 'data.id' => 'required|numeric',
@@ -296,7 +296,7 @@ class CellFabricTaskRollController extends Controller
                 throw new Exception('Рулон уже перемещен на закрой');
             }
 
-            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE || $roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE) {
+            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE) {
                 throw new Exception('Неверный статус');
             }
 
@@ -343,9 +343,9 @@ class CellFabricTaskRollController extends Controller
             $fabric->save();
 
             return EndPointStaticRequestAnswer::ok();
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail(response()->json($e));
-        }
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
 
     }
 
