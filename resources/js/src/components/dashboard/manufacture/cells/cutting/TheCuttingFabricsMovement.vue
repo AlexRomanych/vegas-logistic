@@ -1036,7 +1036,8 @@ const changeMovingStatus = async (roll) => {
         return
     }
 
-    if (roll.status === FABRIC_ROLL_STATUS.DONE.CODE) {
+    // __ roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE - чтобы сохранить старый функционал, когда учет в 1С - часть статуса
+    if (roll.status === FABRIC_ROLL_STATUS.DONE.CODE || roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE) {
         modalText.value = ['Рулон:', `№ ${roll.id}`, `ПС: ${roll.fabric.display_name}`, 'будет перемещен на закрой.', 'Продолжить?']
         modalType.value = FABRIC_ROLL_STATUS.MOVED.TYPE
 
