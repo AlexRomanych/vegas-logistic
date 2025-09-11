@@ -1,8 +1,8 @@
 <?php
 // ___ Стартовый индекс порядка физических рулонов
 const EXEC_ROLL_START_ORDER_INDEX = 1;
-const EXEC_ROLL_FALSE_ORDER_INDEX = 0;
-const EXEC_ROLL_ROLLING_ORDER_INDEX = -1;
+const EXEC_ROLL_FALSE_ORDER_INDEX = -1000;   // __ Будем считать, что больше 1000 рулонов в день не будет
+const EXEC_ROLL_ROLLING_ORDER_INDEX = -10000;
 
 // ___ Статусы сменного задания
 

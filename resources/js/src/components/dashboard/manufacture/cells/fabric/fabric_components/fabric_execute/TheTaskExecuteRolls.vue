@@ -96,7 +96,7 @@ const isLoading = ref(true)
 const rollsExec = ref([])               // __ Список выполняемых рулонов
 let fabrics = []                               // __ Список ПС
 const responsibleWorkers = ref([])      // __ Список ответственных за выполнение
-let responsibleWorkersCopy = []
+let responsibleWorkersCopy =[]
 
 // __ Собираем все рулоны в один массив
 const getRollsExec = () => {
@@ -297,6 +297,15 @@ const rollsRender = reactive({
         align: 'center',
         data: (roll_exec) => roll_exec.textile_length.toFixed(PRECISION)
     },
+    textileLayersAmount: {
+        width: 'w-[50px]',
+        show: true,
+        title: 'Количество рулонов, шт.',
+        headerTextSize: 'mini',
+        dataTextSize: 'mini',
+        align: 'center',
+        data: (roll_exec) => fabrics.find((fabric) => fabric.id === roll_exec.fabric_id).textile_layers_amount.toString()
+    },
     fabricLength: {
         width: 'w-[50px]',
         show: true,
@@ -382,11 +391,13 @@ const rollsRender = reactive({
 
             const responsibleWorker =
                 responsibleWorkersCopy.data.find(responsibleWorker => responsibleWorker.id === roll_exec.finish_by)
+
             if (responsibleWorker) {
                 responsibleWorker.selected = true
             } else {
                 responsibleWorkersCopy.data[0].selected = true
             }
+
             return responsibleWorkersCopy
         }
     },
@@ -432,7 +443,15 @@ watch(() => fabricsStore.globalExecuteRollChangeDescription, async (newValue) =>
 
 // attract: Отслеживаем изменение Изменить длину ткани
 watch(() => fabricsStore.globalExecuteRollChangeTextile, async (newValue) => {
+    // console.log('!!!: ', activeRoll)
+
     activeRoll.textile_length = fabricsStore.globalExecuteRollChangeTextileLength
+    const fabric = fabrics.find(fabric => fabric.id === activeRoll.fabric_id)
+    if (fabric) {
+        activeRoll.fabric_length = activeRoll.textile_length / fabric.textile_layers_amount
+        activeRoll.fabric_length = activeRoll.rate ? activeRoll.fabric_length / activeRoll.rate : 0
+    }
+
     const res = await fabricsStore.updateExecuteRoll(activeRoll)
 })
 

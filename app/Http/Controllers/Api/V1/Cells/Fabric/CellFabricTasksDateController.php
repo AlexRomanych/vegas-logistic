@@ -705,7 +705,7 @@ class CellFabricTasksDateController extends Controller
 
                 // TODO: Добавить изменение статусов в FabricTask таблице в соответствии с FabricTasksDate статусом
 
-
+                $falseRollsPositionIndex = EXEC_ROLL_FALSE_ORDER_INDEX;
                 foreach ($rollsToMove as $rollToMove) {
 
                     // attract: Создаем или обновляем саму сущность СЗ, к которому привязываем задание от ОПП и рулоны
@@ -733,7 +733,7 @@ class CellFabricTasksDateController extends Controller
                             'fabric_task_id' => $task->id,
                             'fabric_id' => $rollToMove['roll']['fabric_id'],
                             'roll_position' => $rollToMove['roll_exec']['status'] === FABRIC_ROLL_FALSE_CODE ?
-                                EXEC_ROLL_FALSE_ORDER_INDEX : EXEC_ROLL_ROLLING_ORDER_INDEX,
+                                $falseRollsPositionIndex++ : EXEC_ROLL_ROLLING_ORDER_INDEX,
                             'fabric_mode' => $rollToMove['roll']['fabric_mode'],
                             'rolls_amount' => 1,
                             'average_textile_length' => $rollToMove['roll_exec']['textile_length'],
@@ -798,7 +798,10 @@ class CellFabricTasksDateController extends Controller
                         return $a['roll_position'] <=> $b['roll_position'];
                     });
 
+                    // __ Задаем начальные индексы
                     $contextOrderCount = EXEC_ROLL_START_ORDER_INDEX;
+                    $rollOrderCount = EXEC_ROLL_START_ORDER_INDEX;
+
                     foreach ($task['fabric_task_contexts'] as $context) {
 
                         $contextModel = FabricTaskContext::query()
@@ -807,7 +810,7 @@ class CellFabricTasksDateController extends Controller
 
 
 //                        return ['$contextModel' => $contextModel];
-                        $rollOrderCount = EXEC_ROLL_START_ORDER_INDEX;
+
                         foreach ($contextModel->fabricTaskRolls as $execRoll) {
                             $execRoll->update(['roll_position' => $rollOrderCount++]);
                         }

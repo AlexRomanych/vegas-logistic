@@ -6,7 +6,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.position.show"
             :text="['№', 'п/п']"
-            :title="rollsRender.position.title"
             :type="getHeaderType()"
             :width="rollsRender.position.width"
             :align="rollsRender.position.align"
@@ -17,7 +16,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.isCalc.show"
             :text="['Кальк.', '+ / -']"
-            :title="rollsRender.isCalc.title"
             :type="getHeaderType()"
             :width="rollsRender.isCalc.width"
             :align="rollsRender.isCalc.align"
@@ -28,7 +26,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.rollNumber.show"
             :text="['Номер', 'рулона']"
-            :title="rollsRender.rollNumber.title"
             :type="getHeaderType()"
             :width="rollsRender.rollNumber.width"
             :align="rollsRender.rollNumber.align"
@@ -39,7 +36,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.fabricName.show"
             :text="['Полотно', 'стеганное']"
-            :title="rollsRender.fabricName.title"
             :type="getHeaderType()"
             :width="rollsRender.fabricName.width"
             :align="rollsRender.fabricName.align"
@@ -50,18 +46,26 @@
         <AppLabelMultiLine
             v-if="rollsRender.textileLength.show"
             :text="['Длина', 'ткани']"
-            :title="rollsRender.textileLength.title"
             :type="getHeaderType()"
             :width="rollsRender.textileLength.width"
             :align="rollsRender.textileLength.align"
             :text-size="rollsRender.textileLength.headerTextSize"
         />
 
+        <!-- __ Количество рулонов в ПС -->
+        <AppLabelMultiLine
+            v-if="rollsRender.textileLayersAmount.show"
+            :text="['Кол-во', 'рул.']"
+            :type="getHeaderType()"
+            :width="rollsRender.textileLayersAmount.width"
+            :align="rollsRender.textileLayersAmount.align"
+            :text-size="rollsRender.textileLayersAmount.headerTextSize"
+        />
+
         <!-- __ Средняя длина ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.fabricLength.show"
             :text="['Длина', 'ПС']"
-            :title="rollsRender.fabricLength.title"
             :type="getHeaderType()"
             :width="rollsRender.fabricLength.width"
             :align="rollsRender.fabricLength.align"
@@ -72,7 +76,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.rollsAmount.show"
             :text="['1', '']"
-            :title="rollsRender.rollsAmount.title"
             :type="getHeaderType()"
             :width="rollsRender.rollsAmount.width"
             :align="rollsRender.rollsAmount.align"
@@ -83,7 +86,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.productivity.show"
             :text="['Плановые', 'трудозатраты']"
-            :title="rollsRender.productivity.title"
             :type="getHeaderType()"
             :width="rollsRender.productivity.width"
             :align="rollsRender.productivity.align"
@@ -106,7 +108,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.status.show"
             :text="['Статус', '']"
-            :title="rollsRender.status.title"
             :type="getHeaderType()"
             :width="rollsRender.status.width"
             :align="rollsRender.status.align"
@@ -117,7 +118,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.startAt.show"
             :text="['Начало', 'стегания']"
-            :title="rollsRender.startAt.title"
             :type="getHeaderType()"
             :width="rollsRender.startAt.width"
             :align="rollsRender.startAt.align"
@@ -128,7 +128,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.finishAt.show"
             :text="['Окончание', 'стегания']"
-            :title="rollsRender.finishAt.title"
             :type="getHeaderType()"
             :width="rollsRender.finishAt.width"
             :align="rollsRender.finishAt.align"
@@ -139,7 +138,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.rollTime.show"
             :text="['Время', 'стегания']"
-            :title="rollsRender.rollTime.title"
             :type="getHeaderType()"
             :width="rollsRender.rollTime.width"
             :align="rollsRender.rollTime.align"
@@ -150,7 +148,6 @@
         <AppLabelMultiLine
             v-if="rollsRender.finishBy.show"
             :text="['Ответственный', '']"
-            :title="rollsRender.finishBy.title"
             :type="getHeaderType()"
             :width="rollsRender.finishBy.width"
             :align="rollsRender.finishBy.align"
@@ -186,7 +183,7 @@ interface IProps {
     rollsRender: IRenderData,
 }
 
-const props = defineProps<IProps>()
+/*const props =*/ defineProps<IProps>()
 
 // const props = defineProps({
 //     rollsRender: {

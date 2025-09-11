@@ -479,10 +479,10 @@ const changeTaskExecute = async (task) => {
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.RUNNING.CODE
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
-            console.log(res)
+            // console.log(res)
 
             const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-            console.log('newTaskDay: ', newTaskDay)
+            // console.log('newTaskDay: ', newTaskDay)
 
             // task.machines = newTaskDay[0].machines
             task.common = newTaskDay[0].common

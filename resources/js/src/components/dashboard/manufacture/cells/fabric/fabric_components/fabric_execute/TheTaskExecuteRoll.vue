@@ -56,6 +56,17 @@
             text-size="mini"
         />
 
+        <!-- __ Количество рулонов в ПС -->
+        <AppLabel
+            v-if="rollsRender.textileLayersAmount.show"
+            :text="rollsRender.textileLayersAmount.data(roll_exec)"
+            :title="rollsRender.textileLayersAmount.title"
+            :type="getTypeByStatus(roll_exec)"
+            :width="rollsRender.textileLayersAmount.width"
+            align="center"
+            text-size="mini"
+        />
+
         <!-- __ Средняя длина ПС -->
         <AppLabel
             v-if="rollsRender.fabricLength.show"

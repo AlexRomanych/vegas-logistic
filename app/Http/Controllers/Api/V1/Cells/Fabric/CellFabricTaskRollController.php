@@ -95,6 +95,12 @@ class CellFabricTaskRollController extends Controller
 
             // TODO: Выполнить жесткую валидацию жестких данных
 
+            $fabric = Fabric::query()->find($rollData['fabric_id']); // Находим нужную ткань
+            if (!$fabric) {
+                throw new Exception('Не найдена ткань c ID: ' . $rollData['fabric_id']);
+            }
+
+
             $updateData = [
                 'roll_status' => $rollData['status'],
                 'roll_status_previous' => $rollData['status_prev'],
@@ -108,7 +114,7 @@ class CellFabricTaskRollController extends Controller
                 'description' => $rollData['descr'],
                 'false_reason' => $rollData['false_reason'],
                 'textile_roll_length' => $rollData['textile_length'],
-                'fabric_roll_length' => (float)$rollData['rate'] === 0.0 ? 0.0 : $rollData['textile_length'] / $rollData['rate'],
+                'fabric_roll_length' => (float)$rollData['rate'] === 0.0 ? 0.0 : $rollData['textile_length'] / $rollData['rate'] / $fabric->textile_layers_amount,
 
                 'user_id' => Auth::id(),    // Текущий пользователь
             ];
@@ -128,7 +134,7 @@ class CellFabricTaskRollController extends Controller
             // __ Тут логика обновления рулона. Если статус рулона DONE - необходимо обновить буфер ткани
             if ($taskRoll->roll_status === FABRIC_ROLL_DONE_CODE) {
 
-                $fabric = Fabric::query()->find($taskRoll->fabric_id); // Находим нужную ткань
+                // $fabric = Fabric::query()->find($taskRoll->fabric_id); // Находим нужную ткань
 
                 if ($fabric) {
 
@@ -469,7 +475,7 @@ class CellFabricTaskRollController extends Controller
                 'fabric_task_id' => $task->id,
                 'fabric_id' => $fabric->id,
                 'roll_position' => ++$maxContextPosition,       // Вставляем найденную позицию
-                'average_textile_length' => $fabric->average_roll_length,
+                'average_textile_length' => $fabric->average_roll_length * $fabric->textile_layers_amount,
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
                 'rolls_amount' => 1,
@@ -483,7 +489,8 @@ class CellFabricTaskRollController extends Controller
                 'fabric_id' => $fabric->id,
                 'roll_position' => ++$maxRollPosition,
                 'roll_status' => FABRIC_ROLL_CREATED_CODE,
-                'textile_roll_length' => $fabric->average_roll_length,
+                'textile_roll_length' => $fabric->average_roll_length * $fabric->textile_layers_amount,
+                'fabric_roll_length' => (float)$fabric->translate_rate === 0.0 ? 0.0 :  $fabric->average_roll_length / $fabric->translate_rate,
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
                 'description' => 'Создан в процессе выполнения',   // дописываем плановый комментарий
