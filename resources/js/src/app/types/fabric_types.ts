@@ -269,3 +269,19 @@ export interface IFabricExpenseOrder {
 }
 
 // line --------------------------------------------------------------
+
+
+// line --------------------------------------------------------------
+// line ------------------- Время переналадки ------------------------
+// line --------------------------------------------------------------
+
+export interface ITimeItem {
+    pic: ITimePicture
+    times: number[]
+}
+
+export interface ITimePicture {
+    id: number
+    machine_id: number
+    name: string
+}

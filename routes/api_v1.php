@@ -223,7 +223,7 @@ Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
 Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabricsBuffer'])->middleware('jwt.auth');
 Route::get('/fabric/average/length/', [CellFabricController::class, 'getFabricAverageLength'])->middleware('jwt.auth');
-Route::get('fabrics/pictures/tuning/time/', [CellFabricController::class, 'getFabricsPicturesTuningTime'])->middleware('jwt.auth');
+
 
 // __ Рисунки стежки ПС
 Route::get('/fabrics/pictures', [CellFabricPictureController::class, 'getFabricPictures'])->middleware('jwt.auth');
@@ -231,6 +231,7 @@ Route::put('/fabrics/pictures/update', [CellFabricPictureController::class, 'upd
 Route::post('/fabrics/pictures/create', [CellFabricPictureController::class, 'createFabricPictures'])->middleware('jwt.auth');
 Route::get('/fabrics/picture/{id}', [CellFabricPictureController::class, 'getFabricPicture'])->middleware('jwt.auth');
 Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
+Route::get('fabrics/pictures/tuning/time/', [CellFabricPictureController::class, 'getFabricsPicturesTuningTime'])->middleware('jwt.auth');
 //Route::post('/fabrics/pictures/upload', function(Request $request){
 //    return json_encode($request->all());
 //})->middleware('jwt.auth');

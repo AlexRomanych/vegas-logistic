@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureResource;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureTuningTimeResource;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
 use App\Services\Manufacture\FabricService;
 use Exception;
@@ -239,5 +240,39 @@ class CellFabricPictureController extends Controller
 
         return EndPointStaticRequestAnswer::ok();
     }
+
+
+    public function getFabricsPicturesTuningTime(Request $request)
+    {
+        // try {
+
+        // $tuningTime = FabricTuningTime::query()
+        //     ->with(['picturesFrom', 'picturesTo'])
+        //     ->get();
+
+        $tuningTime = FabricPicture::query()
+            ->with(['picturesFrom', 'picturesTo'])
+            ->get();
+
+        $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
+
+        $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
+
+        // $arrayOfData = $a->toArray(request());
+
+        return ['data' => $matrix];
+        // return FabricPictureTuningTimeResource::collection($tuningTime);
+
+
+
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
+    }
+
+
+
+
+
 
 }

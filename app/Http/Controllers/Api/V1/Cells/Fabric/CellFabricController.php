@@ -336,32 +336,7 @@ class CellFabricController extends Controller
     }
 
 
-    public function getFabricsPicturesTuningTime()
-    {
-        // try {
 
-        // $tuningTime = FabricTuningTime::query()
-        //     ->with(['picturesFrom', 'picturesTo'])
-        //     ->get();
-
-        $tuningTime = FabricPicture::query()
-            ->with(['picturesFrom', 'picturesTo'])
-            ->get();
-
-        $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime);
-
-        $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
-
-        // $arrayOfData = $a->toArray(request());
-
-        return FabricPictureTuningTimeResource::collection($tuningTime);
-
-
-
-        // } catch (Exception $e) {
-        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
-        // }
-    }
 
 
 }

@@ -397,13 +397,53 @@ final class FabricService
         }
     }
 
-
-    public static function getPicturesTuningTimeMatrix(AnonymousResourceCollection $arrayOfData): array
+    /**
+     * ___ Преобразуем данные в матрицу времени переналадки
+     * @param array $arrayOfData
+     * @return array
+     */
+    public static function getPicturesTuningTimeMatrix(array $arrayOfData): array
     {
+        $matrix = $arrayOfData;
+
+        // __ Сортируем по id
+        usort($matrix, fn($a, $b) => $a['id'] <=> $b['id']);
+
+        $resultMatrix = [];
+
+        foreach ($matrix as $item) {
+
+            $pic = [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'machine_id' => $item['fabric_main_machine']['id']
+            ];
+
+            $times = [];
+            $times = array_pad($times, count($matrix), 0);
+
+            foreach ($item['pictures_from'] as $pictureFrom) {
+                $times[$pictureFrom['picture_to']] = $pictureFrom['tuning_time'];
+            }
+
+            // foreach ($item['pictures_to'] as $pictureTo) {
+            //     // $times[$pictureTo['id']] = $pictureTo['tuning_time'];
+            // }
+
+            $resultMatrix[] = [
+                'pic' => $pic,
+                'times' => $times,
+            ];
+
+            // $resultMatrix[$item['id']] = [
+            //     'pic' => $pic,
+            //     'times' => $times,
+            // ];
+
+        }
 
 
-
-        return [];
+            return $resultMatrix;
     }
 
 

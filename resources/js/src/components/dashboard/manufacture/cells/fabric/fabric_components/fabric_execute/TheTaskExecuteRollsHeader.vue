@@ -55,7 +55,7 @@
         <!-- __ Количество рулонов в ПС -->
         <AppLabelMultiLine
             v-if="rollsRender.textileLayersAmount.show"
-            :text="['Кол-во', 'рул.']"
+            :text="['Рул.', 'в ПС']"
             :type="getHeaderType()"
             :width="rollsRender.textileLayersAmount.width"
             :align="rollsRender.textileLayersAmount.align"

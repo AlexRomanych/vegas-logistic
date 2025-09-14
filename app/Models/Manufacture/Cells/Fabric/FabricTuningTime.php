@@ -9,6 +9,10 @@ class FabricTuningTime extends Model
 {
     protected $guarded = false;
 
+    protected $casts = [
+        'tuning_time' => 'integer',
+    ];
+
     // Relations: Рисунок, с которого происходит переналадка
     public function picturesFrom(): BelongsTo
     {
