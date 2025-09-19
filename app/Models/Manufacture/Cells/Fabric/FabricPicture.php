@@ -19,16 +19,16 @@ class FabricPicture extends Model
     ];
 
 
-    protected $with = [
-        'fabricMainMachine',
-        'fabricAltMachine_1',
-        'fabricAltMachine_2',
-        'fabricAltMachine_3',
-        'fabricMainMachineSchema',
-        'fabricAltMachineSchema_1',
-        'fabricAltMachineSchema_2',
-        'fabricAltMachineSchema_3',
-    ];
+    // protected $with = [
+    //     'fabricMainMachine',
+    //     'fabricAltMachine_1',
+    //     'fabricAltMachine_2',
+    //     'fabricAltMachine_3',
+    //     'fabricMainMachineSchema',
+    //     'fabricAltMachineSchema_1',
+    //     'fabricAltMachineSchema_2',
+    //     'fabricAltMachineSchema_3',
+    // ];
 
 
     //    protected $attributes = [
@@ -97,13 +97,13 @@ class FabricPicture extends Model
         return $this->belongsTo(FabricPictureSchema::class, 'alt_machine_3_schema_id', 'id', 'fabric_picture_schemas');
     }
 
-    // Relations: Рисунок, с которого происходит переналадка
+    // Relations: Рисунок, с которого происходит переналадка, будет содержать id текущего рисунка
     public function picturesFrom(): HasMany
     {
         return $this->hasMany(FabricTuningTime::class, 'picture_from', 'id');
     }
 
-    // Relations: Рисунок, на который происходит переналадка
+    // Relations: Рисунок, на который происходит переналадка, будет содержать id рисунков и id текущего рисунка
     public function picturesTo(): HasMany
     {
         return $this->hasMany(FabricTuningTime::class, 'picture_to', 'id');

@@ -1,39 +1,33 @@
 <template>
+
     <div :class="width" class="flex flex-col ml-0.5 mr-0.5 mt-2">
-        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass]" :for="id">{{
-            label
-        }}</label>
+        <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
         <!--@input="getInputText"-->
         <input
             :id="id"
             v-model="textModel"
-            :class="[
-                'app-input',
-                height,
-                borderColor,
-                focusBorderColor,
-                placeholderColor,
-                placeholderBgColor,
-                textSizeClass,
-            ]"
+            :class="['app-input', height, borderColor, focusBorderColor, placeholderColor, textSizeClass]"
             :disabled="disabled"
             :placeholder="placeholder"
             :type="func"
             :value="textModel"
+            @input="event => (textModel = (event.target as HTMLInputElement).value)"
             @blur="leaveFocus"
-            @input="(event) => (textModel = (event.target as HTMLInputElement).value)"
-        />
+        >
 
         <div v-if="errors" class="mt-0.5">
             <div v-for="(err, index) in errors" :key="index" :class="['input-error', textColor]">
                 {{ err.$message }}
             </div>
         </div>
+
     </div>
+
 </template>
 
+
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, } from 'vue'
 
 import { type IColorTypes } from '@/app/constants/colorsClasses.js'
 import { type IFontsType } from '@/app/constants/fontSizes.js'
@@ -41,16 +35,16 @@ import { type IFontsType } from '@/app/constants/fontSizes.js'
 import { getColorClassByType, getFontSizeClass } from '@/app/helpers/helpers.js'
 
 interface IProps {
-    id: string
-    type?: IColorTypes
-    func?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url'
-    placeholder?: string
-    label?: string
-    disabled?: boolean
-    width?: string
-    height?: string
+    id: string,
+    type?: IColorTypes,
+    func?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url',
+    placeholder?: string,
+    label?: string,
+    disabled?: boolean,
+    width?: string,
+    height?: string,
     errors?: any[] | null
-    textSize?: IFontsType
+    textSize?: IFontsType,
     labelTextSize?: IFontsType
 }
 
@@ -76,29 +70,21 @@ const emits = defineEmits<{
 // }>()
 
 // __ Определяем модель
-const textModel = defineModel<string>('textValue', { required: true })
+const textModel = defineModel<string>('textValue', {required: true})
 
-const currentColorIndex = 600 // задаем основной индекс палитры tailwinds
-const currentColor = computed(() => getColorClassByType(props.type) + currentColorIndex)
+const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
+const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
-// console.log(currentColor.value)
+const placeholderColor = 'placeholder' + currentColor
+const borderColor = 'border' + currentColor
+const backgroundColor = 'bg' + currentColor
+const focusBorderColor = 'focus:ring' + currentColor
 
-const placeholderColor = computed(() => 'placeholder' + currentColor.value)
-const placeholderBgColor = 'bg-white'
-
-// const placeholderBgColor = computed(
-//     () => 'bg' + (getColorClassByType(props.type) + (currentColorIndex - 500)),
-// )
-
-const borderColor = computed(() => 'border' + currentColor.value)
-const backgroundColor = computed(() => 'bg' + currentColor.value)
-const focusBorderColor = computed(() => 'focus:ring' + currentColor.value)
-
-const textColor = computed(() => 'text' + currentColor.value)
+const textColor = 'text' + currentColor
 // attract: Делает цвет темнее
 // textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
-const textSizeClass = computed(() => getFontSizeClass(props.textSize))
-const labelTextSizeClass = computed(() => getFontSizeClass(props.labelTextSize))
+const textSizeClass = ref(getFontSizeClass(props.textSize))
+const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
 
 // warn: (e: Event), а не (e: InputEvent), потому что сразу не типизируется <input />
 // const getInputText = (e: Event) => {
@@ -107,22 +93,22 @@ const labelTextSizeClass = computed(() => getFontSizeClass(props.labelTextSize))
 //     emits('update:textValue', target.value)
 // }
 
+
 const leaveFocus = () => emits('leaveFocus')
+
 </script>
 
 <style scoped>
-@reference "@css/app.css";
-
 .app-input {
     @apply p-1 border rounded-lg focus:outline-none focus:ring-2;
 }
 
 .app-input::placeholder {
-    @apply text-xs;
+    @apply text-xs
 }
 
 .app-input:focus {
-    @apply outline-none ring-2 ring-black;
+    @apply outline-none ring-2 ring-black
 }
 
 .input-error {
@@ -130,6 +116,7 @@ const leaveFocus = () => emits('leaveFocus')
 }
 
 .input-label {
-    @apply font-semibold ml-2 mb-0.5 mt-2;
+    @apply font-semibold ml-2 mb-0.5 mt-2
 }
+
 </style>

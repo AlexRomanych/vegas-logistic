@@ -23,7 +23,21 @@ class CellFabricPictureController extends Controller
     public function getFabricPictures()
     {
         try {
-            return FabricPictureResource::collection(FabricPicture::all());
+            $fabricPictures = FabricPicture::query()
+                ->with([
+                    'fabricMainMachine',
+                    'fabricAltMachine_1',
+                    'fabricAltMachine_2',
+                    'fabricAltMachine_3',
+                    'fabricMainMachineSchema',
+                    'fabricAltMachineSchema_1',
+                    'fabricAltMachineSchema_2',
+                    'fabricAltMachineSchema_3',
+                ])
+                ->get();
+
+
+            return FabricPictureResource::collection($fabricPictures);
         } catch (\Exception $e) {
             return EndPointStaticRequestAnswer::fail($e->getMessage());
         }
@@ -37,7 +51,20 @@ class CellFabricPictureController extends Controller
     public function getFabricPicture($id)
     {
         try {
-            return new FabricPictureResource(FabricPicture::query()->find($id));
+            $picture = FabricPicture::query()
+                ->with([
+                    'fabricMainMachine',
+                    'fabricAltMachine_1',
+                    'fabricAltMachine_2',
+                    'fabricAltMachine_3',
+                    'fabricMainMachineSchema',
+                    'fabricAltMachineSchema_1',
+                    'fabricAltMachineSchema_2',
+                    'fabricAltMachineSchema_3',
+                ])
+                ->find($id);
+
+            return new FabricPictureResource($picture);
         } catch (\Exception $e) {
             return EndPointStaticRequestAnswer::fail($e->getMessage());
         }
@@ -251,28 +278,33 @@ class CellFabricPictureController extends Controller
         //     ->get();
 
         $tuningTime = FabricPicture::query()
-            ->with(['picturesFrom', 'picturesTo'])
+            ->with([
+                'fabricMainMachine',                                          // добавляем основную СМ
+                'picturesFrom',                                               // добавляем рисунки из которых производится тюнинг
+                'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine', // добавляем объекты рисунков и СМ
+            ])
+            // ->with([
+            //     'fabricMainMachine',
+            //     'picturesFrom.picFrom', 'picturesFrom.picFrom.fabricMainMachine',
+            //     'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine',
+            //     'picturesTo.picFrom', 'picturesTo.picFrom.fabricMainMachine',
+            //     'picturesTo.picTo', 'picturesTo.picTo.fabricMainMachine',
+            // ])
             ->get();
 
-        $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
+        return FabricPictureTuningTimeResource::collection($tuningTime);
+        // return FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
 
-        $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
-
-        // $arrayOfData = $a->toArray(request());
-
+        // $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
+        // $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
         return ['data' => $matrix];
+
         // return FabricPictureTuningTimeResource::collection($tuningTime);
-
-
 
         // } catch (Exception $e) {
         //     return EndPointStaticRequestAnswer::fail(response()->json($e));
         // }
     }
-
-
-
-
 
 
 }

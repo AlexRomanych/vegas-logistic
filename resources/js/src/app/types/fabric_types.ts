@@ -276,12 +276,27 @@ export interface IFabricExpenseOrder {
 // line --------------------------------------------------------------
 
 export interface ITimeItem {
-    pic: ITimePicture
-    times: number[]
+    id: number
+    name: string
+    active: boolean
+    machine: ITimeMachine
+    pictures: ITimePictureSchema[]
+}
+
+export interface ITimeMachine {
+    id: number
+    name: string
+    short_name: string
 }
 
 export interface ITimePicture {
     id: number
-    machine_id: number
     name: string
+    active: boolean
+    machine: ITimeMachine
+}
+
+export interface ITimePictureSchema {
+    pic: ITimePicture
+    tuning_time: number
 }

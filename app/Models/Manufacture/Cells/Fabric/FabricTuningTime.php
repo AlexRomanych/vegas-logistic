@@ -14,13 +14,13 @@ class FabricTuningTime extends Model
     ];
 
     // Relations: Рисунок, с которого происходит переналадка
-    public function picturesFrom(): BelongsTo
+    public function picFrom(): BelongsTo
     {
         return $this->belongsTo(FabricPicture::class, 'picture_from', 'id');
     }
 
     // Relations: Рисунок, на который происходит переналадка
-    public function picturesTo(): BelongsTo
+    public function picTo(): BelongsTo
     {
         return $this->belongsTo(FabricPicture::class, 'picture_to', 'id');
     }

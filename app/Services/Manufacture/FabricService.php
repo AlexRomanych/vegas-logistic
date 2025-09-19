@@ -24,6 +24,7 @@ final class FabricService
 {
     private static array $fabricsNameCache = [];                       // Кэш ПС по имени
     private static array $fabricPicsNameCache = [];                    // Кэш рисунков ПС по имени
+    // private static array $fabricIdsCache = [];                         // Кэш рисунков ПС по ID
     private static array $fabricMachinesNameCache = [];                // Кэш стегальных машин
     private static array $fabricPicSchemasNameCache = [];              // Кэш схем мгл рисунков
 
@@ -63,7 +64,7 @@ final class FabricService
     // attract: рисунки ПС
 
     /**
-     * Получаем рисунок по имени
+     * ___ Получаем рисунок по имени
      * @param string $name
      * @return FabricPicture|null
      */
@@ -82,7 +83,7 @@ final class FabricService
 
 
     /**
-     * Кэшируем рисунки: ключ - имя, значение - объект рисунка
+     * __ Кэшируем рисунки: ключ - имя, значение - объект рисунка
      * @return void
      */
     private static function cacheFabricPicsByName(): void
@@ -399,6 +400,7 @@ final class FabricService
 
     /**
      * ___ Преобразуем данные в матрицу времени переналадки
+     * ___ Пока оставляем неиспользуемой, все преобразования будут на фронте
      * @param array $arrayOfData
      * @return array
      */
@@ -416,7 +418,7 @@ final class FabricService
             $pic = [
                 'id' => $item['id'],
                 'name' => $item['name'],
-                'machine_id' => $item['fabric_main_machine']['id']
+                'machine_id' => $item['machine']['id']
             ];
 
             $times = [];
@@ -424,6 +426,10 @@ final class FabricService
 
             foreach ($item['pictures_from'] as $pictureFrom) {
                 $times[$pictureFrom['picture_to']] = $pictureFrom['tuning_time'];
+                // $times[$pictureFrom['picture_to']] = $pictureFrom['tuning_time'];
+
+                // $workPic = self::getFabricPicByName();
+
             }
 
             // foreach ($item['pictures_to'] as $pictureTo) {

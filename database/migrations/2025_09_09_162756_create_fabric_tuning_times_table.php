@@ -44,6 +44,9 @@ return new class extends Migration
             $table->string('note')->nullable()->comment('Примечание');
 
             $table->timestamps();
+
+            // __ Уникальное сочетание для 'Защиты от дурака'
+            $table->unique(['picture_from', 'picture_to']);
         });
     }
 

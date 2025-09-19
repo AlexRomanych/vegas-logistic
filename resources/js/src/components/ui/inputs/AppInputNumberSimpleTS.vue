@@ -5,7 +5,7 @@
         <input
             :id="id"
 
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass ]"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass, horizontalAlign]"
             :disabled="disabled"
             :placeholder="placeholder"
             :step="step"
@@ -32,7 +32,12 @@ import type { IHorizontalAlign } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 import type { IFontsType } from '@/app/constants/fontSizes.js'
 
-import { getColorClassByType, getFontSizeClass, getTextColorClassByType } from '@/app/helpers/helpers.js'
+import {
+    getColorClassByType,
+    getFontSizeClass,
+    getHorizontalAlignText,
+    getTextColorClassByType
+} from '@/app/helpers/helpers.js'
 
 interface IProps {
     id: string
@@ -81,9 +86,11 @@ const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIn
 const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 const textColor = ref('text' + currentColor)
 
-// __ вычисляем горизонтальное выравнивание
-const horizontalAlign = ref('text-' + props.align)
-const semibold = ref(props.bold ? 'font-semibold' : '')
+// __ горизонтальное выравнивание
+const horizontalAlign = computed(() => getHorizontalAlignText(props.align))
+
+// __ стили для текста
+const semibold = computed(() => props.bold ? 'font-semibold' : '')
 
 const textSizeClass = ref(getFontSizeClass(props.textSize))
 const labelTextSizeClass = ref(getFontSizeClass(props.labelTextSize))
@@ -106,9 +113,7 @@ watch(() => props.type, (newType) => {
     textColor.value = currentTextColor.value.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 })
 
-watch(() => props.align, (newAlign) => horizontalAlign.value = 'text-' + newAlign)
 watch(() => props.textSize, (newTextSize) => textSizeClass.value = getFontSizeClass(newTextSize))
-watch(() => props.bold, (newBold) => semibold.value = newBold ? 'font-semibold' : '')
 
 </script>
 

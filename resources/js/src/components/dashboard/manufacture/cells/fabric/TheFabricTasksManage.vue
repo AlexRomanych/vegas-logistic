@@ -180,6 +180,8 @@ import {
     // getISOFromLocaleDate,
 } from '@/app/helpers/helpers_date.js'
 
+import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
+
 import TheTaskCommonInfo
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheTaskCommonInfo.vue'
 
@@ -194,8 +196,6 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
-
 
 const isLoading = ref(true)
 // __ End Loader

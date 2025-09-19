@@ -1,6 +1,7 @@
 // Info Тут все константы, касающиеся участка Стежки
 
 import type { IFabricMachine, ITaskStatus, IRoll, IFabric } from '@/types'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 /*
  // attract Это из PHP, в ней все названия и значения для статусов
@@ -225,43 +226,57 @@ export const FABRIC_PAGE_MODE = Object.freeze({
 })
 
 // ___ Константы ID машин стежки
-interface IConstFabricMachine {
+export interface IConstFabricMachine {
     ID: number
     TITLE: string
     NAME: string
     INDEX: string
+    ORIGIN: string
+    TYPE: IColorTypes
 }
 
-export const FABRIC_MACHINES: Record<string, IConstFabricMachine> = Object.freeze({
+export type IMachineKey = 'UNKNOWN' | 'AMERICAN' | 'GERMAN' | 'CHINA' | 'KOREAN'
+
+export const FABRIC_MACHINES: Record<IMachineKey, IConstFabricMachine> = Object.freeze({
     UNKNOWN: {
         ID: 0,
         TITLE: 'unknown',
         NAME: 'Неизвестно',
         INDEX: 'unknown',
+        ORIGIN: '',
+        TYPE: 'dark'
     },
     AMERICAN: {
         ID: 1,
         TITLE: 'american',
         NAME: 'Американец',
         INDEX: 'american',
+        ORIGIN: 'LEGACY-4',
+        TYPE: 'orange'
     },
     GERMAN: {
         ID: 2,
         TITLE: 'german',
         NAME: 'Немец',
         INDEX: 'german',
+        ORIGIN: 'CHAINTRONIC',
+        TYPE: 'success'
     },
     CHINA: {
         ID: 3,
         TITLE: 'china',
         NAME: 'Китаец',
         INDEX: 'china',
+        ORIGIN: 'HY-W-DGW',
+        TYPE: 'danger'
     },
     KOREAN: {
         ID: 4,
         TITLE: 'korean',
         NAME: 'Кореец',
         INDEX: 'korean',
+        ORIGIN: 'МТ-94',
+        TYPE: 'warning'
     },
 })
 

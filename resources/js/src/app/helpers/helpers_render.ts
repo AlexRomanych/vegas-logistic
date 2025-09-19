@@ -66,3 +66,9 @@ export function getHorizontalAlign(alignPosition: IHorizontalAlign): string {
     }
     return horizontalAlign
 }
+
+
+// ___ Возвращает выравнивание текста в тегах
+export function getHorizontalAlignText(alignPosition: IHorizontalAlign): string {
+    return 'text-' + alignPosition
+}
