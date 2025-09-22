@@ -26,7 +26,7 @@
 
         <!-- __ Выводим время переналадки (верхняя строка) -->
         <div class="flex ml-[64px] mb-[5px]">
-            <div v-for="(time, index) of renderTimes" :key="time.id">
+            <div v-for="time of renderTimes" :key="time.id">
                 <div v-if="time.id !== 0">
 
                     <AppLabel
@@ -62,24 +62,27 @@
                     <!--__ Данные -->
                     <div v-for="(subTime, subIndex) of time.pictures" :key="subTime.pic.id" class="mt-[3px]">
 
-                        <!--{{ `(${time.id},${subTime.pic.id})` }}-->
-
                         <AppInputNumberSimpleTS
-                            :id="'time' + time.id.toString() + subTime.pic.id.toString()"
+                            :id="'t' + index.toString() + 's' + subIndex.toString()"
                             v-model:inputNumber.number="subTime.tuning_time"
+                            :bg-color="true"
                             :disabled="time.id === subTime.pic.id"
+                            :show-spins="false"
+                            :show-zeros="showZeros === null ? subTime.db : showZeros"
                             :type="getType(time, subTime)"
                             align="center"
                             class="ml-[-1px] mt-[-1px]"
                             height="h-[40px]"
+                            placeholder=""
                             text-size="micro"
                             width="w-[51px]"
+                            @take-focus="takeFocus"
                             @leave-focus="handleTime(time, subTime)"
                             @keyup.enter="handleTime(time, subTime)"
+                            @keydown.ctrl.delete="eraseTime(time, subTime)"
                         />
 
                     </div>
-
 
                 </div>
             </div>
@@ -103,8 +106,8 @@ import { deepCopy } from '@/app/helpers/helpers_lib.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import TheDividerLine from '@/components/dashboard/manufacture/cells/components/TheDividerLine.vue'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
-import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
+// import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
@@ -133,7 +136,8 @@ const fabricsStore = useFabricsStore()
 const tuningTimes = ref<ITimeItem[]>([])
 const renderTimes = ref<ITimeItem[]>([])
 
-const timeModel = ref('')
+const showZeros = ref<null | boolean>(null) // Показывать нули в таблице
+
 
 // __ Задаем отображение вкладок СМ
 const TYPE_PASSIVE = 'dark'
@@ -202,11 +206,12 @@ const getTuningTime = async () => {
             }
         },
         tuning_time: 0,
+        db: false,  // __ Для отрисовки '0' в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
     }
 
-    tuningTimes.value.forEach((time, index) => {
+    tuningTimes.value.forEach((time, /*index*/) => {
 
-        tuningTimes.value.forEach((subTime, subIndex) => {
+        tuningTimes.value.forEach((subTime, /*subIndex*/) => {
 
             const findTime = time.pictures.find(item => item.pic.id === subTime.id)
             if (!findTime) {
@@ -219,6 +224,8 @@ const getTuningTime = async () => {
                 dubNullPicture.tuning_time = 0
 
                 time.pictures.push(dubNullPicture)
+            } else {
+                findTime.db = true
             }
         })
 
@@ -294,26 +301,69 @@ const getType = (time: ITimeItem, subTime: ITimePictureSchema) => {
         }
     }
 
-
-    // if (time.machine.id === subTime.machine.id) {
-    //     const findMachineKey = Object.keys(FABRIC_MACHINES).find(key => FABRIC_MACHINES[key].ID === time.machine.id)
-    //     return findMachineKey ? FABRIC_MACHINES[findMachineKey].TYPE : 'dark'
-    // }
-
     return 'dark'
 }
 
 
 // __ Обработчик изменения времени
-const handleTime = (time: ITimeItem, subTime: ITimePictureSchema) => {
+const handleTime = async (time: ITimeItem, subTime: ITimePictureSchema) => {
     console.log('time.id:', time.id)
     console.log('subTime.id:', subTime.pic.id)
-    console.log('timeModel:', timeModel.value)
+    console.log('tuning_time:', subTime.tuning_time)
+
+    showZeros.value = subTime.db!
+
+    // Находим исходник, из которого все копируется
+    const findTime = tuningTimes.value.find(item => item.id === time.id)
+    const findSubTime = findTime?.pictures.find(item => item.pic.id === subTime.pic.id)
+
+    // Выходим, если не заполнено время, возвращая копию из массива
+    if (subTime.tuning_time === null) {
+        if (findSubTime) {
+            subTime.tuning_time = findSubTime.tuning_time
+        }
+        return
+    }
+
+    if (subTime.tuning_time === findSubTime?.tuning_time && subTime.db) return    // Выходим, если время не изменилось
+
+    /*const res =*/ await fabricsStore.setFabricsPicturesTuningTime(time.id, subTime.pic.id, subTime.tuning_time) // Обновляем время
+
+    if (findSubTime) {
+        findSubTime.tuning_time = subTime.tuning_time   // Обновляем время в исходнике без перезагрузки
+        findSubTime.db = true   // Обновляем признак, что время из БД на сервере, а не сгенерировано на фронте
+    }
 
 }
 
-onMounted(async () => {
 
+// __ Обработчик изменения времени
+const eraseTime = async (time: ITimeItem, subTime: ITimePictureSchema) => {
+    console.log('er time.id:', time.id)
+    console.log('subTime.id:', subTime.pic.id)
+    console.log('tuning_time:', subTime.tuning_time)
+
+    // Находим исходник, из которого все копируется
+    const findTime = tuningTimes.value.find(item => item.id === time.id)
+    if (!findTime) return
+
+    const findSubTime = findTime.pictures.find(item => item.pic.id === subTime.pic.id)
+    if (!findSubTime) return
+
+    await fabricsStore.deleteFabricsPicturesTuningTime(time.id, subTime.pic.id)
+
+    subTime.tuning_time = 0
+    findSubTime.tuning_time = subTime.tuning_time // Обновляем время в исходнике без перезагрузки
+    findSubTime.db = false // Обновляем признак, что время из БД на сервере, а не сгенерировано на фронте
+}
+
+
+const takeFocus = (/*time: ITimeItem, subTime: ITimePictureSchema*/) => {
+    showZeros.value = true
+    // console.log('takeFocus:')
+}
+
+onMounted(async () => {
 
     isLoading.value = true
     const loadingService = useLoading()
@@ -321,8 +371,6 @@ onMounted(async () => {
         loadingService,
         async () => {
             await getTuningTime()
-
-
             setActiveTab(tabs.common)
         },
         undefined,

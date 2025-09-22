@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manufacture\Fabric\TuningTime\DeleteTuningTimeRequest;
+use App\Http\Requests\Manufacture\Fabric\TuningTime\StoreTuningTimeRequest;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureTuningTimeResource;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
+use App\Models\Manufacture\Cells\Fabric\FabricTuningTime;
 use App\Services\Manufacture\FabricService;
 use Exception;
 use Illuminate\Http\Request;
@@ -268,43 +271,100 @@ class CellFabricPictureController extends Controller
         return EndPointStaticRequestAnswer::ok();
     }
 
-
+    /**
+     * ___ Получаем время переналадки рисунков
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function getFabricsPicturesTuningTime(Request $request)
     {
-        // try {
+        try {
 
-        // $tuningTime = FabricTuningTime::query()
-        //     ->with(['picturesFrom', 'picturesTo'])
-        //     ->get();
+            // $tuningTime = FabricTuningTime::query()
+            //     ->with(['picturesFrom', 'picturesTo'])
+            //     ->get();
 
-        $tuningTime = FabricPicture::query()
-            ->with([
-                'fabricMainMachine',                                          // добавляем основную СМ
-                'picturesFrom',                                               // добавляем рисунки из которых производится тюнинг
-                'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine', // добавляем объекты рисунков и СМ
-            ])
-            // ->with([
-            //     'fabricMainMachine',
-            //     'picturesFrom.picFrom', 'picturesFrom.picFrom.fabricMainMachine',
-            //     'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine',
-            //     'picturesTo.picFrom', 'picturesTo.picFrom.fabricMainMachine',
-            //     'picturesTo.picTo', 'picturesTo.picTo.fabricMainMachine',
-            // ])
-            ->get();
+            $tuningTime = FabricPicture::query()
+                ->with([
+                    'fabricMainMachine',                                          // добавляем основную СМ
+                    'picturesFrom',                                               // добавляем рисунки из которых производится тюнинг
+                    'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine', // добавляем объекты рисунков и СМ
+                ])
+                // ->with([
+                //     'fabricMainMachine',
+                //     'picturesFrom.picFrom', 'picturesFrom.picFrom.fabricMainMachine',
+                //     'picturesFrom.picTo', 'picturesFrom.picTo.fabricMainMachine',
+                //     'picturesTo.picFrom', 'picturesTo.picFrom.fabricMainMachine',
+                //     'picturesTo.picTo', 'picturesTo.picTo.fabricMainMachine',
+                // ])
+                ->get();
 
-        return FabricPictureTuningTimeResource::collection($tuningTime);
-        // return FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
+            return FabricPictureTuningTimeResource::collection($tuningTime);
+            // return FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
 
-        // $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
-        // $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
-        return ['data' => $matrix];
+            // $arrayOfData = FabricPictureTuningTimeResource::collection($tuningTime)->toArray($request);
+            // $matrix = FabricService::getPicturesTuningTimeMatrix($arrayOfData);
+            // return ['data' => $matrix];
 
-        // return FabricPictureTuningTimeResource::collection($tuningTime);
+            // return FabricPictureTuningTimeResource::collection($tuningTime);
 
-        // } catch (Exception $e) {
-        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
-        // }
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
     }
+
+    /**
+     * ___ Обновление/создание времени переналадки рисунков
+     * @param StoreTuningTimeRequest $request
+     * @return string
+     */
+    public function setFabricsPicturesTuningTime(StoreTuningTimeRequest $request)
+    {
+        try {
+            $tuningTime = FabricTuningTime::query()
+                ->updateOrCreate([
+                    'picture_from' => $request->input('from'),
+                    'picture_to' => $request->input('to'),
+                ],[
+                    'tuning_time' => $request->input('time'),
+                ]);
+
+            if (!$tuningTime) {
+                throw new Exception('Tuning time not found');
+            }
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Удаление времени переналадки рисунков
+     * @param DeleteTuningTimeRequest $request
+     * @return string
+     */
+    public function deleteFabricsPicturesTuningTime(DeleteTuningTimeRequest $request)
+    {
+        try {
+            $tuningTime = FabricTuningTime::query()
+            ->where('picture_from', $request->input('from'))
+            ->where('picture_to', $request->input('to'))
+            ->first();
+
+            if (!$tuningTime) {
+                throw new Exception('Tuning time not found');
+            }
+
+            $tuningTime->delete();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
 
 
 }

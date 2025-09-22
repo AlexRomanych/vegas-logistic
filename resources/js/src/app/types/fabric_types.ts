@@ -299,4 +299,5 @@ export interface ITimePicture {
 export interface ITimePictureSchema {
     pic: ITimePicture
     tuning_time: number
+    db?: boolean                    // __ Для отрисовки в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
 }

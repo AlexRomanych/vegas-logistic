@@ -124,7 +124,7 @@ export async function jwtDelete(url, data = {}) {
     try {
         const response = await jwtAxios.delete(url, { data: data })
 
-        console.log(response)
+        // console.log(response)
 
         const res = await response.data
         return res
