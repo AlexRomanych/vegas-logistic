@@ -809,6 +809,10 @@ onMounted(async () => {
         undefined,
         // false,
     )
+
+    const time = await fabricsStore.getFabricsPicturesBetweenTuningTime(150, 150)
+    console.log('time: ', time)
+
     isLoading.value  = false
 })
 

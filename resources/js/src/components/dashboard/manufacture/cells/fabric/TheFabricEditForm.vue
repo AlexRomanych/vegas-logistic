@@ -27,6 +27,7 @@
                         label="Название ПС"
                         placeholder="Введите название ПС"
                         width="w-[364px]"
+                        @leave-focus="nameHandler"
                     />
                 </div>
 
@@ -34,7 +35,7 @@
 
                     <!-- __ Средняя длина рулона ткани, м.п. -->
                     <AppInputNumberSimpleTS
-                        id="average_textile_length"
+                        id="average-textile-length"
                         v-model:inputNumber.number="v$.averageTextileLengthHand.$model as unknown as number"
                         :disabled="statistic"
                         :errors="v$.averageTextileLengthHand.$errors"
@@ -66,7 +67,7 @@
 
                     <!-- __ Средняя длина ткани по статистике -->
                     <AppInputNumberSimpleTS
-                        id="buffer_rolls"
+                        id="average-length"
                         v-model:inputNumber.number="averageTextileLengthStatistic"
                         :disabled="true"
                         label="Ср. длина ткани по статистике (1 мес.)"
@@ -82,7 +83,7 @@
 
                     <!-- __ Буфер, м.п. -->
                     <AppInputNumberSimpleTS
-                        id="buffer_meters"
+                        id="buffer-meters"
                         v-model:inputNumber.number="v$.bufferAmount.$model as unknown as number"
                         :errors="v$.bufferAmount.$errors"
                         label="Буфер, м.п."
@@ -93,7 +94,7 @@
 
                     <!-- __ Буфер, рул. -->
                     <AppInputNumberSimpleTS
-                        id="buffer_rolls"
+                        id="buffer-rolls"
                         v-model:inputNumber.number="v$.bufferRolls.$model as unknown as number"
                         :disabled="true"
                         :errors="v$.bufferRolls.$errors"
@@ -109,7 +110,7 @@
 
                     <!-- __ Мин. запас ПС, рул. -->
                     <AppInputNumberSimpleTS
-                        id="min_buffer_rolls"
+                        id="min-buffer-rolls"
                         v-model:inputNumber.number="v$.minRolls.$model as unknown as number"
                         :errors="v$.minRolls.$errors"
                         label="Минимальный запас ПС, рул."
@@ -120,7 +121,7 @@
 
                     <!-- __ Макс. запас ПС, рул. -->
                     <AppInputNumberSimpleTS
-                        id="max_buffer_rolls"
+                        id="max-buffer-rolls"
                         v-model:inputNumber.number="v$.maxRolls.$model as unknown as number"
                         :errors="v$.maxRolls.$errors"
                         label="Максимальный запас ПС, рул."
@@ -135,7 +136,7 @@
 
                     <!-- __ Оптимальная партия для запуска, м.п. (ОПЗ) -->
                     <AppInputNumberSimpleTS
-                        id="optimal_party"
+                        id="optimal-party"
                         v-model:inputNumber.number="v$.optimalParty.$model as unknown as number"
                         :errors="v$.optimalParty.$errors"
                         label="Оптим. партия для запуска, м.п."
@@ -163,12 +164,12 @@
                     <AppInputNumberSimpleTS
                         id="productivity"
                         v-model:inputNumber.number="v$.productivity.$model as unknown as number"
+                        :disabled="true"
                         :errors="v$.productivity.$errors"
                         label="Производительность, м.п./ч."
                         placeholder="Введите производительность"
                         step="0.00000000001"
                         width="w-[230px]"
-                        :disabled="true"
                     />
 
                     <!-- __ Количество рулонов ткани в буфере -->
@@ -320,6 +321,7 @@ import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppLabelCheckBoxTS from '@/components/ui/labels/AppLabelCheckBoxTS.vue'
+import { getPicNameByFabric } from '@/app/helpers/manufacture/helpers_fabric'
 
 // import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
 // import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'
@@ -465,7 +467,7 @@ const rules = {
 const v$ = useVuelidate(rules, verify)
 
 
-// attract: Формируем данные для отображения статуса
+// __ Формируем данные для отображения статуса
 const checkboxDataStatus = {
     name: 'status',
     data: [
@@ -474,7 +476,7 @@ const checkboxDataStatus = {
     ]
 }
 
-// attract: Формируем данные для отображения редкости
+// __ Формируем данные для отображения редкости
 const checkboxDataRarity = {
     name: 'rarity',
     data: [
@@ -530,7 +532,11 @@ const setVariables = async () => {
 
 // __ Получаем среднюю длину ткани из статистики
 const getAverageTextileLengthStatistic = async () => {
-    averageTextileLengthStatistic.value = await fabricStore.getFabricsAverageLength(fabric.value.id)
+    if (editMode) {
+        averageTextileLengthStatistic.value = await fabricStore.getFabricsAverageLength(fabric.value.id)
+    } else {
+        averageTextileLengthStatistic.value = 0
+    }
     console.log('averageTextileLengthStatistic: ', averageTextileLengthStatistic.value)
 }
 
@@ -542,6 +548,14 @@ const changeTextileLayersAmount = () => {
     } else {
         textileLayersAmount.value = 1
     }
+}
+
+// __ Получаем данные по производительности рисунка
+const nameHandler = async () => {
+    const picName = getPicNameByFabric(name.value) as unknown as string
+    if (!picName) return
+    const pic = await fabricStore.getFabricPictureByName(picName)
+    productivity.value = (pic?.productivity) ? pic.productivity : 0
 }
 
 
@@ -600,6 +614,7 @@ const formSubmit = async () => {
     // Пр-во попросило отключить автоматический переход
     // await router.push({name: 'manufacture.cell.fabrics.show'})      // переходим к списку ПС
 }
+
 
 // __ отслеживаем длину в рулонах
 watchEffect(() => {

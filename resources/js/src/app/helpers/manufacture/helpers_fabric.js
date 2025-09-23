@@ -484,6 +484,22 @@ export function getProductivityValueByRoll(roll)
 }
 
 
+// __ Получаем название рисунка по id
+export function getPicNameByFabric(fabric) {
+    const composibles = fabric.split(' ')
+    let picName = composibles.find(item => item.endsWith(')'))
+    if (!picName || picName.length === 0) return ''
+    picName = picName
+        .toUpperCase()
+        .replace('РИС.', '')
+        .replace(')', '')
+        .replace('(', '')
+    // picName = picName.toUpperCase().replace('РИС.', '').slice(0, -1)
+    return picName
+}
+
+
+
 
 // __ Получаем активное СЗ и вкладку из LocalStorage
 

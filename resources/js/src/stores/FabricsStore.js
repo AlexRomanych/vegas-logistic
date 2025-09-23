@@ -26,6 +26,7 @@ const URL_FABRICS_UPLOAD = 'fabrics/upload/'                            // URL �
 const URL_FABRIC_DELETE = 'fabrics/delete/'                             // URL для удаления ПС
 
 const URL_FABRICS_PICTURE = 'fabrics/picture/'                          // URL для получения рисунка ПС (/ в конце обязателен!)
+const URL_FABRICS_PICTURE_BY_NAME = 'fabrics/picture-name/'             // URL для получения рисунка ПС по имени (/ в конце обязателен!)
 const URL_FABRICS_PICTURES = 'fabrics/pictures'                         // URL для получения списка рисунков ПС
 const URL_FABRICS_PICTURES_UPDATE = 'fabrics/pictures/update/'          // URL для обновления списка рисунков ПС
 const URL_FABRICS_PICTURES_CREATE = 'fabrics/pictures/create/'          // URL для создания нового рисунка ПС
@@ -87,6 +88,12 @@ const URL_FABRIC_BUFFER_UPDATE = 'fabrics/buffer/update/'               // URL �
 const URL_FABRIC_AVERAGE_LENGTH_GET = 'fabric/average/length/'          // URL для получения среднего метража ткани ПС
 const URL_FABRIC_PICTURES_TUNING_TIME =
     'fabrics/pictures/tuning/time/'                                     // URL для получения времени переналадки рисунков ПС
+const URL_FABRIC_PICTURE_TUNING_TIME =
+    'fabrics/pic/tuning/time'                                           // URL для получения времени переналадки между рисунками ПС
+
+
+
+
 // URL для получения времени переналадки рисунков ПС
 
 
@@ -316,6 +323,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const getFabricPictureById = async (id) => {
         const result = await jwtGet(URL_FABRICS_PICTURE + id)
         console.log('store: getFabricPictureById: ', result)
+        return result.data
+    }
+
+    // __ Получаем с API Рисунок ПС по имени
+    const getFabricPictureByName = async (name) => {
+        const result = await jwtGet(URL_FABRICS_PICTURE_BY_NAME + name)
+        console.log('store: getFabricPictureByName: ', result)
         return result.data
     }
 
@@ -663,6 +677,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         return result.data
     }
 
+    // __ Получаем время переналадки рисунков между двумя рисунками
+    const getFabricsPicturesBetweenTuningTime = async (from, to) => {
+        const result = await jwtGet(`${URL_FABRIC_PICTURE_TUNING_TIME}/${from}/${to}`)
+        console.log('store: getFabricsPicturesBetweenTuningTime: ', result)
+        return result.data
+    }
+
 
     return {
         fabricsCashe,
@@ -704,7 +725,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         deleteFabric,
         getFabricPictureSchemas,
         getFabricPictures,
-        getFabricPictureById,
+        getFabricPictureById, getFabricPictureByName,
         uploadFabricsPictures,
         updateFabricPicture,
         createFabricPicture,
@@ -736,7 +757,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
         setRollMovedStatus,
         updateFabricsBuffer,
         getFabricsAverageLength,
-        getFabricsPicturesTuningTime, setFabricsPicturesTuningTime, deleteFabricsPicturesTuningTime
+        getFabricsPicturesTuningTime, setFabricsPicturesTuningTime, deleteFabricsPicturesTuningTime, getFabricsPicturesBetweenTuningTime,
     }
 
 })

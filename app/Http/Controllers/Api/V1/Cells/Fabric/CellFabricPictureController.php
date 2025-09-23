@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Fabric\TuningTime\DeleteTuningTimeRequest;
+use App\Http\Requests\Manufacture\Fabric\TuningTime\GetTuningTimeRequest;
 use App\Http\Requests\Manufacture\Fabric\TuningTime\StoreTuningTimeRequest;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricPictureTuningTimeResource;
@@ -47,7 +48,7 @@ class CellFabricPictureController extends Controller
     }
 
     /**
-     * Descr: Получение рисунка ПС по id
+     * ___ Получение рисунка ПС по id
      * @param $id
      * @return FabricPictureResource|string
      */
@@ -68,6 +69,39 @@ class CellFabricPictureController extends Controller
                 ->find($id);
 
             return new FabricPictureResource($picture);
+        } catch (\Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
+        }
+    }
+
+
+    /**
+     * ___ Получение рисунка ПС по name
+     * @param $name
+     * @return FabricPictureResource|string
+     */
+    public function getFabricPictureByName($name)
+    {
+        try {
+            $picture = FabricPicture::query()
+                ->where('name', mb_strtoupper($name, 'UTF-8'))
+                ->with([
+                    'fabricMainMachine',
+                    'fabricAltMachine_1',
+                    'fabricAltMachine_2',
+                    'fabricAltMachine_3',
+                    'fabricMainMachineSchema',
+                    'fabricAltMachineSchema_1',
+                    'fabricAltMachineSchema_2',
+                    'fabricAltMachineSchema_3',
+                ])
+                ->first();
+
+            if (!$picture) {
+                $picture = FabricPicture::query()->find(0);
+            }
+            return new FabricPictureResource($picture);
+
         } catch (\Exception $e) {
             return EndPointStaticRequestAnswer::fail($e->getMessage());
         }
@@ -271,6 +305,53 @@ class CellFabricPictureController extends Controller
         return EndPointStaticRequestAnswer::ok();
     }
 
+
+    /**
+     * ___ Получение времени переналадки рисунков между 2 рисунками
+     * @param GetTuningTimeRequest $request
+     * @return string
+     */
+    public function getFabricsPicturesBetweenTuningTime(Request $request, string $from, string $to)
+    {
+        try {
+            $validator = validator([
+                'from' => $from,
+                'to' => $to
+            ], [
+                'from' => 'required|integer',
+                'to' => 'required|integer',
+            ]);
+
+            if ($validator->fails()) {
+                throw new Exception($validator->errors()->first());
+            }
+
+            $tuningTime = FabricTuningTime::query()
+                ->where('picture_from', $from)
+                ->where('picture_to', $to)
+                ->first();
+
+            $returnData = [
+                'data' => [
+                    'from' => (int)$from,
+                    'to' => (int)$to,
+                    'time' => '',
+                ]
+            ];
+
+            if ($tuningTime) {
+                $returnData['data']['time'] = $tuningTime->tuning_time;
+            } else {
+                $returnData['data']['time'] = null;
+            }
+
+            return json_encode($returnData);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
     /**
      * ___ Получаем время переналадки рисунков
      * @param Request $request
@@ -325,7 +406,7 @@ class CellFabricPictureController extends Controller
                 ->updateOrCreate([
                     'picture_from' => $request->input('from'),
                     'picture_to' => $request->input('to'),
-                ],[
+                ], [
                     'tuning_time' => $request->input('time'),
                 ]);
 
@@ -348,23 +429,20 @@ class CellFabricPictureController extends Controller
     {
         try {
             $tuningTime = FabricTuningTime::query()
-            ->where('picture_from', $request->input('from'))
-            ->where('picture_to', $request->input('to'))
-            ->first();
+                ->where('picture_from', $request->input('from'))
+                ->where('picture_to', $request->input('to'))
+                ->first();
 
-            if (!$tuningTime) {
+            if ($tuningTime) {
+                $tuningTime->delete();
+            } /*else {
                 throw new Exception('Tuning time not found');
-            }
-
-            $tuningTime->delete();
+            }*/
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
-
-
-
 
 }

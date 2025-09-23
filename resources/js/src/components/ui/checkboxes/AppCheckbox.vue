@@ -116,7 +116,8 @@ const emit = defineEmits(['checked'])
 const tempData = props.checkboxData.data.map((item, idx) => {
     return {
         ...item,
-        uniqID: Date.now().toString() + '_' + item.id,
+        uniqID: props.id + '_' + item.id,
+        // uniqID: Date.now().toString() + '_' + item.id,
         checked: item.checked ?? false
     }
 })
