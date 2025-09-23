@@ -11,7 +11,7 @@
                     :class="task.active ? 'bg-blue-200 border-2 border-blue-400 rounded-lg' : ''"
                     class="flex flex-col p-0.5  h-full">
 
-                    <!-- attract: Дата + день недели -->
+                    <!-- __ Дата + день недели -->
                     <AppLabelMultiLine
                         :text="[formatDate(task.date), getDayOfWeek(task.date, false)]"
                         :type="getDayOfWeekStyle(task.date).toString()"
@@ -65,7 +65,7 @@
         </div>
 
         <!-- __ Выводим табы, если есть СЗ -->
-        <div v-if="activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
+        <div v-if="activeTask && activeTask.common.status !== FABRIC_TASK_STATUS.UNKNOWN.CODE">
 
             <!-- __ Выводим табы, если СМ активна или статус СЗ - "Выполнено" или "Выполняется" -->
             <div class="flex flex-row justify-start items-center m-3">
@@ -104,7 +104,7 @@
                 <div v-for="tab in tabs" :key="tab.id">
                     <div v-if="tab.shown && tab.hasOwnProperty('machine')">
                         <TheTaskMachine
-                            :key="rerender[tab.machine.ID]"
+                            :key="rerender[tab.machine!.ID]"
                             :machine="tab.machine"
                             :task="activeTask"
                             @add-roll="addRoll"
@@ -131,12 +131,6 @@
         mode="confirm"
     />
 
-    <!--    <AppModal-->
-    <!--        :show="modalSimpleShow"-->
-    <!--        :text="modalSimpleText"-->
-    <!--        :type="modalSimpleType"-->
-    <!--    />-->
-
     <AppCallout
         :show="modalSimpleShow"
         :text="modalSimpleText"
@@ -145,29 +139,28 @@
 
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref, reactive, watch, onMounted } from 'vue'
-// import { useRoute, useRouter } from 'vue-router'
+
+import type { IFabric, IFabricMachine, IRoll, ITaskItem, ITaskPeriod } from '@/types'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
+    type IConstFabricMachine,
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
     TASK_DRAFT,
-    // TEST_FABRICS,
 } from '@/app/constants/fabrics.js'
 
 import { cloneShallow } from '@/app/helpers/helpers_lib.js'
-// import { log } from '@/app/helpers/helpers.js'
 
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
     getFabricTasksPeriod,
     addEmptyFabricTasks,
-    // fillFabricsDisplayNames
 } from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -175,9 +168,6 @@ import {
     formatDate,
     compareDatesLogic,
     getDayOfWeekStyle,
-    // isToday,
-    // isWorkingDay,
-    // getISOFromLocaleDate,
 } from '@/app/helpers/helpers_date.js'
 
 import { catchErrorHandler } from '@/app/helpers/helpers_checks.ts'
@@ -197,25 +187,53 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
 
+
 const isLoading = ref(true)
 // __ End Loader
 
 
+type ITabKey = 'common' | 'american' | 'german' | 'china' | 'korean'
+
+interface ITab {
+    id: number,
+    shown: boolean,
+    enabled: boolean,
+    name: string[],
+    typePassive: string,
+    machine?: IConstFabricMachine
+}
+
+interface IInputData {
+    index: number
+    machine: IConstFabricMachine
+    roll: IRoll
+    task: ITaskItem
+    taskDescription: string
+}
+
+interface ITempWorker {
+    checked: boolean
+    disabled: boolean
+    id: number
+    name: string
+    record_id: number
+    uniqID: string
+}
 
 const fabricsStore = useFabricsStore()
 
 // __ Подготавливаем данные
-let fabrics = []  // загружаем после монтирования
-const fabricsMachines = ref([])
-let tasksPeriod = null
+let fabrics: IFabric[] = []  // загружаем после монтирования
+const fabricsMachines = ref<IFabricMachine[]>([])
+let tasksPeriod: ITaskPeriod = {start: '', end: ''}
 let tasks = []
-let taskData = null
-const activeTask = ref(null)
+let taskData: ITaskItem[] = []
+const activeTask = ref<ITaskItem | undefined>(undefined)
 
 const getTasks = async () => {
 
     // __ Получаем период отображения сменного задания
-    tasksPeriod = getFabricTasksPeriod()
+    tasksPeriod = getFabricTasksPeriod() as ITaskPeriod
 
     // __ Получаем сами сменные задания
     tasks = await fabricsStore.getTasksByPeriod(tasksPeriod)
@@ -253,12 +271,13 @@ const getFabrics = async () => {
 
 // __ Получаем список всех стегальных машин
 const getFabricsMachines = async () => {
-    const machines = await fabricsStore.getFabricsMachines()
+    const machines = await fabricsStore.getFabricsMachines() as IFabricMachine[]
     fabricsMachines.value = machines.filter(machine => machine.id !== 0).sort((a, b) => a.id - b.id) // сортируем по id, без id == 0
+    console.log('fabricsMachines: ', fabricsMachines.value)
 }
 
 // __ Устанавливаем активную вкладку даты по дате
-const setActiveTaskByDate = (date) => {
+const setActiveTaskByDate = (date: string) => {
     taskData.forEach(task => {
         if (date === task.date) {
             task.active = true
@@ -274,7 +293,7 @@ const setActiveTaskByDate = (date) => {
 const modalType = ref('danger')
 
 // attract: Задаем отображение вкладок (Общие данные, Американец, Немец, Китаец, Кореец)
-const tabs = reactive({
+const tabs: Record<ITabKey, ITab> = reactive({
     common: {
         id: 1,
         shown: false,
@@ -320,32 +339,33 @@ const tabs = reactive({
 
 // __ Устанавливаем только активные машины
 const setEnabledTabs = () => {
-    Object.keys(tabs).forEach(tab => {
+    (Object.keys(tabs) as ITabKey[]).forEach(tab => {
 
         if (tabs[tab].hasOwnProperty('machine')) {
-            const machine = fabricsMachines.value.find(m => m.id === tabs[tab].machine.ID)
-            tabs[tab].enabled = machine.active
-            // log(machine.active)
+            // if ('machine' in tabs[tab]) {
+            const machine = fabricsMachines.value.find(m => m.id === tabs[tab].machine?.ID)
+            if (machine) {
+                tabs[tab].enabled = machine.active
+            }
         }
-
     })
 }
 //__ --------------------------------
 
 
 // attract: Условие на отображение сервисных кнопок под статусами
-const serviceBtnShowCondition = (status) => {
+const serviceBtnShowCondition = (status: number) => {
     return !(status === FABRIC_TASK_STATUS.DONE.CODE || status === FABRIC_TASK_STATUS.RUNNING.CODE)
 }
 
 // attract: Получаем название сервисной кнопки в зависимости от статуса
-const serviceBtnTitle = (status) => {
+const serviceBtnTitle = (status: number) => {
     const titles = ['Создать', 'На стежку', 'Вернуть статус', '', '']
     return titles[status]
 }
 
 // attract: Условие на отображение сервисной кнопки в зависимости от даты (больше или равна текущей)
-const taskDateConstraint = (taskDate) => {
+const taskDateConstraint = (taskDate: string) => {
     const result = compareDatesLogic(new Date(), taskDate)
     return result || (result === undefined)
 }
@@ -356,12 +376,12 @@ const modalSimpleText = ref('')
 const modalSimpleShow = ref(false)
 const modalSimpleClose = (delay = 5000) => setTimeout(() => modalSimpleShow.value = false, delay) // закрываем модалку
 
-const appModalAsync = ref(null)         // Получаем ссылку на модальное окно с асинхронной функцией
-const modalText = ref([])
+const appModalAsync = ref<any>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+const modalText = ref<string[]>([])
 
 
 // attract Меняем статус СЗ по сервисной кнопке
-const changeTaskStatus = async (task, btnRow = 1) => {
+const changeTaskStatus = async (task: ITaskItem, btnRow = 1) => {
 
     if (!task.active) return
 
@@ -375,19 +395,8 @@ const changeTaskStatus = async (task, btnRow = 1) => {
         console.log('machines: ', task.machines)
 
         Object.keys(task.machines).forEach((machine) => {
-
-            // let i = 0
-            // canDelete &&= !task.machines[machine].rolls.some(roll => {
-            //     console.log(i, roll.editable)
-            //     i++
-            //     return !roll.editable
-            // })
             canDelete &&= !task.machines[machine].rolls.some(roll => !roll.editable)
-            // task.machines[machine].rolls.forEach(roll => {canDelete &&= roll.editable})
         })
-
-        // console.log('canDelete: ', canDelete)
-        // return
 
         if (!canDelete) {
             modalSimpleType.value = 'danger'
@@ -399,7 +408,8 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
         modalText.value = ['Сменное задания и все связанные с', 'ними данные будут удалены.', 'Продолжить?']
         modalType.value = 'danger'
-        const result = await appModalAsync.value.show()             // показываем модалку и ждем ответ
+
+        const result = appModalAsync.value.show()             // показываем модалку и ждем ответ
         if (result) {
             task.common.status = FABRIC_TASK_STATUS.UNKNOWN.CODE
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
@@ -427,13 +437,6 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
         await getTasks()
         setActiveTaskByDate(task.date)
-        // const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-        // console.log('created: newTaskDay: ', newTaskDay)
-        //
-        // task.machines = newTaskDay[0].machines
-        // task.common = newTaskDay[0].common
-
-        // fabricsStore.globalOrderManageChangeFlag = false
 
         // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
         rerender.forEach((_, index, array) => array[index]++)
@@ -443,7 +446,6 @@ const changeTaskStatus = async (task, btnRow = 1) => {
 
     // attract: Вернуть статус с "Готов к стежке" на "Создано". Обращаемся к API
     if (task.common.status === FABRIC_TASK_STATUS.PENDING.CODE) {
-        // task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
 
         modalText.value = ['Сменное задание будет доступно для редактирования', 'и будут удалены все связанные рулоны для производства.', 'Продолжить?']
         modalType.value = 'danger'
@@ -456,16 +458,7 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             await getTasks()
             setActiveTaskByDate(task.date)
 
-            // const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-            // console.log('newTaskDay: ', newTaskDay)
-            //
-            // task.machines = newTaskDay[0].machines
-            // task.common = newTaskDay[0].common
-            //
-            // fabricsStore.globalOrderManageChangeFlag = false
-            // // sortTaskByPosition()
-            //
-            // // todo: сделать обработку ошибок + callout
+            // todo: сделать обработку ошибок + callout
         }
 
         return
@@ -500,29 +493,17 @@ const changeTaskStatus = async (task, btnRow = 1) => {
             await getTasks()
             setActiveTaskByDate(task.date)
 
-            // // todo: сделать обработку ошибок + callout
-            //
-            // // console.log('pending: ', task)
-            //
-            // const newTaskDay = await fabricsStore.getTasksByPeriod({start: task.date, end: task.date})
-            // // console.log('newTaskDay: ', newTaskDay)
-            //
-            // task.machines = newTaskDay[0].machines
-            // task.common = newTaskDay[0].common
-            //
-            // // fabricsStore.globalOrderManageChangeFlag = false
-            // // sortTaskByPosition()
-            // // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
+            // todo: сделать обработку ошибок + callout
+            // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
             rerender.forEach((_, index, array) => array[index]++)
 
         }
     }
-
 }
 
 
 // __ Меняем активный день по клику на нем
-const changeActiveTask = (task) => {
+const changeActiveTask = (task: ITaskItem) => {
     taskData.forEach((t) => t.active = t.date === task.date)
     activeTask.value = taskData.find(t => t.active)
     // console.log('active_task: ', activeTask.value)
@@ -540,39 +521,24 @@ const changeActiveTask = (task) => {
 
 }
 
-
 // __ Переключаем выбранную вкладку
-const changeTab = (selectedTab) => {
-    for (const tab in tabs) {
-        if (tabs.hasOwnProperty(tab)) {
-            tabs[tab].shown = tabs[tab].id === selectedTab.id
-        }
-    }
-    // console.log('tabs: ', tabs)
+const changeTab = (selectedTab: ITab) => {
+    Object.values(tabs).forEach(tab => tab.shown = tab.id === selectedTab.id)
     setActiveTaskAndTab()
 }
 
 // __ Сбрасываем все вкладки в false, потому что в некоторых ситуациях появляется мультивыбор
 const resetTabs = () => {
-    for (const tab in tabs) {
-        if (tabs.hasOwnProperty(tab)) {
-            tabs[tab].shown = false
-        }
-    }
-    // console.log(tabs)
+    Object.values(tabs).forEach(tab => tab.shown = false)
 }
-
-// resetTabs()                                 // сбрасываем все табы
-// tabs.common.shown = true                    // делаем вкладку "общие данные" активной, чтобы запустить реактивность
-
 
 // __ Устанавливаем активное СЗ и вкладку в LocalStorage
 const TASK_TAB_PREFIX = 'TASK_TAB'
 const setActiveTaskAndTab = () => {
     try {
-        const findTab = Object.keys(tabs).find(tab => tabs[tab].shown)
+        const findTab = (Object.keys(tabs) as ITabKey[]).find(tab => tabs[tab].shown)
         localStorage.setItem(TASK_TAB_PREFIX, JSON.stringify({
-            activeTaskDate: activeTask.value.date,
+            activeTaskDate: activeTask.value?.date,
             activeTabId: findTab ? tabs[findTab].id : tabs.common.id
         }))
     } catch (e) {
@@ -583,13 +549,19 @@ const setActiveTaskAndTab = () => {
 // __ Получаем активное СЗ и вкладку из LocalStorage
 const getActiveTaskAndTab = () => {
     try {
-        const data = JSON.parse(localStorage.getItem(TASK_TAB_PREFIX))
+        const storedData = localStorage.getItem(TASK_TAB_PREFIX)
+        let data: { activeTaskDate: string, activeTabId: number } | null = null
+        if (storedData) {
+            data = JSON.parse(storedData)
+        }
+        // const data: {activeTaskDate: string, activeTabId: string} | null = JSON.parse(localStorage.getItem(TASK_TAB_PREFIX))
+
         if (data) {
             const findTask = taskData.find(t => t.date === data.activeTaskDate)
             if (findTask) {
                 changeActiveTask(findTask)
                 resetTabs()
-                const findTab = Object.keys(tabs).find(tab => tabs[tab].id === data.activeTabId)
+                const findTab = (Object.keys(tabs) as ITabKey[]).find(tab => tabs[tab].id === data.activeTabId)
                 if (findTab) {
                     tabs[findTab].shown = true
                 }
@@ -602,20 +574,20 @@ const getActiveTaskAndTab = () => {
 
 
 // __ Определяем тип таба (цвет) в зависимости от наличия СЗ
-const getTabType = (tab) => {
+const getTabType = (tab: ITab) => {
 
     // если вкладка активна
     // if (tab.shown) return 'primary'
     if (tab.hasOwnProperty('machine')) {
 
         // если неактивна, но есть СЗ
-        if (activeTask.value.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
+        if (activeTask.value && tab.machine && activeTask.value.machines[tab.machine.TITLE].rolls.length > 0) return 'success'
     }
     return tab.typePassive
 }
 
 // __ Пересчитывает позицию рулонов в массиве + сохраняет по необходимости
-const changeRollsPosition = (machine, task) => {
+const changeRollsPosition = (machine: IConstFabricMachine, task: ITaskItem) => {
     const findTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
 
     // если не находим СЗ или там нет рулонов, то выходим
@@ -625,37 +597,29 @@ const changeRollsPosition = (machine, task) => {
 }
 
 // __ Поднятое событие при клике на кнопку "Сохранить порядок рулонов"
-const saveRollsPosition = async (machine, task) => {
+const saveRollsPosition = async (machine: IConstFabricMachine, task: ITaskItem) => {
     // console.log('from saveRollsPosition!!!: ', machine, task)
 
-    // debugger
     fabricsStore.globalOrderManageChangeFlag = true
 
-    const targetTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
-
-    const result = await fabricsStore.changeContextOrder(task.id, machine.ID, task.machines[machine.TITLE].rolls)
+    // const targetTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
+    /*const result =*/ await fabricsStore.changeContextOrder(task.id, machine.ID, task.machines[machine.TITLE].rolls)
 
     const orderContext = await fabricsStore.getOrderContext(task.id, machine.ID)
     // console.log('orderContext: ', orderContext)
 
-    task.machines[machine.TITLE].rolls = orderContext.sort((a, b) => a.roll_position - b.roll_position)
-
+    task.machines[machine.TITLE].rolls = orderContext.sort((a: IRoll, b: IRoll) => a.roll_position - b.roll_position)
     fabricsStore.globalOrderManageChangeFlag = false
 }
 
-const saveRollsPosition_Old = async (machine, task) => {
-    const targetTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
-    const result = await fabricsStore.createFabricTask(targetTask)
-    fabricsStore.globalOrderManageChangeFlag = false
-}
 //line ----------------------
 
 
 // attract: Поднятое событие при клике на кнопку "Добавить рулон"
-const addRoll = (newRoll, machine, task) => {
+const addRoll = (newRoll: IRoll, machine: IConstFabricMachine, task: ITaskItem) => {
     // console.log(newRoll)
     const workTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
-    workTask.machines[machine.TITLE].rolls.push(newRoll)
+    if (workTask) workTask.machines[machine.TITLE].rolls.push(newRoll)
     changeRollsPosition(machine, task)
 
     // console.log('workTask addRoll: ', workTask)
@@ -663,34 +627,21 @@ const addRoll = (newRoll, machine, task) => {
 
 
 // __ Поднятое событие при клике на кнопку "Сохранить рулон"
-const saveTasks = async (saveData) => {
-    const result = await fabricsStore.addOrderContextRoll(saveData.task.id, saveData.machine.ID, saveData.roll)
+const saveTasks = async (saveData: IInputData) => {
+    /*const result =*/
+    await fabricsStore.addOrderContextRoll(saveData.task.id, saveData.machine.ID, saveData.roll)
 
     await getTasks()
     setActiveTaskByDate(saveData.task.date)
     rerender.forEach((_, index, array) => array[index]++)
-
-
-
-
-
-    // console.log('from saveTask: ', saveData)
-    // console.log(result)
-
-    // const targetTask = taskData.find(t => t.date === saveData.task.date)
-    // targetTask.machines[saveData.machine.TITLE].rolls[saveData.index] = saveData.roll       // рулоны
-    // targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
-
-    // const result = await fabricsStore.createFabricTask(targetTask)
-    // rerender[saveData.machine.ID]++
 }
 
 
 // attract: Поднятое событие при клике на кнопку "Сохранить общее описание к СМ"
-const saveMachineDescription = async (saveData) => {
+const saveMachineDescription = async (saveData: IInputData) => {
 
     const targetTask = taskData.find(t => t.date === saveData.task.date)
-    targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
+    if (targetTask) targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
     // console.log('from updateDescription: ', targetTask)
     // console.log('from updateDescription: ', taskData)
@@ -703,13 +654,13 @@ const saveMachineDescription = async (saveData) => {
 
 
 // __ Поднятое событие при клике на кнопку "Удалить рулон"
-const deleteTasksRecord = async (deleteData) => {
-    // console.log('deleteTasksRecord: ', deleteData)
+const deleteTasksRecord = async (deleteData: { task: ITaskItem } & { machine: IConstFabricMachine } & IRoll) => {
+    console.log('deleteTasksRecord: ', deleteData)
 
     // __ Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
     // __ Иначе удаляем его из БД
     if (deleteData.id) {
-        const result = await fabricsStore.deleteFabricTaskRollById(deleteData.id)
+        /*const result =*/ await fabricsStore.deleteFabricTaskRollById(deleteData.id)
 
         // Удаляем рулон из массива, чтобы верно пересчитать позицию
         const findTask = taskData.find(t => t.date === deleteData.task.date)     // Получаем ссылку на СЗ на дату контекста
@@ -739,13 +690,13 @@ const deleteTasksRecord = async (deleteData) => {
 }
 
 
-// attract: Поднятое событие при клике на кнопку "Оптимизировать трудозатраты"
-const optimizeLabor = (machine, task) => {
+// __ Поднятое событие при клике на кнопку "Оптимизировать трудозатраты"
+const optimizeLabor = (machine: IFabricMachine, task: ITaskItem) => {
 
 }
 
 // attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
-const selectWorkers = async (workersList) => {
+const selectWorkers = async (workersList: ITempWorker[]) => {
 
     workersList = workersList.filter(worker => worker.checked)
     console.log('selectWorkers: ', workersList)
@@ -756,23 +707,28 @@ const selectWorkers = async (workersList) => {
     const workersIds = workersList.map(worker => ({worker_id: worker.id, record_id: worker.record_id}))
     // console.log(workersIds)
 
-    const res = await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
-    // console.log(res)
+    if (activeTask.value) {
+        /*const res =*/ await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
+        // console.log(res)
 
-    const newTaskDay = await fabricsStore.getTasksByPeriod({start: activeTask.value.date, end: activeTask.value.date})
-    // console.log('newTaskDay: ', newTaskDay)
+        const newTaskDay = await fabricsStore.getTasksByPeriod({
+            start: activeTask.value.date,
+            end: activeTask.value.date
+        })
+        // console.log('newTaskDay: ', newTaskDay)
 
-    activeTask.value.workers = newTaskDay[0].workers
-    activeTask.value.common = newTaskDay[0].common
+        activeTask.value.workers = newTaskDay[0].workers
+        activeTask.value.common = newTaskDay[0].common
+    }
     // увеличиваем счетчик рендеринга, чтобы обновить данные на странице
     rerender.forEach((_, index, array) => array[index]++)
 
 }
 
 // attract: Сохраняет общий комментарий ко дню СЗ
-const updateTaskDescription = async (description) => {
-    activeTask.value.common.description = description
-    const res = await fabricsStore.changeFabricTaskDateStatus(activeTask.value)
+const updateTaskDescription = async (description: string) => {
+    if (activeTask.value) activeTask.value.common.description = description
+    /*const res =*/ await fabricsStore.changeFabricTaskDateStatus(activeTask.value)
     // console.log('description: ', description)
     // console.log(res)
 }
@@ -813,7 +769,7 @@ onMounted(async () => {
     const time = await fabricsStore.getFabricsPicturesBetweenTuningTime(150, 150)
     console.log('time: ', time)
 
-    isLoading.value  = false
+    isLoading.value = false
 })
 
 </script>

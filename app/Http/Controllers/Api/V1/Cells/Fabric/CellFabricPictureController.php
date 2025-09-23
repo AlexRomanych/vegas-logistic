@@ -83,6 +83,9 @@ class CellFabricPictureController extends Controller
     public function getFabricPictureByName($name)
     {
         try {
+
+            // TODO: Проверить на пустоту
+
             $picture = FabricPicture::query()
                 ->where('name', mb_strtoupper($name, 'UTF-8'))
                 ->with([

@@ -403,9 +403,9 @@
 
 import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 
-import {useWorkersStore} from '/resources/js/src/stores/WorkersStore.js'
-import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
-// import {useFabricsStore} from '/resources/js/src/stores/FabricsStore.js'
+import {useWorkersStore} from '@/stores/WorkersStore.js'
+import {useFabricsStore} from '@/stores/FabricsStore.js'
+// import {useFabricsStore} from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_WORKING_SHIFT_LENGTH,
@@ -413,29 +413,29 @@ import {
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
     FABRIC_TASKS_EXECUTE,
-} from '/resources/js/src/app/constants/fabrics.js'
+} from '@/app/constants/fabrics.js'
 
 import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode, getFunctionalByFabricTaskStatus,
-} from '/resources/js/src/app/helpers/manufacture/helpers_fabric.js'
+} from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
     formatTimeWithLeadingZeros,
     formatDateInFullFormat,
     formatTimeInFullFormat
-} from '/resources/js/src/app/helpers/helpers_date.js'
+} from '@/app/helpers/helpers_date.js'
 
 import {
     getFormatFIO,
     getFormatFIOFromFullNameString
-} from '/resources/js/src/app/helpers/workers/helpers_workers.js'
+} from '@/app/helpers/workers/helpers_workers.js'
 
-import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import TheDividerLine
-    from '/resources/js/src/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
-import AppModalAsyncCheckbox from '/resources/js/src/components/ui/modals/AppModalAsyncCheckbox.vue'
-import AppInputTextArea from '/resources/js/src/components/ui/inputs/AppInputTextArea.vue'
+    from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
+import AppModalAsyncCheckbox from '@/components/ui/modals/AppModalAsyncCheckbox.vue'
+import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 
 const props = defineProps({
     task: {
@@ -616,7 +616,7 @@ const prepareWorkersData = async () => {
     selectData.data = selectWorkers
 
     // attract: записываем в глобальный объект данные для чекбокса
-    fabricsStore.globalSelectWorkers = selectData
+    fabricsStore.globalSelectWorkers.value = selectData
 
     // console.log('selectData: ', selectData)
 }

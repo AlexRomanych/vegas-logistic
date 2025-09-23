@@ -1,6 +1,6 @@
 // Info Тут все константы, касающиеся участка Стежки
 
-import type { IFabricMachine, ITaskStatus, IRoll, IFabric } from '@/types'
+import type { IFabricMachine, ITaskStatus, IRoll, IFabric, ITaskItem } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 /*
@@ -227,12 +227,12 @@ export const FABRIC_PAGE_MODE = Object.freeze({
 
 // ___ Константы ID машин стежки
 export interface IConstFabricMachine {
-    ID: number
-    TITLE: string
-    NAME: string
-    INDEX: string
-    ORIGIN: string
-    TYPE: IColorTypes
+    readonly ID: number
+    readonly TITLE: string
+    readonly NAME: string
+    readonly INDEX: string
+    readonly ORIGIN: string
+    readonly TYPE: IColorTypes
 }
 
 export type IMachineKey = 'UNKNOWN' | 'AMERICAN' | 'GERMAN' | 'CHINA' | 'KOREAN'
@@ -431,14 +431,21 @@ export const NEW_FABRIC_PICTURE = {
 
 
 // __ Скелет объекта сменного задания
-export const TASK_DRAFT =
+export const TASK_DRAFT: ITaskItem =
     {
+        id: 0,
         date: '',
         common: {
+            id: 0,
             team: 1,
             status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
             description: '',
             active: false,
+            created_at: '',
+            created_by: '',
+            start_at: null,
+            finish_at: null,
+
         },
         machines: {
             american: {

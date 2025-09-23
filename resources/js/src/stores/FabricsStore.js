@@ -194,7 +194,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalExecuteRollChangeDescriptionText = ref('')      // текст комментария
 
     // attract: Переменная для хранения данных для select для учета ответственного за стегание рулона
-    const globalSelectWorkers = reactive({})                   // для отображения рабочих в самом выполняемом рулоне
+    const globalSelectWorkers = ref({})                   // для отображения рабочих в самом выполняемом рулоне
     const globalSelectWorkerId = ref(0)                         // для записи id ответственного
     const globalSelectWorkerFlag = ref(false)                   // маяк селекта
 
@@ -215,7 +215,11 @@ export const useFabricsStore = defineStore('fabrics', () => {
     let globalRollsIndexes = reactive([])
 
 
-    // Attract: Получаем с API список ПС
+    // __ Получаем с API список ПС
+    /**
+     * @param {boolean | null} active
+     * @param active
+     */
     const getFabrics = async (active = null) => {
 
         const result = await jwtGet(URL_FABRICS, {active})

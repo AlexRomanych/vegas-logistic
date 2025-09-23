@@ -16,15 +16,15 @@
             </legend>
 
             <div :class="[semibold, dir === 'horizontal' ? 'flex items-center justify-around' : '']">
-                <div v-for="item in checkBoxObject" :key="item.uniqID" >
+                <div v-for="item in checkBoxObject" :key="item.uniqID">
                     <input
-                        class="cursor-pointer"
                         :id="item.uniqID"
                         :checked="item.checked"
                         :disabled="disabled ? disabled : item.disabled"
                         :name="checkboxData.name"
                         :type="inputType"
                         :value="item.uniqID"
+                        class="cursor-pointer"
                         @change="checked"
                     />
                     <label
@@ -45,10 +45,10 @@
 </template>
 
 <script setup>
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getFontSizeClass, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import {computed, reactive, ref} from 'vue'
-import {fontSizesList} from '/resources/js/src/app/constants/fontSizes.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType, getFontSizeClass, getTextColorClassByType } from '@/app/helpers/helpers.js'
+import { computed, reactive, ref } from 'vue'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
 
 const props = defineProps({
     id: {
@@ -131,7 +131,9 @@ if (props.inputType === 'radio') {
         initValue
     )
 
-    tempData.forEach((item, idx) => { item.checked = idx === trueIndex})
+    tempData.forEach((item, idx) => {
+        item.checked = idx === trueIndex
+    })
 }
 
 

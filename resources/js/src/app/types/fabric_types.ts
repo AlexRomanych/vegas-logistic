@@ -50,6 +50,7 @@ export interface ITaskItem {
     id: number
     machines: Record<FabricMachineTitles, IMachineData>
     workers: IWorkerData[]
+    active?: boolean
 }
 
 
@@ -301,3 +302,4 @@ export interface ITimePictureSchema {
     tuning_time: number
     db?: boolean                    // __ Для отрисовки в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
 }
+

@@ -205,7 +205,12 @@ export function getDateIntervalMatrix(startInterval = new Date(), endInterval = 
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// attract Возвращает дату в красивом формате
+// __ Возвращает дату в красивом формате
+/**
+ *
+ * @param {string | Date} inDate
+ * @returns {string}
+ */
 export function formatDate(inDate = new Date()) {
     return getDate(inDate).toLocaleDateString().slice(0, 10)
 }
@@ -306,6 +311,12 @@ export function formatTimeInFullFormat(dateTimeString) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает день недели в строковом представлении
 //  short - 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'
+/**
+ *
+ * @param {string | Date} inDate
+ * @param short
+ * @returns {string}
+ */
 export function getDayOfWeek(inDate = new Date(), short = true) {
     const workDate = getDate(inDate)
 

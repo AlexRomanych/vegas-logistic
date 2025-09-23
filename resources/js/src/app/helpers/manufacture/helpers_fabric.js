@@ -9,7 +9,7 @@ import {
     FABRIC_EXECUTE,
 } from '@/app/constants/fabrics.js'
 
-import {isEmptyObj} from '@/app/helpers/helpers_lib.js'
+import { isEmptyObj } from '@/app/helpers/helpers_lib.js'
 
 import {
     addDays,
@@ -18,7 +18,12 @@ import {
     getISOFromLocaleDate, formatTimeWithLeadingZeros
 } from '@/app/helpers/helpers_date.js'
 
-// descr Получить тип стиля по коду статуса СЗ на стежке
+// ___ Получить тип стиля по коду статуса СЗ на стежке
+/**
+ *
+ * @param {number | null} taskStatusCode
+ * @returns {string}
+ */
 export const getStyleTypeByFabricTaskStatusCode = function (taskStatusCode = null) {
     if (taskStatusCode === null) return 'dark'
 
@@ -44,7 +49,12 @@ export const getStyleTypeByFabricTaskStatusCode = function (taskStatusCode = nul
 }
 
 
-// descr Получить название статуса по коду статуса СЗ на стежке
+// ___ Получить название статуса по коду статуса СЗ на стежке
+/**
+ *
+ * @param {number | null} taskStatusCode
+ * @returns {string}
+ */
 export const getTitleByFabricTaskStatusCode = function (taskStatusCode = null) {
     if (taskStatusCode === null) return ''
 
@@ -92,6 +102,11 @@ export function getFabricTasksPeriod() {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract: добавляет к массиву сменных заданий недостающие дни со статусом FABRIC_TASK_STATUS.UNKNOWN
+/**
+ *
+ * @param fabricTasks
+ * @param {null | ITaskPeriod} period
+ */
 export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     // console.log('period: ', period)
     // страховочка
@@ -282,7 +297,7 @@ export function getAddFabricMode(fabrics = [], machineId = -1, fabricId = -1) {
 export function fillFabricsDisplayNames(fabrics = [], tasks = []) {
 
     // страховочка
-    if (!Array.isArray(fabrics) || !Array.isArray(tasks) || fabrics.length === 0 || tasks.length === 0) return [];
+    if (!Array.isArray(fabrics) || !Array.isArray(tasks) || fabrics.length === 0 || tasks.length === 0) return []
 
     tasks.forEach((task) =>
         Object.keys(task.machines).forEach((key) =>
@@ -416,7 +431,6 @@ export function getProductivityTotalTask(task) {
     })
 
 
-
     // const hours = rolls.reduce((acc, roll) => acc + (roll.length_amount / roll.rate / roll.productivity), 0)
     return formatTimeWithLeadingZeros(hours, 'hour')
 }
@@ -440,8 +454,7 @@ export function getTextileLength(
 }
 
 // __ Получаем среднюю длину ткани для ПС по рулону
-export function getTextileLengthByRoll(roll)
-{
+export function getTextileLengthByRoll(roll) {
     if (isEmptyObj(roll)) return 0
     return getTextileLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount)
 }
@@ -457,8 +470,7 @@ export function getFabricLength(
 }
 
 // __ Получаем среднюю ПС по рулону
-export function getFabricLengthByRoll(roll)
-{
+export function getFabricLengthByRoll(roll) {
     if (isEmptyObj(roll)) return 0
     return getFabricLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount, roll.rate)
 }
@@ -475,8 +487,7 @@ export function getProductivityValue(
 }
 
 // __ Получаем производительность ПС (время стегания) по рулону
-export function getProductivityValueByRoll(roll)
-{
+export function getProductivityValueByRoll(roll) {
 
     // console.log('roll: ', roll)
     if (isEmptyObj(roll)) return 0
@@ -497,8 +508,6 @@ export function getPicNameByFabric(fabric) {
     // picName = picName.toUpperCase().replace('РИС.', '').slice(0, -1)
     return picName
 }
-
-
 
 
 // __ Получаем активное СЗ и вкладку из LocalStorage
