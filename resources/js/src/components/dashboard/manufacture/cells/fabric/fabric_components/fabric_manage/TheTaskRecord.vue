@@ -419,7 +419,7 @@ const lengthAmount = defineModel('lengthAmount', {
 const getFabrics = () => fabrics = fabricsStore.fabricsMemory
 
 // __ Получаем список индексов для исключения их из selectData
-const getRollsIndexes = () => rollsIndexes = fabricsStore.globalRollsIndexes
+const getRollsIndexes = () => rollsIndexes = fabricsStore.globalRollsIndexes.value
 
 // __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
 const getFabricMode = () => fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.value.fabric_id) as boolean

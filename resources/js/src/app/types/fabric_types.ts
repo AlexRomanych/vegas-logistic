@@ -80,11 +80,11 @@ export interface ITaskStatus {
 }
 
 export type TaskStatusUnionType =
-    typeof FABRIC_TASK_STATUS.UNKNOWN
-    | typeof FABRIC_TASK_STATUS.CREATED
-    | typeof FABRIC_TASK_STATUS.PENDING
-    | typeof FABRIC_TASK_STATUS.RUNNING
-    | typeof FABRIC_TASK_STATUS.DONE
+    typeof FABRIC_TASK_STATUS.UNKNOWN |
+    typeof FABRIC_TASK_STATUS.CREATED |
+    typeof FABRIC_TASK_STATUS.PENDING |
+    typeof FABRIC_TASK_STATUS.RUNNING |
+    typeof FABRIC_TASK_STATUS.DONE
 
 
 // __ Контекстный рулон
@@ -111,6 +111,7 @@ export interface IRoll {
     average_textile_roll_length: number
     textile_length?: number
     fabric_name?: string
+    isTuning?: boolean          // Указатель на то, что рулон является информацией по переналадке
 }
 
 // __ Физический (исполняемый) рулон

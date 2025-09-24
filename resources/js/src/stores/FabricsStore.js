@@ -106,10 +106,10 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // const ordersShowTest = ref('123')
     const fabricsCasheIsChanged = ref(false)
 
-    // attract: Маячок того, что в данный момент происходит редактирование какого-то ПС рулона
+    // __ Маячок того, что в данный момент происходит редактирование какого-то ПС рулона
     const globalEditMode = ref(false)       // Начальное значение - режим просмотра
 
-    // attract: Маячок выбора режима доступности ПС - Основные или Все доступные
+    // __ Маячок выбора режима доступности ПС - Основные или Все доступные
     const globalFabricsMode = ref(true)    // Начальное значение - основные
 
     // attract: Массив с трудозатратами по СЗ
@@ -211,8 +211,10 @@ export const useFabricsStore = defineStore('fabrics', () => {
     // info----------------------------------------------------------------------------------------
 
 
-    // attract: Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
-    let globalRollsIndexes = reactive([])
+    // __ Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
+    /** @type {import('vue').Ref<number[]>} */
+    const globalRollsIndexes = ref([])
+    // let globalRollsIndexes = reactive([])
 
 
     // __ Получаем с API список ПС

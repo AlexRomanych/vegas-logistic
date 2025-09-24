@@ -96,7 +96,7 @@ const isLoading = ref(true)
 const rollsExec = ref([])               // __ Список выполняемых рулонов
 let fabrics = []                               // __ Список ПС
 const responsibleWorkers = ref([])      // __ Список ответственных за выполнение
-let responsibleWorkersCopy =[]
+let responsibleWorkersCopy = []
 
 // __ Собираем все рулоны в один массив
 const getRollsExec = () => {
@@ -113,7 +113,7 @@ const getFabrics = async () => fabrics = fabricsStore.fabricsMemory
 
 // __ Получаем список ответственных за выполнение
 const getResponsibleWorkers = async () => {
-    responsibleWorkers.value = fabricsStore.globalSelectWorkers
+    responsibleWorkers.value = fabricsStore.globalSelectWorkers.value
     responsibleWorkersCopy = JSON.parse(JSON.stringify(responsibleWorkers.value))
 }
 

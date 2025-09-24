@@ -348,7 +348,7 @@ const FABRIC_ROLL_STATUS_ARRAY = Object.values(FABRIC_ROLL_STATUS_LIST)
 
 // __ Получаем данные из хранилища по ПС
 const fabricsStore = useFabricsStore()
-const fabrics: Array<{id: number, display_name: string}> = fabricsStore.fabricsMemory
+const fabrics: Array<{ id: number, display_name: string }> = fabricsStore.fabricsMemory
 
 // __ Получаем ПС по ID
 // const getFabricById = (fabric_id) => fabrics.find((fabric) => fabric.id === fabric_id)
@@ -394,7 +394,12 @@ const rollsRender: IRenderData = {
         data: (roll_exec) => roll_exec.fabric_length.toFixed(PRECISION)
         // data: (roll_exec) => (roll_exec.textile_length / roll_exec.rate).toFixed(PRECISION)
     },
-    rollsAmount: {width: 'w-[30px]', show: false, title: 'Кол-во рулонов, шт.', data: () => '1'},
+    rollsAmount: {
+        width: 'w-[30px]',
+        show: false,
+        title: 'Кол-во рулонов, шт.',
+        data: () => '1'
+    },
     productivity: {
         width: 'w-[90px]',
         show: true,

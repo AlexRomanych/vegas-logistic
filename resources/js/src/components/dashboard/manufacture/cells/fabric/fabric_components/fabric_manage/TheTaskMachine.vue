@@ -206,7 +206,7 @@ const getRollsIndexes = () => {
         .map((roll) => (roll.editable ? roll.fabric_id : undefined))
         .filter((roll) => roll !== undefined)
 
-    fabricsStore.globalRollsIndexes = rollsIndexes // сохраняем индексы рулонов в глобальном хранилище
+    fabricsStore.globalRollsIndexes.value = rollsIndexes // сохраняем индексы рулонов в глобальном хранилище
     // attract: Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
     return rollsIndexes
 }

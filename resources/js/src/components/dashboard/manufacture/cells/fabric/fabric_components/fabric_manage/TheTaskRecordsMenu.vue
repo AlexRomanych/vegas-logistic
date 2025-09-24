@@ -1,11 +1,11 @@
 <template>
 
-    <!--attract: Меню стегальной машины -->
+    <!--__ Меню стегальной машины -->
     <div class="flex">
 
-        <!-- attract: Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
+        <!-- __ Добавление рулона. Показываем только в режиме просмотра + если у СЗ соответсвующий статус-->
         <AppLabelMultiLine
-            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
+            v-if="!globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             :text="['Добавить', 'рулон']"
             align="center"
             class="cursor-pointer"
@@ -16,9 +16,9 @@
 
         />
 
-        <!-- attract: Оптимизировать трудозатраты -->
+        <!-- __ Оптимизировать трудозатраты -->
         <AppLabelMultiLine
-            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
+            v-if="!globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             :text="['Оптимизировать', 'трудозатраты']"
             align="center"
             class="cursor-pointer"
@@ -28,7 +28,7 @@
             @click="optimizeLabor"
         />
 
-        <!-- attract: Текущий рисунок -->
+        <!-- __ Текущий рисунок -->
         <AppLabelMultiLine
             :text="['Текущий рисунок:', 'Ж25']"
             align="center"
@@ -37,7 +37,7 @@
             width="w-[170px]"
         />
 
-        <!-- attract: Общие трудозатраты -->
+        <!-- __ Общие трудозатраты -->
         <AppLabelMultiLine
             :text="['Общие трудозатраты:', formatTimeWithLeadingZeros(totalProductivityAmount, 'hour')]"
             :type="totalProductivityAmount <= FABRIC_WORKING_SHIFT_LENGTH ? 'success' : 'danger'"
@@ -47,8 +47,8 @@
         />
 
         <!-- __ Выбор режима ПС: Основной или Все доступные -->
-        <AppCheckbox
-            v-if="!fabricsStore.globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
+        <AppCheckboxTS
+            v-if="!globalEditMode && getFunctionalByFabricTaskStatus(taskStatus)"
             id="active"
             :checkboxData="checkboxData"
             dir="horizontal"
@@ -72,76 +72,105 @@
         />
 
 
-
     </div>
 
 </template>
 
-<script setup>
-import {reactive, ref, watch} from 'vue'
+<script lang="ts" setup>
+import { reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import type { ICheckboxDataItem, MachineUnionType, TaskStatusUnionType } from '@/types'
+
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_MACHINES,
-    FABRIC_TASK_STATUS,
-    FABRIC_WORKING_SHIFT_LENGTH
+    FABRIC_WORKING_SHIFT_LENGTH,
+    // FABRIC_TASK_STATUS
 } from '@/app/constants/fabrics.js'
 
-import {getFunctionalByFabricTaskStatus,} from '@/app/helpers/manufacture/helpers_fabric.js'
+import { getFunctionalByFabricTaskStatus, } from '@/app/helpers/manufacture/helpers_fabric.js'
 
-import {formatTimeWithLeadingZeros} from '@/app/helpers/helpers_date.js'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date.js'
 
 import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
-import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
+import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 
-const props = defineProps({
-    machine: {
-        type: Object,
-        required: false,
-        default: () => FABRIC_MACHINES.AMERICAN,
-    //     validator: (machine) => [
-    //         FABRIC_MACHINES.AMERICAN,
-    //         FABRIC_MACHINES.GERMAN,
-    //         FABRIC_MACHINES.CHINA,
-    //         FABRIC_MACHINES.KOREAN,
-    //     ].includes(machine)
-    },
-    taskStatus: {
-        type: Number,
-        required: true,
-        validator: (taskStatus) => [
-            FABRIC_TASK_STATUS.UNKNOWN.CODE,
-            FABRIC_TASK_STATUS.CREATED.CODE,
-            FABRIC_TASK_STATUS.PENDING.CODE,
-            FABRIC_TASK_STATUS.RUNNING.CODE,
-            FABRIC_TASK_STATUS.DONE.CODE,
-        ].includes(taskStatus)
-    }
+
+interface IProps {
+    taskStatus: TaskStatusUnionType
+    machine?: MachineUnionType
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+    machine: () => FABRIC_MACHINES.AMERICAN
 })
 
-// console.log('menu: ', props.machine)
+const emits = defineEmits<{
+    (e: 'addRoll'): void,
+    (e: 'optimizeLabor'): void,
+    (e: 'saveRollsOrder'): void
+}>()
 
-const emits = defineEmits(['addRoll', 'optimizeLabor', 'saveRollsOrder'])
 
-// attract: Получаем данные из хранилища
+// __ Получаем данные из хранилища
 const fabricsStore = useFabricsStore()
-// глобальный режим редактирования + глобальный режим выбора ПС
-// let {globalEditMode, globalFabricsMode} = storeToRefs(fabricsStore)
 
-// console.log(globalFabricsMode.value)
-// const fabricsMode
+// __ Глобальный режим редактирования + глобальный режим выбора ПС
+const {globalEditMode, globalFabricsMode, globalRollsIndexes} = storeToRefs(fabricsStore)
 
-// attract: Общие трудозатраты
+// __ Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
+const checkboxData = reactive({
+    name: 'availability',
+    data: [
+        {id: 1, name: 'Основные', checked: globalEditMode.value},
+        {id: 2, name: 'Все доступные', checked: !globalEditMode.value},
+    ]
+})
+
+// __ Общие трудозатраты
 const getTotalProductivityAmount = () => {
     const productivityAmounts = fabricsStore.globalTaskProductivity[props.machine.TITLE]
     // console.log(productivityAmounts)
-
     return productivityAmounts.reduce((acc, cur) => acc + cur, 0)
 }
 const totalProductivityAmount = ref(getTotalProductivityAmount())
 
-// attract: Отслеживаем изменения в хранилище по трудозатратам
+
+// __ Обрабатываем клик по чек боксу (Основные или все доступные)
+const changeFabricsMode = (item: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(item)) {
+        globalFabricsMode.value = item.id === 1
+        checkboxData.data[0].checked = globalFabricsMode.value
+        checkboxData.data[1].checked = !globalFabricsMode.value
+        // console.log(item)
+        // console.log('menu: ', globalEditMode.value)
+    }
+}
+
+// __ Обрабатываем клик по кнопке "Добавить рулон"
+const addRoll = () => {
+    // console.log(globalRollsIndexes.value)
+    if (globalRollsIndexes.value.includes(0)) return
+    // console.log('add roll')
+    emits('addRoll')
+}
+
+// __ Обрабатываем клик по кнопке "Оптимизировать трудозатраты"
+const optimizeLabor = () => {
+    // console.log('optimize labor')
+    emits('optimizeLabor')
+}
+
+// __ Обрабатываем клик по кнопке Сохранить порядок рулонов
+const saveRollsOrder = () => {
+    // console.log('save Rolls Order')
+    emits('saveRollsOrder')
+}
+
+
+// __ Отслеживаем изменения в хранилище по трудозатратам
 watch(
     () => fabricsStore.globalTaskProductivity,
     () => {
@@ -150,50 +179,6 @@ watch(
     },
     {deep: true}
 )
-
-// attract: Определяем объект с данными чекбокса (доступность тканей - основные или все доступные)
-const checkboxData = reactive({
-    name: 'Availability',
-    data: [
-        {id: 1, name: 'Основные', checked: fabricsStore.globalFabricsMode},
-        {id: 2, name: 'Все доступные', checked: !fabricsStore.globalFabricsMode},
-    ]
-})
-
-// attract: Обрабатываем клик по чек боксу (Основные или все доступные)
-const changeFabricsMode = (item) => {
-    fabricsStore.globalFabricsMode = item.id === 1
-    // console.log('menu: ', fabricsStore.globalFabricsMode)
-    checkboxData.data[0].checked = fabricsStore.globalFabricsMode
-    checkboxData.data[1].checked = !fabricsStore.globalFabricsMode
-    // console.log(item)
-}
-
-// attract: Обрабатываем клик по кнопке "Добавить рулон"
-const addRoll = () => {
-    console.log(fabricsStore.globalRollsIndexes)
-    if (fabricsStore.globalRollsIndexes.includes(0)) return
-    // console.log('add roll')
-    emits('addRoll')
-}
-
-// attract: Обрабатываем клик по кнопке "Оптимизировать трудозатраты"
-const optimizeLabor = () => {
-    emits('optimizeLabor')
-    // console.log('optimize labor')
-}
-
-
-// __ Обрабатываем клик по кнопке Сохранить порядок рулонов
-const saveRollsOrder = () => {
-    emits('saveRollsOrder')
-    // console.log('save Rolls Order')
-}
-
-
-// watch(() => fabricsStore.globalFabricsMode, () => {})
-
-
 
 </script>
 

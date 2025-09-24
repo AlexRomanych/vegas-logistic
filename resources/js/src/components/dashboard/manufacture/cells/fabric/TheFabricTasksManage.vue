@@ -186,12 +186,11 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-
-
-const isLoading = ref(true)
 // __ End Loader
 
-
+// Line -----------------------------------------------------------------------------
+// Line ----------------------------- Интерфейсы-------------------------------------
+// Line -----------------------------------------------------------------------------
 type ITabKey = 'common' | 'american' | 'german' | 'china' | 'korean'
 
 interface ITab {
@@ -219,8 +218,11 @@ interface ITempWorker {
     record_id: number
     uniqID: string
 }
+// Line -----------------------------------------------------------------------------
 
 const fabricsStore = useFabricsStore()
+
+const isLoading = ref(true)
 
 // __ Подготавливаем данные
 let fabrics: IFabric[] = []  // загружаем после монтирования
@@ -260,6 +262,23 @@ const getTasks = async () => {
     console.log('tasks:', tasks)
     // console.log('taskData: ', taskData)
     // console.log('activeTask', activeTask.value)
+}
+
+
+const addTuningRolls = async () => {
+
+    for (let i = 0; i < taskData.length; i++) {
+        console.log(taskData[i])
+    }
+
+
+
+    // taskData.forEach(task => {
+    //     Object.keys(task.machines).forEach(machine => {
+    //         task.machines[machine].rolls.forEach(roll => {})
+    //
+    //     })
+    // })
 }
 
 // __ Получаем все ткани и запоминаем в хранилище
@@ -603,7 +622,8 @@ const saveRollsPosition = async (machine: IConstFabricMachine, task: ITaskItem) 
     fabricsStore.globalOrderManageChangeFlag = true
 
     // const targetTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста
-    /*const result =*/ await fabricsStore.changeContextOrder(task.id, machine.ID, task.machines[machine.TITLE].rolls)
+    /*const result =*/
+    await fabricsStore.changeContextOrder(task.id, machine.ID, task.machines[machine.TITLE].rolls)
 
     const orderContext = await fabricsStore.getOrderContext(task.id, machine.ID)
     // console.log('orderContext: ', orderContext)
@@ -660,7 +680,8 @@ const deleteTasksRecord = async (deleteData: { task: ITaskItem } & { machine: IC
     // __ Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
     // __ Иначе удаляем его из БД
     if (deleteData.id) {
-        /*const result =*/ await fabricsStore.deleteFabricTaskRollById(deleteData.id)
+        /*const result =*/
+        await fabricsStore.deleteFabricTaskRollById(deleteData.id)
 
         // Удаляем рулон из массива, чтобы верно пересчитать позицию
         const findTask = taskData.find(t => t.date === deleteData.task.date)     // Получаем ссылку на СЗ на дату контекста
@@ -708,7 +729,8 @@ const selectWorkers = async (workersList: ITempWorker[]) => {
     // console.log(workersIds)
 
     if (activeTask.value) {
-        /*const res =*/ await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
+        /*const res =*/
+        await fabricsStore.updateFabricTaskWorkers(activeTask.value.common.id, workersIds)
         // console.log(res)
 
         const newTaskDay = await fabricsStore.getTasksByPeriod({
@@ -728,7 +750,8 @@ const selectWorkers = async (workersList: ITempWorker[]) => {
 // attract: Сохраняет общий комментарий ко дню СЗ
 const updateTaskDescription = async (description: string) => {
     if (activeTask.value) activeTask.value.common.description = description
-    /*const res =*/ await fabricsStore.changeFabricTaskDateStatus(activeTask.value)
+    /*const res =*/
+    await fabricsStore.changeFabricTaskDateStatus(activeTask.value)
     // console.log('description: ', description)
     // console.log(res)
 }
@@ -755,6 +778,7 @@ onMounted(async () => {
             setEnabledTabs()                // Устанавливаем только активные машины
             await getFabrics()              // Получаем ПС
             await getTasks()                // Получаем список СЗ
+            await addTuningRolls()          // Добавляем рулоны для переналадки
             resetTabs()                     // сбрасываем все табы
             tabs.common.shown = true        // делаем вкладку "общие данные" активной, чтобы запустить реактивность
             getActiveTaskAndTab()           // Получаем активное СЗ и вкладку из LocalStorage
