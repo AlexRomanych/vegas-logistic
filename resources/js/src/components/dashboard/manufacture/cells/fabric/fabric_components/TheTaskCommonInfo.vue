@@ -127,7 +127,7 @@
                     align="center"
                     class="cursor-pointer"
                     height="h-[60px]"
-                    text="V"
+                    text="💾"
                     text-size="huge"
                     type="success"
                     width="w-[50px]"

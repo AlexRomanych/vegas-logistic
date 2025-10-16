@@ -5,7 +5,7 @@
         <!-- __ Меню с кнопками управления записями -->
         <TheTaskRecordsMenu
             :machine="machine"
-            :task-status="task.common.status"
+            :task="task"
             @add-roll="addRoll"
             @optimize-labor="optimizeLabor"
             @save-rolls-order="saveRollsOrder"
@@ -18,14 +18,15 @@
             <!-- __ Заголовки таблицы для записей с рулонами -->
             <TheTaskRecordsTitle/>
 
+            <!--:move="evt => !evt.draggedContext.element.isTuning && evt.draggedContext.element.editable"-->
             <div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">
                 <!-- __ Сами рулоны с возможностью перетаскивания -->
                 <draggable
                     :="dragOptions"
                     :disabled="!isDragging"
                     :list="rolls"
+                    :move="checkMove"
                     item-key="id"
-                    :move="evt => evt.draggedContext.element.editable"
                     tag="div"
                     @end="changeRollsPosition"
                     @start="checkForDrag"
@@ -38,7 +39,7 @@
                                 :index="index"
                                 :machine="machine"
                                 :roll="element"
-                                :task-status="task.common.status"
+                                :task-status="task.common.status as unknown as TaskStatusUnionType"
                                 @save-task-record="saveTaskRecord"
                                 @delete-task-record="deleteTaskRecord"
                             />
@@ -60,7 +61,7 @@
                     :placeholder="
                         !getFunctionalByFabricTaskStatus(task.common.status)? '' : 'Введите комментарий'"
                     :rows="2"
-                    :value="taskDescription"
+                    :value="taskDescription ?? ''"
                     class="cursor-pointer"
                     height="min-h-[60px]"
                     label="Комментарий к сменному заданию на этой стегальной машине:"
@@ -77,7 +78,7 @@
                     align="center"
                     class="cursor-pointer"
                     height="h-[60px]"
-                    text="V"
+                    text="💾"
                     text-size="huge"
                     type="success"
                     width="w-[50px]"
@@ -97,23 +98,29 @@
     </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import draggable from 'vuedraggable'
+
+import type { FabricMachineTitles, IRoll, ITaskItem, TaskStatusUnionType } from '@/types'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
-    FABRIC_MACHINES,
+    type IConstFabricMachine,
     FABRIC_TASK_STATUS, FABRICS_NULLABLE,
     NEW_ROLL,
+    // FABRIC_MACHINES,
 } from '@/app/constants/fabrics.js'
 import {
-    getFunctionalByFabricTaskStatus,
+    getFunctionalByFabricTaskStatus, getProductivityValueByRoll,
     // filterFabricsByMachineId,
     // getAddFabricMode,
 } from '@/app/helpers/manufacture/helpers_fabric.js'
+import { cloneDeep } from '@/app/helpers/helpers_lib.js'
+
 
 import TheTaskRecordsMenu
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordsMenu.vue'
@@ -125,46 +132,49 @@ import TheTaskRecordRolls
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/fabric_manage/TheTaskRecordRolls.vue'
 import TheDividerLine
     from '@/components/dashboard/manufacture/cells/fabric/fabric_components/TheDividerLine.vue'
-
 import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
+
 // import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
 
-const props = defineProps({
-    task: {
-        type: Object,
-        required: false,
-        default: () => ({}),
-    },
-    machine: {
-        type: Object,
-        required: false,
-        default: () => FABRIC_MACHINES.AMERICAN,
-        validator: (machine) =>
-            [
-                FABRIC_MACHINES.AMERICAN.ID,
-                FABRIC_MACHINES.GERMAN.ID,
-                FABRIC_MACHINES.CHINA.ID,
-                FABRIC_MACHINES.KOREAN.ID,
-            ].includes(machine.ID),
-    },
-})
 
-// console.log('task: ', props.task)
-// console.log('machine: ', props.machine)
+interface IProps {
+    task: ITaskItem
+    machine: IConstFabricMachine
+}
 
-const emits = defineEmits([
-    'addRoll',
-    'optimizeLabor',
-    'saveTaskRecord',
-    'deleteTaskRecord',
-    'saveMachineDescription',
-    'changeRollsPosition',
-    'saveRollsPosition',
-])
+const props = defineProps<IProps>()
+
+// console.log('task from machine: ', props.task)
+// console.log('machine from machine: ', props.machine)
+
+const emits = defineEmits<{
+    (e: 'addRoll', newRoll: IRoll, machine: IConstFabricMachine, task: ITaskItem): void,
+    (e: 'optimizeLabor', machine: IConstFabricMachine, task: ITaskItem): void,
+    (e: 'changeRollsPosition', machine: IConstFabricMachine, task: ITaskItem): void,
+    (e: 'saveRollsPosition', machine: IConstFabricMachine, task: ITaskItem): void,
+    (e: 'saveRollsOrder', machine: IConstFabricMachine, task: ITaskItem): void,
+    (e: 'deleteTaskRecord', payload: IRoll & { machine: IConstFabricMachine, task: ITaskItem }): void,
+    (e: 'saveTaskRecord', payload: {
+        index: number,
+        roll: IRoll,
+        machine: IConstFabricMachine,
+        task: ITaskItem,
+        taskDescription: string | null
+    }): void
+    (e: 'saveMachineDescription', payload: {
+        machine: IConstFabricMachine,
+        task: ITaskItem,
+        taskDescription: string | null
+    }): void
+}>()
+
 
 const fabricsStore = useFabricsStore()
 const fabrics = fabricsStore.fabricsMemory
+const {globalRollsIndexes, globalEditMode } = storeToRefs(fabricsStore)
+
+let rollsCopy: IRoll[]
 
 // __ Опции для draggable
 const dragOptions = computed(() => {
@@ -179,13 +189,12 @@ const dragOptions = computed(() => {
 
 // __ Проверяем, можно ли менять порядок рулонов
 const isDragging = ref(false)
-
 const checkDruggable = () => {
     // console.log('checkDruggable: start')
 
     if (props.task.common.status !== FABRIC_TASK_STATUS.CREATED.CODE) return false
 
-    const nullRoll = props.task.machines[props.machine.TITLE].rolls.find(roll => roll.fabric_id === FABRICS_NULLABLE.id)
+    const nullRoll = props.task.machines[props.machine.TITLE].rolls.find(roll => !roll.isTuning && roll.fabric_id === FABRICS_NULLABLE.id)
     if (nullRoll) return false
 
     if (fabricsStore.globalEditMode) return false// Если режим редактирования, то не меняем порядок рулонов
@@ -194,7 +203,18 @@ const checkDruggable = () => {
 }
 
 
-const rolls = ref([])
+// __ Проверка возможности перетаскивания рулона
+const checkMove = (evt: any) => {
+    // console.log('roll: ', evt.draggedContext.element)
+    // console.log('tuning: ', evt.draggedContext.element.isTuning)
+    // console.log('editable: ', evt.draggedContext.element.editable)
+    // console.log(!evt.draggedContext.element.isTuning && evt.draggedContext.element.editable)
+
+    return !evt.draggedContext.element.isTuning &&
+        evt.draggedContext.element.editable
+}
+
+const rolls = ref<IRoll[]>([])
 
 // attract: Тут функционал, который дополняет функционал уникальности выбора ПС из выпадающего списка
 const getRollsIndexes = () => {
@@ -206,7 +226,10 @@ const getRollsIndexes = () => {
         .map((roll) => (roll.editable ? roll.fabric_id : undefined))
         .filter((roll) => roll !== undefined)
 
-    fabricsStore.globalRollsIndexes.value = rollsIndexes // сохраняем индексы рулонов в глобальном хранилище
+    // console.log('rollsIndexes: ', rollsIndexes)
+
+    globalRollsIndexes.value = rollsIndexes // сохраняем индексы рулонов в глобальном хранилище
+    // fabricsStore.globalRollsIndexes.value = rollsIndexes // сохраняем индексы рулонов в глобальном хранилище
     // attract: Получаем индексы рулонов, для того, чтобы их потом исключить из выбора ПС в самой записи
     return rollsIndexes
 }
@@ -215,59 +238,90 @@ const rollsIndexes = ref(getRollsIndexes())
 
 // attract: ---------------------------------------------------------------
 
-fabricsStore.globalEditMode = false // устанавливаем в false глобальный режим редактирования
+globalEditMode.value = false // устанавливаем в false глобальный режим редактирования
+// fabricsStore.globalEditMode = false // устанавливаем в false глобальный режим редактирования
 
-// attract: Заполняем глобальный массив производительности в хранилище
+// __ Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
     fabricsStore.clearTaskGlobalProductivity()
     rolls.value.forEach((roll, index, rolls) => {
-        const fabric = fabrics.find((fabric) => fabric.id === roll.fabric_id)
-        fabricsStore.globalTaskProductivity[props.machine.TITLE][index] = fabric.buffer.productivity
-            ? (fabric.buffer.average_length * roll.rolls_amount) / fabric.buffer.productivity
-            : 0
+
+        fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles][index] = {
+            time: getProductivityValueByRoll(roll),
+            isTuning: roll.isTuning ?? false
+        }
+
+        // const fabric = fabrics.find((fabric) => fabric.id === roll.fabric_id)
+
+        // globalTaskProductivity[props.machine.TITLE][index] = fabric.buffer.productivity
+        // fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles].push({
+        //     time: getProductivityValueByRoll(roll),
+        //     isTuning: roll.isTuning
+        // })
+
+        //     ? (fabric.buffer.average_length * roll.rolls_amount) / fabric.buffer.productivity
+        //     : 0
+
         // console.log(fabric, roll.rolls_amount)
         // console.log(fabric.buffer.productivity ? fabric.buffer.average_length * roll.rolls_amount : 0)
     })
+
+    // console.log('fillGlobalProductivity: ', fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles])
+    // debugger
 }
 
-// attract: Общий комментарий к сменному заданию
+// __ Общий комментарий к сменному заданию
 const taskDescription = ref(props.task.machines[props.machine.TITLE].description)
-
 
 // __ Начало перетаскивания
 const checkForDrag = () => {
+    rollsCopy = cloneDeep(props.task.machines[props.machine.TITLE].rolls)   // Сохраняем копию рулонов
 }
 
 // __ Меняем позицию рулонов в СЗ
 const changeRollsPosition = () => {
+    // console.log('rollsCopy: ', rollsCopy)
+    // console.log('props.task.machines[props.machine.TITLE].rolls: ', props.task.machines[props.machine.TITLE].rolls)
+
+    let findChanges = false
+    for (let i = 0; i < rollsCopy.length; i++) {
+        if (rollsCopy[i].roll_position !== props.task.machines[props.machine.TITLE].rolls[i].roll_position) {
+            findChanges = true
+            break
+        }
+    }
+
+    if (!findChanges) return
+
     // console.log('from Machine: changeRollsPosition')
+
     fabricsStore.globalOrderManageChangeFlag = true // устанавливаем флаг для изменения порядка в глобальном хранилище
     emits('changeRollsPosition', props.machine, props.task)     // Меняем порядок рулонов в СЗ
     emits('saveRollsPosition', props.machine, props.task)       // Сохраняем порядок рулонов в СЗ
+
+    // console.log('rolls: ', props.task.machines[props.machine.TITLE].rolls)
 }
 
 
-// attract: Добавляем новый рулон
+// __ Добавляем новый рулон
 const addRoll = () => {
-    // console.log('NEW_ROLL: ', NEW_ROLL)
+    console.log('addRoll: machine')
     // Передаем в родительский компонент новый рулон, стегальную машину и само задание как контекст
     emits('addRoll', NEW_ROLL, props.machine, props.task)
 }
 
-// attract: Оптимизируем трудозатраты
+// __ Оптимизируем трудозатраты
 const optimizeLabor = () => {
     emits('optimizeLabor', props.machine, props.task)
 }
 
-// __ Сохраняем порядок рулонов
+// __ Сохраняем порядок рулонов (Всплывающее по кнопке "Сохранить порядок")
 const saveRollsOrder = () => {
-    // console.log('saveRollsOrder: ')
     emits('saveRollsOrder', props.machine, props.task)
 }
 
-// attract: Сохраняем запись
-const saveTaskRecord = (saveData) => {
-    // console.log(saveData)
+// __ Сохраняем запись
+const saveTaskRecord = (saveData: { index: number, roll: IRoll }) => {
     emits('saveTaskRecord', {
         ...saveData,
         machine: props.machine,
@@ -276,16 +330,15 @@ const saveTaskRecord = (saveData) => {
     })
 }
 
-// attract: Удаляем запись
-const deleteTaskRecord = (deleteData) => {
+// __ Удаляем запись
+const deleteTaskRecord = (deleteData: IRoll) => {
     emits('deleteTaskRecord', {...deleteData, machine: props.machine, task: props.task})
 }
 
-// attract: Обновляем общее описание к СМ
+// __ Обновляем общее описание к СМ
 const updateTaskMachineDescription = () => {
     if (!taskDescription.value) return
-
-    console.log(taskDescription.value)
+    // console.log(taskDescription.value)
     emits('saveMachineDescription', {
         machine: props.machine,
         task: props.task,
@@ -299,20 +352,23 @@ watch(
     () => {
         fillGlobalProductivity()
         rollsIndexes.value = getRollsIndexes() // Обновляем индексы рулонов, чтобы потом их исключить из выбора ПС в самой записи
-
         isDragging.value = checkDruggable()
-        // console.log('TaskMachine: Task changed: ', fabricsStore.globalRollsIndexes)
 
+        // console.log('global productivity: ', fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles])
+        // console.log('TaskMachine: Task changed: ', fabricsStore.globalRollsIndexes)
         // console.log('TaskMachine: Task changed: ', props.task)
         // console.log('globalProductivity: TheTaskMachine: ', fabricsStore.globalTaskProductivity)
         // console.log('isDragging: ', isDragging.value)
         // console.log('globalEditMode: ', fabricsStore.globalEditMode)
+
+
     },
     {deep: true, immediate: true},
 )
 
 // __ Отдельно отслеживаем глобальное редактирование
-watch(() => fabricsStore.globalEditMode, () => isDragging.value = checkDruggable(), {deep: true, immediate: true})
+watch(() => globalEditMode, () => isDragging.value = checkDruggable(), {deep: true, immediate: true})
+// watch(() => fabricsStore.globalEditMode, () => isDragging.value = checkDruggable(), {deep: true, immediate: true})
 
 </script>
 

@@ -192,19 +192,29 @@ class CellFabricController extends Controller
             $fabric->average_roll_length_hand = $fabricPayload['hand_length'];          // Записываем ручную длину в любом случае
 
             // __ Тут логика для расчета средней длины рулона
-            if (!$fabricPayload['statistic']) {
-                if ($fabricPayload['hand_length'] !== 0) {
+            if (!$fabricPayload['statistic']) {     // Длина из ручного ввода
+                if ((float)$fabricPayload['hand_length'] !== 0.0) {
                     $fabric->average_roll_length = $fabricPayload['hand_length'];
                     $fabric->average_roll_length_hand = $fabricPayload['hand_length'];
                 } else {
-                    $fabric->average_roll_length_hand = $fabric->average_roll_length;
+                    if ((float)$fabric->average_roll_length != 0.0) {
+                        $fabric->average_roll_length_hand = $fabric->average_roll_length;
+                    }
                 }
-            } else {
-                if ($fabricPayload['statistic_length'] !== 0) {
+            } else {    // Длина из статистики
+                if ((float)$fabricPayload['statistic_length'] !== 0.0) {
                     $fabric->average_roll_length = $fabricPayload['statistic_length'];
                     $fabric->average_roll_length_statistic = $fabricPayload['statistic_length'];
                 } else {
-                    $fabric->average_roll_length_statistic = $fabric->average_roll_length;
+                    if ((float)$fabric->average_roll_length != 0.0) {
+                        $fabric->average_roll_length_statistic = $fabric->average_roll_length;
+                    } else {
+                        if ((float)$fabricPayload['hand_length'] != 0.0) {
+                            $fabric->average_roll_length = $fabricPayload['hand_length'];
+                        } elseif ((float)$fabric->average_roll_length_hand != 0.0) {
+                            $fabric->average_roll_length = $fabric->average_roll_length_hand;
+                        }
+                    }
                 }
             }
 
@@ -336,7 +346,50 @@ class CellFabricController extends Controller
     }
 
 
+    /**
+     * ___ Получение времени переналадки рисунков между 2 рисунками
+     */
+    public function getFabricsBetweenTuningTime(Request $request, string $from, string $to)
+    {
+        // try {
+        $validator = validator([
+            'from' => $from,
+            'to' => $to
+        ], [
+            'from' => 'required|integer',
+            'to' => 'required|integer',
+        ]);
 
+        if ($validator->fails()) {
+            throw new Exception($validator->errors()->first());
+        }
+
+        $fabricFrom = Fabric::query()
+            ->with('fabricPicture')
+            ->find($from);
+
+        if (!$fabricFrom) {
+            throw new Exception('Missing fabric with id ' . $from);
+        }
+
+        $fabricTo = Fabric::query()
+            ->with('fabricPicture')
+            ->find($to);
+
+        if (!$fabricTo) {
+            throw new Exception('Missing fabric with id ' . $to);
+        }
+
+        // Через сервис
+        return FabricService::getFabricsPicturesBetweenTuningTime($fabricFrom->fabricPicture->id, $fabricTo->fabricPicture->id);
+
+        // Через контроллер
+        // return (new CellFabricPictureController())->getFabricsPicturesBetweenTuningTime($request, $fabricFrom->fabricPicture->id, $fabricTo->fabricPicture->id);
+
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
+    }
 
 
 }

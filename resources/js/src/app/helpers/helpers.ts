@@ -53,6 +53,7 @@ export function getColorClassByType(type: ColorName, prefix = '', colorIndexData
 
 export function getTextColorClassByType(type: ColorName) {
     // console.log(colorsClasses, colorsClasses['danger'].color)
+    // if (type === 'plug') return 'text-slate-100'
     return 'text-' + colorsClasses[type].text
 }
 

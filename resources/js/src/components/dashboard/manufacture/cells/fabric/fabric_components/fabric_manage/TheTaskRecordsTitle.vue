@@ -1,6 +1,6 @@
 <template>
 
-    <!--attract: Добавляем информацию о рулонах -->
+    <!-- __ Добавляем информацию о рулонах -->
     <div class="flex">
 
 <!--        <AppLabelMultiLine-->

@@ -8,7 +8,7 @@ export interface IRenderDataItem {
     header: string | string[]
     width: string
     show: boolean
-    type: ((...args: any[]) => string) | IColorTypes
+    type: ((...args: any[]) => IColorTypes) | IColorTypes
     height?: string
     class?: string
     placeholder?: string

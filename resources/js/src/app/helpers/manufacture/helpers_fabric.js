@@ -5,6 +5,7 @@ import {
     FABRIC_MACHINES,
     TASK_DRAFT, FABRIC_ROLL_STATUS,
     WARNINGS_RANGES,
+    FABRIC_DEFAULT_TUNING_TIME,
     FABRIC_MANAGE,
     FABRIC_EXECUTE,
 } from '@/app/constants/fabrics.js'
@@ -20,7 +21,6 @@ import {
 
 // ___ Получить тип стиля по коду статуса СЗ на стежке
 /**
- *
  * @param {number | null} taskStatusCode
  * @returns {string}
  */
@@ -231,7 +231,7 @@ export function addEmptyFabricTasks(fabricTasks = [], period = null) {
     // устанавливаем активный флаг для первого элемента
     fabricTasks.forEach((item) => item.active = false)
 
-    // устанавливаем активный флаг для первого элемента. Обязательно!!!
+    // warn: устанавливаем активный флаг для первого элемента. Обязательно!!!
     fabricTasks[0].active = true
 
     return fabricTasks
@@ -454,6 +454,10 @@ export function getTextileLength(
 }
 
 // __ Получаем среднюю длину ткани для ПС по рулону
+/**
+ * @param {IRollExec} roll
+ * @returns {*|number}
+ */
 export function getTextileLengthByRoll(roll) {
     if (isEmptyObj(roll)) return 0
     return getTextileLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount)
@@ -470,9 +474,17 @@ export function getFabricLength(
 }
 
 // __ Получаем среднюю ПС по рулону
+/**
+ * @param {IRollExec} roll
+ * @returns {number}
+ */
 export function getFabricLengthByRoll(roll) {
     if (isEmptyObj(roll)) return 0
-    return getFabricLength(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount, roll.rate)
+    return getFabricLength(
+        roll.average_textile_roll_length,
+        roll.rolls_amount,
+        roll.textile_layers_amount,
+        roll.rate)
 }
 
 // __ Получаем производительность ПС (время стегания)
@@ -487,15 +499,17 @@ export function getProductivityValue(
 }
 
 // __ Получаем производительность ПС (время стегания) по рулону
+/**
+ * @param {IRollExec} roll
+ * @returns {number}
+ */
 export function getProductivityValueByRoll(roll) {
-
-    // console.log('roll: ', roll)
     if (isEmptyObj(roll)) return 0
     return getProductivityValue(roll.average_textile_roll_length, roll.rolls_amount, roll.textile_layers_amount, roll.rate, roll.productivity)
 }
 
 
-// __ Получаем название рисунка по id
+// __ Получаем название рисунка по названию ПС
 export function getPicNameByFabric(fabric) {
     const composibles = fabric.split(' ')
     let picName = composibles.find(item => item.endsWith(')'))
@@ -507,6 +521,108 @@ export function getPicNameByFabric(fabric) {
         .replace('(', '')
     // picName = picName.toUpperCase().replace('РИС.', '').slice(0, -1)
     return picName
+}
+
+// line ----------------------------------------------------
+// line ------------ Трудозатраты для рулонов ОПП ----------
+// line ----------------------------------------------------
+
+// __ Трудозатраты в виде объекта
+/**
+ * @param  {IRoll[]} rolls
+ */
+export function getContextProductivity(rolls) {
+    return {
+        rollsProductivity: getTotalRollsProductivity(rolls),
+        tuningProductivity: getTotalTuningProductivity(rolls),
+        totalProductivity: getTotalProductivity(rolls),
+    }
+}
+
+// __ Трудозатраты по рулонам
+/**
+ * @param {IRoll[]} rolls
+ * @returns {number}
+ */
+export function getTotalRollsProductivity(rolls) {
+    return rolls
+        .filter(roll => !roll.isTuning)
+        .reduce((acc, roll) => acc + roll.average_fabric_length / roll.productivity, 0)
+}
+
+// __ Трудозатраты по переналадкам
+/**
+ * @param {IRoll[]} rolls
+ * @returns {number}
+ */
+export function getTotalTuningProductivity(rolls) {
+    return rolls
+        .filter(roll => roll.isTuning && roll.productivity !== FABRIC_DEFAULT_TUNING_TIME)
+        .reduce((acc, roll) => acc + roll.productivity, 0)
+}
+
+// __ Общие трудозатраты
+/**
+ * @param {IRoll[]} rolls
+ * @returns {number}
+ */
+export function getTotalProductivity(rolls) {
+    return rolls
+        .filter(roll => roll.productivity !== FABRIC_DEFAULT_TUNING_TIME)
+        .reduce((acc, roll) => acc + (!roll.isTuning ? roll.average_fabric_length / roll.productivity : roll.productivity), 0)
+}
+
+
+// line ----- Трудозатраты для рулонов ОПП через глобальный массив трудозатрат ----------
+/**
+ * @typedef {import("@/app/types/fabric_types").IGlobalProductivity} IGlobalProductivity
+ */
+
+/**
+ * @param {IGlobalProductivity} globalProductivity
+ * @param {IConstFabricMachine} machine
+ * @returns {number}
+ */
+export function getTotalProductivityGlobal(globalProductivity, machine) {
+    return globalProductivity[machine.TITLE]
+        .filter(timeItem => timeItem.time !== FABRIC_DEFAULT_TUNING_TIME)
+        .reduce((acc, timeItem) => acc + timeItem.time, 0)
+}
+
+/**
+ * @param {IGlobalProductivity} globalProductivity
+ * @param {IConstFabricMachine} machine
+ * @returns {number}
+ */
+export function getTotalRollProductivityGlobal(globalProductivity, machine) {
+    return globalProductivity[machine.TITLE]
+        .filter(timeItem => !timeItem.isTuning)
+        .reduce((acc, timeItem) => acc + timeItem.time, 0)
+}
+
+/**
+ * @param {IGlobalProductivity} globalProductivity
+ * @param {IConstFabricMachine} machine
+ * @returns {number}
+ */
+export function getTotalTunningProductivityGlobal(globalProductivity, machine) {
+    return globalProductivity[machine.TITLE]
+        .filter(timeItem => timeItem.isTuning && timeItem.time !== FABRIC_DEFAULT_TUNING_TIME)
+        .reduce((acc, timeItem) => acc + timeItem.time, 0)
+}
+
+// line ----------------------------------------------------
+
+
+// ___ Получаем ключ для кеширования времени тюнинга
+/**
+ *
+ * @param {number} picfrom
+ * @param {number} picTo
+ * @returns {string}
+ */
+export function getTuningTimeCasheKey(picfrom, picTo) {
+    return `${picfrom}:${picTo}`
 }
 
 

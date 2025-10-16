@@ -21,6 +21,11 @@ class Fabric extends Model
         'average_roll_length_hand' => 'float',
         'average_roll_length_statistic' => 'float',
         'productivity' => 'float',
+        'buffer_amount' => 'float',
+        'buffer_max' => 'int',
+        'buffer_min' => 'int',
+        'translate_rate' => 'float',
+        'optimal_party' => 'int',
     ];
 
     // Добавляем новые атрибуты

@@ -23,13 +23,15 @@ const slate = 'slate'
 const orange = 'orange'
 const stone = 'stone'
 const indigo = 'indigo'
+const plug = 'plug'
 
-// __ ----------------------------------------------------
-// __ Литеральные типы для ключей и значений
-// __----------------------------------------------------
+
+// line ----------------------------------------------------
+// line ----- Литеральные типы для ключей и значений -------
+// line ----------------------------------------------------
 
 // __ 1. Тип для ключей свойств (mainColor, textColor, effectDirection)
-type ColorPropertyKey = typeof mainColor | typeof textColor | typeof effectDirection;
+// type ColorPropertyKey = typeof mainColor | typeof textColor | typeof effectDirection;
 
 // __ 2. Тип для направлений эффекта (toLight, toDark)
 export type EffectDirection = typeof toLight | typeof toDark;
@@ -47,25 +49,26 @@ export type ColorName =
     | typeof slate
     | typeof orange
     | typeof stone
-    | typeof indigo;
+    | typeof indigo
+    | typeof plug
 
 // __ 4. Тип для строковых значений цветов Tailwind CSS (blue, white, green, red, yellow, sky, zinc, indigo, etc.)
 // __ Это могут быть любые строковые значения, которые используются в `mainColor` и `textColor`.
 // __ Если вы ограничены конкретным набором, можно создать литеральный тип и для них.
 // __ Например, если они все из Tailwind CSS, вы можете перечислить их или сделать более общий 'string'.
 type TailwindColorValue =
-    'blue'
-    | 'white'
-    | 'slate'
-    | 'green'
-    | 'black'
-    | 'red'
-    | 'yellow'
-    | 'sky'
-    | 'zinc'
-    | 'orange'
-    | 'stone'
-    | 'indigo';
+    'blue' |
+    'white' |
+    'slate' |
+    'green' |
+    'black' |
+    'red' |
+    'yellow' |
+    'sky' |
+    'zinc' |
+    'orange' |
+    'stone' |
+    'indigo'
 
 
 // __ ----------------------------------------------------
@@ -151,11 +154,16 @@ const colorsClasses: ColorsClassesMap = {
         [mainColor]: 'indigo',
         [textColor]: 'white',
         [effectDirection]: toLight
+    },
+    [plug]: {
+        [mainColor]: 'white',
+        [textColor]: 'white',
+        [effectDirection]: toLight
     }
 }
 
-const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo]
-const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo}
+const colorsList = [primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo, plug]
+const colorsListObj = {primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo, plug}
 //
 // const colorsClasses = {
 //     warn: 'yellow-' + colorValue,
@@ -168,7 +176,7 @@ const colorsListObj = {primary, secondary, success, danger, warning, info, light
 export {
     colorsClasses, colorsList, colorsListObj,
     toLight, toDark,
-    primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo,
+    primary, secondary, success, danger, warning, info, light, dark, slate, orange, stone, indigo, plug,
     colorIndex, colorIndexLight, colorIndexOffset
 }
 
@@ -186,3 +194,4 @@ export type IColorTypes =
     | typeof orange
     | typeof stone
     | typeof indigo
+    | typeof plug

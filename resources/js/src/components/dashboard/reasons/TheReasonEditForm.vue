@@ -95,7 +95,7 @@
 
 import type {
     IReason
-} from '@/app/types'
+} from '@/types'
 
 import { onMounted, ref, } from 'vue'
 

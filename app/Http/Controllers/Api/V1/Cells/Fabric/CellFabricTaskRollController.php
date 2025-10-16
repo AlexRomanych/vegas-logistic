@@ -15,9 +15,11 @@ use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 
 // use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 
+use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use \Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 // use Carbon\Carbon;
@@ -272,83 +274,83 @@ class CellFabricTaskRollController extends Controller
     public function setRollMovedStatus(Request $request)
     {
         // try {
-            $result = $request->validate([
-                'data' => 'required|array',
-                'data.id' => 'required|numeric',
-                'data.status' => 'required|numeric'
-            ]);
+        $result = $request->validate([
+            'data' => 'required|array',
+            'data.id' => 'required|numeric',
+            'data.status' => 'required|numeric'
+        ]);
 
-            $status = $result['data']['status'];
+        $status = $result['data']['status'];
 
 
-            // __ Перемещенный на закрой в одном направлении
-            // if ($status !== FABRIC_ROLL_MOVED_CODE) {
-            //     throw new Exception('Неверный статус');
-            // }
+        // __ Перемещенный на закрой в одном направлении
+        // if ($status !== FABRIC_ROLL_MOVED_CODE) {
+        //     throw new Exception('Неверный статус');
+        // }
 
-            // __ Перемещенный на закрой в двух направлениях
-            // if ($status !== FABRIC_ROLL_DONE_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
-            //     throw new Exception('Неверный статус');
-            // }
+        // __ Перемещенный на закрой в двух направлениях
+        // if ($status !== FABRIC_ROLL_DONE_CODE && $status !== FABRIC_ROLL_MOVED_CODE) {
+        //     throw new Exception('Неверный статус');
+        // }
 
-            $roll = FabricTaskRoll::query()->find($result['data']['id']);
+        $roll = FabricTaskRoll::query()->find($result['data']['id']);
 
-            if (!$roll) {
-                throw new Exception('Рулон не найден');
-            }
+        if (!$roll) {
+            throw new Exception('Рулон не найден');
+        }
 
-            // __ Перемещенный на закрой в одном направлении
-            if ($roll->roll_status === FABRIC_ROLL_MOVED_CODE) {
-                throw new Exception('Рулон уже перемещен на закрой');
-            }
+        // __ Перемещенный на закрой в одном направлении
+        if ($roll->roll_status === FABRIC_ROLL_MOVED_CODE) {
+            throw new Exception('Рулон уже перемещен на закрой');
+        }
 
-            if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE) {
-                throw new Exception('Неверный статус');
-            }
+        if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_REGISTERED_1C_CODE) {
+            throw new Exception('Неверный статус');
+        }
 
-            // __ Перемещенный на закрой в двух направлениях
-            // if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_MOVED_CODE) {
-            //     throw new Exception('Неверный статус');
-            // }
+        // __ Перемещенный на закрой в двух направлениях
+        // if ($roll->roll_status !== FABRIC_ROLL_DONE_CODE && $roll->roll_status !== FABRIC_ROLL_MOVED_CODE) {
+        //     throw new Exception('Неверный статус');
+        // }
 
-            $delta = $roll->textile_roll_length / $roll->translate_rate; // +/- количество к буферу
+        $delta = $roll->textile_roll_length / $roll->translate_rate; // +/- количество к буферу
 
-            // __ Перемещенный на закрой в одном направлении
-            $result = $roll->update([
-                'roll_status' => FABRIC_ROLL_MOVED_CODE,
-                'move_to_cut_by' => Auth::id(),
-                'move_to_cut_at' => now(),
-            ]);
+        // __ Перемещенный на закрой в одном направлении
+        $result = $roll->update([
+            'roll_status' => FABRIC_ROLL_MOVED_CODE,
+            'move_to_cut_by' => Auth::id(),
+            'move_to_cut_at' => now(),
+        ]);
 
-            // __ Перемещенный на закрой в двух направлениях
-            // if ($status === FABRIC_ROLL_MOVED_CODE) {
-            //     $result = $roll->update([
-            //         'roll_status' => FABRIC_ROLL_MOVED_CODE,
-            //         'move_to_cut_by' => Auth::id(),
-            //         'move_to_cut_at' => now(),
-            //     ]);
-            //     $delta = -$delta;
-            //
-            // } else {
-            //     $result = $roll->update([
-            //         'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
-            //         'move_to_cut_by' => 0,
-            //         'move_to_cut_at' => null,
-            //     ]);
-            //
-            // }
+        // __ Перемещенный на закрой в двух направлениях
+        // if ($status === FABRIC_ROLL_MOVED_CODE) {
+        //     $result = $roll->update([
+        //         'roll_status' => FABRIC_ROLL_MOVED_CODE,
+        //         'move_to_cut_by' => Auth::id(),
+        //         'move_to_cut_at' => now(),
+        //     ]);
+        //     $delta = -$delta;
+        //
+        // } else {
+        //     $result = $roll->update([
+        //         'roll_status' => FABRIC_ROLL_REGISTERED_1C_CODE,
+        //         'move_to_cut_by' => 0,
+        //         'move_to_cut_at' => null,
+        //     ]);
+        //
+        // }
 
-            if (!$result) throw new Exception('Не удалось обновить статус');
+        if (!$result) throw new Exception('Не удалось обновить статус');
 
-            // __Изменяем количество в буфере ткани в зависимости от статуса
-            $fabric = Fabric::query()->find($roll->fabric_id);
+        // __Изменяем количество в буфере ткани в зависимости от статуса
+        $fabric = Fabric::query()->find($roll->fabric_id);
 
-            if (!$fabric) throw new Exception('Не удалось найти ткань');
+        if (!$fabric) throw new Exception('Не удалось найти ткань');
 
-            $fabric->buffer_amount += $delta;
-            $fabric->save();
+        $fabric->buffer_amount += $delta;
+        $fabric->save();
 
-            return EndPointStaticRequestAnswer::ok();
+        return EndPointStaticRequestAnswer::ok();
         // } catch (Exception $e) {
         //     return EndPointStaticRequestAnswer::fail(response()->json($e));
         // }
@@ -490,7 +492,7 @@ class CellFabricTaskRollController extends Controller
                 'roll_position' => ++$maxRollPosition,
                 'roll_status' => FABRIC_ROLL_CREATED_CODE,
                 'textile_roll_length' => $fabric->average_roll_length * $fabric->textile_layers_amount,
-                'fabric_roll_length' => (float)$fabric->translate_rate === 0.0 ? 0.0 :  $fabric->average_roll_length / $fabric->translate_rate,
+                'fabric_roll_length' => (float)$fabric->translate_rate === 0.0 ? 0.0 : $fabric->average_roll_length / $fabric->translate_rate,
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
                 'description' => 'Создан в процессе выполнения',   // дописываем плановый комментарий
@@ -658,6 +660,40 @@ class CellFabricTaskRollController extends Controller
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+    /**
+     *    ___ Возвращаем последний рулон предшествующий данной дате на заданной машине
+     * @param Request $request
+     * @param string $date
+     * @param int $machine
+     * @return FabricTaskRollResource|null[]|string
+     */
+    public function getLastRoll(Request $request, string $date, int $machine)
+    {
+        try {
+            $validator = validator([
+                'date' => $date,
+                'machine' => $machine
+            ], [
+                'date' => 'required|string',            // task_date
+                'machine' => 'required|integer',        // machine_id
+            ]);
+
+            if ($validator->fails()) {
+                throw new Exception($validator->errors()->first());
+            }
+
+            $lastRoll = FabricService::getLastRoll($date, $machine);
+
+            if ($lastRoll) return new FabricTaskRollResource($lastRoll);
+
+            return ['data' => null];
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e->getMessage());
         }
     }
 

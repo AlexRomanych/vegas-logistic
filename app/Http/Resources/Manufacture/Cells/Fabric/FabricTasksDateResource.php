@@ -1,13 +1,14 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
-use App\Http\Resources\Worker\WorkerCollection;
 use App\Http\Resources\Worker\WorkerResource;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
+
+// use App\Http\Resources\Worker\WorkerCollection;
 
 class FabricTasksDateResource extends JsonResource
 {
@@ -19,13 +20,13 @@ class FabricTasksDateResource extends JsonResource
     public function toArray(Request $request): array
     {
 
-        // Заполняем массив с именами стегальных машин
+        // __Заполняем массив с именами стегальных машин
         $machinesNames = [];
         for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
             $machinesNames[] = FabricService::getFabricMachineNameById($i); // Получаем название машины
         }
 
-        // Формируем массив с данными о машине
+        // __Формируем массив с данными о машине
         $machines = [];
         foreach ($this->fabricTasks as $task) {
 
@@ -35,7 +36,9 @@ class FabricTasksDateResource extends JsonResource
                 'description' => $task->description,
                 'finish_at' => $task->tasks_finish_at,
                 'rolls' => FabricTaskContextResourceDate::collection($task->fabricTaskContexts),          // Здесь будут все рулончики от ОПП для данной машины
-                // 'rolls' => $rollsContext,          // Здесь будут все рулончики от ОПП для данной машины
+                'lastExecRoll' => FabricTaskRollResource::make(
+                    FabricService::getLastRoll($this->tasks_date, $task->fabric_machine_id)
+                )
             ];
 
             // убираем те данные из массива, которые обработали
@@ -49,6 +52,12 @@ class FabricTasksDateResource extends JsonResource
                 'description' => null,
                 'finish_at' => null,
                 'rolls' => [],
+                'lastExecRoll' => FabricTaskRollResource::make(
+                    FabricService::getLastRoll(
+                        $this->tasks_date,
+                        FabricService::getFabricMachineIdByName($machineName)
+                    )
+                )
             ];
         }
 
@@ -79,7 +88,7 @@ class FabricTasksDateResource extends JsonResource
             ],
             'workers' => $workers,
             'machines' => $machines,
-//            'test' => $this->fabricTasks,
+            //            'test' => $this->fabricTasks,
         ];
 
         //        return parent::toArray($request);

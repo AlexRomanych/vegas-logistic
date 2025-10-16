@@ -223,6 +223,7 @@ Route::post('/fabric', [CellFabricController::class, 'create'])->middleware('jwt
 Route::delete('/fabric', [CellFabricController::class, 'destroy'])->middleware('jwt.auth');
 Route::get('/fabrics/buffer/update/', [CellFabricController::class, 'updateFabricsBuffer'])->middleware('jwt.auth');
 Route::get('/fabric/average/length/', [CellFabricController::class, 'getFabricAverageLength'])->middleware('jwt.auth');
+Route::get('/fabrics/tuning/time/{from}/{to}', [CellFabricController::class, 'getFabricsBetweenTuningTime'])->middleware('jwt.auth');
 
 
 // __ Рисунки стежки ПС
@@ -232,6 +233,7 @@ Route::post('/fabrics/pictures/create', [CellFabricPictureController::class, 'cr
 Route::get('/fabrics/picture/{id}', [CellFabricPictureController::class, 'getFabricPicture'])->middleware('jwt.auth');
 Route::get('/fabrics/picture-name/{id}', [CellFabricPictureController::class, 'getFabricPictureByName'])->middleware('jwt.auth');
 Route::post('/fabrics/pictures/upload', [CellFabricPictureController::class, 'uploadFabricPictures'])->middleware('jwt.auth');
+
 
 // __ Время переналадки стежки ПС
 Route::get('fabrics/pictures/tuning/time/', [CellFabricPictureController::class, 'getFabricsPicturesTuningTime'])->middleware('jwt.auth');
@@ -283,6 +285,7 @@ Route::prefix('/fabrics/tasks')
         Route::put('/context/change-order/', [CellFabricTaskContextController::class, 'changeContextOrder']);
         Route::get('/context/', [CellFabricTaskContextController::class, 'getOrderContext']);
         Route::post('/context/add/roll', [CellFabricTaskContextController::class, 'addOrderContextRoll']);
+        Route::get('/context/optimize/{task}/{machine}/{statistic?}', [CellFabricTaskContextController::class, 'optimizeOrderContext']);
 
 
         Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
@@ -292,7 +295,7 @@ Route::prefix('/fabrics/tasks')
         Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
         Route::post('/execute/save/rolls/order/', [CellFabricTaskRollController::class, 'saveExecuteRollsOrder']);
         Route::patch('/roll/update/comment/', [CellFabricTaskRollController::class, 'updateRollComment']);
-
+        Route::get('/execute/roll/last/{date}/{machine}', [CellFabricTaskRollController::class, 'getLastRoll']);
 
         // descr: Тут просто точки доступа для разных действий
         Route::get('/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate']);

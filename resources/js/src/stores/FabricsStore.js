@@ -17,6 +17,7 @@ import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/u
 const API_PREFIX = '/api/v1/'                                           // Префикс API
 const URL_FABRICS = 'fabrics/'                                          // URL для получения списка ПС
 const URL_FABRIC = 'fabric/'                                            // URL для получения ПС
+const URL_FABRICS_BETWEEN_TUNING_TIME = 'fabrics/tuning/time'           // URL для получения времени переналадки между ПС
 
 const URL_FABRICS_MACHINES = 'fabrics/machines/'                        // URL для получения списка Стегальных Машин
 const URL_FABRICS_MACHINE = 'fabrics/machine/'                          // URL для получения Стегальной Машины
@@ -56,6 +57,8 @@ const URL_FABRIC_TASKS_CONTEXT_GET_NOT_DONE =
     'fabrics/tasks/context/not-done/'                                   // URL для получения СЗ, созданного ОПП (FabricTaskContext), где статус СЗ у FabricTask - не "Выполнен"
 const URL_FABRIC_TASKS_CONTEXT_CHANGE_ORDER =
     'fabrics/tasks/context/change-order/'                               // URL для изменения порядка СЗ, созданного ОПП (FabricTaskContext)
+const URL_FABRIC_TASKS_CONTEXT_OPTIMIZE =
+    'fabrics/tasks/context/optimize'                                    // URL для оптимизации порядка СЗ, созданного ОПП (FabricTaskContext)
 
 
 const URL_FABRIC_TASKS_WORKERS_UPDATE = 'fabrics/tasks/workers/update/' // URL для обновления списка сотрудников на СЗ
@@ -77,6 +80,9 @@ const URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER =
     'fabrics/tasks/execute/save/rolls/order/'                           // URL для изменения порядка выполняемых рулонов в СЗ
 const URL_FABRIC_TASKS_ROLL_UPDATE_COMMENT =
     '/fabrics/tasks/roll/update/comment/'                               // URL для обновления комментария к рулону
+const URL_FABRIC_TASKS_EXECUTE_ROLL_LAST =
+    '/fabrics/tasks/execute/roll/last'                                  // URL для получения последнего выполненого рулона предыдущего СЗ
+
 
 const URL_FABRIC_TASKS_ROLLS_GET_DONE = 'fabrics/tasks/rolls/done/'     // URL для получения всех выполненных рулонов
 const URL_FABRIC_TASKS_ROLLS_GET_NOT_MOVED_TO_CUT =
@@ -90,7 +96,6 @@ const URL_FABRIC_PICTURES_TUNING_TIME =
     'fabrics/pictures/tuning/time/'                                     // URL для получения времени переналадки рисунков ПС
 const URL_FABRIC_PICTURE_TUNING_TIME =
     'fabrics/pic/tuning/time'                                           // URL для получения времени переналадки между рисунками ПС
-
 
 
 
@@ -126,12 +131,24 @@ export const useFabricsStore = defineStore('fabrics', () => {
     })
     */
 
+    /**
+     * @typedef {Object.<string, {isTuning: boolean, time: number}[]> IGlobalProductivity
+     * @type {IGlobalProductivity}
+     */
+
+
+    /**
+     * @type {IGlobalProductivity}
+     */
     const globalTaskProductivity = reactive({
         [FABRIC_MACHINES.AMERICAN.TITLE]: [],
         [FABRIC_MACHINES.GERMAN.TITLE]: [],
         [FABRIC_MACHINES.CHINA.TITLE]: [],
         [FABRIC_MACHINES.KOREAN.TITLE]: [],
     })
+
+
+
 
     // console.log(globalTaskProductivity)
 
@@ -208,13 +225,23 @@ export const useFabricsStore = defineStore('fabrics', () => {
     const globalOrderExecuteChangeFlag = ref(false)
     const globalOrderExecuteChangeReason = ref('')              // причина изменения порядка
 
-    // info----------------------------------------------------------------------------------------
+    // __ Переменная-флаг, которая определяет, загружается ли контекст в моменте
+    const globalOrderContextIsLoading = ref(false)
+
+    // __ Кэш с временем переналадки рисунков ПС
+    /**
+     * @type {Object.<string, ITimeContext>}
+     */
+    const tuningTimeCache = {}
 
 
     // __ Массив с индексами рулонов, которые уже есть в СЗ, для того, чтобы исключить их из выбора при создании СЗ
     /** @type {import('vue').Ref<number[]>} */
     const globalRollsIndexes = ref([])
     // let globalRollsIndexes = reactive([])
+
+
+    // info----------------------------------------------------------------------------------------
 
 
     // __ Получаем с API список ПС
@@ -430,7 +457,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         const result = await jwtPut(URL_FABRIC_TASKS_CREATE, {data: task})
         console.log('store', result)
         return result
-        debugger
     }
 
     // attract: Изменение статуса СЗ (именно для конкретной СМ)
@@ -438,7 +464,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
         console.log('store', result)
         return result
-        debugger
     }
 
     // attract: Изменение статуса СЗ (для всех СМ - для дня)
@@ -446,7 +471,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         const result = await jwtPatch(URL_FABRIC_TASKS_STATUS_CHANGE, {data: task})
         console.log('store', result)
         return result
-        debugger
     }
 
     // attract: Удаление рулона из СЗ по id созданного ОПП (FabricTaskContext)
@@ -487,15 +511,13 @@ export const useFabricsStore = defineStore('fabrics', () => {
         })
         log('changeContextOrder: ', result)
         return result
-        debugger
     }
 
     // __ Получаем контекст СЗ, созданного ОПП (FabricTaskContext)
-    const getOrderContext = async (taskId, machineId, contextData) => {
+    const getOrderContext = async (taskId, machineId) => {
         const result = await jwtGet(URL_FABRIC_TASKS_CONTEXT, {task: taskId, machine: machineId})
         console.log('getOrderContext: ', result)
         return result.data
-        debugger
     }
 
     // __ Создаем рулон контекста СЗ, созданного ОПП (FabricTaskContext)
@@ -510,6 +532,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         // debugger
     }
 
+    // __ Оптимизируем контекст СЗ, созданного ОПП (FabricTaskContext)
+    // __ static - статистика выполнения операции
+    const optimizeOrderContext = async (taskId, machineId, statistic = false) => {
+        const addStatistic = statistic ? 1 : 0
+        console.log(`${URL_FABRIC_TASKS_CONTEXT_OPTIMIZE}/${taskId}/${machineId}/${addStatistic}`)
+        const result = await jwtGet(`${URL_FABRIC_TASKS_CONTEXT_OPTIMIZE}/${taskId}/${machineId}/${addStatistic}`)
+        console.log('store: optimizeOrderContext: ', result)
+        return result
+    }
 
     // attract: Получаем с API номер смены по дате
     const getFabricTeamNumberByDate = async (date = null) => {
@@ -691,6 +722,22 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
+    // __ Получаем время переналадки рисунков между двумя ПС
+    const getFabricsBetweenTuningTime = async (from, to) => {
+        const result = await jwtGet(`${URL_FABRICS_BETWEEN_TUNING_TIME}/${from}/${to}`)
+        console.log('store: getFabricsBetweenTuningTime: ', result)
+        return result.data
+    }
+
+    // __ Получаем последний рисунок с предыдущего СЗ
+    const getLastRoll = async (taskDate, machineID) => {
+        const result = await jwtGet(`${URL_FABRIC_TASKS_EXECUTE_ROLL_LAST}/${taskDate}/${machineID}`)
+        console.log('store: getLastRoll: ', result)
+        return result.data
+    }
+
+
+
     return {
         fabricsCashe,
         fabricsMemory,
@@ -698,7 +745,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalEditMode,
         globalFabricsMode,
         globalTaskProductivity,
-        clearTaskGlobalProductivity,
         globalRollsIndexes,
         globalActiveRolls,
         globalExecuteRollsInfo,
@@ -723,6 +769,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalSelectWorkerFlag,
         globalCalendarChangeFlag,
         globalOrderManageChangeFlag, globalOrderExecuteChangeFlag, globalOrderExecuteChangeReason,
+        globalOrderContextIsLoading,
+        tuningTimeCache,
+        clearTaskGlobalProductivity,
         getFabrics,
         getFabricById,
         updateFabric,
@@ -756,14 +805,15 @@ export const useFabricsStore = defineStore('fabrics', () => {
         setFabricOrderActive,
         saveFabricsOrdersOrder,
         getFabricTaskContextNotDone,
-        changeContextOrder, getOrderContext, addOrderContextRoll,
+        changeContextOrder, getOrderContext, addOrderContextRoll, optimizeOrderContext,
         createContextExpense,
         getNotAcceptedToCutRolls,
         setRollRegisteredStatus,
         setRollMovedStatus,
         updateFabricsBuffer,
         getFabricsAverageLength,
-        getFabricsPicturesTuningTime, setFabricsPicturesTuningTime, deleteFabricsPicturesTuningTime, getFabricsPicturesBetweenTuningTime,
+        getFabricsPicturesTuningTime, setFabricsPicturesTuningTime, deleteFabricsPicturesTuningTime, getFabricsPicturesBetweenTuningTime, getFabricsBetweenTuningTime,
+        getLastRoll,
     }
 
 })

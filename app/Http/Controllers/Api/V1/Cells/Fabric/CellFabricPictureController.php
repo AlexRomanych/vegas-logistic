@@ -15,6 +15,11 @@ use App\Services\Manufacture\FabricService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+// use App\Http\Resources\Manufacture\Cells\Fabric\FabricResource;
+// use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
+// use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
+// use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+// use Illuminate\Support\Carbon;
 
 class CellFabricPictureController extends Controller
 {
@@ -160,7 +165,7 @@ class CellFabricPictureController extends Controller
 
 
     /**
-     * Descr: Создание рисунка ПС
+     * ___ Создание рисунка ПС
      * @param Request $request
      * @return string
      */
@@ -329,26 +334,29 @@ class CellFabricPictureController extends Controller
                 throw new Exception($validator->errors()->first());
             }
 
-            $tuningTime = FabricTuningTime::query()
-                ->where('picture_from', $from)
-                ->where('picture_to', $to)
-                ->first();
+            // $tuningTime = FabricTuningTime::query()
+            //     ->where('picture_from', $from)
+            //     ->where('picture_to', $to)
+            //     ->first();
+            //
+            // $returnData = [
+            //     'data' => [
+            //         'from' => (int)$from,
+            //         'to' => (int)$to,
+            //         'time' => '',
+            //     ]
+            // ];
+            //
+            // if ($tuningTime) {
+            //     $returnData['data']['time'] = $tuningTime->tuning_time;
+            // } else {
+            //     $returnData['data']['time'] = null;
+            // }
+            //
+            // return json_encode($returnData);
 
-            $returnData = [
-                'data' => [
-                    'from' => (int)$from,
-                    'to' => (int)$to,
-                    'time' => '',
-                ]
-            ];
+            return FabricService::getFabricsPicturesBetweenTuningTime($from, $to);
 
-            if ($tuningTime) {
-                $returnData['data']['time'] = $tuningTime->tuning_time;
-            } else {
-                $returnData['data']['time'] = null;
-            }
-
-            return json_encode($returnData);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
@@ -447,5 +455,9 @@ class CellFabricPictureController extends Controller
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
+
+
+
+
 
 }

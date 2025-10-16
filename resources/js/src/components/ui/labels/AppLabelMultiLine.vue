@@ -14,7 +14,6 @@
 
 
 <script setup>
-
 import { reactive, ref, watch } from 'vue'
 
 import { LINE_SEPARATOR } from '@/app/constants/common.js'

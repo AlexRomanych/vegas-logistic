@@ -400,7 +400,7 @@
 
 <script lang="ts" setup>
 
-import type { ICellsGroupReasons, IRenderData, IReason, IReasonCategory } from '@/app/types/index.ts'
+import type { ICellsGroupReasons, IRenderData, IReason, IReasonCategory } from '@/types'
 
 import { ref, onMounted, watch } from 'vue'
 

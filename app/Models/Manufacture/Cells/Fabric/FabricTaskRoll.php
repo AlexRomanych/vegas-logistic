@@ -10,9 +10,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FabricTaskRoll extends Model
 {
+    // use HasAttributes;
+
     protected $guarded = [];
 
-    protected $appends = ['isRegistered'];
+    //warning: Конвенция наименования атрибутов
+    protected $appends = [
+        'isRegistered',     //__ Атрибут, который будет доступен через getIsRegisteredAttribute()/setIsRegisteredAttribute()
+        'is_registered',    //__ Атрибут, который будет доступен через isRegistered()
+    ];    // Атрибуты, которые будут доступны через $model->isRegistered
+
+    // Аксессор (GET)
+    public function getIsRegisteredAttribute(): bool
+    {
+        // Логика остается той же, но в старом методе
+        return $this->registration_1C_at !== null && $this->registration_1C_by !== 0;
+    }
+
+    // Мутатор (SET)
+    public function setIsRegisteredAttribute(bool $value): void
+    {
+        if ($value) {
+            $this->attributes['registration_1C_at'] = now();
+            $this->attributes['registration_1C_by'] = auth()->id();
+        } else {
+            $this->attributes['registration_1C_at'] = null;
+            $this->attributes['registration_1C_by'] = 0;
+        }
+    }
 
 
     // ___ Attribute: Рулон зарегистрирован в 1С

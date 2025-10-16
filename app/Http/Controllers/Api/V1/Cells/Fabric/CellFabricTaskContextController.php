@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
@@ -12,6 +12,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
 use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+use App\Services\LogicalService;
 use App\Services\Manufacture\FabricService;
 use Carbon\Carbon;
 use Exception;
@@ -398,6 +399,228 @@ class CellFabricTaskContextController extends Controller
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
 
+    }
+
+
+
+    /**
+     * ___ Оптимизируем контекст СЗ по времени переналадки
+     * @param int $task
+     * @param int $machine
+     * @param int $statistic    - 0 - без статистики, 1 - возврат статистики выполнения скрипта (время + память)
+     * @return array
+     * @throws Exception
+     */
+    public function optimizeOrderContext(int $task, int $machine, int $statistic = 0)
+    {
+        // try {
+        $validator = validator([
+            'task' => $task,
+            'machine' => $machine,
+            'statistic' => $statistic,
+        ], [
+            'task' => 'required|integer',           // task_id
+            'machine' => 'required|integer',        // machine_id
+            'statistic' => 'nullable|in:0,1',       // statistic 'nullable|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            throw new Exception($validator->errors()->first());
+        }
+
+        // __ Получаем СЗ на СМ
+        $task = FabricTask::query()
+            ->where('fabric_tasks_date_id', $task)
+            ->where('fabric_machine_id', $machine)
+            ->with([
+                'fabricTaskContexts.fabric.fabricPicture',
+                'fabricTaskContexts.fabric.fabricPicture.picturesFrom',
+                // 'fabricTaskContexts.fabric.fabricPicture.picturesFrom.picTo',
+                // 'picturesFrom.picTo.fabricMainMachine'
+            ])
+            ->first();
+
+        if (!$task) {
+            throw new Exception('Task not found');
+        }
+
+        // __ Получаем рисунок последнего рулона
+        $taskDate = FabricTasksDate::query()->find($task->fabric_tasks_date_id);
+        if (!$taskDate) {
+            throw new Exception('Tasks not found');
+        }
+        $lastRoll = FabricService::getLastRoll($taskDate->tasks_date, $machine);
+
+        /**
+         * ___ Получаем ключ ассоциативного массива времени переналадки для доступа O(1)
+         * @param int $index1
+         * @param int $index2
+         * @return string
+         */
+        function getListKey(int $index1, int $index2): string
+        {
+            return $index1 . '-' . $index2;
+        }
+
+        // __ Формируем массив с уникальными Рисунками
+        $uniquePics = [];
+
+        // __ Добавляем рисунок последнего рулона
+        if ($lastRoll) {
+            $fabric = $lastRoll->fabric;
+            $picture = ($fabric->toArray())['fabric_picture'];
+            $uniquePics[$picture['id']] = $picture; // Добавляем в массив
+        }
+
+        foreach ($task->fabricTaskContexts as $context) {
+            $fabricPic = $context->fabric->fabricPicture;
+            $uniquePics[$fabricPic->id] = $fabricPic;
+        }
+
+        // __ Формируем матрицу с временем переналадки и ассоциативный массив со временем
+        $tuningTimes = [];
+        $tuningTimesMatrix = [];
+        $minTime = 0;   // Максимальное время переналадки (для сравнения)
+        $errors = [];   // Массив ошибок
+        $MISSING_TUNING_TIME = -1;
+
+        foreach ($uniquePics as $iH => $picH) {
+            foreach ($uniquePics as $iV => $picV) {
+
+                $time = $MISSING_TUNING_TIME;
+                if ($iH !== $iV) {
+
+                    $picHArray = $picH->toArray();
+
+                    foreach ($picHArray['pictures_from'] as $picItem) {
+                        if ($picItem['picture_to'] === $iV) {
+                            $time = $picItem['tuning_time'];
+                            break;
+                        }
+                    }
+                }
+
+                // Матрицу не используем пока
+                // $tuningTimesMatrix[$iH][$iV] = [
+                //     'from' => $picH->id,
+                //     'to' => $picV->id,
+                //     'time' => $time,
+                // ];
+
+                if ($time === $MISSING_TUNING_TIME && $iH !== $iV) {
+                    $errors[] = 'Нет времени переналадки с рис. ' . $picH->name . ' на рис. ' . $picV->name;
+                    $time = 0;
+                }
+
+                $tuningTimes[getListKey($picH->id, $picV->id)] = $time;
+                $minTime += $time;
+            }
+        }
+
+        $outData['data'] = [
+            'minTime' => 0,
+            'permutation' => [],
+            'errors' => $errors,
+        ];
+
+        if (count($errors) > 0) return $outData;    // Если есть ошибки, то выходим
+
+        // __ Сами расчеты
+        $startTime = microtime(true);
+
+        // Тут можно сделать алгоритм на 1 итерацию меньше, если не включать $lastRoll в $uniquePics
+        $picKeys = array_keys($uniquePics);
+        // $picKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Тестовый массив. 10 рисунков - 5 секунд. 11 - 55 сек.
+
+        $startPicId = $lastRoll ? $picture['id'] : 0; // Первый рисунок (переходящий рисунок)
+        // $startPicId = $lastRoll ? $picture['id'] : $picKeys[0]; // Первый рисунок (переходящий рисунок)
+
+        // __ Оставляем закомментированными для уменьшения мспользования памяти
+        $permutations = [];     // Все перестановки рисунков
+        // $permutations = $lastRoll ? [$picture['id']] : [];     // Все перестановки рисунков
+        $minTimes = [];         // Время для каждой перестановки
+        // $permutations = LogicalService::getPermutations($picKeys);
+
+        $permutationMin = $picKeys;
+
+        foreach (LogicalService::getPermutationsGenerator($picKeys) as $permutation) {
+            // Для оптимизации нужно убрать эту строку
+            if ($startPicId !==0 && $permutation[0] !== $startPicId) continue;  // Пропускаем перестановку, если задан начальный рисунок
+
+            $permutationsTime = 0;
+
+            for ($i = 0; $i < count($permutation) - 1; $i++) {
+                $permutationsTime += $tuningTimes[getListKey($permutation[$i], $permutation[$i + 1])];
+            }
+
+            // Тут могут быть и несколько перестановок с одинаковым временем
+            if ($permutationsTime < $minTime) { // Первая найденная перестановка, $permutationsTime <= $minTime - последняя
+                $minTime = $permutationsTime;
+                $permutationMin = $permutation;
+            }
+
+            // __ Оставляем закомментированными для уменьшения использования памяти
+            // $permutations[] = $permutation;
+            // $minTimes[] = $permutationsTime;
+        }
+
+        // __ Сопоставляем перестановку с контекстными рулонами
+        $contextRolls = $task->fabricTaskContexts->toArray();
+
+        // __ Сортируем по позиции
+        usort($contextRolls, function ($a, $b) {
+            return $a['roll_position'] <=> $b['roll_position']; // Для сортировки по возрастанию
+        });
+
+        $resultPermutations = [];
+        foreach ($permutationMin as $key => $picId) {
+            $groupPermutations = [];
+
+            foreach ($contextRolls as $contextRoll) {
+                if ($contextRoll['fabric']['fabric_picture']['id'] === $picId) {
+                    $groupPermutations[] = $contextRoll;
+                }
+            }
+
+            // Сортируем еще и по имени ткани, чтобы ткани были упорядочены
+            usort($groupPermutations, function ($a, $b) {
+                return $a['fabric']['textile'] <=> $b['fabric']['textile']; // Для сортировки по возрастанию
+            });
+
+            $resultPermutations = array_merge($resultPermutations, $groupPermutations);
+        }
+
+
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+
+        $outData['data'] = [
+            'minTime' => $minTime,
+            'permutation' => $resultPermutations,
+            'errors' => null,
+        ];
+
+        if ($statistic) {
+            $outData['statistic'] = [
+                'uniquePics' => $uniquePics,
+                'keys' => $picKeys,
+                'times' => $tuningTimes,
+                'executionTime' => $executionTime . ', sec.',
+                'memory' => memory_get_peak_usage(true) / 1024 / 1024 . ', MB',
+                // 'matrix' => $tuningTimesMatrix,
+                // 'minTimes' => $minTimes,            // Оставляем закомментированными для уменьшения использования памяти
+                // 'permutations' => $permutations,    // Оставляем закомментированными для уменьшения использования памяти
+            ];
+        }
+
+        $outData['debug'] = $permutationMin;
+
+        return $outData;
+
+        // } catch (Exception $e) {
+        //     return $e;
+        //     return EndPointStaticRequestAnswer::fail(response()->json($e));
+        // }
     }
 
 }

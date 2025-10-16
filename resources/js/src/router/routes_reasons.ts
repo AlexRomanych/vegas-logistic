@@ -7,13 +7,13 @@ const reasons = [
     {
         path: '/reasons',
         name: 'reasons',
-        component: () => import('@/components/reasons/TheReasonsShow.vue'),
+        component: () => import('@/components/dashboard/reasons/TheReasonsShow.vue'),
         meta: {title: 'Причины изменения статуса'} as IRouteMeta,
     },
     {
         path: '/reasons/edit/:id',
         name: 'reasons.edit',
-        component: () => import('@/components/reasons/TheReasonEditForm.vue'),
+        component: () => import('@/components/dashboard/reasons/TheReasonEditForm.vue'),
         meta: {
             title: 'Редактирование причины изменения статуса',
             mode: FABRIC_PAGE_MODE.EDIT,
@@ -22,7 +22,7 @@ const reasons = [
     {
         path: '/reasons/create',
         name: 'reasons.create',
-        component: () => import('@/components/reasons/TheReasonEditForm.vue'),
+        component: () => import('@/components/dashboard/reasons/TheReasonEditForm.vue'),
         meta: {
             title: 'Добавление причины изменения статуса',
             mode: FABRIC_PAGE_MODE.CREATE,

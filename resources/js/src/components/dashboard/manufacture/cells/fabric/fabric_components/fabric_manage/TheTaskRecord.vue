@@ -3,7 +3,7 @@
     <!-- __ Режим отображения + Режим редактирования -->
     <div v-if="!isLoading" class="flex">
 
-        <!-- attract: Номер рулона -->
+        <!-- __ Номер рулона -->
         <!--        <AppLabelMultiLine-->
         <!--            :text="!editMode ? roll.num.toString() : [roll.num.toString(), '']"-->
         <!--            align="center"-->
@@ -14,11 +14,11 @@
 
         <!-- __ Позиция рулона -->
         <AppLabelMultiLine
-            :text="!editMode ? roll.roll_position.toString() : [roll.roll_position.toString(), '']"
+            :text="roll.isTuning ? '⚙️' : !editMode ? roll.roll_position.toString() : [roll.roll_position.toString(), '']"
+            :type="roll.isTuning ? tuningRollType : 'primary'"
             align="center"
             height="h-[30px]"
             text-size="mini"
-            type="primary"
             width="w-[50px]"
         />
 
@@ -26,7 +26,7 @@
         <div v-if="!editMode">
             <AppLabelMultiLine
                 :text="!editMode ? workRoll.fabric : [workRoll.fabric, '']"
-                :type="typeForErrorsAndConstraintsForLabel"
+                :type="roll.isTuning ? tuningRollType : typeForErrorsAndConstraintsForLabel"
                 height="h-[30px]"
                 text-size="mini"
                 width="w-[300px]"
@@ -47,8 +47,8 @@
 
         <!--__ Буфер ПС -->
         <AppLabelMultiLine
-            :text="!editMode ? buffer.toFixed(PRECISION) : [buffer.toFixed(PRECISION), '']"
-            :type="buffer ? 'dark' : 'danger'"
+            :text="roll.isTuning ? '' : !editMode ? buffer.toFixed(PRECISION) : [buffer.toFixed(PRECISION), '']"
+            :type="roll.isTuning ? tuningRollType : buffer ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -57,8 +57,8 @@
 
         <!--__ Средняя длина рулона -->
         <AppLabelMultiLine
-            :text="!editMode ? averageLength.toFixed(PRECISION) : [averageLength.toFixed(PRECISION), '']"
-            :type="averageLength ? 'dark' : 'danger'"
+            :text="roll.isTuning ? '' : !editMode ? averageLength.toFixed(PRECISION) : [averageLength.toFixed(PRECISION), '']"
+            :type="roll.isTuning ? tuningRollType : averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -67,8 +67,8 @@
 
         <!--__ Кол-во рулонов в ПС -->
         <AppLabelMultiLine
-            :text="!editMode ? textileLayersAmount.toString() : [textileLayersAmount.toString(), '']"
-            :type="averageLength ? 'dark' : 'danger'"
+            :text="roll.isTuning ? '' : !editMode ? textileLayersAmount.toString() : [textileLayersAmount.toString(), '']"
+            :type="roll.isTuning ? tuningRollType : averageLength ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -77,8 +77,8 @@
 
         <!--__ Средняя длина рулона ПС -->
         <AppLabelMultiLine
-            :text="!editMode ? averageLengthFabric.toFixed(PRECISION) : [averageLengthFabric.toFixed(PRECISION), '']"
-            :type="averageLengthFabric ? 'dark' : 'danger'"
+            :text="roll.isTuning ? '' : !editMode ? averageLengthFabric.toFixed(PRECISION) : [averageLengthFabric.toFixed(PRECISION), '']"
+            :type="roll.isTuning ? tuningRollType : averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -88,8 +88,8 @@
         <!--__ Количество в рулонах -->
         <div v-if="!editMode">
             <AppLabelMultiLine
-                :text="Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(5)"
-                :type="isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
+                :text="roll.isTuning ? '' : Number.isInteger(rollsAmount) ? rollsAmount.toFixed(0) : rollsAmount.toFixed(5)"
+                :type="roll.isTuning ? tuningRollType : isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
@@ -101,13 +101,13 @@
                 id="rolls_amount"
                 v-model:input-number="rollsAmount"
                 :fraction-digits=2
-                :type="isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
+                :type="roll.isTuning ? tuningRollType : isRollsAmountFractional || !rollsAmount ? 'danger' : 'primary'"
                 :value=Math.round(rollsAmount*100000)/100000
                 align="center"
                 height="h-[60px]"
                 text-size="mini"
                 width="w-[80px]"
-                @blur="getLengthAmount"
+                @focusout="getLengthAmount"
                 @change="getLengthAmount"
                 @input="getLengthAmount"
             />
@@ -116,8 +116,8 @@
         <!--__ Количество ткани в м.п. -->
         <div v-if="!editMode">
             <AppLabelMultiLine
-                :text="lengthAmount.toFixed(PRECISION)"
-                :type="lengthAmount ? 'primary' : 'danger'"
+                :text="roll.isTuning ? '' : lengthAmount.toFixed(PRECISION)"
+                :type="roll.isTuning ? tuningRollType : lengthAmount ? 'primary' : 'danger'"
                 align="center"
                 height="h-[30px]"
                 text-size="mini"
@@ -136,7 +136,7 @@
                 step="0.01"
                 text-size="mini"
                 width="w-[80px]"
-                @blur="getRollsAmount"
+                @focusout="getRollsAmount"
                 @change="getRollsAmount"
                 @input="getRollsAmount"
             />
@@ -145,8 +145,8 @@
 
         <!--__ Количество ПС в м.п. -->
         <AppLabelMultiLine
-            :text="!editMode ? (averageLengthFabric*rollsAmount).toFixed(PRECISION) : [(averageLengthFabric*rollsAmount).toFixed(PRECISION), '']"
-            :type="averageLengthFabric ? 'dark' : 'danger'"
+            :text="roll.isTuning ? '' : !editMode ? (averageLengthFabric*rollsAmount).toFixed(PRECISION) : [(averageLengthFabric*rollsAmount).toFixed(PRECISION), '']"
+            :type="roll.isTuning ? tuningRollType : averageLengthFabric ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -155,8 +155,8 @@
 
         <!--__ Трудозатраты -->
         <AppLabelMultiLine
-            :text="!editMode ? formatTimeWithLeadingZeros(productivityAmount, 'hour') : [formatTimeWithLeadingZeros(productivityAmount, 'hour'), '']"
-            :type="productivityAmount ? 'dark' : 'danger'"
+            :text="getProductivityLabelText(roll, productivityAmount, editMode)"
+            :type="roll.isTuning ? tuningRollType : productivityAmount ? 'dark' : 'danger'"
             align="center"
             height="h-[30px]"
             text-size="mini"
@@ -166,11 +166,11 @@
         <!--__ Комментарий -->
         <div v-if="!editMode">
             <AppLabel
-                :text="description"
+                :text="roll.isTuning ? '' : description"
                 class="truncate"
                 height="h-[30px]"
                 text-size="mini"
-                type="primary"
+                :type="roll.isTuning ? tuningRollType : 'primary'"
                 width="w-[300px]"
             />
         </div>
@@ -192,7 +192,7 @@
 
 
         <!--__ Показываем кнопки Редактировать и Удалить только для тех СЗ, где есть возможность менять данные -->
-        <div v-if="getFunctionalByFabricTaskStatus(taskStatus)">
+        <div v-if="!roll.isTuning && getFunctionalByFabricTaskStatus(taskStatus)">
 
             <!--__ Управляющие кнопки -->
             <div v-if="!editMode" class="flex">
@@ -204,10 +204,10 @@
                     align="center"
                     class="cursor-pointer font-bold"
                     height="h-[30px]"
-                    text="Х"
+                    text="🗑️"
                     text-size="mini"
                     type="danger"
-                    width="w-[50px]"
+                    width="w-[30px]"
                     @click="deleteTaskRecord"
                 />
 
@@ -217,10 +217,10 @@
                     align="center"
                     class="cursor-pointer font-bold"
                     height="h-[30px]"
-                    text="Ред."
+                    text="✏️"
                     text-size="mini"
                     type="warning"
-                    width="w-[50px]"
+                    width="w-[30px]"
                     @click="setEditMode"
                 />
 
@@ -230,26 +230,26 @@
 
                 <!--__ Отменить -->
                 <AppLabelMultiLine
-                    :text="['Отмена', '']"
+                    :text="['✘', '']"
                     align="center"
                     class="cursor-pointer font-bold"
                     height="h-[30px]"
                     text-size="mini"
                     type="warning"
-                    width="w-[50px]"
+                    width="w-[30px]"
                     @click="cancelEditMode"
                 />
 
                 <!--__ Сохранить -->
                 <AppLabelMultiLine
                     v-if="saveRollFlag"
-                    :text="['V', '']"
+                    :text="['💾', '']"
                     align="center"
                     class="cursor-pointer font-bold"
                     height="h-[30px]"
                     text-size="mini"
                     type="success"
-                    width="w-[50px]"
+                    width="w-[30px]"
                     @click="saveTaskRecord"
                 />
 
@@ -298,11 +298,20 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 
-import type { IFabric, IRoll, ISelectData, ISelectDataItem, MachineUnionType, TaskStatusUnionType } from '@/types'
+import type {
+    FabricMachineTitles,
+    IFabric,
+    IRoll,
+    ISelectData,
+    ISelectDataItem,
+    MachineUnionType,
+    TaskStatusUnionType
+} from '@/types'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
+    FABRIC_DEFAULT_TUNING_TIME,
     FABRIC_MACHINES,
     FABRIC_ROLL_STATUS,
     NEW_ROLL,
@@ -327,6 +336,7 @@ import AppInputNumber from '@/components/ui/inputs/AppInputNumber.vue'
 import AppSelect from '@/components/ui/selects/AppSelect.vue'
 import AppModalAsyncMultiLine from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import { storeToRefs } from 'pinia'
+import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 
 
 // line -----------------------------------------------------------------------------------------------------------
@@ -348,10 +358,10 @@ const props = withDefaults(defineProps<IProps>(), {
     machine: () => FABRIC_MACHINES.AMERICAN
 })
 
-
 const emits = defineEmits<{
-    (e: 'saveTaskRecord', payload: { index: number, roll: object }): void
+    (e: 'saveTaskRecord', payload: { index: number, roll: IRoll }): void
     (e: 'deleteTaskRecord', workRoll: IRoll): void
+    (e: 'changeRollsAmount', rollsAmount: number): void
 }>()
 
 
@@ -359,6 +369,9 @@ const fabricsStore = useFabricsStore()
 const {globalFabricsMode} = storeToRefs(fabricsStore)
 
 const PRECISION = 2 // точность для округления
+
+const TUNING_TYPE = 'stone' // тип для "рулона" переналадки
+const tuningRollType = computed(() => props.roll.productivity === FABRIC_DEFAULT_TUNING_TIME ? 'danger' : TUNING_TYPE) // тип для "рулона" переналадки
 
 const isLoading = ref(false)
 
@@ -375,7 +388,7 @@ const averageLengthFabric = ref(0)                          // __ Определ
 const buffer = ref(0)                                       // __ Определяем переменные для буфера ПС
 const productivity = ref(0)                                 // __ Определяем переменные для трудозатрат
 const textileLayersAmount = ref(0)                          // __ Определяем переменные для количества рулонов в ПС
-const fabricMode = ref(false)                               // __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
+const fabricMode = ref(true)                                // __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
 const description = ref(workRoll.value.descr)                      // __ Описание
 const typeForErrorsAndConstraintsForSelect = ref('primary') // __ Определяем переменные для стилей
 const productivityAmount = ref(0)                           // __ Время стегания в часах
@@ -394,22 +407,23 @@ const typeForErrorsAndConstraintsForLabel = computed(() => {
 })
 
 // __ Маячок для отображения сервисных кнопок
-const funcButtonsConstraints = computed(() => !(globalFabricsMode && !fabricMode.value) || !workRoll.value.fabric_id)
-// const getFuncButtonsConstraints = () => !(fabricsStore.globalFabricsMode && !fabricMode.value) || !workRoll.value.fabric_id
-// const funcButtonsConstraints = ref(getFuncButtonsConstraints())
+const getFuncButtonsConstraints = () => (
+    (globalFabricsMode.value && fabricMode.value) ||
+    (!globalFabricsMode.value && !fabricMode.value) ||
+    !workRoll.value.fabric_id
+)
+const funcButtonsConstraints = ref(getFuncButtonsConstraints())
 
 
 // __ Определяем модели для передачи обмена данными
 // __ Длина ткани в рулонах
-const rollsAmount = defineModel('rollsAmount', {
-    // type: Number,
+const rollsAmount = defineModel<number>('rollsAmount', {
     required: false,
     default: 0
 })
 
 // __ Длина ткани в м.п.
-const lengthAmount = defineModel('lengthAmount', {
-    // type: Number,
+const lengthAmount = defineModel<number>('lengthAmount', {
     required: false,
     default: 0
 })
@@ -419,7 +433,7 @@ const lengthAmount = defineModel('lengthAmount', {
 const getFabrics = () => fabrics = fabricsStore.fabricsMemory
 
 // __ Получаем список индексов для исключения их из selectData
-const getRollsIndexes = () => rollsIndexes = fabricsStore.globalRollsIndexes.value
+const getRollsIndexes = () => rollsIndexes = fabricsStore.globalRollsIndexes
 
 // __ Дорабатываем входные данные. Получаем fabricMode для ПС (Основная или альтернативная)
 const getFabricMode = () => fabricMode.value = getAddFabricMode(fabrics, props.machine.ID, workRoll.value.fabric_id) as boolean
@@ -465,7 +479,8 @@ const getProductivityAmount = () => {
 
     const tempProductivityAmount = getProductivityValueByRoll(workRoll.value) as number //  (productivity.value ? lengthAmount.value / productivity.value : 0) as number
     // const tempProductivityAmount = (productivity.value ? lengthAmount.value / productivity.value : 0) as number
-    (fabricsStore.globalTaskProductivity[props.machine.TITLE] as number[])[props.index] = tempProductivityAmount
+    // console.log(fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles])
+    fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles][props.index].time = tempProductivityAmount
     productivityAmount.value = tempProductivityAmount
     // return tempProductivityAmount
 }
@@ -668,6 +683,7 @@ const getRollsAmount = () => {
 const getLengthAmount = () => {
     lengthAmount.value = getTextileLength(averageLength.value, rollsAmount.value, textileLayersAmount.value)
     amountActions()
+    emits('changeRollsAmount', rollsAmount.value)
 }
 
 
@@ -685,13 +701,26 @@ const getSaveRollFlag = () => {
 // __ Определяем переменную, указывающую, что рулон готов к сохранению
 const saveRollFlag = ref(getSaveRollFlag())
 
+
+const getProductivityLabelText = (roll: IRoll, productivityAmount: number, editMode: boolean) => {
+    // roll.isTuning ? formatTimeWithLeadingZeros(roll.productivity, 'min') : !editMode ? formatTimeWithLeadingZeros(productivityAmount, 'hour') : [formatTimeWithLeadingZeros(productivityAmount, 'hour'), '']"
+
+    if (roll.isTuning) {
+        return roll.productivity === FABRIC_DEFAULT_TUNING_TIME ? 'н/д' : formatTimeWithLeadingZeros(roll.productivity, 'hour')
+    }
+
+    return !editMode ? formatTimeWithLeadingZeros(productivityAmount, 'hour') : [formatTimeWithLeadingZeros(productivityAmount, 'hour'), '']
+}
+
+
 // __ Обрабатываем редактирование записи с ПС, чтобы дать доступ к сохранению
 watch([
     () => workRoll.value,
     () => rollsAmount,
     () => averageLength,
     () => productivity,
-    () => isRollsAmountFractional], () => {
+    () => isRollsAmountFractional
+], () => {
     // reactiveActions()
     saveRollFlag.value = getSaveRollFlag()
 }, {deep: true})
@@ -702,6 +731,7 @@ watch([
 watch(() => globalFabricsMode, () => {
     reactiveActions()
     getSelectData()     // Вычисляем данные для селекта ПС
+    funcButtonsConstraints.value = getFuncButtonsConstraints()
 }, {deep: true, immediate: true})
 
 
@@ -719,12 +749,15 @@ onMounted(() => {
     getSelectData()                 // __ Вычисляем данные для селекта ПС
     // selectData = getSelectData()
 
+
     // __ Задаем начальные значения для моделей
     rollsAmount.value = workRoll.value.rolls_amount
     lengthAmount.value = workRoll.value.average_textile_length
 
     getIsRollsAmountFractional()    // __ Важен порядок
     getProductivityAmount()         // __ Важен порядок
+
+    funcButtonsConstraints.value = getFuncButtonsConstraints()
 
     isLoading.value = false
 })

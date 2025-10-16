@@ -1,6 +1,6 @@
 // Info Тут все константы, касающиеся участка Стежки
 
-import type { IFabricMachine, ITaskStatus, IRoll, IFabric, ITaskItem } from '@/types'
+import type { IFabricMachine, ITaskStatus, IRoll, IFabric, ITaskItem, IRollStatus } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 /*
@@ -26,6 +26,9 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 // descr: Длина рабочей смены в часах
 export const FABRIC_WORKING_SHIFT_LENGTH = 10.5
 
+
+// ___ Значение, которое присваивается при отсутствии времени переналадки
+export const FABRIC_DEFAULT_TUNING_TIME = -1
 
 // descr: Интервалы состояний количества
 // descr: Нижнее количество включается, верхнее - нет
@@ -95,7 +98,7 @@ export const FABRIC_TASK_STATUS: Record<string, ITaskStatus> = Object.freeze({
 
 
 // descr: Тут все константы, касающиеся статусов движения рулона
-export const FABRIC_ROLL_STATUS = Object.freeze({
+export const FABRIC_ROLL_STATUS: Record<string, IRollStatus> = Object.freeze({
 
     // descr: Рулон создан (или сохранен)
     CREATED: {
@@ -353,7 +356,7 @@ export const NEW_ROLL: IRoll =
         rolls_amount: 0,
         length_amount: 0,
         fabric_id: FABRICS_NULLABLE.id,
-        fabric: FABRICS_NULLABLE.display_name,
+        fabric: FABRICS_NULLABLE.name,
         fabric_rate: 0,
         fabric_mode: false,
         descr: '',
@@ -363,6 +366,8 @@ export const NEW_ROLL: IRoll =
         note: null,
         textile_layers_amount: 1,
         average_textile_roll_length: 0,
+        fabric_name: FABRICS_NULLABLE.name,
+        isTuning: false
     }
 
 
@@ -453,24 +458,28 @@ export const TASK_DRAFT: ITaskItem =
                 description: '',
                 active: true,
                 finish_at: null,
+                lastExecRoll: null,
             },
             german: {
                 rolls: [],
                 description: '',
                 active: true,
                 finish_at: null,
+                lastExecRoll: null,
             },
             china: {
                 rolls: [],
                 description: '',
                 active: true,
                 finish_at: null,
+                lastExecRoll: null,
             },
             korean: {
                 rolls: [],
                 description: '',
                 active: true,
                 finish_at: null,
+                lastExecRoll: null,
             },
         },
         workers: [],

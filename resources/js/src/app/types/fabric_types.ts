@@ -1,4 +1,5 @@
-import { FABRIC_MACHINES, FABRIC_TASK_STATUS, } from '@/app/constants/fabrics.ts'
+import { FABRIC_MACHINES, FABRIC_TASK_STATUS, type IConstFabricMachine, } from '@/app/constants/fabrics.ts'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 // import { getISOFromLocaleDate } from '@/app/helpers/helpers_date'
 
 
@@ -20,6 +21,7 @@ export interface IMachineData {
     description: string | null
     finish_at: string | null
     rolls: IRoll[]
+    lastExecRoll: IRollExec | null // Последний выполненный рулон на этой машине в предыдущем СЗ
 }
 
 // Здесь все то, что приходит с сервера в объекте workers
@@ -38,7 +40,7 @@ export interface ITaskItem {
     common: {
         id: number
         active: boolean
-        status: number
+        status: TaskStatusUnionCodeType
         created_at: string
         created_by: string
         description: string | null
@@ -85,6 +87,22 @@ export type TaskStatusUnionType =
     typeof FABRIC_TASK_STATUS.PENDING |
     typeof FABRIC_TASK_STATUS.RUNNING |
     typeof FABRIC_TASK_STATUS.DONE
+
+export type TaskStatusUnionCodeType =
+    typeof FABRIC_TASK_STATUS.UNKNOWN.CODE |
+    typeof FABRIC_TASK_STATUS.CREATED.CODE |
+    typeof FABRIC_TASK_STATUS.PENDING.CODE |
+    typeof FABRIC_TASK_STATUS.RUNNING.CODE |
+    typeof FABRIC_TASK_STATUS.DONE.CODE
+
+
+export interface IRollStatus {
+    WORD: string
+    CODE: number
+    TITLE: string
+    TYPE: IColorTypes
+}
+
 
 
 // __ Контекстный рулон
@@ -304,3 +322,30 @@ export interface ITimePictureSchema {
     db?: boolean                    // __ Для отрисовки в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
 }
 
+// __ Для получения времени переналадки для Управления СЗ и Выпоолнения СЗ
+export interface ITimeContext {
+    from: number
+    to: number
+    time: number | null
+}
+
+
+// ___ Общий массив производительности
+export interface IGlobalProductivityItem {
+    isTuning: boolean
+    time: number
+}
+export type IGlobalProductivity = Record<FabricMachineTitles, IGlobalProductivityItem>
+
+
+
+// line --------------------------------------------------------------
+// line ------------- Для обмена между компонентами ------------------
+// line --------------------------------------------------------------
+export interface IInputData {
+    index: number
+    machine: IConstFabricMachine
+    roll: IRoll
+    task: ITaskItem
+    taskDescription: string | null
+}

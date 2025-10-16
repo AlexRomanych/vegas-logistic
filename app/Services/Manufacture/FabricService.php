@@ -4,6 +4,7 @@ namespace App\Services\Manufacture;
 
 // Сервис для Полотен стеганных
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
 use App\Models\Manufacture\Cells\Fabric\FabricMachine;
 use App\Models\Manufacture\Cells\Fabric\FabricPicture;
@@ -11,10 +12,12 @@ use App\Models\Manufacture\Cells\Fabric\FabricPictureSchema;
 use App\Models\Manufacture\Cells\Fabric\FabricTask;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskContext;
 use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
+use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
+use App\Models\Manufacture\Cells\Fabric\FabricTuningTime;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+// use Illuminate\Http\Request;
+// use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -167,7 +170,7 @@ final class FabricService
 
 
     /**
-     * Получаем название стегальной машины по ее ID
+     * ___ Получаем название стегальной машины по ее ID
      * @param int $machineId
      * @return string
      */
@@ -451,6 +454,92 @@ final class FabricService
 
             return $resultMatrix;
     }
+
+
+    /**
+     * ___ Получение времени переналадки рисунков между 2 рисунками
+     * @param string $from
+     * @param string $to
+     * @return string
+     */
+    public static function getFabricsPicturesBetweenTuningTime(string $from, string $to): string
+    {
+        try {
+
+            $tuningTime = FabricTuningTime::query()
+                ->where('picture_from', $from)
+                ->where('picture_to', $to)
+                ->first();
+
+            $returnData = [
+                'data' => [
+                    'from' => (int)$from,
+                    'to' => (int)$to,
+                    'time' => '',
+                ]
+            ];
+
+            if ($tuningTime) {
+                $returnData['data']['time'] = $tuningTime->tuning_time;
+            } else {
+                $returnData['data']['time'] = null;
+            }
+
+            return json_encode($returnData);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+
+    /**
+     *  ___ Возвращаем последний рулон предшествующий данной дате на заданной машине
+     * @param string $date
+     * @param int $machine
+     * @return FabricTaskRoll|null
+     */
+    public static function getLastRoll( string $date, int $machine): FabricTaskRoll|null
+    {
+        $targetDate = Carbon::parse($date);
+
+        do {
+            // __ Находим задачу с максимальной датой, предшествующей заданной
+            $tasksDate = FabricTasksDate::query()
+                ->where('tasks_date', '<', $targetDate)
+                ->whereHas('fabricTasks', function ($query) use ($machine) {
+                    $query->where('fabric_machine_id', $machine);
+                })
+                ->latest('tasks_date') // Сортировка: Сортируем по дате по убыванию, чтобы самая поздняя была первой
+                ->first(); // Получение: Получаем только первую (самую позднюю) запись
+
+            // __ Если нет СЗ на этой СМ, то выходим
+            if (!$tasksDate) return null;
+
+            // __ Находим все рулоны, которые были сделаны на эту дату
+            $rolls = FabricTaskRoll::query()
+                ->whereNotIn('roll_status', [FABRIC_ROLL_FALSE_CODE, FABRIC_ROLL_CANCELLED_CODE])
+                ->whereHas('fabricTaskContext.fabricTask.fabricTasksDate', function ($query) use ($tasksDate) {
+                    $query->where('id', $tasksDate->id);
+                })
+                ->with('fabric.fabricPicture')
+                ->orderBy('roll_position')
+                ->get();
+
+            if (!$rolls->isEmpty()) {
+                return $rolls->last();
+            }
+
+            // __ Может возникнуть ситуация, когда есть рулоны, но они все либо cancelled либо false
+            // __ В этом случае, мы должны найти дату, от которой отталкиваемся
+            $targetDate = Carbon::parse($tasksDate->tasks_date);
+
+        } while (true);
+
+    }
+
+
+
 
 
 }

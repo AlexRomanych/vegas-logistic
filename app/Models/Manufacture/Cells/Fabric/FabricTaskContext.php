@@ -19,7 +19,10 @@ class FabricTaskContext extends Model
 
     protected $casts = [
         'average_fabric_length' => 'float',
+        'average_textile_length' => 'float',
         'average_textile_roll_length' => 'float',
+        'translate_rate' => 'float',
+        'productivity' => 'float'
     ];
 
 

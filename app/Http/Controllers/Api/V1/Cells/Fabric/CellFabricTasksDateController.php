@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-
-//use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTasksDateResource;
 use App\Models\Manufacture\Cells\Fabric\Fabric;
@@ -19,31 +17,31 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 //use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
-
+//use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 
 class CellFabricTasksDateController extends Controller
 {
 
     /**
-     *  ___ Возвращает все заказы за период
-     *  ___ Если без параметров, то все заказы
+     *   ___ Возвращает все заказы за период
+     *   ___ Если без параметров, то все заказы
      * @param Request $request
-     * @return FabricTasksDateCollection|string
+     * @return AnonymousResourceCollection|string
      */
-
     public function tasks(Request $request)
     {
-//        return json_encode($request->all());
-        try {
+        // TODO: сделать валидацию
 
+        try {
             // Если без параметров, возвращаем все заказы
             if (!$request->has('start') || !$request->has('end')) {
-                return new FabricTasksDateCollection(FabricTasksDate::all());
+                return FabricTasksDateResource::collection(FabricTasksDate::all());
             }
 
             $validData = $request->validate([
@@ -54,7 +52,6 @@ class CellFabricTasksDateController extends Controller
             $tasksQuery = FabricTasksDate::query()
                 ->whereBetween('tasks_date', [$validData['start'], $validData['end']])
                 // relations добавляем основные + вложенные + user
-//                ->with(['fabricTasks.fabricTaskContexts', 'fabricTasks.fabricTaskRolls'])
                 ->with([
                     'fabricTasks.fabricTaskContexts.fabricTaskRolls',
                     'fabricTasks.fabricTaskContexts.fabric',
@@ -69,10 +66,7 @@ class CellFabricTasksDateController extends Controller
                 ->orderBy('tasks_date')
                 ->get();
 
-//            return json_encode($tasksQuery);
-
-            return new FabricTasksDateCollection($tasksQuery);
-
+            return FabricTasksDateResource::collection($tasksQuery);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
@@ -81,7 +75,7 @@ class CellFabricTasksDateController extends Controller
 
 
     /**
-     * descr: Создает или обновляет данные по сменным заданиям на конкретную дату
+     * ___ Создает или обновляет данные по сменным заданиям на конкретную дату
      * @return string
      * @throws Throwable
      */
