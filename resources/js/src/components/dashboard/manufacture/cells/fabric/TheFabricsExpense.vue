@@ -54,6 +54,18 @@
                         class="header-item"
                     />
 
+                    <!-- __ Незавершенное пр-во -->
+                    <AppLabelMultiLine
+                        v-if="render.shouldBuffer.show"
+                        :align="render.shouldBuffer.headerAlign"
+                        :height="render.shouldBuffer.height"
+                        :text="render.shouldBuffer.header"
+                        :text-size="render.shouldBuffer.headerTextSize"
+                        :type="typeof render.shouldBuffer.type === 'function' ? render.shouldBuffer.type() : render.shouldBuffer.type"
+                        :width="render.shouldBuffer.width"
+                        class="header-item"
+                    />
+
                     <!-- __ Расход -->
                     <AppLabelMultiLine
                         v-if="render.expense.show"
@@ -195,7 +207,7 @@
                     class="cursor-pointer"
                     text-size="small"
                     type="info"
-                    width="w-[562px]"
+                    width="w-[625px]"
                     @click="toggleMachineVisibility(machine)"
                 />
 
@@ -227,6 +239,16 @@
                                 :text-size="render.buffer.dataTextSize"
                                 :type="getAmountWarningStatus(fabricItem.fabric.buffer, fabricItem.fabric.maxBuffer)"
                                 :width="render.buffer.width"
+                            />
+
+                            <!-- __ Незавершенное пр-во -->
+                            <AppLabel
+                                v-if="render.shouldBuffer.show"
+                                :align="render.shouldBuffer.dataAlign"
+                                :text="fabricItem.fabric.shouldBuffer ? fabricItem.fabric.shouldBuffer.toFixed(PRECISION) : ''"
+                                :text-size="render.shouldBuffer.dataTextSize"
+                                :type="fabricItem.fabric.shouldBuffer ? 'success' : 'light'"
+                                :width="render.shouldBuffer.width"
                             />
 
                             <!-- __ Расход -->
@@ -269,7 +291,7 @@
                                         :height="render.orderExpense.height"
                                         :text="fabricExpense.expense ? fabricExpense.expense.toFixed(PRECISION) : ''"
                                         :text-size="render.orderExpense.dataTextSize"
-                                        :type="fabricExpense.expense ? (fabricExpense.active ? 'warning' : 'dark') : 'light'"
+                                        :type="getExpenseCellType(fabricExpense)"
                                         :width="render.orderExpense.width"
                                     />
 
@@ -308,7 +330,7 @@ import type { IFabric, IFabricExpenseOrder, IRenderData } from '@/types'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
-import { FABRIC_MACHINES, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
+import { type IMachineKey, FABRIC_MACHINES, FABRIC_TASK_STATUS } from '@/app/constants/fabrics.js'
 
 import { round } from '@/app/helpers/helpers_lib'
 import { formatDate, getISOFromLocaleDate } from '@/app/helpers/helpers_date.js'
@@ -341,6 +363,7 @@ interface IExpenseMachine {
 interface IOrderExpenseItem {
     expense: number
     active: boolean
+    enough: boolean
 }
 
 interface IOrderExpenseFabric {
@@ -350,10 +373,12 @@ interface IOrderExpenseFabric {
     id: number
     machine: number
     maxBuffer: number
+    shouldBuffer: number
 }
 
 interface ITaskContextItem {
     average_textile_length: number
+    average_fabric_length: number
     comment: null | string
     description: null | string
     fabric_id: number
@@ -418,6 +443,17 @@ const render: IRenderData = reactive({
     },
     buffer: {
         header: ['Буфер', 'м.п.'],
+        width: 'w-[60px]',
+        show: true,
+        type: 'primary',
+        headerAlign: HEADER_ALIGN,
+        dataAlign: DATA_ALIGN,
+        height: CELL_HEIGHT,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize: DATA_TEXT_SIZE,
+    },
+    shouldBuffer: {
+        header: ['Нез.пр.', 'м.п.'],
         width: 'w-[60px]',
         show: true,
         type: 'primary',
@@ -534,25 +570,37 @@ const getOrdersExpenseMatrix = () => {
 
     fabrics.forEach(fabric => {
 
+        // __ подготавливаем инфу для кнопки СЗ
+        const tempTaskContexts = taskContexts.value.filter(taskContext => taskContext.fabric_id === fabric.id)
+
+        // __ считаем незавершенное производство
+        const shouldBuffer = tempTaskContexts.reduce((accumulator, currentValue) => accumulator + currentValue.average_fabric_length, 0)
+
         // __ формируем массив расходов по каждой заявке для рендеринга в шаблоне
         const tempExpense: IOrderExpenseItem[] = []
-        let expenseTotal = 0
+
+        let expenseTotal = 0                                            // общий расход по заявкам
+        let currentOrderBuffer = fabric.buffer.amount + shouldBuffer    // текущий буфер заявки для отображения в шаблоне разными цветами (на сколько заявок хватает)
+        let isEnough = true                                             // флаг для отображения в шаблоне, что заявка хватает на сколько ПС в буфере
 
         ordersExpense.value.forEach(orderExpense => {
 
             const tempFabricExpense = orderExpense.fabricsExpense.find(expense => expense.fabric_id === fabric.id)
             const tempFabricExpenseAmount = tempFabricExpense ? tempFabricExpense.expense : 0
 
+            if (orderExpense.active) {
+                isEnough = currentOrderBuffer >= tempFabricExpenseAmount
+                currentOrderBuffer -= tempFabricExpenseAmount
+            }
+
             tempExpense.push({
                 expense: tempFabricExpenseAmount,
-                active: orderExpense.active
+                active: orderExpense.active,
+                enough: isEnough,
             })
             expenseTotal += orderExpense.active ? tempFabricExpenseAmount : 0   // суммируем расходы по активным заявкам
         })
 
-
-        // __ подготавливаем инфу для кнопки СЗ
-        const tempTaskContexts = taskContexts.value.filter(taskContext => taskContext.fabric_id === fabric.id)
 
         // __ Подготавливаем объект ПС для рендеринга в шаблоне
         const fabricData = {
@@ -560,6 +608,7 @@ const getOrdersExpenseMatrix = () => {
                 id: fabric.id,
                 display_name: fabric.display_name,
                 buffer: fabric.buffer.amount,
+                shouldBuffer: shouldBuffer,
                 maxBuffer: fabric.buffer.average_length * fabric.buffer.max_rolls,
                 machine: fabric.machines[0].id,
                 correct: fabric.correct,
@@ -570,6 +619,7 @@ const getOrdersExpenseMatrix = () => {
             expense: tempExpense,
             expenseTotal: round(expenseTotal, PRECISION),
             // expenseTotal: round(tempExpense.reduce((accumulator, currentValue) => accumulator + (orderExpense.active ? currentValue : 0), 0), PRECISION),
+            shouldBuffer: round(shouldBuffer, PRECISION),
 
             get delta() {
                 return this.fabric.buffer - this.expenseTotal
@@ -589,12 +639,12 @@ const getMachines = () => {
 
     const tempMachines: IExpenseMachine[] = []
 
-    Object.keys(FABRIC_MACHINES).forEach((machine) => {
+    Object.keys(FABRIC_MACHINES).forEach((machine)=> {
 
-        if (FABRIC_MACHINES[machine].ID !== 0) {
+        if (FABRIC_MACHINES[machine as IMachineKey].ID !== 0) {
             tempMachines.push({
-                id: FABRIC_MACHINES[machine].ID,
-                name: FABRIC_MACHINES[machine].NAME,
+                id: FABRIC_MACHINES[machine as IMachineKey].ID,
+                name: FABRIC_MACHINES[machine as IMachineKey].NAME,
                 show: true,
             })
         }
@@ -636,11 +686,12 @@ const fabricTaskAdd = async (fabricItem: IOrdersExpenseMatrixItem) => {
         const modalTextInform: string[] = []
         fabricItem.taskContexts.forEach(taskContext => {
             const taskDate = formatDate(new Date(taskContext.task.task_date))
-            const taskMachineKey = Object.keys(FABRIC_MACHINES).find(machine => FABRIC_MACHINES[machine].ID === taskContext.task.fabric_machine_id)
-            const taskMachine = taskMachineKey ? FABRIC_MACHINES[taskMachineKey].NAME : ''
+            const taskMachineKey = Object.keys(FABRIC_MACHINES).find(machine => FABRIC_MACHINES[machine as IMachineKey].ID === taskContext.task.fabric_machine_id)
+            const taskMachine = taskMachineKey ? FABRIC_MACHINES[taskMachineKey as IMachineKey].NAME : ''
             const taskStatusKey = Object.keys(FABRIC_TASK_STATUS).find(status => FABRIC_TASK_STATUS[status as keyof typeof FABRIC_TASK_STATUS].CODE === taskContext.task.task_status)
             const taskStatus = taskStatusKey ? FABRIC_TASK_STATUS[taskStatusKey as keyof typeof FABRIC_TASK_STATUS].TITLE : ''
-            const fabricLength = taskContext.translate_rate ? taskContext.average_textile_length / taskContext.translate_rate : 0
+            const fabricLength = taskContext.average_fabric_length
+            // const fabricLength = taskContext.translate_rate ? taskContext.average_textile_length / taskContext.translate_rate : 0
 
             modalTextInform.push(
                 `СЗ (${taskStatus}): ${taskDate}, ${taskMachine}, ${taskContext.rolls_amount}рул., ${fabricLength.toFixed(PRECISION)}мп.`,
@@ -681,6 +732,14 @@ const fabricTaskAdd = async (fabricItem: IOrdersExpenseMatrixItem) => {
 
 }
 
+
+// __ Получаем тип для рендера расхода в ячейке таблицы (пересечение заявка-ПС)
+const getExpenseCellType = (fabricExpense: IOrderExpenseItem) => {
+    if (!fabricExpense.expense) return 'light'
+    if (!fabricExpense.active) return 'dark'
+    return fabricExpense.enough ? 'success' : 'orange'
+    // :type="fabricExpense.expense ? (fabricExpense.active ? 'warning' : 'dark') : 'light'"
+}
 
 // __ Начало перетаскивания
 const startDrag = () => {
@@ -728,9 +787,9 @@ onMounted(async () => {
             // console.log('fabrics: ', fabrics)
             // console.log('ordersExpense: ', ordersExpense.value)
             // console.table(ordersExpense.value)
-            // console.log('taskContexts: ', taskContexts.value)
+            console.log('taskContexts: ', taskContexts.value)
             // console.log('machines: ', machines.value)
-            // console.log('ordersExpenseMatrix: ', ordersExpenseMatrix.value)
+            console.log('ordersExpenseMatrix: ', ordersExpenseMatrix.value)
         },
         undefined,
         // false,

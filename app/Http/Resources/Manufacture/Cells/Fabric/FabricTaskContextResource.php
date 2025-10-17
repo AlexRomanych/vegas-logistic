@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
@@ -16,7 +16,8 @@ class FabricTaskContextResource extends JsonResource
     {
         return [
 
-            'average_textile_length' => (float)$this->average_textile_length,
+            'average_textile_length' => $this->average_textile_length,
+            'average_fabric_length' => $this->average_fabric_length,
             'comment' => $this->comment,
             'description' => $this->description,
             'fabric_id' => $this->fabric_id,
