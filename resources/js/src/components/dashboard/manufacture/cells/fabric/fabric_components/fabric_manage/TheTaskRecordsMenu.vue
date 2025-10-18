@@ -316,13 +316,15 @@ const addRoll = () => {
 
 // __ Обрабатываем клик по кнопке "Оптимизировать трудозатраты"
 const optimizeLabor = () => {
-    if (totalTuningProductivityHasError.value) return
+    // let optimizeLaborError = null
+    // if (totalTuningProductivityHasError.value) {
+    //     optimizeLaborError = 'Не заданы все данные по переналадкам'
+    // }
     emits('optimizeLabor')
 }
 
 // __ Обрабатываем клик по кнопке Сохранить порядок рулонов
 const saveRollsOrder = () => {
-    // console.log('save Rolls Order')
     emits('saveRollsOrder')
 }
 

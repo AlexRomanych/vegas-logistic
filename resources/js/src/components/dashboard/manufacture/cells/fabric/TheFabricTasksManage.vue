@@ -152,7 +152,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, onMounted, nextTick, } from 'vue'
+import { ref, reactive, onMounted, nextTick, } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { IFabric, IFabricMachine, IGlobalProductivity, IRoll, ITaskItem, ITaskPeriod, ITimeContext } from '@/types'
@@ -164,7 +164,7 @@ import {
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
     FABRICS_NULLABLE,
-    TASK_DRAFT, NEW_ROLL, FABRIC_DEFAULT_TUNING_TIME, type IMachineKey,
+    TASK_DRAFT, NEW_ROLL, FABRIC_DEFAULT_TUNING_TIME, type IMachineKey, FABRIC_ROLL_STATUS,
 } from '@/app/constants/fabrics.js'
 
 import { cloneDeep, cloneShallow } from '@/app/helpers/helpers_lib.js'
@@ -223,13 +223,13 @@ interface ITab {
     machine?: IConstFabricMachine
 }
 
-interface IInputData {
-    index: number
-    machine: IConstFabricMachine
-    roll: IRoll
-    task: ITaskItem
-    taskDescription: string
-}
+// interface IInputData {
+//     index: number
+//     machine: IConstFabricMachine
+//     roll: IRoll
+//     task: ITaskItem
+//     taskDescription: string
+// }
 
 interface ITempWorker {
     checked: boolean
@@ -311,6 +311,7 @@ const getTasks = async () => {
 }
 
 // __ Добавляем последний рулон в предыдущем СЗ
+/*
 const addLastExecRolls = async () => {
     for (let i = 0; i < taskData.length; i++) {
 
@@ -333,7 +334,7 @@ const addLastExecRolls = async () => {
         }
     }
 }
-
+*/
 
 // __ Добавляем переналадку по машине и СЗ
 const addTuning = async (task: ITaskItem, machine: IConstFabricMachine) => {
@@ -424,171 +425,13 @@ const addTuningRolls = async () => {
 
         const workTask = taskData[i]
 
-        for (const [machineKey, machine] of Object.entries(workTask.machines)) {
+        for (const [machineKey, /*machine*/] of Object.entries(workTask.machines)) {
 
             const targetMachine = Object.keys(FABRIC_MACHINES).find(key => FABRIC_MACHINES[key as IMachineKey].TITLE === machineKey)
             if (targetMachine) {
                 await addTuning(workTask, FABRIC_MACHINES[targetMachine as IMachineKey])
             }
 
-        }
-    }
-}
-
-
-const addTuningRolls_ = async () => {
-
-    let resultRolls
-    let memRoll
-    let tuningTime: ITimeContext
-
-    for (let i = 0; i < taskData.length; i++) {
-        const workTask = taskData[i]
-
-        for (const [machineKey, machine] of Object.entries(workTask.machines)) {
-
-            if (machine.rolls.length === 0) continue    // пропускаем пустые машины
-
-            memRoll = cloneDeep(NEW_ROLL) // __ Тут должны получать последний рулон предыдущей смены
-            memRoll.fabric_id = 1
-            resultRolls = []
-
-            // console.log(machine.rolls.length)
-
-            for (let j = 0; j < machine.rolls.length; j++) {
-                const roll = machine.rolls[j]
-
-                // console.log('memRoll.fabric_id: ', memRoll.fabric_id)
-                // console.log('roll.fabric_id: ', roll.fabric_id)
-
-                if (roll.fabric_id !== memRoll.fabric_id) {
-
-                    // Получаем рисунки переналадки + время
-                    const picFrom = fabrics.find(fabric => fabric.id === memRoll!.fabric_id)?.picture.id ?? 0
-                    const picTo = fabrics.find(fabric => fabric.id === roll.fabric_id)?.picture.id ?? 0
-                    const key: string = getTuningTimeCasheKey(picFrom, picTo)
-                    if (tuningTimeCache[key]) {
-                        tuningTime = tuningTimeCache[key]
-                    } else {
-                        tuningTime = await fabricsStore.getFabricsPicturesBetweenTuningTime(picFrom, picTo)
-                        tuningTimeCache[key] = tuningTime
-                        // const tuningTime: ITimeContext = await fabricsStore.getFabricsPicturesBetweenTuningTime(picFrom, picTo)
-                    }
-
-
-                    // const tuningTime: ITimeContext = await fabricsStore.getFabricsBetweenTuningTime(memRoll.fabric_id, roll.fabric_id)
-                    // tuningTimeCache.
-
-                    // let tuningTime = {from: 0, to: 0, time: 0}
-                    // fabricsStore.getFabricsBetweenTuningTime(memRoll.fabric_id, roll.fabric_id)
-                    //     .then(res => tuningTime = res).then(() => {
-                    //     console.log(tuningTime)
-                    if (tuningTime.from !== tuningTime.to || tuningTime.time === 0) {    // если есть время переналадки или если есть, но время не равно 0
-
-                        const tuningTimeRoll = cloneDeep(NEW_ROLL)
-                        tuningTimeRoll.fabric = tuningTime.time ? 'Переналадка' : 'Переналадка (нет данных)'
-                        tuningTimeRoll.roll_position = roll.roll_position - 0.5
-                        tuningTimeRoll.productivity = tuningTime.time ?? FABRIC_DEFAULT_TUNING_TIME
-                        tuningTimeRoll.isTuning = true
-
-                        tuningTimeRoll.id = -100
-                        tuningTimeRoll.fabric_id = 0
-                        tuningTimeRoll.fabric_rate = 1
-                        tuningTimeRoll.correct = true
-                        tuningTimeRoll.rolls_amount = 1
-                        tuningTimeRoll.average_textile_length = tuningTimeRoll.productivity
-                        tuningTimeRoll.average_fabric_length = tuningTimeRoll.productivity
-                        tuningTimeRoll.average_textile_roll_length = 1
-
-
-                        resultRolls.push(tuningTimeRoll)
-                    }
-                    // })
-                    // console.log(tuningTime)
-                    // console.log(tuningTimeRoll)
-
-                }
-
-                resultRolls.push(roll)
-                memRoll = cloneDeep(roll)
-            }
-
-            machine.rolls = resultRolls
-
-            // console.log('tuningTimeCache: ', tuningTimeCache)
-
-        }
-    }
-}
-const addTuningRolls_old = async () => {
-
-    for (let i = 0; i < taskData.length; i++) {
-        const workTask = taskData[i]
-
-        for (const [machineKey, machine] of Object.entries(workTask.machines)) {
-            if (machine.rolls.length === 0) continue
-
-            // const memRolls = [];
-            const rollPairs = []
-
-            // Подготавливаем пары рулонов для сравнения
-            for (let j = 0; j < machine.rolls.length; j++) {
-                const currentRoll = machine.rolls[j]
-                const prevRoll = j === 0 ? cloneDeep(NEW_ROLL) : machine.rolls[j - 1]
-
-                if (prevRoll.fabric_id === 0) prevRoll.fabric_id = 1
-
-                // memRolls.push(prevRoll);
-                rollPairs.push({prev: prevRoll, current: currentRoll})
-            }
-
-            // Создаем массив промисов для всех запросов
-            const tuningPromises = rollPairs.map(pair => {
-                if (pair.current.fabric_id !== pair.prev.fabric_id) {
-                    return fabricsStore.getFabricsBetweenTuningTime(pair.prev.fabric_id, pair.current.fabric_id)
-                }
-                return Promise.resolve(null) // Возвращаем null, если нет переналадки
-            })
-
-            // Запускаем все запросы одновременно
-            const tuningResults = await Promise.all(tuningPromises)
-
-            console.log('tuningResults: ', tuningResults)
-
-            // Обрабатываем результаты и создаем новый массив рулонов
-            const resultRolls = []
-            // let fabricIDIndex = -100
-            let indexID = -100
-
-            for (let k = 0; k < machine.rolls.length; k++) {
-                const tuningTime = tuningResults[k]
-                const currentRoll = machine.rolls[k]
-
-                if (tuningTime) {
-                    if (tuningTime.from !== tuningTime.to || tuningTime.time === 0) {
-                        // Ваша логика создания рулона для переналадки
-                        const tuningTimeRoll = cloneDeep(NEW_ROLL)
-                        tuningTimeRoll.fabric = tuningTime.time ? 'Переналадка' : 'Переналадка (нет данных)'
-                        tuningTimeRoll.roll_position = currentRoll.roll_position - 0.5
-                        tuningTimeRoll.productivity = tuningTime.time ?? FABRIC_DEFAULT_TUNING_TIME
-                        tuningTimeRoll.isTuning = true
-
-                        tuningTimeRoll.id = indexID--
-                        tuningTimeRoll.fabric_id = -1
-                        tuningTimeRoll.fabric_rate = 1
-                        tuningTimeRoll.correct = true
-                        tuningTimeRoll.editable = false
-                        tuningTimeRoll.rolls_amount = 1
-                        tuningTimeRoll.average_textile_length = tuningTimeRoll.productivity
-                        tuningTimeRoll.average_fabric_length = tuningTimeRoll.productivity
-                        tuningTimeRoll.average_textile_roll_length = 1
-                        resultRolls.push(tuningTimeRoll)
-                    }
-                }
-                resultRolls.push(currentRoll)
-            }
-
-            machine.rolls = resultRolls
         }
     }
 }
@@ -1045,7 +888,7 @@ const saveTasks = async (saveData: {
 }
 
 
-// attract: Поднятое событие при клике на кнопку "Сохранить общее описание к СМ"
+// __ Поднятое событие при клике на кнопку "Сохранить общее описание к СМ"
 const saveMachineDescription = async (saveData: {
     machine: IConstFabricMachine,
     task: ITaskItem,
@@ -1055,11 +898,7 @@ const saveMachineDescription = async (saveData: {
     const targetTask = taskData.find(t => t.date === saveData.task.date)
     if (targetTask) targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
-    // console.log('from updateDescription: ', targetTask)
-    // console.log('from updateDescription: ', taskData)
-
-    const result = await fabricsStore.createFabricTask(targetTask)
-    console.log('SFC: ', result)
+    await fabricsStore.createFabricTask(targetTask)
 
     rerender[saveData.machine.ID]++     // Нужно для обновления трудозатрат
 }
@@ -1072,7 +911,6 @@ const deleteTasksRecord = async (deleteData: { task: ITaskItem } & { machine: IC
     // __ Если deleteData.id === 0 - это новый рулон, который еще не сохранился в БД
     // __ Иначе удаляем его из БД
     if (deleteData.id) {
-        /*const result =*/
         await fabricsStore.deleteFabricTaskRollById(deleteData.id)
 
         // Удаляем рулон из массива, чтобы верно пересчитать позицию
@@ -1083,12 +921,8 @@ const deleteTasksRecord = async (deleteData: { task: ITaskItem } & { machine: IC
 
         findTask.machines[deleteData.machine.TITLE].rolls =
             findTask.machines[deleteData.machine.TITLE].rolls.filter(roll => roll.id !== deleteData.id)
-
-        // console.log(findTask.machines[deleteData.machine.TITLE].rolls)
-
     }
 
-    // debugger
     // __ Пересчитываем позиции рулонов
     changeRollsPosition(deleteData.machine, deleteData.task)
 
@@ -1130,6 +964,26 @@ const optimizeLabor = async (machine: IConstFabricMachine, task: ITaskItem) => {
             'Количество уникальных рисунков превышает ' + OPTIMIZE_PICS_LIMIT + '.',
             'Оптимизация трудозатрат займет много времени.',
             'Уменьшите количество уникальных рисунков и',
+            'повторите оптимизацию.'
+        ]
+
+        await appModalAsyncTS.value.show()             // показываем модалку и выходим
+        return
+    }
+
+    // __ Ограничение. Не должно быть не выполненных рулонов
+    let hasFalseContextRolls = false
+    task.machines[machine.TITLE].rolls.forEach(roll => {
+        roll.rolls_exec.forEach(rollExec => {
+            hasFalseContextRolls ||= rollExec.status === FABRIC_ROLL_STATUS.FALSE.CODE
+        })
+    })
+
+    if (hasFalseContextRolls) {
+        modalText.value = [
+            'В сменном задании есть',
+            'не выполненные рулоны.',
+            'Удалите и заново добавьте их и',
             'повторите оптимизацию.'
         ]
 
@@ -1192,6 +1046,7 @@ const optimizeLabor = async (machine: IConstFabricMachine, task: ITaskItem) => {
     await saveRollsPosition(machine, task)    // сохраняем порядок рулонов
 }
 
+
 // attract: Поднятое событие при клике на кнопку "Персонал", точнее, его сохранение
 const selectWorkers = async (workersList: ITempWorker[]) => {
 
@@ -1251,12 +1106,10 @@ const updateTaskDescription = async (description: string) => {
 // attract: Создаем реактивную переменную и вешаем ее ключом на компоненты для ререндеринга
 const rerender = reactive([0, 0, 0, 0, 0])
 
-watch(() => taskData, async (newValue) => {
-
-    // rerender.value++
-    // console.log('taskData: changed: ', rerender)
-
-}, {deep: true})
+// watch(() => taskData, async (newValue) => {
+//     // rerender.value++
+//     // console.log('taskData: changed: ', rerender)
+// }, {deep: true})
 
 // __ Загрузка данных
 onMounted(async () => {
