@@ -16,6 +16,7 @@ export interface IRenderDataItem {
     headerTextSize?: IFontsType
     dataTextSize?: IFontsType
     filterTextSize?: IFontsType
+    textSize? : IFontsType | ((...args: any[]) => string)
     headerAlign?: IHorizontalAlign
     dataAlign?: IHorizontalAlign
     align?: IHorizontalAlign

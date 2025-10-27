@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Manufacture\Cells\Fabric;
 
@@ -39,15 +39,15 @@ class FabricTaskRollMovingResource extends JsonResource
                 'name' => $this->moveToCutBy->name,
                 'surname' => '',
                 'patronymic' => '',
-//                'surname' => $this->moveToCutBy->surname,
-//                'patronymic' => $this->moveToCutBy->patronymic,
+                //                'surname' => $this->moveToCutBy->surname,
+                //                'patronymic' => $this->moveToCutBy->patronymic,
             ],
-//            'move_to_cut_by' => [
-//                'id' => $this->moveToCutBy->id,
-//                'name' => $this->moveToCutBy->name,
-//                'surname' => $this->moveToCutBy->surname,
-//                'patronymic' => $this->moveToCutBy->patronymic,
-//            ],
+            //            'move_to_cut_by' => [
+            //                'id' => $this->moveToCutBy->id,
+            //                'name' => $this->moveToCutBy->name,
+            //                'surname' => $this->moveToCutBy->surname,
+            //                'patronymic' => $this->moveToCutBy->patronymic,
+            //            ],
 
             'receipt_to_cut_at' => $this->receipt_to_cut_at,
             'receipt_to_cut_by' => [
@@ -55,15 +55,15 @@ class FabricTaskRollMovingResource extends JsonResource
                 'name' => $this->receiptToCutBy->name,
                 'surname' => '',
                 'patronymic' => '',
-//                'surname' => $this->receiptToCutBy->surname,
-//                'patronymic' => $this->receiptToCutBy->patronymic,
+                //                'surname' => $this->receiptToCutBy->surname,
+                //                'patronymic' => $this->receiptToCutBy->patronymic,
             ],
-//            'receipt_to_cut_by' => [
-//                'id' => $this->receiptToCutBy->id,
-//                'name' => $this->receiptToCutBy->name,
-//                'surname' => $this->receiptToCutBy->surname,
-//                'patronymic' => $this->receiptToCutBy->patronymic,
-//            ],
+            //            'receipt_to_cut_by' => [
+            //                'id' => $this->receiptToCutBy->id,
+            //                'name' => $this->receiptToCutBy->name,
+            //                'surname' => $this->receiptToCutBy->surname,
+            //                'patronymic' => $this->receiptToCutBy->patronymic,
+            //            ],
 
 
             'registration_1C_at' => $this->registration_1C_at,
@@ -72,42 +72,44 @@ class FabricTaskRollMovingResource extends JsonResource
                 'name' => $this->registration1CBy->name,
                 'surname' => '',
                 'patronymic' => '',
-//                'surname' => $this->registration1CBy->surname,
-//                'patronymic' => $this->registration1CBy->patronymic,
+                //                'surname' => $this->registration1CBy->surname,
+                //                'patronymic' => $this->registration1CBy->patronymic,
             ],
             'isRegistered_1C' => $this->is_registered,
             //'isRegistered_1C' => parent::toArray($request),
-//            'registration_1C_by' => [
-//                'id' => $this->registration1CBy->id,
-//                'name' => $this->registration1CBy->name,
-//                'surname' => $this->registration1CBy->surname,
-//                'patronymic' => $this->registration1CBy->patronymic,
-//            ],
-
-
-
+            //            'registration_1C_by' => [
+            //                'id' => $this->registration1CBy->id,
+            //                'name' => $this->registration1CBy->name,
+            //                'surname' => $this->registration1CBy->surname,
+            //                'patronymic' => $this->registration1CBy->patronymic,
+            //            ],
 
             'duration' => $this->duration,
             'descr' => $this->description ?? '',
             'comment' => $this->comment ?? '',
             'note' => $this->note ?? '',
-            'textile_length' => (float)$this->textile_roll_length,
-            'rate' => (float)$this->translate_rate,
+            'rate' => $this->translate_rate,
+            'textile_length' => $this->textile_roll_length,
 
-//            'user' => $this->user->name,
-//            'rolling' => $this->rolling,
-//            'resume_at' => $this->resume_at,
-//            'paused_at' => $this->paused_at,
-//            'status_prev' => $this->roll_status_previous,
-//            'position' => $this->roll_position,
-//            'movable' => $this->movable,
-//            'false_reason' => $this->false_reason,
-//            'productivity' => (float)$this->productivity,
-//            '__source' => parent::toArray($request)
+            // Ставим костыль для ранних версий, когда  fabric_roll_length === 0
+            'fabric_length' => $this->fabric_roll_length !== 0.0
+                ? $this->fabric_roll_length
+                : $this->textile_roll_length / $this->fabric->rolls_amount / $this->fabric->translate_rate,
+
+            //            '__source' => parent::toArray($request)
+            //            'productivity' => (float)$this->productivity,
+            //            'false_reason' => $this->false_reason,
+            //            'movable' => $this->movable,
+            //            'position' => $this->roll_position,
+            //            'status_prev' => $this->roll_status_previous,
+            //            'paused_at' => $this->paused_at,
+            //            'resume_at' => $this->resume_at,
+            //            'rolling' => $this->rolling,
+            //            'user' => $this->user->name,
+
 
         ];
 
-
-//        return parent::toArray($request);
+        //        return parent::toArray($request);
     }
 }

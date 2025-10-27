@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollCollection;
-use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
+// use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
+use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
 
 use App\Models\Manufacture\Cells\Fabric\Fabric;
@@ -19,6 +20,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Services\Manufacture\FabricService;
 use Illuminate\Http\Request;
 use \Exception;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,27 +62,52 @@ class CellFabricTaskRollController extends Controller
     }
 
     /**
-     * Descr: Возвращает список не принятых на закрой рулонов (DONE или REGISTERED_1C или MOVED)
+     * ___ Возвращает список не принятых на закрой рулонов (DONE или REGISTERED_1C или MOVED)
      * @param Request $request
-     * @return FabricTaskRollMovingCollection
+     * @return AnonymousResourceCollection|string
      */
     public function getNotAcceptedToCutRolls(Request $request)
     {
-        $rollsQuery = FabricTaskRoll::query()
-            ->where('roll_status', FABRIC_ROLL_DONE_CODE)
-            ->orWhere('roll_status', FABRIC_ROLL_REGISTERED_1C_CODE)
-            ->orWhere('roll_status', FABRIC_ROLL_MOVED_CODE)
-            ->with([
-                'fabric',
-                'finishBy',
-                'registration1CBy',
-                'moveToCutBy',
-                'receiptToCutBy',
-                'user'])
-            ->orderBy('id')
-            ->get();
+        try {
 
-        return new FabricTaskRollMovingCollection($rollsQuery);
+
+            $rollsQuery = FabricTaskRoll::query()
+                ->whereIn('roll_status', [
+                    FABRIC_ROLL_DONE_CODE,
+                    FABRIC_ROLL_REGISTERED_1C_CODE,
+                    FABRIC_ROLL_MOVED_CODE
+                ])
+                ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01')) // TODO: Error!!! Temporary Decision
+                ->with([
+                    'fabric',
+                    'finishBy',
+                    'registration1CBy',
+                    'moveToCutBy',
+                    'receiptToCutBy',
+                    'user'])
+                ->orderBy('id')
+                ->get();
+
+            // $rollsQuery = FabricTaskRoll::query()
+            //     ->where('roll_status', FABRIC_ROLL_DONE_CODE)
+            //     ->orWhere('roll_status', FABRIC_ROLL_REGISTERED_1C_CODE)
+            //     ->orWhere('roll_status', FABRIC_ROLL_MOVED_CODE)
+            //     ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01'))
+            //     ->with([
+            //         'fabric',
+            //         'finishBy',
+            //         'registration1CBy',
+            //         'moveToCutBy',
+            //         'receiptToCutBy',
+            //         'user'])
+            //     ->orderBy('id')
+            //     ->get();
+
+            return FabricTaskRollMovingResource::collection($rollsQuery);
+            // return new FabricTaskRollMovingCollection($rollsQuery);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
     }
 
 

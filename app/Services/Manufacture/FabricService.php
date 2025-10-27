@@ -16,6 +16,7 @@ use App\Models\Manufacture\Cells\Fabric\FabricTasksDate;
 use App\Models\Manufacture\Cells\Fabric\FabricTuningTime;
 use Carbon\Carbon;
 use Exception;
+
 // use Illuminate\Http\Request;
 // use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -452,7 +453,7 @@ final class FabricService
         }
 
 
-            return $resultMatrix;
+        return $resultMatrix;
     }
 
 
@@ -492,16 +493,18 @@ final class FabricService
     }
 
 
-
     /**
      *  ___ Возвращаем последний рулон предшествующий данной дате на заданной машине
      * @param string $date
      * @param int $machine
      * @return FabricTaskRoll|null
      */
-    public static function getLastRoll( string $date, int $machine): FabricTaskRoll|null
+    public static function getLastRoll(string $date, int $machine): FabricTaskRoll|null
     {
         $targetDate = Carbon::parse($date);
+
+        $stop = 0;
+
 
         do {
             // __ Находим задачу с максимальной датой, предшествующей заданной
@@ -519,6 +522,9 @@ final class FabricService
             // __ Находим все рулоны, которые были сделаны на эту дату
             $rolls = FabricTaskRoll::query()
                 ->whereNotIn('roll_status', [FABRIC_ROLL_FALSE_CODE, FABRIC_ROLL_CANCELLED_CODE])
+                ->whereHas('fabricTaskContext.fabricTask', function ($query) use ($machine) {
+                    $query->where('fabric_machine_id', $machine);
+                })
                 ->whereHas('fabricTaskContext.fabricTask.fabricTasksDate', function ($query) use ($tasksDate) {
                     $query->where('id', $tasksDate->id);
                 })
@@ -537,9 +543,6 @@ final class FabricService
         } while (true);
 
     }
-
-
-
 
 
 }

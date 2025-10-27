@@ -13,6 +13,11 @@ class FabricTaskRoll extends Model
     // use HasAttributes;
 
     protected $guarded = [];
+    protected $casts = [
+        'textile_roll_length' => 'float',
+        'fabric_roll_length' => 'float',
+        'rate' => 'float',
+    ];
 
     //warning: Конвенция наименования атрибутов
     protected $appends = [

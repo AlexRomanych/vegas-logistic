@@ -754,7 +754,7 @@ const render = reactive({
         show: true,
         title: 'Ткань, м.п.',
         type: (flag = false, roll) => getTypeOfRoll(roll, flag),
-        data: (roll) => roll.textile_length.toFixed(3),
+        data: (roll) => roll.textile_length.toFixed(2),
     },
     fabricLength: {
         header: ['ПС', 'м.п.'],
@@ -762,7 +762,8 @@ const render = reactive({
         show: true,
         title: 'ПС, м.п.',
         type: (flag = false, roll) => getTypeOfRoll(roll, flag),
-        data: (roll) => (roll.textile_length / roll.rate).toFixed(2),
+        data: (roll) => roll.fabric_length.toFixed(2),
+        // data: (roll) => (roll.textile_length / roll.rate).toFixed(2),
     },
     finishAt: {
         header: ['Дата', 'пр-ва'],

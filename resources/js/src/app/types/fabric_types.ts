@@ -104,7 +104,6 @@ export interface IRollStatus {
 }
 
 
-
 // __ Контекстный рулон
 export interface IRoll {
     id: number
@@ -335,8 +334,8 @@ export interface IGlobalProductivityItem {
     isTuning: boolean
     time: number
 }
-export type IGlobalProductivity = Record<FabricMachineTitles, IGlobalProductivityItem>
 
+export type IGlobalProductivity = Record<FabricMachineTitles, IGlobalProductivityItem>
 
 
 // line --------------------------------------------------------------
@@ -349,3 +348,54 @@ export interface IInputData {
     task: ITaskItem
     taskDescription: string | null
 }
+
+// line --------------------------------------------------------------
+// line ------------- Рулон для движения между участками -------------
+// line --------------------------------------------------------------
+export interface IRollMove {
+    id: number
+    descr: string
+    comment: string
+    note: string
+    rate: number
+    duration: number
+    start_at: string
+    status: number
+    textile_length: number
+    fabric_length: number
+    fabric: {
+        display_name: string
+        fabric_id: number
+    }
+    finish_at: string | null
+    finish_by: IRollMovePerson
+    isRegistered_1C: boolean
+    move_to_cut_at: string | null
+    move_to_cut_by: IRollMovePerson
+    receipt_to_cut_at: string | null
+    receipt_to_cut_by: IRollMovePerson
+    registration_1C_at: string | null
+    registration_1C_by: IRollMovePerson
+}
+
+export interface IRollMovePerson {
+    id: number
+    name: string
+    patronymic: string
+    surname: string
+}
+
+// __ Рендер рулона (преобразуем в удобный для отображения вид)
+export interface IRollMoveRender {
+    fabric: {
+        id: number
+        displayName: string
+        textileLength: number
+        fabricLength: number
+        collapsed: boolean
+    },
+
+    rolls: IRollMove[],
+}
+
+// line --------------------------------------------------------------
