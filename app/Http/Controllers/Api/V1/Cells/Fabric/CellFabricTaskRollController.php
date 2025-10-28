@@ -77,7 +77,7 @@ class CellFabricTaskRollController extends Controller
                     FABRIC_ROLL_REGISTERED_1C_CODE,
                     FABRIC_ROLL_MOVED_CODE
                 ])
-                ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01')) // TODO: Error!!! Temporary Decision
+                // ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01')) // TODO: Error!!! Temporary Decision
                 ->with([
                     'fabric',
                     'finishBy',
