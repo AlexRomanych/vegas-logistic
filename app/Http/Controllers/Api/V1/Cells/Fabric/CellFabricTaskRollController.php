@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollCollection;
+
 // use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingCollection;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollMovingResource;
 use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
@@ -69,24 +70,34 @@ class CellFabricTaskRollController extends Controller
     public function getNotAcceptedToCutRolls(Request $request)
     {
         try {
-
+            $twoMonthsAgo = Carbon::now()->subMonths(2);
 
             $rollsQuery = FabricTaskRoll::query()
-                ->whereIn('roll_status', [
-                    FABRIC_ROLL_DONE_CODE,
-                    FABRIC_ROLL_REGISTERED_1C_CODE,
-                    FABRIC_ROLL_MOVED_CODE
-                ])
-                // ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01')) // TODO: Error!!! Temporary Decision
-                ->with([
-                    'fabric',
-                    'finishBy',
-                    'registration1CBy',
-                    'moveToCutBy',
-                    'receiptToCutBy',
-                    'user'])
-                ->orderBy('id')
+                ->where('roll_status', FABRIC_ROLL_DONE_CODE) // 1. Выбрать все записи со статусом DONE
+                ->orWhere(function ($query) use ($twoMonthsAgo) { // 2. ИЛИ записи со статусом MOVED_TO_CUT...
+                    $query
+                        ->where('roll_status', FABRIC_ROLL_MOVED_CODE)
+                        ->where('move_to_cut_at', '>=', $twoMonthsAgo); // ...которые были перемещены за последние 2 месяца
+                })
                 ->get();
+
+
+            // $rollsQuery = FabricTaskRoll::query()
+            //     ->whereIn('roll_status', [
+            //         FABRIC_ROLL_DONE_CODE,
+            //         FABRIC_ROLL_REGISTERED_1C_CODE,
+            //         FABRIC_ROLL_MOVED_CODE
+            //     ])
+            //     // ->whereDate('move_to_cut_at', '>', Carbon::parse('2025-09-01')) // TODO: Error!!! Temporary Decision
+            //     ->with([
+            //         'fabric',
+            //         'finishBy',
+            //         'registration1CBy',
+            //         'moveToCutBy',
+            //         'receiptToCutBy',
+            //         'user'])
+            //     ->orderBy('id')
+            //     ->get();
 
             // $rollsQuery = FabricTaskRoll::query()
             //     ->where('roll_status', FABRIC_ROLL_DONE_CODE)

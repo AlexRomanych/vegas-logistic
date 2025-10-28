@@ -295,7 +295,10 @@ class CellFabricController extends Controller
 
     }
 
-
+    /**
+     * ___ Обновляем буфер ПС
+     * @return string
+     */
     public function updateFabricsBuffer()
     {
         try {
@@ -306,18 +309,23 @@ class CellFabricController extends Controller
 
             foreach ($fabrics as $fabric) {
 
-                $textileLength =
+                $fabricLength =
                     FabricTaskRoll::query()
                         ->where('fabric_id', $fabric->id)
                         ->whereIn('roll_status', [FABRIC_ROLL_DONE_CODE, FABRIC_ROLL_REGISTERED_1C_CODE])
-                        ->sum('textile_roll_length');
+                        ->sum('fabric_roll_length');
+                $fabric->buffer_amount = $fabricLength;
 
-
-                $fabric->buffer_amount = $fabric->translate_rate === 0 ? 0 : $textileLength / $fabric->translate_rate;
+                // $textileLength =
+                //     FabricTaskRoll::query()
+                //         ->where('fabric_id', $fabric->id)
+                //         ->whereIn('roll_status', [FABRIC_ROLL_DONE_CODE, FABRIC_ROLL_REGISTERED_1C_CODE])
+                //         ->sum('textile_roll_length');
+                //
+                // $fabric->buffer_amount = $fabric->translate_rate === 0 ? 0 : $textileLength / $fabric->translate_rate;
 
                 $fabric->save();
             }
-
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
