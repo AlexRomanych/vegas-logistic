@@ -70,7 +70,9 @@ class CellFabricTaskRollController extends Controller
     public function getNotAcceptedToCutRolls(Request $request)
     {
         try {
-            $twoMonthsAgo = Carbon::now()->subMonths(2);
+            $MONTHS_AGO = 2;
+
+            $twoMonthsAgo = Carbon::now()->subMonths($MONTHS_AGO);
 
             $rollsQuery = FabricTaskRoll::query()
                 ->where('roll_status', FABRIC_ROLL_DONE_CODE) // 1. Выбрать все записи со статусом DONE
