@@ -4,6 +4,7 @@ export * from './reasons_types.ts'                  // Причина невып
 export * from './data_render.ts'                    // Элемент вывода датных в шаблон
 export * from './components_definitions.ts'         // Компоненты
 export * from './fabric_types.ts'                   // Все типы для стежки
+export * from './client_types.ts'                   // Все типы для клиентов
 
 
 // ___ Константы выравнивания текста

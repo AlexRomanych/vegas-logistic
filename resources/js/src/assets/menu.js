@@ -5,6 +5,7 @@ const menuData = () => {
             group: {name: 'Производство', shown: true, isActive: true, icon: 'HomeModernIcon'},
             items:
                 [
+                    {name: 'План', path: 'plans', shown: true, isActive: true,},
                     {name: 'Группы ПЯ', path: 'manufacture.cells.groups', shown: true, isActive: true,},
                     {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
                     {name: 'Стежка', path: 'manufacture.cell.fabrics', shown: true, isActive: true,},

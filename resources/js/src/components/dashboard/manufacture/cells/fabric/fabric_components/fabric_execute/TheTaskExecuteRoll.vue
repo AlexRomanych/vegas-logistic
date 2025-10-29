@@ -159,6 +159,7 @@
         <!-- __ Ответственный -->
         <AppSelectSimple
             v-if="rollsRender.finishBy.show"
+            :disabled="roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE || roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE"
             :multiple="false"
             :selectData="rollsRender.finishBy.data(roll_exec)"
             :title="rollsRender.finishBy.title"
@@ -166,7 +167,6 @@
             :width="rollsRender.finishBy.width"
             text-size="mini"
             @change="getSelectedWorker"
-            :disabled="roll_exec.status === FABRIC_ROLL_STATUS.CREATED.CODE || roll_exec.status === FABRIC_ROLL_STATUS.DONE.CODE"
         />
 
 
@@ -188,8 +188,8 @@
 </template>
 
 <script setup>
-import {onUnmounted, ref, watch} from 'vue'
-import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { onUnmounted, ref, watch } from 'vue'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_ROLL_STATUS,
@@ -197,11 +197,11 @@ import {
     // FABRIC_TASK_STATUS
 } from '@/app/constants/fabrics.js'
 
-import {getDuration} from '@/app/helpers/helpers_date.js'
+import { getDuration } from '@/app/helpers/helpers_date.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
-import {getTypeByRollStatus} from '@/app/helpers/manufacture/helpers_fabric.js'
+import { getTypeByRollStatus } from '@/app/helpers/manufacture/helpers_fabric.js'
 
 const props = defineProps({
     roll_exec: {
@@ -235,7 +235,6 @@ const getTypeByStatusFinishBy = (roll_exec) => {
 }
 
 
-
 // __ Добавляем часики выполнения рулона
 let intervalId = null   // Для очистки интервала, если он будет создан, чтобы убрать утечки памяти
 const duration = ref('')
@@ -262,7 +261,7 @@ watch(() => props.roll_exec, (newRoll, oldRoll) => {
     } else if (newRoll.status === FABRIC_ROLL_STATUS.DONE.CODE || newRoll.status === FABRIC_ROLL_STATUS.PAUSED.CODE) {
 
         if (intervalId !== null) {
-            clearInterval(intervalId);
+            clearInterval(intervalId)
             intervalId = null
             duration.value = getDuration(null, null, newRoll.duration)
         }
@@ -281,9 +280,9 @@ const getSelectedWorker = (workerData) => {
 
 onUnmounted(() => {
     if (intervalId !== null) {
-        clearInterval(intervalId);
+        clearInterval(intervalId)
     }
-});
+})
 
 </script>
 

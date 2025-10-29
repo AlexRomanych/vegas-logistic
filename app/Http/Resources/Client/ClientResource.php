@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Client;
 
@@ -14,13 +14,13 @@ class ClientResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
-            'sn' => $this->short_name,
-            'reg' => $this->region,
-            'act' => $this->active,
-        ];
+        // return [
+        //     'sn' => $this->short_name,
+        //     'reg' => $this->region,
+        //     'act' => $this->active,
+        // ];
 
-//        return parent::toArray($request);
+       return parent::toArray($request);
 
     }
 }

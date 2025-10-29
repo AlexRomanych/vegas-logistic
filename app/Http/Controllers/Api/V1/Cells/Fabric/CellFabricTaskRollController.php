@@ -156,7 +156,8 @@ class CellFabricTaskRollController extends Controller
                 'description' => $rollData['descr'],
                 'false_reason' => $rollData['false_reason'],
                 'textile_roll_length' => $rollData['textile_length'],
-                'fabric_roll_length' => (float)$rollData['rate'] === 0.0 ? 0.0 : $rollData['textile_length'] / $rollData['rate'] / $fabric->textile_layers_amount,
+                'fabric_roll_length' => $fabric->translate_rate === 0.0 ? 0.0 : $rollData['textile_length'] / $fabric->translate_rate / $fabric->textile_layers_amount,
+                // 'fabric_roll_length' => (float)$rollData['rate'] === 0.0 ? 0.0 : $rollData['textile_length'] / $rollData['rate'] / $fabric->textile_layers_amount,
 
                 'user_id' => Auth::id(),    // Текущий пользователь
             ];

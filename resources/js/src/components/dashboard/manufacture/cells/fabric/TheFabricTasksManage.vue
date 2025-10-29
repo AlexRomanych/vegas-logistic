@@ -127,13 +127,13 @@
 
     <!-- __ Модальное окно отображения результатов оптимизации СЗ -->
     <KeepAlive>
-    <TheTaskOptimize
-        v-if="optimizedShow"
-        ref="theTaskOptimize"
-        :machine="optimizedMachine"
-        :task="optimizedTask"
-        :type="taskOptimizeType"
-    />
+        <TheTaskOptimize
+            v-if="optimizedShow"
+            ref="theTaskOptimize"
+            :machine="optimizedMachine"
+            :task="optimizedTask"
+            :type="taskOptimizeType"
+        />
     </KeepAlive>
 
     <AppModalAsyncMultilineTS
@@ -156,6 +156,7 @@ import { ref, reactive, onMounted, nextTick, } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { IFabric, IFabricMachine, IGlobalProductivity, IRoll, ITaskItem, ITaskPeriod, ITimeContext } from '@/types'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
@@ -204,7 +205,6 @@ import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultil
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 
 // __ End Loader
@@ -277,7 +277,7 @@ const optimizedTask = ref<ITaskItem>(TASK_DRAFT) // СЗ для оптимиза
 const optimizedMachine = ref<IConstFabricMachine>(FABRIC_MACHINES.UNKNOWN) // СМ для оптимизации
 const optimizedShow = ref(false)
 
-const getTasks = async () => {
+const getTasks = async (activeTaskDate: string | null = null) => {
 
     // __ Получаем период отображения сменного задания
     tasksPeriod = getFabricTasksPeriod() as ITaskPeriod
@@ -301,11 +301,18 @@ const getTasks = async () => {
         })
     })
 
-    // __ Ссылка на активное СЗ
-    activeTask.value = taskData.find(t => t.active)
-
     console.log('tasksPeriod:', tasksPeriod)
     console.log('tasks:', tasks)
+
+    // __ Ссылка на активное СЗ
+    if (activeTaskDate) {
+        activeTask.value = taskData.find(t => t.date === activeTaskDate)
+        if (activeTask.value) return
+    }
+
+    activeTask.value = taskData.find(t => t.active)
+
+
     // console.log('taskData: ', taskData)
     // console.log('activeTask', activeTask.value)
 }
@@ -622,7 +629,7 @@ const changeTaskStatus = async (task: ITaskItem, btnRow = 1) => {
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
 
-            await getTasks()
+            await getTasks(task.date)
             setActiveTaskByDate(task.date)
 
             // todo: сделать обработку ошибок + callout
@@ -659,7 +666,7 @@ const changeTaskStatus = async (task: ITaskItem, btnRow = 1) => {
             const res = await fabricsStore.changeFabricTaskDateStatus(task)
             console.log(res)
 
-            await getTasks()
+            await getTasks(task.date)
             setActiveTaskByDate(task.date)
 
             // todo: сделать обработку ошибок + callout
@@ -761,7 +768,6 @@ const changeRollsPosition = (machine: IConstFabricMachine, task: ITaskItem) => {
     task.machines[machine.TITLE].rolls = task.machines[machine.TITLE].rolls.filter(roll => !roll.isTuning)
     // переиндексируем
     task.machines[machine.TITLE].rolls.forEach((roll, index) => roll.roll_position = index + 1)
-
 
 
     // const findTask = taskData.find(t => t.date === task.date)     // Получаем ссылку на СЗ на дату контекста

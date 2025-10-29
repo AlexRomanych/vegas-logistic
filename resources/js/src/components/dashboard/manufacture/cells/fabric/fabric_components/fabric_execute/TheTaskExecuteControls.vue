@@ -2,7 +2,7 @@
 
     <div class="flex">
 
-        <!-- attract: Начать выполнение -->
+        <!-- __ Начать выполнение -->
         <AppLabelMultiLine
             :text="['Начать', 'выполнение']"
             :type="startButtonDisabledFlag ? 'dark' : 'success'"

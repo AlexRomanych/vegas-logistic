@@ -480,6 +480,7 @@ const getProductivityAmount = () => {
     const tempProductivityAmount = getProductivityValueByRoll(workRoll.value) as number //  (productivity.value ? lengthAmount.value / productivity.value : 0) as number
     // const tempProductivityAmount = (productivity.value ? lengthAmount.value / productivity.value : 0) as number
     // console.log(fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles])
+
     fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles][props.index].time = tempProductivityAmount
     productivityAmount.value = tempProductivityAmount
     // return tempProductivityAmount

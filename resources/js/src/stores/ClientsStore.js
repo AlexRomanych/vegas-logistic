@@ -18,13 +18,13 @@ const URL_CLIENTS_LOAD = 'clients/load' // URL для загрузки клие�
 export const useClientsStore = defineStore('clients', () => {
     let clientsShow = []
 
-    //attract: загружает клиентов из файла в базу данных
+    //__ Загружает клиентов из файла в базу данных
     const clientsLoad = async () => {
         const response = await jwtGet(URL_CLIENTS_LOAD)
         return response
     }
 
-    //attract: Получаем с API список моделей
+    //__ Получаем с API список моделей
     const getClients = async (params) => {
         const result = await jwtGet(URL_CLIENTS, params)
         clientsShow.value = result[WRAP] // кэшируем

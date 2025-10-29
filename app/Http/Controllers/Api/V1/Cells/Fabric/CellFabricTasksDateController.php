@@ -21,6 +21,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use function Symfony\Component\String\s;
 
 //use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskCollection;
 //use App\Http\Resources\Manufacture\Cells\Fabric\FabricTaskRollResource;
@@ -292,6 +293,7 @@ class CellFabricTasksDateController extends Controller
 
 
                                 for ($j = 0; $j < $taskContext['rolls_amount']; $j++) {
+
                                     $roll = FabricTaskRoll::query()->create(
                                         [
                                             'fabric_task_context_id' => $taskContext['id'],

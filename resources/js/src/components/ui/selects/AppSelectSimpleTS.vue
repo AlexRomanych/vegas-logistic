@@ -1,39 +1,44 @@
 <template>
 
-    <div v-if="selectData.data.length"
-         :class="[width, height, bgColor, 'container']">
+    <div v-if="selectData.data.length">
 
-<!-- attract: Убрал пока, так как глюки и надо разбираться :size="multiple ? size : ''"       -->
-        <select :id="id"
-                :class="[bgColor, textColor, textSizeClass, semibold, 'select']"
-                :multiple="multiple"
-                :name="selectData.name"
+        <div :class="[width, height, bgColor, 'container', align]">
 
-                :disabled="disabled"
+            <div>
 
-                @change="onChange">
+                <!-- __ Убрал пока, так как глюки и надо разбираться :size="multiple ? size : ''"       -->
+                <select :id="id"
+                        :class="[bgColor, textColor, textSizeClass, semibold, 'select']"
+                        :disabled="disabled"
+                        :multiple="multiple"
 
-            <option v-for="item in selectData.data"
-                    :key="item.id"
-                    :disabled="item.disabled"
-                    :selected="item.selected"
-                    :value="item.id"
+                        :name="selectData.name"
 
-            >
-                {{ item.name }}
-            </option>
+                        @change="onChange">
 
-        </select>
+                    <option v-for="item in selectData.data"
+                            :key="item.id"
+                            :disabled="item.disabled"
+                            :selected="item.selected"
+                            :value="item.id"
+
+                    >
+                        {{ item.name }}
+                    </option>
+
+                </select>
+
+            </div>
+        </div>
     </div>
-
 
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue'
+import { computed, ref, watch } from 'vue'
 
-import {colorsList} from '@/app/constants/colorsClasses.js'
-import {fontSizesList} from '@/app/constants/fontSizes.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
 import {
     getColorClassByType,
     getFontSizeClass,
@@ -98,6 +103,12 @@ const props = defineProps({
         type: Boolean,
         required: false,
         default: false
+    },
+    align: {
+        type: String,
+        required: false,
+        default: 'between',
+        validator: (align) => ['left', 'center', 'right', 'between'].includes(align)
     }
 
 
@@ -119,6 +130,18 @@ let textColor = ref(getTextColorClassByType(props.type))
 
 const semibold = props.bold ? 'font-semibold' : ''
 
+const align = computed(() => {
+    if (props.align === 'center') {
+        return 'flex justify-center'
+    } else if (props.align === 'right') {
+        return 'justify-end'
+    } else if (props.align === 'left') {
+        return 'justify-start'
+    }
+    return '' // По умолчанию props.align === 'between'
+})
+
+
 // реактивный тип
 watch(() => props.type, (newType) => {
     bgColor.value = getColorClassByType(newType, 'bg')                   // Получаем класс для цвета заднего фона
@@ -126,7 +149,7 @@ watch(() => props.type, (newType) => {
 })
 
 // реактивный шрифт
-watch(() => props.textSize, (newSize) =>textSizeClass.value = getFontSizeClass(newSize))
+watch(() => props.textSize, (newSize) => textSizeClass.value = getFontSizeClass(newSize))
 
 
 </script>
@@ -137,10 +160,10 @@ watch(() => props.textSize, (newSize) =>textSizeClass.value = getFontSizeClass(n
 }
 
 .label {
-    @apply absolute text-mc mt-1 ml-1 font-semibold
+    @apply text-mc mt-1 ml-1 font-semibold
 }
 
 .select {
-    @apply m-0 h-full w-full rounded-lg
+    @apply h-full w-full rounded-lg
 }
 </style>

@@ -15,12 +15,14 @@ final class Client extends Model
     ];
 
     protected $hidden = [
-        'id', 'manager_id', 'order_id',
+        // 'id', 'manager_id', 'order_id',
         'created_at', 'updated_at',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'longitude' => 'float',
+        'latitude' => 'float',
     ];
 
 //    protected $with = [

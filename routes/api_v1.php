@@ -169,7 +169,7 @@ Route::get('/manufacture/cells/sewing/solid/{type}', [CellSewingController::clas
 //Route::put('/orders/upload', [OrderController::class, 'uploadOrders']);
 
 //hr--------------------------------------------------------------------------------------------------------------------
-//attract: Блок Клиентов
+//__ Блок Клиентов
 //загружаем из файла клиентов
 Route::get('/clients', [ClientController::class, 'getClients'])->middleware('jwt.auth');
 Route::get('/clients/load', [ClientController::class, 'clientsLoad'])->middleware('jwt.auth');

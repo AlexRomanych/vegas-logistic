@@ -441,7 +441,7 @@ watch(() => fabricsStore.globalExecuteRollChangeDescription, async (newValue) =>
     console.log('update comment: ', activeRoll)
 })
 
-// attract: Отслеживаем изменение Изменить длину ткани
+// __ Отслеживаем изменение Изменить длину ткани
 watch(() => fabricsStore.globalExecuteRollChangeTextile, async (newValue) => {
     // console.log('!!!: ', activeRoll)
 

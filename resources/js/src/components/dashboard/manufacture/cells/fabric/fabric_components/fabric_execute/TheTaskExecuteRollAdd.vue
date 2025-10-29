@@ -83,16 +83,16 @@
 
 <script setup>
 
-import {computed, ref} from 'vue'
+import { computed, ref } from 'vue'
 
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
 
-import AppInputButton from '/resources/js/src/components/ui/inputs/AppInputButton.vue'
-import AppLabelMultiLine from '/resources/js/src/components/ui/labels/AppLabelMultiLine.vue'
-import AppSelect from '/resources/js/src/components/ui/selects/AppSelect.vue'
-// import AppInputNumber from '/resources/js/src/components/ui/inputs/AppInputNumber.vue'
-// import AppLabel from '/resources/js/src/components/ui/labels/AppLabel.vue'
+import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
+import AppLabelMultiLine from '@/components/ui/labels/AppLabelMultiLine.vue'
+import AppSelect from '@/components/ui/selects/AppSelect.vue'
+// import AppInputNumber from '@/components/ui/inputs/AppInputNumber.vue'
+// import AppLabel from '@/components/ui/labels/AppLabel.vue'
 
 const props = defineProps({
     width: {
@@ -133,7 +133,6 @@ const props = defineProps({
 })
 
 
-
 const emit = defineEmits(['select'])
 
 // attract: Выбранное ПС
@@ -171,7 +170,7 @@ const show = (inSelectData) => {                  // Передаем сюда �
     selectData.value = getSelectData(inSelectData)
     console.log('selectData show: ', inSelectData)
 
-    showModal.value = true;
+    showModal.value = true
     return new Promise((resolve) => {
         resolvePromise = resolve
     })
