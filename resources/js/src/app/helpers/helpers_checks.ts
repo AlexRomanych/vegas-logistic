@@ -2,6 +2,16 @@
 import { DISPLAY_CATCH_ERRORS } from '@/app/constants/common.ts'
 import { isRef } from 'vue'
 
+// Проверка на успешный ответ сервера
+// warning: Пока так
+export function checkCRUD(data: any) {
+    if (typeof data === 'string') {
+        return data.toLowerCase().indexOf('success') !== -1
+    }
+
+    return false
+}
+
 
 // ___ Проверяет, является ли строка JSON
 export function isJSON(str: string) {

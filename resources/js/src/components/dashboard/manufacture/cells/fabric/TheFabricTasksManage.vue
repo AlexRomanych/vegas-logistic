@@ -383,10 +383,12 @@ const addTuning = async (task: ITaskItem, machine: IConstFabricMachine) => {
                 } else {
                     tuningTime = await fabricsStore.getFabricsPicturesBetweenTuningTime(picFrom, picTo)
                     tuningTimeCache[key] = tuningTime
+                    console.log('tuningTime: ', tuningTime)
+
                 }
             }
 
-            if (tuningTime.from !== tuningTime.to || tuningTime.time === null) {    // если есть время переналадки или если есть, но время не равно 0
+            if (tuningTime.from !== tuningTime.to && tuningTime.time !== 0) {    // если есть время переналадки или если есть, но время не равно 0
 
                 const tuningTimeRoll = cloneDeep(NEW_ROLL)
                 // tuningTimeRoll.fabric = tuningTime.time

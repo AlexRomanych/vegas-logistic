@@ -202,7 +202,17 @@
 
                 <div>
                     <!-- __ + Клиент -->
-                    <router-link :to="{ name: 'clients.create' }">
+                    <!--<router-link :to="{ name: 'clients.create' }">-->
+                    <!--    <AppLabelMultiLineTS-->
+                    <!--        :text="['➕', '']"-->
+                    <!--        align="center"-->
+                    <!--        class="cursor-pointer"-->
+                    <!--        text-size="large"-->
+                    <!--        type="warning"-->
+                    <!--        width="w-[64px]"-->
+                    <!--    />-->
+                    <!--</router-link>-->
+                    <!--<router-link :to="{ name: 'clients.create' }">-->
                         <AppLabelMultiLineTS
                             :text="['➕', '']"
                             align="center"
@@ -210,8 +220,10 @@
                             text-size="large"
                             type="warning"
                             width="w-[64px]"
+                            @click="createClient"
                         />
-                    </router-link>
+                    <!--</router-link>-->
+
 
                     <!-- __ Сброс фильтров -->
                     <div class=" mt-[8px]">
@@ -335,7 +347,7 @@
                         />
 
                         <!-- __ Редактировать -->
-                        <router-link :to="{ name: 'clients.edit', params: { id: client.id } }">
+                        <!--<router-link :to="{ name: 'clients.edit', params: { id: client.id } }">-->
                             <AppLabelTS
                                 v-if="client.can_edit"
                                 align="center"
@@ -343,9 +355,23 @@
                                 text-size="mini"
                                 type="warning"
                                 width="w-[30px]"
-                                @click=""
+                                @click="edit(client)"
                             />
-                        </router-link>
+                        <!--</router-link>-->
+
+
+                        <!--&lt;!&ndash; __ Редактировать &ndash;&gt;-->
+                        <!--<router-link :to="{ name: 'clients.edit', params: { id: client.id } }">-->
+                        <!--    <AppLabelTS-->
+                        <!--        v-if="client.can_edit"-->
+                        <!--        align="center"-->
+                        <!--        text="✏️"-->
+                        <!--        text-size="mini"-->
+                        <!--        type="warning"-->
+                        <!--        width="w-[30px]"-->
+                        <!--        @click=""-->
+                        <!--    />-->
+                        <!--</router-link>-->
 
                         <!--<router-link :to="{ name: 'manufacture.cell.fabric.edit', params: { id: fabric.id } }">-->
                         <!--    <AppLabel-->
@@ -406,7 +432,7 @@ import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-import { cloneDeep } from '@/app/helpers/helpers_lib.ts'
+import { useRouter } from 'vue-router'
 
 
 const clientsStore = useClientsStore()
@@ -423,7 +449,7 @@ const appModalAsyncTS = ref<any>(null)         // Получаем ссылку 
 const modalSimpleType = ref('danger')
 const modalSimpleText = ref('')
 const modalSimpleShow = ref(false)
-const modalSimpleClose = (delay = 5000) => setTimeout(() => modalSimpleShow.value = false, delay) // закрываем модалку
+// const modalSimpleClose = (delay = 5000) => setTimeout(() => modalSimpleShow.value = false, delay) // закрываем модалку
 
 
 // __ Подготавливаем переменные
@@ -611,11 +637,29 @@ const getClients = async () => {
 }
 
 // __ Подготавливаем данные для отображения
-const getClientsRender = () => clientsRender.value = cloneDeep(clients.value)
+const getClientsRender = () => clientsRender.value = clients.value
 
 // __ Удаляем клиента
 const deleteClient = async (client: IClient) => {
-    resetFilters()
+    return  // Warn! Не разрешаем удалять клиента
+    // resetFilters()
+    // await clientsStore.deleteClient(client.id)
+    // await getClients()      // Получаем список клиентов
+    // getClientsRender()      // Подготавливаем данные для отображения
+}
+
+const router = useRouter()                 // Определяем роутер
+const edit = (client: IClient) => {
+    router.push({
+        name: 'clients.edit',
+        params: { id: client.id }
+    })
+}
+
+const createClient = () => {
+    router.push({
+        name: 'clients.create',
+    })
 }
 
 // __ Реализация фильтров
@@ -656,6 +700,7 @@ onMounted(async () => {
 
     isLoading.value = false
 })
+
 
 
 </script>

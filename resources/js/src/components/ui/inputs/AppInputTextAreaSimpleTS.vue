@@ -64,7 +64,7 @@ const props = withDefaults(defineProps<IProps>(), {
     label: '',
     disabled: false,
     width: 'w-[500px]',
-    height: 'h-[30px]',
+    height: 'h-[90px]',
     rows: 3,
     cols: 50,
     bold: true,

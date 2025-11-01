@@ -1,4 +1,7 @@
-// Интерфейс для клиентов
+// INFO Интерфейс для клиентов
+
+export type IClientRegion = 'east' | 'west'
+
 export interface IClient {
     id: number
     name: string
@@ -14,7 +17,7 @@ export interface IClient {
     manager_id: number
     meta: string | null
     note: string | null
-    region: 'west' | 'east'
+    region: IClientRegion
 
     can_edit?: boolean
 }

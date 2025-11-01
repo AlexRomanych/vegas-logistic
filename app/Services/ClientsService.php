@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\VegasDataGetContract;
 use App\Contracts\VegasDataUpdateContract;
 use App\Models\Client;
+use Illuminate\Support\Facades\DB;
 
 final class ClientsService implements VegasDataUpdateContract
 {
@@ -26,10 +27,10 @@ final class ClientsService implements VegasDataUpdateContract
                     'id' => $client['id']
                 ],
                 [
-                    'name' => $client['nm'],
-                    'add_name' => $client['an'],
+                    'name'       => $client['nm'],
+                    'add_name'   => $client['an'],
                     'short_name' => $client['sn'],
-                    'region' => $client['rg'],
+                    'region'     => $client['rg'],
                     'manager_id' => $client['mi'],
 
                     'active' => $client['ia'],
@@ -37,4 +38,10 @@ final class ClientsService implements VegasDataUpdateContract
             );
         }
     }
+
+
+
+
+
 }
+

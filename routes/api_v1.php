@@ -170,9 +170,23 @@ Route::get('/manufacture/cells/sewing/solid/{type}', [CellSewingController::clas
 
 //hr--------------------------------------------------------------------------------------------------------------------
 //__ Блок Клиентов
+
+Route::middleware('jwt.auth')
+    ->group(function () {
+        Route::get('/clients/{status?}', [ClientController::class, 'getClients']);
+        Route::get('/client/{id}', [ClientController::class, 'getClient']);
+        Route::post('/client/create', [ClientController::class, 'createClient']);
+        Route::put('/client/update', [ClientController::class, 'updateClient']);
+        Route::delete('/client/delete', [ClientController::class, 'deleteClient']);
+
+        Route::get('/clients/load', [ClientController::class, 'clientsLoad']);
+    });
+
+
+
 //загружаем из файла клиентов
-Route::get('/clients', [ClientController::class, 'getClients'])->middleware('jwt.auth');
-Route::get('/clients/load', [ClientController::class, 'clientsLoad'])->middleware('jwt.auth');
+// Route::get('/clients', [ClientController::class, 'getClients'])->middleware('jwt.auth');
+// Route::get('/clients/load', [ClientController::class, 'clientsLoad'])->middleware('jwt.auth');
 //Route::get('/clients/load', [UpdateData1CController::class, 'clientsLoad'])->middleware('jwt.auth');
 //Route::get('/clients/load', [Update::class, 'updateManagers']);
 //hr--------------------------------------------------------------------------------------------------------------------
@@ -262,7 +276,6 @@ Route::patch('/fabrics/orders/set/active/', [CellFabricOrderController::class, '
 Route::post('/fabrics/orders/order/save', [CellFabricOrderController::class, 'saveFabricsOrdersOrder'])->middleware('jwt.auth');
 
 
-
 // __ Блок Заказов Стежки на производство
 Route::prefix('/fabrics/tasks')
     ->middleware('jwt.auth')
@@ -322,30 +335,29 @@ Route::prefix('/reasons')
         Route::get('/{cellsGroupId}/{reasonsCategoryId}', [ReasonController::class, 'getReasonsByCellsGroupAndReasonCategory']);
 
 
-
         //        Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
-//
-//        Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
-//        Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);
-//        Route::put('/create/', [CellFabricTasksDateController::class, 'create']);
-//        Route::put('/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate']);
-//        Route::get('/executing/', [CellFabricTasksDateController::class, 'getFabricExecutingTasks']);
-//        Route::get('/not-done/', [CellFabricTasksDateController::class, 'getFabricNotDoneTasks']);
-//        Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
-//
-//        Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
-//        Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
-//        Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
-//
-//        Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
-//        Route::post('/execute/roll/add/', [CellFabricTaskRollController::class, 'addExecuteRoll']);
-//        Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
-//        Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
-//        Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
-//
-//
-//        // descr: Тут просто точки доступа для разных действий
-//        Route::get('/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate']);
+        //
+        //        Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
+        //        Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);
+        //        Route::put('/create/', [CellFabricTasksDateController::class, 'create']);
+        //        Route::put('/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate']);
+        //        Route::get('/executing/', [CellFabricTasksDateController::class, 'getFabricExecutingTasks']);
+        //        Route::get('/not-done/', [CellFabricTasksDateController::class, 'getFabricNotDoneTasks']);
+        //        Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
+        //
+        //        Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
+        //        Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
+        //        Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
+        //
+        //        Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
+        //        Route::post('/execute/roll/add/', [CellFabricTaskRollController::class, 'addExecuteRoll']);
+        //        Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
+        //        Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
+        //        Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
+        //
+        //
+        //        // descr: Тут просто точки доступа для разных действий
+        //        Route::get('/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate']);
 
 
     });

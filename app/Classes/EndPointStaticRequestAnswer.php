@@ -3,6 +3,9 @@
 namespace App\Classes;
 
 
+use Tymon\JWTAuth\Providers\Auth\Illuminate;
+use Illuminate\Http\JsonResponse;
+
 class EndPointStaticRequestAnswer
 {
 
@@ -13,22 +16,42 @@ class EndPointStaticRequestAnswer
      */
     public static function ok(string $data = OK_STATUS_WORD): string
     {
-        return json_encode(['data' => $data]);
+        return json_encode([
+            'data' => OK_STATUS_WORD,
+            'payload' => $data,
+        ]);
     }
 
     /**
-     * Возвращает что-то в случае неуспешного выполнения запроса
-     * @param mixed|null $data
+     * ___ Возвращает что-то в случае неуспешного выполнения запроса
+     * @param mixed|null $responseData
      * @return string
      */
-    public static function fail(mixed $data = null): string
+    public static function fail(mixed $responseData = null): string
     {
-        if ($data) {
-//            return $data;
-            return json_encode($data);
+//         if ($data) {
+// //            return $data;
+//             return json_encode($data);
+//         }
+//         $class = get_class($responseData);
+        // return FAIL_STATUS_WORD;
+        if ($responseData instanceof JsonResponse) {
+            return json_encode([
+                'data'  => FAIL_STATUS_WORD,
+                'error' => $responseData->original->getMessage()
+            ]);
+        } else if ($responseData instanceof \Exception) {
+            return json_encode([
+                'data'  => FAIL_STATUS_WORD,
+                'error' => $responseData->getMessage()
+            ]);
         }
 
-        return FAIL_STATUS_WORD;
+        return json_encode([
+            'data'  => FAIL_STATUS_WORD,
+            'error' => 'Нет данных.'
+        ]);
+
     }
 
     /**

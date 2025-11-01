@@ -20,12 +20,12 @@
 
 <script setup>
 
-import {reactive} from 'vue'
+// import { reactive } from 'vue'
 
-import {LINE_SEPARATOR} from '/resources/js/src/app/constants/common.js'
-import {colorsList} from '/resources/js/src/app/constants/colorsClasses.js'
-import {getColorClassByType, getTextColorClassByType} from '/resources/js/src/app/helpers/helpers.js'
-import {computed, ref, watch} from "vue";
+import { LINE_SEPARATOR } from '@/app/constants/common.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType, getTextColorClassByType } from '@/app/helpers/helpers.js'
+import { computed, ref, watch } from "vue"
 
 const props = defineProps({
     width: {
@@ -84,20 +84,20 @@ const getPositionClass = (pos_x, pos_y) => {
 
     switch (pos_x) {
         case 'left':
-            x_pos = 'left-0';
-            break;
+            x_pos = 'left-0'
+            break
         case 'right':
-            x_pos = 'right-0';
-            break;
+            x_pos = 'right-0'
+            break
     }
 
     switch (pos_y) {
         case 'top':
-            y_pos = 'top-0';
-            break;
+            y_pos = 'top-0'
+            break
         case 'bottom':
-            y_pos = 'bottom-0';
-            break;
+            y_pos = 'bottom-0'
+            break
     }
 
     return `${x_pos} ${y_pos}`

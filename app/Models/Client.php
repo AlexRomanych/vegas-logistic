@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Client extends Model
 {
+    // 1. Отключаем автоматический инкремент
+    // public $incrementing = false;
+
+    // 2. Указываем, какой тип данных используется для первичного ключа
+    // (по умолчанию 'int', но лучше явно указать)
+    // protected $keyType = 'integer';
+
     protected $fillable = [
         'id',
         'name', 'add_name', 'short_name', 'description',
