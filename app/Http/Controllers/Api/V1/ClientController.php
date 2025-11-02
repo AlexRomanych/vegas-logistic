@@ -8,10 +8,8 @@ use App\Http\Controllers\Controller;
 
 
 use App\Http\Requests\Clients\StoreClientRequest;
-use App\Http\Resources\Client\ClientCollection;
 use App\Http\Resources\Client\ClientResource;
 use App\Models\Client;
-use App\Models\Collection;
 use App\Services\ClientsService;
 use App\Services\ManagersService;
 use App\Services\SharedService;
@@ -19,12 +17,12 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 
 
 class ClientController extends Controller
 {
-    //attract: Загружаем клиентов из файла
+    //__ Загружаем клиентов из файла
     public function clientsLoad(VegasDataGetContract $getter)
     {
         try {
@@ -32,7 +30,7 @@ class ClientController extends Controller
             App::make(ClientsService::class, [$getter])->updateData();
             return '';
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json($e->getMessage(), 400);
         }
     }
@@ -65,7 +63,7 @@ class ClientController extends Controller
             };
 
             return ClientResource::collection($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
@@ -90,13 +88,19 @@ class ClientController extends Controller
             }
 
             return new ClientResource(Client::query()->find($id));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
 
     }
 
-    /** @noinspection PhpUndefinedFieldInspection */
+
+    /**
+     * ___ Сохраняем клиента
+     * @param StoreClientRequest $request
+     * @return string
+     * @noinspection PhpUndefinedFieldInspection
+     */
     public function createClient(StoreClientRequest $request)
     {
         try {
@@ -127,8 +131,6 @@ class ClientController extends Controller
             if ($client) {
                 throw new Exception('Дубликат отображаемых имен: '.  $data['short_name']);
             }
-
-
 
             // __ Сырой код по вставке клиента
             /*
@@ -183,12 +185,17 @@ class ClientController extends Controller
             }
 
             return EndPointStaticRequestAnswer::ok('Сохранено успешно');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
             // return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
 
+    /**
+     * ___ Обновляем клиента
+     * @param StoreClientRequest $request
+     * @return string
+     */
     public function updateClient(StoreClientRequest $request)
     {
         try {
@@ -209,13 +216,17 @@ class ClientController extends Controller
 
             $client->save();
 
-            return EndPointStaticRequestAnswer::ok();
-        } catch (\Exception $e) {
+            return EndPointStaticRequestAnswer::ok('Обновлено успешно');
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
     }
 
-
+    /**
+     * ___ Удаляем клиента
+     * @param Request $request
+     * @return string
+     */
     public function deleteClient(Request $request)
     {
         try {
@@ -231,11 +242,10 @@ class ClientController extends Controller
 
             $client->delete();
 
-            return EndPointStaticRequestAnswer::ok();
-        } catch (\Exception $e) {
+            return EndPointStaticRequestAnswer::ok('Удалено успешно');
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
-
-
     }
+
 }

@@ -102,13 +102,13 @@
                         />
                     </router-link>
 
-                    <!--                    <AppInputButton-->
-                    <!--                        id="resetButton"-->
-                    <!--                        func="reset"-->
-                    <!--                        title="Сброс"-->
-                    <!--                        type="danger"-->
-                    <!--                        width="w-[150px]"-->
-                    <!--                    />-->
+                    <!--<AppInputButton-->
+                    <!--    id="resetButton"-->
+                    <!--    func="reset"-->
+                    <!--    title="Сброс"-->
+                    <!--    type="danger"-->
+                    <!--    width="w-[150px]"-->
+                    <!--/>-->
 
                     <AppInputButton
                         id="submitButton"
@@ -138,24 +138,25 @@
 <script lang="ts" setup>
 import type { ICheckboxData, ICheckboxDataItem, IClient, IClientRegion } from '@/types'
 
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, helpers, numeric, minValue, integer } from '@vuelidate/validators'
+import { required, minLength, helpers, minValue, integer } from '@vuelidate/validators'
 
 import { useClientsStore } from '@/stores/ClientsStore'
 
 import { CLIENT_DRAFT } from '@/app/constants/clients.ts'
+
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { cloneDeep } from '@/app/helpers/helpers_lib.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
-import { cloneDeep, deepCopy } from '@/app/helpers/helpers_lib.ts'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 
@@ -171,10 +172,10 @@ const isFormCorrect = ref(false)
 const editMode = ref(false)         // определяем режим работы формы (редактирование или создание)
 let paramId: number = -1
 
-const calloutShow = ref(false) // состояние окна
-const confirmClick = ref(false) // определяем для вывода этого callout
-const calloutMessage = ref('') // определяем показываемое сообщение
-const calloutType = ref('danger') // определяем тип callout
+const calloutShow = ref(false)      // состояние окна
+const confirmClick = ref(false)     // определяем для вывода этого callout
+const calloutMessage = ref('')      // определяем показываемое сообщение
+const calloutType = ref('danger')   // определяем тип callout
 const calloutHandler = () => setInterval(() => (confirmClick.value = false), 500)
 
 
@@ -186,9 +187,10 @@ let regionCheckboxData: ICheckboxData         // выбор региона
 
 // __ Подгружаем данные по типу отхода, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
-    if (paramId < 0) return CLIENT_DRAFT
     if (editMode.value) {
         client.value = await clientsStore.getClient(paramId) as IClient // Получаем клиента
+    } else {
+        client.value = cloneDeep(CLIENT_DRAFT)
     }
 }
 
@@ -228,9 +230,9 @@ const verify = {
 
 // __ Определяем правила валидации
 const MIN_NAME_LENGTH = 10
-const MIN_ADD_NAME_LENGTH = 3
 const MIN_SHORT_NAME_LENGTH = 3
 const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
+// const MIN_ADD_NAME_LENGTH = 3
 // const MIN_VOLUME_LENGTH = 0.1
 
 const rules = {
@@ -243,7 +245,6 @@ const rules = {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
     },
     name: {
-        // $lazy: true,
         $autoDirty: true,
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength: helpers.withMessage(
@@ -253,7 +254,6 @@ const rules = {
     },
     addName: {},
     shortName: {
-        // $lazy: true,
         $autoDirty: true,
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength: helpers.withMessage(
@@ -321,7 +321,6 @@ const formSubmit = async () => {
         result = await clientsStore.updateClient(client.value)
     }
 
-
     if (checkCRUD(result.data)) {
         calloutMessage.value = result.payload
         calloutType.value = 'success'
@@ -349,7 +348,6 @@ onMounted(async () => {
     // warn: Порядок важен!
     isLoading.value = true
 
-    client.value = deepCopy(CLIENT_DRAFT)
     client.value = cloneDeep(CLIENT_DRAFT)
 
     await router.isReady().then(() => {
@@ -365,10 +363,8 @@ onMounted(async () => {
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму
     isLoading.value = false
 
-    console.log('editMode.value: ', editMode.value)
+    // console.log('editMode.value: ', editMode.value)
 })
-
-
 
 </script>
 

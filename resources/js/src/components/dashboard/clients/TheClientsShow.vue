@@ -202,17 +202,7 @@
 
                 <div>
                     <!-- __ + Клиент -->
-                    <!--<router-link :to="{ name: 'clients.create' }">-->
-                    <!--    <AppLabelMultiLineTS-->
-                    <!--        :text="['➕', '']"-->
-                    <!--        align="center"-->
-                    <!--        class="cursor-pointer"-->
-                    <!--        text-size="large"-->
-                    <!--        type="warning"-->
-                    <!--        width="w-[64px]"-->
-                    <!--    />-->
-                    <!--</router-link>-->
-                    <!--<router-link :to="{ name: 'clients.create' }">-->
+                    <router-link :to="{ name: 'clients.create' }">
                         <AppLabelMultiLineTS
                             :text="['➕', '']"
                             align="center"
@@ -220,10 +210,8 @@
                             text-size="large"
                             type="warning"
                             width="w-[64px]"
-                            @click="createClient"
                         />
-                    <!--</router-link>-->
-
+                    </router-link>
 
                     <!-- __ Сброс фильтров -->
                     <div class=" mt-[8px]">
@@ -347,7 +335,7 @@
                         />
 
                         <!-- __ Редактировать -->
-                        <!--<router-link :to="{ name: 'clients.edit', params: { id: client.id } }">-->
+                        <router-link :to="{ name: 'clients.edit', params: { id: client.id } }">
                             <AppLabelTS
                                 v-if="client.can_edit"
                                 align="center"
@@ -355,35 +343,8 @@
                                 text-size="mini"
                                 type="warning"
                                 width="w-[30px]"
-                                @click="edit(client)"
                             />
-                        <!--</router-link>-->
-
-
-                        <!--&lt;!&ndash; __ Редактировать &ndash;&gt;-->
-                        <!--<router-link :to="{ name: 'clients.edit', params: { id: client.id } }">-->
-                        <!--    <AppLabelTS-->
-                        <!--        v-if="client.can_edit"-->
-                        <!--        align="center"-->
-                        <!--        text="✏️"-->
-                        <!--        text-size="mini"-->
-                        <!--        type="warning"-->
-                        <!--        width="w-[30px]"-->
-                        <!--        @click=""-->
-                        <!--    />-->
-                        <!--</router-link>-->
-
-                        <!--<router-link :to="{ name: 'manufacture.cell.fabric.edit', params: { id: fabric.id } }">-->
-                        <!--    <AppLabel-->
-                        <!--        align="center"-->
-                        <!--        class="cursor-pointer"-->
-                        <!--        text="Редактировать"-->
-                        <!--        text-size="mini"-->
-                        <!--        type="warning"-->
-                        <!--        width="w-[144px]"-->
-                        <!--    />-->
-                        <!--</router-link>-->
-
+                        </router-link>
 
                     </div>
                 </div>
@@ -415,10 +376,12 @@
 
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watchEffect } from 'vue'
-
 import type { IClient, IRenderData, ISelectData, ISelectDataItem } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
+
+import { onMounted, reactive, ref, watchEffect } from 'vue'
+
+// import { useRouter } from 'vue-router'
 
 import { useClientsStore } from '@/stores/ClientsStore'
 
@@ -432,8 +395,6 @@ import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
-import { useRouter } from 'vue-router'
-
 
 const clientsStore = useClientsStore()
 
@@ -641,26 +602,36 @@ const getClientsRender = () => clientsRender.value = clients.value
 
 // __ Удаляем клиента
 const deleteClient = async (client: IClient) => {
+    // TODO: Тут логика прав доступа
+
     return  // Warn! Не разрешаем удалять клиента
-    // resetFilters()
-    // await clientsStore.deleteClient(client.id)
-    // await getClients()      // Получаем список клиентов
-    // getClientsRender()      // Подготавливаем данные для отображения
+
+    // modalText.value = ['Данные будут удалены.', 'Продолжить?']
+    // modalType.value = 'danger'
+    // modalMode.value = 'confirm'
+    //
+    // const result = appModalAsyncTS.value.show()             // показываем модалку и ждем ответ
+    // if (result) {
+    //     resetFilters()
+    //     await clientsStore.deleteClient(client.id)
+    //     await getClients()      // Получаем список клиентов
+    //     getClientsRender()      // Подготавливаем данные для отображения
+    // }
 }
 
-const router = useRouter()                 // Определяем роутер
-const edit = (client: IClient) => {
-    router.push({
-        name: 'clients.edit',
-        params: { id: client.id }
-    })
-}
+// const router = useRouter()                 // Определяем роутер
+// const edit = (client: IClient) => {
+//     router.push({
+//         name: 'clients.edit',
+//         params: {id: client.id}
+//     })
+// }
 
-const createClient = () => {
-    router.push({
-        name: 'clients.create',
-    })
-}
+// const createClient = () => {
+//     router.push({
+//         name: 'clients.create',
+//     })
+// }
 
 // __ Реализация фильтров
 watchEffect(() => {
@@ -700,7 +671,6 @@ onMounted(async () => {
 
     isLoading.value = false
 })
-
 
 
 </script>
