@@ -13,7 +13,7 @@
             @click="startExecuteRoll()"
         />
 
-        <!-- attract: Приостановить выполнение -->
+        <!-- __ Приостановить выполнение -->
         <AppLabelMultiLine
             :text="['Приостановить', 'выполнение']"
             :type="pauseButtonDisabledFlag ? 'dark' : 'success'"
@@ -24,7 +24,7 @@
             @click="pauseExecuteRoll()"
         />
 
-        <!-- attract: Продолжить выполнение -->
+        <!-- __ Продолжить выполнение -->
         <AppLabelMultiLine
             :text="['Продолжить', 'выполнение']"
             :type="resumeButtonDisabledFlag ? 'dark' : 'success'"
@@ -35,7 +35,7 @@
             @click="resumeExecuteRoll()"
         />
 
-        <!-- attract: Закончить выполнение -->
+        <!-- __ Закончить выполнение -->
         <AppLabelMultiLine
             :text="['Закончить', 'выполнение']"
             :type="endButtonDisabledFlag ? 'dark' : 'success'"
@@ -46,7 +46,7 @@
             @click="finishExecuteRoll()"
         />
 
-        <!-- attract: Не выполнено -->
+        <!-- __ Не выполнено -->
         <AppLabelMultiLine
             :text="falseLabelText"
             :type="falseButtonDisabledFlag ? 'dark' : 'danger'"
@@ -58,7 +58,7 @@
             @click="toggleFalse()"
         />
 
-        <!-- attract: Отменено -->
+        <!-- __ Отменено -->
         <AppLabelMultiLine
             :text="cancelLabelText"
             :type="cancelButtonDisabledFlag ? 'dark' : 'stone'"
@@ -70,7 +70,7 @@
             @click="toggleCancel()"
         />
 
-        <!-- attract: Отметить как переходящий -->
+        <!-- __ Отметить как переходящий -->
         <AppLabelMultiLine
             :text="rollingMarkLabelText"
             :type="rollingButtonDisabledFlag ? 'dark' : 'orange'"
@@ -82,7 +82,7 @@
             @click="toggleRollingMark()"
         />
 
-        <!-- attract: Изменить метраж ткани -->
+        <!-- __ Изменить метраж ткани -->
         <AppLabelMultiLine
             :text="['Изменить', 'метраж ткани']"
             :type="changeTextileLengthButtonDisabledFlag ? 'dark' : 'warning'"
@@ -93,7 +93,7 @@
             @click="changeTextileLength()"
         />
 
-        <!-- attract: Изменить комментарий -->
+        <!-- __ Изменить комментарий -->
         <AppLabelMultiLine
             :text="['Изменить', 'комментарий']"
             align="center"
@@ -104,7 +104,7 @@
             @click="changeDescriptionText()"
         />
 
-        <!-- attract: Добавить рулон -->
+        <!-- __ Добавить рулон -->
         <AppLabelMultiLine
             :text="['Добавить', 'рулон']"
             align="center"
@@ -115,7 +115,7 @@
             @click="addRoll()"
         />
 
-        <!-- attract: Больше/Меньше -->
+        <!-- __ Больше/Меньше -->
         <AppLabelMultiLine
             :text="extendInfoLabelText"
             align="center"
@@ -141,7 +141,7 @@
 
     </div>
 
-    <!-- attract: Модальное окно для подтверждений -->
+    <!-- __ Модальное окно для подтверждений -->
     <AppModalAsyncMultiLine
         ref="appModalAsync"
         :mode="modalConfirm"
@@ -149,7 +149,7 @@
         :type="modalType"
     />
 
-    <!-- attract: Модальное окно для ввода текстовых данных -->
+    <!-- __ Модальное окно для ввода текстовых данных -->
     <AppModalAsyncArea
         ref="appModalAsyncArea"
         :text="modalTextArea"
@@ -171,7 +171,7 @@
         mode="confirm"
     />
 
-    <!-- attract: Модальное окно для ввода числовых данных -->
+    <!-- __ Модальное окно для ввода числовых данных -->
     <AppModalAsyncNumber
         ref="appModalAsyncNumber"
         :max=300
@@ -183,7 +183,7 @@
         step="0.01"
     />
 
-    <!-- attract: Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
+    <!-- __ Модальное (асинхронное) окно для ввода данных для переходящего рулона -->
     <TheTaskExecuteRollRollingData
         ref="theTaskExecuteRollRollingData"
         :mode="rollingRollConfirm"
@@ -191,7 +191,7 @@
         :type="rollingRollType"
     />
 
-    <!-- attract: Добавляем рулон (асинхронно) -->
+    <!-- __ Добавляем рулон (асинхронно) -->
     <TheTaskExecuteRollAdd
         ref="theTaskExecuteRollAdd"
         :fabrics="fabricsData"
@@ -291,7 +291,7 @@ const isCreatedRollPresent = () => {
     const rollsExec = []
     props.rolls.forEach((roll) => {
         rollsExec.push(...roll.rolls_exec)
-    })
+    }) // или const rollsExec = props.rolls.map(roll => roll.rolls_exec).flat()
 
     rollsExec.sort((a, b) => a.position - b.position)
 
@@ -385,7 +385,7 @@ const isCancelButtonDisabled = () => {
 }
 
 
-// attract: Возвращает статус кнопки "Изменить метраж ткани"
+// __ Возвращает статус кнопки "Изменить метраж ткани"
 const isChangeTextileLengthButtonDisabled = () => {
     if (!fabricsStore.globalActiveRolls[props.machine.TITLE]) return true   // тут еще может быть не определен контекст
     if (fabricsStore.globalActiveRolls[props.machine.TITLE].status === FABRIC_ROLL_STATUS.DONE.CODE) return true
@@ -394,7 +394,7 @@ const isChangeTextileLengthButtonDisabled = () => {
 }
 
 
-// attract: Реактивные переменные для работы кнопок управления выполнением
+// __ Реактивные переменные для работы кнопок управления выполнением
 const startButtonDisabledFlag = ref(isStartButtonDisabled())    // нужно для реактивности
 const pauseButtonDisabledFlag = ref(isPauseButtonDisabled())    // нужно для реактивности
 const resumeButtonDisabledFlag = ref(isResumeButtonDisabled())  // нужно для реактивности
@@ -677,7 +677,7 @@ const startExecuteRoll = async () => {
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {
-        fabricsStore.globalStartExecuteRoll = true  // attract: Переменная-флаг нажатия кнопки "Начать выполнение" рулона    }
+        fabricsStore.globalStartExecuteRoll = true  // __ Переменная-флаг нажатия кнопки "Начать выполнение" рулона    }
         emits('start-execute-roll')
     }
 }
@@ -696,7 +696,7 @@ const pauseExecuteRoll = async () => {
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {
-        fabricsStore.globalPauseExecuteRoll = true  // attract: Переменная-флаг нажатия кнопки "Приостановить выполнение" рулона
+        fabricsStore.globalPauseExecuteRoll = true  // __ Переменная-флаг нажатия кнопки "Приостановить выполнение" рулона
         emits('pause-execute-roll')
     }
 }
@@ -715,7 +715,7 @@ const resumeExecuteRoll = async () => {
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {
-        fabricsStore.globalResumeExecuteRoll = true // attract: Переменная-флаг нажатия кнопки "Возобновить выполнение" рулона
+        fabricsStore.globalResumeExecuteRoll = true // __ Переменная-флаг нажатия кнопки "Возобновить выполнение" рулона
         emits('resume-execute-roll')
     }
 }
@@ -743,7 +743,7 @@ const finishExecuteRoll = async () => {
 
     const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
     if (answer) {
-        fabricsStore.globalFinishExecuteRoll = true // attract: Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
+        fabricsStore.globalFinishExecuteRoll = true // __ Переменная-флаг нажатия кнопки "Закончить выполнение" рулона
         emits('finish-execute-roll')
     }
     emits('finish-execute-roll')

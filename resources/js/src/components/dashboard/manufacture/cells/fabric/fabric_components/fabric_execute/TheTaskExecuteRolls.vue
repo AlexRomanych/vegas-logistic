@@ -228,6 +228,24 @@ const changeRollsPosition = () => {
 // __ Меняем позицию рулонов в после сброса статуса "Не выполнено" и "Отменено" на "Создано"
 // __ Помещаем элемент в конец списка
 const changeRollsPositionAfterFalseReset = () => {
+    const rollsExecCheck = props.rolls.map(roll => roll.rolls_exec).flat()
+
+    // Находим рулоны со статусом "Выполнено" или "Выполняется" или "Приостановлено" после активного рулона
+    let isFind = false
+    const currentRollPosition = activeRoll.position
+
+    rollsExecCheck.forEach(roll => {
+        isFind
+            ||= (roll.position > currentRollPosition)
+            && ((roll.status === FABRIC_ROLL_STATUS.CREATED.CODE)
+                || (roll.status === FABRIC_ROLL_STATUS.RUNNING.CODE)
+                || (roll.status === FABRIC_ROLL_STATUS.PAUSED.CODE))
+    })
+
+    // Если рулоны не найдены, оставляем позицию прежней
+    if (!isFind) return
+
+    // Если рулоны найдены, то меняем их позицию
     activeRoll.position = rollsExec.value.length + 1        // __ Меняем позицию рулонов
     sortRollsExec()                                         // __ Сортируем рулоны по позиции
     emits('saveExecRollsOrder', rollsExec, props.machine)   // __ Сохраняем порядок рулонов
