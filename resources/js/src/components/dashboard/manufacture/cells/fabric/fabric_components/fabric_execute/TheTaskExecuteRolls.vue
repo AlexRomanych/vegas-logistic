@@ -239,6 +239,7 @@ const changeRollsPositionAfterFalseReset = () => {
             ||= (roll.position > currentRollPosition)
             && ((roll.status === FABRIC_ROLL_STATUS.ROLLING.CODE)
                 || (roll.status === FABRIC_ROLL_STATUS.RUNNING.CODE)
+                || (roll.status === FABRIC_ROLL_STATUS.DONE.CODE)
                 // || (roll.status === FABRIC_ROLL_STATUS.FALSE.CODE)
                 || (roll.status === FABRIC_ROLL_STATUS.PAUSED.CODE))
     })
