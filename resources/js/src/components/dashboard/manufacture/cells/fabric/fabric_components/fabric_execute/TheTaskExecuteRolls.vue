@@ -237,10 +237,17 @@ const changeRollsPositionAfterFalseReset = () => {
     rollsExecCheck.forEach(roll => {
         isFind
             ||= (roll.position > currentRollPosition)
-            && ((roll.status === FABRIC_ROLL_STATUS.CREATED.CODE)
+            && ((roll.status === FABRIC_ROLL_STATUS.ROLLING.CODE)
                 || (roll.status === FABRIC_ROLL_STATUS.RUNNING.CODE)
+                // || (roll.status === FABRIC_ROLL_STATUS.FALSE.CODE)
                 || (roll.status === FABRIC_ROLL_STATUS.PAUSED.CODE))
     })
+
+    // console.log('rollsExecCheck: ', rollsExecCheck)
+    // console.log('currentRollPosition: ', currentRollPosition)
+    // console.log('isFind: ', isFind)
+
+
 
     // Если рулоны не найдены, оставляем позицию прежней
     if (!isFind) return
@@ -248,6 +255,7 @@ const changeRollsPositionAfterFalseReset = () => {
     // Если рулоны найдены, то меняем их позицию
     activeRoll.position = rollsExec.value.length + 1        // __ Меняем позицию рулонов
     sortRollsExec()                                         // __ Сортируем рулоны по позиции
+    fabricsStore.globalOrderExecuteChangeReason = 'Сброс отметки Не выполнено'
     emits('saveExecRollsOrder', rollsExec, props.machine)   // __ Сохраняем порядок рулонов
 }
 
@@ -482,8 +490,8 @@ watch(() => fabricsStore.globalExecuteMarkRollFalse, async (newState) => {
         activeRoll.status = FABRIC_ROLL_STATUS.FALSE.CODE
         activeRoll.false_reason = fabricsStore.globalExecuteMarkRollFalseReason
         fabricsStore.globalExecuteMarkRollFalseReason = ''
-        const res = await fabricsStore.updateExecuteRoll(activeRoll)
-        emits('saveExecRollsOrder', rollsExec, props.machine)
+        // const res = await fabricsStore.updateExecuteRoll(activeRoll)
+        // emits('saveExecRollsOrder', rollsExec, props.machine)
     } else if (activeRoll.status === FABRIC_ROLL_STATUS.FALSE.CODE) { // __ Сброс статуса "Не выполнено"
         activeRoll.status_prev = activeRoll.status
         activeRoll.status = FABRIC_ROLL_STATUS.CREATED.CODE

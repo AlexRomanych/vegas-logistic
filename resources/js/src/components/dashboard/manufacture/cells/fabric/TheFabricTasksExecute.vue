@@ -669,6 +669,7 @@ const changeCalcStatus = (rollExec, machine) => {
 const saveExecRollsOrder = async (rollsExec, /*machine*/) => {
     rollsExec.value.forEach((rollExec, index) => rollExec.position = index + 1)
     /*const res =*/ await fabricsStore.saveExecuteRollsOrder(rollsExec.value, fabricsStore.globalOrderExecuteChangeReason)
+    fabricsStore.globalOrderExecuteChangeReason = ''    // __ обнуляем причину изменения порядка рулонов
     // console.log('saveExecRollsOrder: ', rollsExec.value)
     // console.log('machine: ', machine)
 }

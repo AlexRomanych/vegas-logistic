@@ -568,7 +568,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
     // __ Сохранение порядка выполняемых рулонов в СЗ
-    const saveExecuteRollsOrder = async (rollsExec, reason) => {
+    const saveExecuteRollsOrder = async (rollsExec, reason = '') => {
         // const saveExecuteRollsOrder = async (taskId, machineId, rollsExec) => {
         //     const result = await jwtPost(URL_FABRIC_TASKS_EXECUTE_SAVE_ROLLS_ORDER, {
         //         task: taskId,
