@@ -418,7 +418,7 @@ import {
     getTitleByFabricTaskStatusCode,
     getStyleTypeByFabricTaskStatusCode,
     getFunctionalByFabricTaskStatus,
-    getTotalRollsProductivity,
+    getTotalRollsProductivity, getTotalExecRollsProductivityFromContextRolls,
 } from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -661,11 +661,8 @@ watch(() => props.task, async () => {
 
 // attract: Обновляем общее описание ко дню СЗ
 const updateTaskCommonDescription = () => {
-
-
-    if (!taskCommonDescription.value) return
-
-    console.log(taskCommonDescription.value)
+    // if (!taskCommonDescription.value) return
+    // console.log(taskCommonDescription.value)
     emits('saveTaskDescription', taskCommonDescription.value)
 }
 
