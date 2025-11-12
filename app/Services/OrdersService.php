@@ -11,11 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Order\{
-    Order,
-    AssemblyPart,
-    Line,
-};
+use App\Models\Order\{Order, AssemblyPart, Line, OrderType};
 
 
 final class OrdersService implements VegasDataUpdateContract
@@ -25,15 +21,18 @@ final class OrdersService implements VegasDataUpdateContract
     private Period $renderPeriod;           // отображаемый период (первый понедельник - последнее воскресение)
     private int $weeksAmount;               // количество недель для рендеринга плана
 
+
+    private static array $orderTypesCache = [];     // Типы заявок
+
     public function __construct(public VegasDataGetContract $getter)
     {
     }
 
     /**
      * Возвращает массив заказов для отображения плана в зависимости от типа
-     * @param Period|null $inPeriod     Период плана
-     * @param string|null $type         Тип плана
-     * @param bool|null $ext            Подгружать или нет все основные данные
+     * @param Period|null $inPeriod Период плана
+     * @param string|null $type Тип плана
+     * @param bool|null $ext Подгружать или нет все основные данные
      * @return array
      */
     public function selectOrders(?Period $inPeriod = null, ?string $type = ASSEMBLY_PLAN_TYPE, ?bool $ext = true): array
@@ -42,10 +41,10 @@ final class OrdersService implements VegasDataUpdateContract
 
         $relations = match (strtolower($type)) {
             ASSEMBLY_PLAN_TYPE => 'assemblyParts',
-            SEWING_PLAN_TYPE   => 'sewingParts',
-            CUTTING_PLAN_TYPE  => 'cuttingParts',
-            LOADS_PLAN_TYPE    => LOADS_PLAN_TYPE,
-            default            => null
+            SEWING_PLAN_TYPE => 'sewingParts',
+            CUTTING_PLAN_TYPE => 'cuttingParts',
+            LOADS_PLAN_TYPE => LOADS_PLAN_TYPE,
+            default => null
         };
 
         // Важен порядок
@@ -58,7 +57,7 @@ final class OrdersService implements VegasDataUpdateContract
                 ->get()
                 ->toArray();
 
-        } elseif (! is_null($relations)) {
+        } elseif (!is_null($relations)) {
 
             $query = Order::whereHas($relations, function (Builder $query) use ($period) {
                 $query
@@ -94,13 +93,13 @@ final class OrdersService implements VegasDataUpdateContract
      * @return array
      */
     public function getRenderAssemblyPicsData(
-        array $orders = [],
-        Period $period = null,
-        Period &$renderPeriod = null,
-        int|null &$weeksAmount = null ): array
+        array    $orders = [],
+        Period   $period = null,
+        Period   &$renderPeriod = null,
+        int|null &$weeksAmount = null): array
     {
 
-        if (! $this->checkPlanData($orders, $period)) {
+        if (!$this->checkPlanData($orders, $period)) {
             return [];
         }
 
@@ -117,7 +116,7 @@ final class OrdersService implements VegasDataUpdateContract
 
             for ($j = 1; $j <= 7; $j++) {
 
-//                dump($key);
+                //                dump($key);
                 $totalAmountsInPics = [
                     'm' => 0,
                     'u' => 0,
@@ -126,12 +125,12 @@ final class OrdersService implements VegasDataUpdateContract
                 ];
 
                 $renderData[$key] = [
-//                    'title' => $tempDate->format('d.m.Y\(D\)')
+                    //                    'title' => $tempDate->format('d.m.Y\(D\)')
                     'title' => $tempDate->format('d.m.Y')
-//                    'title' => $tempDate->toDateString()
+                    //                    'title' => $tempDate->toDateString()
                 ];
 
-//                dd($renderData);
+                //                dd($renderData);
 
                 $renderParts = [];
 
@@ -178,7 +177,7 @@ final class OrdersService implements VegasDataUpdateContract
                     $totalAmountsInPics['f'];
 
                 $renderData[$key] = array_merge($renderData[$key], [
-                    'data' =>  $renderParts,
+                    'data'  => $renderParts,
                     'total' => $totalAmountsInPics
                 ]);
 
@@ -201,13 +200,13 @@ final class OrdersService implements VegasDataUpdateContract
      * @return array
      */
     public function getRenderUnloadsPicsData(
-        array $orders = [],
-        Period $period = null,
-        Period &$renderPeriod = null,
-        int|null &$weeksAmount = null ): array
+        array    $orders = [],
+        Period   $period = null,
+        Period   &$renderPeriod = null,
+        int|null &$weeksAmount = null): array
     {
 
-        if (! $this->checkPlanData($orders, $period)) {
+        if (!$this->checkPlanData($orders, $period)) {
             return [];
         }
 
@@ -287,8 +286,6 @@ final class OrdersService implements VegasDataUpdateContract
     }
 
 
-
-
     /**
      * Проверяет на вшивость данные и устанавливает при необходимости даты
      * @param array $orders
@@ -342,29 +339,29 @@ final class OrdersService implements VegasDataUpdateContract
 
             try {
 
-            Order::query()->forceCreate(
-                [
-                    'id' => $order['id'],
+                Order::query()->forceCreate(
+                    [
+                        'id' => $order['id'],
 
-                    'no_origin'         => $order['no'],
-                    'no_num'            => $order['nn'],
-                    'plan_period'       => new Carbon($order['pp']),
-                    'load_date'         => new Carbon($order['ld']),
-                    'unload_date'       => $order['ud'] === '' ? null : new Carbon($order['ud']),
-                    'description'       => $order['dn'] === '' ? null : $order['dn'],
-                    'manager_start'     => $order['ms'] === '' ? null : new Carbon($order['ms']),
-                    'manager_end'       => $order['me'] === '' ? null : new Carbon($order['me']),
-                    'comment'           => $order['cm'],
-                    'responsible'       => $order['re'],
-                    'manager_load_date' => $order['ml'] === '' ? null : new Carbon($order['ml']),
-                    'manuf_date_1C'     => $order['ld1C'] === '' ? null : new Carbon($order['ld1C']),
-                    'design_start'      => $order['ds'] === '' ? null : new Carbon($order['ds']),
-                    'design_end'        => $order['de'] === '' ? null : new Carbon($order['de']),
-                    'service_text'      => $order['si'] === '' ? null : $order['si'],
+                        'no_origin'         => $order['no'],
+                        'no_num'            => $order['nn'],
+                        'plan_period'       => new Carbon($order['pp']),
+                        'load_date'         => new Carbon($order['ld']),
+                        'unload_date'       => $order['ud'] === '' ? null : new Carbon($order['ud']),
+                        'description'       => $order['dn'] === '' ? null : $order['dn'],
+                        'manager_start'     => $order['ms'] === '' ? null : new Carbon($order['ms']),
+                        'manager_end'       => $order['me'] === '' ? null : new Carbon($order['me']),
+                        'comment'           => $order['cm'],
+                        'responsible'       => $order['re'],
+                        'manager_load_date' => $order['ml'] === '' ? null : new Carbon($order['ml']),
+                        'manuf_date_1C'     => $order['ld1C'] === '' ? null : new Carbon($order['ld1C']),
+                        'design_start'      => $order['ds'] === '' ? null : new Carbon($order['ds']),
+                        'design_end'        => $order['de'] === '' ? null : new Carbon($order['de']),
+                        'service_text'      => $order['si'] === '' ? null : $order['si'],
 
-                    'client_id' => $order['ci'],
-                ]
-            );
+                        'client_id' => $order['ci'],
+                    ]
+                );
 
             } catch (Exception $e) {
                 dd($order);
@@ -393,10 +390,10 @@ final class OrdersService implements VegasDataUpdateContract
     }
 
     // Заполняем сами данные
-    private function    fillLines(): void
+    private function fillLines(): void
     {
-//        $fileName = config('vegas.lines_EPS_json_name');
-//        result = $this->getData($fileName);
+        //        $fileName = config('vegas.lines_EPS_json_name');
+        //        result = $this->getData($fileName);
 
 
         $file = File::get(storage_path('\\app\\data1c\\lines.json'));
@@ -423,7 +420,7 @@ final class OrdersService implements VegasDataUpdateContract
 
         Line::query()->truncate(); // Очистка таблицы
 
-//        $linesCollect[] = [];
+        //        $linesCollect[] = [];
 
         foreach ($result as $key => $line) {
             try {
@@ -451,45 +448,45 @@ final class OrdersService implements VegasDataUpdateContract
             }
 
 
-//            try {
-//                $linesCollect[] = [
-//
-//                    'load_1C'          => new Carbon($line['m']),
-//                    'size'             => $line['s'],
-//                    'amount'           => $line['a'],
-//                    'name'             => $line['n'],
-//                    'textile'          => $line['t'],
-//                    'comment'          => $line['d'],
-//                    'describe_1'       => $line['d1'],
-//                    'describe_2'       => $line['d2'],
-//                    'describe_3'       => $line['d3'],
-//                    'assembly_part_id' => $line['p'],
-//                    'model_code1C'     => $line['e'],
-//
-//                ];
-//            } catch (Exception $e) {
-//                dd($key, $e, $result[11782]);
-//            }
+            //            try {
+            //                $linesCollect[] = [
+            //
+            //                    'load_1C'          => new Carbon($line['m']),
+            //                    'size'             => $line['s'],
+            //                    'amount'           => $line['a'],
+            //                    'name'             => $line['n'],
+            //                    'textile'          => $line['t'],
+            //                    'comment'          => $line['d'],
+            //                    'describe_1'       => $line['d1'],
+            //                    'describe_2'       => $line['d2'],
+            //                    'describe_3'       => $line['d3'],
+            //                    'assembly_part_id' => $line['p'],
+            //                    'model_code1C'     => $line['e'],
+            //
+            //                ];
+            //            } catch (Exception $e) {
+            //                dd($key, $e, $result[11782]);
+            //            }
 
 
         }
 
-//        Line::query()->upsert([
-//            ...$linesCollect
-//
-//        ],
-//        ['id'],
-//        ['load_1C',
-//         'size',
-//         'amount',
-//         'name',
-//         'textile',
-//         'comment',
-//         'describe_1',
-//         'describe_2',
-//         'describe_3',
-//         'assembly_part_id',
-//         'model_code1C']);
+        //        Line::query()->upsert([
+        //            ...$linesCollect
+        //
+        //        ],
+        //        ['id'],
+        //        ['load_1C',
+        //         'size',
+        //         'amount',
+        //         'name',
+        //         'textile',
+        //         'comment',
+        //         'describe_1',
+        //         'describe_2',
+        //         'describe_3',
+        //         'assembly_part_id',
+        //         'model_code1C']);
 
     }
 
@@ -497,5 +494,76 @@ final class OrdersService implements VegasDataUpdateContract
     {
         return $this->getter->getDataFromFile($filename);
     }
+
+
+    /**
+     * ___ Возвращает массив типов заказов
+     * @return array
+     */
+    public static function getOrderTypes(): array
+    {
+        try {
+            $orderTypes = OrderType::all();
+            foreach ($orderTypes as $orderType) {
+                self::$orderTypesCache[$orderType->type_index] = $orderType;
+            }
+            return self::$orderTypesCache;
+        } catch (Exception $e) {
+            self::$orderTypesCache = [];
+            return [];
+        }
+    }
+
+    /**
+     * ___ Возвращает тип заказа по индексу
+     * @param string $typeIndex
+     * @return OrderType|null
+     */
+    public static function getOrderTypeByIndex(string $typeIndex): ?OrderType
+    {
+        if (count(self::$orderTypesCache) === 0) {
+            self::getOrderTypes();
+        }
+
+        if (isset(self::$orderTypesCache[$typeIndex])) {
+            return self::$orderTypesCache[$typeIndex];
+        }
+
+        return null;
+    }
+
+
+    /**
+     * ___ Возвращает тип заявки по номеру заявки
+     * @param string $orderNo
+     * @return OrderType
+     */
+    public static function getOrderTypeByOrderNoAndClientId(string $orderNo, int $clientID = 0): OrderType
+    {
+        $orderNo = trim($orderNo);
+        $orderNo = str_replace(',', '.', $orderNo);
+        $orderNo = getDigitPartAndDotAndComma($orderNo);
+
+        if (!is_numeric($orderNo)) {
+            return self::getOrderTypeByIndex('.00');       // неизвестный тип заказа, если номер не число
+        }
+
+        if (!str_contains($orderNo, '.')) {
+            return self::getOrderTypeByIndex('_');         // основной тип заказа, если нет точки
+        }
+
+        $parts = explode('.', $orderNo, 2);
+
+        if (isset(self::$orderTypesCache['.' . $parts[1]])) {
+            return self::getOrderTypeByIndex('.' . $parts[1]);
+        }
+
+        if (in_array($parts[1], ['1', '2', '3', '4', '5', '6', '7', '8', '9'])) {
+            return self::getOrderTypeByIndex('.1-10; .20-...');     // Дополнительная заявка
+        }
+
+        return self::getOrderTypeByIndex('.00');
+    }
+
 }
 

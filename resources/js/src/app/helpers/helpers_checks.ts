@@ -86,7 +86,6 @@ export function checkApiAnswer(response: unknown): CheckResult | never {
     }
 
 
-
     throw new Error('Неверный тип ответа от сервера!')
 
 }

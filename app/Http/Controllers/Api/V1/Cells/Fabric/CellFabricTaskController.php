@@ -16,7 +16,7 @@ class CellFabricTaskController extends Controller
 {
     public function tasks(Request $request)
     {
-//        return json_encode($request->all());
+        //        return json_encode($request->all());
         try {
 
             // Если без параметров, возвращаем все заказы
@@ -26,20 +26,20 @@ class CellFabricTaskController extends Controller
 
             $validData = $request->validate([
                 'start' => 'required|date|beforeOrEqual:end',
-                'end' => 'required|date|afterOrEqual:start',
+                'end'   => 'required|date|afterOrEqual:start',
             ]);
 
             $tasksQuery = FabricTask::query()
                 ->whereBetween('task_date', [$validData['start'], $validData['end']])
-//                ->with(['fabricTaskContexts', 'fabricTaskRolls'])
+                //                ->with(['fabricTaskContexts', 'fabricTaskRolls'])
                 ->with(['fabricTaskContexts'])
                 ->get();
 
             return json_encode($tasksQuery);
 
-//            $tasksArray = $tasks->toArray();
+            //            $tasksArray = $tasks->toArray();
 
-//            $tasksUniqueDatesArray = $task    s->
+            //            $tasksUniqueDatesArray = $task    s->
 
             // Преобразуем коллекцию в массив
             $tasksArray = json_decode(json_encode($tasksQuery), true);
@@ -56,18 +56,15 @@ class CellFabricTaskController extends Controller
             foreach ($tasksDatesArrayUnique as $key => $taskDate) {
 
                 $tempDateMachineTask = [
-                    'date' => $taskDate,
+                    'date'   => $taskDate,
                     'common' => [
                         [
-                            'active' => true,
-                            'status' => 0,
+                            'active'      => true,
+                            'status'      => 0,
                             'description' => ''
                         ]
                     ]
                 ];
-
-
-
 
 
                 for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
@@ -92,7 +89,7 @@ class CellFabricTaskController extends Controller
 
     public function create(Request $request)
     {
-//        try {
+        //        try {
         $payload = $request->all();
         $taskData = $payload['data']['data'];               // одна data в axios, вторая data в самом объекте task
 
@@ -101,7 +98,7 @@ class CellFabricTaskController extends Controller
         // Проверка статуса задания (если 0 - пропускаем)
         if ($taskData['common']['status'] === FABRIC_TASK_UNKNOWN_CODE) {
 
-//                return $taskData['common']['status'];
+            //                return $taskData['common']['status'];
             return EndPointStaticRequestAnswer::ok();
         }
 
@@ -111,48 +108,48 @@ class CellFabricTaskController extends Controller
             // Получаем название машины
             $machineStr = FabricService::getFabricMachineNameById($i);
 
-//                return $payload;
-//                return $payload['machines'][$machineStr];
+            //                return $payload;
+            //                return $payload['machines'][$machineStr];
             // Проверка на наличие данных для данной машины
             if (count($taskData['machines'][$machineStr]['rolls']) === 0) continue;
 
             // Создаем задание или обновляем основное задание
             $task = FabricTask::query()->updateOrCreate(
                 [
-                    'task_date' => $taskData['date'],
+                    'task_date'         => $taskData['date'],
                     'fabric_machine_id' => $i
                 ],
                 [
-                    'task_date' => $taskData['date'],
+                    'task_date'         => $taskData['date'],
                     'fabric_machine_id' => $i,
-                    'task_status' => $taskData['common']['status'],
-                    'description' => $taskData['common']['description'],
+                    'task_status'       => $taskData['common']['status'],
+                    'description'       => $taskData['common']['description'],
 
                     // todo: сделать проверку на существование бригады и вообще тут продумать сущность
-                    'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
-//                        'fabric_team_id' => $taskData['common']['team'],
-                    'active' => true,
-//                        'active' => $taskData['active'],
+                    'fabric_team_id'    => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
+                    //                        'fabric_team_id' => $taskData['common']['team'],
+                    'active'            => true,
+                    //                        'active' => $taskData['active'],
                 ]
             );
 
             // Создаем или обновляем все рулоны, которые пришли с бэка
             foreach ($taskData['machines'][$machineStr]['rolls'] as $key => $rollData) {
 
-//                    return $rollData;
+                //                    return $rollData;
 
                 $fabricTaskRoll = FabricTaskContext::query()->updateOrCreate(
                     [
                         'fabric_task_id' => $task->id,
-                        'fabric_id' => $rollData['fabric_id']
+                        'fabric_id'      => $rollData['fabric_id']
                     ],
                     [
-                        'roll_position' => $key + 1,
-                        'fabric_mode' => $rollData['fabric_mode'],
-                        'rolls_amount' => $rollData['rolls_amount'],
+                        'roll_position'  => $key + 1,
+                        'fabric_mode'    => $rollData['fabric_mode'],
+                        'rolls_amount'   => $rollData['rolls_amount'],
                         'textile_length' => $rollData['textile_length'],
-                        'description' => $rollData['descr'],
-                        'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
+                        'description'    => $rollData['descr'],
+                        'fabric_id'      => $rollData['fabric_id'],                  // привязка к ПС
                         'fabric_task_id' => $task->id                          // привязка к СЗ
                     ]
                 );
@@ -164,10 +161,10 @@ class CellFabricTaskController extends Controller
 
         return EndPointStaticRequestAnswer::ok();
 
-//        } catch (Exception $e) {
-//            return EndPointStaticRequestAnswer::fail(response()->json($e));
-//        }
-//        return $request->all();
+        //        } catch (Exception $e) {
+        //            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        //        }
+        //        return $request->all();
     }
 
 
@@ -186,22 +183,61 @@ class CellFabricTaskController extends Controller
         $task = FabricTask::query()->updateOrCreate(
             [
                 'task_date' => $taskData['date'],
-//                'fabric_machine_id' => $i
+                //                'fabric_machine_id' => $i
             ],
             [
-                'task_date' => $taskData['date'],
-//                'fabric_machine_id' => $i,
-                'task_status' => $taskData['common']['status'],
-                'description' => $taskData['common']['description'],
+                'task_date'      => $taskData['date'],
+                //                'fabric_machine_id' => $i,
+                'task_status'    => $taskData['common']['status'],
+                'description'    => $taskData['common']['description'],
 
                 // todo: сделать проверку на существование бригады и вообще тут продумать сущность
                 'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($taskData['date']),
-                'active' => $taskData['active'],
+                'active'         => $taskData['active'],
             ]
         );
 
 
         return $taskData;
+    }
+
+    /**
+     * ___ Обновляем комментарий к СЗ к данной СМ
+     * @param Request $request
+     * @return string
+     */
+    public function updateTaskComment(Request $request)
+    {
+        try {
+            $all = $request->all();
+
+            $validatedData = $request->validate([
+                'data'             => 'required|array',
+                'data.task'        => 'required|integer|min:1',
+                'data.machine'     => 'required|integer|min:1',
+                'data.description' => 'nullable|string'
+            ]);
+
+            $data = $validatedData['data'];
+
+            $task = FabricTask::query()
+                ->where('fabric_tasks_date_id', $data['task'])
+                ->where('fabric_machine_id', $data['machine'])
+                ->first();
+
+            if (!$task) {
+                throw new Exception('Task not found');
+            };
+
+            $description = $data['description'] ?? '';
+
+            $task->description = $description;
+            $task->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 }

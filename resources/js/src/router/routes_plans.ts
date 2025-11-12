@@ -35,6 +35,13 @@ const plans = [
         component: () => import('@/components/dashboard/plans/ThePlanSewing.vue'),
         meta: {title: 'План Швейки'} as IRouteMeta,
     },
+    {
+        path: `${PREFIX}/upload`,               // __ Загрузка плана Загрузок из Json
+        name: 'plan.upload',
+        component: () => import('@/components/dashboard/plans/ThePlanLoadsUpLoad.vue'),
+        meta: {title: 'Загрузка плана'} as IRouteMeta,
+    },
+
 
     // {
     //     path: '/reasons/edit/:id',

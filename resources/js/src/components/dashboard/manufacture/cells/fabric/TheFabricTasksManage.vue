@@ -906,7 +906,8 @@ const saveMachineDescription = async (saveData: {
     const targetTask = taskData.find(t => t.date === saveData.task.date)
     if (targetTask) targetTask.machines[saveData.machine.TITLE].description = saveData.taskDescription      // общее описание
 
-    await fabricsStore.createFabricTask(targetTask)
+    await fabricsStore.updateTaskComment(targetTask.id, saveData.machine.ID, saveData.taskDescription)
+    // await fabricsStore.createFabricTask(targetTask)
 
     rerender[saveData.machine.ID]++     // Нужно для обновления трудозатрат
 }

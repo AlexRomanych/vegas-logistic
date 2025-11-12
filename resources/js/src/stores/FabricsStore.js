@@ -12,8 +12,10 @@ import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/u
 
 // import axios from 'axios'
 
+// __ Отладка
+const DEBUG = true
 
-// Устанавливаем глобальные переменные
+// __Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                                           // Префикс API
 const URL_FABRICS = 'fabrics/'                                          // URL для получения списка ПС
 const URL_FABRIC = 'fabric/'                                            // URL для получения ПС
@@ -97,7 +99,7 @@ const URL_FABRIC_PICTURES_TUNING_TIME =
 const URL_FABRIC_PICTURE_TUNING_TIME =
     'fabrics/pic/tuning/time'                                           // URL для получения времени переналадки между рисунками ПС
 
-
+const URL_FABRIC_TASK_COMMENT_UPDATE = 'fabrics/tasks/comment/update/'  // URL для обновления комментария к СЗ на данной СМ
 
 // URL для получения времени переналадки рисунков ПС
 
@@ -146,8 +148,6 @@ export const useFabricsStore = defineStore('fabrics', () => {
         [FABRIC_MACHINES.CHINA.TITLE]: [],
         [FABRIC_MACHINES.KOREAN.TITLE]: [],
     })
-
-
 
 
     // console.log(globalTaskProductivity)
@@ -737,6 +737,17 @@ export const useFabricsStore = defineStore('fabrics', () => {
     }
 
 
+    // __ Меняем комментарий к СЗ на данной СМ
+    const updateTaskComment = async (taskId, machineId, description = '') => {
+        const result = await jwtPatch(URL_FABRIC_TASK_COMMENT_UPDATE, {
+            task: taskId,
+            machine: machineId,
+            description
+        })
+        if (DEBUG) console.log('OrdersStore: updateTaskComment: ', result)
+        return result.data
+    }
+
 
     return {
         fabricsCashe,
@@ -768,7 +779,9 @@ export const useFabricsStore = defineStore('fabrics', () => {
         globalSelectWorkerId,
         globalSelectWorkerFlag,
         globalCalendarChangeFlag,
-        globalOrderManageChangeFlag, globalOrderExecuteChangeFlag, globalOrderExecuteChangeReason,
+        globalOrderManageChangeFlag,
+        globalOrderExecuteChangeFlag,
+        globalOrderExecuteChangeReason,
         globalOrderContextIsLoading,
         tuningTimeCache,
         clearTaskGlobalProductivity,
@@ -780,7 +793,8 @@ export const useFabricsStore = defineStore('fabrics', () => {
         deleteFabric,
         getFabricPictureSchemas,
         getFabricPictures,
-        getFabricPictureById, getFabricPictureByName,
+        getFabricPictureById,
+        getFabricPictureByName,
         uploadFabricsPictures,
         updateFabricPicture,
         createFabricPicture,
@@ -795,7 +809,10 @@ export const useFabricsStore = defineStore('fabrics', () => {
         changeFabricTaskDateStatus,
         deleteFabricTaskRollById,
         getFabricTeamNumberByDate,
-        updateExecuteRoll, addExecuteRoll, saveExecuteRollsOrder, updateRollComment,
+        updateExecuteRoll,
+        addExecuteRoll,
+        saveExecuteRollsOrder,
+        updateRollComment,
         updateFabricTaskWorkers,
         getFabricExecutingTasks,
         getFabricNotDoneTasks,
@@ -805,15 +822,23 @@ export const useFabricsStore = defineStore('fabrics', () => {
         setFabricOrderActive,
         saveFabricsOrdersOrder,
         getFabricTaskContextNotDone,
-        changeContextOrder, getOrderContext, addOrderContextRoll, optimizeOrderContext,
+        changeContextOrder,
+        getOrderContext,
+        addOrderContextRoll,
+        optimizeOrderContext,
         createContextExpense,
         getNotAcceptedToCutRolls,
         setRollRegisteredStatus,
         setRollMovedStatus,
         updateFabricsBuffer,
         getFabricsAverageLength,
-        getFabricsPicturesTuningTime, setFabricsPicturesTuningTime, deleteFabricsPicturesTuningTime, getFabricsPicturesBetweenTuningTime, getFabricsBetweenTuningTime,
+        getFabricsPicturesTuningTime,
+        setFabricsPicturesTuningTime,
+        deleteFabricsPicturesTuningTime,
+        getFabricsPicturesBetweenTuningTime,
+        getFabricsBetweenTuningTime,
         getLastRoll,
+        updateTaskComment,
     }
 
 })

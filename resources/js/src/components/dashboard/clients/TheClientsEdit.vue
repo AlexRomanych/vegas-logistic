@@ -229,7 +229,7 @@ const verify = {
 }
 
 // __ Определяем правила валидации
-const MIN_NAME_LENGTH = 10
+const MIN_NAME_LENGTH = 3
 const MIN_SHORT_NAME_LENGTH = 3
 const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
 // const MIN_ADD_NAME_LENGTH = 3

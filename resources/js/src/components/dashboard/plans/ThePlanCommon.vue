@@ -28,6 +28,7 @@ let menuItems: IMenuItem[] = [
     {name: 'План Сборки', path: 'plan.assembly', shown: true, isActive: false},
     {name: 'План Раскроя', path: 'plan.cutting', shown: true, isActive: false},
     {name: 'План Швейки', path: 'plan.sewing', shown: true, isActive: false},
+    {name: 'Загрузка Плана', path: 'plan.upload', shown: true, isActive: false},
 ]
 
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
