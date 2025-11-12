@@ -337,7 +337,7 @@ const deleteTaskRecord = (deleteData: IRoll) => {
 
 // __ Обновляем общее описание к СМ
 const updateTaskMachineDescription = () => {
-    if (!taskDescription.value) return
+    // if (!taskDescription.value) return
     // console.log(taskDescription.value)
     emits('saveMachineDescription', {
         machine: props.machine,

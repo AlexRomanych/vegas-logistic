@@ -229,7 +229,7 @@ class CellFabricTaskController extends Controller
                 throw new Exception('Task not found');
             };
 
-            $description = $data['description'] ?? '';
+            $description = $data['description'] ?? null;
 
             $task->description = $description;
             $task->save();
