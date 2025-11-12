@@ -262,7 +262,7 @@
                 />
 
                 <!-- attract: Кнопка персонала (неактивно для завершенного СЗ) -->
-                <div v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE"  class="ml-3">
+                <div v-if="task.common.status !== FABRIC_TASK_STATUS.DONE.CODE" class="ml-3">
 
                     <AppLabel
                         :type="task.workers.length ? 'info' : 'danger'"
@@ -296,7 +296,7 @@
 
         <!-- attract: Трудозатраты -->
         <!-- attract: Показываем, если есть -->
-        <div v-if="getTotalProductivity()" class="mb-2">
+        <div v-if="totalProductivityRolls" class="mb-2">
             <div>
                 <AppLabel
                     text="Трудозатраты:"
@@ -304,61 +304,61 @@
                 />
             </div>
 
-            <!-- attract: Трудозатраты на американце -->
-            <div v-if="getProductivityAmerican()" class="flex items-start ml-3">
+            <!-- __ Трудозатраты на американце -->
+            <div v-if="americanProductivityRolls" class="flex items-start ml-3">
                 <AppLabel
                     text="Американец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    :text="formatTimeWithLeadingZeros(getProductivityAmerican(), 'hour')"
-                    :type="getStyleTypeByProductivity(getProductivityAmerican())"
+                    :text="'🕒 ' + formatTimeWithLeadingZeros(americanProductivityRolls, 'hour')"
+                    :type="getStyleTypeByProductivity(americanProductivityRolls)"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
-            <!-- attract: Трудозатраты на немце -->
-            <div v-if="getProductivityGerman()" class="flex items-start ml-3">
+            <!-- __ Трудозатраты на немце -->
+            <div v-if="germanProductivityRolls" class="flex items-start ml-3">
                 <AppLabel
                     text="Немец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    :text="formatTimeWithLeadingZeros(getProductivityGerman(), 'hour')"
-                    :type="getStyleTypeByProductivity(getProductivityGerman())"
+                    :text="'🕒 ' + formatTimeWithLeadingZeros(germanProductivityRolls, 'hour')"
+                    :type="getStyleTypeByProductivity(germanProductivityRolls)"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
-            <!-- attract: Трудозатраты на китайце -->
-            <div v-if="getProductivityChina()" class="flex items-start ml-3">
+            <!-- __ Трудозатраты на китайце -->
+            <div v-if="chinaProductivityRolls" class="flex items-start ml-3">
                 <AppLabel
                     text="Китаец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    :text="formatTimeWithLeadingZeros(getProductivityChina(), 'hour')"
-                    :type="getStyleTypeByProductivity(getProductivityChina())"
+                    :text="'🕒 ' + formatTimeWithLeadingZeros(chinaProductivityRolls, 'hour')"
+                    :type="getStyleTypeByProductivity(chinaProductivityRolls)"
                     text-size="mini"
                     width="w-[200px]"
                 />
             </div>
 
-            <!-- attract: Трудозатраты на корейце -->
-            <div v-if="getProductivityKorean()" class="flex items-start ml-3">
+            <!-- __ Трудозатраты на корейце -->
+            <div v-if="koreanProductivityRolls" class="flex items-start ml-3">
                 <AppLabel
                     text="Кореец:"
                     text-size="mini"
                     width="w-[150px]"
                 />
                 <AppLabel
-                    :text="formatTimeWithLeadingZeros(getProductivityKorean(), 'hour')"
-                    :type="getStyleTypeByProductivity(getProductivityKorean())"
+                    :text="'🕒 ' + formatTimeWithLeadingZeros(koreanProductivityRolls, 'hour')"
+                    :type="getStyleTypeByProductivity(koreanProductivityRolls)"
                     text-size="mini"
                     width="w-[200px]"
                 />
@@ -375,7 +375,7 @@
                     width="w-[150px]"
                 />
                 <AppLabel
-                    :text="formatTimeWithLeadingZeros(getTotalProductivity(), 'hour')"
+                    :text="'🕒 ' + formatTimeWithLeadingZeros(totalProductivityRolls, 'hour')"
                     text-size="mini"
                     type="primary"
                     width="w-[200px]"
@@ -401,23 +401,24 @@
 
 <script setup>
 
-import {onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import { computed, /*onMounted,*/ onUnmounted, reactive, ref, watch } from 'vue'
 
-import {useWorkersStore} from '@/stores/WorkersStore.js'
-import {useFabricsStore} from '@/stores/FabricsStore.js'
-// import {useFabricsStore} from '@/stores/FabricsStore.js'
+import { useWorkersStore } from '@/stores/WorkersStore.js'
+import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {
     FABRIC_WORKING_SHIFT_LENGTH,
     FABRIC_TASK_STATUS,
     FABRIC_MACHINES,
-    FABRICS_NULLABLE,
-    FABRIC_TASKS_EXECUTE,
+    // FABRICS_NULLABLE,
+    // FABRIC_TASKS_EXECUTE,
 } from '@/app/constants/fabrics.js'
 
 import {
     getTitleByFabricTaskStatusCode,
-    getStyleTypeByFabricTaskStatusCode, getFunctionalByFabricTaskStatus,
+    getStyleTypeByFabricTaskStatusCode,
+    getFunctionalByFabricTaskStatus,
+    getTotalRollsProductivity,
 } from '@/app/helpers/manufacture/helpers_fabric.js'
 
 import {
@@ -437,6 +438,7 @@ import TheDividerLine
 import AppModalAsyncCheckbox from '@/components/ui/modals/AppModalAsyncCheckbox.vue'
 import AppInputTextArea from '@/components/ui/inputs/AppInputTextArea.vue'
 
+
 const props = defineProps({
     task: {
         type: Object,
@@ -447,11 +449,9 @@ const props = defineProps({
 
 const emits = defineEmits(['selectWorkers', 'saveTaskDescription'])
 
-// console.log('task: ', props.task)
-
-// const fabricsStore = useFabricsStore()
 const workersStore = useWorkersStore()
 const fabricsStore = useFabricsStore()
+
 
 // attract: Определяем модель для Общего комментария к дню СЗ
 const taskCommonDescription = ref(props.task.common.description)
@@ -474,32 +474,50 @@ const getTaskDuration = (task) => {
 const duration = ref(getTaskDuration(props.task))
 
 
-// attract: Трудозатраты на американце
-const getProductivityAmerican = () => props.task.machines.american.rolls.reduce((acc, roll) => {
-    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
-    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
-}, 0)
+// __ Трудозатраты на СМ
+// __ Если статус СЗ - "Выполнено", "Выполняется" или "Готов к стежке"
+// __ то есть, когда есть физические рулоны, то считаем по физическим рулонам
+// __ иначе считаем по контекстным рулонам
 
-// attract: Трудозатраты на немце
-const getProductivityGerman = () => props.task.machines.german.rolls.reduce((acc, roll) => {
-    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
-    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
-}, 0)
+/**
+ *
+ * @param {IConstFabricMachine} machine
+ * @returns {number}
+ */
+const getProductivityByMachine = (machine) => {
+    if (
+        props.task.common.status === FABRIC_TASK_STATUS.DONE.CODE ||
+        props.task.common.status === FABRIC_TASK_STATUS.RUNNING.CODE ||
+        props.task.common.status === FABRIC_TASK_STATUS.PENDING.CODE
+    ) {
+        return getTotalRollsProductivity(props.task.machines[machine.TITLE].rolls)
+    }
 
-// attract: Трудозатраты на китайце
-const getProductivityChina = () => props.task.machines.china.rolls.reduce((acc, roll) => {
-    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
-    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
-}, 0)
+    return getTotalExecRollsProductivityFromContextRolls(props.task.machines[machine.TITLE].rolls)
+}
 
-// attract: Трудозатраты на корейце
-const getProductivityKorean = () => props.task.machines.korean.rolls.reduce((acc, roll) => {
-    return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity)
-    // return acc + roll.average_textile_length * roll.rolls_amount / (roll.productivity * roll.fabric_rate)
-}, 0)
+// __ Трудозатраты на СМ
+const americanProductivityRolls = computed(() => getProductivityByMachine(FABRIC_MACHINES.AMERICAN))
+const germanProductivityRolls = computed(() => getProductivityByMachine(FABRIC_MACHINES.GERMAN))
+const chinaProductivityRolls = computed(() => getProductivityByMachine(FABRIC_MACHINES.CHINA))
+const koreanProductivityRolls = computed(() => getProductivityByMachine(FABRIC_MACHINES.KOREAN))
 
-// attract: Общие трудозатраты: Американец + Немец + Китаец + Кореец
-const getTotalProductivity = () => getProductivityAmerican() + getProductivityGerman() + getProductivityChina() + getProductivityKorean()
+// TODO: Пока не делаю, потому что переналадка не сохраняется в базе, а формируется динамически
+// TODO: здесь выполнение и нет запросов к базе со временем переналадки
+// const americanProductivityTuning = computed(() => getTotalTuningProductivity(props.task.machines[FABRIC_MACHINES.AMERICAN.TITLE].rolls))
+// const germanProductivityTuning = computed(() => getTotalTuningProductivity(props.task.machines[FABRIC_MACHINES.GERMAN.TITLE].rolls))
+// const chinaProductivityTuning = computed(() => getTotalTuningProductivity(props.task.machines[FABRIC_MACHINES.CHINA.TITLE].rolls))
+// const koreanProductivityTuning = computed(() => getTotalTuningProductivity(props.task.machines[FABRIC_MACHINES.KOREAN.TITLE].rolls))
+
+// console.log(americanProductivityTuning.value, germanProductivityTuning.value, chinaProductivityTuning.value, koreanProductivityTuning.value)
+
+const totalProductivityRolls = computed(() =>
+    americanProductivityRolls.value +
+    germanProductivityRolls.value +
+    chinaProductivityRolls.value +
+    koreanProductivityRolls.value
+)
+
 
 // attract: Получаем тип стиля по продолжительности трудозатрат
 const getStyleTypeByProductivity = (productivity) => productivity <= FABRIC_WORKING_SHIFT_LENGTH ? 'success' : 'danger'
@@ -521,7 +539,7 @@ watch(() => props.task, (newTask) => {
         }
     } else if (newTask.common.status === FABRIC_TASK_STATUS.DONE.CODE) {
         if (intervalId !== null) {
-            clearInterval(intervalId);
+            clearInterval(intervalId)
             duration.value = getTaskDuration(newTask)
         }
     }
@@ -663,12 +681,12 @@ const updateTaskCommonDescription = () => {
 
 onUnmounted(async () => {
     if (intervalId !== null) {
-        clearInterval(intervalId);
+        clearInterval(intervalId)
     }
 
     // attract: Вызываем пересчет данных о работниках, чтобы определить все глобальное
     // await prepareWorkersData()
-});
+})
 
 </script>
 

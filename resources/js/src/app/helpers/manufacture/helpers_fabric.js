@@ -524,6 +524,35 @@ export function getPicNameByFabric(fabric) {
 }
 
 // line ----------------------------------------------------
+// line ----- Трудозатраты для физических рулонов ----------
+// line ----------------------------------------------------
+
+/**
+ * ___ Трудозатраты для физических рулонов из всех рулонов ОПП
+ * @param {IRoll[]} rolls
+ */
+export function getTotalExecRollsProductivityFromContextRolls(rolls) {
+    let totalProductivity = 0
+
+    rolls.forEach(roll => {
+        totalProductivity += getTotalExecRollsProductivity(roll.rolls_exec)
+        // totalProductivity = roll.rolls_exec.reduce((acc, roll_exec) => {
+        //     return acc + roll_exec.fabric_length / roll_exec.productivity
+        // }, totalProductivity)
+    })
+    return totalProductivity
+}
+
+/**
+ * ___ Трудозатраты для физических рулонов
+ * @param {IRollExec[]} rollsExec
+ */
+export function getTotalExecRollsProductivity(rollsExec) {
+    return rollsExec.reduce((acc, roll_exec) => acc + roll_exec.fabric_length / roll_exec.productivity, 0)
+}
+
+
+// line ----------------------------------------------------
 // line ------------ Трудозатраты для рулонов ОПП ----------
 // line ----------------------------------------------------
 
