@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Plans;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Plans\Loads\PlanLoadsResource;
 use App\Models\Plan\PlanLoad;
 use App\Services\ClientsService;
 use App\Services\OrdersService;
@@ -18,7 +19,7 @@ class PlanLoadsController extends Controller
     /**
      * ___ Обновляем план загрузок
      * @param Request $request
-     * @return string|void
+     * @return string
      */
     public function uploadLoads(Request $request)
     {
@@ -36,6 +37,8 @@ class PlanLoadsController extends Controller
                 throw new Exception('Invalid JSON structure');
             }
 
+            $loadsUpdated = []; // Массив обновленных отгрузок, а не созданных для ответа
+
             foreach ($loads as $load) {
 
                 // Проверка существования клиента
@@ -48,7 +51,7 @@ class PlanLoadsController extends Controller
                 $existLoads = PlanLoad::query()
                     ->where('client_id', $load['client_id'])
                     ->where('order_no', $load['order_no'])
-                    ->whereYear('period', Carbon::parse($load['unload_at'])->year)
+                    ->whereYear('period', Carbon::parse($load['load_at'])->year)
                     ->get(); // Тут нарочно используем get() вместо first(), чтобы выявить коллизии (две заявки одного клиента в одном периоде)
 
                 if ($existLoads->count() > 1) {
@@ -64,38 +67,50 @@ class PlanLoadsController extends Controller
 
                 if ($existLoads->count() == 1) {
                     $workload = $existLoads->first();
+
+                    $loadAtMemory = $workload->load_at; // Запоминаем дату загрузки, чтобы потом сравнить с новой
+
                     $workload->load_at = PlanService::normalizeToCarbon($load['load_at']);
                     $workload->period = PlanService::getLoadPeriod($load['load_at']);
                     $workload->order_type_id = $orderType->id;
                     $workload->unload_at = $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']);
                     $workload->amounts = $load['amounts'];
                     $workload->save();
-                }
 
+                    $oldDate = Carbon::parse($loadAtMemory);
+                    $newDate = Carbon::parse($workload->load_at);
 
+                    // TODO: Доделать возврат обновленных отгрузок, для того, чтобы понимать, что с ними делать:
+                    // TODO: обновить ли зависимые планы (швейки, закроя, сборки и т.д.), какие именно не нужно и т.д.
+                    if (!$newDate->isSameDay($oldDate)) {    // Если дата не изменилась, то ничего не делаем
+                        $loadsUpdated[] = $workload;
+                    }
 
-                $insertData = [
-                    'client_id'     => $load['client_id'],
-                    'order_no'      => $load['order_no'],
-                    'amounts'       => $load['amounts'],
-                    'active'        => true,
-                    'order_type_id' => $orderType->id,
-                    'period'        => PlanService::getLoadPeriod($load['load_at']),
-                    'load_at'       => PlanService::normalizeToCarbon($load['load_at']),
-                    'unload_at'     => $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']),
+                } else { // __ Иначе создаем новую отгрузку
 
-                    // 'status' => $load['status'],
-                    // 'description' => $load['description'],
-                    // 'comment' => $load['comment'],
-                    // 'note' => $load['note'],
-                    // 'meta' => $load['meta'],
-                    // 'history' => $load['history'],
-                    // 'extended_meta' => $load['extended_meta'],
-                ];
+                    $insertData = [
+                        'client_id'     => $load['client_id'],
+                        'order_no'      => $load['order_no'],
+                        'amounts'       => $load['amounts'],
+                        'active'        => true,
+                        'order_type_id' => $orderType->id,
+                        'period'        => PlanService::getLoadPeriod($load['load_at']),
+                        'load_at'       => PlanService::normalizeToCarbon($load['load_at']),
+                        'unload_at'     => $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']),
 
-                $planLoad = PlanLoad::query()->create($insertData);
-                if (!$planLoad) {
-                    throw new Exception('Error while creating plan load');
+                        // 'status' => $load['status'],
+                        // 'description' => $load['description'],
+                        // 'comment' => $load['comment'],
+                        // 'note' => $load['note'],
+                        // 'meta' => $load['meta'],
+                        // 'history' => $load['history'],
+                        // 'extended_meta' => $load['extended_meta'],
+                    ];
+
+                    $planLoad = PlanLoad::query()->create($insertData);
+                    if (!$planLoad) {
+                        throw new Exception('Error while uploading plan loads');
+                    }
                 }
             }
 
@@ -103,6 +118,17 @@ class PlanLoadsController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
+    }
+
+
+    public function getPlanLoads(Request $request)
+    {
+        $planLoads = PlanLoad::query()
+            ->with(['client', 'orderType'])
+            ->orderBy('load_at')
+            ->get();
+
+        return PlanLoadsResource::collection($planLoads);
     }
 
 

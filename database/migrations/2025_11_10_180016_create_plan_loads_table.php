@@ -15,7 +15,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(1);
 
             // __ Связь с клиентом
             $table->foreignIdFor(Client::class)
@@ -34,12 +34,30 @@ return new class extends Migration {
             // __ Обходим ситуацию, когда заявки начинаются каждый год для каждого клиента с 1
             $table->date('period')->nullable(false)->comment('Период, к которому относится заявка');
 
-            $table->string('extended_meta')->nullable()->comment('Расширенная информация');
+            // __ Порядок заявки в плане
+            $table->unsignedSmallInteger('load_position')
+                ->nullable()
+                ->comment('Порядок заявки в плане');
 
-            $table->jsonb('history')->nullable()->comment('История изменений');
+            $table->dateTime('load_at')
+                ->nullable(false)
+                ->comment('Дата загрузки на складе Вегас');
 
-            $table->dateTime('load_at')->nullable(false)->comment('Дата загрузки на складе Вегас');
+            // __ Дата загрузки на складе Вегас предыдущая, в случае изменения
+            $table->dateTime('load_at_previous')
+                ->nullable()
+                ->comment('Предыдущая дата загрузки на складе Вегас');
+
+            // __ Флаг, который говорит о том, что были изменены даты загрузки на складе Вегас и ситуация требует разрешения
+            $table->boolean('load_at_dates_conflict')
+                ->nullable(false)
+                ->default(false)
+                ->comment('Конфликт при изменении даты загрузки на складе Вегас');
+
             $table->dateTime('unload_at')->nullable()->comment('Дата разгрузки на складе Клиента');
+
+            $table->string('extended_meta')->nullable()->comment('Расширенная информация');
+            $table->jsonb('history')->nullable()->comment('История изменений');
 
         });
 

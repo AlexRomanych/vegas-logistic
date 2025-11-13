@@ -24,11 +24,11 @@ interface IMenuItem {
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 let menuItems: IMenuItem[] = [
-    {name: 'План Загрузок', path: 'plan.loads', shown: true, isActive: false},
+    {name: 'План Загрузок', path: 'plan.loads', shown: true, isActive: true},
     {name: 'План Сборки', path: 'plan.assembly', shown: true, isActive: false},
     {name: 'План Раскроя', path: 'plan.cutting', shown: true, isActive: false},
     {name: 'План Швейки', path: 'plan.sewing', shown: true, isActive: false},
-    {name: 'Загрузка Плана', path: 'plan.upload', shown: true, isActive: false},
+    {name: 'Загрузка Плана', path: 'plan.upload', shown: true, isActive: true},
 ]
 
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))

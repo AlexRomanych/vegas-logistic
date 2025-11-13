@@ -5,6 +5,7 @@ export * from './data_render.ts'                    // Элемент вывод
 export * from './components_definitions.ts'         // Компоненты
 export * from './fabric_types.ts'                   // Все типы для стежки
 export * from './client_types.ts'                   // Все типы для клиентов
+export * from './plan_types.ts'                     // Все типы для планов
 
 
 // ___ Константы выравнивания текста

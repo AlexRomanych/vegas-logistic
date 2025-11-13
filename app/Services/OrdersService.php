@@ -536,6 +536,7 @@ final class OrdersService implements VegasDataUpdateContract
     /**
      * ___ Возвращает тип заявки по номеру заявки
      * @param string $orderNo
+     * @param int $clientID
      * @return OrderType
      */
     public static function getOrderTypeByOrderNoAndClientId(string $orderNo, int $clientID = 0): OrderType
@@ -553,6 +554,12 @@ final class OrdersService implements VegasDataUpdateContract
         }
 
         $parts = explode('.', $orderNo, 2);
+
+        if (ClientsService::isClient_LMM($clientID)) {
+            if (in_array($parts[1], ['1', '2'])) {
+                return self::getOrderTypeByIndex('.' . $parts[1]);     // Дополнительная заявка ЛММ
+            }
+        }
 
         if (isset(self::$orderTypesCache['.' . $parts[1]])) {
             return self::getOrderTypeByIndex('.' . $parts[1]);

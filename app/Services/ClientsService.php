@@ -76,5 +76,30 @@ final class ClientsService implements VegasDataUpdateContract
     }
 
 
+    /**
+     * __ Проверяет является ли клиент ЛММ
+     * @param Client|string|int $entity
+     * @return bool
+     */
+    public static function isClient_LMM(Client | string | int $entity): bool
+    {
+        if (is_string($entity)) {
+            return mb_stripos($entity, 'ЛММ') !== false;
+        }
+
+        if (is_int($entity)) {
+            $client = Client::query()->find($entity);
+            if (!$client) return false;
+            return self::isClient_LMM($client->name);
+        }
+
+        if ($entity instanceof Client) {
+            return self::isClient_LMM($entity->name);
+        }
+
+        return false;
+    }
+
+
 }
 

@@ -353,8 +353,9 @@ Route::prefix('/plan')
     ->middleware('jwt.auth')
     ->group(function () {
 
-        // loads/upload
-        Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);
+
+        Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);  // ___ Загрузка плана
+        Route::get('/loads', [PlanLoadsController::class, 'getPlanLoads']);
 
         // // descr: Получаем список СЗ, период в query
         // Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
