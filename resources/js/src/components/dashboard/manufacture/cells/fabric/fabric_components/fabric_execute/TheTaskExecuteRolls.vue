@@ -611,10 +611,12 @@ watch(() => fabricsStore.globalFinishExecuteRoll, async (newValue) => {
 watch(() => fabricsStore.globalSelectWorkerFlag, async (newValue) => {
     if (activeRoll.status === FABRIC_ROLL_STATUS.DONE.CODE) return      // если статус = "Выполнено" - не меняем, потому что будет задвоение буфера
     if (activeRoll.status === FABRIC_ROLL_STATUS.CREATED.CODE) return   // если статус = "Создан"
-    fabricsStore.globalSelectWorkerFlag = false                         // сбрасываем значение флага
     activeRoll.finish_by = fabricsStore.globalSelectWorkerId
 
-    const res = await fabricsStore.updateExecuteRoll(activeRoll)
+    if (fabricsStore.globalSelectWorkerFlag) {                          // делаем проверку, чтобы не было рекурсии
+        const res = await fabricsStore.updateExecuteRoll(activeRoll)
+        fabricsStore.globalSelectWorkerFlag = false                     // сбрасываем значение флага
+    }
 })
 
 // attract: Переменная-флаг нажатия кнопки "Добавить рулон"

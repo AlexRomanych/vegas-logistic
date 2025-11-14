@@ -244,6 +244,9 @@ globalEditMode.value = false // устанавливаем в false глобал
 // __ Заполняем глобальный массив производительности в хранилище
 const fillGlobalProductivity = () => {
     fabricsStore.clearTaskGlobalProductivity()
+
+    // console.log('rolls: ', rolls.value)
+
     rolls.value.forEach((roll, index, rolls) => {
 
         fabricsStore.globalTaskProductivity[props.machine.TITLE as FabricMachineTitles][index] = {

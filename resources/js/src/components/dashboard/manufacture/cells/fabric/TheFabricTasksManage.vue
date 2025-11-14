@@ -607,9 +607,9 @@ const changeTaskStatus = async (task: ITaskItem, btnRow = 1) => {
     if (task.common.status === FABRIC_TASK_STATUS.UNKNOWN.CODE) {
         task.common.status = FABRIC_TASK_STATUS.CREATED.CODE
         const res = await fabricsStore.changeFabricTaskDateStatus(task)
-        console.log(res)
+        // console.log(res)
 
-        await getTasks()
+        await getTasks(task.date)
         setActiveTaskByDate(task.date)
 
         // увеличиваем счетчик рендеринга, чтобы обновить данные на странице

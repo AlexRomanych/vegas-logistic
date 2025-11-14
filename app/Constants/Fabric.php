@@ -48,6 +48,9 @@ const FABRIC_ROLL_PENDING = 1;
 const FABRIC_ROLL_READY = 2;
 
 // ___ Константы статусов состояния готовности рулона на стежке
+// ___ Рулон не создан
+const FABRIC_ROLL_NULL_CODE = -1;
+
 // ___ Рулон создан (или сохранен)
 const FABRIC_ROLL_CREATED_CODE = 0;
 

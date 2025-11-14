@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Manufacture\Cells\Fabric\FabricTaskRoll;
+use App\Observers\FabricTaskRollObserver;
 use Illuminate\Support\ServiceProvider;
+// use Illuminate\Http\Resources\Json\JsonResource;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         mb_internal_encoding('UTF-8'); // Устанавливаем кодировку
+
+        FabricTaskRoll::observe(FabricTaskRollObserver::class);
 
 //        JsonResource::withoutWrapping();  // удаляет обертку для OrderResource
 //        JsonResource::wrap('test');  // задает глобальную обертку для OrderResource
