@@ -12,6 +12,7 @@ import workers from '@/router/routes_workers.js'
 import templates from '@/router/routes_templates.js'
 import reasons from '@/router/routes_reasons.js'
 import plans from '@/router/routes_plans.ts'
+import logs from '@/router/routes_logs.ts'
 
 const routes = [
     ...auth,
@@ -28,6 +29,7 @@ const routes = [
     ...templates,
     ...reasons,
     ...plans,
+    ...logs,
 
     {
         path: '/plan',

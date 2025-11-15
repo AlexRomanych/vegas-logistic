@@ -37,6 +37,7 @@ let menuItems: IMenuItem[] = [
     {name: 'Движение СЗ', path: 'manufacture.cell.fabric.tasks.movement', shown: false, isActive: true},
     {name: 'Архив СЗ', path: 'manufacture.cell.fabric.tasks.archive', shown: true, isActive: true},
     {name: 'Время переналадки', path: 'manufacture.cell.fabrics.pictures.tuning.time', shown: true, isActive: true},
+    {name: 'История', path: 'manufacture.logs.fabrics.rolls.execute', shown: true, isActive: true},
     {name: 'Загрузка списка рисунков ПС', path: 'manufacture.cell.fabrics.pictures.upload', shown: true, isActive: false},
     {name: 'Загрузка списка ПС', path: 'manufacture.cell.fabrics.upload', shown: true, isActive: false},
     // {name: 'Календарь ПС', path: 'manufacture.cell.fabric.tasks.calendar', shown: true, isActive: true},

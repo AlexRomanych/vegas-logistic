@@ -9,6 +9,11 @@ export interface ITaskPeriod {
     end: string
 }
 
+// __ Просто период
+export interface IPeriod {
+    start: string
+    end: string
+}
 
 // __ Объект СЗ для отображения в компонентах, который приходит с сервера
 

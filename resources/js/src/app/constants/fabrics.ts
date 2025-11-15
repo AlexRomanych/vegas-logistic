@@ -100,6 +100,14 @@ export const FABRIC_TASK_STATUS: Record<string, ITaskStatus> = Object.freeze({
 // descr: Тут все константы, касающиеся статусов движения рулона
 export const FABRIC_ROLL_STATUS: Record<string, IRollStatus> = Object.freeze({
 
+    // ___ Статус не определен
+    UNKNOWN: {
+        WORD: 'unknown',
+        CODE: -1,
+        TITLE: 'Не определено',
+        TYPE: 'dark',
+    },
+
     // descr: Рулон создан (или сохранен)
     CREATED: {
         WORD: 'created',
@@ -178,6 +186,14 @@ export const FABRIC_ROLL_STATUS: Record<string, IRollStatus> = Object.freeze({
         CODE: 9,
         TITLE: 'Отменено',
         TYPE: 'stone',
+    },
+
+    // ___ Рулон закрытый (списанный)
+    CLOSED: {
+        WORD: 'closed',
+        CODE: 10,
+        TITLE: 'Закрыт',
+        TYPE: 'secondary',
     },
 
     // ___ Рулон, без учета в 1С (чисто технический статус). Не учавствует в движении заявки

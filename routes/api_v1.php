@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskContextController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTaskRollController;
 use App\Http\Controllers\Api\V1\Cells\Fabric\CellFabricTasksDateController;
+use App\Http\Controllers\Api\V1\Cells\Logs\FabricTaskRollLogController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -390,6 +391,16 @@ Route::prefix('/plan')
     });
 
 
+
+// __ Блок Планов
+Route::prefix('/logs')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        Route::get('/fabrics/rolls/execute', [FabricTaskRollLogController::class, 'getLogsFabricsExecuteRollsByPeriod']);
+
+
+    });
 
 
 

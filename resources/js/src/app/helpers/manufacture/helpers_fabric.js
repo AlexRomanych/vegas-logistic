@@ -654,6 +654,19 @@ export function getTuningTimeCasheKey(picfrom, picTo) {
     return `${picfrom}:${picTo}`
 }
 
+/**
+ *
+ * @param {number} statusCode
+ * @returns {IRollStatus | undefined}
+ */
+export function getRollExecStatusByCode(statusCode) {
+    return Object.values(FABRIC_ROLL_STATUS).find(value => value.CODE === statusCode)
+    // return Object.entries(FABRIC_ROLL_STATUS).find(([key, value]) => value.CODE === statusCode)
+}
+
+
+
+
 
 // __ Получаем активное СЗ и вкладку из LocalStorage
 

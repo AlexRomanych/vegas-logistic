@@ -79,10 +79,10 @@ const FABRIC_ROLL_MOVED_CODE = 7;
 const FABRIC_ROLL_ACCEPTED_CODE = 8;
 
 // ___ Рулон отмененный на закрое
-const FABRIC_ROLL_CANCELLED_CODE = 8;
+const FABRIC_ROLL_CANCELLED_CODE = 9;
 
 // ___ Рулон списанный после закроя
-const FABRIC_ROLL_CLOSED_CODE = 9;
+const FABRIC_ROLL_CLOSED_CODE = 10;
 
 // line ----------------------------------------------------------------
 // ___ Константы Групп ПЯ
