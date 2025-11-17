@@ -19,9 +19,11 @@ class FabricTaskRollObserver
         FabricTaskRollLog::query()->create([
             'fabric_task_roll_id' => $fabricTaskRoll->id,
             'user_id'             => auth()->id(),
+            'worker_id'           => auth()->id(),
             'status_after'        => $fabricTaskRoll->roll_status,
-            'event'               => 'Создание рулона',
-            // 'reason'              => '',  // TODO: Брать причину из какого-то поля, еще не доделано
+            'event'               => is_null($fabricTaskRoll->service) ? 'Создание рулона' : 'Создание рулона во время выполнения СЗ',
+            'reason'              => is_null($fabricTaskRoll->service) ? null : $fabricTaskRoll->false_reason,
+            'ip'                  => request()->ip(),
         ]);
     }
 
@@ -39,12 +41,15 @@ class FabricTaskRollObserver
         $currentPosition = $fabricTaskRoll->roll_position;
         $oldPosition = $fabricTaskRoll->getOriginal('roll_position');
 
+        $serviceInform = $fabricTaskRoll->service;
+        $oldServiceInform = $fabricTaskRoll->getOriginal('service');
+
         $check_1C = null;
         $uncheck_1C = null;
 
         $description = null;
 
-        $responsible = $fabricTaskRoll->finish_by;
+        $responsible = $fabricTaskRoll->finish_by ?? 0;
 
         $event = null;
         $reason = null;
@@ -91,10 +96,10 @@ class FabricTaskRollObserver
             }
 
         } else {
-            if ($currentPosition !== $oldPosition) { // TODO: Надо добавить еще и проверку присутствия причины для перемещения
-                $isLog = false; // TODO: Не логируем, потому, что, когда рулоны падают вниз после статуса "Не выполнено" - куча записей
+            if ($currentPosition !== $oldPosition && $serviceInform !== $oldServiceInform) { // __ Логируем только с указанием причины
+                // $isLog = false;
                 $event = 'Изменение позиции рулона';
-                // $reason = $fabricTaskRoll->false_reason; // TODO: Брать причину из какого-то поля, еще не доделано
+                $reason = $fabricTaskRoll->service;
             }
 
             if ($fabricTaskRoll->registration_1C_by !== 0 && $fabricTaskRoll->getOriginal('registration_1C_by') === 0) {
@@ -104,6 +109,7 @@ class FabricTaskRollObserver
                 $uncheck_1C = false;
             } else if ($fabricTaskRoll->registration_1C_by === 0 && $fabricTaskRoll->getOriginal('registration_1C_by') !== 0) {
                 $event = 'Отмена регистрации рулона в 1С';
+                $responsible = $fabricTaskRoll->registration_1C_by;
                 $check_1C = false;
                 $uncheck_1C = true;
             }
@@ -146,16 +152,16 @@ class FabricTaskRollObserver
         }
     }
 
-/*
-    public function deleted(FabricTaskRoll $fabricTaskRoll): void
-    {
-    }
+    /*
+        public function deleted(FabricTaskRoll $fabricTaskRoll): void
+        {
+        }
 
-    public function restored(FabricTaskRoll $fabricTaskRoll): void
-    {
-    }
-    public function forceDeleted(FabricTaskRoll $fabricTaskRoll): void
-    {
-    }
-*/
+        public function restored(FabricTaskRoll $fabricTaskRoll): void
+        {
+        }
+        public function forceDeleted(FabricTaskRoll $fabricTaskRoll): void
+        {
+        }
+    */
 }

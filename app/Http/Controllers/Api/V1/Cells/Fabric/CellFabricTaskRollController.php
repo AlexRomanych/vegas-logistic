@@ -480,6 +480,8 @@ class CellFabricTaskRollController extends Controller
                 'data.falseReason' => 'required|string',
             ]);
 
+            $SERVICE_TEXT = 'Создан в процессе выполнения СЗ.';
+
             // __ Находим СЗ на данной СМ, чтобы добавить контекст - FabricTaskContext
             $task = FabricTask::query()
                 ->where('fabric_tasks_date_id', $request->data['taskId'])
@@ -522,7 +524,7 @@ class CellFabricTaskRollController extends Controller
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
                 'rolls_amount' => 1,
-                'description' => 'Создан в процессе выполнения СЗ.'
+                'description' => $SERVICE_TEXT,
                 // 'note' => 'Создан в процессе выполнения СЗ. ' . (Carbon::parse($contextDate))->format('d.m.Y'),
             ]);
 
@@ -536,10 +538,11 @@ class CellFabricTaskRollController extends Controller
                 'fabric_roll_length' => (float)$fabric->translate_rate === 0.0 ? 0.0 : $fabric->average_roll_length / $fabric->translate_rate,
                 'translate_rate' => $fabric->translate_rate,
                 'productivity' => $fabric->productivity,
-                'description' => 'Создан в процессе выполнения',   // дописываем плановый комментарий
+                'description' => 'Создан в процессе выполнения СЗ.',   // дописываем плановый комментарий
                 'false_reason' => $request->data['falseReason'],
                 'note' => $request->data['falseReason'],
-                'comment' => $request->data['falseReason']
+                'comment' => $request->data['falseReason'],
+                'service' => $SERVICE_TEXT,
             ]);
 
             return EndPointStaticRequestAnswer::ok();
@@ -691,6 +694,7 @@ class CellFabricTaskRollController extends Controller
 
                 if ($targetRoll->roll_position !== $roll['position']) {
                     $targetRoll->roll_position = $roll['position'];
+                    $targetRoll->service = $validData['reason'];
                     $targetRoll->save();
 
                     // TODO: Добавить логирование c указанием причины ($reason)

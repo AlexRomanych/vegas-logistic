@@ -397,7 +397,8 @@ Route::prefix('/logs')
     ->middleware('jwt.auth')
     ->group(function () {
 
-        Route::get('/fabrics/rolls/execute', [FabricTaskRollLogController::class, 'getLogsFabricsExecuteRollsByPeriod']);
+        Route::get('/fabrics/rolls/execute/period', [FabricTaskRollLogController::class, 'getLogsFabricsExecuteRollsByPeriod']);
+        Route::get('/fabrics/rolls/execute/roll-number', [FabricTaskRollLogController::class, 'getLogsFabricsExecuteRollsByRollNumber']);
 
 
     });

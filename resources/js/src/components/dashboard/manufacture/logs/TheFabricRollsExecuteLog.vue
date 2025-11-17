@@ -1,7 +1,109 @@
 <template>
     <div v-if="!isLoading" class="ml-2 mt-2">
 
-        <div class="sticky top-0 p-1 mb-1 bg-blue-200 border-2 rounded-lg border-blue-700 max-w-fit">
+        <div class="flex">
+            <div
+                v-for="tab in tabs" :key="tab.id"
+                :class="tab.isActive ? 'bg-blue-200 border-2 border-blue-500 rounded-lg' : ''"
+                class="cursor-pointer"
+            >
+                <div class="m-1.5">
+                    <!-- __ Tab -->
+                    <AppLabelMultiLineTS
+                        v-if="tab.show"
+                        :text="tab.name"
+                        :type="tab.type"
+                        align="center"
+                        class="cursor-pointer"
+                        text-size="small"
+                        width="w-[150px]"
+                        @click="changeTab(tab)"
+                    />
+                </div>
+
+                <Teleport defer to="#tab-content">
+
+                    <!--__ Выбор номера для рулона -->
+                    <div v-if="tab.isActive && tab.id === 0" class="flex justify-start items-end">
+
+                        <AppLabelTS
+                            align="center"
+                            text="Номер рулона:"
+                            text-size="mini"
+                            type="dark"
+                            width="w-[150px]"
+                        />
+
+                        <AppInputTextTS
+                            id="roll-number-load"
+                            v-model:text-value.trim="rollNumber"
+                            class="mb-[2px]"
+                            height="h-[30px]"
+                            placeholder="🔍 Номер рулона..."
+                            text-size="mini"
+                            type="dark"
+                            width="w-[150px]"
+                        />
+
+                        <AppLabelTS
+                            align="center"
+                            text="Показать"
+                            text-size="mini"
+                            type="dark"
+                            width="w-[150px]"
+                            @click="handleNumberSelect"
+                        />
+
+                    </div>
+
+                    <!--__ Выбор дат для периода -->
+                    <div v-if="tab.isActive && tab.id === 1" class="flex justify-start items-end">
+
+                        <!-- __ Статус после -->
+                        <div class="mb-[-2px] mr-0.5">
+                            <AppLabelTS
+                                align="center"
+                                height="h-[38px]"
+                                text="Статус:"
+                                text-size="mini"
+                                type="dark"
+                                width="w-[150px]"
+                            />
+                        </div>
+
+                        <!-- __ Фильтр: Статус после -->
+                        <AppSelectSimpleTS
+                            :select-data="statusSelectData"
+                            :type="statusSelectType"
+                            align="center"
+                            class="mt-[7px] mr-0.5"
+                            height="h-[38px]"
+                            text-size="mini"
+                            width="w-[150px]"
+                            @change="selectStatus"
+                        />
+
+                        <!-- __ Выбор дат для периода -->
+                        <CellDatesSelectTS
+                            label-text="История:"
+                            @apply="handleDatesSelect"
+                        />
+
+
+                    </div>
+
+                </Teleport>
+
+            </div>
+        </div>
+
+        <!-- __ Сюда телепортирует содержимое Таба-->
+        <div id="tab-content" class="mt-3">
+
+        </div>
+
+
+        <div class="sticky top-0 p-1 mb-1 mt-2 bg-blue-200 border-2 rounded-lg border-blue-700 max-w-fit">
 
             <div class="flex">
 
@@ -403,7 +505,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 
 import type { IFabricTaskRollLog, IPeriod, IRenderData, ISelectData, ISelectDataItem } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
@@ -429,6 +531,20 @@ import {
 import { getRollExecStatusByCode } from '@/app/helpers/manufacture/helpers_fabric'
 import { getFormatFIO } from '@/app/helpers/workers/helpers_workers'
 import { FABRIC_ROLL_STATUS } from '@/app/constants/fabrics.ts'
+import CellDatesSelectTS from '@/components/dashboard/manufacture/components/CellDatesSelectTS.vue'
+import { isNumeric } from '@/app/helpers/helpers_lib.ts'
+
+
+interface ITab {
+    id: number
+    name: string | string[]
+    isActive: boolean
+    type: IColorTypes
+    show: boolean
+    action?: (...args: any[]) => any
+}
+
+type ITabs = Record<string, ITab>
 
 
 const isLoading = ref(true)
@@ -486,7 +602,7 @@ const render: IRenderData = reactive({
     id: {
         header: ['id', ''],
         width: 'w-[50px]',
-        show: true,
+        show: false,
         type: (log = null, isHeader: boolean = true) => getType(log, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -565,7 +681,7 @@ const render: IRenderData = reactive({
         filterTextSize: FILTER_TEXT_SIZE,
         headerAlign: HEADER_ALIGN,
         dataAlign: 'center',
-        data: (log) => getFormatFIO(log.responsible),
+        data: (log) => log.responsible ? getFormatFIO(log.responsible) : '',
     },
     reason: {
         header: ['Причина', ''],
@@ -606,25 +722,6 @@ const render: IRenderData = reactive({
 })
 
 
-// __ Получаем список логов
-const period: IPeriod = {start: '2024-01-01', end: '2024-12-31'}
-const getLogs = async () => {
-    const tempLogs: IFabricTaskRollLog[] = await logsStore.getLogsFabricsExecuteRollsByPeriod(/*period*/)
-    logs.value = tempLogs
-        .map(log => {
-            log.description = log.description ?? ''
-            log.reason = log.reason ?? ''
-            log.ip = log.ip ?? ''
-            log.log_at_date = new Date(log.log_at)
-            return log
-        })
-        .sort((a, b) => a.log_at_date!.getTime() - b.log_at_date!.getTime())
-}
-
-// __ Получаем рендер
-const getLogsRender = () => logsRender.value = logs.value
-
-
 // __ Обработчик ввода даты лога
 const handleLogAtInputObj = {   // Объект для манипуляции с вводом и выводом даты
     newValue: '',
@@ -649,7 +746,13 @@ const statusBeforeSelect: ISelectData = {
         {id: FABRIC_ROLL_STATUS.DONE.CODE, name: FABRIC_ROLL_STATUS.DONE.TITLE, selected: false, disabled: false},
         {id: FABRIC_ROLL_STATUS.FALSE.CODE, name: FABRIC_ROLL_STATUS.FALSE.TITLE, selected: false, disabled: false},
         {id: FABRIC_ROLL_STATUS.MOVED.CODE, name: FABRIC_ROLL_STATUS.MOVED.TITLE, selected: false, disabled: false},
-        {id: FABRIC_ROLL_STATUS.CANCELLED.CODE, name: FABRIC_ROLL_STATUS.CANCELLED.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.ROLLING.CODE, name: FABRIC_ROLL_STATUS.ROLLING.TITLE, selected: false, disabled: false},
+        {
+            id: FABRIC_ROLL_STATUS.CANCELLED.CODE,
+            name: FABRIC_ROLL_STATUS.CANCELLED.TITLE,
+            selected: false,
+            disabled: false
+        },
         {id: FABRIC_ROLL_STATUS.CLOSED.CODE, name: FABRIC_ROLL_STATUS.CLOSED.TITLE, selected: false, disabled: false},
     ],
 }
@@ -665,7 +768,13 @@ const statusAfterSelect: ISelectData = {
         {id: FABRIC_ROLL_STATUS.DONE.CODE, name: FABRIC_ROLL_STATUS.DONE.TITLE, selected: false, disabled: false},
         {id: FABRIC_ROLL_STATUS.FALSE.CODE, name: FABRIC_ROLL_STATUS.FALSE.TITLE, selected: false, disabled: false},
         {id: FABRIC_ROLL_STATUS.MOVED.CODE, name: FABRIC_ROLL_STATUS.MOVED.TITLE, selected: false, disabled: false},
-        {id: FABRIC_ROLL_STATUS.CANCELLED.CODE, name: FABRIC_ROLL_STATUS.CANCELLED.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.ROLLING.CODE, name: FABRIC_ROLL_STATUS.ROLLING.TITLE, selected: false, disabled: false},
+        {
+            id: FABRIC_ROLL_STATUS.CANCELLED.CODE,
+            name: FABRIC_ROLL_STATUS.CANCELLED.TITLE,
+            selected: false,
+            disabled: false
+        },
         {id: FABRIC_ROLL_STATUS.CLOSED.CODE, name: FABRIC_ROLL_STATUS.CLOSED.TITLE, selected: false, disabled: false},
     ],
 }
@@ -709,6 +818,124 @@ const resetFilters = () => {
     statusAfterFilter.value = -100
 }
 
+
+// __ Определяем табы
+const tabs: ITabs = reactive({
+    searchByNumber: {
+        id: 0,
+        name: ['История', 'рулона'],
+        isActive: true,
+        type: 'stone',
+        show: true,
+    },
+    searchByPeriod: {
+        id: 1,
+        name: ['История', 'за период'],
+        isActive: false,
+        type: 'primary',
+        show: true,
+    },
+    resetFilters: {
+        id: 2,
+        name: ['Сброс', 'фильтров'],
+        isActive: false,
+        type: 'orange',
+        show: true,
+        action: resetFilters
+    },
+})
+
+// __ Переключаем табы
+const changeTab = (tab: ITab) => {
+    Object.keys(tabs).forEach(key => {
+        tabs[key].isActive = tabs[key].id === tab.id
+    })
+
+    if ('action' in tab && typeof tab.action === 'function') tab.action() // Вызываем функцию, если она есть
+}
+
+
+// __ Предварительная подготовка логов
+const logsPrepare = (logs: IFabricTaskRollLog[]): IFabricTaskRollLog[] => {
+    return logs
+        .map(log => {
+            log.description = log.description ?? ''
+            log.reason = log.reason ?? ''
+            log.ip = log.ip ?? ''
+            log.log_at_date = new Date(log.log_at)
+            return log
+        })
+        .sort((a, b) => a.log_at_date!.getTime() - b.log_at_date!.getTime())
+}
+
+// __ Получаем список логов за период
+const getLogsByPeriod = async (period: IPeriod | null = null, status: number | null = null) => {
+    const tempLogs: IFabricTaskRollLog[] = await logsStore.getLogsFabricsExecuteRollsByPeriod(period, status)
+    logs.value = logsPrepare(tempLogs)
+}
+
+// __ Получаем список логов по номеру рулона
+const getLogsByRollNumber = async (rollNumber: string) => {
+    const tempLogs: IFabricTaskRollLog[] = await logsStore.getLogsFabricsExecuteRollsByRollNumber(rollNumber)
+    logs.value = logsPrepare(tempLogs)
+}
+
+// __ Получаем рендер
+const getLogsRender = () => logsRender.value = logs.value
+
+// __ Обработка выбора рулона
+const rollNumber = ref('')
+const handleNumberSelect = async () => {
+    if (!isNumeric(rollNumber.value)) {
+        rollNumber.value = ''
+        return
+    }
+    await getLogsByRollNumber(rollNumber.value)
+    getLogsRender()
+}
+
+// __ Обработка выбора периода
+const statusSelectData: ISelectData = {
+    name: 'status-select',
+    data: [
+        {id: -100, name: 'Все', selected: true, disabled: false},
+        // {id: FABRIC_ROLL_STATUS.UNKNOWN.CODE, name: FABRIC_ROLL_STATUS.UNKNOWN.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.CREATED.CODE, name: FABRIC_ROLL_STATUS.CREATED.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.RUNNING.CODE, name: FABRIC_ROLL_STATUS.RUNNING.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.PAUSED.CODE, name: FABRIC_ROLL_STATUS.PAUSED.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.DONE.CODE, name: FABRIC_ROLL_STATUS.DONE.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.FALSE.CODE, name: FABRIC_ROLL_STATUS.FALSE.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.MOVED.CODE, name: FABRIC_ROLL_STATUS.MOVED.TITLE, selected: false, disabled: false},
+        {id: FABRIC_ROLL_STATUS.ROLLING.CODE, name: FABRIC_ROLL_STATUS.ROLLING.TITLE, selected: false, disabled: false},
+        {
+            id: FABRIC_ROLL_STATUS.CANCELLED.CODE,
+            name: FABRIC_ROLL_STATUS.CANCELLED.TITLE,
+            selected: false,
+            disabled: false
+        },
+        {id: FABRIC_ROLL_STATUS.CLOSED.CODE, name: FABRIC_ROLL_STATUS.CLOSED.TITLE, selected: false, disabled: false},
+    ],
+}
+
+const statusSelect = ref(-100)  // Статус в табе выбора периода
+const getStatusSelectType = () => {
+    if (statusSelect.value === -100) {
+        return 'primary'
+    }
+    return getRollExecStatusByCode(statusSelect.value)?.TYPE as string
+}
+const statusSelectType = ref(getStatusSelectType())
+
+const selectStatus = (value: ISelectDataItem) => {
+    statusSelect.value = value.id
+}
+
+const handleDatesSelect = async (period: IPeriod) => {
+    await getLogsByPeriod(period, statusSelect.value)
+    getLogsRender()
+}
+
+
 // __ Реализация фильтров
 watchEffect(() => {
     logsRender.value = logs.value
@@ -731,6 +958,10 @@ watchEffect(() => {
         })
 })
 
+// __ Следим за селектами выбора статуса выборки
+watch(() => statusSelect.value, (newValue) => {
+    statusSelectType.value = getStatusSelectType()
+})
 
 onMounted(async () => {
     isLoading.value = true
@@ -738,7 +969,7 @@ onMounted(async () => {
     await loaderHandler(
         loadingService,
         async () => {
-            await getLogs()             // Получаем список логов
+            await getLogsByPeriod()             // Получаем список логов
             getLogsRender()
 
             console.log('logsRender:', logsRender.value)
