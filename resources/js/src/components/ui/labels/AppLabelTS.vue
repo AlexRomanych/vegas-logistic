@@ -1,7 +1,18 @@
 <template>
     <div
-        :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
+        :class="[
+            width,
+            height,
+            backgroundColor,
+            borderColor,
+            currentTextColor,
+            textSizeClass,
+            semibold,
+            horizontalAlign,
+            rounded
+        ]"
         :title="title"
+        :style="color ? {'background-color': color} : ''"
         class="flex flex-col justify-center app-label"
         @click="labelClick"
     >
@@ -32,6 +43,8 @@ interface IProps {
     bold?: boolean
     align?: IHorizontalAlign
     title?: string
+    rounded?: string
+    color?: string
 }
 
 
@@ -44,6 +57,8 @@ const props = withDefaults(defineProps<IProps>(), {
     bold: true,
     align: 'left',
     title: '',
+    rounded: 'rounded-lg',
+    color: '',
 })
 
 const emits = defineEmits<{
@@ -70,7 +85,7 @@ const semibold = computed(() => props.bold ? 'font-semibold' : '')
 .app-label {
     @apply
     p-1 m-0.5
-    border rounded-lg focus:outline-none focus:ring-2;
+    border focus:outline-none focus:ring-2;
 }
 
 </style>

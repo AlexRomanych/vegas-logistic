@@ -22,6 +22,13 @@ class Period
         } else {
             $this->end = $end instanceof Carbon ? $end : Carbon::parse($end);
         }
+
+        // __ Проверяем, что начало периода меньше конца и меняем местами по необходимости
+        if ($this->start->greaterThan($this->end)) {
+            $temp = $this->start;
+            $this->start = $this->end;
+            $this->end = $temp;
+        }
     }
 
     /**
@@ -40,6 +47,22 @@ class Period
             ];
     }
 
+    /**
+     * ___ Возвращаем период в виде JSON
+     * @return string
+     */
+    public function toJson(): string
+    {
+        return json_encode(
+            [
+                'period' =>
+                    [
+                        'start' => $this->start->format('Y-m-d H:i:s'),
+                        'end'   => $this->end->format('Y-m-d H:i:s'),
+                    ]
+            ]
+        );
+    }
 
     /**
      * ___ Возвращаем начало периода

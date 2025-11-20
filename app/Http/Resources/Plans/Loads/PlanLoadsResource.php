@@ -25,7 +25,7 @@ class PlanLoadsResource extends JsonResource
             'load_at' => Carbon::parse($this->load_at)->format('Y-m-d H:i:s'),
             'load_at_previous' => $this->unload_at ? Carbon::parse($this->load_at_previous)->format('Y-m-d H:i:s') : null,
             'unload_at' => $this->unload_at ? Carbon::parse($this->unload_at)->format('Y-m-d H:i:s') : null,
-            'load_position' => $this->load_position,
+            'load_position' => $this->load_position ?? 0,
             'period' => $this->period,
             'status' => $this->status,
             'description' => $this->description,

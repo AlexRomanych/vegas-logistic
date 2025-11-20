@@ -13,6 +13,7 @@ class PlanLoad extends Model
 
     protected $casts = [
         'amounts' => 'array',
+        'load_position' => 'integer'
     ];
 
 

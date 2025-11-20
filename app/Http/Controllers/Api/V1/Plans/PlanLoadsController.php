@@ -7,11 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Plans\Loads\PlanLoadsResource;
 use App\Models\Plan\PlanLoad;
 use App\Services\ClientsService;
+use App\Services\DefaultsService;
 use App\Services\OrdersService;
 use App\Services\PlanService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PlanLoadsController extends Controller
 {
@@ -121,15 +123,57 @@ class PlanLoadsController extends Controller
     }
 
 
+    /**
+     * ___ Получаем план загрузок
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function getPlanLoads(Request $request)
     {
-        $planLoads = PlanLoad::query()
-            ->with(['client', 'orderType'])
-            ->orderBy('load_at')
-            ->get();
+        try {
+            $validated = $request->validate([
+                'period'       => 'nullable|array',
+                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date',
+            ]);
 
-        return PlanLoadsResource::collection($planLoads);
+            if (isset($validated['period'])) {
+                $start = Carbon::parse($validated['period']['start']);
+                $end = Carbon::parse($validated['period']['end']);
+            } else {
+                $period = DefaultsService::getDefaultPeriodPlanLoads();
+                $start = Carbon::parse($period->getStart());
+                $end = Carbon::parse($period->getEnd());
+            }
+
+            $planLoads = PlanLoad::query()
+                ->whereDate('load_at', '>=', $start)     // Используем такую конструкцию, потому что
+                ->whereDate('load_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with(['client', 'orderType'])
+                ->orderBy('load_at')
+                ->get();
+
+            return PlanLoadsResource::collection($planLoads);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
+
+
+    /**
+     * ___ Получаем период по умолчанию для плана загрузок
+     * @return string
+     */
+    public function getPlanLoadsDefaultPeriod() {
+        $a = 9;
+        try {
+            $period = DefaultsService::getDefaultPeriodPlanLoads();
+            return DefaultsService::getDefaultPeriodPlanLoads()->toJson();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
 
 }

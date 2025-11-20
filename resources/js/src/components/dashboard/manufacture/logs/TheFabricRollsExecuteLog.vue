@@ -387,6 +387,7 @@
                             :text-size="render.user.dataTextSize"
                             :type="typeof render.user.type === 'function' ? render.user.type(log, false) : render.user.type"
                             :width="render.user.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ id -->
@@ -397,6 +398,7 @@
                             :text-size="render.id.dataTextSize"
                             :type="typeof render.id.type === 'function' ? render.id.type(log, false) : render.id.type"
                             :width="render.id.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Дата Лога -->
@@ -407,6 +409,7 @@
                             :text-size="render.logAt.dataTextSize"
                             :type="typeof render.logAt.type === 'function' ? render.logAt.type(log, false) : render.logAt.type"
                             :width="render.logAt.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Номер рулона -->
@@ -417,6 +420,7 @@
                             :text-size="render.rollNumber.dataTextSize"
                             :type="typeof render.rollNumber.type === 'function' ? render.rollNumber.type(log, false) : render.rollNumber.type"
                             :width="render.rollNumber.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Событие -->
@@ -427,6 +431,7 @@
                             :text-size="render.event.dataTextSize"
                             :type="typeof render.event.type === 'function' ? render.event.type(log, false) : render.event.type"
                             :width="render.event.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Статус до -->
@@ -437,6 +442,7 @@
                             :text-size="render.statusBefore.dataTextSize"
                             :type="typeof render.statusBefore.type === 'function' ? render.statusBefore.type(log, false) : render.statusBefore.type"
                             :width="render.statusBefore.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Статус после -->
@@ -447,6 +453,7 @@
                             :text-size="render.statusAfter.dataTextSize"
                             :type="typeof render.statusAfter.type === 'function' ? render.statusAfter.type(log, false) : render.statusAfter.type"
                             :width="render.statusAfter.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Ответственный -->
@@ -457,6 +464,7 @@
                             :text-size="render.responsible.dataTextSize"
                             :type="typeof render.responsible.type === 'function' ? render.responsible.type(log, false) : render.responsible.type"
                             :width="render.responsible.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Причина -->
@@ -467,6 +475,7 @@
                             :text-size="render.reason.dataTextSize"
                             :type="typeof render.reason.type === 'function' ? render.reason.type(log, false) : render.reason.type"
                             :width="render.reason.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ Описание -->
@@ -477,6 +486,7 @@
                             :text-size="render.description.dataTextSize"
                             :type="typeof render.description.type === 'function' ? render.description.type(log, false) : render.description.type"
                             :width="render.description.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                         <!-- __ ip -->
@@ -487,6 +497,7 @@
                             :text-size="render.ip.dataTextSize"
                             :type="typeof render.ip.type === 'function' ? render.ip.type(log, false) : render.ip.type"
                             :width="render.ip.width"
+                            :rounded="ROUNDED_DEFAULT"
                         />
 
                     </div>
@@ -505,7 +516,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
 
 import type { IFabricTaskRollLog, IPeriod, IRenderData, ISelectData, ISelectDataItem } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
@@ -575,6 +586,7 @@ const DATA_ALIGN = 'left'
 const HEADER_TEXT_SIZE = 'mini'
 const DATA_TEXT_SIZE = 'micro'
 const FILTER_TEXT_SIZE = 'mini'
+const ROUNDED_DEFAULT = 'rounded-[4px]'
 
 const getType = (log: IFabricTaskRollLog | null, isHeader: boolean = true, renderRollStatuses: boolean = false, statusField: string = 'status_before'): IColorTypes => {
     if (isHeader) return DEFAULT_HEADER_TYPE
@@ -959,7 +971,7 @@ watchEffect(() => {
 })
 
 // __ Следим за селектами выбора статуса выборки
-watch(() => statusSelect.value, (newValue) => {
+watch(() => statusSelect.value, () => {
     statusSelectType.value = getStatusSelectType()
 })
 
@@ -972,7 +984,7 @@ onMounted(async () => {
             await getLogsByPeriod()             // Получаем список логов
             getLogsRender()
 
-            console.log('logsRender:', logsRender.value)
+            // console.log('logsRender:', logsRender.value)
         },
         undefined,
         // false,

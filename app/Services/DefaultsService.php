@@ -8,6 +8,11 @@ use Carbon\Carbon;
 
 final class DefaultsService
 {
+
+    /**
+     * ___ Возвращает период логов по умолчанию
+     * @return Period
+     */
     public static function getDefaultPeriodLogs(): Period
     {
         // __ - 1 месяц назад - сегодня
@@ -21,5 +26,14 @@ final class DefaultsService
     }
 
 
+    /**
+     * ___ Возвращает период логов по умолчанию
+     * @return Period
+     */
+    public static function getDefaultPeriodPlanLoads(): Period
+    {
+        // __ Начало текущего месяца + 2 месяца вперед
+        return new Period(Carbon::now()->startOfMonth(), Carbon::now()->addMonths(2)->endOfMonth());
+    }
 
 }

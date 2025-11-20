@@ -441,6 +441,16 @@ export function isWorkingDay(inDate = new Date()) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// attract Возвращает, является ли день выходным или рабочим
+/**
+ * @param {Date} inDate
+ * @returns {boolean}
+ */
+export function isHoliday(inDate = new Date()) {
+    return !isWorkingDay(inDate)
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает, является ли дата текущей
 export function isToday(inDate = new Date()) {
     return getDate(inDate).toLocaleDateString() === new Date().toLocaleDateString()
@@ -705,4 +715,145 @@ export function validateInputDateHelper(input = null) {
     }
 
     input.newValue = input.oldValue
+}
+
+
+
+/**
+ * ___ Функция для преобразования объекта Date в строку формата YYYY-MM-DD
+ * ___ в ЛОКАЛЬНОМ часовом поясе.
+ * @param {Date} date - Исходный объект Date.
+ * @returns {string} - Отформатированная строка (YYYY-MM-DD).
+ */
+export function formatToYMD(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return ''
+    }
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    const pad = (num) => num.toString().padStart(2, '0');
+    return `${year}-${pad(month)}-${pad(day)}`;
+}
+
+
+// --- ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ ---
+// const today = new Date();
+// const specificDate = new Date('2026-04-05T10:30:00'); // Апрель, 5-е
+// const singleDigitMonth = new Date('2025-01-09'); // Январь, 9-е
+//
+// console.log(`Текущая дата (локально): ${formatToYMD(today)}`);
+// console.log(`Конкретная дата: ${formatToYMD(specificDate)}`);
+// console.log(`Дата с нулями: ${formatToYMD(singleDigitMonth)}`);
+// console.log(`Невалидная дата: ${formatToYMD(new Date('abc'))}`);
+
+
+// -------------------------------------------------------------------
+// --- АЛЬТЕРНАТИВНЫЙ СПОСОБ: Использование toISOString() (в UTC) ---
+// -------------------------------------------------------------------
+
+/**
+ * ___ Этот метод быстрый, но всегда возвращает дату в формате UTC.
+ * ___ Если текущее локальное время смещает вас на следующий день UTC,
+ * ___ результат будет отличаться.
+ */
+export function formatToYMD_UTC(date) {
+    // toISOString() возвращает "YYYY-MM-DDTHH:mm:ss.sssZ"
+    // Срез [0, 10] дает "YYYY-MM-DD"
+    return date.toISOString().slice(0, 10);
+}
+
+
+/**
+ * ___ Функция для вычисления разницы в днях между двумя датами,
+ * ___ представленными в виде строк ("YYYY-MM-DD").
+ * ___ * ВАЖНО: При парсинге строк "YYYY-MM-DD" Date() по умолчанию
+ * ___ интерпретирует их как время в UTC (полночь), что устраняет
+ * ___ проблемы с локальным часовым поясом и летним временем при сравнении.
+ * @param {string} dateString1 - Первая дата в формате YYYY-MM-DD.
+ * @param {string} dateString2 - Вторая дата в формате YYYY-MM-DD.
+ * @returns {number} - Количество полных дней между датами (целое число).
+ */
+export function getDaysDifference(dateString1, dateString2) {
+    // Константы для преобразования
+    const MS_PER_SECOND = 1000;
+    const SECONDS_PER_MINUTE = 60;
+    const MINUTES_PER_HOUR = 60;
+    const HOURS_PER_DAY = 24;
+
+    // Общее количество миллисекунд в одном дне
+    const MS_PER_DAY = MS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY;
+
+    // 1. Преобразование строк в объекты Date
+    // Парсинг строки "YYYY-MM-DD" в JS интерпретируется как UTC,
+    // что предотвращает смещение из-за локального часового пояса.
+    const date1 = new Date(dateString1);
+    const date2 = new Date(dateString2);
+
+    // Проверка на корректность парсинга
+    if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+        console.error("Ошибка: Одна из дат невалидна.");
+        return NaN;
+    }
+
+    // 2. Вычисление разницы в миллисекундах
+    // Используем Math.abs(), чтобы разница всегда была положительной, независимо от порядка ввода дат.
+    const diffInMilliseconds = Math.abs(date1.getTime() - date2.getTime());
+
+    // 3. Преобразование миллисекунд в дни. Используем Math.floor() для округления до меньшего целого, чтобы получить количество полных дней.
+    const diffInDays = Math.floor(diffInMilliseconds / MS_PER_DAY);
+
+    return diffInDays;
+}
+
+
+/**
+ * ___ Функция для проверки равенства ДАТ (год, месяц, день) двух объектов Date,
+ * ___ игнорируя время и часовой пояс.
+ * @param {Date} date1 - Первый объект Date.
+ * @param {Date} date2 - Второй объект Date.
+ * @returns {boolean} - true, если даты равны.
+ */
+export function areDatesEqual(date1, date2) {
+    // 1. Проверяем, что оба аргумента являются валидными объектами Date
+    const isValidDate = (d) => d instanceof Date && !isNaN(d.getTime())
+
+    if (!isValidDate(date1) || !isValidDate(date2)) {
+        // console.error("Ошибка: Один или оба аргумента не являются валидными объектами Date.")
+        return false
+    }
+
+    return date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth()    === date2.getMonth() &&
+        date1.getDate()     === date2.getDate();
+
+    // --- АЛЬТЕРНАТИВНЫЙ МЕТОД: Сравнение строкового представления в UTC ---
+    /*
+    const dateString1 = date1.toISOString().slice(0, 10);
+    const dateString2 = date2.toISOString().slice(0, 10);
+
+    return dateString1 === dateString2;
+    */
+}
+
+
+/**
+ * ___ Функция для прибавления указанного количества дней к дате.
+ * ___ ВАЖНО!!!: Функция возвращает НОВЫЙ объект Date, не изменяя исходный.
+ * @param {Date} originalDate - Исходный объект Date.
+ * @param {number} days - Количество дней для прибавления (положительное или отрицательное).
+ * @returns {Date} - Новый объект Date с измененной датой.
+ */
+export function additionDays(originalDate, days) {
+    // 1. Создаем копию исходной даты, чтобы не изменять оригинал
+    const newDate = new Date(originalDate.getTime());
+
+    // 2. Получаем текущий день месяца
+    const currentDay = newDate.getDate();
+
+    // 3. Используем setDate(): Установка нового дня, который автоматически обрабатывает переходы на новый месяц/год.
+    newDate.setDate(currentDay + days);
+
+    return newDate;
 }

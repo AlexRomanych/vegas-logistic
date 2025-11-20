@@ -38,13 +38,27 @@ export interface IPlanLoadClient {
     name: string
     add_name: string
     short_name: string
-    region: string
+    region: IPlanLoadClientRegion
 }
 
 export interface IPlanLoadOrderType {
-    color: string
-    display_name: string
     id: number
     name: string
+    display_name: string
+    color: string
 }
+
+export type IPlanLoadClientRegion = 'east' | 'west'
+
+
+// __ Матрица рендера плана загрузок
+export type IPlanLoadsMatrix = IPlanLoadsMatrixWeek[]
+export type IPlanLoadsMatrixWeek = IPlanLoadsMatrixDay[]
+export type IPlanLoadsMatrixDay = IPlanLoad[]
+// export type IPlanLoadsMatrix = IPlanLoad[][][]    // То же самое
+
+
 // line -------------------------------------------------------------------
+
+
+
