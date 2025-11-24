@@ -10,6 +10,8 @@ const menuData = () => {
                     {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
                     {name: 'Стежка', path: 'manufacture.cell.fabrics', shown: true, isActive: true,},
                     {name: 'Раскрой', path: 'manufacture.cell.cutting', shown: true, isActive: true,},
+                    {name: 'Бизнес-процессы', path: 'business.processes', shown: true, isActive: true,},
+
                     // {name: 'Сменные задания', path: 'manufacture.cells.tasks', shown: true, isActive: true,},
                     // {name: 'План производства по ПЯ', path: 'plan', shown: true, isActive: true,},
                     // {name: 'Планирование производства', path: '', shown: true, isActive: true,},

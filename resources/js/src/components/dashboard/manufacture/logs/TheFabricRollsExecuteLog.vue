@@ -877,7 +877,8 @@ const logsPrepare = (logs: IFabricTaskRollLog[]): IFabricTaskRollLog[] => {
             log.log_at_date = new Date(log.log_at)
             return log
         })
-        .sort((a, b) => a.log_at_date!.getTime() - b.log_at_date!.getTime())
+        .sort((a, b) => b.log_at_date!.getTime() - a.log_at_date!.getTime()) // по убыванию
+        // .sort((a, b) => a.log_at_date!.getTime() - b.log_at_date!.getTime()) // по возрастанию
 }
 
 // __ Получаем список логов за период

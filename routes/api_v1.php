@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\OrderController;
 
 //use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\V1\Plans\PlanLoadsController;
+use App\Http\Controllers\Api\V1\Processes\BusinessProcessController;
 use App\Http\Controllers\Api\V1\ReasonController;
 use App\Http\Controllers\Api\V1\WorkerController;
 use App\Http\Controllers\UpdateData1CController as Update;
@@ -185,7 +186,6 @@ Route::middleware('jwt.auth')
     });
 
 
-
 //загружаем из файла клиентов
 // Route::get('/clients', [ClientController::class, 'getClients'])->middleware('jwt.auth');
 // Route::get('/clients/load', [ClientController::class, 'clientsLoad'])->middleware('jwt.auth');
@@ -203,7 +203,7 @@ Route::get('auth/me', [AuthController::class, 'me'])
 // Это, что касается аутентификации
 Route::group([
     'middleware' => 'api',
-    'prefix' => 'auth'
+    'prefix'     => 'auth'
 ], function ($router) {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -295,8 +295,6 @@ Route::prefix('/fabrics/tasks')
         Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
 
 
-
-
         Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
         Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
         Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
@@ -345,10 +343,6 @@ Route::prefix('/reasons')
     });
 
 
-
-
-
-
 // __ Блок Планов
 Route::prefix('/plan')
     ->middleware('jwt.auth')
@@ -392,7 +386,6 @@ Route::prefix('/plan')
     });
 
 
-
 // __ Блок Логов
 Route::prefix('/logs')
     ->middleware('jwt.auth')
@@ -405,6 +398,15 @@ Route::prefix('/logs')
     });
 
 
+// __ Блок Бизнес процессов
+Route::prefix('/business-processes')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        Route::get('/', [BusinessProcessController::class, 'getBusinessProcesses']);
+        Route::get('/{id}', [BusinessProcessController::class, 'getBusinessProcessById']);
+
+    });
 
 
 

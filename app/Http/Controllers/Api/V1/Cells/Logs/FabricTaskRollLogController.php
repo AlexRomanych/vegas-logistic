@@ -73,7 +73,7 @@ class FabricTaskRollLogController extends Controller
 
             })
                 ->with(['fabricTaskRoll.fabric', 'user', 'responsible'])
-                ->orderBy('log_at')
+                ->orderBy('log_at', 'desc')
                 ->get();
 
             // Метод when() выполнит замыкание, только если $status НЕ null, НЕ 0, НЕ false и т.д.

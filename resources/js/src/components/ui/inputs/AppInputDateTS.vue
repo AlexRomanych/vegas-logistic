@@ -10,6 +10,7 @@
                 selectBtnLabel: 'Выбор',
                 cancelBtnLabel: 'Отмена',
                 nowBtnLabel: 'Текущая',}"
+            :disabled="disabled"
             :formats="{input: 'dd.MM.yyyy г.'}"
             :input-attrs="{
                 clearable: false,

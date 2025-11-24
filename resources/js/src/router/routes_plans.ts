@@ -1,4 +1,4 @@
-// info Причины
+// info Планы
 import type { IRouteMeta } from '@/types'
 
 const PREFIX = '/plan'

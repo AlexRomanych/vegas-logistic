@@ -13,6 +13,7 @@ import templates from '@/router/routes_templates.js'
 import reasons from '@/router/routes_reasons.js'
 import plans from '@/router/routes_plans.ts'
 import logs from '@/router/routes_logs.ts'
+import processes from '@/router/routes_processes.ts'
 
 const routes = [
     ...auth,
@@ -30,6 +31,7 @@ const routes = [
     ...reasons,
     ...plans,
     ...logs,
+    ...processes,
 
     {
         path: '/plan',

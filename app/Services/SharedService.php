@@ -22,6 +22,15 @@ class SharedService
     {
         try {
 
+            // __ Это работает
+            // $tableName = self::TABLE_NAME;
+            // $sql = "SELECT setval(
+            //     pg_get_serial_sequence(?, 'id'),
+            //     (SELECT COALESCE(MAX(id), 0) FROM {$tableName})
+            // );";
+            //
+            // DB::statement($sql, [$tableName]);
+
             // pg_get_serial_sequence возвращает имя sequence в формате 'схема.имя'
             $sequenceObj = DB::selectOne(
                 "SELECT pg_get_serial_sequence(?, ?)",
