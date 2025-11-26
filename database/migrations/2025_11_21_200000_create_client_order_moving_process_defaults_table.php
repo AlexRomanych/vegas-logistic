@@ -8,8 +8,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     use AddCommonColumnsInTableTrait;
 
     /**
@@ -61,16 +60,35 @@ return new class extends Migration
             // __ Предотвращение дублирования связей, создает индекс
             $table->unique(['business_process_id', 'client_id', 'business_process_node_id']);
 
-            // __ Операция для смещения по дате (true - сложение, false - вычитание)
-            $table->boolean('day_offset_operation')
-                ->nullable()
-                ->comment('Операция (true - сложение, false - вычитание)');
-
             // __ Смещение по дате в днях
             $table->integer('offset')
                 ->nullable(false)
                 ->default(0)
                 ->comment('Смещение по дате в днях');
+
+            // __ Операция для смещения по дате (true - сложение, false - вычитание)
+            $table->boolean('day_offset_operation')
+                ->nullable()
+                ->comment('Операция (true - сложение, false - вычитание)');
+
+            // __ Интервал (true - использовать, false - не использовать)
+            $table->boolean('is_interval')
+                ->nullable(false)
+                ->default(false)
+                ->comment('Смещение интервальное или точное');
+
+            // __ Смещение по дате в днях для интервала: начало
+            $table->integer('offset_start')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Начало смещение по дате в днях для интервала');
+
+            // __ Смещение по дате в днях для интервала: окончание
+            $table->integer('offset_end')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Окончание смещение по дате в днях для интервала');
+
 
             // __ Расширенная логика (не только +/-, а еще и условие) (true - использовать, false - не использовать)
             $table->boolean('is_extended_logic')
@@ -87,6 +105,13 @@ return new class extends Migration
             $table->boolean('time_offset_operation')
                 ->nullable()
                 ->comment('Операция (true - до, false - после)');
+
+            // __ Разрешить обработку (для случаев, когда, например, нужно запретить или разрешить обработку
+            // __ данного узла в процессе оптимизации)
+            $table->boolean('allow_action')
+                ->nullable()
+                ->comment('Разрешить обработку');
+
 
             // __ Метаданные (jsonb). Делаем на случай, если логика будет не только +/-, а еще и условие
             $table->jsonb('meta_extended')->nullable()->comment('Метаданные (jsonb)');

@@ -38,12 +38,17 @@ return new class extends Migration {
 
             // __ url для VueRouter для перехода в соответствующий компонент
             $table->string('route_name')
-                ->nullable(true)
+                ->nullable()
                 ->comment('url для VueRouter для перехода в соответствующий компонент');
 
             // __ Тут может быть, например, признак старта узла (если параллельный процесс, то стартовать, если хоть один узел закончен или ожидать всех) (bool
             $table->string('node_start')->nullable()->comment('Старт узла');
 
+            // __ Разрешить обработку (для случаев, когда, например, нужно запретить или разрешить обработку
+            // __ данного узла в процессе оптимизации)
+            $table->boolean('allow_action')
+                ->nullable()
+                ->comment('Разрешить обработку');
 
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность');
             $table->unsignedSmallInteger('status')->nullable()->comment('Статус');

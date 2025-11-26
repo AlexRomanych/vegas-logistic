@@ -406,6 +406,9 @@ Route::prefix('/business-processes')
         Route::get('/', [BusinessProcessController::class, 'getBusinessProcesses']);
         Route::get('/{id}', [BusinessProcessController::class, 'getBusinessProcessById']);
 
+        Route::get('/adjacency-list/{id}', [BusinessProcessController::class, 'getBusinessProcessAdjacencyList']);
+
+
     });
 
 

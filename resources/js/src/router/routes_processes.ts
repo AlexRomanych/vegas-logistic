@@ -10,13 +10,21 @@ const processes = [
         component: () => import('@/components/dashboard/processes/TheProcessesCommon.vue'),
         meta: {title: 'Бизнес-процессы'} as IRouteMeta,
     },
-
     {
         path: `${PREFIX}/list`,              // __ Список Бизнес-процессов
         name: 'business.processes.list',
         component: () => import('@/components/dashboard/processes/TheProcessesList.vue'),
         meta: {title: 'Список Бизнес-процессов'} as IRouteMeta,
     },
+    {
+        path: '/business-process/:id',        // __ Бизнес процесс
+        name: 'business.process',
+        component: () => import('@/components/dashboard/processes/TheProcess.vue'),
+        meta: {title: 'Бизнес-процесс'} as IRouteMeta,
+    },
+
+
+
     // {
     //     path: `${PREFIX}/assembly`,             // __ План Сборки
     //     name: 'plan.assembly',

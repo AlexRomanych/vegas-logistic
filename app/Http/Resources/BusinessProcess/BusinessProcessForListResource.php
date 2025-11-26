@@ -5,7 +5,7 @@ namespace App\Http\Resources\BusinessProcess;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BusinessProcessResourceForList extends JsonResource
+class BusinessProcessForListResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +15,7 @@ class BusinessProcessResourceForList extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            '__' => parent::toArray($request),
+            // '__' => parent::toArray($request),
 
             'id'             => $this->id,
             'name'           => $this->name,
@@ -25,13 +25,13 @@ class BusinessProcessResourceForList extends JsonResource
             'belongs_to'     => $this->belongs_to,
             'type'           => $this->type,
             'start_node'     => $this->whenLoaded('startNode', function () {
-                return new BusinessProcessNodeResourceForList($this->startNode);
+                return new BusinessProcessNodeForListResource($this->startNode);
             }),
             'finish_node'    => $this->whenLoaded('finishNode', function () {
-                return new BusinessProcessNodeResourceForList($this->finishNode);
+                return new BusinessProcessNodeForListResource($this->finishNode);
             }),
             'reference_node' => $this->whenLoaded('referenceNode', function () {
-                return new BusinessProcessNodeResourceForList($this->referenceNode);
+                return new BusinessProcessNodeForListResource($this->referenceNode);
             }),
             // 'reference_node'    => $this->whenLoaded('referenceNode', new BusinessProcessNodeResourceForList($this->referenceNode)),
             // 'reference_node'    => $this->reference_node,

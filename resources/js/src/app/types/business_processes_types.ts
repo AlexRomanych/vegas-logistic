@@ -27,3 +27,15 @@ export interface IBusinessProcessNodeList {
 }
 
 // line -----------------------------------------------------
+
+// ___ Интерфейс для рендеринга бизнес-процесса
+export interface IBusinessProcessRender {
+    node: IBusinessProcessItem
+    'in': IBusinessProcessItem[]
+    'out': IBusinessProcessItem[]
+}
+
+export interface IBusinessProcessItem {
+    id: number
+    name: string
+}

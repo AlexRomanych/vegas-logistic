@@ -176,6 +176,8 @@
                             :text-size="render.id.dataTextSize"
                             :type="typeof render.id.type === 'function' ? render.id.type(process, false) : render.id.type"
                             :width="render.id.width"
+                            class="cursor-pointer"
+                            @click="render.id.click!(process)"
                         />
 
                         <!-- __ Название -->
@@ -186,6 +188,8 @@
                             :text-size="render.name.dataTextSize"
                             :type="typeof render.name.type === 'function' ? render.name.type(process, false) : render.name.type"
                             :width="render.name.width"
+                            class="cursor-pointer"
+                            @click="render.id.click!(process)"
                         />
 
                         <!-- __ Active -->
@@ -196,6 +200,8 @@
                             :text-size="render.active.dataTextSize"
                             :type="typeof render.active.type === 'function' ? render.active.type(process, false) : render.active.type"
                             :width="render.active.width"
+                            class="cursor-pointer"
+                            @click="render.id.click!(process)"
                         />
 
                         <!-- __ Описание -->
@@ -206,7 +212,8 @@
                             :text-size="render.description.dataTextSize"
                             :type="typeof render.description.type === 'function' ? render.description.type(process, false) : render.description.type"
                             :width="render.description.width"
-                            class="truncate"
+                            class="truncate cursor-pointer"
+                            @click="render.id.click!(process)"
                         />
 
                         <!-- __ Комментарий -->
@@ -217,7 +224,8 @@
                             :text-size="render.comment.dataTextSize"
                             :type="typeof render.comment.type === 'function' ? render.comment.type(process, false) : render.comment.type"
                             :width="render.comment.width"
-                            class="truncate"
+                            class="truncate cursor-pointer"
+                            @click="render.id.click!(process)"
                         />
 
                         <!-- __ Удалить -->
@@ -278,7 +286,7 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
-// import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import { useBusinessProcessesStore } from '@/stores/BusinessProcessesStore'
 
@@ -350,6 +358,7 @@ const render: IRenderData = reactive({
         headerAlign: HEADER_ALIGN,
         dataAlign: 'center',
         data: (process) => process.id.toString(),
+        click: (process) => goToProcess(process)
     },
     name: {
         header: ['Название', 'бизнес-процесса'],
@@ -362,6 +371,7 @@ const render: IRenderData = reactive({
         headerAlign: HEADER_ALIGN,
         dataAlign: DATA_ALIGN,
         data: (process) => process.name,
+        click: (process) => goToProcess(process)
     },
     active: {
         header: ['Актуальность', 'процесса'],
@@ -377,6 +387,7 @@ const render: IRenderData = reactive({
         headerAlign: HEADER_ALIGN,
         dataAlign: 'center',
         data: (process) => process.active ? '✓' : '✗',
+        click: (process) => goToProcess(process)
     },
     description: {
         header: ['Описание', 'бизнес-процесса'],
@@ -388,7 +399,8 @@ const render: IRenderData = reactive({
         filterTextSize: FILTER_TEXT_SIZE,
         headerAlign: HEADER_ALIGN,
         dataAlign: DATA_ALIGN,
-        data: (process) => process.description ?? ''
+        data: (process) => process.description ?? '',
+        click: (process) => goToProcess(process)
     },
     comment: {
         header: ['Комментарий', 'к бизнес-процессу'],
@@ -400,7 +412,8 @@ const render: IRenderData = reactive({
         filterTextSize: FILTER_TEXT_SIZE,
         headerAlign: HEADER_ALIGN,
         dataAlign: DATA_ALIGN,
-        data: (process) => process.comment ?? ''
+        data: (process) => process.comment ?? '',
+        click: (process) => goToProcess(process)
     },
 })
 
@@ -464,13 +477,13 @@ const deleteProcess = async (process: IBusinessProcessList) => {
     // }
 }
 
-// const router = useRouter()                 // Определяем роутер
-// const edit = (client: IClient) => {
-//     router.push({
-//         name: 'clients.edit',
-//         params: {id: client.id}
-//     })
-// }
+const router = useRouter()                 // Определяем роутер
+const goToProcess = (process: IBusinessProcessList) => {
+    router.push({
+        name: 'business.process',
+        params: {id: process.id}
+    })
+}
 
 // const createClient = () => {
 //     router.push({

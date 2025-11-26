@@ -8,13 +8,15 @@ import type { IPeriod } from '@/types'
 const DEBUG = true
 
 const URL_PROCESSES = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
+const URL_PROCESS = 'business-processes'                                                          // __ Получение Бизнес-процессов с сервера
+const URL_PROCESSES_ADJACENCY_LIST = 'business-processes/adjacency-list'                        // __ Получение Списка смежности Бизнес-процессов с сервера = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
 
 export const useBusinessProcessesStore = defineStore('business-processes', () => {
 
     // // __ Declare variables
     const businessProcessesGlobal = ref<IPeriod | null>(null)
 
-    // __ ________________________________________________________________
+    // line ----------------------------------------------------------------
 
     // __ Получаем с API все Бизнесс-процессы
     const getBusinessProcesses = async (status = null) => {
@@ -24,16 +26,24 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
                 ? '0'
                 : ''
         const result = await jwtGet(`${URL_PROCESSES}/${params}`)
-
         businessProcessesGlobal.value = result.data     // кэшируем
-
         if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcesses: ', result)
-
-        return result.data // все возвращается через Resource с ключем data
+        return result.data
     }
 
+    // __ Получаем с API Бизнес-процесс по id
+    const getBusinessProcessById = async (id: number) => {
+        const result = await jwtGet(`${URL_PROCESS}/${id.toString()}`)
+        if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcessesAdjacencyList: ', result)
+        return result.data
+    }
 
-
+    // __ Получаем с API Список Смежности (Adjacency List) Бизнес-процесса
+    const getBusinessProcessAdjacencyList = async (id: number) => {
+        const result = await jwtGet(`${URL_PROCESSES_ADJACENCY_LIST}/${id.toString()}`)
+        if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcess: ', result)
+        return result.data
+    }
 
     // // ___ Загрузка Плана загрузок на сервер
     // // fileData - данные файла, отправляем в RAW формате
@@ -83,6 +93,8 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
         businessProcessesGlobal,
 
         getBusinessProcesses,
+        getBusinessProcessById,
+        getBusinessProcessAdjacencyList,
     }
 
 })

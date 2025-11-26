@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api\V1\Processes;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\BusinessProcess\BusinessProcessResourceForList;
+use App\Http\Resources\BusinessProcess\BusinessProcessForListResource;
 use App\Models\BusinessProcesses\BusinessProcess;
+use App\Services\BusinessProcessesService;
 use Exception;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Validator;
@@ -42,7 +43,7 @@ class BusinessProcessController extends Controller
                 default => $result = BusinessProcess::query()->with($with)->get(),
             };
 
-            return BusinessProcessResourceForList::collection($result);
+            return BusinessProcessForListResource::collection($result);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
@@ -51,9 +52,9 @@ class BusinessProcessController extends Controller
     /**
      * ___ Возвращает бизнес процесс по id
      * @param string $id
-     * @return BusinessProcess|string|null
+     * @return BusinessProcessForListResource|string
      */
-    public function getBusinessProcessById(string $id): BusinessProcess|string|null
+    public function getBusinessProcessById(string $id)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -64,11 +65,43 @@ class BusinessProcessController extends Controller
                 throw new Exception($validator->errors()->first());
             }
 
-            return BusinessProcess::query()->find($id);
+            $businessProcess = BusinessProcess::query()->find($id);
+            if (!$businessProcess) {
+                throw new Exception('Business process with id ' . $id . ' not found');
+            }
 
+            return new BusinessProcessForListResource($businessProcess);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
 
     }
+
+
+    /**
+     * ___ Получаем список Список Смежности бизнес-процесса
+     * @param string $id id бизнес процесса
+     * @return array|string
+     */
+    public function getBusinessProcessAdjacencyList(string $id)
+    {
+        try {
+
+            $validator = Validator::make(
+                ['id' => $id],
+                ['id' => 'required|numeric|exists:business_processes,id']
+            );
+
+            if ($validator->fails()) {
+                throw new Exception($validator->errors()->first());
+            }
+
+            return ['data' => BusinessProcessesService::getBusinessProcessAdjacencyList($id)];
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+
+    }
+
+
 }
