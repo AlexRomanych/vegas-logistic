@@ -491,7 +491,7 @@
                         @click="toggleCollapse(fabricRolls)"
                     />
 
-                    <!-- __ Ткань группы, м.п. -->
+                    <!-- __ Ткань группы (сумма), м.п. -->
                     <AppLabel
                         :text="fabricRolls.fabric.textileLength.toFixed(2)"
                         :width="render.textileLength.width"
@@ -502,7 +502,7 @@
                         @click="toggleCollapse(fabricRolls)"
                     />
 
-                    <!-- __ ПС группы, м.п. -->
+                    <!-- __ ПС группы (сумма), м.п. -->
                     <AppLabel
                         :text="fabricRolls.fabric.fabricLength.toFixed(2)"
                         :width="render.fabricLength.width"
@@ -937,7 +937,8 @@ const getRollsByStatus = (inRolls: IRollMove[], status = COMMON_CODE) => {
     for (const fabricId of uniqueFabricIds) {
         const fabricRolls = $rolls.filter((roll) => roll.fabric.fabric_id === fabricId).sort((a, b) => a.id - b.id)
         const fabricTextileLength = fabricRolls.reduce((amount, roll) => amount + roll.textile_length, 0)
-        const fabricLength = fabricRolls.reduce((amount, roll) => amount + roll.textile_length / roll.rate, 0)
+        // const fabricLength = fabricRolls.reduce((amount, roll) => amount + roll.textile_length / roll.rate, 0)
+        const fabricLength = fabricRolls.reduce((amount, roll) => amount + roll.fabric_length, 0)
 
         resultArray.push({
             fabric: {
@@ -970,6 +971,7 @@ allRolls.value = await getNotAcceptedToCutRolls() as IRollMove[]
 // __ преобразуем в структуру для отображения
 const doneRolls = ref<IRollMoveRender[]>([])
 doneRolls.value = getRollsByStatus(allRolls.value)
+console.log('allRolls: ', allRolls.value)
 console.log('doneRolls: ', doneRolls.value)
 
 
@@ -1195,41 +1197,41 @@ const changeRegistrationStatus = async (roll: IRollMove) => {
 
 // Здесь реализован как статус
 /**
-const changeRegistrationStatus_Old = async (roll: IRollMove) => {
-    // console.log(roll)
-    if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
-        calloutType.value = 'danger'
-        calloutText.value = 'Рулон уже перемещен на закрой.'
-        calloutShow.value = true
-        calloutClose()
-        return
-    }
+ const changeRegistrationStatus_Old = async (roll: IRollMove) => {
+ // console.log(roll)
+ if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
+ calloutType.value = 'danger'
+ calloutText.value = 'Рулон уже перемещен на закрой.'
+ calloutShow.value = true
+ calloutClose()
+ return
+ }
 
-    if (roll.status === FABRIC_ROLL_STATUS.DONE.CODE) {
-        modalText.value = ['Будет установлен статус учета рулона в 1С.', 'Продолжить?']
-        modalType.value = FABRIC_ROLL_STATUS.REGISTERED_1C.TYPE
+ if (roll.status === FABRIC_ROLL_STATUS.DONE.CODE) {
+ modalText.value = ['Будет установлен статус учета рулона в 1С.', 'Продолжить?']
+ modalType.value = FABRIC_ROLL_STATUS.REGISTERED_1C.TYPE
 
-        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
-        if (answer) {
-            roll.status = FABRIC_ROLL_STATUS.REGISTERED_1C.CODE
-            const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
-            allRolls.value = await getNotAcceptedToCutRolls()
-            // console.log(res)
-        }
-    } else if (roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE) {
-        modalText.value = ['Будет снят статус учета рулона в 1С.', 'Продолжить?']
-        modalType.value = FABRIC_ROLL_STATUS.DONE.TYPE
+ const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+ if (answer) {
+ roll.status = FABRIC_ROLL_STATUS.REGISTERED_1C.CODE
+ const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
+ allRolls.value = await getNotAcceptedToCutRolls()
+ // console.log(res)
+ }
+ } else if (roll.status === FABRIC_ROLL_STATUS.REGISTERED_1C.CODE) {
+ modalText.value = ['Будет снят статус учета рулона в 1С.', 'Продолжить?']
+ modalType.value = FABRIC_ROLL_STATUS.DONE.TYPE
 
-        const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
-        if (answer) {
-            roll.status = FABRIC_ROLL_STATUS.DONE.CODE
-            const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
-            allRolls.value = await getNotAcceptedToCutRolls()
-            // console.log(res)
-        }
-    }
-}
-*/
+ const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
+ if (answer) {
+ roll.status = FABRIC_ROLL_STATUS.DONE.CODE
+ const res = await fabricsStore.setRollRegisteredStatus(roll.id, roll.status)
+ allRolls.value = await getNotAcceptedToCutRolls()
+ // console.log(res)
+ }
+ }
+ }
+ */
 //__ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -1254,7 +1256,8 @@ const changeMovingStatus = async (roll: IRollMove) => {
         const answer = await appModalAsync.value.show() // показываем модалку и ждем ответ
         if (answer) {
             roll.status = FABRIC_ROLL_STATUS.MOVED.CODE
-            /*const res = */await fabricsStore.setRollMovedStatus(roll.id, roll.status)
+            /*const res = */
+            await fabricsStore.setRollMovedStatus(roll.id, roll.status)
             allRolls.value = await getNotAcceptedToCutRolls()
             // console.log(res)
         }
@@ -1408,7 +1411,7 @@ const filtersApply = (
         commentFilter,
         movedAtFilter,
         register1CAtFilter
-    } : {
+    }: {
         fabricFilter: string,
         rollNumberFilter: string,
         finishAtFilter: string,

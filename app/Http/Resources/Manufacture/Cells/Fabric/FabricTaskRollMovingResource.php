@@ -88,7 +88,8 @@ class FabricTaskRollMovingResource extends JsonResource
             'descr' => $this->description ?? '',
             'comment' => $this->comment ?? '',
             'note' => $this->note ?? '',
-            'rate' => $this->translate_rate,
+            'rate' => (float)$this->translate_rate,
+
             'textile_length' => $this->textile_roll_length,
 
             // Ставим костыль для ранних версий, когда  fabric_roll_length === 0

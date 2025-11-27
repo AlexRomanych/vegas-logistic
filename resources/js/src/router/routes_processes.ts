@@ -22,8 +22,12 @@ const processes = [
         component: () => import('@/components/dashboard/processes/TheProcess.vue'),
         meta: {title: 'Бизнес-процесс'} as IRouteMeta,
     },
-
-
+    {
+        path: '/business-process/customization/order-moving',  // __ Кастомизация Бизнес-процесса движения заявки
+        name: 'business.process.customization.order-moving',
+        component: () => import('@/components/dashboard/processes/customization/TheOrderMovingCustomization.vue'),
+        meta: {title: 'Настройка БП Движение заявки'} as IRouteMeta,
+    },
 
     // {
     //     path: `${PREFIX}/assembly`,             // __ План Сборки

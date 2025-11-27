@@ -1,4 +1,13 @@
-import type { IBusinessProcessList, IBusinessProcessNodeList } from '@/types'
+import type { IBusinessProcessesConst, IBusinessProcessList } from '@/types'
+
+// ___ Константы бизнес процессов
+export const BUSINESS_PROCESSES: IBusinessProcessesConst = {
+    ORDER_MOVING: {
+        id: 1,
+        name: 'Схема движения заявки'
+    }
+}
+
 
 export const BUSINESS_PROCECC_DRAFT: IBusinessProcessList = {
     id: 0,

@@ -76,11 +76,11 @@ return new class extends Migration {
             ['name' => 'Обработка ОЗ', 'type' => 'node', 'route_name' => '', 'has_module' => false, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Начало производства', 'type' => 'node', 'route_name' => '', 'has_module' => false, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Раскрой', 'type' => 'node', 'route_name' => 'manufacture.cell.cutting', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
-            ['name' => 'Швейный цех', 'type' => 'node', 'route_name' => '', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
+            ['name' => 'Пошив', 'type' => 'node', 'route_name' => '', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Сборка', 'type' => 'node', 'route_name' => '', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Упаковка', 'type' => 'node', 'route_name' => '', 'has_module' => false, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Передача на склад ГП', 'type' => 'node', 'route_name' => '', 'has_module' => false, 'created_at' => now(), 'updated_at' => now(),],
-            ['name' => 'Загрузка на складе', 'type' => 'node', 'route_name' => '', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
+            ['name' => 'Загрузка на складе ГП', 'type' => 'node', 'route_name' => '', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Стежка', 'type' => 'node', 'route_name' => 'manufacture.cell.fabrics', 'has_module' => true, 'created_at' => now(), 'updated_at' => now(),],
             ['name' => 'Производство ПБ', 'type' => 'node', 'route_name' => '', 'has_module' => false, 'created_at' => now(), 'updated_at' => now(),],
         ]);

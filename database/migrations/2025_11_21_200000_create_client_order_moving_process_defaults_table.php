@@ -45,17 +45,19 @@ return new class extends Migration {
             //     ->constrained('clients', 'id')
             //     ->cascadeOnDelete();
 
-            // __ Связь с Операционным узлом (узел, относительно которого задается смещение)
+            // __ Связь с Операционным узлом (узел, для которого производится настройка)
             $table->foreignIdFor(BusinessProcessNode::class)
                 ->nullable(false)
-                ->comment('Референс на Бизнес узел')
+                ->comment('Бизнес узел, для которого производится настройка')
                 ->constrained()
                 ->cascadeOnDelete();
-            // $table->foreignId('operation_node_ref_id')
-            //     ->nullable(false)
-            //     ->comment('Референс на Операционный узел')
-            //     ->constrained('operation_nodes', 'id')
-            //     ->cascadeOnDelete();
+
+            // __ Связь с Операционным узлом (узел, относительно которого задается смещение)
+            $table->foreignId('process_node_ref_id')
+                ->nullable(false)
+                ->comment('Референс на Операционный узел')
+                ->constrained('business_process_nodes', 'id')
+                ->cascadeOnDelete();
 
             // __ Предотвращение дублирования связей, создает индекс
             $table->unique(['business_process_id', 'client_id', 'business_process_node_id']);
@@ -119,6 +121,100 @@ return new class extends Migration {
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
+
+        DB::table(self::TABLE_NAME)->insert([
+            [ // __ Поступление заявки
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 1,
+                'process_node_ref_id'      => 12,
+                'offset'                   => -5,
+                'day_offset_operation'     => false,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Внесение заявки КС в 1С
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 2,
+                'process_node_ref_id'      => 1,
+                'offset'                   => 0,
+                'day_offset_operation'     => null,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Начало производства
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 6,
+                'process_node_ref_id'      => 2,
+                'offset'                   => 1,
+                'day_offset_operation'     => true,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Раскрой
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 7,
+                'process_node_ref_id'      => 12,
+                'offset'                   => -3,
+                'day_offset_operation'     => false,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Пошив
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 8,
+                'process_node_ref_id'      => 7,
+                'offset'                   => 1,
+                'day_offset_operation'     => true,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Сборка
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 9,
+                'process_node_ref_id'      => 8,
+                'offset'                   => 1,
+                'day_offset_operation'     => true,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Упаковка
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 10,
+                'process_node_ref_id'      => 9,
+                'offset'                   => 0,
+                'day_offset_operation'     => null,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Передача на склад ГП
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 11,
+                'process_node_ref_id'      => 9,
+                'offset'                   => 0,
+                'day_offset_operation'     => null,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+            [ // __ Загрузка на складе
+                'business_process_id'      => 1,
+                'client_id'                => 0,
+                'business_process_node_id' => 12,
+                'process_node_ref_id'      => 12,
+                'offset'                   => 0,
+                'day_offset_operation'     => null,
+                'created_at'               => now(),
+                'updated_at'               => now()
+            ],
+        ]);
+
     }
 
     /**

@@ -1,5 +1,19 @@
 // info Business Processes types
 
+
+// ___ Интерфейс бизнес процесса для задания констант
+export type IBusinessProcessesConst = Record<IBusinessProcessesConstNames, IBusinessProcessConst>
+
+export interface IBusinessProcessConst {
+    id: number
+    name: string
+}
+
+export type IBusinessProcessesConstNames = 'ORDER_MOVING'
+
+// line -----------------------------------------------------
+
+
 // ___ Интерфейс для списка бизнес процессов
 export interface IBusinessProcessList {
     id: number

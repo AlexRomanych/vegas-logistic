@@ -13,11 +13,21 @@
 
         <div v-for="(process, idx) of businessProcessesAdjacencyList" :key="idx">
 
-            <div v-if="idx != 1" class="flex justify-center">
-                <AppArrowDownTS/>
-            </div>
+            <!--<div v-if="idx != 1" class="flex justify-center">-->
+            <!--    <AppArrowDownTS/>-->
+            <!--</div>-->
 
             <div class="flex justify-center">
+                <AppLabelTS
+                    :text="(counter++).toString()"
+                    align="center"
+                    height="h-10"
+                    text-size="huge"
+                    type="indigo"
+                    width="w-[100px]"
+                    rounded="3"
+                />
+
                 <AppLabelTS
                     :text="idx.toString()"
                     align="center"
@@ -41,6 +51,17 @@
 
         </div>
 
+        <div class="flex justify-center my-4">
+            <AppLabelTS
+                text="Кастомизация"
+                align="center"
+                height="h-20"
+                text-size="huge"
+                type="indigo"
+                width="w-[200px]"
+                @click="router.push({name: 'business.process.customization.order-moving'})"
+            />
+        </div>
 
     </div>
 </template>
@@ -58,7 +79,7 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppArrowDownTS from '@/components/ui/arrows/AppArrowDownTS.vue'
 
 const route = useRoute()
-const router = useRouter()                 // Определяем роутер
+const router = useRouter()
 
 const businessProcessesStore = useBusinessProcessesStore()
 
@@ -66,6 +87,7 @@ const businessProcessesStore = useBusinessProcessesStore()
 const isLoading = ref(false)
 
 let paramId: number = -1
+let counter: number
 
 // __ Определяем переменные
 const businessProcesses = ref<IBusinessProcessList>(BUSINESS_PROCECC_DRAFT)
@@ -95,6 +117,8 @@ onMounted(async () => {
 
             await getBusinessProcessAdjacencyList(paramId)
             await getBusinessProcesses(paramId)
+
+            counter = 1
 
             console.log('businessProcessesAdjacencyList: ', businessProcessesAdjacencyList.value)
             console.log('businessProcesses: ', businessProcesses.value)
