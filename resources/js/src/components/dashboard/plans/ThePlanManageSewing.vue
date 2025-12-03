@@ -4,21 +4,20 @@
             <PlanWeek
                 :date="getStartWeekDate(idx)"
                 :week="planWeek"
+                @drag-and-drop="correctRenderMatrix"
             />
-
         </div>
-
     </div>
 </template>
 
 <script lang="ts" setup>
-import type { IBusinessProcessNode, IPeriod, IPlan, IPlanMatrix } from '@/types'
+import type { IPeriod, IPlan, IPlanMatrix } from '@/types'
 
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute, useRouter } from 'vue-router'
 import { usePlansStore } from '@/stores/PlansStore.ts'
-import { useBusinessProcessesStore } from '@/stores/BusinessProcessesStore.ts'
+// import { useRoute, useRouter } from 'vue-router'
+// import { useBusinessProcessesStore } from '@/stores/BusinessProcessesStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -30,39 +29,27 @@ import {
 import { additionDays } from '@/app/helpers/helpers_date'
 
 import {
-    BUSINESS_PROCESS_NODE_DRAFT,
     BUSINESS_PROCESS_NODES,
     BUSINESS_PROCESSES
 } from '@/app/constants/business_processes.ts'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 
-import PlanWeek from '@/components/dashboard/plans/plan_business_process/PlanWeek.vue'
+import PlanWeek from '@/components/dashboard/plans/plan_sewing/PlanWeek.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import { PLAN_DRAFT } from '@/app/constants/plans.ts'
 
-
-// interface IProps {
-//     businessProcessId?: number
-//     processId?: number
-// }
-
-// const props: IProps = withDefaults(defineProps<IProps>(), {
-//     businessProcessId: BUSINESS_PROCESSES.ORDER_MOVING.ID,              // БП - Движение заявки
-//     businessProcessNodeId: BUSINESS_PROCESS_NODES.LOADS.ID              // Node - Загрузка на складе Вегас
-// })
 
 const DEBUG = true
 const isLoading = ref(false)
 
-const route = useRoute()
-const router = useRouter()
+// const route = useRoute()
+// const router = useRouter()
 
 const planStore = usePlansStore()
-const businessProcessesStore = useBusinessProcessesStore()
 
 const {planPeriodGlobal} = storeToRefs(planStore)
 
 // __ Определяем переменные
-const businessProcessNode = ref<IBusinessProcessNode>(BUSINESS_PROCESS_NODE_DRAFT)
 const plan = ref<IPlan[]>([])
 let planPeriod: IPeriod = PERIOD_DRAFT          // Период плана загрузок
 let renderPeriod: IPeriod = PERIOD_DRAFT        // Период для рендера
@@ -71,11 +58,6 @@ let renderMatrix = ref<IPlanMatrix>([])        // Матрица для ренд
 // __ Определяем переменные из маршрута
 let businessProcessIdFromRoute: number = BUSINESS_PROCESSES.ORDER_MOVING.ID
 let businessProcessNodeIdFromRoute: number = BUSINESS_PROCESS_NODES.LOADS.ID
-
-// __ Получаем узел бизнес-процесса
-const getBusinessProcessNode = async (id: number) => {
-    businessProcessNode.value = await businessProcessesStore.getBusinessProcessNodeById(id)
-}
 
 // __ Получаем план загрузок
 const getPlan = async (
@@ -98,8 +80,34 @@ const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlan(plan.value)
 // __ Получаем матрицу для рендера
 const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(plan.value, renderPeriod)
 
+// __ Проблема с draggable
+// __ Если день пустой, то перетаскивание не срабатывает
+// __ Поэтому добавляем пустой день
+const correctRenderMatrix = () => {
+    let draftId = -100
+    renderMatrix.value.forEach((week, weekIndex) => {
+
+        week.forEach((day, dayIndex) => {
+            const filteredDay = day.filter(item => item.id !== PLAN_DRAFT.id)
+            if (filteredDay.length === 0) {
+                const draft = {...PLAN_DRAFT, id: draftId--}
+                filteredDay.push(draft)
+            }
+            renderMatrix.value[weekIndex][dayIndex] = filteredDay
+        })
+
+    })
+}
+
 // __ Логика
 const getStartWeekDate = (weekOrder: number /* порядковы номер недели */) => additionDays(new Date(renderPeriod.start), weekOrder * 7)
+
+watch(() => renderMatrix.value, () => {
+
+    // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
+
+}, {immediate: true, deep: true})
+
 
 
 onMounted(async () => {
@@ -116,27 +124,21 @@ onMounted(async () => {
             //     businessProcessNodeIdFromRoute = route.params.businessProcessNodeId as unknown as number
             // })
 
-            await getBusinessProcessNode(businessProcessNodeIdFromRoute)    // Получаем узел бизнес-процесса
+            // await getBusinessProcessNode(businessProcessNodeIdFromRoute)    // Получаем узел бизнес-процесса
 
             plan.value = await getPlan(businessProcessIdFromRoute, businessProcessNodeIdFromRoute)
             await getPlanPeriod()       // Получаем период плана загрузок
 
             getRenderPeriod()
             getRenderMatrix()
+            correctRenderMatrix()
+
+            // if (DEBUG) console.log('businessProcessIdFromRoute:', businessProcessIdFromRoute)
+            // if (DEBUG) console.log('businessProcessNodeIdFromRoute:', businessProcessNodeIdFromRoute)
+            // if (DEBUG) console.log('plan:', plan.value)
+            if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
 
 
-            if (DEBUG) console.log('businessProcessIdFromRoute:', businessProcessIdFromRoute)
-            if (DEBUG) console.log('businessProcessNodeIdFromRoute:', businessProcessNodeIdFromRoute)
-            if (DEBUG) console.log('plan:', plan.value)
-            if (DEBUG) console.log('node:', businessProcessNode.value)
-
-            // await getBusinessProcessAdjacencyList(paramId)
-            // await getBusinessProcesses(paramId)
-
-            // counter = 1 // __ Счетчик для сквозной нумерации процессов
-
-            // console.log('businessProcessesAdjacencyList: ', businessProcessesAdjacencyList.value)
-            // console.log('businessProcesses: ', businessProcesses.value)
         },
         undefined,
         // false,

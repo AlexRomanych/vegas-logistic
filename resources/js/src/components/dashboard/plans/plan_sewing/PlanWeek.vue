@@ -15,6 +15,7 @@
                 <PlanLoadsDay
                     :date="getDate(idx)"
                     :day="week[idx].length ? week[idx] : []"
+                    @drag-and-drop="dragAndDrop"
                 />
             </div>
 
@@ -24,11 +25,13 @@
 </template>
 
 <script lang="ts" setup>
-
 import type { IPlanMatrixWeek } from '@/types'
-import PlanLoadsDay from '@/components/dashboard/plans/plan_business_process/PlanDay.vue'
+
+import { computed, watch } from 'vue'
+
 import { additionDays, getWeekNumber } from '@/app/helpers/helpers_date'
-import { computed } from 'vue'
+
+import PlanLoadsDay from '@/components/dashboard/plans/plan_sewing/PlanDay.vue'
 
 interface IProps {
     date: Date                      // Дата начала недели
@@ -39,9 +42,16 @@ const props = withDefaults(defineProps<IProps>(), {
     week: () => []
 })
 
+const emits = defineEmits<{
+    (e: 'drag-and-drop'): void,
+}>()
+
+
 // __ Логика
 const getDate = (dayNumber: number /* порядковый день недели*/) => additionDays(props.date, dayNumber)
 const weekNumber = computed(() => getWeekNumber(props.date).toString())
+
+const dragAndDrop = () => emits('drag-and-drop')
 
 
 </script>
