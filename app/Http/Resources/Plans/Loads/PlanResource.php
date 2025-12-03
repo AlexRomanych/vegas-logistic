@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PlanLoadsResource extends JsonResource
+class PlanResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -44,7 +44,7 @@ class PlanLoadsResource extends JsonResource
                 'color' => $this->orderType->color,
             ],
 
-            'action_at' => Carbon::parse($this->load_at)->format('Y-m-d H:i:s'),
+            'action_at' => Carbon::parse($this->action_at)->format('Y-m-d H:i:s'),
             // '_' => parent::toArray($request),
         ];
     }

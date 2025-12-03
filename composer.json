@@ -28,7 +28,8 @@
         "files": [
             "app/Helpers/helpers.php",
             "app/Constants/Constants.php",
-            "app/Constants/Fabric.php"
+            "app/Constants/Fabric.php",
+            "app/Constants/BusinessProcesses.php"
         ]
     },
     "autoload-dev": {

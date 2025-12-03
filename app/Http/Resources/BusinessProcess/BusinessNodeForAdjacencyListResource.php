@@ -19,18 +19,20 @@ class BusinessNodeForAdjacencyListResource extends JsonResource
 
             'id'            => $this->id,
             'name'          => $this->name,
+            'has_module'    => $this->has_module,
+            'route_name'    => $this->route_name,
+
+            'defaults' => DefaultsForAdjacencyListResource::collection($this->clientsDefaultSettings),
 
             // 'active'        => $this->active,
             // 'allow_action'  => $this->allow_action,
             // 'description'   => $this->description,
-            // 'has_module'    => $this->has_module,
             // 'meta'          => $this->meta,
             // 'meta_extended' => $this->meta_extended,
             // 'node_start'    => $this->node_start,
             // 'note'          => $this->note,
             // 'order'         => $this->order,
             // 'pivot'         => $this->pivot,
-            // 'route_name'    => $this->route_name,
             // 'status'        => $this->status,
             // 'type'          => $this->type,
 

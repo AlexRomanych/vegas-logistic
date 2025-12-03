@@ -1,4 +1,4 @@
-import type { IPeriod, IPlanLoad, IPlanLoadsMatrix } from '@/types'
+import type { IPeriod, IPlan, IPlanMatrix } from '@/types'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import {
     additionDays,
@@ -11,8 +11,8 @@ import {
 
 
 // ___ Функция, которая возвращает период для рендера плана (находит границы данных и расширяет до ПН до и ВС после)
-export function getRenderPeriodForPlanLoads(planLoads: IPlanLoad[]): IPeriod {
-    const datesArray = getRenderArrayForPlanLoads(planLoads)
+export function getRenderPeriodForPlan(plan: IPlan[]): IPeriod {
+    const datesArray = getRenderArrayForPlan(plan)
     if (datesArray.length === 0) return PERIOD_DRAFT
     return {
         start: formatToYMD(getMondayBefore(datesArray[0])),
@@ -22,15 +22,15 @@ export function getRenderPeriodForPlanLoads(planLoads: IPlanLoad[]): IPeriod {
 
 // ___ Функция, которая возвращает матрицу для рендера плана
 // ___ Это сортированный массив дат, на которые нужно отрисовать план
-export function getRenderArrayForPlanLoads(planLoads: IPlanLoad[]): Date[] {
-    const datesSet = new Set(planLoads.map(planLoad => splitDate(planLoad.load_at)))
+export function getRenderArrayForPlan(plan: IPlan[]): Date[] {
+    const datesSet = new Set(plan.map(planItem => splitDate(planItem.action_at)))
     const datesArray = Array.from(datesSet).map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime())
     return datesArray
 }
 
 
 // ___ Возвращает матрицу для рендера плана
-export function getRenderMatrixForPlanLoads(planLoads: IPlanLoad[], renderPeriod: IPeriod): IPlanLoadsMatrix {
+export function getRenderMatrixForPlan(plan: IPlan[], renderPeriod: IPeriod): IPlanMatrix {
 
     const daysDifference = getDaysDifference(renderPeriod.start, renderPeriod.end)
     const weeksAmount = (daysDifference + 1) / 7
@@ -43,13 +43,13 @@ export function getRenderMatrixForPlanLoads(planLoads: IPlanLoad[], renderPeriod
         const weekLoads = []
         for (let j = 0; j < 7; j++) {
 
-            const dayLoads: IPlanLoad[] = []
+            const dayLoads: IPlan[] = []
             let loadPosition = 0
 
-            planLoads.forEach(planLoad => {
-                if (areDatesEqual(workDate, new Date(splitDate(planLoad.load_at)))) {
-                    planLoad.load_position = ++loadPosition,
-                    dayLoads.push(planLoad)
+            plan.forEach(planItem => {
+                if (areDatesEqual(workDate, new Date(splitDate(planItem.action_at)))) {
+                    planItem.load_position = ++loadPosition,
+                    dayLoads.push(planItem)
                 }
             })
             weekLoads.push(dayLoads)

@@ -18,8 +18,8 @@ import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import {
-    getRenderMatrixForPlanLoads,
-    getRenderPeriodForPlanLoads
+    getRenderMatrixForPlan,
+    getRenderPeriodForPlan,
 } from '@/app/helpers/plan/helpers_plan.ts'
 import PlanLoadsWeek from '@/components/dashboard/plans/plan_loads/PlanLoadsWeek.vue'
 import { additionDays } from '@/app/helpers/helpers_date'
@@ -40,7 +40,7 @@ let renderMatrix = ref<IPlanLoadsMatrix>([])        // Матрица для р�
 // __ Получаем план загрузок
 const getPlanLoads = async () => planLoads.value = await planStore.getPlanLoads(/*period*/)
 
-// __ Получаем период плана загрузок
+// __ Получаем период плана загрузок с сервера
 const getDefaultPeriod = async () => planPeriod = await planStore.getPlanLoadsDefaultPeriod()
 const getPlanPeriod = async () => {
     // TODO: Доделать выбор периода
@@ -50,11 +50,11 @@ const getPlanPeriod = async () => {
 
 
 // __ Получаем период для рендера
-const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlanLoads(planLoads.value)
+const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlan(planLoads.value)
 
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlanLoads(planLoads.value, renderPeriod)
+const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(planLoads.value, renderPeriod)
 
 
 

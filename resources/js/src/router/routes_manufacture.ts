@@ -1,7 +1,9 @@
 // info Manufacture
 
-import fabrics from './routes_manufacture_fabrics.js'
-import cutting from './routes_manufacture_cutting.js'
+import fabrics from '@/router/routes_manufacture_fabrics.js'
+import cutting from '@/router/routes_manufacture_cutting.ts'
+import sewing from '@/router/routes_manufacture_sewing.ts'
+import assembly from '@/router/routes_manufacture_assembly.ts'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
@@ -9,12 +11,12 @@ const _CELL_PREFIX = '/cell/'
 const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
-import {
-    CELL_AUTO_TYPE,
-    CELL_UNIVERSAL_TYPE,
-    CELL_SOLID_HARD_TYPE,
-    CELL_SOLID_LIGHT_TYPE,
-} from '/resources/js/src/app/constants/sewingTypes.js'
+// import {
+//     CELL_AUTO_TYPE,
+//     CELL_UNIVERSAL_TYPE,
+//     CELL_SOLID_HARD_TYPE,
+//     CELL_SOLID_LIGHT_TYPE,
+// } from '@/app/constants/sewingTypes.js'
 
 const manufactureRaw = [
     //hr----------------------------------------------------------------------------------------------------------------
@@ -53,13 +55,21 @@ const manufactureRaw = [
     //hr----------------------------------------------------------------------------------------------------------------
 
     //hr----------------------------------------------------------------------------------------------------------------
-    // attract: Производственные ячейки
 
-    // attract: Стежка -------------------------------------------------------------------------------------------------
+    // ___: Производственные ячейки
+    // __ Стежка -------------------------------------------------------------------------------------------------
     ...fabrics,
 
-    // attract: Раскрой-------------------------------------------------------------------------------------------------
+    // __ Раскрой ------------------------------------------------------------------------------------------------
     ...cutting,
+
+    // __ Швейка _------------------------------------------------------------------------------------------------
+    ...sewing,
+
+    // __ Сборка _------------------------------------------------------------------------------------------------
+    ...assembly,
+
+
 
     /*
     {
@@ -263,6 +273,8 @@ const manufactureRaw = [
 
     // attract: Швейка -------------------------------------------------------------------------------------------------
     //info Пошив (автоматы) hr ok
+/*
+
     {
         path: _MAIN_PREFIX + 'sewing/' + CELL_AUTO_TYPE,
         // name: getRouteName(this.path),
@@ -505,10 +517,15 @@ const manufactureRaw = [
                 '/resources/js/src/components/dashboard/manufacture/tasks/TheCellTaskStopper.vue'
             ), //Заглушка
     },
+ */
 ]
 
+
+
+
+
 // Меняем слеши на точки для названия маршрута
-const getRouteName = (path) => path.slice(1).replace(/\//g, '.')
+const getRouteName = (path: string) => path.slice(1).replace(/\//g, '.')
 
 // attract Определяем маршруты для визуализации ПЯ
 const manufacture = manufactureRaw.map((route) => {

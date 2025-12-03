@@ -2,6 +2,8 @@
 
 namespace App\Models\BusinessProcesses;
 
+use App\Models\BusinessProcesses\Defaults\ClientOrderMovingProcessDefault;
+use App\Models\Client;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,9 +12,23 @@ use Illuminate\Support\Facades\DB;
 
 class BusinessProcessNode extends Model
 {
+    // protected $table = 'business_process_node';
+
     protected $guarded = false;
 
     protected $hidden = ['created_at', 'updated_at'];
+
+
+    // __ Референсный узел для бизнес-процесса по id
+    // public function scopeReferenceNode($query, $businessProcessId)
+    // {
+    //     return $query
+    //         ->whereHas('previousNodesConnections', function ($query) use ($businessProcessId) {
+    //             return $query
+    //                 ->where('business_process_id', $businessProcessId)
+    //                 ->where('previous_node_id', null);
+    //         });
+    // }
 
     // __ Первый узел для бизнес-процесса по id
     public function scopeFirstNode($query, $businessProcessId)
@@ -107,5 +123,19 @@ class BusinessProcessNode extends Model
         return $this->hasMany(BusinessProcessNodesConnection::class, 'previous_node_id');
     }
 
+
+    // Relations: Связь с Дефолтными настройками для каждого клиента
+    public function clientsDefaultSettings(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(
+                Client::class,
+                'client_order_moving_process_defaults',
+                'business_process_node_id',     // id узла бизнес-процесса
+                'client_id'                     // id клиента
+            )
+            ->using(ClientOrderMovingProcessDefault::class)
+            ->withPivot(['offset', 'day_offset_operation', 'process_node_ref_id']);
+    }
 
 }

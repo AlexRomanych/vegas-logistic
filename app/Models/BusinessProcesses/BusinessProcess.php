@@ -29,4 +29,6 @@ class BusinessProcess extends Model
     {
         return $this->belongsTo(BusinessProcessNode::class, 'finish_node_id');
     }
+
+
 }

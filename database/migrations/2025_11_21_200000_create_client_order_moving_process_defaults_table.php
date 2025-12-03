@@ -26,10 +26,10 @@ return new class extends Migration {
             $table->id()->from(1);
 
             // __ Связь с Бизнес-процессом
-            $table->foreignIdFor(BusinessProcess::class)
-                ->nullable(false)
-                ->constrained()
-                ->cascadeOnDelete();
+            // $table->foreignIdFor(BusinessProcess::class)
+            //     ->nullable(false)
+            //     ->constrained()
+            //     ->cascadeOnDelete();
 
             // // __ Связь с Операционным узлом
             // $table->foreignId('operation_node_id')
@@ -60,7 +60,7 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             // __ Предотвращение дублирования связей, создает индекс
-            $table->unique(['business_process_id', 'client_id', 'business_process_node_id']);
+            $table->unique([/*'business_process_id',*/ 'client_id', 'business_process_node_id']);
 
             // __ Смещение по дате в днях
             $table->integer('offset')
@@ -124,7 +124,7 @@ return new class extends Migration {
 
         DB::table(self::TABLE_NAME)->insert([
             [ // __ Поступление заявки
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 1,
                 'process_node_ref_id'      => 12,
@@ -134,7 +134,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Внесение заявки КС в 1С
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 2,
                 'process_node_ref_id'      => 1,
@@ -144,7 +144,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Начало производства
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 6,
                 'process_node_ref_id'      => 2,
@@ -154,7 +154,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Раскрой
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 7,
                 'process_node_ref_id'      => 12,
@@ -164,7 +164,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Пошив
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 8,
                 'process_node_ref_id'      => 7,
@@ -174,7 +174,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Сборка
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 9,
                 'process_node_ref_id'      => 8,
@@ -184,7 +184,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Упаковка
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 10,
                 'process_node_ref_id'      => 9,
@@ -194,7 +194,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Передача на склад ГП
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 11,
                 'process_node_ref_id'      => 9,
@@ -204,7 +204,7 @@ return new class extends Migration {
                 'updated_at'               => now()
             ],
             [ // __ Загрузка на складе
-                'business_process_id'      => 1,
+                // 'business_process_id'      => 1,
                 'client_id'                => 0,
                 'business_process_node_id' => 12,
                 'process_node_ref_id'      => 12,

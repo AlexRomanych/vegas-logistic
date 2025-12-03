@@ -8,7 +8,8 @@ import type { IPeriod } from '@/types'
 const DEBUG = true
 
 const URL_PROCESSES = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
-const URL_PROCESS = 'business-processes'                                                          // __ Получение Бизнес-процессов с сервера
+const URL_PROCESS = 'business-processes'                                                        // __ Получение Бизнес-процессов с сервера
+const URL_PROCESS_NODE = 'business-processes/node'                                              // __ Получение узла Бизнес-процесса с сервера = 'business-processes'                                                        // __ Получение Бизнес-процессов с сервера
 const URL_PROCESSES_ADJACENCY_LIST = 'business-processes/adjacency-list'                        // __ Получение Списка смежности Бизнес-процессов с сервера = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
 
 export const useBusinessProcessesStore = defineStore('business-processes', () => {
@@ -37,6 +38,15 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
         if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcessesAdjacencyList: ', result)
         return result.data
     }
+
+    // __ Получаем с API узел Бизнес-процесса по id
+    const getBusinessProcessNodeById = async (id: number) => {
+        const result = await jwtGet(`${URL_PROCESS_NODE}/${id.toString()}`)
+        if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcessNodeById: ', result)
+        return result.data
+    }
+
+
 
     // __ Получаем с API Список Смежности (Adjacency List) Бизнес-процесса
     const getBusinessProcessAdjacencyList = async (id: number) => {
@@ -94,6 +104,7 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
 
         getBusinessProcesses,
         getBusinessProcessById,
+        getBusinessProcessNodeById,
         getBusinessProcessAdjacencyList,
     }
 

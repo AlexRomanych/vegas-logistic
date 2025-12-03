@@ -160,12 +160,55 @@ class PlanLoadsController extends Controller
     }
 
 
+    // /**
+    //  * ___ Получаем план Узла Бизнес-процесса за период
+    //  * @param Request $request
+    //  * @return AnonymousResourceCollection|string
+    //  */
+    // public function getPlanBusinessProcessNode(Request $request)
+    // {
+    //     try {
+    //         $validated = $request->validate([
+    //             'process'      => 'required|numeric|exists:business_processes,id',
+    //             'node'         => 'required|numeric|exists:business_process_nodes,id',
+    //             'period'       => 'nullable|array',
+    //             'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+    //             'period.end'   => 'required_if:period,*,!null|date',
+    //         ]);
+    //
+    //         /** @noinspection DuplicatedCode */
+    //         if (isset($validated['period'])) {
+    //             $start = Carbon::parse($validated['period']['start']);
+    //             $end = Carbon::parse($validated['period']['end']);
+    //         } else {
+    //             $period = DefaultsService::getDefaultPeriodPlan();
+    //             $start = Carbon::parse($period->getStart());
+    //             $end = Carbon::parse($period->getEnd());
+    //         }
+    //
+    //         $planLoads = PlanLoad::query()
+    //             ->whereDate('load_at', '>=', $start)     // Используем такую конструкцию, потому что
+    //             ->whereDate('load_at', '<=', $end)       // ->whereBetween() не включает периоды
+    //             ->with(['client', 'orderType'])
+    //             ->orderBy('load_at')
+    //             ->get();
+    //
+    //
+    //
+    //
+    //         return PlanLoadsResource::collection($planLoads);
+    //     } catch (Exception $e) {
+    //         return EndPointStaticRequestAnswer::fail($e);
+    //     }
+    // }
+
+
     /**
      * ___ Получаем период по умолчанию для плана загрузок
      * @return string
      */
-    public function getPlanLoadsDefaultPeriod() {
-        $a = 9;
+    public function getPlanLoadsDefaultPeriod()
+    {
         try {
             $period = DefaultsService::getDefaultPeriodPlanLoads();
             return DefaultsService::getDefaultPeriodPlanLoads()->toJson();
@@ -173,7 +216,6 @@ class PlanLoadsController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
 }

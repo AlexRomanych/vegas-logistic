@@ -20,8 +20,10 @@ use App\Http\Controllers\Api\V1\ModelController;
 use App\Http\Controllers\Api\V1\OrderController;
 
 //use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\V1\Plans\PlanController;
 use App\Http\Controllers\Api\V1\Plans\PlanLoadsController;
 use App\Http\Controllers\Api\V1\Processes\BusinessProcessController;
+use App\Http\Controllers\Api\V1\Processes\BusinessProcessNodeController;
 use App\Http\Controllers\Api\V1\ReasonController;
 use App\Http\Controllers\Api\V1\WorkerController;
 use App\Http\Controllers\UpdateData1CController as Update;
@@ -348,39 +350,12 @@ Route::prefix('/plan')
     ->middleware('jwt.auth')
     ->group(function () {
 
-
         Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);  // ___ Загрузка плана
         Route::get('/loads', [PlanLoadsController::class, 'getPlanLoads']);
         Route::get('/loads/default/period', [PlanLoadsController::class, 'getPlanLoadsDefaultPeriod']);
 
-        // // descr: Получаем список СЗ, период в query
-        // Route::get('/', [CellFabricTasksDateController::class, 'tasks']);
-        //
-        // Route::get('/last/done/', [CellFabricTasksDateController::class, 'getLastDoneTask']);
-        // Route::patch('/status/change/', [CellFabricTasksDateController::class, 'statusChange']);
-        // Route::put('/create/', [CellFabricTasksDateController::class, 'create']);
-        // Route::put('/workers/update/', [CellFabricTasksDateController::class, 'workersUpdate']);
-        // Route::get('/executing/', [CellFabricTasksDateController::class, 'getFabricExecutingTasks']);
-        // Route::get('/not-done/', [CellFabricTasksDateController::class, 'getFabricNotDoneTasks']);
-        // Route::get('/close/', [CellFabricTasksDateController::class, 'closeFabricTasks']);
-        //
-        // Route::delete('/context/delete/', [CellFabricTaskContextController::class, 'deleteContext']);
-        // Route::get('/context/not-done/', [CellFabricTaskContextController::class, 'getContextNotDone']);
-        // Route::put('/context/expense/create/', [CellFabricTaskContextController::class, 'createContextExpense']);
-        // Route::put('/context/change-order/', [CellFabricTaskContextController::class, 'changeContextOrder']);
-        // Route::get('/context/', [CellFabricTaskContextController::class, 'getOrderContext']);
-        // Route::post('/context/add/roll', [CellFabricTaskContextController::class, 'addOrderContextRoll']);
-        // Route::get('/context/optimize/{task}/{machine}/{statistic?}', [CellFabricTaskContextController::class, 'optimizeOrderContext']);
-        //
-        //
-        // Route::put('/execute/roll/update/', [CellFabricTaskRollController::class, 'update']);
-        // Route::post('/execute/roll/add/', [CellFabricTaskRollController::class, 'addExecuteRoll']);
-        // Route::get('/rolls/done/', [CellFabricTaskRollController::class, 'getNotAcceptedToCutRolls']);
-        // Route::patch('/execute/roll/registered/', [CellFabricTaskRollController::class, 'setRollRegisteredStatus']);
-        // Route::patch('/execute/roll/moved/', [CellFabricTaskRollController::class, 'setRollMovedStatus']);
-        // Route::post('/execute/save/rolls/order/', [CellFabricTaskRollController::class, 'saveExecuteRollsOrder']);
-        // Route::patch('/roll/update/comment/', [CellFabricTaskRollController::class, 'updateRollComment']);
-        // Route::get('/execute/roll/last/{date}/{machine}', [CellFabricTaskRollController::class, 'getLastRoll']);
+
+        Route::get('/business-process-node', [PlanController::class, 'getPlanBusinessProcessNode']);
 
 
     });
@@ -403,10 +378,13 @@ Route::prefix('/business-processes')
     ->middleware('jwt.auth')
     ->group(function () {
 
+        Route::get('/node/{id}', [BusinessProcessNodeController::class, 'getBusinessProcessNodeById']);
+
         Route::get('/', [BusinessProcessController::class, 'getBusinessProcesses']);
         Route::get('/{id}', [BusinessProcessController::class, 'getBusinessProcessById']);
-
         Route::get('/adjacency-list/{id}', [BusinessProcessController::class, 'getBusinessProcessAdjacencyList']);
+
+
 
 
     });

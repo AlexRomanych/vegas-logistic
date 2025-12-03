@@ -1,32 +1,46 @@
 // Info Участок раскороя
 
 // Префикс для всех роутов производства
+import type { IRouteMeta } from '@/types'
+
 const _MANUFACTURE_PREFIX = '/manufacture'
 const _CELL_PREFIX = '/cell'
 const _TASK_PREFIX = '/task'
 const _CUTTING_PREFIX = '/cutting'
-const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX + _CUTTING_PREFIX
+const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX + _CUTTING_PREFIX + '/'
 
 const cutting = [
     {
-        // descr: Основная менюха
+        // ___ Основная менюха
         path: _MAIN_PREFIX,
         name: 'manufacture.cell.cutting',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/cutting/TheCuttingMain.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingMain.vue'),
         meta: {
             title: 'Раскрой'
         }
     },
-
     {
-        // descr: Учет ПС
+        // ___ Управление планом Раскроя
+        path: _MAIN_PREFIX + 'plan/manage',
+        name: 'manufacture.cell.cutting.plan.manage',
+        component: () => import('@/components/dashboard/plans/ThePlanManageCutting.vue'), // Переносим в планы
+        // component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingPlanManage.vue'),
+        meta: {
+            title: 'Управление планом Раскроя'
+        } as IRouteMeta,
+    },
+    {
+        // ___ Учет ПС
         path: _MAIN_PREFIX + 'fabrics/movement',
         name: 'manufacture.cell.cutting.fabrics.movement',
-        component: () => import('/resources/js/src/components/dashboard/manufacture/cells/cutting/TheCuttingFabricsMovement.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingFabricsMovement.vue'),
         meta: {
             title: 'Учет ПС раскроя'
         }
     },
+
+
+
 
 
 

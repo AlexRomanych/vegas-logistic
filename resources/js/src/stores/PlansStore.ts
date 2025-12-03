@@ -4,8 +4,11 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/utils/jwt_api'
 import type { IPeriod } from '@/types'
+import { BUSINESS_PROCESS_NODES, BUSINESS_PROCESSES } from '@/app/constants/business_processes.ts'
 
 const DEBUG = true
+
+const URL_PLAN_BUSINESS_PROCESS_NODE = 'plan/business-process-node'    // Получение Плана Узла бизнес-процесса с сервера
 
 const URL_PLAN_LOADS_UPLOAD = 'plan/loads/upload'                      // Загрузка Плана загрузок на сервер
 const URL_PLAN_LOADS = 'plan/loads'                                    // Получение Плана загрузок с сервера
@@ -40,6 +43,25 @@ export const usePlansStore = defineStore('plans', () => {
     }
 
 
+    // ___ Получение Плана узла бизнес-процесса с сервера за период
+    const getPlanBusinessProcessNode = async (
+        businessProcessId: number | null = BUSINESS_PROCESSES.ORDER_MOVING.ID,
+        businessProcessNodeId: number | null = BUSINESS_PROCESS_NODES.LOADS.ID,
+        period: IPeriod | null = null
+    ) => {
+        let response
+        if (period) {
+            response = await jwtGet(URL_PLAN_BUSINESS_PROCESS_NODE, {process: businessProcessId, node: businessProcessNodeId, period})
+        } else {
+            response = await jwtGet(URL_PLAN_BUSINESS_PROCESS_NODE, {process: businessProcessId, node: businessProcessNodeId})
+        }
+        const result = await response
+        if (DEBUG) console.log('PlansStore: getPlanBusinessProcessNode: ', result)
+        return result.data
+    }
+
+
+
     // ___ Получение Плана загрузок с сервера за период
     const getPlanLoads = async (period: IPeriod | null = null) => {
         let response
@@ -69,6 +91,9 @@ export const usePlansStore = defineStore('plans', () => {
         uploadLoads,
         getPlanLoads,
         getPlanLoadsDefaultPeriod,
+
+
+        getPlanBusinessProcessNode,
     }
 
 })
