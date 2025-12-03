@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string('name')->unique()->nullable(false)->comment('Название');
             $table->string('display_name')->unique()->nullable(false)->comment('Отображаемое название');
             $table->string('type_index')->nullable(false)->comment('Индекс после точки');
-            $table->string('color', 7)->default('#000000')->comment('Цвет рендера');
+            $table->string('color', 7)->default('#64748B')->comment('Цвет рендера');
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
@@ -27,28 +27,32 @@ return new class extends Migration {
             'name'         => 'Не определено',
             'display_name' => 'н/д',
             'type_index'   => '.00',
-            'description'  => 'Тип заявки не определен'
+            'description'  => 'Тип заявки не определен',
+            'color'        => '#64748B'
         ]);
 
         DB::table(self::TABLE_NAME)->insert([
             'name'         => 'Основная заявка',
             'display_name' => 'основная заявка',
             'type_index'   => '_',
-            'description'  => 'Основная заявка'
+            'description'  => 'Основная заявка',
+            'color'        => '#22C55E'
         ]);
 
         DB::table(self::TABLE_NAME)->insert([
             'name'         => 'Дополнительная заявка клиентов',
             'display_name' => 'доп. заявка',
             'type_index'   => '.1-10; .20-...',
-            'description'  => 'Номера, присваиваемые дополнительным заявкам клиентов'
+            'description'  => 'Номера, присваиваемые дополнительным заявкам клиентов',
+            'color'        => '#3B82F6'
         ]);
 
         DB::table(self::TABLE_NAME)->insert([
             'name'         => 'Гарантийный ремонт',
             'display_name' => 'гар. ремонт',
             'type_index'   => '.11',
-            'description'  => 'Номер присваивается заявке с изделиями для гарантийного ремонта'
+            'description'  => 'Номер присваивается заявке с изделиями для гарантийного ремонта',
+            'color'        => '#EAB308'
         ]);
 
         DB::table(self::TABLE_NAME)->insert([
