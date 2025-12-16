@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('models', function (Blueprint $table) {
 
             $table->string('code1C')->primary()->comment('Код по 1С');
-            $table->string('type')->nullable(false)->comment('Тип продукции.Наименование (матрас, наматрасник и тд.)');
+            $table->string('type')->nullable(false)->comment('Тип продукции.Наименование (матрас, наматрасник и тд.)'); // __ Foreign Key
             $table->string('serial')->nullable(false)->comment('Серия');
             $table->string('name')->unique()->nullable(false)->comment('Имя отчеты');
             $table->string('name_1C')->unique()->nullable(false)->comment('Наименование');
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('life')->nullable()->comment('Срок службы, лет');
             $table->string('cover_mark')->nullable()->comment('Маркировка чехла');
             $table->string('model_mark')->nullable()->comment('Маркировка матраса');
-            $table->unsignedTinyInteger('group')->nullable()->comment('Номер группы модели для сортировки');
+            $table->unsignedTinyInteger('group')->nullable()->comment('Номер группы модели для сортировки'); // __ Foreign Key
             $table->string('owner')->nullable()->comment('Владелец');
             $table->unsignedTinyInteger('line')->nullable()->comment('Возможность изготовления на линии (Lamit)');
             $table->string('sewing_machine')->nullable()->comment('Группы ДСЗ (Тип швейных машин: АШМ, УШМ, Обшивка и Прочее)');
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->string('side_height')->nullable()->comment('Высота бортов. Может быть 14.5, а может быть 13/8');
             $table->decimal('pack_weight_rb',5,4)->nullable(false)->comment('Вес упаковки РБ');
             $table->decimal('pack_weight_ex',5,4)->nullable(false)->comment('Вес упаковки экспорт');
-            $table->string('manufacture_type')->nullable()->comment('Вид производства');
+            $table->string('manufacture_type')->nullable()->comment('Вид производства'); // __ Foreign Key
             $table->decimal('weight',7,6)->nullable(false)->comment('Вес в г. куб. см.');
             $table->string('barcode')->nullable()->comment('Штрихкод');
 
@@ -54,8 +54,11 @@ return new class extends Migration
 
             $table->timestamps();
 
+            // __ Связь с коллекцией
             $table->string('collection_id');
-            $table->foreign('collection_id')->references('code1C')->on('collections');
+            $table->foreign('collection_id')
+                ->references('code1C')
+                ->on('collections');
 
 
 //            Const CODE1C_COL = 1                            ' ['cd'] Код

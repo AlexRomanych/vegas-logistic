@@ -62,32 +62,27 @@
 
 
         <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
-        <!--:="dragOptions"-->
         <!-- __ Сами рулоны с возможностью перетаскивания -->
         <draggable
             :="dragOptions"
             :disabled="!isDragging"
             :list="day"
             :move="checkMove"
-
             class="min-h-[25px]"
-
             item-key="id"
             tag="div"
             @end="finishDrag"
             @start="startDrag"
-
         >
             <template #item="{ element, index }">
 
-                <div>
-                    <PlanItem
-                        :columns-width="columnsWidth"
-                        :index="index"
-                        :item="element"
+                <PlanItem
+                    :columns-width="columnsWidth"
+                    :index="index"
+                    :item="element"
 
-                    />
-                </div>
+                />
+
             </template>
 
             <!--<template #header>-->
@@ -146,10 +141,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { IPlanMatrixDay, TaskStatusUnionType } from '@/types'
+import type { IPlanMatrixDay } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
-import { computed, ref, watch } from 'vue'
+import { computed, ref, } from 'vue'
 import draggable from 'vuedraggable'
 
 import { formatDateInFullFormat, isHoliday, isToday } from '@/app/helpers/helpers_date'
@@ -199,8 +194,6 @@ const dateType = computed((): IColorTypes => {
 // ----------------------------------------
 
 // __ Итого
-// const getTotalAmountInDAy = () => props.day.reduce((acc, load) => load.amounts.totals ? load.amounts.totals + acc : acc, 0)
-// const totalAmountInDAy = ref(getTotalAmountInDAy())
 const totalAmountInDAy = computed(() => props.day.reduce((acc, load) => load.amounts.totals ? load.amounts.totals + acc : acc, 0))
 
 // __ Ширина колонок

@@ -29,7 +29,8 @@
             "app/Helpers/helpers.php",
             "app/Constants/Constants.php",
             "app/Constants/Fabric.php",
-            "app/Constants/BusinessProcesses.php"
+            "app/Constants/BusinessProcesses.php",
+            "app/Constants/Materials.php"
         ]
     },
     "autoload-dev": {

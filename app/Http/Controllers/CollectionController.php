@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\VegasDataGetContract;
-use App\Models\Collection;
+use App\Models\Models\Collection;
 use App\Services\CollectionsService;
 use Illuminate\Support\Facades\App;
 

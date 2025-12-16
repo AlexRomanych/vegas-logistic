@@ -3,6 +3,7 @@
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 if (!function_exists('getCloneByJSON')) {
@@ -171,5 +172,60 @@ if (!function_exists('checkCarbonDuplicates')) {
             'unique_count'   => count($counts),
             'total_count'    => count($dates)
         ];
+    }
+}
+
+
+/**
+ * ___ Устанавливает значение SEQUENCE
+ * @param string $tableName - имя таблицы
+ * @param string $columnName - имя столбца
+ * @param int|null $startValue - начальное значение
+ * @return bool
+ */
+if (!function_exists('setSequence')) {
+    function setSequence(string $tableName, string $columnName = 'id', int|null $startValue = null): bool
+    {
+        try {
+
+            // __ Это работает
+            // $tableName = self::TABLE_NAME;
+            // $sql = "SELECT setval(
+            //     pg_get_serial_sequence(?, 'id'),
+            //     (SELECT COALESCE(MAX(id), 0) FROM {$tableName})
+            // );";
+            //
+            // DB::statement($sql, [$tableName]);
+
+            // pg_get_serial_sequence возвращает имя sequence в формате 'схема.имя'
+            $sequenceObj = DB::selectOne(
+                "SELECT pg_get_serial_sequence(?, ?)",
+                [$tableName, $columnName]
+            );
+
+            // Функция selectOne возвращает объект, где ключ - это имя поля (pg_get_serial_sequence)
+            if (!($sequenceObj && property_exists($sequenceObj, 'pg_get_serial_sequence'))) return false;
+
+
+            if (!is_null($startValue)) {
+                $maxId = $startValue;
+            } else {
+                // Получаем максимальный ID из таблицы 'clients'
+                $maxId = DB::table($tableName)->max($columnName);
+
+                if ($maxId === null) return false;
+            }
+
+            $sequenceName = $sequenceObj->pg_get_serial_sequence;
+
+            // Выполнение команды setval:
+            // Устанавливаем SEQUENCE на $maxId, чтобы следующий ID был $maxId + 1.
+            DB::statement("SELECT setval(?, ?, TRUE)", [$sequenceName, $maxId]);
+
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+
     }
 }

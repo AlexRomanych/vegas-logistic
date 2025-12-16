@@ -112,6 +112,16 @@
             :text-size="rollsRender.rollTime.dataTextSize"
         />
 
+        <!-- __ Плановое время стегания -->
+        <AppLabel
+            v-if="rollsRender.rollTimePlan.show"
+            :text="rollsRender.rollTimePlan.data ? rollsRender.rollTimePlan.data(roll) : ''"
+            :type="typeof rollsRender.rollTimePlan.type === 'function' ? rollsRender.rollTimePlan.type(roll) : rollsRender.rollTimePlan.type"
+            :width="rollsRender.rollTimePlan.width"
+            :align="rollsRender.rollTimePlan.dataAlign"
+            :text-size="rollsRender.rollTimePlan.dataTextSize"
+        />
+
         <!-- __ Ответственный -->
         <AppLabel
             v-if="rollsRender.finishBy.show"

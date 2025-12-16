@@ -2,7 +2,7 @@
 
 namespace App\Models\Shared\Facades;
 
-use App\Models\Model;
+use App\Models\Models\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 

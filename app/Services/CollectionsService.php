@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Contracts\VegasDataGetContract;
 use App\Contracts\VegasDataUpdateContract;
-use App\Models\Collection;
+use App\Models\Models\Collection;
 
 final class CollectionsService implements VegasDataUpdateContract
 {

@@ -86,8 +86,8 @@ const clickApply = () => {
 
     // __ Подготавливаем данные
     const formattedDate = new Date().toISOString().slice(0, 10)  // дата в формате YYYY-MM-DD
-    dateInterval.start = dateInterval.start ?? formattedDate
-    dateInterval.end = dateInterval.end ?? formattedDate
+    dateInterval.start = dateInterval.start !== '' ? dateInterval.start: formattedDate
+    dateInterval.end = dateInterval.end !== '' ? dateInterval.end: formattedDate
 
     // __ Инвертируем, если дата начала больше даты окончания
     if (!compareDatesLogic(dateInterval.start, dateInterval.end)) {

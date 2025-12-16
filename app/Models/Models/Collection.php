@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +21,6 @@ final class Collection extends Model
 
     public function models(): HasMany
     {
-        return $this->hasMany(\App\Models\Model::class, 'collection_id', 'code1C' );
+        return $this->hasMany(\App\Models\Models\Model::class, 'collection_id', 'code1C' );
     }
 }

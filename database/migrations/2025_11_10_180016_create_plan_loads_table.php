@@ -39,6 +39,7 @@ return new class extends Migration {
                 ->nullable()
                 ->comment('Порядок заявки в плане');
 
+            // __ Дата загрузки на складе Вегас
             $table->dateTime('load_at')
                 ->nullable(false)
                 ->comment('Дата загрузки на складе Вегас');
@@ -54,7 +55,26 @@ return new class extends Migration {
                 ->default(false)
                 ->comment('Конфликт при изменении даты загрузки на складе Вегас');
 
+            // __ Дата разгрузки на складе Клиента
             $table->dateTime('unload_at')->nullable()->comment('Дата разгрузки на складе Клиента');
+
+            // __ Флаг, указывающий, что заявка является прогнозной
+            $table->boolean('is_forecast')
+                ->nullable(false)
+                ->default(false)
+                ->comment('Прогнозная заявка');
+
+            // __ Флаг, указывающий на пропуск при расчете сырья, например, если заявка тендерная
+            $table->boolean('miss_calculate')
+                ->nullable(false)
+                ->default(false)
+                ->comment('Пропуск при расчете сырья');
+
+            // __ Флаг, указывающий на не отображение заявки в плане
+            $table->boolean('shown')
+                ->nullable(false)
+                ->default(true)
+                ->comment('Отображать в плане');
 
             $table->string('extended_meta')->nullable()->comment('Расширенная информация');
             $table->jsonb('history')->nullable()->comment('История изменений');

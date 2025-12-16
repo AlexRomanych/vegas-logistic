@@ -540,13 +540,13 @@ export function getDuration(startMoment = null, endMoment = null, offset = 0) {
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// attract Возвращает дату в формате YYYY-MM-DD, но полученную из локального формата (без -03:00))
+// __ Возвращает дату в формате YYYY-MM-DD, но полученную из локального формата (без -03:00))
 export function getISOFromLocaleDate(inDate) {
     inDate = inDate ? getDate(inDate) : new Date()
     return inDate.toLocaleDateString().split('.').reverse().join('-')
 }
 
-// attract Получаем тип раскраски в зависимости от типа дня недели (выходной или рабочий или текущий)
+// __ Получаем тип раскраски в зависимости от типа дня недели (выходной или рабочий или текущий)
 export function getDayOfWeekStyle(date) {
     if (isToday(date)) return 'success' // текущий
     if (isWorkingDay(date)) return 'dark' // рабочмй

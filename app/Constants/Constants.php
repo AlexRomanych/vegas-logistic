@@ -2,6 +2,10 @@
 
 const TIME_ZONE_OFFSET = 3;                     // смещение времени по UTC +3
 
+const CODE_1C = 'code_1c';                      // Название переменной, в которой передается код 1С
+const CODE_1C_LENGTH = 9;                       // Длина кода 1С
+
+
 const OK_STATUS_WORD = 'success';               // отправляем при удачном запросе
 const FAIL_STATUS_WORD = 'fail';                // отправляем при неудачном запросе
 

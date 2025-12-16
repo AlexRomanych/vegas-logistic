@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Models;
 
 use App\Models\Order\Line;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Model extends LaravelModel
 {
+    protected $primaryKey = CODE_1C;
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     public const AVERAGE_MODEL_NAME = 'AVERAGE';                // Название средней (расчетной) модели
 
     //attract Определяем признаки принадлежности модели к оборудованию
@@ -52,40 +56,38 @@ final class Model extends LaravelModel
     //'weight'                          ('Вес в г. куб. см.')
     //'barcode'                         ('Штрихкод')
 
-    protected $primaryKey = 'code1C';
-    protected $keyType = 'string';
-    public $incrementing = false;
 
-    protected $fillable = [
-        'code1C',
-        'type', 'serial',
-        'name', 'name_1C',
-        'base_height', 'cover_height',
-        'textile', 'textile_combination', 'cover_type', 'zipper', 'spacer', 'stitch_pattern',
-        'pack_type', 'pack_density',
-        'base_composition', 'base_block', 'side_foam',
-        'load',
-        'guarantee',
-        'life',
-        'cover_mark', 'model_mark',
-        'group',
-        'owner',
-        'line',
-        'sewing_machine',
-        'side_height',
-        'pack_weight_rb', 'pack_weight_ex',
-        'manufacture_type',
-        'weight',
-        'barcode',
-        'collection_id',
-        'base', 'cover',
-        'active'
-    ];
 
-    protected $hidden = [
-        'code1C', 'collection_id',
-        'created_at', 'updated_at',
-    ];
+    // protected $fillable = [
+    //     CODE_1C,
+    //     'type', 'serial',
+    //     'name', 'name_1C',
+    //     'base_height', 'cover_height',
+    //     'textile', 'textile_combination', 'cover_type', 'zipper', 'spacer', 'stitch_pattern',
+    //     'pack_type', 'pack_density',
+    //     'base_composition', 'base_block', 'side_foam',
+    //     'load',
+    //     'guarantee',
+    //     'life',
+    //     'cover_mark', 'model_mark',
+    //     'group',
+    //     'owner',
+    //     'line',
+    //     'sewing_machine',
+    //     'side_height',
+    //     'pack_weight_rb', 'pack_weight_ex',
+    //     'manufacture_type',
+    //     'weight',
+    //     'barcode',
+    //     'collection_id',
+    //     'base', 'cover',
+    //     'active'
+    // ];
+
+    // protected $hidden = [
+    //     'collection_id',
+    //     'created_at', 'updated_at',
+    // ];
 
     protected $casts = [
         'active' => 'boolean',
@@ -96,22 +98,22 @@ final class Model extends LaravelModel
 
     protected $guarded = [];
 
-    protected $attributes = [
-        'code1C' => '000000000',
-        'type' => 'Матрас',
-        'serial' => 'МВ 314',
-        'name' => 'Матрас',
-        'name_1C' => 'МВ 314.Матрас.',
-        'owner' => 'Матрасы ортопедические обшитые тип МВ314',
-        'base_height' => 0.2,
-        'cover_height' => 0.2,
-        'pack_density' => 0,
-        'pack_weight_rb' => 0,
-        'pack_weight_ex' => 0,
-        'weight' => 0,
-        'active' => 1,
-        'collection_id' => '000000000',
-    ];
+    // protected $attributes = [
+    //     CODE_1C => '000000000',
+    //     'type' => 'Матрас',
+    //     'serial' => 'МВ 314',
+    //     'name' => 'Матрас',
+    //     'name_1C' => 'МВ 314.Матрас.',
+    //     'owner' => 'Матрасы ортопедические обшитые тип МВ314',
+    //     'base_height' => 0.2,
+    //     'cover_height' => 0.2,
+    //     'pack_density' => 0,
+    //     'pack_weight_rb' => 0,
+    //     'pack_weight_ex' => 0,
+    //     'weight' => 0,
+    //     'active' => 1,
+    //     'collection_id' => '000000000',
+    // ];
 
     //attract: Задаем вычисляемые свойства
     protected $appends = ['is_auto', 'is_universal', 'is_solid', 'is_solid_light', 'is_solid_hard', 'is_undefined'];    // Задаем типы швейных машин, исходя из свойства sewing_machine
@@ -154,7 +156,7 @@ final class Model extends LaravelModel
 
     //h2-------------------------------------------------------------------------------
 
-
+    // Relations: Связь с коллекцией
     public function collection(): BelongsTo
     {
         return $this->belongsTo(Collection::class, 'collection_id', 'code1C');

@@ -112,6 +112,16 @@
             :text-size="rollsRender.rollTime.headerTextSize"
         />
 
+        <!-- __ Плановое время стегания -->
+        <AppLabelMultiLine
+            v-if="rollsRender.rollTimePlan.show"
+            :text="rollsRender.rollTimePlan.header"
+            :type="getHeaderType()"
+            :width="rollsRender.rollTimePlan.width"
+            :align="rollsRender.rollTimePlan.headerAlign"
+            :text-size="rollsRender.rollTimePlan.headerTextSize"
+        />
+
         <!-- __ Ответственный -->
         <AppLabelMultiLine
             v-if="rollsRender.finishBy.show"

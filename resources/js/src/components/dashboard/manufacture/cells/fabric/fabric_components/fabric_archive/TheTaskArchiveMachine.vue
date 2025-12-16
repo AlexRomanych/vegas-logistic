@@ -50,6 +50,15 @@
             width="w-[200px]"
         />
 
+        <!-- __ Общие плановые трудозатраты -->
+        <AppLabel
+            :align="GLOBAL_ALIGN"
+            :text="`План. труд-ты: ${totalProductivityPlan}`"
+            :text-size="GLOBAL_TEXT_SIZE"
+            :type="GLOBAL_TYPE"
+            width="w-[250px]"
+        />
+
     </div>
 
     <div v-if="!machine.collapsed" class="ml-[34px] mb-4">
@@ -90,7 +99,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-console.log('props.machine: ', props.machine)
+// console.log('props.machine: ', props.machine)
 
 /*
 const emit = defineEmits<{
@@ -140,6 +149,19 @@ const totalProductivity = computed(() => {
     }, 0)
 
     return formatTimeWithLeadingZeros(totalTime)
+})
+
+// __ Общие трудозатраты плановые
+const totalProductivityPlan = computed(() => {
+    const totalTime = props.machine.rollsRender.reduce((acc, roll) => {
+        if (roll.status !== FABRIC_ROLL_STATUS.CANCELLED.CODE && roll.status !== FABRIC_ROLL_STATUS.FALSE.CODE) {
+            return acc + roll.fabric_length / roll.productivity
+        } else {
+            return acc
+        }
+    }, 0)
+
+    return formatTimeWithLeadingZeros(totalTime, 'hour')
 })
 
 </script>

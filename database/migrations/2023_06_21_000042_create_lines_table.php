@@ -1,10 +1,6 @@
 <?php
 
-use App\Models\Model;
-use App\Models\Order\AssemblyPart;
-use App\Models\Order\CuttingPart;
 use App\Models\Order\Order;
-use App\Models\Order\SewingPart;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

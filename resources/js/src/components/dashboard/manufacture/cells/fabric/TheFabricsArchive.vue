@@ -76,10 +76,17 @@ import type {
 
 import { useFabricsStore } from '@/stores/FabricsStore'
 
-import { FABRIC_MACHINES, FABRIC_ROLL_STATUS_LIST } from '@/app/constants/fabrics.ts'
+import { FABRIC_MACHINES, FABRIC_ROLL_STATUS_LIST, type IMachineKey } from '@/app/constants/fabrics.ts'
 
-import { getFabricTasksPeriod, getTypeByRollStatus } from '@/app/helpers/manufacture/helpers_fabric'
-import { formatDateAndTimeInShortFormat, formatTimeWithLeadingZeros, getDuration } from '@/app/helpers/helpers_date'
+import {
+    getFabricTasksPeriod,
+    getTypeByRollStatus
+} from '@/app/helpers/manufacture/helpers_fabric'
+import {
+    formatDateAndTimeInShortFormat,
+    formatTimeWithLeadingZeros,
+    getDuration,
+} from '@/app/helpers/helpers_date'
 import { getFormatFIO } from '@/app/helpers/workers/helpers_workers'
 
 import TheTaskArchiveMachine
@@ -93,7 +100,7 @@ import CellDatesSelect from '@/components/dashboard/manufacture/cells/components
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
-import { loaderHandler, log } from '@/app/helpers/helpers.ts'
+import { loaderHandler } from '@/app/helpers/helpers.ts'
 
 
 // line -----------------------------------------------------------------------------------------------------------
@@ -304,6 +311,19 @@ const rollsRender: IRenderData = reactive({
         align: 'center',
         data: (roll_exec) => getDuration(roll_exec.start_at, roll_exec.finish_at)
     },
+    rollTimePlan: {
+        header: ['Плановое', 'время'],
+        type: (roll_exec) => getTypeByRollStatus(roll_exec.status),
+        width: 'w-[90px]',
+        show: true,
+        title: 'Время стегания',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize: DATA_TEXT_SIZE,
+        headerAlign: HEADER_ALIGN,
+        dataAlign: DATA_ALIGN,
+        align: 'center',
+        data: (roll_exec) => formatTimeWithLeadingZeros(roll_exec.fabric_length / roll_exec.productivity, 'hour')
+    },
     finishBy: {
         header: ['Ответственный', 'за производство'],
         type: (roll_exec) => getTypeByRollStatus(roll_exec.status),
@@ -499,8 +519,8 @@ const prepareTasksData = () => {
             task.machines[machine].rollsRender = [] // Обнуляем массив для отображаемых рулонов
             task.machines[machine].collapsed = true // Сворачиваем рулоны по умолчанию
 
-            const findMachine = Object.keys(FABRIC_MACHINES).find(key => FABRIC_MACHINES[key].TITLE === machine)
-            task.machines[machine].machineName = findMachine ? FABRIC_MACHINES[findMachine].NAME : '' // Название машины
+            const findMachine = Object.keys(FABRIC_MACHINES).find(key => FABRIC_MACHINES[key as IMachineKey].TITLE === machine)
+            task.machines[machine].machineName = findMachine ? FABRIC_MACHINES[findMachine as IMachineKey].NAME : '' // Название машины
 
             // по ОПП
             task.machines[machine].rolls = task.machines[machine].rolls.sort((a, b) => a.roll_position - b.roll_position)
@@ -526,13 +546,11 @@ const prepareTasksData = () => {
 // __ Проверяет, есть ли данные для отображения
 const hasData = (taskData: ITaskDataItem) => Object.values(taskData.machines).some(machine => machine.rollsRender.length > 0)
 
-
 // __ Выбираем даты для отображения и посылаем запрос на получение данных
 const selectDates = async (period: ITaskPeriod) => {
     tasksPeriod = period
     await getTasks()
     prepareTasksData()                              // Подготавливаем СЗ для отображения
-
     // console.log('tasks: ', tasks)
     // console.log('taskData: ', tasksData.value)
 }
