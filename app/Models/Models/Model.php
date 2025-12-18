@@ -5,6 +5,7 @@ namespace App\Models\Models;
 use App\Models\Order\Line;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Model extends LaravelModel
 {
@@ -159,8 +160,18 @@ final class Model extends LaravelModel
     // Relations: Связь с коллекцией
     public function collection(): BelongsTo
     {
-        return $this->belongsTo(Collection::class, 'collection_id', 'code1C');
+        return $this->belongsTo(Collection::class, 'collection_id', CODE_1C);
     }
+
+
+    // Relations: Связь со спецификацией
+    public function constructs(): HasMany
+    {
+        return $this->hasMany(ModelConstruct::class, 'model_code_1c', CODE_1C);
+    }
+
+
+
 
     public function line(): BelongsTo
     {

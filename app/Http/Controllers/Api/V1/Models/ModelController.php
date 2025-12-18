@@ -219,15 +219,23 @@ class ModelController extends Controller
 
     public function getModels()
     {
+
+        $models = Model::query()
+            ->with(['constructs', 'constructs.constructItems'])
+            ->get();
+
+        return $models;
+
         //        return 11111;
         //        return new ModelCollection(Model::all());
-        return new ModelCollection(
-            Model::query()
-                ->orderBy('type')
-                ->orderBy('name')
-                ->with('collection')
-                ->get()
-        );
+
+        // return new ModelCollection(
+        //     Model::query()
+        //         ->orderBy('type')
+        //         ->orderBy('name')
+        //         ->with('collection')
+        //         ->get()
+        // );
 
         //        $models = $users = DB::table('models')
         //            ->select(DB::raw('*'))

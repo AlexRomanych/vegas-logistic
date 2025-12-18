@@ -16,10 +16,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
+
+            //line -----------------------------------------------
+            //line ----- Для лучшей наглядности иерархии ---------
+            //line ----- такой порядок                   ---------
+            //line -----------------------------------------------
+            // Relations: Связь с Группой материалов
+            $table->string('material_group_code_1c', CODE_1C_LENGTH)
+                ->nullable()
+                ->comment('Группа материала');
+
+            // Relations: Связь с Категорией
+            $table->string('material_category_code_1c',CODE_1C_LENGTH)
+                ->nullable()
+                ->comment('Категория материала');
+            //line -----------------------------------------------
+
             $table->string(CODE_1C, CODE_1C_LENGTH)->primary()->comment('Код 1C');
+            $table->string(CODE_1C . '_copy', CODE_1C_LENGTH)->nullable()->comment('Копия Кода 1C');
+
             $table->string('name')->nullable(false)->comment('Название материала');
-            $table->string('unit')->nullable()->default(MaterialUnits::UNDEFINED)->comment('Единица измерения');
-            $table->string('supplier')->comment('Поставщик');
+            $table->string('unit')->nullable()->comment('Единица измерения');
+            // $table->string('unit')->nullable()->default(MaterialUnits::UNDEFINED)->comment('Единица измерения');
+            $table->string('supplier')->nullable()->comment('Поставщик');
 
             $table->string('alt_unit')->nullable()->comment('Альтернативная Единица измерения');
             $table->float('alt_multiplier')->nullable(false)->default(1.0)->comment('Альтернативная Единица измерения');
@@ -29,25 +48,8 @@ return new class extends Migration
 
             $table->boolean('is_deleted')->nullable(false)->default(false)->comment('Софт удаление');
             $table->boolean('is_shown')->nullable(false)->default(true)->comment('Показывать в списке');
-
-            // $table->foreignIdFor(MaterialCategory::class)
-            //     ->nullable(false)
-            //     ->default(UNDEFINED_MATERIALS_CATEGORY_CODE1C)
-            //     ->comment('Категория материала')
-            //     ->constrained()
-            //     ->cascadeOnDelete();
-
-            // Relations: Связь с Категорией
-            $table->string('material_category_code_1c',CODE_1C_LENGTH)
-                ->nullable(false)
-                ->default(UNDEFINED_MATERIALS_CATEGORY_CODE1C)
-                ->comment('Категория материала');
-            $table->foreign('material_category_code_1c')
-                ->references(CODE_1C)
-                ->on('material_categories')
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
-
+            $table->boolean('is_collapsed')->nullable(false)->default(false)->comment('Схлопывать или разворачивать при запуске');
+            $table->boolean('is_checked')->nullable(false)->default(false)->comment('Проверено (для внутреннего использования)');
 
             $table->softDeletes();
 

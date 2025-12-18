@@ -10,6 +10,7 @@ enum MaterialUnits: string
     case SQUARE_METERS = 'м2';   // 'м²'
     case CUBIC_METERS = 'м3';   // 'м³'
     case RUNNING_METERS = 'м.п.';
+    case ROLL = 'рул.';
     case UNDEFINED = 'н/д';
 
 }

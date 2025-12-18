@@ -43,6 +43,7 @@ export const useMaterialsStore = defineStore('materials', () => {
     //__ Получаем с API список моделей
     const getMaterials = async (params: any = null) => {
         const result = await jwtGet(URL_MATERIALS, params)
+        if (DEBUG) console.log('MaterialsStore: getMaterials: ', result)
         materialsCacshe.value = result.data // кэшируем
         return result.data // все возвращается через Resource с ключем data
     }

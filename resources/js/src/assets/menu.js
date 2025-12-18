@@ -34,11 +34,13 @@ const menuData = () => {
             items:
                 [
                     {name: 'Список моделей', path: 'models', shown: true, isActive: true,},
-                    {name: 'Список процедур расчета', path: 'procedures', shown: true, isActive: true,},
                     {name: 'Список материалов', path: 'materials', shown: true, isActive: true,},
+                    {name: 'Список процедур расчета', path: 'procedures', shown: true, isActive: true,},
+                    {name: 'Список специфиакций', path: 'constructs', shown: true, isActive: true,},
                     {name: 'Обновление списка моделей', path: 'models.upload', shown: true, isActive: true,},
-                    {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},
                     {name: 'Обновление списка материалов', path: 'materials.upload', shown: true, isActive: true,},
+                    {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},
+                    {name: 'Обновление спецификаций', path: 'constructs.upload', shown: true, isActive: true,},
                     {name: 'Загрузка из базы', path: 'models.load', shown: false, isActive: false,},
                 ]
         },

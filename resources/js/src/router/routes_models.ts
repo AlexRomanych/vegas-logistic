@@ -26,7 +26,7 @@ const models = [
     },
 
     {
-        path: '/procedures',                                    // __ Список процедур расчета
+        path: '/models/procedures',                                // __ Список процедур расчета
         name: 'procedures',
         component: () => import('@/components/dashboard/models/TheProceduresShow.vue'),
         meta: {
@@ -41,6 +41,26 @@ const models = [
             title: 'Обновление списка процедур расчета',
         } as IRouteMeta,
     },
+
+    {
+        path: '/models/constructs',                                // __ Список спецификаций
+        name: 'constructs',
+        component: () => import('@/components/dashboard/models/TheConstructsShow.vue'),
+        meta: {
+            title: 'Спецификации изделий - справочник',
+        } as IRouteMeta,
+    },
+    {
+        path: '/models/constructs/upload',                  // __ Загрузка / обновление списка процедур расчета
+        name: 'constructs.upload',
+        component: () => import('@/components/dashboard/models/TheConstructsUpload.vue'),
+        meta: {
+            title: 'Обновление спецификаций изделий',
+        } as IRouteMeta,
+    },
+
+
+
 
     {
         path: '/models/load',

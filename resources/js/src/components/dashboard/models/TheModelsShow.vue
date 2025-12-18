@@ -20,7 +20,7 @@ import AppTable from '@/components/ui/tables/AppTable.vue'
 const modelsStore = useModelsStore()
 const models = await modelsStore.getModels() // даем запрос на получение данных по моделям
 
-console.log(models)
+console.log('models: ', models)
 
 const modelsData = models.map((model) => {
     return [model.type, model.coll, model.name, model.textile, model.bh, model.ch, model.bc]
@@ -28,7 +28,7 @@ const modelsData = models.map((model) => {
 
 const modelsTableData = {}
 
-console.log(modelsData)
+// console.log(modelsData)
 
 modelsTableData.headers = [
     'Тип',

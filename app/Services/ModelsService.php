@@ -22,6 +22,7 @@ final class ModelsService implements VegasDataUpdateContract
     private static array $modelsCollectionsCacheByName = [];
     private static array $modelsCacheByCode1C = [];
     private static array $modelsCacheByName = [];
+    private static array $modelsCoverCacheByCode1C = [];    // Кэш для чехлов моделей, используем в обновлении спецификаций
     private static array $modelManufactureTypeCacheByCode1C = [];
     private static array $modelManufactureTypeCacheByName = [];
     private static array $modelTypeCacheByCode1C = [];
@@ -56,6 +57,11 @@ final class ModelsService implements VegasDataUpdateContract
             foreach ($models as $model) {
                 self::$modelsCacheByCode1C[$model->code_1c] = $model;
                 self::$modelsCacheByName[$model->name] = $model;
+
+                // Добавление чехла в кэш
+                if ($model->cover_code_1c) {
+                    self::$modelsCoverCacheByCode1C[$model->cover_code_1c] = $model;
+                }
             }
         }
     }
@@ -80,6 +86,17 @@ final class ModelsService implements VegasDataUpdateContract
     {
         self::getModels();
         return self::$modelsCacheByName[$name] ?? null;
+    }
+
+    /**
+     * ___ Получение чехла модели по коду 1С
+     * @param string $code1C
+     * @return Model|null
+     */
+    public static function getModelCoverByCode1C(string $code1C): ?Model
+    {
+        self::getModels();
+        return self::$modelsCoverCacheByCode1C[$code1C] ?? null;
     }
     // line -------------------------------------------------------------------
 

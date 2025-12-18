@@ -48,7 +48,7 @@ class ModelConstructProcedureController extends Controller
     }
 
 
-    public function getProcedures()
+    public function getModelProcedures()
     {
         try {
             $procedures = ModelConstructProcedure::query()->get();

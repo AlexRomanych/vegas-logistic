@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
+use App\Http\Controllers\Api\V1\Models\ModelConstructController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructProcedureController;
 use App\Http\Controllers\Api\V1\Models\ModelController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -40,8 +41,13 @@ Route::prefix('/models')
         Route::get('/', [ModelController::class, 'getModels']);
         Route::post('/upload', [ModelController::class, 'modelsUpload']);
 
-        Route::get('/procedures', [ModelConstructProcedureController::class, 'getProcedures']);
+        Route::get('/procedures', [ModelConstructProcedureController::class, 'getModelProcedures']);
         Route::post('/procedures/upload', [ModelConstructProcedureController::class, 'modelConstructProceduresUpload']);
+
+        Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
+        Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
+
+
     });
 
 
