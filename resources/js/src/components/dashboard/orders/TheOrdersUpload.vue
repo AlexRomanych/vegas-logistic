@@ -32,7 +32,7 @@ import AppInputFile from '@/components/ui/inputs/AppInputFile.vue'
 import AppButton from '@/components/ui/buttons/AppButton.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
-import { useOrdersStore } from '@/stores/OrdersStore.js'
+import { useOrdersStore } from '@/stores/OrdersStore.ts'
 import { getFileContent } from '@/app/helpers/helpers_file_reader.js'
 import { isJSON } from '@/app/helpers/helpers_checks.js'
 

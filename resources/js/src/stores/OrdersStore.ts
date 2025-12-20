@@ -1,15 +1,14 @@
 // Хранилище для заказов
+import { DEBUG } from '@/app/constants/common.ts'
 
-import {defineStore} from 'pinia'
-import {ref, reactive, computed, watch} from 'vue'
+import { ref, /*reactive, computed, watch*/ } from 'vue'
+import { defineStore } from 'pinia'
 
-import {jwtGet, jwtPost, jwtDelete} from "/resources/js/src/app/utils/jwt_api"
-import {openNewTab} from "/resources/js/src/app/helpers/helpers_service"
-
-import axios from 'axios'
+import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
+// import { openNewTab } from '@/app/helpers/helpers_service'
 
 
-// Устанавливаем глобальные переменные
+// __ Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_ORDERS = 'orders/'                    // URL для получения списка заказов
 const URL_ORDER = 'order/'                      // URL для получения заказа
@@ -22,13 +21,13 @@ export const useOrdersStore = defineStore('orders', () => {
 
 
     // Список заказов, которые получили к отображению
-    let ordersShow = []
+    let ordersShow: any = []
     // const ordersShowTest = ref('123')
     const ordersShowIsChanged = ref(false)
 
     // Получаем с API список заказов
     // params - период
-    const getOrders = async (params) => {
+    const getOrders = async (params: any) => {
 
         // console.log(params)
 
@@ -49,10 +48,7 @@ export const useOrdersStore = defineStore('orders', () => {
 
     // Загрузка заказов на сервер
     // fileData - данные файла, отправляем в RAW формате
-    const uploadOrders = async (fileData) => {
-
-        // console.log(fileData)
-
+    const uploadOrders = async (fileData: string) => {
         const headers = {
             'Content-Type': 'application/json',
             // 'Content-Type': 'application/octet-stream',
@@ -60,12 +56,10 @@ export const useOrdersStore = defineStore('orders', () => {
             // 'Content-Type': 'application/x-www-form-urlencoded',
         }
 
-        const response = await jwtPost(URL_ORDERS_UPLOAD, fileData, headers)
+        const response = await jwtPost(URL_ORDERS_UPLOAD, {data: fileData}, headers)
         const result = await response
 
-        openNewTab(result)
-
-        console.log(result)
+        if (DEBUG) console.log('OrdersStore: uploadOrders', result)
 
         return result
     }

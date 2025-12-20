@@ -1,5 +1,8 @@
 // Info: Тут все общее
 
+// ___ Режим приложения
+export const DEBUG = true
+
 // ___ Показывать ли сообщения об ошибках
 export const DISPLAY_CONSOLE_LOG = true
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Orders;
 
 use App\Facades\Model;
 use App\Http\Controllers\Controller;
@@ -20,76 +20,59 @@ class OrderController extends Controller
     // Отдаем заказы за период
     public function getOrders(Request $request)
     {
-//        return apiDebug($request->all());
+        //        return apiDebug($request->all());
 
         $validData = $request->validate([
             'start' => 'required|date|beforeOrEqual:end',
-            'end' => 'required|date|afterOrEqual:start',
+            'end'   => 'required|date|afterOrEqual:start',
         ]);
 
-//        return apiDebug($validData);
-//        return $validData;
+        //        return apiDebug($validData);
+        //        return $validData;
 
         $orders = Order::query()
             ->whereBetween('load_date', [$validData['start'], $validData['end']])
             ->get();
-//        $orders = Order::all();
+        //        $orders = Order::all();
 
 
         return new OrderCollection($orders);
 
-//        return $orders;
+        //        return $orders;
 
-//        return apiDebug($orders);
-//        return new OrderCollection(
-//            Order::whereBetween('unload_date', [$validData['start'], $validData['end']])
-//        );
+        //        return apiDebug($orders);
+        //        return new OrderCollection(
+        //            Order::whereBetween('unload_date', [$validData['start'], $validData['end']])
+        //        );
 
     }
 
-// Загружаем заказы из браузера
-// todo доделать поверку на валидность данных
+    // ___ Проверяем заявки на вшивость перед загрузкой в базу
+    public function validateOrders(Request $request)
+    {
+        $data = $request->validate(['data' => 'required|json']);
+
+        $orders = json_decode($data['data'], true);
+
+
+
+
+
+    }
+
+
+
+    // Загружаем заказы из браузера
+    // todo доделать поверку на валидность данных
     public function uploadOrders(Request $request)
     {
 
-        /*
-            Info: Структура выгружаемых данных
-        [
-          {
-            "order":                                Объект заказа
-                {
-                    "client_id": 5,                 'c'
-                    "order_no": 456,                'n'
-                    "load": "25.01.2025",           'l'
-                    "unload": "25.01.2025",         'u'
-                    "manufacture": "25.01.2025",    'm'
-                    "date_1C": "25.01.2025",        'd'
-                    "meta": "Text"                  'meta'
-                    "remark": "Comment"             'r'
-                    "status": 10                    's'
-                    "short_name": "ЛММ_Брест"       'sn'            не используем
-                },
-            "order_data":
-                [
-                    {
-                        "size": "160x200x20",       's'
-                        "model": "F5",              'm'
-                        "amount": 5,                'a'
-                        "textile": "кб",            't'
-                        "comment": "comment",       'c'
-                        "describe_1": "d1",         'd1'
-                        "describe_2": "d2",         'd2'
-                        "describe_3": "d3"          'd3'
-                    }
-                ]
-          },
-          {}
-        ]
-        */
+        $data = $request->validate(['data' => 'required|json']);
 
-        $orders = $request->all();
+        $orders = json_decode($data['data'], true);
 
-//        return $orders;
+
+        //        return $orders;
         // todo проверка на валидность данных
 
         $dubs = [];
@@ -116,17 +99,17 @@ class OrderController extends Controller
                     'client_id' => $order['c'],
                     //'client_id' => 1,               // todo заменить
 
-                    'no_num' => $order['n'],
-                    'load_date' => $order['l'],
+                    'no_num'      => $order['n'],
+                    'load_date'   => $order['l'],
                     'unload_date' => $order['u'],
-                    'manuf_date' => $order['m'],
+                    'manuf_date'  => $order['m'],
                     // 'date_1C' => $order['d'],
-                    'meta' => $order['meta'],
+                    'meta'        => $order['meta'],
                     'description' => $order['r'],
-                    'status' => $order['s']
+                    'status'      => $order['s']
                 ]);
 
-//                return $newOrder;
+                //                return $newOrder;
                 $newOrderId = $newOrder->id;
 
 
@@ -138,27 +121,27 @@ class OrderController extends Controller
 
 
                 foreach ($orderBag['order_data'] as $line) {
-//                    $newLine = new Line([
-//                        'order_id' => $newOrderId,
-//                        'size' => $line['s'],
-//                        'model' => $line['m'],
-//                        'amount' => $line['a'],
-//                        'textile' => $line['t'],
-//                        'comment' => $line['c'],
-//                        'describe_1' => $line['d1'],
-//                        'describe_2' => $line['d2'],
-//                        'describe_3' => $line['d3']
-//                    ]);
-//
-//                    $newLine->save();
+                    //                    $newLine = new Line([
+                    //                        'order_id' => $newOrderId,
+                    //                        'size' => $line['s'],
+                    //                        'model' => $line['m'],
+                    //                        'amount' => $line['a'],
+                    //                        'textile' => $line['t'],
+                    //                        'comment' => $line['c'],
+                    //                        'describe_1' => $line['d1'],
+                    //                        'describe_2' => $line['d2'],
+                    //                        'describe_3' => $line['d3']
+                    //                    ]);
+                    //
+                    //                    $newLine->save();
 
                     $newLine = Line::create([
-                        'order_id' => $newOrderId,
-                        'size' => $line['s'],
-                        'model' => $line['m'],
-                        'amount' => $line['a'],
-                        'textile' => $line['t'],
-                        'comment' => $line['c'],
+                        'order_id'   => $newOrderId,
+                        'size'       => $line['s'],
+                        'model'      => $line['m'],
+                        'amount'     => $line['a'],
+                        'textile'    => $line['t'],
+                        'comment'    => $line['c'],
                         'describe_1' => $line['d1'],
                         'describe_2' => $line['d2'],
                         'describe_3' => $line['d3']
@@ -166,8 +149,8 @@ class OrderController extends Controller
 
                     // Создаем запись для добавления в ПЯ швейки
                     $sewingLine = [
-                        'amount' => $line['a'],
-                        'line_id' => $newLine->id,
+                        'amount'          => $line['a'],
+                        'line_id'         => $newLine->id,
                         'manufactured_at' => $newOrder->manufacture_date_opp,
                     ];
 
@@ -196,20 +179,20 @@ class OrderController extends Controller
         }
 
 
-//        return 1111;
-//        return $dubs;           // возвращаем дубликаты
+        //        return 1111;
+        //        return $dubs;           // возвращаем дубликаты
 
         return response()->json([
             'dubs' => $dubs
         ]);
 
 
-//        $data = $request->all();
-//        return view('dd', ['data' => $data]);
-//
-//        return $request->all();
-//
-//        return 'Data Received';
+        //        $data = $request->all();
+        //        return view('dd', ['data' => $data]);
+        //
+        //        return $request->all();
+        //
+        //        return 'Data Received';
     }
 
 
@@ -229,10 +212,10 @@ class OrderController extends Controller
             ]);
         }
 
-//        $data = $request->all();
-//        return view('dd', ['data' => $data]);
+        //        $data = $request->all();
+        //        return view('dd', ['data' => $data]);
 
-//        return $ids;
+        //        return $ids;
     }
 
 

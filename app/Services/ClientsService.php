@@ -75,13 +75,64 @@ final class ClientsService implements VegasDataUpdateContract
         return null;
     }
 
+    /**
+     *  ___ Возвращает клиента по его имени
+     * @param string $fullName Имя клиента
+     * @param string|null $addName Дополнительное имя клиента
+     * @return Client|null
+     */
+    public static function getClientByName(string $fullName, string | null $addName = null): ?Client
+    {
+        if (count(self::$clientsCache) === 0) {
+            self::getClients();
+        }
+
+        foreach (self::$clientsCache as $client) {
+            if (mb_strtolower($client->name) === mb_strtolower($fullName)) {
+
+                if ($addName) {
+                    if (mb_strtolower($client->add_name) === mb_strtolower($addName)) {
+                        return $client;
+                    }
+                } else {
+                    return $client;
+                }
+
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     *  ___ Возвращает клиента по его коду в 1С
+     * @param string|null $code_1c Код клиента из 1С
+     * @return Client|null
+     */
+    public static function getClientByCode_1c(string | null $code_1c = null): ?Client
+    {
+        if (!$code_1c) return null;
+
+        if (count(self::$clientsCache) === 0) {
+            self::getClients();
+        }
+
+        foreach (self::$clientsCache as $client) {
+            if ($client->$code_1c === $code_1c) {
+                return $client;
+            }
+        }
+
+        return null;
+    }
+
 
     /**
      * __ Проверяет является ли клиент ЛММ
      * @param Client|string|int $entity
      * @return bool
      */
-    public static function isClient_LMM(Client | string | int $entity): bool
+    public static function isClient_LMM(Client|string|int $entity): bool
     {
         if (is_string($entity)) {
             return mb_stripos($entity, 'ЛММ') !== false;

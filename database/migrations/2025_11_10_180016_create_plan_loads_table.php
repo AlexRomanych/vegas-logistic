@@ -17,27 +17,8 @@ return new class extends Migration {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id()->from(1);
 
-            // __ Связь с клиентом
-            $table->foreignIdFor(Client::class)
-                ->comment('Клиент к которому относится заявка')
-                ->constrained();
-
-            $table->string('order_no')->nullable(false)->comment('Номер заявки');
-
-            // __ Связь с типом заявки (серийная, гарантийная и т.д.)
-            $table->foreignIdFor(OrderType::class)
-                ->comment('Тип заявки')
-                ->constrained();
-
+            // __ Количество изделий для отгрузки
             $table->jsonb('amounts')->nullable()->comment('Количество изделий');
-
-            // __ Обходим ситуацию, когда заявки начинаются каждый год для каждого клиента с 1
-            $table->date('period')->nullable(false)->comment('Период, к которому относится заявка');
-
-            // __ Порядок заявки в плане
-            $table->unsignedSmallInteger('load_position')
-                ->nullable()
-                ->comment('Порядок заявки в плане');
 
             // __ Дата загрузки на складе Вегас
             $table->dateTime('load_at')
@@ -54,6 +35,32 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(false)
                 ->comment('Конфликт при изменении даты загрузки на складе Вегас');
+
+            $table->string('extended_meta')->nullable()->comment('Расширенная информация');
+
+
+            // Warning: Этот код переехал в миграцию Orders
+            // TODO: Закомментировать после переноса
+
+            // Relations: Связь с клиентом
+            $table->foreignIdFor(Client::class)
+                ->comment('Клиент к которому относится заявка')
+                ->constrained();
+
+            $table->string('order_no')->nullable(false)->comment('Номер заявки');
+
+            // Relations: Связь с типом заявки (серийная, гарантийная и т.д.)
+            $table->foreignIdFor(OrderType::class)
+                ->comment('Тип заявки')
+                ->constrained();
+
+            // __ Обходим ситуацию, когда заявки начинаются каждый год для каждого клиента с 1
+            $table->date('period')->nullable(false)->comment('Период, к которому относится заявка');
+
+            // __ Порядок заявки в плане
+            $table->unsignedSmallInteger('load_position')
+                ->nullable()
+                ->comment('Порядок заявки в плане');
 
             // __ Дата разгрузки на складе Клиента
             $table->dateTime('unload_at')->nullable()->comment('Дата разгрузки на складе Клиента');
@@ -76,9 +83,7 @@ return new class extends Migration {
                 ->default(true)
                 ->comment('Отображать в плане');
 
-            $table->string('extended_meta')->nullable()->comment('Расширенная информация');
             $table->jsonb('history')->nullable()->comment('История изменений');
-
         });
 
         $this->addCommonColumns(self::TABLE_NAME);

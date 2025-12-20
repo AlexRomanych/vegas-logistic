@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\Materials\MaterialController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructProcedureController;
 use App\Http\Controllers\Api\V1\Models\ModelController;
-use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\Orders\OrderController;
 use App\Http\Controllers\Api\V1\Plans\PlanController;
 use App\Http\Controllers\Api\V1\Plans\PlanLoadsController;
 use App\Http\Controllers\UpdateData1CController as Update;
@@ -73,18 +73,20 @@ Route::prefix('/materials')
 
 //hr--------------------------------------------------------------------------------------------------------------------
 
-
-
-
 //hr--------------------------------------------------------------------------------------------------------------------
-//attract: Блок Заказов
-//Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');
-Route::get('/orders', [OrderController::class, 'getOrders'])->middleware('jwt.auth');;
-Route::post('/orders/upload', [OrderController::class, 'uploadOrders'])->middleware('jwt.auth');
-Route::delete('/orders/delete', [OrderController::class, 'deleteOrders'])->middleware('jwt.auth');
-//Route::delete('/orders/delete', function (Request $request) {
-//    return $request->all();
-//});
+// __ Блок Заказов
+
+Route::prefix('/orders')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        Route::get('/', [OrderController::class, 'getOrders']);
+        Route::post('/upload', [OrderController::class, 'uploadOrders']);
+        Route::post('/validate', [OrderController::class, 'validateOrders']);
+        Route::delete('/delete', [OrderController::class, 'deleteOrders']);
+
+
+    });
 //hr--------------------------------------------------------------------------------------------------------------------
 
 //hr--------------------------------------------------------------------------------------------------------------------

@@ -20,7 +20,7 @@ import { ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 
 import { storeToRefs } from 'pinia'
-import { useOrdersStore } from '@/stores/OrdersStore'
+import { useOrdersStore } from '@/stores/OrdersStore.js'
 
 import DataStatusIndicator from '@/components/dashboard/service/DataStatusIndicator.vue'
 import TheOrderHeader from '@/components/dashboard/orders/components/TheOrderHeader.vue'
