@@ -5,14 +5,23 @@ namespace App\Http\Controllers\Api\V1\Orders;
 use App\Facades\Model;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderCollection;
+use App\Http\Resources\Order\Render\OrderRenderResource;
+use App\Models\Client;
 use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
 use App\Models\Manufacture\Cells\sewing\CellSewingHard;
 use App\Models\Manufacture\Cells\sewing\CellSewingLight;
 use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
+use App\Models\Order\OrderLine;
+use App\Services\ModelsService;
+use App\Services\OrdersService;
+use App\Services\PlanService;
+use App\Services\SizeService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -20,7 +29,13 @@ class OrderController extends Controller
     // Отдаем заказы за период
     public function getOrders(Request $request)
     {
-        //        return apiDebug($request->all());
+
+        $orders = Order::query()
+            ->with(['lines.model.modelType', 'client', 'orderType'])
+            ->get();
+
+
+        return OrderRenderResource::collection($orders);
 
         $validData = $request->validate([
             'start' => 'required|date|beforeOrEqual:end',
@@ -55,9 +70,6 @@ class OrderController extends Controller
         $orders = json_decode($data['data'], true);
 
 
-
-
-
     }
 
 
@@ -71,6 +83,150 @@ class OrderController extends Controller
 
         $orders = json_decode($data['data'], true);
 
+        $orderDubs = [];            // Дубли заказов
+        $missingModels = [];        // Не найденные модели
+        $missingClients = [];       // Не найденные клиенты
+
+
+        DB::table('orders')->truncate();
+
+
+        foreach ($orders as $order) {
+
+            // __ Пробуем найти клиента
+            $client = Client::query()->find($order['client_id']);
+
+            if (!$client) {
+                $missingClients[$order['client_id']] = [
+                    'name'           => $order['client_full_name'],
+                    'client_code_1c' => $order['client_code'],
+                ];
+                continue;
+            }
+
+            // __ Получаем тип элементов в Заявке
+            $elementsType = OrdersService::getOrderElementsTypeFromFront($order);
+
+            // __ Пробуем найти заказ
+            $findOrder = Order::query()
+                ->where('client_id', $order['client_id'])
+                ->where('order_no_num', (float)$order['order_no'])
+                ->where('elements_type', $elementsType)
+                ->first();
+
+            if ($findOrder) {
+                $orderDubs[] = $order;
+                continue;
+            }
+
+            // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
+            $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($order['order_no'], $order['client_id']);
+
+            $createdOrder = Order::query()->create([
+                'client_id'       => $client->id,
+                'order_type_id'   => $orderType->id,
+                'plan_load_id'    => 0,                  // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                'order_no_num'    => parseNumericValue($order['order_no']),
+                'order_no_str'    => $order['order_no'],
+                'order_no_origin' => $order['order_no_1c'],
+                'order_period'    => PlanService::getLoadPeriod($order['load_at']),
+                'elements_type'   => $elementsType,
+
+                // Вставляем именно массивом, без преобразования в json
+                'amounts' => [
+                    'mattresses' => 0,
+                    'up_covers'  => 0,
+                    'averages'   => 0,
+                    'covers'     => 0,
+                    'children'   => 0,
+                    'formats'    => 0,
+                    'unknowns'   => 0,
+                    'totals'     => 0,
+                ],
+
+                'responsible'        => $order['responsible'],
+                'manager_load_date'  => $order['load_at_1c'] === '' ? null : Carbon::parse($order['load_at_1c']),
+                'manager_start'      => $order['mg_start'] === '' ? null : Carbon::parse($order['mg_start']),
+                'manager_end'        => $order['mg_end'] === '' ? null : Carbon::parse($order['mg_end']),
+                'design_start'       => $order['kb_start'] === '' ? null : Carbon::parse($order['kb_start']),
+                'design_end'         => $order['kb_end'] === '' ? null : Carbon::parse($order['kb_end']),
+                'no_1c'              => $order['order_no_1c'],
+                'code_1c'            => $order['order_code'],
+                'base_order_code_1c' => $order['base'],
+                'comment_1c'         => $order['comment'],
+                'client_code_1c'     => $order['client_code'],
+                'client_name_1c'     => $order['client_full_name'],
+                'service'            => $order['service'],
+                'load_at'            => Carbon::parse($order['load_at']),
+                'unload_at'          => $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']), //' $order['service'],
+                // 'status'             => $order[''],
+                // 'is_forecast'        => $order[''],
+                // 'shown'              => $order[''],
+                // 'stat_include'       => $order[''],
+                // 'service_ext'        => $order[''],
+                // 'extended_meta'      => $order[''],
+                // 'description'        => $order[''],
+                // 'comment'            => $order[''],
+                // 'note'               => $order[''],
+                // 'meta'               => $order[''],
+                // 'history'            => $order[''],
+                // 'meta_ext'           => $order[''],
+                // 'active'             => $order[''],
+
+
+            ]);
+
+
+            foreach ($order['items'] as $orderLine) {
+
+                // __ Получаем размеры
+                $dims = SizeService::getDimensions($orderLine['s']);
+
+                // __ Пробуем найти модель
+                $findModel = ModelsService::getModelByCode1C($orderLine['c']);
+
+                if (!$findModel) {
+                    $missingModels[$orderLine['c']] = $orderLine['n'];
+                    continue;
+                }
+
+                $createLine = OrderLine::query()->create(
+                    [
+                        'order_id'      => $createdOrder->id,
+                        'size'          => $orderLine['s'],
+                        'width'         => $dims->getWidth(),
+                        'length'        => $dims->getLength(),
+                        'height'        => $dims->getHeight(),
+                        'model_name'    => $orderLine['n'],
+                        'model_code_1c' => $findModel->code_1c,
+                        'amount'        => $orderLine['a'],
+                        'textile'       => $orderLine['t'],
+                        'composition'   => $orderLine['d'],
+                        'describe_1'    => $orderLine['d1'],
+                        'describe_2'    => $orderLine['d2'],
+                        'describe_3'    => $orderLine['d3'],
+                        // 'active'        => $orderLine[''],
+                        // 'status'        => $orderLine[''],
+                        // 'description'   => $orderLine[''],
+                        // 'comment'       => $orderLine[''],
+                        // 'note'          => $orderLine[''],
+                        // 'meta'          => $orderLine[''],
+                    ]
+                );
+
+            }
+
+
+        }
+
+        $a = $orderDubs;            // Дубли заказов
+        $b = $missingModels;        // Не найденные модели
+        $c = $missingClients;       // Не найденные клиенты
+
+
+        return 'done...';
+
+        $result = OrdersService::validateOrders($orders);
 
         //        return $orders;
         // todo проверка на валидность данных

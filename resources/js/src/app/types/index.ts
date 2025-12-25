@@ -8,6 +8,7 @@ export * from './client_types.ts'                   // Все типы для к
 export * from './plan_types.ts'                     // Все типы для планов
 export * from './log_types.ts'                      // Все типы для логов
 export * from './business_processes_types.ts'       // Все типы для бизнес-процессов
+export * from './order_types.ts'                    // Все типы для Заявок
 
 
 // ___ Константы выравнивания текста
@@ -22,4 +23,8 @@ export type IRouteMeta = {
 }
 
 
-
+// ___ Типы для валидации ввода даты
+export type IDataInputObj = {
+    newValue: string
+    oldValue: string
+}

@@ -780,7 +780,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { IRenderData, IRollMove, IRollMoveRender, ISelectData, ISelectDataItem } from '@/types'
+import type { IDataInputObj, IRenderData, IRollMove, IRollMoveRender, ISelectData, ISelectDataItem } from '@/types'
 
 import { reactive, ref, watch } from 'vue'
 
@@ -816,10 +816,7 @@ interface ITab {
 
 type ITabs = Record<string, ITab>
 
-type IDataInputObj = {
-    newValue: string
-    oldValue: string
-}
+
 
 
 const fabricsStore = useFabricsStore()

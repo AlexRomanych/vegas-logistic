@@ -94,7 +94,7 @@ const uploadFile = async () => {
             const res = await modelsStore.uploadConstructs(fileData)
             // const res = await ordersStore.uploadOrders(fileData)
 
-            console.log('uploadProcedures: ', res)
+            console.log('uploadConstructs: ', res)
 
             // if (res === 'success') {
             //     opResultText.value = 'Данные успешно загружены'

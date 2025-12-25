@@ -26,15 +26,18 @@
 </template>
 
 <script setup>
-// import axios from 'axios';
 import { ref } from 'vue'
-import AppInputFile from '@/components/ui/inputs/AppInputFile.vue'
-import AppButton from '@/components/ui/buttons/AppButton.vue'
-import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 import { getFileContent } from '@/app/helpers/helpers_file_reader.js'
 import { isJSON } from '@/app/helpers/helpers_checks.js'
+
+// import AppInputFileTS from '@/components/ui/inputs/AppInputFileTS.vue'
+import AppInputFile from '@/components/ui/inputs/AppInputFile.vue'
+import AppButton from '@/components/ui/buttons/AppButton.vue'
+import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+
+
 
 const selectedFile = ref(null)
 const isDataJson = ref(true) // Проверка на тип файла для вызова Callout
@@ -69,26 +72,26 @@ const uploadFile = async () => {
             const res = await ordersStore.uploadOrders(fileData)
             // const res = await ordersStore.uploadOrders(fileData)
 
-            if (res.length === 0) {
-                opResultText.value = 'Данные успешно загружены'
-                opResultType.value = 'success'
-                setTimeout(() => {
-                    opResult.value = false
-                }, 5000)
-            } else {
-                const dubsTextArray = res.map((item) => {
-                    return item['sh'] + ' ' + item['n']
-                })
-
-                // console.log(dubsTextArray)
-
-                opResultText.value = 'Дубликат:' + dubsTextArray.join(', ')
-                opResultType.value = 'danger'
-            }
-            opResult.value = true
-            setTimeout(() => {
-                opResult.value = false
-            }, 5000)
+            // if (res.length === 0) {
+            //     opResultText.value = 'Данные успешно загружены'
+            //     opResultType.value = 'success'
+            //     setTimeout(() => {
+            //         opResult.value = false
+            //     }, 5000)
+            // } else {
+            //     const dubsTextArray = res.map((item) => {
+            //         return item['sh'] + ' ' + item['n']
+            //     })
+            //
+            //     // console.log(dubsTextArray)
+            //
+            //     opResultText.value = 'Дубликат:' + dubsTextArray.join(', ')
+            //     opResultType.value = 'danger'
+            // }
+            // opResult.value = true
+            // setTimeout(() => {
+            //     opResult.value = false
+            // }, 5000)
         } else {
             isDataJson.value = false
             setTimeout(() => {

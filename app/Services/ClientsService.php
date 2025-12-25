@@ -135,7 +135,7 @@ final class ClientsService implements VegasDataUpdateContract
     public static function isClient_LMM(Client|string|int $entity): bool
     {
         if (is_string($entity)) {
-            return mb_stripos($entity, 'ЛММ') !== false;
+            return mb_stripos(mb_strtolower($entity), mb_strtolower('ЛидерМатрасМаркет')) !== false;
         }
 
         if (is_int($entity)) {

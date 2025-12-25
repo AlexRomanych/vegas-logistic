@@ -20,14 +20,31 @@
             </div>
         </div>
     </div>
+
+
+
+    <!--<div class="flex items-center justify-center w-full max-w-xl mx-auto">-->
+    <!--    <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100 hover:border-indigo-400 transition-all duration-300 cursor-pointer group">-->
+    <!--        <div class="flex flex-col items-center justify-center pt-5 pb-6">-->
+    <!--            <div class="p-4 bg-indigo-100 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">-->
+    <!--                <svg class="w-8 h-8 text-indigo-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">-->
+    <!--                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>-->
+    <!--                </svg>-->
+    <!--            </div>-->
+    <!--            <p class="mb-2 text-sm text-slate-700 font-semibold">Нажмите для загрузки или перетащите файл</p>-->
+    <!--            <p class="text-xs text-slate-500">Excel (XLSX, XLS) до 50МБ</p>-->
+    <!--        </div>-->
+    <!--        <input id="dropzone-file" type="file" class="hidden" accept=".xlsx, .xls" />-->
+    <!--    </label>-->
+    <!--</div>-->
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+// import { computed, ref } from 'vue'
 
 import { colorsClasses, colorsList } from '@/app/constants/colorsClasses.js'
-import { getColorClassByType } from '@/app/helpers/helpers.js'
-import AppButton from '@/components/ui/buttons/AppButton.vue'
+// import { getColorClassByType } from '@/app/helpers/helpers.js'
+// import AppButton from '@/components/ui/buttons/AppButton.vue'
 
 const props = defineProps({
     id: {
@@ -52,7 +69,7 @@ const props = defineProps({
     width: {
         type: String,
         required: false,
-        default: 'w-[400px]',
+        default: 'w-[800px]',
     },
     errors: {
         type: Array,

@@ -22,7 +22,7 @@ final class OrdersService_Old implements VegasDataUpdateContract
     private int $weeksAmount;               // количество недель для рендеринга плана
 
 
-    private static array $orderTypesCache = [];     // Типы заявок
+
 
     public function __construct(public VegasDataGetContract $getter)
     {
@@ -496,81 +496,6 @@ final class OrdersService_Old implements VegasDataUpdateContract
     }
 
 
-    /**
-     * ___ Возвращает массив типов заказов
-     * @return array
-     */
-    public static function getOrderTypes(): array
-    {
-        try {
-            $orderTypes = OrderType::all();
-            foreach ($orderTypes as $orderType) {
-                self::$orderTypesCache[$orderType->type_index] = $orderType;
-            }
-            return self::$orderTypesCache;
-        } catch (Exception $e) {
-            self::$orderTypesCache = [];
-            return [];
-        }
-    }
-
-    /**
-     * ___ Возвращает тип заказа по индексу
-     * @param string $typeIndex
-     * @return OrderType|null
-     */
-    public static function getOrderTypeByIndex(string $typeIndex): ?OrderType
-    {
-        if (count(self::$orderTypesCache) === 0) {
-            self::getOrderTypes();
-        }
-
-        if (isset(self::$orderTypesCache[$typeIndex])) {
-            return self::$orderTypesCache[$typeIndex];
-        }
-
-        return null;
-    }
-
-
-    /**
-     * ___ Возвращает тип заявки по номеру заявки
-     * @param string $orderNo
-     * @param int $clientID
-     * @return OrderType
-     */
-    public static function getOrderTypeByOrderNoAndClientId(string $orderNo, int $clientID = 0): OrderType
-    {
-        $orderNo = trim($orderNo);
-        $orderNo = str_replace(',', '.', $orderNo);
-        $orderNo = getDigitPartAndDotAndComma($orderNo);
-
-        if (!is_numeric($orderNo)) {
-            return self::getOrderTypeByIndex('.00');       // неизвестный тип заказа, если номер не число
-        }
-
-        if (!str_contains($orderNo, '.')) {
-            return self::getOrderTypeByIndex('_');         // основной тип заказа, если нет точки
-        }
-
-        $parts = explode('.', $orderNo, 2);
-
-        if (ClientsService::isClient_LMM($clientID)) {
-            if (in_array($parts[1], ['1', '2'])) {
-                return self::getOrderTypeByIndex('.' . $parts[1]);     // Дополнительная заявка ЛММ
-            }
-        }
-
-        if (isset(self::$orderTypesCache['.' . $parts[1]])) {
-            return self::getOrderTypeByIndex('.' . $parts[1]);
-        }
-
-        if (in_array($parts[1], ['1', '2', '3', '4', '5', '6', '7', '8', '9'])) {
-            return self::getOrderTypeByIndex('.1-10; .20-...');     // Дополнительная заявка
-        }
-
-        return self::getOrderTypeByIndex('.00');
-    }
 
 }
 

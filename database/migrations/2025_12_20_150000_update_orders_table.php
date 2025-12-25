@@ -18,24 +18,24 @@ return new class extends Migration {
             $table->id()->from(1);
 
             // __ Номер заявки в десятичном представлении
-            $table->decimal('no_num', 8, 3)
+            $table->decimal('order_no_num', 8, 3)
                 ->nullable(false)
                 ->default(0)
                 ->comment('Номер заявки в числовом формате');
 
             // __ Номер заявки в текстовом представлении
-            $table->string('no_str')
+            $table->string('order_no_str')
                 ->nullable()
                 ->comment('Номер заявки в текстовом формате');
 
             // __ Оригинальный номер заявки - номер, который может придти из 1С
-            $table->string('no_origin')
+            $table->string('order_no_origin')
                 ->nullable()
                 ->comment('Оригинальный номер заявки');
 
             // __ Период (начало месяца), к которому принадлежит заявка, оставляем, пока не знаем, пригодится ли
             // __ Обходим ситуацию, когда заявки начинаются каждый год для каждого клиента с 1
-            $table->date('plan_period')
+            $table->date('order_period')
                 ->nullable()
                 ->comment('Период (начало месяца), к которому принадлежит заявка');
 
@@ -49,6 +49,9 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Статус заявки (загружена/не загружена/отгружена/закрыта и т.д.)');
+
+            // __ Мета-информация о статусе (кто и когда менял)
+            $table->jsonb('status_history')->nullable()->default(json_encode([]))->comment('Мета-информация о статусе');
 
             // __ Количество изделий (расширенное, для быстроты обмена данными)
             $table->jsonb('amounts')
@@ -73,6 +76,10 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(true)
                 ->comment('Включать или нет в статистику при планировании (пропуск при расчете сырья)');
+
+            // __ Позиция загрузки заявки в Плане отгрузок. Выносим сюда, чтобы обеспечить более гибкий порядок управления загрузкой
+            // __ Например, загрузить сначала ЛММ 1, потом ЛММ 2, а потом ЛММ 1 аксессуары
+            $table->unsignedInteger('load_position')->nullable()->comment('Позиция загрузки заявки в Плане отгрузок');
 
             // __ Ответственный, кто вносил заявку в 1С
             $table->string('responsible')
@@ -134,7 +141,8 @@ return new class extends Migration {
 
             // Relations: Связь с типом заявки (серийная, гарантийная и т.д.)
             $table->foreignIdFor(OrderType::class)
-                ->nullable()
+                ->nullable(false)
+                ->default(0)
                 ->comment('Тип заявки (серийная, гарантийная и т.д.)')
                 ->constrained();
 
@@ -144,9 +152,36 @@ return new class extends Migration {
                 ->comment('Загрузка на складе Вегас (Загрузка в плане)')
                 ->constrained();
 
-            // Warn: Ставим уникальность на номер заявки + период + клиент,
+            // Warn: Ставим уникальность на номер заявки + тип элементов (матрасы/аксессуары и т.д.) + период + клиент,
             // Warn: т.к. заявки могут быть с одинаковым номером, но в разных периодах
-            $table->unique(['client_id', 'no_num', 'plan_period']);
+            $table->unique(['client_id', 'order_no_num', 'order_period', 'elements_type']);
+
+
+
+            // __ Дата загрузки на складе Вегас
+            $table->dateTime('load_at')
+                ->nullable(false)
+                ->comment('Дата загрузки на складе Вегас');
+
+            // __ Дата загрузки на складе Вегас предыдущая, в случае изменения
+            $table->dateTime('load_at_previous')
+                ->nullable()
+                ->comment('Предыдущая дата загрузки на складе Вегас');
+
+            // __ Дата разгрузки на складе Клиента
+            $table->dateTime('unload_at')->nullable()->comment('Дата разгрузки на складе Клиента');
+
+            // __ Флаг, который говорит о том, что были изменены даты загрузки на складе Вегас и ситуация требует разрешения
+            $table->boolean('load_at_dates_conflict')
+                ->nullable(false)
+                ->default(false)
+                ->comment('Конфликт при изменении даты загрузки на складе Вегас');
+
+
+            // Relations: __ ID склада (На будущее, пока не используется)
+            $table->unsignedInteger('storage_id')->nullable()->comment('ID склада');
+
+
 
 
             // $table->timestamp('load_date')->nullable(false)->default(now())->comment('дата загрузки на складе Вегаса');

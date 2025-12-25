@@ -3,13 +3,37 @@
 namespace App\Models\Shared;
 
 
-class Size
+readonly class Size
 {
     public function __construct(
-        public int $width  = 0,     // ширина
-        public int $length = 0,     // длина
-        public int $height = 0      // высота
+        private int|null $width  = null,     // ширина
+        private int|null $length = null,     // длина
+        private int|null $height = null      // высота
     )
     {
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getWidth(): ?int
+    {
+        return $this->width;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLength(): ?int
+    {
+        return $this->length;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getHeight(): ?int
+    {
+        return $this->height;
     }
 }

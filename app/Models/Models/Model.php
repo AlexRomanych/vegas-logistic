@@ -6,6 +6,7 @@ use App\Models\Order\Line;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Model extends LaravelModel
 {
@@ -160,7 +161,7 @@ final class Model extends LaravelModel
     // Relations: Связь с коллекцией
     public function collection(): BelongsTo
     {
-        return $this->belongsTo(Collection::class, 'collection_id', CODE_1C);
+        return $this->belongsTo(Collection::class, 'model_collection_code_1c', CODE_1C);
     }
 
 
@@ -171,11 +172,30 @@ final class Model extends LaravelModel
     }
 
 
-
-
-    public function line(): BelongsTo
+    // Relations: Связь с Типом модели
+    public function modelType(): BelongsTo
     {
-        return $this->belongsTo(Line::class);
+        return $this->belongsTo(ModelType::class, 'model_type_code_1c', CODE_1C);
     }
+
+
+    // Relations: Связь Модели с Чехлом
+    public function cover(): BelongsTo
+    {
+        return $this->belongsTo(Model::class, 'cover_code_1c', CODE_1C);
+    }
+
+
+    // Relations: Связь Чехла с Моделью
+    public function base(): HasOne
+    {
+        return $this->hasOne(Model::class, 'cover_code_1c', CODE_1C);
+    }
+
+
+    // public function line(): BelongsTo
+    // {
+    //     return $this->belongsTo(Line::class);
+    // }
 
 }

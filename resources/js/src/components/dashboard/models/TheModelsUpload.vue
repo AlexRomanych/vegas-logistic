@@ -90,6 +90,8 @@ const uploadFile = async () => {
             // Отправляем в RAW формате и возвращаем результат операции
             // todo сделать проверку на существующие ПС
 
+            console.log('upload...')
+
             const modelsStore = useModelsStore()
             const res = await modelsStore.uploadModels(fileData)
             // const res = await ordersStore.uploadOrders(fileData)

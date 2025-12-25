@@ -22,6 +22,8 @@ trait AddCommonColumnsInTableTrait
             $table->string('comment')->nullable()->comment('Комментарий');
             $table->string('note')->nullable()->comment('Примечание');
             $table->json('meta')->nullable()->comment('Метаданные');
+            $table->string('color', 7)->default('#64748B')->comment('Цвет рендера');
+
 
             $table->timestamps();
         });

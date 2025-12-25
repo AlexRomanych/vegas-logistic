@@ -43,9 +43,39 @@ class ModelConstructController extends Controller
             $missingModels = [];
             $missingMaterials = [];
             $missingProcedures = [];
+            $fillsCount = 0;
 
             foreach ($data as $modelConstruct) {
 
+
+                // ___ Тут логика, когда в базе моделей уже есть чехлы
+
+                // __ Получаем модель (может быть как основная модель, так и чехол)
+                $model = ModelsService::getModelByCode1C($modelConstruct['mc']);                // mc - model construct
+
+                $constructType = null;
+
+
+
+                if ($model) {      // Заполняем спецификации только для существующих моделей
+                    if (ModelsService::isElementCover($model)) {
+                        $constructType = ConstructTypes::COVER->value;
+                    } else if (ModelsService::isElementMattress($model) || ModelsService::isElementUpMattress($model)) {
+                        $constructType = ConstructTypes::BASE->value;
+                    }
+
+                    $fillsCount++;
+
+                } else {
+                    $missingModels[] = [
+                        'code_1c' => $modelConstruct['mc'],
+                        'name'    => $modelConstruct['mn'],
+                    ];
+                    continue;
+                }
+
+                // ___ Тут первоначальная логика, когда в базе моделей не было чехлов
+                /*
                 // TODO: Обновляем чехол по сути по информации о чехле, которая есть в таблице моделей
                 // TODO: Проверить на достаточность, если нет, то можно попробовать по имени поискать чехол
                 // __ Получаем модель или чехол
@@ -66,17 +96,20 @@ class ModelConstructController extends Controller
                     ];
                     continue;
                 }
+                */
+
 
                 // TODO: Добавить проверку на совпадение спецификации со входящими данными для уменьшения количества запросов в БД
 
                 /** @noinspection PhpUndefinedFieldInspection */
-                /*$createdModelConstruct = */ModelConstruct::query()->updateOrCreate(
+                /*$createdModelConstruct = */
+                ModelConstruct::query()->updateOrCreate(
                     [
                         CODE_1C => $modelConstruct['cc'],                           // cc - construct code 1c
                     ],
                     [
                         'name'          => $modelConstruct['cn'],                            // cn - construct name
-                        'model_code_1c' => $model->code_1c, // тут принадлежность к модели и для чехла, благодаря подмене
+                        'model_code_1c' => $model->code_1c, // тут принадлежность к модели (и для чехла, благодаря подмене для старой версии)
                         // 'model_code_1c' => $modelConstruct['mc'],                // mc - model code 1c
                         'model_name'    => $modelConstruct['mn'],                   // mn - model name
                         'type'          => $constructType,

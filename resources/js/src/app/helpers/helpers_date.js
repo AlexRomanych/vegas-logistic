@@ -1,6 +1,6 @@
 // Здесь все, что касается даты и времени
 
-import {PERIOD_LENGTH} from '/resources/js/src/app/constants/dates.js'
+import { PERIOD_LENGTH } from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
 const GMT_0 = ':00Z'
@@ -641,7 +641,188 @@ export function validateInputDateHelper(input = null) {
         }
 
         if ((input.newValue[3] === '0' && ifDigit(input.newValue[4])) ||
-            (input.newValue[3] === '1' && ['0', '1', '2'].includes(input.newValue[4])) ) {   // mm: 01-12
+            (input.newValue[3] === '1' && ['0', '1', '2'].includes(input.newValue[4]))) {   // mm: 01-12
+            input.newValue += '.'
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 6) { // dd.mm?yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+    } else if (input.newValue.length === 7) { // dd.mm.?yyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (input.newValue[6] === '2') {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 8) { // dd.mm.y?yy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (input.newValue[7] === '0') {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 9) { // dd.mm.yy?y
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (['2', '3'].includes(input.newValue[8])) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 10) { // dd.mm.yy?y
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if ((input.newValue[8] === '2') && ['5', '6', '7', '8', '9'].includes(input.newValue[9]) ||
+            (input.newValue[8] === '3') && ifDigit(input.newValue[9])) { // yyyy: 2025-2039
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+    }
+
+    input.newValue = input.oldValue
+}
+
+export function validateInputDateHelper_new(input = null) {
+
+    if (!input) {
+        return ''
+    }
+
+    const workInput = JSON.parse(JSON.stringify(input))
+
+    // console.log('input: ', workInput.newValue, workInput.newValue.length)
+    // console.log('oldInput: ', workInput.oldValue, workInput.oldValue.length)
+    // console.log()
+
+    const direction = workInput.newValue.length > workInput.oldValue.length    // для проверки на ввод или удаление, true - ввод, false - удаление
+
+    const ifDigit = (char) => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(char)
+
+    console.log('direction: ', direction)
+
+    // __ Удаление символа
+    if (!direction) {
+        if ([4, 7].includes(input.oldValue.length)) {
+            input.newValue = input.newValue.slice(0, -1)
+        }
+        input.oldValue = input.newValue
+        return
+        // if (input.newValue.length === 0) {
+        //
+        //     input.newValue = ''
+        //     input.oldValue = input.newValue
+        //     return
+        // }
+        //
+        //
+        // if ([10, 9, 8, 5, 2].includes(input.oldValue.length)) {
+        //     input.oldValue = input.newValue
+        //     return
+        // }
+        //
+        // result = str.slice(0, -2)
+    }
+
+
+    if (input.newValue.length === 0) {
+
+        input.newValue = ''
+        input.oldValue = input.newValue
+
+    } else if (input.newValue.length === 1) {  // ?d.mm.yyyy // Если длина строки равна 1, то проверяем, является ли символ цифрой от 0 до 3 (dd)
+
+        if (['0', '1', '2', '3'].includes(input.newValue)) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = ''
+            input.oldValue = input.newValue
+        }
+
+    } else if (input.newValue.length === 2) {   // d?.mm.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.newValue = input.newValue[0]
+            input.oldValue = input.newValue
+            return
+        }
+
+        // добавляем
+        if (ifDigit(input.newValue[1])) {
+            input.newValue += '.'
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 3) {   // dd?mm.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+    } else if (input.newValue.length === 4) {   // dd.?m.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.oldValue = input.newValue
+            return
+        }
+
+        if (['0', '1'].includes(input.newValue[3])) {
+            input.oldValue = input.newValue
+        } else {
+            input.newValue = input.oldValue
+        }
+
+    } else if (input.newValue.length === 5) { // dd.m?.yyyy
+
+        // удаляем символ
+        if (!direction) {
+            input.newValue = input.newValue.substring(0, 4)
+            input.oldValue = input.newValue
+            return
+        }
+
+        if ((input.newValue[3] === '0' && ifDigit(input.newValue[4])) ||
+            (input.newValue[3] === '1' && ['0', '1', '2'].includes(input.newValue[4]))) {   // mm: 01-12
             input.newValue += '.'
             input.oldValue = input.newValue
         } else {
@@ -719,6 +900,8 @@ export function validateInputDateHelper(input = null) {
 
 
 
+
+
 /**
  * ___ Функция для преобразования объекта Date в строку формата YYYY-MM-DD
  * ___ в ЛОКАЛЬНОМ часовом поясе.
@@ -729,12 +912,12 @@ export function formatToYMD(date) {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
         return ''
     }
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
 
-    const pad = (num) => num.toString().padStart(2, '0');
-    return `${year}-${pad(month)}-${pad(day)}`;
+    const pad = (num) => num.toString().padStart(2, '0')
+    return `${year}-${pad(month)}-${pad(day)}`
 }
 
 
@@ -761,7 +944,7 @@ export function formatToYMD(date) {
 export function formatToYMD_UTC(date) {
     // toISOString() возвращает "YYYY-MM-DDTHH:mm:ss.sssZ"
     // Срез [0, 10] дает "YYYY-MM-DD"
-    return date.toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10)
 }
 
 
@@ -777,34 +960,34 @@ export function formatToYMD_UTC(date) {
  */
 export function getDaysDifference(dateString1, dateString2) {
     // Константы для преобразования
-    const MS_PER_SECOND = 1000;
-    const SECONDS_PER_MINUTE = 60;
-    const MINUTES_PER_HOUR = 60;
-    const HOURS_PER_DAY = 24;
+    const MS_PER_SECOND = 1000
+    const SECONDS_PER_MINUTE = 60
+    const MINUTES_PER_HOUR = 60
+    const HOURS_PER_DAY = 24
 
     // Общее количество миллисекунд в одном дне
-    const MS_PER_DAY = MS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY;
+    const MS_PER_DAY = MS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY
 
     // 1. Преобразование строк в объекты Date
     // Парсинг строки "YYYY-MM-DD" в JS интерпретируется как UTC,
     // что предотвращает смещение из-за локального часового пояса.
-    const date1 = new Date(dateString1);
-    const date2 = new Date(dateString2);
+    const date1 = new Date(dateString1)
+    const date2 = new Date(dateString2)
 
     // Проверка на корректность парсинга
     if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
-        console.error("Ошибка: Одна из дат невалидна.");
-        return NaN;
+        console.error("Ошибка: Одна из дат невалидна.")
+        return NaN
     }
 
     // 2. Вычисление разницы в миллисекундах
     // Используем Math.abs(), чтобы разница всегда была положительной, независимо от порядка ввода дат.
-    const diffInMilliseconds = Math.abs(date1.getTime() - date2.getTime());
+    const diffInMilliseconds = Math.abs(date1.getTime() - date2.getTime())
 
     // 3. Преобразование миллисекунд в дни. Используем Math.floor() для округления до меньшего целого, чтобы получить количество полных дней.
-    const diffInDays = Math.floor(diffInMilliseconds / MS_PER_DAY);
+    const diffInDays = Math.floor(diffInMilliseconds / MS_PER_DAY)
 
-    return diffInDays;
+    return diffInDays
 }
 
 
@@ -825,8 +1008,8 @@ export function areDatesEqual(date1, date2) {
     }
 
     return date1.getFullYear() === date2.getFullYear() &&
-        date1.getMonth()    === date2.getMonth() &&
-        date1.getDate()     === date2.getDate();
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
 
     // --- АЛЬТЕРНАТИВНЫЙ МЕТОД: Сравнение строкового представления в UTC ---
     /*
@@ -847,18 +1030,16 @@ export function areDatesEqual(date1, date2) {
  */
 export function additionDays(originalDate, days) {
     // 1. Создаем копию исходной даты, чтобы не изменять оригинал
-    const newDate = new Date(originalDate.getTime());
+    const newDate = new Date(originalDate.getTime())
 
     // 2. Получаем текущий день месяца
-    const currentDay = newDate.getDate();
+    const currentDay = newDate.getDate()
 
     // 3. Используем setDate(): Установка нового дня, который автоматически обрабатывает переходы на новый месяц/год.
-    newDate.setDate(currentDay + days);
+    newDate.setDate(currentDay + days)
 
-    return newDate;
+    return newDate
 }
-
-
 
 
 /**
@@ -883,7 +1064,7 @@ export function formatDayString(count) {
         dayWord = 'дней'
     } else {
         // Анализ последней цифры (для всех остальных случаев)
-        const remainder = count % 10;
+        const remainder = count % 10
 
         if (remainder === 1) {
             // Заканчивается на 1: Именительный падеж, единственное число ("день")
@@ -902,4 +1083,63 @@ export function formatDayString(count) {
 
     return dayWord
     // return `${count} ${dayWord}`;
+}
+
+// ___ Возвращаем дату в форматированном виде по русскую локализацию
+/**
+ * @param {string | Date | null} dateEntity
+ * @param {boolean} monthLong
+ * @param {boolean} hasDate - Показывать ли дату: 01.12.2025 -> дек. 2025 г.
+ * @return {string}
+ */
+export function formatDateIntl(dateEntity = null, monthLong = false, hasDate = true) {
+
+    let workDate = null
+
+    if (typeof dateEntity === 'string') {
+        // Важно: парсинг даты из строки YYYY-MM-DD может вызвать смещение часового пояса.
+        // Лучше всего парсить как UTC, чтобы избежать смещения на день назад в некоторых часовых поясах.
+
+        dateEntity.includes(' ')
+            ? workDate = new Date(dateEntity)                       // строка в формате "YYYY-MM-DD HH:mm:ss"
+            : workDate = new Date(dateEntity + 'T00:00:00Z') // строка в формате "YYYY-MM-DD"
+
+        if (isNaN(workDate.getTime())) return ''                    // Ошибка парсинга
+
+    } else if (dateEntity instanceof Date) {
+        workDate = dateEntity
+    } else {
+        return ''
+    }
+
+    // 2. Используем Intl.DateTimeFormat для локализованного форматирования.
+
+    const options = {
+        day: 'numeric',      // 31
+        month: monthLong ? 'long' : 'short',       // декабря
+        year: 'numeric'      // 2025
+    }
+
+    if (!hasDate) {
+        delete options.day
+    }
+
+    // const timeOptions = {
+    //     hour: '2-digit',
+    //     minute: '2-digit',
+    //     second: '2-digit',
+    //     hour12: false // Используем 24-часовой формат
+    // };
+
+    let formattedDate = new Intl.DateTimeFormat('ru-RU', options).format(workDate)
+
+    // Регулярное выражение /\s+г\.?$/ находит:
+    // - \s+ : один или несколько пробелов
+    // - г : букву 'г'
+    // - \.? : необязательную точку
+    // - $ : в конце строки.
+    // formattedDate = formattedDate.replace(/\s+г\.?$/, '');
+    // return formattedDate + 'г.'
+
+    return formattedDate.replace(/ г\.$/, 'г.')
 }

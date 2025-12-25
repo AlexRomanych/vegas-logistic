@@ -156,7 +156,7 @@ watch(() => props.textSize, (newSize) => textSizeClass.value = getFontSizeClass(
 
 <style scoped>
 .container {
-    @apply rounded-lg
+    @apply rounded-lg ml-0.5
 }
 
 .label {

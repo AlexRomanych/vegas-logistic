@@ -6,6 +6,12 @@ const CODE_1C = 'code_1c';                      // Название переме
 const CODE_1C_LENGTH = 9;                       // Длина кода 1С
 
 
+const LAT_X = 'x';
+const RUS_X = 'х';
+
+const VEGAS = 'vegas';                          // Название переменной для внутреннего использования
+const ORDERS = 'orders';                        // для логирования ошибок для заказов
+
 const OK_STATUS_WORD = 'success';               // отправляем при удачном запросе
 const FAIL_STATUS_WORD = 'fail';                // отправляем при неудачном запросе
 

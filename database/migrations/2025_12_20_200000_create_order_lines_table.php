@@ -10,7 +10,7 @@ return new class extends Migration
 {
     use AddCommonColumnsInTableTrait;
 
-    private const TABLE_NAME = 'orders_lines';
+    private const TABLE_NAME = 'order_lines';
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
@@ -21,7 +21,12 @@ return new class extends Migration
                 ->nullable()
                 // ->nullable(false)
                 // ->default('0x0x0')
-                ->comment('Размер матраса');
+                ->comment('Размер элемента');
+
+            // __ Физические Размеры элемента
+            $table->unsignedSmallInteger('width')->nullable()->comment('Ширина элемента');
+            $table->unsignedSmallInteger('length')->nullable()->comment('Длина элемента');
+            $table->unsignedSmallInteger('height')->nullable()->comment('Высота элемента');
 
             // __ Имя модели, оно не нужное, оставляем для удобства
             $table->string('model_name')

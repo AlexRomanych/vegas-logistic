@@ -52,8 +52,8 @@ return new class extends Migration {
 
             $table->unique(['name', 'model_manufacture_status_id']);    // warn Ставим сомнительное ограничение уникальности
 
-
-            $table->string('cover_code_1c')->nullable()->comment('Модель чехла.Код.12');
+            // __ Выносим во внешний ключ, а здесь только копия, куда заносим код 1С для чехла, даже на него нельзя указать внешний ключ
+            $table->string('cover_code_1c_copy')->nullable()->comment('Копия Модель чехла.Код.12');
             $table->string('cover_name_1c')->nullable()->comment('Модель чехла.Наименование.13');
 
             $table->decimal('base_height', 4, 3)->nullable(false)->default(0.000)->comment('Стандартная высота.14 (высота матраса, м)');
@@ -123,6 +123,26 @@ return new class extends Migration {
             // cover_construct_id __ Конструкция чехла - Переделать на FK   - Оставляем эту связь в ModelConstruct
 
         });
+
+        // __ Делаем отдельным обращением к фасаду, потому что нужно, чтобы был сформирован первичный ключ,
+        // __ а миграция выполняется в транзакции
+        Schema::table(self::TABLE_NAME, function (Blueprint $table) {
+
+            // $table->string('cover_code_1c')->nullable()->comment('Модель чехла.Код.12');
+
+            // Relations: __ Связь с Чехлом
+            $table->string('cover_code_1c', CODE_1C_LENGTH)
+                ->nullable()
+                ->after('cover_code_1c_copy')
+                ->comment('Модель чехла.Код.12');
+            $table->foreign('cover_code_1c')
+                ->references(CODE_1C)
+                ->on(self::TABLE_NAME)
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
+        });
+
+
     }
 
     /**

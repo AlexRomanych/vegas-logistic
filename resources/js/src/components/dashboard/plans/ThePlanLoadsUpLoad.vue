@@ -43,7 +43,7 @@ import { usePlansStore } from '@/stores/PlansStore.ts'
 import { getFileContent } from '@/app/helpers/helpers_file_reader.js'
 import { isJSON } from '@/app/helpers/helpers_checks.ts'
 
-import AppInputFile from '@/components/ui/inputs/AppInputFile.vue'
+import AppInputFile from '@/components/ui/inputs/AppInputFileTS.vue'
 
 import AppButton from '@/components/ui/buttons/AppButton.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'

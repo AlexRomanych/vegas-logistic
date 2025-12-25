@@ -1,8 +1,10 @@
+import { computed } from 'vue'
+
 export * from '@/app/helpers/helpers_render.js'
 
-import {DISPLAY_CONSOLE_LOG} from '@/app/constants/common.ts'
+import { DISPLAY_CONSOLE_LOG } from '@/app/constants/common.ts'
 
-import type {ColorName, EffectDirection}  from '@/app/constants/colorsClasses.js'
+import type { ColorName, EffectDirection } from '@/app/constants/colorsClasses.js'
 
 import {
     colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
@@ -90,7 +92,7 @@ function getColorSchemeByEffect(effect: EffectDirection) {
 export function getFontSizeClass(param = fontNormal) {
 
     let textSizeClass = ''
-    switch(param) {
+    switch (param) {
         case fontMicro:
             textSizeClass = 'text-mc'
             break
@@ -115,6 +117,36 @@ export function getFontSizeClass(param = fontNormal) {
     }
 
     return textSizeClass
+}
+
+
+/**
+ * ___ Получаем класс для скругления рамки
+ * @param param
+ */
+export function getRoundedClass(param: string) {
+    switch (param) {
+        case '2':
+            return 'rounded-[2px]'
+        case '3':
+            return 'rounded-[3px]'
+        case '4':
+            return 'rounded-[4px]'
+        case '5':
+            return 'rounded-[5px]'
+        case '6':
+            return 'rounded-[6px]'
+        case '7':
+            return 'rounded-[7px]'
+        case '8':
+            return 'rounded-[8px]'
+        case '9':
+            return 'rounded-[9px]'
+        case '10':
+            return 'rounded-[10px]'
+        default:
+            return param
+    }
 }
 
 
@@ -154,84 +186,83 @@ export function getFontSizeClass(param = fontNormal) {
 
 
 // ___ Показывать ли в консоли логи
-export function log_Var2(...args: any[]): void {
-    if (DISPLAY_CONSOLE_LOG) {
-        const stackTrace = new Error().stack;
-
-        if (stackTrace) {
-            const lines = stackTrace.split('\n');
-            const callerLine = lines[2]; // Строка с информацией о вызывающей функции
-
-            // Используем регулярное выражение для извлечения имени файла и номера строки
-            // .*\/ — это "любые символы, за которыми следует слэш"
-            const match = callerLine.match(/([^\/]+):(\d+):(\d+)\)$/);
-
-            // Если не удается найти шаблон в конце строки, пробуем другой формат (Node.js)
-            if (!match) {
-                // Пример:    at someFunction (internal/modules/cjs/loader.js:100:20)
-                // Регулярка:  ^ at [^ ]+ \((.+):(\d+):(\d+)\)
-                const nodeMatch = callerLine.match(/\(([^)]+)\)$/);
-                if (nodeMatch) {
-                    const fullPath = nodeMatch[1];
-                    const parts = fullPath.split(':');
-                    const fileName = parts[0].split('/').pop(); // Получаем имя файла из полного пути
-                    const lineNumber = parts[1];
-                    console.log(`[${fileName}:${lineNumber}]`, ...args);
-                    return;
-                }
-            }
-
-            if (match) {
-                const fullPath = match[1];
-                const fileName = fullPath.split('/').pop(); // Получаем имя файла из полного пути
-                const lineNumber = match[2];
-                console.log(`[${fileName}:${lineNumber}]`, ...args);
-            } else {
-                console.log('Unable to parse caller stack trace:', callerLine, ...args);
-            }
-        } else {
-            console.log(...args);
-        }
-    }
-}
-
-
-// ___ Показывать ли в консоли логи
-export function log_FullPath(...args: any[]): void {
-    if (DISPLAY_CONSOLE_LOG) {
-        // Создаем новый объект ошибки, чтобы получить стек вызовов
-        const stackTrace = new Error().stack;
-
-        if (stackTrace) {
-            // Разделяем стек на строки и находим нужную
-            // В зависимости от окружения (браузер/Node.js) формат стека может отличаться.
-            // Строка [1] обычно содержит информацию о файле и строке, где была вызвана функция log.
-            const lines = stackTrace.split('\n');
-            const callerLine = lines[2]; // lines[0] — "Error", lines[1] — "at log", lines[2] — вызывающая функция
-
-            // Используем регулярное выражение для извлечения имени файла и номера строки
-            const match = callerLine.match(/\((.*):(\d+):(\d+)\)$/);
-            if (match) {
-                const filePath = match[1];
-                const lineNumber = match[2];
-                // Выводим информацию
-                console.log(`[${filePath}:${lineNumber}]`, ...args);
-            } else {
-                // Если не удалось распарсить, выводим просто стек
-                console.log('Caller stack trace:', callerLine, ...args);
-            }
-        } else {
-            // Если стек не доступен, выводим как обычно
-            console.log(...args);
-        }
-    }
-}
-
+// export function log_Var2(...args: any[]): void {
+//     if (DISPLAY_CONSOLE_LOG) {
+//         const stackTrace = new Error().stack
+//
+//         if (stackTrace) {
+//             const lines = stackTrace.split('\n')
+//             const callerLine = lines[2] // Строка с информацией о вызывающей функции
+//
+//             // Используем регулярное выражение для извлечения имени файла и номера строки
+//             // .*\/ — это "любые символы, за которыми следует слэш"
+//             const match = callerLine.match(/([^\/]+):(\d+):(\d+)\)$/)
+//
+//             // Если не удается найти шаблон в конце строки, пробуем другой формат (Node.js)
+//             if (!match) {
+//                 // Пример:    at someFunction (internal/modules/cjs/loader.js:100:20)
+//                 // Регулярка:  ^ at [^ ]+ \((.+):(\d+):(\d+)\)
+//                 const nodeMatch = callerLine.match(/\(([^)]+)\)$/)
+//                 if (nodeMatch) {
+//                     const fullPath = nodeMatch[1]
+//                     const parts = fullPath.split(':')
+//                     const fileName = parts[0].split('/').pop() // Получаем имя файла из полного пути
+//                     const lineNumber = parts[1]
+//                     console.log(`[${fileName}:${lineNumber}]`, ...args)
+//                     return
+//                 }
+//             }
+//
+//             if (match) {
+//                 const fullPath = match[1]
+//                 const fileName = fullPath.split('/').pop() // Получаем имя файла из полного пути
+//                 const lineNumber = match[2]
+//                 console.log(`[${fileName}:${lineNumber}]`, ...args)
+//             } else {
+//                 console.log('Unable to parse caller stack trace:', callerLine, ...args)
+//             }
+//         } else {
+//             console.log(...args)
+//         }
+//     }
+// }
 
 
 // ___ Показывать ли в консоли логи
-export function log(...args: any[]): void {
-    if (DISPLAY_CONSOLE_LOG) {
-        console.log(...args)
-    }
-}
+// export function log_FullPath(...args: any[]): void {
+//     if (DISPLAY_CONSOLE_LOG) {
+//         // Создаем новый объект ошибки, чтобы получить стек вызовов
+//         const stackTrace = new Error().stack
+//
+//         if (stackTrace) {
+//             // Разделяем стек на строки и находим нужную
+//             // В зависимости от окружения (браузер/Node.js) формат стека может отличаться.
+//             // Строка [1] обычно содержит информацию о файле и строке, где была вызвана функция log.
+//             const lines = stackTrace.split('\n')
+//             const callerLine = lines[2] // lines[0] — "Error", lines[1] — "at log", lines[2] — вызывающая функция
+//
+//             // Используем регулярное выражение для извлечения имени файла и номера строки
+//             const match = callerLine.match(/\((.*):(\d+):(\d+)\)$/)
+//             if (match) {
+//                 const filePath = match[1]
+//                 const lineNumber = match[2]
+//                 // Выводим информацию
+//                 console.log(`[${filePath}:${lineNumber}]`, ...args)
+//             } else {
+//                 // Если не удалось распарсить, выводим просто стек
+//                 console.log('Caller stack trace:', callerLine, ...args)
+//             }
+//         } else {
+//             // Если стек не доступен, выводим как обычно
+//             console.log(...args)
+//         }
+//     }
+// }
+
+
+// ___ Показывать ли в консоли логи
+// export function log(...args: any[]): void {
+//     if (DISPLAY_CONSOLE_LOG) {
+//         console.log(...args)
+//     }
+// }

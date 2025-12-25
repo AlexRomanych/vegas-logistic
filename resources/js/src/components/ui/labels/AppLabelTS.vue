@@ -30,7 +30,7 @@ import type { IFontsType } from '@/app/constants/fontSizes.js'
 import {
     getColorClassByType,
     getTextColorClassByType,
-    getFontSizeClass, getHorizontalAlignText
+    getFontSizeClass, getHorizontalAlignText, getRoundedClass
 } from '@/app/helpers/helpers.js'
 import type { IHorizontalAlign } from '@/types'
 
@@ -79,30 +79,7 @@ const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 const horizontalAlign = computed(() => getHorizontalAlignText(props.align))
 const semibold = computed(() => props.bold ? 'font-semibold' : '')
 
-const roundedCSS = computed(() => {
-    switch (props.rounded) {
-        case '2':
-            return 'rounded-[2px]'
-        case '3':
-            return 'rounded-[3px]'
-        case '4':
-            return 'rounded-[4px]'
-        case '5':
-            return 'rounded-[5px]'
-        case '6':
-            return 'rounded-[6px]'
-        case '7':
-            return 'rounded-[7px]'
-        case '8':
-            return 'rounded-[8px]'
-        case '9':
-            return 'rounded-[9px]'
-        case '10':
-            return 'rounded-[10px]'
-        default:
-            return props.rounded
-    }
-})
+const roundedCSS = computed(() => getRoundedClass(props.rounded))
 
 </script>
 

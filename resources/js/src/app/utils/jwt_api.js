@@ -109,6 +109,8 @@ export async function jwtPost(url, data = {}, headers = {}) {
     //     }
     // })
 
+    // console.log('reached...')
+
     const response = await jwtAxios.post(url, data)
     const result = await response.data
 

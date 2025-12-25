@@ -25,25 +25,15 @@ export const useOrdersStore = defineStore('orders', () => {
     // const ordersShowTest = ref('123')
     const ordersShowIsChanged = ref(false)
 
-    // Получаем с API список заказов
-    // params - период
-    const getOrders = async (params: any) => {
+    // __ Получаем с API список Заказов
+    const getOrders = async (/*period: any*/) => {
 
-        // console.log(params)
+        // console.log(period)
 
-        const result = await jwtGet(URL_ORDERS, params)
+        const result = await jwtGet(URL_ORDERS,/* params*/)
         ordersShow.value = result.data             // кэшируем
-        //
-        // console.log(ordersShow.value)
-
-        // openNewTab(result)
-        // console.log(data)
-        // console.log(result)
-
-        // console.log(result.data)
 
         return result.data // все возвращается через Resource с ключем data
-
     }
 
     // Загрузка заказов на сервер

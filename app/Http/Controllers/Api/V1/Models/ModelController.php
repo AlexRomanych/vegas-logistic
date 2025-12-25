@@ -16,6 +16,7 @@ use App\Services\ModelsService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class ModelController extends Controller
@@ -28,8 +29,9 @@ class ModelController extends Controller
      */
     public function modelsUpload(Request $request)
     {
-
         try {
+            // DB::table('models')->truncate();
+
             $data = $request->validate(['data' => 'required|json']);
 
             $data = json_decode($data['data'], true);
@@ -118,26 +120,6 @@ class ModelController extends Controller
                     );
                 }
 
-
-                // $modelsCollection = ModelsService::getModelsCollectionByCode1C($item['model_collection_code_1c']);
-                // if (!$modelsCollection || $modelsCollection->name !== $item['model_collection_name']) {
-                //     $insertedModelsCollection = ModelCollection::query()->updateOrCreate(
-                //         [
-                //             CODE_1C => $item['model_collection_code_1c'],
-                //         ],
-                //         [
-                //             'name' => $item['model_collection_name'],
-                //         ]
-                //     );
-                //
-                //     if (!$insertedModelsCollection) {
-                //         throw new Exception(
-                //             'Fail to insert model collection: ' .
-                //             $item['model_collection_id'] . ' =>' .
-                //             $item['model_collection_name']);
-                //     }
-                // }
-
                 $model = Model::query()->updateOrCreate(
                     [
                         CODE_1C => $item[CODE_1C],
@@ -157,7 +139,11 @@ class ModelController extends Controller
                         'name_short'          => $item['name_short'] === '' ? null : $item['name_short'],
                         'name_common'         => $item['name_common'] === '' ? null : $item['name_common'],
                         'name_report'         => $item['name_report'] === '' ? null : $item['name_report'],
-                        'cover_code_1c'       => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
+
+                        // __ Заполняем отдельным проходом внешний ключ, а здесь заполняем копию
+                        // 'cover_code_1c'       => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
+                        'cover_code_1c_copy'       => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
+
                         'cover_name_1c'       => $item['cover_name_1c'] === '' ? null : $item['cover_name_1c'],
                         'base_height'         => $item['base_height'],
                         'cover_height'        => $item['cover_height'],
@@ -196,6 +182,32 @@ class ModelController extends Controller
                         'barcode' => $item['barcode'] === '' ? null : $item['barcode'],
                     ],
                 );
+
+            }
+
+
+            // __ Заполняем в моделях внешний ключ на чехол, если он есть
+            $allModels = ModelsService::getModels();
+
+            foreach ($allModels as $model) {
+
+                $modelArray = $model->toArray();
+
+                if (!is_null($model->cover_code_1c_copy)) {
+
+
+                    if (ModelsService::getModelByCode1C($model->cover_code_1c_copy)) {
+                        $model->cover_code_1c = $model->cover_code_1c_copy;
+                        $model->save();
+                    }
+                }
+
+                // __ Перебираем все изделия, у которых Тип изделия ==
+                // __ 'Матрас' или 'Чехол для подушки'
+                // if ($model->modelType->code_1c === '000000012' || $model->modelType->code_1c === '000000024') {
+                //
+                // }
+
             }
 
 
@@ -220,40 +232,20 @@ class ModelController extends Controller
     public function getModels()
     {
 
+        // __ Матрасы, у которых есть Чехлы
+        // $models = Model::query()
+        //     ->whereNotNull('cover_code_1c')
+        //     ->with(['cover', 'constructs', 'constructs.constructItems'])
+        //     ->get();
+
+        // __ Чехлы
         $models = Model::query()
-            ->with(['constructs', 'constructs.constructItems'])
+            ->where('model_type_code_1c', '000000012')
+            ->with(['base', 'constructs', 'constructs.constructItems'])
             ->get();
 
         return $models;
 
-        //        return 11111;
-        //        return new ModelCollection(Model::all());
-
-        // return new ModelCollection(
-        //     Model::query()
-        //         ->orderBy('type')
-        //         ->orderBy('name')
-        //         ->with('collection')
-        //         ->get()
-        // );
-
-        //        $models = $users = DB::table('models')
-        //            ->select(DB::raw('*'))
-        //            ->where('type', '<>', '')
-        //            ->groupBy('serial')
-        //            ->get();
-
-        //        $models = $users = DB::table('models')
-        //            ->select('*', 'name', 'type')
-        ////            ->where('type', '<>', '')
-        //            ->orderBy('type')
-        //            ->get();
-        //
-        //        $models = $models->orderBy('type');
-
-        //        return $models;
-        //        return new ModelCollection(DB::table('models')->get());
-        //        return new ModelCollection($models);
     }
 
     public function show(string $id)

@@ -41,9 +41,10 @@ export const useModelsStore = defineStore('models', () => {
             // 'Content-Type': 'application/x-www-form-urlencoded',
         }
 
-        const response = await jwtPost(URL_MODELS_UPLOAD, {data: fileData}, headers)
+        const result = await jwtPost(URL_MODELS_UPLOAD, {data: fileData}, headers)
+        // const response = await jwtPost(URL_MODELS_UPLOAD, {data: fileData}, headers)
         // const response = await jwtPost(URL_PLAN_ULOADS_UPLOAD, fileData, headers)
-        const result = await response
+        // const result = await response
 
         if (DEBUG) console.log('ModelsStore: uploadModels: ', result)
 

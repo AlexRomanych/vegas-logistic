@@ -9,6 +9,7 @@
             textSizeClass,
             semibold,
             horizontalAlign,
+            roundedCSS,
         ]"
         class="flex flex-col m-0.5 app-label justify-center"
         @click="labelClick"
@@ -20,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, /*ref*/} from 'vue'
+import { computed, /*ref*/ } from 'vue'
 
 import type { IHorizontalAlign } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
@@ -30,7 +31,7 @@ import {
     getColorClassByType,
     getTextColorClassByType,
     getFontSizeClass,
-    getHorizontalAlign,
+    getHorizontalAlign, getRoundedClass,
 } from '@/app/helpers/helpers.js'
 
 import { getDigitPart } from '@/app/helpers/helpers_lib.ts'
@@ -43,6 +44,7 @@ interface IProps {
     textSize?: IFontsType
     bold?: boolean
     align?: IHorizontalAlign
+    rounded?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -53,6 +55,7 @@ const props = withDefaults(defineProps<IProps>(), {
     textSize: 'normal',
     bold: true,
     align: 'left',
+    rounded: 'rounded-lg',
 })
 
 const emits = defineEmits<{
@@ -71,6 +74,8 @@ const horizontalAlign = computed(() => getHorizontalAlign(props.align))
 const currentTextColor = computed(() => getTextColorClassByType(props.type))
 const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex))
 const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex))
+
+const roundedCSS = computed(() => getRoundedClass(props.rounded))
 
 // __ Обрабатываем нажатие на label
 const labelClick = (e: Event) => {
@@ -139,6 +144,6 @@ const labelHeight = computed(() => getLabelHeight(textArray.value))
 .app-label {
     @apply flex flex-col justify-center
     p-1 m-0.5
-    border rounded-lg focus:outline-none focus:ring-2;
+    border focus:outline-none focus:ring-2;
 }
 </style>

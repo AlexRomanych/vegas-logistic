@@ -5,7 +5,9 @@ import type { IFontsType } from '@/app/constants/fontSizes.ts'
 import type { IHorizontalAlign } from '@/app/types'
 
 export interface IRenderDataItem {
+    id?: string | ((...args: any[]) => string)
     header: string | string[]
+    headerType: ((...args: any[]) => IColorTypes) | IColorTypes
     width: string
     show: boolean
     type: ((...args: any[]) => IColorTypes) | IColorTypes
@@ -22,6 +24,7 @@ export interface IRenderDataItem {
     align?: IHorizontalAlign
     data?: (...args: any[]) => string
     click?: (...args: any[]) => void
+    color?: (...args: any[]) => string
 }
 
 export interface IRenderData {

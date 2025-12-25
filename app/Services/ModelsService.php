@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\VegasDataGetContract;
 use App\Contracts\VegasDataUpdateContract;
+use App\Enums\ElementTypes;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
 use App\Models\Models\ModelManufactureGroup;
@@ -47,16 +48,18 @@ final class ModelsService implements VegasDataUpdateContract
 
     /**
      * ___ Получение моделей из БД и заполнение кэша
-     * @return void
+     * @return array
      */
-    private static function getModels(): void
+    public static function getModels(): array
     {
         if (!self::isModelsCashed()) {
-            $models = Model::all();
+            $models = Model::query()
+                ->with('modelType')
+                ->get();
 
             foreach ($models as $model) {
                 self::$modelsCacheByCode1C[$model->code_1c] = $model;
-                self::$modelsCacheByName[$model->name] = $model;
+                self::$modelsCacheByName[mb_strtolower($model->name)] = $model;
 
                 // Добавление чехла в кэш
                 if ($model->cover_code_1c) {
@@ -64,6 +67,8 @@ final class ModelsService implements VegasDataUpdateContract
                 }
             }
         }
+
+        return self::$modelsCacheByCode1C;
     }
 
     /**
@@ -315,8 +320,7 @@ final class ModelsService implements VegasDataUpdateContract
     // line -------------------------------------------------------------------
     // line --------------- Группы сортировки производства --------------------
     // line -------------------------------------------------------------------
-    // private static array $modelManufactureGroupCacheById = [];
-    // private static array $modelManufactureGroupCacheByName = [];
+
     /**
      * ___ Проверка на заполненность кэша Группы сортировки производства моделей
      * @return bool
@@ -398,7 +402,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelsCollection = self::getModelsCollectionByCode1C($attributes['model_collection_code_1c']);
             if (!$modelsCollection || $modelsCollection->name !== $attributes['model_collection_name'] || !$modelsCollection->active) {
-                !$modelsCollection->active = true;
+
+                if ($modelsCollection) $modelsCollection->active = true;
+
                 $insertedModelsCollection = ModelCollection::query()->updateOrCreate(
                     [
                         CODE_1C => $attributes['model_collection_code_1c'],
@@ -426,7 +432,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelManufactureType = self::getModelManufactureTypeByCode1C($attributes['model_manufacture_type_code_1c']);
             if (!$modelManufactureType || $modelManufactureType->name !== $attributes['model_manufacture_type_name'] || !$modelManufactureType->active) {
-                $modelManufactureType->active = true;
+
+                if ($modelManufactureType) $modelManufactureType->active = true;    // Устанавливаем в кэше, чтобы не перегружать БД
+
                 $insertedManufactureType = ModelManufactureType::query()->updateOrCreate(
                     [
                         CODE_1C => $attributes['model_manufacture_type_code_1c'],
@@ -443,6 +451,7 @@ final class ModelsService implements VegasDataUpdateContract
 
                 return $insertedManufactureType;
             }
+
             return $modelManufactureType;
 
         } else if ($modelEntity === ModelType::class) {
@@ -454,7 +463,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelType = self::getModelTypeByCode1C($attributes['model_type_code_1c']);
             if (!$modelType || $modelType->name !== $attributes['model_type_name'] || !$modelType->active) {
-                $modelType->active = true;
+
+                if ($modelType) $modelType->active = true;
+
                 $insertedModelType = ModelType::query()->updateOrCreate(
                     [
                         CODE_1C => $attributes['model_type_code_1c'],
@@ -482,7 +493,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelManufactureStatus = self::getModelManufactureStatusById($attributes['model_manufacture_status_id']);
             if (!$modelManufactureStatus || $modelManufactureStatus->name !== $attributes['model_manufacture_status_name'] || !$modelManufactureStatus->active) {
-                $modelManufactureStatus->active = true;
+
+                if ($modelManufactureStatus) $modelManufactureStatus->active = true;
+
                 $insertedModelManufactureStatus = ModelManufactureStatus::query()->updateOrCreate(
                     [
                         'id' => $attributes['model_manufacture_status_id'],
@@ -510,7 +523,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelManufactureGroup = self::getModelManufactureGroupById($attributes['model_manufacture_group_id']);
             if (!$modelManufactureGroup || $modelManufactureGroup->name !== $attributes['model_manufacture_group_name'] || !$modelManufactureGroup->active) {
-                $modelManufactureGroup->active = true;
+
+                if ($modelManufactureGroup) $modelManufactureGroup->active = true;
+
                 $insertedModelManufactureGroup = ModelManufactureGroup::query()->updateOrCreate(
                     [
                         'id' => $attributes['model_manufacture_group_id'],
@@ -649,7 +664,7 @@ final class ModelsService implements VegasDataUpdateContract
 
     }
 
-    // Возвращаем фейковую модель
+    // ___ Возвращаем фейковую модель
     public function createFakeModel(array $attributes = []): Model
     {
         $model = new Model();
@@ -663,5 +678,185 @@ final class ModelsService implements VegasDataUpdateContract
         }
         return new Model($modelAttributes);
     }
+
+
+    // line ---------------------------------------------------------------------------
+    // line -- Проверка на принадлежность изделия к условной производственной группе --
+    // line ---------------------------------------------------------------------------
+
+    /**
+     * ___ Возвращаем группу производства для модели
+     * @param string|Model $data
+     * @param string $name
+     * @return string
+     */
+    public static function getElementTypeGroup(string|Model $data, string $name = ''): string
+    {
+        return match (true) {
+            self::isElementMattressTypeGroup($data)      => ElementTypes::MATTRESSES->value,
+            self::isElementAccessoriesTypeGroup($data)   => ElementTypes::ACCESSORIES->value,
+            self::isElementCoversTypeGroup($data, $name) => ElementTypes::COVERS->value,
+            default                                      => ElementTypes::UNDEFINED->value,
+        };
+    }
+
+    /**
+     * ___ Получение модели по коду 1С или имени или самой модели
+     * @param string|Model $data
+     * @return Model|null
+     */
+    public static function getElementByNameOrCode1C(string|Model $data): Model|null
+    {
+        if ($data instanceof Model) {
+            return $data;
+        }
+
+        $model = self::getModelByCode1C($data);
+        if (!$model) {
+            $model = self::getModelByName(mb_strtolower($data));
+        }
+
+        return $model;
+    }
+
+    /**
+     * ___ Проверка на принадлежность элемента к матрасной группе
+     * @param string $data
+     * @return bool
+     * @noinspection PhpUnnecessaryLocalVariableInspection
+     */
+    public static function isElementMattressTypeGroup(string $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+
+        if (!$model) {
+            return false;
+        }
+
+        return
+            self::isElementMattress($model)
+            || self::isElementUpMattress($model);
+    }
+
+    /**
+     * ___ Проверка на принадлежность элемента к аксессуарной группе
+     * @param string $data
+     * @return bool
+     * @noinspection PhpUnnecessaryLocalVariableInspection
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementAccessoriesTypeGroup(string $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+        if (!$model) {
+            return false;
+        }
+
+        if (is_null($model->modelType)) {
+            return false;
+        };
+
+        $isAccessoriesGroup =
+            $model->modelType->code_1c === '000000003'          // Наматрасник защитный
+            || $model->modelType->code_1c === '000000004'       // Подушка
+            || $model->modelType->code_1c === '000000009'       // Одеяло
+            || $model->modelType->code_1c === '000000041'       // Подматрасник
+            || $model->modelType->code_1c === '000000006'       // Постельное белье
+        ;
+
+        return $isAccessoriesGroup;
+    }
+
+    /**
+     * ___ Проверка на принадлежность элемента к группе производства чехлов
+     * @param string|Model $data
+     * @param string $name
+     * @return bool
+     */
+    public static function isElementCoversTypeGroup(string|Model $data, string $name): bool
+    {
+        return self::isElementCover($data, $name);
+    }
+
+
+    // line ---------------------------------------------------------------------------
+    // line ----------- Проверка на принадлежность изделия к типу изделия -------------
+    // line ---------------------------------------------------------------------------
+
+    /**
+     * ___ Проверка, является ли элемент матрасом
+     * @param string|Model $data
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementMattress(string|Model $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+
+        if (!$model) {
+            return false;
+        }
+
+        if (is_null($model->modelType)) {
+            return false;
+        };
+
+        return $model->modelType->code_1c === '000000001';   // Матрас
+    }
+
+    /**
+     * ___ Проверка, является ли элемент наматрасником
+     * @param string|Model $data
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementUpMattress(string|Model $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+
+        if (!$model) {
+            return false;
+        }
+
+        if (is_null($model->modelType)) {
+            return false;
+        };
+
+        return $model->modelType->code_1c === '000000002';  // Наматрасник модифицирующий
+    }
+
+
+    /**
+     * ___ Проверка, является ли элемент чехлом ($name - возможность определить чехол по имени)
+     * @param string|Model $data
+     * @param string $name
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementCover(string|Model $data, string $name = ''): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+
+        // __ Если находим модель, пробуем определить его тип
+        if ($model) {
+            if (!is_null($model->modelType)) {
+                return $model->modelType->code_1c === '000000012';
+            };
+        }
+
+        // __ Если не находим модель, пробуем определить ее по имени
+        if (str_contains(mb_strtolower($data), 'чехол')) {
+            return true;
+        };
+
+        return str_contains(mb_strtolower($name), 'чехол');
+    }
+
+
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
+
+
 
 }
