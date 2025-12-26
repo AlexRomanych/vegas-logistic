@@ -15,6 +15,7 @@
                 placeholderColor,
                 placeholderBgColor,
                 textSizeClass,
+                roundedCSS,
             ]"
             :disabled="disabled"
             :placeholder="placeholder"
@@ -38,7 +39,7 @@ import { computed, ref } from 'vue'
 import { type IColorTypes } from '@/app/constants/colorsClasses.js'
 import { type IFontsType } from '@/app/constants/fontSizes.js'
 
-import { getColorClassByType, getFontSizeClass } from '@/app/helpers/helpers.js'
+import { getColorClassByType, getFontSizeClass, getRoundedClass } from '@/app/helpers/helpers.js'
 
 interface IProps {
     id: string
@@ -52,6 +53,7 @@ interface IProps {
     errors?: any[] | null
     textSize?: IFontsType
     labelTextSize?: IFontsType
+    rounded?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -65,6 +67,7 @@ const props = withDefaults(defineProps<IProps>(), {
     errors: null,
     textSize: 'small',
     labelTextSize: 'mini',
+    rounded: 'rounded-lg',
 })
 
 const emits = defineEmits<{
@@ -100,6 +103,8 @@ const textColor = computed(() => 'text' + currentColor.value)
 const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 const labelTextSizeClass = computed(() => getFontSizeClass(props.labelTextSize))
 
+const roundedCSS = computed(() => getRoundedClass(props.rounded))
+
 // warn: (e: Event), а не (e: InputEvent), потому что сразу не типизируется <input />
 // const getInputText = (e: Event) => {
 //     const target = e.target as HTMLInputElement       // или так
@@ -114,7 +119,7 @@ const leaveFocus = () => emits('leaveFocus')
 @reference "@css/app.css";
 
 .app-input {
-    @apply p-1 border rounded-lg focus:outline-none focus:ring-2;
+    @apply p-1 border focus:outline-none focus:ring-2;
 }
 
 .app-input::placeholder {

@@ -69,7 +69,10 @@ class OrderController extends Controller
 
         $orders = json_decode($data['data'], true);
 
+        $validatedOrders = OrdersService::validateOrders($orders);
 
+
+        return $validatedOrders;
     }
 
 
@@ -81,7 +84,13 @@ class OrderController extends Controller
 
         $data = $request->validate(['data' => 'required|json']);
 
+        // TODO: Сделать проверку на валидность данных и соответствие шаблону
+
+
         $orders = json_decode($data['data'], true);
+
+        $validatedOrders = OrdersService::validateOrders($orders);
+
 
         $orderDubs = [];            // Дубли заказов
         $missingModels = [];        // Не найденные модели
@@ -123,17 +132,18 @@ class OrderController extends Controller
             $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($order['order_no'], $order['client_id']);
 
             $createdOrder = Order::query()->create([
-                'client_id'       => $client->id,
-                'order_type_id'   => $orderType->id,
-                'plan_load_id'    => 0,                  // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
-                'order_no_num'    => parseNumericValue($order['order_no']),
-                'order_no_str'    => $order['order_no'],
-                'order_no_origin' => $order['order_no_1c'],
-                'order_period'    => PlanService::getLoadPeriod($order['load_at']),
-                'elements_type'   => $elementsType,
+                'client_id'         => $client->id,
+                'order_type_id'     => $orderType->id,
+                'plan_load_id'      => 0,                  // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                'order_no_num'      => parseNumericValue($order['order_no']),
+                'order_no_str'      => $order['order_no'],
+                'order_no_origin'   => $order['order_no_1c'],
+                'order_period'      => PlanService::getOrderPeriod($order['load_at']),
+                'elements_type'     => $elementsType,
+                'elements_type_ref' => OrdersService::getOrderElementsTypeReference($elementsType),
 
                 // Вставляем именно массивом, без преобразования в json
-                'amounts' => [
+                'amounts'           => [
                     'mattresses' => 0,
                     'up_covers'  => 0,
                     'averages'   => 0,

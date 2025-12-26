@@ -24,7 +24,7 @@ final class PlanService
         $dates = [];
         $loads->each(function ($load) use (&$dates) {
             // Проверяем, чтобы даты загрузок не были в одном году
-            $dates[] = self::getLoadPeriod($load->load_at)->copy()->startOfYear();
+            $dates[] = self::getOrderPeriod($load->load_at)->copy()->startOfYear();
         });
         // $dates = $loads->pluck('load_at')->toArray();
 
@@ -38,7 +38,7 @@ final class PlanService
      * @param string|Carbon|PlanLoad $entity
      * @return Carbon
      */
-    public static function getLoadPeriod(string | Carbon | PlanLoad $entity): Carbon
+    public static function getOrderPeriod(string | Carbon | PlanLoad $entity): Carbon
     {
         $period = self::normalizeToCarbon($entity);
         return $period->copy()->startOfMonth();

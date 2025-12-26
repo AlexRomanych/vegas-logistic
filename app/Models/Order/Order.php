@@ -21,9 +21,10 @@ class Order extends Model
         // 'amounts' => 'array',
     ];
 
+    protected $appends = ['elements_type_render'];
 
     // __ Преобразование типа Заявки в русский язык (mattresses+covers --> матрасы+чехлы)
-    protected function elementsType(): Attribute
+    protected function elementsTypeRender(): Attribute
     {
         return Attribute::make(
             get: function(mixed $value, array $attributes) {
@@ -43,7 +44,8 @@ class Order extends Model
                     'смешанная',
                     'прогнозная',
                 ];
-                return str_replace($search, $replace, $value);
+                return str_replace($search, $replace, $attributes['elements_type']);
+                // return str_replace($search, $replace, $value);
 
             }, //->shouldCache(), // ⬅️ Результат будет вычислен только один раз,
         );

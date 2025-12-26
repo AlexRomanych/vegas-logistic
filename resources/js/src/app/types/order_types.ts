@@ -3,13 +3,15 @@
 export interface IRenderOrder {
     id: number
     active: boolean
+    elements_type_ref: string       // __ Типы элементов референсный (матрасы или чехлы или что-то ещё)
     elements_type: string           // __ Типы элементов (матрасы + чехлы)
+    elements_type_render: string    // __ Типы элементов (матрасы + чехлы) на русском
     client: IRenderOrderClient
     client_name_1c: string
     order_no_str: string
     no_1c: string
-    order_type:IRenderOrderType
-    amounts:IRenderOrderAmounts
+    order_type: IRenderOrderType
+    amounts: IRenderOrderAmounts
 
     status: number
 

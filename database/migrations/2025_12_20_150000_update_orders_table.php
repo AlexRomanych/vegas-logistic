@@ -39,6 +39,12 @@ return new class extends Migration {
                 ->nullable()
                 ->comment('Период (начало месяца), к которому принадлежит заявка');
 
+            // __ Тип производства (матрасы, аксессуары и т.д.). Это ключевой элемент, по которому мы будем идентифицировать заявки
+            // __ Не может быть смешанный. Либо матрасная группа, либо аксессуары, либо что-то еще
+            $table->string('elements_type_ref')
+                ->nullable()
+                ->comment('Тип производства (матрасы, аксессуары и т.д.) - Опорный ключ');
+
             // __ Тип производства (матрасы, аксессуары и т.д.)
             $table->string('elements_type')
                 ->nullable()
@@ -154,7 +160,7 @@ return new class extends Migration {
 
             // Warn: Ставим уникальность на номер заявки + тип элементов (матрасы/аксессуары и т.д.) + период + клиент,
             // Warn: т.к. заявки могут быть с одинаковым номером, но в разных периодах
-            $table->unique(['client_id', 'order_no_num', 'order_period', 'elements_type']);
+            $table->unique(['client_id', 'order_no_num', 'order_period', 'elements_type_ref']);
 
 
 

@@ -73,7 +73,7 @@ class PlanLoadsController extends Controller
                     $loadAtMemory = $workload->load_at; // Запоминаем дату загрузки, чтобы потом сравнить с новой
 
                     $workload->load_at = PlanService::normalizeToCarbon($load['load_at']);
-                    $workload->period = PlanService::getLoadPeriod($load['load_at']);
+                    $workload->period = PlanService::getOrderPeriod($load['load_at']);
                     $workload->order_type_id = $orderType->id;
                     $workload->unload_at = $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']);
                     $workload->amounts = $load['amounts'];
@@ -96,7 +96,7 @@ class PlanLoadsController extends Controller
                         'amounts'       => $load['amounts'],
                         'active'        => true,
                         'order_type_id' => $orderType->id,
-                        'period'        => PlanService::getLoadPeriod($load['load_at']),
+                        'period'        => PlanService::getOrderPeriod($load['load_at']),
                         'load_at'       => PlanService::normalizeToCarbon($load['load_at']),
                         'unload_at'     => $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']),
 

@@ -734,8 +734,9 @@ final class ModelsService implements VegasDataUpdateContract
         }
 
         return
-            self::isElementMattress($model)
-            || self::isElementUpMattress($model);
+            self::isElementMattress($model)         // Матрас
+            || self::isElementUpMattress($model)    // Наматрасник
+            || self::isElementCover($model);        // Чехол
     }
 
     /**
@@ -762,6 +763,7 @@ final class ModelsService implements VegasDataUpdateContract
             || $model->modelType->code_1c === '000000009'       // Одеяло
             || $model->modelType->code_1c === '000000041'       // Подматрасник
             || $model->modelType->code_1c === '000000006'       // Постельное белье
+            || $model->modelType->code_1c === '000000024'       // Чехол для подушки
         ;
 
         return $isAccessoriesGroup;
@@ -853,10 +855,37 @@ final class ModelsService implements VegasDataUpdateContract
     }
 
 
-    // line ---------------------------------------------------------------------------
-    // line ---------------------------------------------------------------------------
-    // line ---------------------------------------------------------------------------
+    /**
+     * ___ Проверка, является ли элемент Прогнозной моделью ($name - возможность определить чехол по имени)
+     * @param string|Model $data
+     * @param string $name
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementAverage(string|Model $data, string $name = ''): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
 
+        // __ Если находим модель, пробуем определить его тип
+        if ($model) {
+            // Если модель прогнозная, то проверяем по префиксу в коде 1С, который создаем сами
+            return mb_stripos($model->code_1c, CLIENT_AVERAGE_MATTRESS_PREFIX) !== false
+                || mb_stripos($model->name_1c, CLIENT_AVERAGE_ACCESSORY_PREFIX) !== false;
+
+        }
+
+        // __ Если не находим модель, пробуем определить ее по имени
+        if (str_contains(mb_strtolower($data), 'average')) {
+            return true;
+        };
+
+        return str_contains(mb_strtolower($name), 'average');
+    }
+
+
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
 
 
 }

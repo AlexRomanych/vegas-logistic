@@ -159,60 +159,68 @@
 
         <!-- __ Данные -->
         <div v-for="order of ordersRender" :key="order.id" class="ml-2 max-w-fit">
-            <div class="flex ">
 
-                <!-- __ Collapsed -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.collapsed"
-                                   @click="render.collapsed.click!(order)"/>
-
-                <!-- __ ID -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.id"/>
-
-                <!-- __ Клиент -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.client"/>
-
-                <!-- __ Номер Заявки -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.orderNoStr"/>
-
-                <!-- __ Тип элементов (изделий) -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.elementsType"/>
-
-                <!-- __ Общее количество элементов (изделий) -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.orderAmount"/>
-
-                <!-- __ Период, к которому относится Заявка -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.orderPeriod"/>
-
-                <!-- __ Active -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.orderActive"/>
-
-                <!-- __ Прогнозный -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.isForecast"/>
-
-                <!-- __ Отображаемый в Планах -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.isShown"/>
-
-                <!-- __ Дата загрузки на складе Вегас -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.loadAt"/>
-
-                <!-- __ Дата разагрузки на складе клиента -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt"/>
-
-                <!-- __ Комментарий из 1С -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.comment_1c"/>
-
-                <!-- __ Описание -->
-                <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
-
-            </div>
-
-            <!-- __ Сами данные по абонентскому соглашению -->
             <div v-if="!order.collapsed">
-                <OrderLines :order-lines="order.lines"/>
-                <div class="min-h-3"></div>
                 <TheDividerLine/>
+                <div class="min-h-3 bg-red-50 rounded-[4px]"></div>
             </div>
 
+            <div :class="!order.collapsed ? 'bg-green-100 rounded-[4px]' : ''">
+
+                <div class="flex ">
+
+                    <!-- __ Collapsed -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.collapsed"
+                                       @click="render.collapsed.click!(order)"/>
+
+                    <!-- __ ID -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.id"/>
+
+                    <!-- __ Клиент -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.client"/>
+
+                    <!-- __ Номер Заявки -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderNoStr"/>
+
+                    <!-- __ Тип элементов (изделий) -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.elementsType"/>
+
+                    <!-- __ Общее количество элементов (изделий) -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderAmount"/>
+
+                    <!-- __ Период, к которому относится Заявка -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderPeriod"/>
+
+                    <!-- __ Active -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderActive"/>
+
+                    <!-- __ Прогнозный -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.isForecast"/>
+
+                    <!-- __ Отображаемый в Планах -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.isShown"/>
+
+                    <!-- __ Дата загрузки на складе Вегас -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.loadAt"/>
+
+                    <!-- __ Дата разагрузки на складе клиента -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt"/>
+
+                    <!-- __ Комментарий из 1С -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.comment_1c"/>
+
+                    <!-- __ Описание -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
+
+                </div>
+
+                <!-- __ Сами данные по абонентскому соглашению -->
+                <div v-if="!order.collapsed">
+                    <OrderLines :order-lines="order.lines"/>
+                    <div class="min-h-3"></div>
+                    <TheDividerLine/>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -346,8 +354,8 @@ const render: IRenderData = reactive({
         dataType: () => DATA_TYPE,
         type: (order: IRenderOrder) => {
             if (!order) return DEFAULT_TYPE
-            return order.elements_type.toLowerCase().includes('матрасы')
-                ? 'success' : order.elements_type.toLowerCase().includes('аксессуары')
+            return order.elements_type_render.toLowerCase().includes('матрасы')
+                ? 'success' : order.elements_type_render.toLowerCase().includes('аксессуары')
                     ? 'info' : 'danger'
         },
         headerTextSize: HEADER_TEXT_SIZE,
@@ -355,7 +363,7 @@ const render: IRenderData = reactive({
         headerAlign: HEADER_ALIGN,
         dataAlign: 'center',
         placeholder: '🔍Тип изделий...',
-        data: (order: IRenderOrder) => order.elements_type
+        data: (order: IRenderOrder) => order.elements_type_render
     },
     orderAmount: {
         id: () => 'order-amount-search',
@@ -601,7 +609,11 @@ const toggleCollapsed = () => {
 const getOrders = async () => {
     const tempOrders = await ordersStore.getOrders()
     orders.value = tempOrders
-    orders.value = tempOrders.map((order: IRenderOrder) => ({...order, collapsed: collapseAll.value, description: order.description ?? ''}))
+    orders.value = tempOrders.map((order: IRenderOrder) => ({
+        ...order,
+        collapsed: collapseAll.value,
+        description: order.description ?? ''
+    }))
 }
 
 // __ Формируем отображение Заявок
@@ -617,7 +629,7 @@ watchEffect(() => {
         .filter(order => order.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
         .filter(order => order.client.short_name.toLowerCase().includes(clientFilter.value.toLowerCase()))
         .filter(order => order.order_no_str.toLowerCase().includes(orderNoStrFilter.value.toLowerCase()))
-        .filter(order => order.elements_type.toLowerCase().includes(elementsTypeFilter.value.toLowerCase()))
+        .filter(order => order.elements_type_render.toLowerCase().includes(elementsTypeFilter.value.toLowerCase()))
         .filter(order => order.comment_1c.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
         .filter(order => order.description!.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
         .filter(order => getDateFromDateTimeString(order.load_at).includes(loadAtFilter.value))

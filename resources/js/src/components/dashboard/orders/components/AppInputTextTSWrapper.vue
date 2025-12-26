@@ -7,6 +7,7 @@
         :type="typeof renderObject.type === 'function' ? renderObject.type(arg) : renderObject.type"
         :width="renderObject.width"
         :placeholder="renderObject.placeholder"
+        rounded="4"
     />
 </template>
 

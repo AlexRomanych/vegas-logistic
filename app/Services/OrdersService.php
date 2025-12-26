@@ -4,7 +4,10 @@ namespace App\Services;
 
 
 use App\Enums\ElementTypes;
+use App\Models\Client;
+use App\Models\Order\Order;
 use App\Models\Order\OrderType;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -14,39 +17,149 @@ final class OrdersService
 
 
     // ___ Проверяем Заявки перед загрузкой в БД на вшивость
-    public static function validateOrders(array $orders)
+    public static function validateOrders(array &$orders): array
     {
+
+        $CHECK_FIELD = 'check';
+        $CHECK_PASS = 'ok';
+        $CHECK_FAIL = 'fail';
+
+        $ADVICE_FIELD = 'advice';
+
+        $ORDER_ELEMENTS_TYPE_FIELD = 'elements_type';
+
+        $ACTION_FIELD = 'action';
+        $ACTION_NONE = 'none';
+        $ACTION_CLIENT_IGNORE = 'Игнорировать Клиента';
+        $ACTION_CLIENT_ADD = 'Создать Клиента';
+        $ACTION_ORDER_UPDATE = 'Обновить Заявку';
+        $ACTION_ORDER_IGNORE = 'Игнорировать Заявку';
+        $ACTION_ORDER_ADD = 'Создать Заявку';
+        $ACTION_MODEL_ADD = 'Создать Модель';
+        $ACTION_MODEL_IGNORE = 'Игнорировать Модель';
+
+        // __ Подготавливаем данные (если строка json, преобразуем в массив)
         $orders = self::prepareOrderData($orders);
-        // $checkResult = checkClientsExist;
-
-        // $validOrderResult = [
-        //     'is_order_exist' => 'false',
-        //     'is_client_valid' => 'false',
-        // ];
-        //
-
-        $validOrderResult = [];
 
 
-        foreach ($orders as $order) {
+
+        // __ Проходим по всем Заявкам
+        foreach ($orders as &$order) {
+
+            // __ Получаем Тип изделий в Заявках
+            $elementsType = self::getOrderElementsTypeFromFront($order);
+            $elementsTypeRef = self::getOrderElementsTypeReference($elementsType);
+            $order[$ORDER_ELEMENTS_TYPE_FIELD] = $elementsTypeRef;
+
+            // __ Пробуем получить клиента по ID
+            $client = null;
+            if ($order['client_id'] === 0) { // Приходит с фронта сразу не определенный ID, пробуем его найти по code_1c
+                $client = Client::query()->where(CODE_1C, $order['client_code'])->first();
+            } else {
+                $client = Client::query()->find($order['client_id']);
+            }
+
+            if (!$client) { // Если не нашли клиента по ID или code_1c
+                // Действие зависит от того, какого типа заявка
+                if (self::isOrderUndefinedType($elementsTypeRef)) {
+                    if (self::isOrderCoversType($elementsType)) {  // Если референсный тип Не определен, но есть Чехлы - предлагаем добавить клиента
+                        $order[$CHECK_FIELD] = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
+                        $order[$ACTION_FIELD] = $ACTION_CLIENT_ADD;
+                        $order[$ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки.';
+                    } else {
+                        $order[$CHECK_FIELD] = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
+                        $order[$ACTION_FIELD] = $ACTION_CLIENT_IGNORE;
+                        $order[$ADVICE_FIELD] = 'Пропустить Заявку. Возможно это не матрасы или аксессуары.';
+                    }
+
+                } else {
+                    $order[$CHECK_FIELD] = 'Клиент отсутствует в базе.';
+                    $order[$ACTION_FIELD] = $ACTION_CLIENT_ADD;
+                    $order[$ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки.';
+                }
+
+            } else { // Если нашли клиента
+
+                // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
+                // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
+                // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
+                $orderPeriod = self::getOrderPeriod($order['load_at']);
+                $existOrder = null;
+
+                for ($i = 0; $i < 3; $i++) {
+
+                    $queryPeriod = match ($i) {
+                        0 => $orderPeriod,
+                        1 => $orderPeriod->addMonth(),
+                        2 => $orderPeriod->subMonth(),
+                    };
+
+                    $existOrder = Order::query()
+                        ->where('client_id', $client->id)
+                        ->where('order_no_str', $order['order_no'])
+                        ->where('elements_type_ref', $elementsTypeRef)
+                        ->with('lines')
+                        ->whereDate('order_period', $queryPeriod)
+                        ->first();
+
+                    if ($existOrder) break;
+                }
+
+                if ($existOrder) {  // __ Если нашли Заявку с таким номером в БД
+                    // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
+                    if (self::isOrderAverageType($existOrder, $elementsType)) {
+
+                        $order[$CHECK_FIELD] = 'Прогнозная Заявка с таким номером уже есть в базе.';
+                        $order[$ACTION_FIELD] = $ACTION_ORDER_UPDATE;
+                        $order[$ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
+
+                    } else {
+
+                        $order[$CHECK_FIELD] = 'Заявка с таким номером уже есть в базе.';
+                        $order[$ACTION_FIELD] = $ACTION_ORDER_IGNORE;
+                        $order[$ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
+
+                    }
+                } else {  // __ Если не нашли Заявку с таким номером в БД
+
+                    if (self::isOrderMattressesType($elementsType)
+                        || self::isOrderAccessoriesType($elementsType)) {
+
+                        $order[$CHECK_FIELD] = 'Заявка с таким номером не найдена в базе.';
+                        $order[$ACTION_FIELD] = $ACTION_ORDER_ADD;
+                        $order[$ADVICE_FIELD] = 'Добавить заявку в базу.';
+
+                    } else {
+
+                        $order[$CHECK_FIELD] = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
+                        $order[$ACTION_FIELD] = $ACTION_ORDER_IGNORE;
+                        $order[$ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
+
+                    }
+
+                }
 
 
-            $orderType = self::getOrderElementsTypeFromFront($order);
+            }
 
-            $a = 0;
-
-            // if (
-            //     $order['client_id'] === 0 ||
-            //     !ClientsService::getClientById($order['client_id']) ||
-            //     !ClientsService::getClientByName($order['client_full_name'], $order['client_add_name']) ||
-            //     !ClientsService::getClientByCode_1c($order['client_code'])
-            // ) {
-            //     $order['client_id_check'] = false;
-            //     $order['client_id_action'] = 'add';
-            // }
+            // __ Проходим по всем позициям в Заявке
+            foreach ($order['items'] as &$orderLine) {
+                $model = ModelsService::getModelByCode1C($orderLine['c']);
+                if (!$model) {
+                    $orderLine[$CHECK_FIELD] = 'Модель не найдена в базе.';
+                    $orderLine[$ACTION_FIELD] = $ACTION_MODEL_ADD;
+                    $orderLine[$ADVICE_FIELD] = 'Можно добавить модель в базу. Но лучше сделать это через обновление Моделей.';
+                } else {
+                    $orderLine[$CHECK_FIELD] = $CHECK_PASS;
+                    $orderLine[$ACTION_FIELD] = $ACTION_NONE;
+                    $orderLine[$ADVICE_FIELD] = '';
+                }
+            }
 
 
         }
+
+        return $orders;
     }
 
 
@@ -68,13 +181,7 @@ final class OrdersService
     public static function getOrderElementsTypeFromFront(array|string $order): string
     {
 
-
-        $result = [
-            // ElementTypes::UNDEFINED->value => 0,
-            // ElementTypes::MATTRESSES->value => 0,
-            // ElementTypes::ACCESSORIES->value => 0,
-            // ElementTypes::MIXED->value => 0,
-        ];
+        $result = [];
 
         foreach ($order['items'] as $element) {
 
@@ -102,35 +209,121 @@ final class OrdersService
         }
         return rtrim($resultString, '+');
 
-        // __ Если найден один тип
-        if (count($result) === 1) {
 
-            foreach (ElementTypes::cases() as $type) {
-                if (isset($result[$type->value])) {
-                    return $type->value;
-                };
-                // echo "Ключ: {$type->name}, Значение: {$type->value}" . PHP_EOL;
-            }
+        // // __ Если найден один тип
+        // if (count($result) === 1) {
+        //
+        //     foreach (ElementTypes::cases() as $type) {
+        //         if (isset($result[$type->value])) {
+        //             return $type->value;
+        //         };
+        //         // echo "Ключ: {$type->name}, Значение: {$type->value}" . PHP_EOL;
+        //     }
+        //
+        // }
 
-        }
-
-        // __ Если найдено два типа, но в них только чехлы и матрасы или неопределенные, возвращаем тип - Матрасы
-        if (count($result) === 1) {
-            if (
-                isset($result[ElementTypes::MATTRESSES->value])
-                // && isset($result[ElementTypes::COVERS->value])
-            ) {
-                return ElementTypes::MATTRESSES->value;
-            }
-        } else if (
-            isset($result[ElementTypes::ACCESSORIES->value])
-        ) {
-            return ElementTypes::ACCESSORIES->value;
-        }
-
-        return ElementTypes::MIXED->value;
+        // // __ Если найдено два типа, но в них только чехлы и матрасы или неопределенные, возвращаем тип - Матрасы
+        // if (count($result) === 1) {
+        //     if (
+        //         isset($result[ElementTypes::MATTRESSES->value])
+        //         // && isset($result[ElementTypes::COVERS->value])
+        //     ) {
+        //         return ElementTypes::MATTRESSES->value;
+        //     }
+        // } else if (
+        //     isset($result[ElementTypes::ACCESSORIES->value])
+        // ) {
+        //     return ElementTypes::ACCESSORIES->value;
+        // }
+        //
+        // return ElementTypes::MIXED->value;
     }
 
+    /**
+     * ___ Возвращает референсный тип элементов, для идентификации заявок в базе
+     * @param string $orderType
+     * @return string
+     */
+    public static function getOrderElementsTypeReference(string $orderType): string
+    {
+        return match (true) {
+            self::isOrderMattressesType($orderType)  => ElementTypes::MATTRESSES->value,
+            self::isOrderAccessoriesType($orderType) => ElementTypes::ACCESSORIES->value,
+            default                                  => ElementTypes::UNDEFINED->value,
+        };
+    }
+
+
+    /**
+     * ___ Проверяем тип Заявки на матрасную группу
+     * ___ Если есть и Матрасы и Чехлы и Не определено - будет Матрасы
+     * @param string $orderType
+     * @return bool
+     */
+    public static function isOrderMattressesType(string $orderType): bool
+    {
+        return mb_stripos($orderType, ElementTypes::MATTRESSES->value) !== false;
+    }
+
+    /**
+     * ___ Проверяем тип Заявки на аксессуарную группу
+     * ___ Если есть и Аксессуары и Чехлы и Не определено - будет Аксессуары
+     * @param string $orderType
+     * @return bool
+     */
+    public static function isOrderAccessoriesType(string $orderType): bool
+    {
+        return mb_stripos($orderType, ElementTypes::ACCESSORIES->value) !== false;
+    }
+
+    /**
+     * ___ Проверяем тип Заявки на то, что тип элементов - Не определен
+     * ___ Строгое соответствие
+     * @param string $orderType
+     * @return bool
+     */
+    public static function isOrderUndefinedType(string $orderType): bool
+    {
+        return mb_strtolower($orderType) === mb_strtolower(ElementTypes::UNDEFINED->value);
+    }
+
+    /**
+     * ___ Проверяем тип Заявки на чехольную группу
+     * ___ Строгое соответствие
+     * @param string $orderType
+     * @return bool
+     */
+    public static function isOrderCoversType(string $orderType): bool
+    {
+        return mb_strtolower($orderType) === mb_strtolower(ElementTypes::COVERS->value);
+        // return mb_stripos($orderType, ElementTypes::COVERS->value) !== false;
+    }
+
+
+    /**
+     * ___ Проверяем тип Заявки на Прогнозную группу
+     * ___ Проверяем состав заявки или тип изделий
+     * @param Order|null $order
+     * @param string|null $orderType
+     * @return bool
+     */
+    public static function isOrderAverageType(Order $order = null, string $orderType = null): bool
+    {
+        if (is_null($order) && is_null($orderType)) {
+            return false;
+        }
+
+        if (!is_null($order)) {
+            foreach ($order->lines as $line) {
+                if (ModelsService::isElementAverage($line->model_code_1c, $line->model_name)) {
+                    return true;
+                }
+            }
+        }
+
+        return mb_stripos($orderType, ElementTypes::AVERAGE->value) !== false;
+        // return mb_strtolower($orderType) === mb_strtolower(ElementTypes::COVERS->value);
+    }
 
     /**
      * ___ Форматируем входящий JSON с заявками в массив
@@ -235,6 +428,41 @@ final class OrdersService
     }
 
 
+    /**
+     * ___ Возвращает Период Заявки по дате загрузки
+     * @param string|Carbon|Order $entity
+     * @return Carbon
+     */
+    public static function getOrderPeriod(string|Carbon|Order $entity): Carbon
+    {
+        $period = self::normalizeToCarbon($entity);
+        return $period->copy()->startOfMonth();
+    }
+
+    /**
+     * ___ Возвращает дату в виде Carbon
+     * @noinspection PhpUndefinedFieldInspection
+     * @param string|Carbon|Order $entity
+     * @return Carbon
+     */
+    public static function normalizeToCarbon(string|Carbon|Order $entity): Carbon
+    {
+        return match (true) {
+            is_string($entity)        => (function () use ($entity) {
+                try {
+                    return Carbon::parse($entity);
+                } catch (\Exception $e) {
+                    return Carbon::now();
+                }
+            })(),
+            $entity instanceof Carbon => $entity,
+            $entity instanceof Order  => Carbon::parse($entity->load_at),
+            default                   => Carbon::now(),
+            // default => throw new \InvalidArgumentException(
+            //     'Ожидается строка, Carbon или PlanLoad, получен: ' . get_debug_type($entity)
+            // )
+        };
+    }
 }
 
 // "client_id":63,
