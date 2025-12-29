@@ -29,6 +29,32 @@ const CLIENT_AVERAGE_ACCESSORY_PREFIX = 'CAID_';  // CLIENT ACCESSORY ID
 // Descr: ID модуля производства "Производство полотен стеганных" (объединяет все стегальные машины)
 const FABRIC_ID = 1;
 
+// __ Поля, которые получаем из базы, если заявка существует
+const ORDER_METADATA_FIELD = 'metadata';
+const CLIENT_SHORT_NAME_FIELD = 'client_short_name';
+const ORDER_NO_FIELD = 'order_no';
+const ORDER_PERIOD_FIELD = 'order_period';
+
+
+const VALIDATE_FIELD = 'validate';
+const CHECK_FIELD = 'check';
+const CHECK_PASS = 'ok';
+const CHECK_FAIL = 'fail';
+
+const ADVICE_FIELD = 'advice';
+
+const ORDER_ELEMENTS_TYPE_FIELD = 'elements_type';
+
+const ACTION_FIELD = 'action';
+const ACTION_NONE = 'Нет действия';
+const ACTION_CLIENT_IGNORE = 'Игнорировать Клиента';
+const ACTION_CLIENT_ADD = 'Создать Клиента';
+const ACTION_ORDER_UPDATE = 'Обновить Заявку';
+const ACTION_ORDER_IGNORE = 'Игнорировать Заявку';
+const ACTION_ORDER_ADD = 'Создать Заявку';
+const ACTION_MODEL_ADD = 'Создать Модель';
+const ACTION_MODEL_IGNORE = 'Игнорировать Модель';
+
 
 
 

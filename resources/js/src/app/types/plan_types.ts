@@ -3,7 +3,12 @@
 // line -------------------------------------------------------------------
 // line ------------------------- План Загрузок----------------------------
 // line -------------------------------------------------------------------
-export interface IPlanLoad extends IPlan {}
+
+import type { IValidatedOrderValidator } from '@/types/order_types.ts'
+
+export interface IPlanLoad extends IPlan {
+}
+
 export interface IPlan {
     id: number
     active: boolean
@@ -23,7 +28,9 @@ export interface IPlan {
     updated_at: string | null
 }
 
-export interface IPlanLoadAmounts extends IPlanAmounts{}
+export interface IPlanLoadAmounts extends IPlanAmounts {
+}
+
 export interface IPlanAmounts {
     averages?: number
     children?: number
@@ -36,7 +43,9 @@ export interface IPlanAmounts {
 }
 
 
-export interface IPlanLoadClient extends IPlanClient{}
+export interface IPlanLoadClient extends IPlanClient {
+}
+
 export interface IPlanClient {
     id: number
     active: boolean
@@ -46,7 +55,9 @@ export interface IPlanClient {
     region: IPlanLoadClientRegion
 }
 
-export interface IPlanLoadOrderType extends IPlanOrderType{}
+export interface IPlanLoadOrderType extends IPlanOrderType {
+}
+
 export interface IPlanOrderType {
     id: number
     name: string
@@ -71,5 +82,20 @@ export type IPlanLoadsMatrixDay = IPlanLoad[]
 
 // line -------------------------------------------------------------------
 
+// line -------------------------------------------------------------------
+// line ----------- План Загрузок, который загружаем с диска --------------
+// line ----------- и который потом возвращается с сервера   --------------
+// line -------------------------------------------------------------------
 
+export interface IPlanLoadValidate {
+    client_id: number
+    client_short_name?: string
+    elements_type: string
+    order_no: string
+    load_at: string
+    unload_at: string
+    amounts: IPlanAmounts
 
+    validate: IValidatedOrderValidator
+    order_status?: string
+}

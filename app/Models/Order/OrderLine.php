@@ -13,7 +13,7 @@ class OrderLine extends Model
     // Relations: Связь с Заказом
     public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_id', 'id', 'orders');
     }
 
     // Relations: Связь с Моделью

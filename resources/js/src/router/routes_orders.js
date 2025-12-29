@@ -12,7 +12,7 @@ const orders = [
         path: '/orders/upload',
         name: 'orders.upload',
         component: () => import('@/components/dashboard/orders/TheOrdersUpload.vue'),
-        meta: { title: 'Загрузка с диска' },
+        meta: { title: 'Загрузка Заявок в БД' },
     },
 ]
 

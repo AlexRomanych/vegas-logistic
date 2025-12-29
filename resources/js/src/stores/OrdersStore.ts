@@ -11,17 +11,18 @@ import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
 // __ Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/'                   // Префикс API
 const URL_ORDERS = 'orders/'                    // URL для получения списка заказов
-const URL_ORDER = 'order/'                      // URL для получения заказа
+const URL_ORDER  = 'order/'                      // URL для получения заказа
 
-const URL_ORDERS_UPLOAD = 'orders/upload/'      // URL для загрузки заказов с диска
-const URL_ORDER_DELETE = 'orders/delete/'       // URL для удаления заказов
+const URL_ORDERS_UPLOAD   = 'orders/upload/'      // URL для загрузки заказов с диска
+const URL_ORDERS_VALIDATE = 'orders/validate/'  // URL для проверки заказов с диска
+const URL_ORDER_DELETE    = 'orders/delete/'       // URL для удаления заказов
 
 
 export const useOrdersStore = defineStore('orders', () => {
 
 
     // Список заказов, которые получили к отображению
-    let ordersShow: any = []
+    let ordersShow: any       = []
     // const ordersShowTest = ref('123')
     const ordersShowIsChanged = ref(false)
 
@@ -29,12 +30,27 @@ export const useOrdersStore = defineStore('orders', () => {
     const getOrders = async (/*period: any*/) => {
 
         // console.log(period)
-
-        const result = await jwtGet(URL_ORDERS,/* params*/)
+        const result     = await jwtGet(URL_ORDERS,/* params*/)
         ordersShow.value = result.data             // кэшируем
 
         return result.data // все возвращается через Resource с ключем data
     }
+
+
+    // __ Проверка заказов на сервере
+    const validateOrders = async (fileData: string) => {
+        const headers = {
+            'Content-Type': 'application/json',
+        }
+
+        const response = await jwtPost(URL_ORDERS_VALIDATE, {data: fileData}, headers)
+        const result   = await response
+
+        if (DEBUG) console.log('OrdersStore: validateOrders', result)
+
+        return result.data
+    }
+
 
     // Загрузка заказов на сервер
     // fileData - данные файла, отправляем в RAW формате
@@ -47,7 +63,7 @@ export const useOrdersStore = defineStore('orders', () => {
         }
 
         const response = await jwtPost(URL_ORDERS_UPLOAD, {data: fileData}, headers)
-        const result = await response
+        const result   = await response
 
         if (DEBUG) console.log('OrdersStore: uploadOrders', result)
 
@@ -65,10 +81,11 @@ export const useOrdersStore = defineStore('orders', () => {
 
     return {
         ordersShow,
-        // ordersShowTest,
         ordersShowIsChanged,
+
         getOrders,
         uploadOrders,
+        validateOrders,
         deleteOrders,
     }
 

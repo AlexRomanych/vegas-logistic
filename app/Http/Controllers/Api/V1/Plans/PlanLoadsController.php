@@ -9,6 +9,7 @@ use App\Models\Plan\PlanLoad;
 use App\Services\ClientsService;
 use App\Services\DefaultsService;
 use App\Services\OrdersService;
+use App\Services\Plan\PlanLoadsService;
 use App\Services\PlanService;
 use Carbon\Carbon;
 use Exception;
@@ -17,6 +18,22 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PlanLoadsController extends Controller
 {
+
+    public function validateLoads(Request $request)
+    {
+        $data = $request->validate(['data' => 'required|json']);
+
+        $planLoads = json_decode($data['data'], true);
+
+        $validatedPlanLoads = PlanLoadsService::validatePlanLoads($planLoads);
+
+
+        return ['data' => $validatedPlanLoads];
+    }
+
+
+
+
 
     /**
      * ___ Обновляем план загрузок

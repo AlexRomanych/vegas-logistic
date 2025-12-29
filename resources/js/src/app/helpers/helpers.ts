@@ -25,7 +25,7 @@ export function getColorClassByType(type: ColorName, prefix = '', colorIndexData
     }
 
     let mainIndexColor = colorIndexData ? colorIndexData : colorIndex
-    mainIndexColor = type === 'light' ? colorIndexLight : mainIndexColor
+    mainIndexColor     = type === 'light' ? colorIndexLight : mainIndexColor
 
     const offset = colorIndexOffset
 
@@ -266,3 +266,6 @@ export function getRoundedClass(param: string) {
 //         console.log(...args)
 //     }
 // }
+
+
+

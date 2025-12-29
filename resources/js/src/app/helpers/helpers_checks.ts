@@ -116,3 +116,29 @@ export function catchErrorHandler<T = unknown>(message: string = '', error: T = 
         console.error(message, error)
     }
 }
+
+
+// ___ Проверяем JSON объект по шаблону
+export function validateJsonByTemplate(data: object | string | any[], template: object) {
+
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data)
+            if (Array.isArray(data)) {
+                data = data[0]
+            }
+        } catch (e) {
+            console.error('Invalid JSON string:', e)
+            return false
+        }
+    } else if (Array.isArray(data)) {
+        if (data.length > 0) {
+            data = data[0]
+        } else {
+            return false
+        }
+    }
+
+    // @ts-ignore
+    return Object.keys(template).every(key => template[key](data[key]))
+}

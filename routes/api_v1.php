@@ -112,6 +112,8 @@ Route::prefix('/plan')
     ->group(function () {
 
         Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);  // ___ Загрузка плана
+        Route::post('/loads/validate', [PlanLoadsController::class, 'validateLoads']);  // ___ Проверка плана с Бэка
+
         Route::get('/loads', [PlanLoadsController::class, 'getPlanLoads']);
         Route::get('/loads/default/period', [PlanLoadsController::class, 'getPlanLoadsDefaultPeriod']);
 

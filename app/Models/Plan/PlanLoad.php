@@ -3,30 +3,19 @@
 namespace App\Models\Plan;
 
 use App\Models\Client;
+use App\Models\Order\Order;
 use App\Models\Order\OrderType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PlanLoad extends Plan
+
+// ___ Фактически - это обертка над Orders, в которой продублированы поля из PlanLoad
+// ___ В будущем - это будет отдельная таблица и сущность
+// ___ Но логику уже разносим по разным сущностям
+class PlanLoad extends Order
 {
-    // protected $guarded = false;
-    //
-    // protected $casts = [
-    //     'amounts' => 'array',
-    //     'load_position' => 'integer'
-    // ];
-    //
-    //
-    // // Relations: Связь с клиентом
-    // public function client(): BelongsTo
-    // {
-    //     return $this->belongsTo(Client::class);
-    // }
-    //
-    // // Relations: Связь с Типом Заказа
-    // public function orderType(): BelongsTo
-    // {
-    //     return $this->belongsTo(OrderType::class);
-    // }
+    protected $table = 'orders';
+
+
 
 }

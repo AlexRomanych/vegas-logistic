@@ -3,6 +3,7 @@
         v-if="renderObject.show"
         :align="header ? renderObject.headerAlign : renderObject.dataAlign"
         :color="color"
+        :class="renderObject.class || ''"
         :text="header ? (renderObject.header as string): renderObject.data!(arg)"
         :text-size="header ? renderObject.headerTextSize : renderObject.dataTextSize"
         :title="title"

@@ -1,5 +1,7 @@
 // ___ Тут все тиы для Заказов
 
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
+
 export interface IRenderOrder {
     id: number
     active: boolean
@@ -91,4 +93,54 @@ export interface IRenderOrderLineModel {
 }
 
 
+// ___ Проверенная Заявка, котороая вернулась с сервера
+export interface IValidatedOrder {
+    client_id: number
+    client_full_name: string
+    client_add_name: string
+    client_code: string
+    order_code: string
+    order_no: string
+    order_no_1c: string
+    manuf_at_1c: string
+    load_at: string
+    load_at_1c: string
+    unload_at: string
+    kb_start: string
+    kb_end: string
+    mg_start: string
+    mg_end: string
+    responsible: string
+    comment: string
+    base: string
+    service: string
+
+    collapsed?: boolean
+    elements_type?: string
+    renderType?: IColorTypes,
+
+    validate: IValidatedOrderValidator
+
+    items: IValidatedOrderItem[]
+}
+
+export interface IValidatedOrderItem {
+    n: string
+    c: string
+    s: string
+    t: string
+    a: number
+    d: string
+    d1: string
+    d2: string
+    d3: string
+
+    validate: IValidatedOrderValidator
+}
+
+export interface IValidatedOrderValidator {
+    check: string
+    action: string
+    advice: string
+}
 

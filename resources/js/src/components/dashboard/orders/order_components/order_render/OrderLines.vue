@@ -238,14 +238,11 @@ import { formatDateIntl } from '@/app/helpers/helpers_date.js'
 import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { log_FullPath } from '@/app/helpers/helpers.ts'
 
 interface IProps {
     orderLines: IRenderOrderLine[]
 }
-
 const props = defineProps<IProps>()
-
 
 // __ Определяем переменные
 // const getDotLogisticRender = (dotLogistic: IDotLogistic[]) => dotLogistic.map((dotLogisticEntity: IDotLogistic) => ({ ...dotLogisticEntity, collapsed: true }))
@@ -276,6 +273,7 @@ const HEADER_ALIGN = 'center'
 const DATA_ALIGN_DEFAULT = 'center'
 const DATA_ALIGN = 'left'
 // const COORDINATES_PRECISION = 7
+
 
 const render: IRenderData = reactive({
     collapsed: {
@@ -413,255 +411,25 @@ const render: IRenderData = reactive({
     },
 
 
-    wasterType: {
-        header: 'Тип отходов',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => dotLogistic.tank_type.waster_type.display_name
-    },
-    loadType: {
-        header: 'Тип загрузки',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => dotLogistic.tank_type.load_type.display_name
-    },
-    tankVolume: {
-        header: 'Объем контейнера',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => dotLogistic.tank_type.tank_volume.display_name
-    },
-    active: {
-        header: 'Действ-щий',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic) => dotLogistic.common.active ? 'success' : 'danger',
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => dotLogistic.common.active ? '✓' : '✗'
-    },
-
-    // __ Общее кол-во контейнеров (Если логика периодичности простая /1 запись/ - показываем ее, иначе - показываем инфу про смешанную частоту)
-    tanksAmount: {
-        header: 'Кол-во контейнеров',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic) => dotLogistic.frequency_entities.length === 0 ? 'danger' : dotLogistic.frequency_entities.length > 1 ? 'warning' : DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => {
-            let result = ''
-            dotLogistic.frequency_entities.forEach(frequencyEntity => result += `${frequencyEntity.tanks_amount.toString()}/`)
-            if (!result) return 'н/д'
-            return result.slice(0, -1)
-        }
-
-    },
-    // __ График(и) вывоза
-    routes: {
-        header: 'График(и)',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic) => 'danger', //DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: DATA_ALIGN_DEFAULT,
-        data: (dotLogistic: IDotLogistic) => 'TODO!!!'
-    },
-
-    // __ Общая Периодичность /частота/ (Если логика периодичности простая /1 запись/ - показываем ее, иначе - показываем инфу про смешанную частоту)
-    generalFrequency: {
-        header: 'Периодичность вывоза',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic) => dotLogistic.frequency_entities.length === 0 ? 'danger' : dotLogistic.frequency_entities.length > 1 ? 'warning' : DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => {
-            if (!dotLogistic.frequency_entities) return 'н/д'
-            if (dotLogistic.frequency_entities.length > 1) return 'смешанная'
-            return dotLogistic.frequency_entities[0].frequency_template.display_name
-        }
-    },
-
-    // __ Логика периодичности (Актуальность периодов) - Учет приостановки вывоза
-    generalRemovalActive: {
-        header: 'Учет приостановки',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic: IDotLogistic) => dotLogistic.removal.removal_active ? 'danger' : 'success',
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => dotLogistic.removal.removal_active ? '✓' : '✗',
-        click: (dotLogistic: IDotLogistic) => {
-            if (!canEdit.value) return
-            dotLogistic.removal.removal_active = !dotLogistic.removal.removal_active
-        }
-    },
     // __ Начало вывоза
-    generalRemovalStart: {
-        id: (dotLogistic: IDotLogistic) => 'general-removal-start-' + dotLogistic.id.toString(),
-        header: 'Начало вывоза',
-        width: DEFAULT_WIDTH_DATE,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_start)
-    },
-    // __ Окончание вывоза
-    generalRemovalEnd: {
-        id: (dotLogistic: IDotLogistic) => 'general-removal-end-' + dotLogistic.id.toString(),
-        header: 'Окончание вывоза',
-        width: DEFAULT_WIDTH_DATE,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_end)
-    },
-
-    // __ Учет паузы приостановки шаблона вывоза
-    generalPauseActive: {
-        header: 'Учет паузы вывоза',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic: IDotLogistic) => dotLogistic.removal.removal_pause_active ? 'danger' : 'success',
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => dotLogistic.removal.removal_pause_active ? '✓' : '✗',
-        click: (dotLogistic: IDotLogistic) => {
-            if (!canEdit.value) return
-            dotLogistic.removal.removal_pause_active = !dotLogistic.removal.removal_pause_active
-        }
-    },
-    // __ Начало приостановки вывоза
-    generalPauseStart: {
-        id: (dotLogistic: IDotLogistic) => 'general-pause-start-' + dotLogistic.id.toString(),
-        header: 'Начало приостановки',
-        width: DEFAULT_WIDTH_DATE,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_pause_start)
-    },
-    // __ Окончание приостановки вывоза
-    generalPauseEnd: {
-        id: (dotLogistic: IDotLogistic) => 'general-pause-end-' + dotLogistic.id.toString(),
-        header: 'Окончание приостановки',
-        width: DEFAULT_WIDTH_DATE,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_pause_end)
-    },
-
-
-    // __ Общая логика вывоза по месяцам (checkbox)
-    generalMonthLogicActive: {
-        header: 'Месячная логика',
-        width: DEFAULT_WIDTH,
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: (dotLogistic: IDotLogistic) => dotLogistic.frequency_entities.some(entity => entity.month_logic) ? 'danger' : 'success',
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (dotLogistic: IDotLogistic) => dotLogistic.frequency_entities.some(entity => entity.month_logic) ? '✓' : '✗'
-    },
+    // generalRemovalStart: {
+    //     id: (dotLogistic: IDotLogistic) => 'general-removal-start-' + dotLogistic.id.toString(),
+    //     header: 'Начало вывоза',
+    //     width: DEFAULT_WIDTH_DATE,
+    //     height: DEFAULT_HEIGHT,
+    //     show: true,
+    //     headerType: () => HEADER_TYPE,
+    //     dataType: () => DATA_TYPE,
+    //     type: () => DEFAULT_TYPE,
+    //     headerTextSize: HEADER_TEXT_SIZE,
+    //     dataTextSize: DATA_TEXT_SIZE,
+    //     headerAlign: HEADER_ALIGN,
+    //     dataAlign: 'center',
+    //     data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_start)
+    // },
 
 })
 
-
-// __ Collapse/Expand all
-const toggleCollapsed = () => {
-    // dotLogisticRender.value.forEach(dotLogistic => dotLogistic.collapsed = !dotLogistic.collapsed)
-    if (render.collapsed.header === '▲') {
-        dotLogisticRender.value.forEach(dotLogistic => dotLogistic.collapsed = false)
-        render.collapsed.header = '▼'
-    } else {
-        dotLogisticRender.value.forEach(dotLogistic => dotLogistic.collapsed = true)
-        render.collapsed.header = '▲'
-    }
-}
 
 
 </script>

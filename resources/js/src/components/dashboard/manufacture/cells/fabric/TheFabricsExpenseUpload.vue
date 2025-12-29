@@ -74,7 +74,7 @@ import {useFabricsStore} from '@/stores/FabricsStore.js'
 import {getFileContent} from '@/app/helpers/helpers_file_reader.js'
 import {isJSON} from '@/app/helpers/helpers_checks.ts'
 
-import AppInputFile from '@/components/ui/inputs/AppInputFileTS.vue'
+import AppInputFile from '@/components/ui/inputs/AppInputFileTS_4.vue'
 import AppButton from '@/components/ui/buttons/AppButton.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import AppLabel from '@/components/ui/labels/AppLabel.vue'

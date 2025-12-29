@@ -12,6 +12,8 @@ const URL_PLAN_BUSINESS_PROCESS_NODE = 'plan/business-process-node'    // Пол
 
 const URL_PLAN_LOADS_UPLOAD = 'plan/loads/upload'                      // Загрузка Плана загрузок на сервер
 const URL_PLAN_LOADS = 'plan/loads'                                    // Получение Плана загрузок с сервера
+const URL_PLAN_LOADS_VALIDATE = 'plan/loads/validate'                  // Проверка Плана загрузок на сервере
+
 const URL_PLAN_LOADS_DEFAULT_PERIOD = 'plan/loads/default/period'      // Получение периода по умолчанию для плана загрузок
 
 export const usePlansStore = defineStore('plans', () => {
@@ -84,12 +86,28 @@ export const usePlansStore = defineStore('plans', () => {
     }
 
 
+    // __ Проверка заказов на сервере
+    const validatePlanLoads = async (fileData: string) => {
+        const headers = {
+            'Content-Type': 'application/json',
+        }
+
+        const response = await jwtPost(URL_PLAN_LOADS_VALIDATE, {data: fileData}, headers)
+        const result   = await response
+
+        if (DEBUG) console.log('PlansStore: validatePlanLoads', result)
+
+        return result.data
+    }
+
+
 
     return {
         planPeriodGlobal,
 
         uploadLoads,
         getPlanLoads,
+        validatePlanLoads,
         getPlanLoadsDefaultPeriod,
 
 

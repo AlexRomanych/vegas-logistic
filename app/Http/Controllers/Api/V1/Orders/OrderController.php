@@ -14,6 +14,7 @@ use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
 use App\Models\Order\Line;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
+use App\Models\Plan\PlanLoad;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
 use App\Services\PlanService;
@@ -30,10 +31,13 @@ class OrderController extends Controller
     public function getOrders(Request $request)
     {
 
+        // $orders = PlanLoad::query()
+        //     ->with(['lines.model.modelType', 'client', 'orderType'])
+        //     ->get();
+
         $orders = Order::query()
             ->with(['lines.model.modelType', 'client', 'orderType'])
             ->get();
-
 
         return OrderRenderResource::collection($orders);
 
@@ -72,7 +76,7 @@ class OrderController extends Controller
         $validatedOrders = OrdersService::validateOrders($orders);
 
 
-        return $validatedOrders;
+        return ['data' => $validatedOrders];
     }
 
 
