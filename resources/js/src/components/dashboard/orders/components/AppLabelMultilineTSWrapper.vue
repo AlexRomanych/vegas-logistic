@@ -12,6 +12,7 @@
             : renderObject.headerType
             : headerType"
         :width="renderObject.width"
+        :class="renderObject.class"
         rounded="4"
     />
 </template>

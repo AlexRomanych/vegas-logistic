@@ -525,8 +525,30 @@ final class OrdersService
         return str_replace($search, $replace, $value);
     }
 
+    /**
+     * ___ Возвращает тип изделий из русской нотации в референсный
+     * @param string $value
+     * @return string
+     */
+    public static function getElementsTypeFromRender(string $value): string
+    {
+        if (mb_stripos($value, 'матрас') !== false) {
+            return ElementTypes::MATTRESSES->value;
+        } elseif (mb_stripos($value, 'аксессуар') !== false) {
+            return ElementTypes::ACCESSORIES->value;
+        } elseif (mb_stripos($value, 'чехлы') !== false || mb_stripos($value, 'чехол') !== false) {
+            return ElementTypes::COVERS->value;
+        } elseif (mb_stripos($value, 'прогноз') !== false || mb_stripos($value, 'план') !== false) {
+            return ElementTypes::AVERAGE->value;
+        }
 
+        return ElementTypes::UNDEFINED->value;
+    }
 }
+
+
+
+
 
 // "client_id":63,
 // "client_full_name":"RAY",

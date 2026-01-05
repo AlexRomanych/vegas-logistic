@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Manufacture\Cells\sewing;
+namespace App\Models\Manufacture\Cells\Sewing;
 
 use App\Models\Manufacture\CellItem;
 use App\Models\Norm\sewing\CellSewingAutoNorm;

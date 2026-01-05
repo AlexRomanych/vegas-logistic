@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api\V1\Cells\sewing;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Sewing\CellSewingAutoCollection;
 use App\Http\Resources\Order\OrderCollection;
-use App\Models\Manufacture\Cells\sewing\CellSewingAuto;
-use App\Models\Manufacture\Cells\sewing\CellSewingHard;
-use App\Models\Manufacture\Cells\sewing\CellSewingLight;
-use App\Models\Manufacture\Cells\sewing\CellSewingUniversal;
+use App\Models\Manufacture\Cells\Sewing\CellSewingAuto;
+use App\Models\Manufacture\Cells\Sewing\CellSewingHard;
+use App\Models\Manufacture\Cells\Sewing\CellSewingLight;
+use App\Models\Manufacture\Cells\Sewing\CellSewingUniversal;
 use App\Models\Order\Order;
 use Illuminate\Http\Request;
 

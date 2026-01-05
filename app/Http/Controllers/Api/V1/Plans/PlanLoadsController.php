@@ -5,42 +5,223 @@ namespace App\Http\Controllers\Api\V1\Plans;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Plans\Loads\PlanLoadsResource;
+use App\Models\Client;
+use App\Models\Order\OrderLine;
 use App\Models\Plan\PlanLoad;
 use App\Services\ClientsService;
 use App\Services\DefaultsService;
+use App\Services\ModelsService;
 use App\Services\OrdersService;
 use App\Services\Plan\PlanLoadsService;
 use App\Services\PlanService;
+use App\Services\SizeService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class PlanLoadsController extends Controller
 {
 
+    // ___ Проверяем план загрузок на валидность
     public function validateLoads(Request $request)
     {
-        $data = $request->validate(['data' => 'required|json']);
+        try {
+            $data = $request->validate(['data' => 'required|json']);
 
-        $planLoads = json_decode($data['data'], true);
+            $planLoads = json_decode($data['data'], true);
 
-        $validatedPlanLoads = PlanLoadsService::validatePlanLoads($planLoads);
+            $validatedPlanLoads = PlanLoadsService::validatePlanLoads($planLoads);
 
-
-        return ['data' => $validatedPlanLoads];
+            return ['data' => $validatedPlanLoads];
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 
-
-
-
     /**
-     * ___ Обновляем план загрузок
+     * ___ Обновляем или загружаем план загрузок
      * @param Request $request
      * @return string
      */
     public function uploadLoads(Request $request)
+    {
+        // try {
+        // $all = $request->all();
+
+        $validated = $request->validate([
+            'data' => 'required|json'
+        ]);
+
+        // DB::table('orders')->truncate();
+
+        $planLoads = json_decode($validated['data'], true);
+
+        // Дополнительная проверка структуры JSON
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON structure');
+        }
+
+        $loadsUpdated = []; // Массив обновленных отгрузок, а не созданных для ответа
+
+        foreach ($planLoads as $planLoad) {
+
+            // __ Проверяем действие
+            if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_NONE ||
+                $planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_ORDER_IGNORE
+            ) {
+                continue;
+            }
+            if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] !== ACTION_ORDER_ADD) {
+                continue;
+            }
+
+            // __ Проверяем наличие клиента на всякий случай
+            // __ Пробуем получить клиента по ID
+            $client = null;
+            if ($planLoad['client_id'] !== 0) {
+                $client = Client::query()->find($planLoad['client_id']);
+            }
+            if (!$client) {
+                throw new Exception('Client with id = ' . $planLoad['client_id'] . ' not found');
+            }
+
+            // __ Получаем Тип изделий в Заявках
+            $elementsType = OrdersService::getElementsTypeFromRender($planLoad['elements_type']);
+
+            // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
+            // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
+            // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
+            $existOrder = OrdersService::getOrderByClientIdOrderNoElementsTypeLoadAt(
+                $client->id,
+                $planLoad['order_no'],
+                $elementsType,
+                $planLoad['load_at']
+            );
+
+            // __ Проверка на всякий случай
+            // __ Если не нашли Заявку с таким номером в БД и она прогнозная - создаем ее
+            if (!$existOrder && $planLoad['amounts']['averages'] !== 0) {
+
+                $averageModel = ModelsService::createAverageModel($client->id, $elementsType);
+                if (!$averageModel) {
+                    throw new Exception('Error while creating average model with Client id = ' . $planLoad['client_id']);
+
+                }
+            }
+
+            // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
+            $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX); // Прогнозная Заявка
+            // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
+
+            $createdOrder = PlanLoad::query()->create([
+                'client_id'         => $client->id,
+                'order_type_id'     => $orderType->id,
+                'plan_load_id'      => 0, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                'order_no_num'      => parseNumericValue($planLoad['order_no']),
+                'order_no_str'      => $planLoad['order_no'],
+                'order_no_origin'   => $planLoad['order_no'],
+                'no_1c'             => '',   // Используем на фронте
+                'is_forecast'       => true, // Прогнозная Заявка
+                'order_period'      => PlanService::getOrderPeriod($planLoad['load_at']),
+                'elements_type'     => $elementsType,
+                'elements_type_ref' => OrdersService::getOrderElementsTypeReference($elementsType),
+
+                // __ Вставляем именно массивом, без преобразования в json
+                'amounts'           => [
+                    'mattresses' => 0,
+                    'up_covers'  => 0,
+                    'averages'   => $planLoad['amounts']['averages'],
+                    'covers'     => 0,
+                    'children'   => 0,
+                    'formats'    => 0,
+                    'unknowns'   => 0,
+                    'totals'     => $planLoad['amounts']['averages'],
+                ],
+
+                'load_at'   => PlanService::normalizeToCarbon($planLoad['load_at']),
+                'unload_at' => $planLoad['unload_at'] === '' ? null : PlanService::normalizeToCarbon($planLoad['unload_at']),
+
+
+                // 'responsible'        => null,
+                // 'manager_load_date'  => null,
+                // 'manager_start'      => null,
+                // 'manager_end'        => null,
+                // 'design_start'       => null,
+                // 'design_end'         => null,
+                // 'no_1c'              => null,
+                // 'code_1c'            => null,
+                // 'base_order_code_1c' => null,
+                // 'comment_1c'         => null,
+                // 'client_code_1c'     => null,
+                // 'client_name_1c'     => null,
+                // 'service'            => null,
+
+                // 'status'             => $order[''],
+
+                // 'shown'              => $order[''],
+                // 'stat_include'       => $order[''],
+                // 'service_ext'        => $order[''],
+                // 'extended_meta'      => $order[''],
+                // 'description'        => $order[''],
+                // 'comment'            => $order[''],
+                // 'note'               => $order[''],
+                // 'meta'               => $order[''],
+                // 'history'            => $order[''],
+                // 'meta_ext'           => $order[''],
+                // 'active'             => $order[''],
+            ]);
+
+            if (!$createdOrder) {
+                throw new Exception('Error while creating Average Order with Client id = ' . $planLoad['client_id'] . ' is failed');
+            }
+
+            // __ Вставляем содержимое Прогнозной Заявки
+            // __ Получаем размеры
+            $AVERAGE_SIZE_STR = '0x0x0';
+            $dims = SizeService::getDimensions($AVERAGE_SIZE_STR);
+
+            /** @noinspection PhpUndefinedVariableInspection */
+            $createLine = OrderLine::query()->create(
+                [
+                    'order_id'      => $createdOrder->id,
+                    'size'          => $AVERAGE_SIZE_STR,
+                    'width'         => $dims->getWidth(),
+                    'length'        => $dims->getLength(),
+                    'height'        => $dims->getHeight(),
+                    'model_name'    => $averageModel->name,
+                    'model_code_1c' => $averageModel->code_1c,
+                    'amount'        => $planLoad['amounts']['averages'],
+                    // 'textile'       => $orderLine['t'],
+                    // 'composition'   => $orderLine['d'],
+                    // 'describe_1'    => $orderLine['d1'],
+                    // 'describe_2'    => $orderLine['d2'],
+                    // 'describe_3'    => $orderLine['d3'],
+                    // 'active'        => $orderLine[''],
+                    // 'status'        => $orderLine[''],
+                    // 'description'   => $orderLine[''],
+                    // 'comment'       => $orderLine[''],
+                    // 'note'          => $orderLine[''],
+                    // 'meta'          => $orderLine[''],
+                ]
+            );
+
+            if (!$createLine) {
+                throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
+            }
+
+        }
+
+        // return EndPointStaticRequestAnswer::ok();
+        // } catch (Exception $e) {
+        //     return EndPointStaticRequestAnswer::fail($e);
+        // }
+    }
+
+
+    public function uploadLoads_Old(Request $request)
     {
         try {
             // $all = $request->all();

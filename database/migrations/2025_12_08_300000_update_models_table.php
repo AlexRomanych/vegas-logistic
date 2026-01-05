@@ -104,7 +104,7 @@ return new class extends Migration {
 
             // model_manufacture_type_name  Вид производства.Наименование	42 // warn Нет в таблице Models
 
-            $table->decimal('weight', 7, 6)->nullable(false)->comment('Вес в г.43 (куб. см. ???)');
+            $table->decimal('weight', 7, 6)->nullable(false)->default(0)->comment('Вес в г.43 (куб. см. ???)');
             $table->string('barcode')->nullable()->comment('Штрих код.44');
 
             $table->jsonb('base')->nullable()->comment('Спецификация МЭ');

@@ -117,7 +117,7 @@ final class Model extends LaravelModel
     //     'collection_id' => '000000000',
     // ];
 
-    //attract: Задаем вычисляемые свойства
+    // __ Задаем вычисляемые свойства
     protected $appends = ['is_auto', 'is_universal', 'is_solid', 'is_solid_light', 'is_solid_hard', 'is_undefined'];    // Задаем типы швейных машин, исходя из свойства sewing_machine
 
     //info Проверяем на АШМ

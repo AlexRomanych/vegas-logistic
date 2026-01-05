@@ -19,7 +19,7 @@ class FabricTaskRollObserver
         FabricTaskRollLog::query()->create([
             'fabric_task_roll_id' => $fabricTaskRoll->id,
             'user_id'             => auth()->id(),
-            'worker_id'           => auth()->id(),
+            'worker_id'           => null, //auth()->id(),
             'status_after'        => $fabricTaskRoll->roll_status,
             'event'               => is_null($fabricTaskRoll->service) ? 'Создание рулона' : 'Создание рулона во время выполнения СЗ',
             'reason'              => is_null($fabricTaskRoll->service) ? null : $fabricTaskRoll->false_reason,

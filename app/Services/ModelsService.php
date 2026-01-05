@@ -882,10 +882,99 @@ final class ModelsService implements VegasDataUpdateContract
         return str_contains(mb_strtolower($name), 'average');
     }
 
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
+    // line ---------------------------------------------------------------------------
 
-    // line ---------------------------------------------------------------------------
-    // line ---------------------------------------------------------------------------
-    // line ---------------------------------------------------------------------------
+    /**
+     * ___ Создание средней модели
+     * @param string $clientId id клиента
+     * @param string $elementType тип элемента
+     * @return Model|null
+     */
+    public static function createAverageModel(string $clientId, string $elementType = ElementTypes::MATTRESSES->value): ?Model
+    {
+        // __ Пока или матрасы или аксессуары
+        if ($elementType !== ElementTypes::MATTRESSES->value && $elementType !== ElementTypes::ACCESSORIES->value) {
+            return null;
+        }
+
+        $client = ClientsService::getClientById($clientId);
+        if (!$client) {
+            return null;
+        }
+
+        $isMattressType = ($elementType === ElementTypes::MATTRESSES->value);
+
+        // __ Проверка на присутствие средней модели в базе
+        $PREFIX = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
+        $code_1c = $PREFIX . str_pad($client->id, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
+
+        // __ Получаем среднюю модель напрямую, без кэша, т.к. она создается динамически
+        $averageModel = Model::query()->find($code_1c);
+        if ($averageModel) {
+            return $averageModel;
+        }
+
+        $averageModel = Model::query()->create(
+            [
+                'code_1c'                        => $code_1c,
+                'model_manufacture_status_id'    => null,
+                'model_collection_code_1c'       => $isMattressType ? AVERAGE_M_PREFIX . '0000' : AVERAGE_A_PREFIX . '0000',
+                'model_type_code_1c'             => $isMattressType ? AVERAGE_M_PREFIX . '0000' : AVERAGE_A_PREFIX . '0000',
+                'serial'                         => null,
+                'name'                           => $isMattressType ? AVERAGE_M_PREFIX . $client->short_name : AVERAGE_A_PREFIX . $client->short_name,
+                'name_short'                     => null,
+                'name_common'                    => null,
+                'name_report'                    => $isMattressType ? 'Плановый Матрас' : 'Плановый Аксессуар',
+                'cover_code_1c_copy'             => null,
+                'cover_name_1c'                  => null,
+                // 'base_height'                    => 0,
+                // 'cover_height'                   => 0,
+                'textile'                        => null,
+                'textile_composition'            => null,
+                'cover_type'                     => null,
+                'zipper'                         => null,
+                'spacer'                         => null,
+                'stitch_pattern'                 => null,
+                'pack_type'                      => null,
+                'base_composition'               => null,
+                'side_foam'                      => null,
+                'base_block'                     => null,
+                'load'                           => null,
+                'guarantee'                      => null,
+                'life'                           => null,
+                'cover_mark'                     => null,
+                'model_mark'                     => null,
+                // 'model_manufacture_group_id'     => 0,
+                'owner'                          => null,
+                'lamit'                          => null,
+                'sewing_machine'                 => null,
+                'kant'                           => null,
+                'tkch'                           => null,
+                'pack_density'                   => null,
+                'side_height'                    => null,
+                'pack_weight_rb'                 => null,
+                'pack_weight_ex'                 => null,
+                'model_manufacture_type_code_1c' => $isMattressType ? AVERAGE_M_PREFIX . '0000' : AVERAGE_A_PREFIX . '0000',
+                'weight'                         => 0,
+                'barcode'                        => null,
+                'base'                           => null,
+                'cover'                          => null,
+                'active'                         => true,
+                'status'                         => null,
+                'description'                    => null,
+                'comment'                        => null,
+                'note'                           => null,
+                'meta'                           => null,
+                // 'created_at'                     => $this->created_at,
+                // 'updated_at'                     => $this->updated_at,
+                'cover_code_1c'                  => null,
+            ]
+        );
+
+        return $averageModel;
+    }
 
 
 }

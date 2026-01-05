@@ -22,6 +22,8 @@ return new class extends Migration {
 
         DB::table(self::TABLE_NAME)->insert([
 
+            [CODE_1C => AVERAGE_M_PREFIX . '0000', 'name' => 'Плановый Матрас', 'created_at' => now(), 'updated_at' => now(),],
+            [CODE_1C => AVERAGE_A_PREFIX . '0000', 'name' => 'Плановый Аксессуар', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000001', 'name' => 'Матрас', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000002', 'name' => 'Наматрасник модифицирующий', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000003', 'name' => 'Наматрасник защитный', 'created_at' => now(), 'updated_at' => now(),],

@@ -52,6 +52,11 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Вид ткани элемента в заказе');
 
+            $table->boolean('stat_include')
+                ->nullable(false)
+                ->default(true)
+                ->comment('Включать или нет в статистику при планировании (пропуск при расчете сырья)');
+
             // __ Комментарий
             $table->string('composition')->nullable()->comment('Состав/Комментарий');
             $table->string('describe_1')->nullable()->comment('Описание 1');

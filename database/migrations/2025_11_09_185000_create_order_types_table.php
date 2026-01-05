@@ -32,6 +32,14 @@ return new class extends Migration {
         ]);
 
         DB::table(self::TABLE_NAME)->insert([
+            'name'         => 'Плановая заявка',
+            'display_name' => 'плановая заявка',
+            'type_index'   => AVERAGE_TYPE_INDEX,
+            'description'  => 'Плановая заявка',
+            'color'        => '#C0C0C0'
+        ]);
+
+        DB::table(self::TABLE_NAME)->insert([
             'name'         => 'Основная заявка',
             'display_name' => 'основная заявка',
             'type_index'   => '_',

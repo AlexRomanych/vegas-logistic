@@ -49,6 +49,9 @@
                         <!-- __ Пояснение результата -->
                         <AppLabelMultilineTSWrapper :render-object="render.validateAdvice"/>
 
+                        <!-- __ Загрузка на сервер -->
+                        <AppLabelMultilineTSWrapper :render-object="render.uploadFile" @click="uploadFile"/>
+
                     </div>
                 </div>
             </div>
@@ -56,9 +59,7 @@
             <!-- __ Данные -->
             <div v-for="(planLoad, index) of planLoadsRender" :key="index" class="ml-2 max-w-fit">
 
-
                 <div class="flex ">
-
 
                     <!-- __ Клиент -->
                     <AppLabelTSWrapper :arg="planLoad" :render-object="render.client"/>
@@ -98,10 +99,12 @@
 
     </div>
 
-
-    <AppCallout v-if="!isDataJson" text="Ошибка данных!" type="danger"/>
-
-    <AppCallout v-if="opResult" :text="opResultText" :type="opResultType"/>
+    <AppCalloutTS
+        :show="calloutShow"
+        :text="calloutMessage"
+        :type="calloutType"
+        @toggleShow="calloutHandler"
+    />
 
     <AppModalAsyncTS
         ref="appModalAsyncTS"
@@ -121,16 +124,16 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { usePlansStore } from '@/stores/PlansStore.ts'
 import { getFileContent } from '@/app/helpers/helpers_file_reader.js'
 
-import { isJSON, validateJsonByTemplate } from '@/app/helpers/helpers_checks.ts'
+import { checkCRUD, isJSON, validateJsonByTemplate } from '@/app/helpers/helpers_checks.ts'
 
 import { DEBUG } from '@/app/constants/common.ts'
 import { PLAN_LOAD_TEMPLATE } from '@/app/constants/json_templates.ts'
 
-import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import AppInputFileTS from '@/components/ui/inputs/AppInputFileTS.vue'
 import AppModalAsyncTS from '@/components/ui/modals/AppModalAsyncTS.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
+import AppCalloutTS from '@/components/ui/callouts/AppCalloutTS.vue'
 
 
 const plansStore = usePlansStore()
@@ -170,6 +173,14 @@ const DATA_TEXT_SIZE     = 'micro'
 const HEADER_ALIGN       = 'center'
 const DATA_ALIGN         = 'left'
 // const DATA_ALIGN_DEFAULT = 'center'
+
+const ACTION_ORDER_IGNORE = 'Игнорировать Заявку'
+const ACTION_ORDER_ADD    = 'Создать Заявку'
+const getTypeByAction     = (action: string): IColorTypes => {
+    if (action === ACTION_ORDER_IGNORE) return 'warning'
+    if (action === ACTION_ORDER_ADD) return 'success'
+    return DEFAULT_TYPE
+}
 
 
 const render: IRenderData = reactive({
@@ -321,7 +332,7 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+        type:           (planLoad: IPlanLoadValidate) => getTypeByAction(planLoad.validate.action),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
@@ -346,8 +357,30 @@ const render: IRenderData = reactive({
         data:           (planLoad: IPlanLoadValidate) => planLoad.validate.advice
     },
 
+    uploadFile: {      // __ Кнопка загрузки
+        id:             () => 'upload',
+        header:         ['Загрузить', ''],
+        width:          'w-[150px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => 'orange',
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      DATA_ALIGN,
+        class:          'cursor-pointer',
+    },
+
+
 })
 
+// __ Callout
+const calloutShow    = ref(false)      // состояние окна
+const calloutMessage = ref('')      // определяем показываемое сообщение
+const calloutType    = ref<IColorTypes>('danger')   // определяем тип callout
+const calloutHandler = () => setInterval(() => (calloutShow.value = false), 500)
 
 // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 // Получаем данные файла
@@ -385,7 +418,7 @@ const onFileSelected = async (formData: File) => {
 
 // __ Валидируем входящие данные на сервере
 const validatePlanLoads = async () => {
-    planLoadsVerified.value = (await plansStore.validatePlanLoads(fileData.value))  // Получаем валидированные данные
+    planLoadsVerified.value = await plansStore.validatePlanLoads(fileData.value)  // Получаем валидированные данные
 
     isVerified.value = true
 
@@ -396,47 +429,21 @@ const validatePlanLoads = async () => {
 }
 
 
+// __ Загружаем данные на сервер
 const uploadFile = async () => {
 
-    if (selectedFile.value) {
-        // const fileData = await getFileContent(selectedFile.value)
+    const result = await plansStore.uploadLoads(JSON.stringify(planLoadsVerified.value))
 
-        isDataJson.value = true
-
-        if (isJSON(fileData.value)) {
-            // Отправляем в RAW формате и возвращаем результат операции
-            // todo сделать проверку на существующие заявки
-            // const ordersStore = useOrdersStore()
-            // const res         = await ordersStore.uploadOrders(fileData.value)
-            // const res = await ordersStore.uploadOrders(fileData)
-
-            // if (res.length === 0) {
-            //     opResultText.value = 'Данные успешно загружены'
-            //     opResultType.value = 'success'
-            //     setTimeout(() => {
-            //         opResult.value = false
-            //     }, 5000)
-            // } else {
-            //     const dubsTextArray = res.map((item) => {
-            //         return item['sh'] + ' ' + item['n']
-            //     })
-            //
-            //     // console.log(dubsTextArray)
-            //
-            //     opResultText.value = 'Дубликат:' + dubsTextArray.join(', ')
-            //     opResultType.value = 'danger'
-            // }
-            // opResult.value = true
-            // setTimeout(() => {
-            //     opResult.value = false
-            // }, 5000)
-        } else {
-            isDataJson.value = false
-            setTimeout(() => {
-                isDataJson.value = true
-            }, 5000)
-        }
+    if (checkCRUD(result.data)) {
+        calloutMessage.value = result.payload
+        calloutType.value    = 'success'
+    } else {
+        calloutMessage.value = result.error
+        calloutType.value    = 'danger'
     }
+
+    calloutShow.value = true    // показываем callout
+    calloutHandler()            // запускаем таймер на скрытие callout
 }
 
 

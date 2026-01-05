@@ -9,6 +9,9 @@ export function checkCRUD(data: any) {
         return data.toLowerCase().indexOf('success') !== -1
     }
 
+
+
+
     return false
 }
 

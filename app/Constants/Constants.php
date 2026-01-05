@@ -16,8 +16,13 @@ const OK_STATUS_WORD = 'success';               // отправляем при �
 const FAIL_STATUS_WORD = 'fail';                // отправляем при неудачном запросе
 
 
-const CLIENT_AVERAGE_MATTRESS_PREFIX = 'CMID_';  // CLIENT MATTRESS ID
-const CLIENT_AVERAGE_ACCESSORY_PREFIX = 'CAID_';  // CLIENT ACCESSORY ID
+const CLIENT_AVERAGE_MATTRESS_PREFIX = 'CMID_';  // CLIENT MATTRESS ID, должен быть 5 символов
+const CLIENT_AVERAGE_ACCESSORY_PREFIX = 'CAID_';  // CLIENT ACCESSORY ID, должен быть 5 символов
+
+const AVERAGE_M_PREFIX = 'AVGM_';               // Универсальный префикс для средних значений, должен быть 5 символов
+const AVERAGE_A_PREFIX = 'AVGA_';               // Универсальный префикс для средних значений, должен быть 5 символов
+
+const AVERAGE_TYPE_INDEX = '.#';                // Индекс средних значений для типа заявки
 
 // Descr: Список всех модулей производства (ПЯ)
 // Descr: Причем, это не обязательно те модули, которые реально есть сейчас в ПЯ,

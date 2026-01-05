@@ -23,20 +23,26 @@ export const usePlansStore = defineStore('plans', () => {
 
     // __ ________________________________________________________________
 
-
-    // ___ Загрузка Плана загрузок на сервер
-    // fileData - данные файла, отправляем в RAW формате
-    const uploadLoads = async (fileData: string) => {
-
+    // __ Проверка заказов на сервере
+    const validatePlanLoads = async (fileData: string) => {
         const headers = {
             'Content-Type': 'application/json',
-            // 'Content-Type': 'application/octet-stream',
-            // 'Content-Type': 'multipart/form-data',
-            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        const response = await jwtPost(URL_PLAN_LOADS_VALIDATE, {data: fileData}, headers)
+        const result   = await response
+
+        if (DEBUG) console.log('PlansStore: validatePlanLoads', result)
+
+        return result.data
+    }
+
+    // __ Загрузка Плана загрузок на сервер
+    const uploadLoads = async (fileData: string) => {
+        const headers = {
+            'Content-Type': 'application/json',
         }
 
         const response = await jwtPost(URL_PLAN_LOADS_UPLOAD, {data: fileData}, headers)
-        // const response = await jwtPost(URL_PLAN_ULOADS_UPLOAD, fileData, headers)
         const result = await response
 
         if (DEBUG) console.log('PlansStore: uploadLoads: ', result)
@@ -86,19 +92,7 @@ export const usePlansStore = defineStore('plans', () => {
     }
 
 
-    // __ Проверка заказов на сервере
-    const validatePlanLoads = async (fileData: string) => {
-        const headers = {
-            'Content-Type': 'application/json',
-        }
 
-        const response = await jwtPost(URL_PLAN_LOADS_VALIDATE, {data: fileData}, headers)
-        const result   = await response
-
-        if (DEBUG) console.log('PlansStore: validatePlanLoads', result)
-
-        return result.data
-    }
 
 
 

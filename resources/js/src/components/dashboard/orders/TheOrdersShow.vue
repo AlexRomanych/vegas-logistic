@@ -611,14 +611,16 @@ const getOrders = async () => {
     orders.value     = tempOrders.map((order: IRenderOrder) => ({
         ...order,
         collapsed:   collapseAll.value,
-        description: order.description ?? ''
+        description: order.description ?? '',
+        comment_1c:  order.comment_1c ?? ''
     }))
 }
 
 // __ Формируем отображение Заявок
 const getOrdersRender = () => {
     // ordersRender.value = orders.value
-    ordersRender.value = orders.value.sort((a, b) => a.no_1c.localeCompare(b.no_1c))
+    // ordersRender.value = orders.value.sort((a, b) => a.no_1c.localeCompare(b.no_1c))
+    ordersRender.value = orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
 }
 
 
@@ -629,7 +631,7 @@ watchEffect(() => {
         .filter(order => order.client.short_name.toLowerCase().includes(clientFilter.value.toLowerCase()))
         .filter(order => order.order_no_str.toLowerCase().includes(orderNoStrFilter.value.toLowerCase()))
         .filter(order => order.elements_type_render.toLowerCase().includes(elementsTypeFilter.value.toLowerCase()))
-        .filter(order => order.comment_1c.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
+        .filter(order => order.comment_1c?.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
         .filter(order => order.description!.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
         .filter(order => getDateFromDateTimeString(order.load_at).includes(loadAtFilter.value))
         .filter(order => getDateFromDateTimeString(order.unload_at).includes(unloadAtFilter.value))
@@ -661,9 +663,9 @@ onMounted(async () => {
         async () => {
 
             await getOrders()
-            getOrdersRender()
+            console.log('orders: ', orders.value)
 
-            // console.log('orders: ', orders.value)
+            getOrdersRender()
             console.log('ordersRender: ', ordersRender.value)
         },
         undefined,

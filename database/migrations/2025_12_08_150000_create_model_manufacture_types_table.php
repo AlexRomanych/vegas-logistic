@@ -19,6 +19,12 @@ return new class extends Migration {
 
         $this->addCommonColumns(self::TABLE_NAME);
 
+        // __ Добавляем для средних плановых изделий
+        DB::table(self::TABLE_NAME)->insert([
+            [CODE_1C => AVERAGE_M_PREFIX . '0000', 'name' => 'Производство плановых матрасов', 'active' => true, 'created_at' => now(), 'updated_at' => now()],
+            [CODE_1C => AVERAGE_A_PREFIX . '0000', 'name' => 'Производство плановых аксессуаров', 'active' => true, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
         DB::table(self::TABLE_NAME)->insert([
             [CODE_1C => '000000005', 'name' => 'Производство матрасов', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000003', 'name' => 'Производство стеганных полотен', 'created_at' => now(), 'updated_at' => now(),],

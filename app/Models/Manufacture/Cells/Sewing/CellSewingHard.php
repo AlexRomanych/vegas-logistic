@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Manufacture\Cells\sewing;
+namespace App\Models\Manufacture\Cells\Sewing;
 
 use App\Models\Manufacture\CellItem;
 use App\Models\Norm\sewing\CellSewingAutoNorm;
@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 //use Illuminate\Database\Eloquent\Model;
 
-class CellSewingLight extends CellItem
+class CellSewingHard extends CellItem
 {
     protected CellSewingAutoNorm $norm;                 // attract: todo Не забыть поменять норму для УШМ
 
-    protected $table = 'cell_sewing_light';
+    protected $table = 'cell_sewing_hard';
 
 
     protected $guarded = [];

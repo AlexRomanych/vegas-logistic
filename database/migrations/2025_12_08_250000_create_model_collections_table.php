@@ -20,6 +20,8 @@ return new class extends Migration {
         $this->addCommonColumns(self::TABLE_NAME);
 
         DB::table(self::TABLE_NAME)->insert([
+            [CODE_1C => AVERAGE_M_PREFIX . '0000', 'name' => 'Плановые Матрасы', 'created_at' => now(), 'updated_at' => now(),],
+            [CODE_1C => AVERAGE_A_PREFIX . '0000', 'name' => 'Плановые Аксессуары', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000001', 'name' => '9901 Vegas_Комфорт', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000002', 'name' => '9925 Vegas_Comfort', 'created_at' => now(), 'updated_at' => now(),],
             [CODE_1C => '000000003', 'name' => '9902 Vegas_Модерн', 'created_at' => now(), 'updated_at' => now(),],
