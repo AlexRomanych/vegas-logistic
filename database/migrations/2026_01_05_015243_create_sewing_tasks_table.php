@@ -27,14 +27,22 @@ return new class extends Migration {
             // __ Если разные дни, то порядок можно определить по дате
             $table->integer('position')
                 ->nullable(false)
-                ->default(0)
+                ->default(1)
                 ->comment('Порядок выполнения в производственном дне');
 
             // __ Дата выполнения СЗ
-            $table->timestamp('planned_at')
+            $table->timestamp('action_at')
                 ->nullable(false)
                 ->comment('Дата выполнения СЗ');
 
+            // __ Номер производственной смены. Пока 1 смена, но задел на будущее
+            $table->unsignedSmallInteger('change')
+                ->nullable(false)
+                ->default(1)
+                ->comment('Номер производственной смены');
+
+            // __ Уникальность по Дате Выполнения, Производственной Смене и Порядку (позиции в производственном дне)
+            $table->unique(['action_at', 'position', 'change']);
 
             $table->jsonb('meta_ext')->nullable()->comment('Метаданные в формате JSON');
         });

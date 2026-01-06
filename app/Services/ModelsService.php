@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\VegasDataGetContract;
 use App\Contracts\VegasDataUpdateContract;
 use App\Enums\ElementTypes;
+use App\Models\Client;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
 use App\Models\Models\ModelManufactureGroup;
@@ -58,7 +59,7 @@ final class ModelsService implements VegasDataUpdateContract
                 ->get();
 
             foreach ($models as $model) {
-                self::$modelsCacheByCode1C[$model->code_1c] = $model;
+                self::$modelsCacheByCode1C[$model->code_1c]           = $model;
                 self::$modelsCacheByName[mb_strtolower($model->name)] = $model;
 
                 // Добавление чехла в кэш
@@ -130,7 +131,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelsCollections as $modelsCollection) {
                 self::$modelsCollectionsCacheByCode1C[$modelsCollection->code_1c] = $modelsCollection;
-                self::$modelsCollectionsCacheByName[$modelsCollection->name] = $modelsCollection;
+                self::$modelsCollectionsCacheByName[$modelsCollection->name]      = $modelsCollection;
             }
         }
     }
@@ -182,7 +183,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelManufactureTypes as $modelManufactureType) {
                 self::$modelManufactureTypeCacheByCode1C[$modelManufactureType->code_1c] = $modelManufactureType;
-                self::$modelManufactureTypeCacheByName[$modelManufactureType->name] = $modelManufactureType;
+                self::$modelManufactureTypeCacheByName[$modelManufactureType->name]      = $modelManufactureType;
             }
         }
     }
@@ -235,7 +236,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelTypes as $modelType) {
                 self::$modelTypeCacheByCode1C[$modelType->code_1c] = $modelType;
-                self::$modelTypeCacheByName[$modelType->name] = $modelType;
+                self::$modelTypeCacheByName[$modelType->name]      = $modelType;
             }
         }
     }
@@ -287,7 +288,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureStatuses = ModelManufactureStatus::all();
 
             foreach ($modelManufactureStatuses as $modelManufactureStatus) {
-                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id] = $modelManufactureStatus;
+                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id]     = $modelManufactureStatus;
                 self::$modelManufactureStatusCacheByName[$modelManufactureStatus->name] = $modelManufactureStatus;
             }
         }
@@ -340,7 +341,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureGroups = ModelManufactureGroup::all();
 
             foreach ($modelManufactureGroups as $modelManufactureGroup) {
-                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id] = $modelManufactureGroup;
+                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id]     = $modelManufactureGroup;
                 self::$modelManufactureGroupCacheByName[$modelManufactureGroup->name] = $modelManufactureGroup;
             }
         }
@@ -570,13 +571,13 @@ final class ModelsService implements VegasDataUpdateContract
 
     public function updateData(VegasDataGetContract $getter = null): void
     {
-        $fileName = config('vegas.models_1C_json_name');
+        $fileName   = config('vegas.models_1C_json_name');
         $modelsList = !is_null($getter) ? $getter->getDataFromFile($fileName) : $this->getter->getDataFromFile($fileName);
 
         Model::query()->update(['active' => 0]);
 
         foreach ($modelsList as $modelItem) {
-            $base = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
+            $base  = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
             $cover = json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
             //            $base = $modelItem['bs'];
             //            $cover = $modelItem['cv'];
@@ -667,7 +668,7 @@ final class ModelsService implements VegasDataUpdateContract
     // ___ Возвращаем фейковую модель
     public function createFakeModel(array $attributes = []): Model
     {
-        $model = new Model();
+        $model           = new Model();
         $modelAttributes = $model->getAttributes();
         $modelAttributes = array_merge($modelAttributes, $attributes);
 
@@ -757,8 +758,8 @@ final class ModelsService implements VegasDataUpdateContract
             return false;
         };
 
-        $isAccessoriesGroup =
-            $model->modelType->code_1c === '000000003'          // Наматрасник защитный
+        $isAccessoriesGroup
+            = $model->modelType->code_1c === '000000003'          // Наматрасник защитный
             || $model->modelType->code_1c === '000000004'       // Подушка
             || $model->modelType->code_1c === '000000009'       // Одеяло
             || $model->modelType->code_1c === '000000041'       // Подматрасник
@@ -907,7 +908,7 @@ final class ModelsService implements VegasDataUpdateContract
         $isMattressType = ($elementType === ElementTypes::MATTRESSES->value);
 
         // __ Проверка на присутствие средней модели в базе
-        $PREFIX = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
+        $PREFIX  = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
         $code_1c = $PREFIX . str_pad($client->id, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
 
         // __ Получаем среднюю модель напрямую, без кэша, т.к. она создается динамически
@@ -976,5 +977,37 @@ final class ModelsService implements VegasDataUpdateContract
         return $averageModel;
     }
 
+
+    /**
+     * ___ Получение кода средней модели по id клиента и типу элемента
+     * @param Client|int|null $client
+     * @param string $modelType
+     * @return string|null
+     */
+    public static function getAverageModelCodeByClientAndElementsType(
+        Client|int $client = null,
+        string $modelType = ElementTypes::MATTRESSES->value): string|null
+    {
+        if (!$client) {
+            return null;
+        }
+
+        if ($modelType === ElementTypes::MATTRESSES->value) {
+            $PREFIX  =  ElementTypes::MATTRESSES->value;
+        } elseif ($modelType === ElementTypes::ACCESSORIES->value) {
+            $PREFIX  =  ElementTypes::ACCESSORIES->value;
+        } else {
+            return null;
+        }
+
+        if ($client instanceof Client) {
+            /** @noinspection PhpUndefinedFieldInspection */
+            $clientId = $client->id;
+        } else {
+            $clientId = $client;
+        }
+
+        return str_pad($clientId, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
+    }
 
 }

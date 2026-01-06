@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
-use App\Http\Controllers\Api\V1\Cells\sewing\CellSewingController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructController;
@@ -22,7 +22,6 @@ require_once 'v1/reasons_routes.php';
 require_once 'v1/logs_routes.php';
 require_once 'v1/fabrics_routes.php';
 require_once 'v1/business_processes_routes.php';
-
 
 
 //hr--------------------------------------------------------------------------------------------------------------------
@@ -49,8 +48,6 @@ Route::prefix('/models')
 
 
     });
-
-
 
 
 Route::get('/model/{code1C}', [ModelController::class, 'model'])->middleware('jwt.auth');
@@ -94,16 +91,26 @@ Route::prefix('/orders')
 Route::get('/manufacture/cells/groups', [CellsGroupController::class, 'getCellsGroups'])->middleware('jwt.auth');
 Route::get('/manufacture/cells', [CellItemController::class, 'getCells'])->middleware('jwt.auth');
 
-// attract: Sewing
-Route::get('/manufacture/cells/sewing/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
-Route::get('/manufacture/cells/sewing/solid/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
 
+
+
+// __ Блок Пошива - Sewing
+Route::prefix('/manufacture/cells/sewing')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+
+
+        // Route::get('/manufacture/cells/sewing/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+        // Route::get('/manufacture/cells/sewing/solid/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+
+    });
 
 //Route::get('/manufacture/cells/groups', function(Request $request) {
 //    return json_encode(['cells_groups' => '11111111111111']);
 //})->middleware('jwt.auth');;
 //hr--------------------------------------------------------------------------------------------------------------------
-
 
 
 // __ Блок Планов

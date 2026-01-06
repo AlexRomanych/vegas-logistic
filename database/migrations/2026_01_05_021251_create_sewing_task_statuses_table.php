@@ -26,6 +26,8 @@ return new class extends Migration
                 ->nullable(false)
                 ->default(0)
                 ->comment('Позиция (порядок) статуса');
+
+
         });
 
         $this->addCommonColumns(self::TABLE_NAME);

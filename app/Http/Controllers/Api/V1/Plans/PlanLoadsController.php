@@ -8,8 +8,10 @@ use App\Http\Resources\Plans\Loads\PlanLoadsResource;
 use App\Models\Client;
 use App\Models\Order\OrderLine;
 use App\Models\Plan\PlanLoad;
+use App\Services\BusinessProcessesService;
 use App\Services\ClientsService;
 use App\Services\DefaultsService;
+use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
 use App\Services\Plan\PlanLoadsService;
@@ -20,6 +22,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PlanLoadsController extends Controller
 {
@@ -45,6 +48,7 @@ class PlanLoadsController extends Controller
      * ___ Обновляем или загружаем план загрузок
      * @param Request $request
      * @return string
+     * @throws Throwable
      */
     public function uploadLoads(Request $request)
     {
@@ -211,6 +215,18 @@ class PlanLoadsController extends Controller
             if (!$createLine) {
                 throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
             }
+
+
+            // __ Тут начинаем формировать СЗ на различные участки
+
+            // __ Создаем СЗ на Пошив
+            $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
+            if (!$sewingTask) {
+                throw new Exception('Error while creating Sewing Task with Client id = ' . $planLoad['client_id']);
+            }
+
+
+
 
         }
 

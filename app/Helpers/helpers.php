@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 if (!function_exists('getCloneByJSON')) {
 
     /**
-     * Descr: Функция копирует один объект в другой через JSON
+     * ___ Функция копирует один объект в другой через JSON
      * @param mixed $data
      * @return mixed
      */
@@ -24,7 +24,7 @@ if (!function_exists('getCloneByJSON')) {
 if (!function_exists('correctTimeZone')) {
 
     /**
-     * Descr: Функция переводит дату из UTC в текущее время зоны
+     * ___ Функция переводит дату из UTC в текущее время зоны
      * @param string $dateString
      * @return Carbon
      */
@@ -51,10 +51,14 @@ if (!function_exists('getCorrectDate')) {
     }
 }
 
-/**
- * Возвращает преобразованную строку (обычно это название в 1С)
- */
+
 if (!function_exists('getPrettyNameFrom1CData')) {
+
+    /**
+     *  ___ Возвращает преобразованную строку (обычно это название в 1С)
+     * @param string $name
+     * @return string
+     */
     function getPrettyNameFrom1CData(string $name): string
     {
         $name = trim($name);
@@ -77,11 +81,13 @@ if (!function_exists('getPrettyNameFrom1CData')) {
 }
 
 
-/**
- * ___ Возвращает только цифры из входящей строки
- * @return string
- */
 if (!function_exists('getDigitPart')) {
+
+    /**
+     * ___ Возвращает только цифры из входящей строки
+     * @param string $inStr
+     * @return string
+     */
     function getDigitPart(string $inStr = ''): string
     {
         $result = '';
@@ -94,11 +100,14 @@ if (!function_exists('getDigitPart')) {
     }
 }
 
-/**
- * ___ Возвращает только цифры из входящей строки + точку и запятую
- * @return string
- */
+
 if (!function_exists('getDigitPartAndDotAndComma')) {
+
+    /**
+     * ___ Возвращает только цифры из входящей строки + точку и запятую
+     * @param string $inStr
+     * @return string
+     */
     function getDigitPartAndDotAndComma(string $inStr = ''): string
     {
         $result = '';
@@ -112,11 +121,14 @@ if (!function_exists('getDigitPartAndDotAndComma')) {
 }
 
 
-/**
- * ___Возвращает только буквы из входящей строки
- * @return string
- */
+
 if (!function_exists('getLetterPart')) {
+
+    /**
+     * ___Возвращает только буквы из входящей строки
+     * @param string $inStr
+     * @return string
+     */
     function getLetterPart(string $inStr = ''): string
     {
         $result = '';
@@ -130,10 +142,11 @@ if (!function_exists('getLetterPart')) {
 }
 
 
-/**
- * Обертка над validator
- */
 if (!function_exists('validate')) {
+
+    /**
+     * ___ Обертка над validator
+     */
     function validate(array $data = [], array $rules = []): array
     {
         return validator($data, $rules)->validate();
@@ -141,22 +154,24 @@ if (!function_exists('validate')) {
 }
 
 
-function apiDebug($data = []): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
-{
-    return view('dd', ['data' => $data]);
-}
+// function apiDebug($data = []): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+// {
+//     return view('dd', ['data' => $data]);
+// }
 
 
-/**
- * ___ Проверяет массив дат на дубликаты
- * __ [
- * __   'has_duplicates' => true,
- * __   'duplicates' => ['2023-01-01 00:00:00' => 2],
- * __   'unique_count' => 3,
- * __   'total_count' => 4
- * __ ]
- */
+
 if (!function_exists('checkCarbonDuplicates')) {
+
+    /**
+     * ___ Проверяет массив дат на дубликаты
+     * __ [
+     * __   'has_duplicates' => true,
+     * __   'duplicates' => ['2023-01-01 00:00:00' => 2],
+     * __   'unique_count' => 3,
+     * __   'total_count' => 4
+     * __ ]
+     */
     function checkCarbonDuplicates(array $dates, bool $includeTime = false): array
     {
         $format = $includeTime ? 'Y-m-d H:i:s' : 'Y-m-d';
@@ -176,14 +191,16 @@ if (!function_exists('checkCarbonDuplicates')) {
 }
 
 
-/**
- * ___ Устанавливает значение SEQUENCE
- * @param string $tableName - имя таблицы
- * @param string $columnName - имя столбца
- * @param int|null $startValue - начальное значение
- * @return bool
- */
+
 if (!function_exists('setSequence')) {
+
+    /**
+     * ___ Устанавливает значение SEQUENCE
+     * @param string $tableName - имя таблицы
+     * @param string $columnName - имя столбца
+     * @param int|null $startValue - начальное значение
+     * @return bool
+     */
     function setSequence(string $tableName, string $columnName = 'id', int|null $startValue = null): bool
     {
         try {
@@ -223,41 +240,43 @@ if (!function_exists('setSequence')) {
             DB::statement("SELECT setval(?, ?, TRUE)", [$sequenceName, $maxId]);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
-
     }
+}
 
+
+if (!function_exists('parseNumericValue')) {
 
     /**
-     * ___ Преобразует строку из Excel в чистое число или возвращает null
+     *  ___ Преобразует строку из Excel в чистое число или возвращает null
+     * @param $value
+     * @return float|null
      */
-    if (!function_exists('parseNumericValue')) {
-
-        /**
-         * @param $value
-         * @return float|null
-         */
-        function parseNumericValue($value): ?float
-        {
-            if (is_null($value) || $value === '') {
-                return 0.0;
-            }
-
-            // 1. Убираем лишние пробелы (в т.ч. неразрывные)
-            $value = trim(str_replace("\xc2\xa0", ' ', $value));
-
-            // 2. Меняем запятую на точку (для локальных форматов)
-            $value = str_replace(',', '.', $value);
-
-            // 3. Убираем всё, кроме цифр, точек и минуса
-            $value = preg_replace('/[^0-9.-]/', '', $value);
-
-            return is_numeric($value) ? (float)$value : null;
+    function parseNumericValue($value): ?float
+    {
+        if (is_null($value) || $value === '') {
+            return 0.0;
         }
-    }
 
+        // 1. Убираем лишние пробелы (в т.ч. неразрывные)
+        $value = trim(str_replace("\xc2\xa0", ' ', $value));
+
+        // 2. Меняем запятую на точку (для локальных форматов)
+        $value = str_replace(',', '.', $value);
+
+        // 3. Убираем всё, кроме цифр, точек и минуса
+        $value = preg_replace('/[^0-9.-]/', '', $value);
+
+        return is_numeric($value) ? (float)$value : null;
+    }
+}
+
+
+
+
+if (!function_exists('findMinMissingNumber')) {
 
     /**
      * ___ Вот функция PHP, которая находит минимальное пропущенное число
@@ -266,41 +285,63 @@ if (!function_exists('setSequence')) {
      * @param array $numbers
      * @return int|null
      */
-
-    if (!function_exists('findMinMissingNumber')) {
-
-        function findMinMissingNumber(array $numbers): ?int
-        {
-            // Если массив пуст, и мы ожидаем числа от 1, то 1 - минимальное пропущенное.
-            if (empty($numbers)) {
-                return 1;
-            }
-
-            // 1. Сортируем массив по возрастанию.
-            // Это критически важно для эффективной проверки последовательности.
-            sort($numbers);
-
-            // 2. Проверяем, отсутствует ли число '1'.
-            // Если первый элемент не равен 1, то 1 - минимальное пропущенное число.
-            if ($numbers[0] !== 1) {
-                return 1;
-            }
-
-            // 3. Итерируем по отсортированному массиву, чтобы найти первый пробел.
-            // Мы ожидаем, что каждое число будет ровно на единицу больше предыдущего.
-            // Цикл начинается со второго элемента (индекс 1).
-            for ($i = 1; $i < count($numbers); $i++) {
-                // Если текущее число не равно предыдущему числу + 1,
-                // то пропущенное число - это (предыдущее число + 1).
-                if ($numbers[$i] !== $numbers[$i - 1] + 1) {
-                    return $numbers[$i - 1] + 1;
-                }
-            }
-
-            // 4. Если пробелов не найдено, то минимальное пропущенное число - это n + 1.
-            // Это происходит, если массив содержит все числа от 1 до своего максимального элемента.
-            // В этом случае наименьшее пропущенное число будет следующим целым числом после наибольшего в массиве.
-            return end($numbers) + 1;
+    function findMinMissingNumber(array $numbers): ?int
+    {
+        // Если массив пуст, и мы ожидаем числа от 1, то 1 - минимальное пропущенное.
+        if (empty($numbers)) {
+            return 1;
         }
+
+        // 1. Сортируем массив по возрастанию.
+        // Это критически важно для эффективной проверки последовательности.
+        sort($numbers);
+
+        // 2. Проверяем, отсутствует ли число '1'.
+        // Если первый элемент не равен 1, то 1 - минимальное пропущенное число.
+        if ($numbers[0] !== 1) {
+            return 1;
+        }
+
+        // 3. Итерируем по отсортированному массиву, чтобы найти первый пробел.
+        // Мы ожидаем, что каждое число будет ровно на единицу больше предыдущего.
+        // Цикл начинается со второго элемента (индекс 1).
+        for ($i = 1; $i < count($numbers); $i++) {
+            // Если текущее число не равно предыдущему числу + 1,
+            // то пропущенное число - это (предыдущее число + 1).
+            if ($numbers[$i] !== $numbers[$i - 1] + 1) {
+                return $numbers[$i - 1] + 1;
+            }
+        }
+
+        // 4. Если пробелов не найдено, то минимальное пропущенное число - это n + 1.
+        // Это происходит, если массив содержит все числа от 1 до своего максимального элемента.
+        // В этом случае наименьшее пропущенное число будет следующим целым числом после наибольшего в массиве.
+        return end($numbers) + 1;
+    }
+}
+
+/**
+ *
+ */
+if (!function_exists('normalizeToCarbon')) {
+
+    /**
+     * ___ Преобразует строку в Carbon
+     * @param string|Carbon $entity
+     * @return Carbon
+     */
+    function normalizeToCarbon(string|Carbon $entity): Carbon
+    {
+        return match (true) {
+            is_string($entity)        => (function () use ($entity) {
+                try {
+                    return Carbon::parse($entity);
+                } catch (Exception $e) {
+                    return Carbon::now();
+                }
+            })(),
+            $entity instanceof Carbon => $entity,
+            default                   => Carbon::now(),
+        };
     }
 }

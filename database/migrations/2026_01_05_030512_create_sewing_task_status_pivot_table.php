@@ -41,6 +41,9 @@ return new class extends Migration
                 ->constrained('workers')
                 ->nullOnDelete();
 
+            // __ Дата установки статуса
+            $table->timestamp('set_at')->nullable()->comment('Дата установки статуса');
+
             // __ Дополнительные поля для бизнес-логики
             $table->timestamp('started_at')->nullable();
             $table->timestamp('finished_at')->nullable();

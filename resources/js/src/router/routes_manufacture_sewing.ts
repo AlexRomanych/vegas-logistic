@@ -24,12 +24,24 @@ const sewing = [
         // ___ Управление планом Швейного цеха
         path: _MAIN_PREFIX + 'plan/manage',
         name: 'manufacture.cell.sewing.plan.manage',
-        component: () => import('@/components/dashboard/plans/ThePlanManageSewing.vue'), // Переносим в планы
-        // component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingPlanManage.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingManage.vue'),
         meta: {
             title: 'Управление планом Швейного цеха'
         } as IRouteMeta,
     },
+
+
+
+    // {
+    //     // ___ Управление планом Швейного цеха
+    //     path: _MAIN_PREFIX + 'plan/manage',
+    //     name: 'manufacture.cell.sewing.plan.manage',
+    //     component: () => import('@/components/dashboard/plans/ThePlanManageSewing.vue'),
+    //     // component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingPlanManage.vue'),
+    //     meta: {
+    //         title: 'Управление планом Швейного цеха'
+    //     } as IRouteMeta,
+    // },
 ]
 
 export default sewing

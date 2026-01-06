@@ -1,7 +1,7 @@
 <template>
     <div v-if="!isLoading">
         <div v-for="(planWeek, idx) of renderMatrix" :key="idx">
-            <PlanWeek
+            <ManageWeek
                 :date="getStartWeekDate(idx)"
                 :week="planWeek"
                 @drag-and-drop="correctRenderMatrix"
@@ -34,7 +34,7 @@ import {
 } from '@/app/constants/business_processes.ts'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 
-import PlanWeek from '@/components/dashboard/plans/plan_sewing/PlanWeek.vue'
+import ManageWeek from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageWeek.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import { PLAN_DRAFT } from '@/app/constants/plans.ts'
 

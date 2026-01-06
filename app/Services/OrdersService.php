@@ -13,6 +13,25 @@ use Illuminate\Support\Facades\Log;
 
 final class OrdersService
 {
+
+    public const VALIDATE_FIELD = 'validate';
+    public const CHECK_FIELD = 'check';
+    public const ADVICE_FIELD = 'advice';
+    public const ORDER_ELEMENTS_TYPE_FIELD = 'elements_type';
+    public const ACTION_FIELD = 'action';
+    public const CHECK_PASS = 'ok';
+    public const CHECK_FAIL = 'fail';
+    public const ACTION_NONE = 'Нет действия';
+    public const ACTION_CLIENT_IGNORE = 'Игнорировать Клиента';
+    public const ACTION_CLIENT_ADD = 'Создать Клиента';
+    public const ACTION_ORDER_UPDATE = 'Обновить Заявку';
+    public const ACTION_ORDER_IGNORE = 'Игнорировать Заявку';
+    public const ACTION_ORDER_ADD = 'Создать Заявку';
+    public const ACTION_MODEL_ADD = 'Создать Модель';
+    public const ACTION_MODEL_IGNORE = 'Игнорировать Модель';
+    public const ORDER_ID_FIELD = 'order_id';
+
+
     private static array $orderTypesCache = [];     // Типы заявок
 
 
@@ -22,30 +41,11 @@ final class OrdersService
         // TODO!!!!! Проверка Дубликатов!!!
 
         // __ Поля, которые получаем из базы, если заявка существует
-        $ORDER_METADATA_FIELD = 'metadata';
-        $CLIENT_SHORT_NAME_FIELD = 'client_short_name';
-        $ORDER_NO_FIELD = 'order_no';
-        $ORDER_PERIOD_FIELD = 'order_period';
+        // $ORDER_METADATA_FIELD = 'metadata';
+        // $CLIENT_SHORT_NAME_FIELD = 'client_short_name';
+        // $ORDER_NO_FIELD = 'order_no';
+        // $ORDER_PERIOD_FIELD = 'order_period';
 
-
-        $VALIDATE_FIELD = 'validate';
-        $CHECK_FIELD = 'check';
-        $CHECK_PASS = 'ok';
-        $CHECK_FAIL = 'fail';
-
-        $ADVICE_FIELD = 'advice';
-
-        $ORDER_ELEMENTS_TYPE_FIELD = 'elements_type';
-
-        $ACTION_FIELD = 'action';
-        $ACTION_NONE = 'none';
-        $ACTION_CLIENT_IGNORE = 'Игнорировать Клиента';
-        $ACTION_CLIENT_ADD = 'Создать Клиента';
-        $ACTION_ORDER_UPDATE = 'Обновить Заявку';
-        $ACTION_ORDER_IGNORE = 'Игнорировать Заявку';
-        $ACTION_ORDER_ADD = 'Создать Заявку';
-        $ACTION_MODEL_ADD = 'Создать Модель';
-        $ACTION_MODEL_IGNORE = 'Игнорировать Модель';
 
         // __ Подготавливаем данные (если строка json, преобразуем в массив)
         $orders = self::prepareOrderData($orders);
@@ -57,7 +57,7 @@ final class OrdersService
             // __ Получаем Тип изделий в Заявках
             $elementsType = self::getOrderElementsTypeFromFront($order);
             $elementsTypeRef = self::getOrderElementsTypeReference($elementsType);
-            $order[$ORDER_ELEMENTS_TYPE_FIELD] = self::getElementsTypeRender($elementsTypeRef);
+            $order[self::ORDER_ELEMENTS_TYPE_FIELD] = self::getElementsTypeRender($elementsTypeRef);
 
             // __ Пробуем получить клиента по ID
             $client = null;
@@ -67,26 +67,30 @@ final class OrdersService
                 $client = Client::query()->find($order['client_id']);
             }
 
-            if (!$client) { // Если не нашли клиента по ID или code_1c
-                // Действие зависит от того, какого типа заявка
+            // __ Если не нашли клиента по ID или code_1c
+            if (!$client) {
+
+                // __ Действие зависит от того, какого типа заявка
                 if (self::isOrderUndefinedType($elementsTypeRef)) {
                     if (self::isOrderCoversType($elementsType)) {  // Если референсный тип Не определен, но есть Чехлы - предлагаем добавить клиента
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_CLIENT_ADD;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                     } else {
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_CLIENT_IGNORE;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Пропустить Заявку. Возможно это не матрасы или аксессуары.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Пропустить Заявку. Возможно это не матрасы или аксессуары.';
                     }
 
                 } else {
-                    $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Клиент отсутствует в базе.';
-                    $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_CLIENT_ADD;
-                    $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки.';
+                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе.';
+                    $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
+                    $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                 }
 
-            } else { // Если нашли клиента
+                $order['client_id'] = 0;                  // Перезаписываем id клиента из БД, если даже он есть в excel
+
+            } else { // __ Если нашли клиента
 
                 $order['client_full_name'] = $client->short_name;   // Перезаписываем имя клиента из БД
                 $order['client_id'] = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
@@ -108,57 +112,72 @@ final class OrdersService
                         ->first();
                 };
 
-                if ($existOrder) {  // __ Если нашли Заявку с таким номером в БД
+                // __ Если нашли Заявку с таким номером в БД
+                if ($existOrder) {
+
+                    // __ Записываем id Заявки
+                    $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = $existOrder->id;
+
                     // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
                     if (self::isOrderAverageType($existOrder, $elementsType)) {
 
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Прогнозная Заявка с таким номером уже есть в базе.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_ORDER_UPDATE;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Прогнозная Заявка с таким номером уже есть в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_UPDATE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
 
                     } else {
 
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Заявка с таким номером уже есть в базе.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_ORDER_IGNORE;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером уже есть в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
 
                     }
                 } else {  // __ Если не нашли Заявку с таким номером в БД
 
+                    // __ Записываем id Заявки = 0
+                    $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = 0;
+
                     if (self::isOrderMattressesType($elementsType)
                         || self::isOrderAccessoriesType($elementsType)) {
 
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Заявка с таким номером не найдена в базе.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_ORDER_ADD;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Добавить заявку в базу.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_ADD;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить заявку в базу.';
 
                     } else {
 
-                        $order[$VALIDATE_FIELD][$CHECK_FIELD] = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
-                        $order[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_ORDER_IGNORE;
-                        $order[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
 
                     }
 
                 }
 
-
             }
 
             // __ Проходим по всем позициям в Заявке
+            $isAllModelsExist = true;
             foreach ($order['items'] as &$orderLine) {
                 $model = ModelsService::getModelByCode1C($orderLine['c']);
                 if (!$model) {
-                    $orderLine[$VALIDATE_FIELD][$CHECK_FIELD] = 'Модель не найдена в базе.';
-                    $orderLine[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_MODEL_IGNORE;
-                    $orderLine[$VALIDATE_FIELD][$ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново. Код Модели из 1С = ' . $orderLine['c'];
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Модель не найдена в базе.';
+                    $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_MODEL_IGNORE;
+                    $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново. Код Модели из 1С = ' . $orderLine['c'];
+                    $isAllModelsExist = false;
                 } else {
-                    $orderLine[$VALIDATE_FIELD][$CHECK_FIELD] = $CHECK_PASS;
-                    $orderLine[$VALIDATE_FIELD][$ACTION_FIELD] = $ACTION_NONE;
-                    $orderLine[$VALIDATE_FIELD][$ADVICE_FIELD] = '';
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = self::CHECK_PASS;
+                    $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_NONE;
+                    $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = '';
                 }
             }
 
+            // __ Если не все модели найдены
+            if (!$isAllModelsExist && $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] !== 'Пропустить Заявку. Возможно это не матрасы или аксессуары.') {
+                $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Есть неизвестные модели.';
+                $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново.';
+            }
 
         }
 

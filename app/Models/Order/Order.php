@@ -7,6 +7,7 @@ use App\Models\Client;
 
 //use App\Models\Shared\Period;
 //use Illuminate\Database\Eloquent\Builder;
+use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Services\OrdersService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -73,6 +74,13 @@ class Order extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(OrderLine::class, 'order_id');
+    }
+
+
+    // Relations: Связь со СЗ Пошив
+    public function sewingTask(): HasMany
+    {
+        return $this->hasMany(SewingTask::class, 'order_id');
     }
 
     // public function delete(): void

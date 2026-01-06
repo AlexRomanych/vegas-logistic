@@ -356,7 +356,6 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Описание...',
         data:           (planLoad: IPlanLoadValidate) => planLoad.validate.advice
     },
-
     uploadFile: {      // __ Кнопка загрузки
         id:             () => 'upload',
         header:         ['Загрузить', ''],
@@ -372,15 +371,13 @@ const render: IRenderData = reactive({
         dataAlign:      DATA_ALIGN,
         class:          'cursor-pointer',
     },
-
-
 })
 
 // __ Callout
 const calloutShow    = ref(false)      // состояние окна
 const calloutMessage = ref('')      // определяем показываемое сообщение
 const calloutType    = ref<IColorTypes>('danger')   // определяем тип callout
-const calloutHandler = () => setInterval(() => (calloutShow.value = false), 500)
+const calloutHandler = () => setInterval(() => (calloutShow.value = false), 5000)
 
 // todo Сделать отображение данных файла и сделать проверку на тип файла(данных)
 // Получаем данные файла

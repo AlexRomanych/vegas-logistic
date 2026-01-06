@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Api\V1\ClientController;
 
 //___ Блок Клиентов
 Route::middleware('jwt.auth')

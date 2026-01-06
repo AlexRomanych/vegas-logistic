@@ -53,6 +53,9 @@
                         <!-- __ Пояснение результата -->
                         <AppLabelMultilineTSWrapper :render-object="render.validateAdvice"/>
 
+                        <!-- __ Загрузка на сервер -->
+                        <AppLabelMultilineTSWrapper :render-object="render.uploadFile" @click="uploadFile"/>
+
                     </div>
                 </div>
             </div>
@@ -120,10 +123,12 @@
 
     </div>
 
-
-    <AppCallout v-if="!isDataJson" text="Ошибка данных!" type="danger"/>
-
-    <AppCallout v-if="opResult" :text="opResultText" :type="opResultType"/>
+    <AppCalloutTS
+        :show="calloutShow"
+        :text="calloutMessage"
+        :type="calloutType"
+        @toggleShow="calloutHandler"
+    />
 
     <AppModalAsyncTS
         ref="appModalAsyncTS"
@@ -131,7 +136,6 @@
         :text="modalText"
         :type="modalType"
     />
-
 
 </template>
 
@@ -144,18 +148,19 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 import { getFileContent } from '@/app/helpers/helpers_file_reader.js'
 
-import { isJSON, validateJsonByTemplate } from '@/app/helpers/helpers_checks.ts'
+import { checkCRUD, isJSON, validateJsonByTemplate } from '@/app/helpers/helpers_checks.ts'
 
 import { DEBUG } from '@/app/constants/common.ts'
 import { ORDER_TEMPLATE } from '@/app/constants/json_templates.ts'
 
-import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import AppInputFileTS from '@/components/ui/inputs/AppInputFileTS.vue'
 import AppModalAsyncTS from '@/components/ui/modals/AppModalAsyncTS.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import OrderItems from '@/components/dashboard/orders/order_components/order_upload/OrderItems.vue'
+import AppCalloutTS from '@/components/ui/callouts/AppCalloutTS.vue'
+// import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 // import AppInputTextTSWrapper from '@/components/dashboard/orders/components/AppInputTextTSWrapper.vue'
 // import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 // import { formatDateIntl } from '@/app/helpers/helpers_date'
@@ -177,18 +182,11 @@ const checkFile      = ref<boolean>(false)
 // __ Глобальный Collapse
 const collapseAll = ref(true)
 
-
-const isDataJson   = ref(true) // Проверка на тип файла для вызова Callout
-const opResult     = ref(false) // Проверка на результат выполнения операции
-const opResultText = ref('') // Сообщение результата операции
-const opResultType = ref('') // Тип результата операции
-
 // __ Тип для модального окна
 const modalType       = ref<IColorTypes>('danger')
 const modalText       = ref<string>('')
 const modalMode       = ref<'inform' | 'confirm'>('inform')
 const appModalAsyncTS = ref<any>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
-
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH = 'w-[100px]'
@@ -205,6 +203,8 @@ const DATA_ALIGN         = 'left'
 const DATA_ALIGN_DEFAULT = 'center'
 
 const OK_WORD = 'ok'
+const CREATE_ORDER_ACTION_WORD = 'Создать Заявку'
+const CREATE_CLIENT_ACTION_WORD = 'Создать Клиента'
 // const CLIENT_MISSING_WORD = 'ok'
 
 const render: IRenderData = reactive({
@@ -347,7 +347,7 @@ const render: IRenderData = reactive({
     validateCheck:  {
         id:             () => 'validate-check-search',
         header:         ['Результат', 'проверки'],
-        width:          'w-[200px]',
+        width:          'w-[250px]',
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
@@ -368,7 +368,11 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+        type:           (order: IValidatedOrder) => {
+            if (order.validate.action === CREATE_ORDER_ACTION_WORD) return 'success'
+            if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return 'primary'
+            return 'warning'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
@@ -392,7 +396,21 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Описание...',
         data:           (order: IValidatedOrder) => order.validate.advice
     },
-
+    uploadFile: {      // __ Кнопка загрузки
+        id:             () => 'upload',
+        header:         ['Загрузить', ''],
+        width:          'w-[150px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => 'orange',
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      DATA_ALIGN,
+        class:          'cursor-pointer',
+    },
 })
 
 
@@ -429,6 +447,11 @@ const onFileSelected = async (formData: File) => {
     // DEBUG && console.log('isFileDataJson: ', isFileDataJson)
 }
 
+// __ Callout
+const calloutShow    = ref(false)      // состояние окна
+const calloutMessage = ref('')      // определяем показываемое сообщение
+const calloutType    = ref<IColorTypes>('danger')   // определяем тип callout
+const calloutHandler = () => setInterval(() => (calloutShow.value = false), 5000)
 
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
@@ -459,47 +482,21 @@ const validateOrders = async () => {
 }
 
 
+// __ Загружаем данные на сервер
 const uploadFile = async () => {
 
-    if (selectedFile.value) {
-        // const fileData = await getFileContent(selectedFile.value)
+    const result = await ordersStore.uploadOrders(JSON.stringify(verifiedOrders.value))
 
-        isDataJson.value = true
-
-        if (isJSON(fileData.value)) {
-            // Отправляем в RAW формате и возвращаем результат операции
-            // todo сделать проверку на существующие заявки
-            const ordersStore = useOrdersStore()
-            const res         = await ordersStore.uploadOrders(fileData.value)
-            // const res = await ordersStore.uploadOrders(fileData)
-
-            // if (res.length === 0) {
-            //     opResultText.value = 'Данные успешно загружены'
-            //     opResultType.value = 'success'
-            //     setTimeout(() => {
-            //         opResult.value = false
-            //     }, 5000)
-            // } else {
-            //     const dubsTextArray = res.map((item) => {
-            //         return item['sh'] + ' ' + item['n']
-            //     })
-            //
-            //     // console.log(dubsTextArray)
-            //
-            //     opResultText.value = 'Дубликат:' + dubsTextArray.join(', ')
-            //     opResultType.value = 'danger'
-            // }
-            // opResult.value = true
-            // setTimeout(() => {
-            //     opResult.value = false
-            // }, 5000)
-        } else {
-            isDataJson.value = false
-            setTimeout(() => {
-                isDataJson.value = true
-            }, 5000)
-        }
+    if (checkCRUD(result.data)) {
+        calloutMessage.value = result.payload
+        calloutType.value    = 'success'
+    } else {
+        calloutMessage.value = result.error
+        calloutType.value    = 'danger'
     }
+
+    calloutShow.value = true    // показываем callout
+    calloutHandler()            // запускаем таймер на скрытие callout
 }
 
 

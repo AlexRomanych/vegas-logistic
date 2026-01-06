@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1\Cells\sewing;
+namespace App\Http\Controllers\Api\V1\Cells\Sewing;
 
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Sewing\CellSewingAutoCollection;
 use App\Http\Resources\Order\OrderCollection;
@@ -9,11 +10,55 @@ use App\Models\Manufacture\Cells\Sewing\CellSewingAuto;
 use App\Models\Manufacture\Cells\Sewing\CellSewingHard;
 use App\Models\Manufacture\Cells\Sewing\CellSewingLight;
 use App\Models\Manufacture\Cells\Sewing\CellSewingUniversal;
+use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Order\Order;
+use App\Services\DefaultsService;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 
 class CellSewingController extends Controller
 {
+
+
+    public function getSewingTasks(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'period'       => 'nullable|array',
+                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date',
+            ]);
+
+            if (isset($validated['period'])) {
+                $start = Carbon::parse($validated['period']['start']);
+                $end = Carbon::parse($validated['period']['end']);
+            } else {
+                $period = DefaultsService::getDefaultPeriodPlanLoads();
+                $start = Carbon::parse($period->getStart());
+                $end = Carbon::parse($period->getEnd());
+            }
+
+            $sewingTasks = SewingTask::query()
+                ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
+                ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with(['lines', 'statuses'])
+                ->orderBy('action_at')
+                ->get();
+
+            return $sewingTasks;
+
+
+
+            // return PlanLoadsResource::collection($planLoads);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
     public function getSewingCellData(Request $request, string $type = '')
     {
         $result = json_encode(['sewing' => '']);

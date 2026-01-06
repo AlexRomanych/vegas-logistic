@@ -279,7 +279,7 @@ const render: IRenderData = reactive({
     },
     validateCheck:  {
         header:         'Результат проверки',
-        width:          'w-[200px]',
+        width:          'w-[250px]',
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,

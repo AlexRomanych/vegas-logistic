@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1\Cells\sewing;
+namespace App\Http\Controllers\Api\V1\Cells\Sewing;
 
 use App\Http\Controllers\Controller;
 

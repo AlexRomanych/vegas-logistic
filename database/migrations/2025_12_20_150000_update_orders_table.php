@@ -127,6 +127,7 @@ return new class extends Migration {
 
             // __ Дополнительные поля
             $table->boolean('active')->nullable(false)->default(true)->comment('Актуальность');
+            $table->boolean('active_logistic')->nullable(false)->default(true)->comment('Актуальность для ОЗ');
             $table->string('service')->nullable()->comment('Сервисная для хранения различной информации в json формате');
             $table->string('service_ext')->nullable()->comment('Расширенная сервисная для хранения различной информации в json формате');
             $table->string('extended_meta')->nullable()->comment('Расширенная информация');

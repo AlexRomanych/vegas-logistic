@@ -74,8 +74,21 @@ class BusinessProcessesService
             ->where('business_process_node_id', $nodeId)
             ->first();
 
+        // __ Если нет настроек для клиента, то берем настройки по умолчанию
         if (!$currentDefault) {
-            return 0;
+            if ($clientId === 0) {
+                return 0;
+            }
+
+            $clientId = 0;      // __ Переключаемся на настройки по умолчанию, явно задаем клиента по умолчанию
+            $currentDefault = ClientOrderMovingProcessDefault::query()
+                ->where('client_id', $clientId)
+                ->where('business_process_node_id', $nodeId)
+                ->first();
+
+            if (!$currentDefault) { // __ Если что-то пошло не так, то возвращаем 0
+                return 0;
+            }
         }
 
         $offset = $currentDefault->offset;
