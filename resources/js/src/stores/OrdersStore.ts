@@ -4,14 +4,17 @@ import { DEBUG } from '@/app/constants/common.ts'
 import { ref, /*reactive, computed, watch*/ } from 'vue'
 import { defineStore } from 'pinia'
 
-import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
+import { jwtGet, jwtPost, jwtDelete, jwtPatch } from '@/app/utils/jwt_api'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 
 // __ Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/'                   // Префикс API
-const URL_ORDERS = 'orders/'                    // URL для получения списка заказов
-const URL_ORDER  = 'order/'                      // URL для получения заказа
+const API_PREFIX                    = '/api/v1/'     // Префикс API
+const URL_ORDERS                    = 'orders/'      // URL для получения списка заказов
+const URL_ORDER                     = 'order/'       // URL для получения заказа
+const URL_ORDERS_TYPES              = 'orders/types' // URL для получения типа заказов
+const URL_ORDERS_TYPES_COLOR_UPDATE = 'orders/types/color/patch' // URL для обновления цвета типа заказов
+
 
 const URL_ORDERS_UPLOAD   = 'orders/upload/'      // URL для загрузки заказов с диска
 const URL_ORDERS_VALIDATE = 'orders/validate/'  // URL для проверки заказов с диска
@@ -79,6 +82,22 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
 
+    // __ Получаем с API список Типов заказов (серийная, гаррмем, прогнозная и т.д.)
+    const getOrderTypes = async () => {
+        const result = await jwtGet(URL_ORDERS_TYPES)
+
+        if (DEBUG) console.log('OrdersStore: getOrderTypes', result)
+
+        return result.data
+    }
+
+    // __ Получаем с API список Типов заказов (серийная, гаррмем, прогнозная и т.д.)
+    const patchOrderTypeColor = async (orderTypeId: number, color: string) => {
+        const result = await jwtPatch(URL_ORDERS_TYPES_COLOR_UPDATE, {id: orderTypeId, color})
+        if (DEBUG) console.log('OrdersStore: updateOrderTypeColor', result)
+        return result.data
+    }
+
     return {
         ordersShow,
         ordersShowIsChanged,
@@ -87,6 +106,9 @@ export const useOrdersStore = defineStore('orders', () => {
         uploadOrders,
         validateOrders,
         deleteOrders,
+
+        getOrderTypes,
+        patchOrderTypeColor,
     }
 
 })

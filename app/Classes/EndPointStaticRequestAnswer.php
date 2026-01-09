@@ -19,6 +19,7 @@ class EndPointStaticRequestAnswer
         return json_encode([
             'data' => OK_STATUS_WORD,
             'payload' => $data,
+            'error' => null
         ]);
     }
 
@@ -38,18 +39,21 @@ class EndPointStaticRequestAnswer
         if ($responseData instanceof JsonResponse) {
             return json_encode([
                 'data'  => FAIL_STATUS_WORD,
-                'error' => $responseData->original->getMessage()
+                'error' => $responseData->original->getMessage(),
+                'payload' => null,
             ]);
         } else if ($responseData instanceof \Exception) {
             return json_encode([
                 'data'  => FAIL_STATUS_WORD,
-                'error' => $responseData->getMessage()
+                'error' => $responseData->getMessage(),
+                'payload' => null,
             ]);
         }
 
         return json_encode([
             'data'  => FAIL_STATUS_WORD,
-            'error' => 'Нет данных.'
+            'error' => 'Нет данных.',
+            'payload' => null,
         ]);
 
     }

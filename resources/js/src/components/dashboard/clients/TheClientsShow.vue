@@ -98,6 +98,29 @@
                 </div>
 
                 <div>
+                    <!-- __ Код из 1С -->
+                    <AppLabelMultiLineTS
+                        v-if="render.code1c.show"
+                        :align="render.code1c.headerAlign"
+                        :text="render.code1c.header"
+                        :text-size="render.code1c.headerTextSize"
+                        :type="typeof render.code1c.type === 'function' ? render.code1c.type() : render.code1c.type"
+                        :width="render.code1c.width"
+                    />
+
+                    <!-- __ Фильтр: Сокращенное название -->
+                    <AppInputTextTS
+                        v-if="render.code1c.show"
+                        id="id-code-1c-search"
+                        v-model:text-value.trim="code1cFilter"
+                        :text-size="render.code1c.filterTextSize"
+                        :type="typeof render.code1c.type === 'function' ? render.code1c.type() : render.code1c.type"
+                        :width="render.code1c.width"
+                        placeholder="🔍Код из 1С..."
+                    />
+                </div>
+
+                <div>
                     <!-- __ Active -->
                     <AppLabelMultiLineTS
                         v-if="render.active.show"
@@ -281,6 +304,16 @@
                             :width="render.shortName.width"
                         />
 
+                        <!-- __ Код из 1С -->
+                        <AppLabelTS
+                            v-if="render.code1c.show"
+                            :align="render.code1c.dataAlign"
+                            :text="render.code1c.data ? render.code1c.data(client) : ''"
+                            :text-size="render.code1c.dataTextSize"
+                            :type="typeof render.code1c.type === 'function' ? render.code1c.type(client, false) : render.code1c.type"
+                            :width="render.code1c.width"
+                        />
+
                         <!-- __ Active -->
                         <AppLabelTS
                             v-if="render.active.show"
@@ -422,6 +455,7 @@ const idFilter = ref('')
 const nameFilter = ref('')
 const addNameFilter = ref('')
 const shortNameFilter = ref('')
+const code1cFilter = ref('')
 const descriptionFilter = ref('')
 const commentFilter = ref('')
 const activeFilter = ref(0)
@@ -449,6 +483,7 @@ const render: IRenderData = reactive({
         header: ['id', ''],
         width: 'w-[50px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -461,6 +496,7 @@ const render: IRenderData = reactive({
         header: ['Название', 'клиента'],
         width: 'w-[200px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -473,6 +509,7 @@ const render: IRenderData = reactive({
         header: ['Доп. название', 'клиента'],
         width: 'w-[150px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -485,6 +522,7 @@ const render: IRenderData = reactive({
         header: ['Сокр. название', 'клиента'],
         width: 'w-[150px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -493,10 +531,24 @@ const render: IRenderData = reactive({
         dataAlign: DATA_ALIGN,
         data: (client) => client.short_name,
     },
+    code1c: {
+        header: ['Код', 'из 1С'],
+        width: 'w-[150px]',
+        show: true,
+        headerType: DEFAULT_HEADER_TYPE,
+        type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize: DATA_TEXT_SIZE,
+        filterTextSize: FILTER_TEXT_SIZE,
+        headerAlign: HEADER_ALIGN,
+        dataAlign: 'center',
+        data: (client) => client.code_1c ?? '',
+    },
     active: {
         header: ['Актуальность', 'клиента'],
         width: 'w-[100px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => {
             if (isHeader) return DEFAULT_HEADER_TYPE
             return client.active ? 'success' : 'danger'
@@ -512,6 +564,7 @@ const render: IRenderData = reactive({
         header: ['Регион', 'клиента'],
         width: 'w-[100px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -524,6 +577,7 @@ const render: IRenderData = reactive({
         header: ['Описание', 'клиента'],
         width: 'w-[250px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -536,6 +590,7 @@ const render: IRenderData = reactive({
         header: ['Комментарий', 'к клиенту'],
         width: 'w-[250px]',
         show: true,
+        headerType: DEFAULT_HEADER_TYPE,
         type: (client = null, isHeader: boolean = true) => getType(client, isHeader),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize: DATA_TEXT_SIZE,
@@ -593,6 +648,7 @@ const getClients = async () => {
     clients.value = clients.value.map(client => {
         client.description = client.description ?? ''
         client.comment = client.comment ?? ''
+        client.code_1c = client.code_1c ?? ''
         return {...client, can_edit: client.id !== 0}
     })   // Добавляем возможность редактирования
 }
@@ -640,6 +696,7 @@ watchEffect(() => {
         .filter(client => client.name.toLowerCase().includes(nameFilter.value.toLowerCase()))
         .filter(client => client.add_name.toLowerCase().includes(addNameFilter.value.toLowerCase()))
         .filter(client => client.short_name.toLowerCase().includes(shortNameFilter.value.toLowerCase()))
+        .filter(client => client.code_1c!.toLowerCase().includes(code1cFilter.value.toLowerCase()))
         .filter(client => client.description!.toLowerCase().includes(descriptionFilter.value.toLowerCase()))
         .filter(client => client.comment!.toLowerCase().includes(commentFilter.value.toLowerCase()))
         .filter(client => {

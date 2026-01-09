@@ -345,3 +345,19 @@ if (!function_exists('normalizeToCarbon')) {
         };
     }
 }
+
+
+if (!function_exists('arrayClone')) {
+
+    /**
+     * ___ Глубокое копирование массива
+     * @param $arr $data
+     * @return array
+     */
+    function arrayClone(array $arr): array
+    {
+        return array_map(function($item) {
+            return clone $item;
+        }, $arr);
+    }
+}

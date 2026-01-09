@@ -9,7 +9,7 @@
         :title="title"
         :type="colorType"
         :width="renderObject.width"
-        rounded="4"
+        rounded="rounded-[3px]"
     />
 </template>
 

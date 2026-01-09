@@ -106,6 +106,9 @@
                         <!-- __ Пояснение результата -->
                         <AppLabelTSWrapper :arg="order" :render-object="render.validateAdvice"/>
 
+                        <!-- __ Выбор действия -->
+                        <AppLabelTSWrapper :arg="order" :render-object="render.choiseAction"
+                                           @click="render.choiseAction.click!(order)"/>
 
                     </div>
 
@@ -202,9 +205,12 @@ const HEADER_ALIGN       = 'center'
 const DATA_ALIGN         = 'left'
 const DATA_ALIGN_DEFAULT = 'center'
 
-const OK_WORD = 'ok'
-const CREATE_ORDER_ACTION_WORD = 'Создать Заявку'
+const OK_WORD                   = 'ok'
+const CREATE_ORDER_ACTION_WORD  = 'Создать Заявку'
+const IGNORE_ORDER_ACTION_WORD  = 'Игнорировать Заявку'
 const CREATE_CLIENT_ACTION_WORD = 'Создать Клиента'
+const IGNORE_CLIENT_ACTION_WORD = 'Игнорировать Клиента'
+const DOUBLE_ORDER_CHECK_WORD   = 'Дубликат Заявки.'
 // const CLIENT_MISSING_WORD = 'ok'
 
 const render: IRenderData = reactive({
@@ -352,7 +358,10 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+        type:           (order: IValidatedOrder) => {
+            if (order.validate.check === DOUBLE_ORDER_CHECK_WORD) return 'danger'
+            return DEFAULT_TYPE
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
@@ -370,13 +379,15 @@ const render: IRenderData = reactive({
         dataType:       () => DATA_TYPE,
         type:           (order: IValidatedOrder) => {
             if (order.validate.action === CREATE_ORDER_ACTION_WORD) return 'success'
+            if (order.validate.action === IGNORE_ORDER_ACTION_WORD) return 'warning'
             if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return 'primary'
-            return 'warning'
+            if (order.validate.action === IGNORE_CLIENT_ACTION_WORD) return 'danger'
+            return DEFAULT_TYPE
         },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
+        dataAlign:      'center',
         placeholder:    '🔍Действие...',
         data:           (order: IValidatedOrder) => order.validate.action
     },
@@ -396,7 +407,51 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Описание...',
         data:           (order: IValidatedOrder) => order.validate.advice
     },
-    uploadFile: {      // __ Кнопка загрузки
+    choiseAction:   {
+        id:             () => 'choise-action-search',
+        header:         ['Действие', ''],
+        width:          'w-[150px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           (order: IValidatedOrder) => {
+            if (order.validate.action === CREATE_ORDER_ACTION_WORD) return 'warning'
+            if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) return 'success'
+            if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return 'danger'
+            if (order.validate.action === IGNORE_CLIENT_ACTION_WORD && order.validate.mem_action === CREATE_CLIENT_ACTION_WORD) return 'primary'
+            return 'light'
+        },
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Действие...',
+        data:           (order: IValidatedOrder) => {
+            if (order.validate.action === CREATE_ORDER_ACTION_WORD) return IGNORE_ORDER_ACTION_WORD
+            if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) return CREATE_ORDER_ACTION_WORD
+            if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return IGNORE_CLIENT_ACTION_WORD
+            if (order.validate.action === IGNORE_CLIENT_ACTION_WORD && order.validate.mem_action === CREATE_CLIENT_ACTION_WORD) return CREATE_CLIENT_ACTION_WORD
+            return ''
+        },
+        class:          'cursor-pointer',
+        click:          (order: IValidatedOrder) => {
+            if (order.validate.action === CREATE_ORDER_ACTION_WORD) {
+                order.validate.mem_action = order.validate.action
+                order.validate.action     = IGNORE_ORDER_ACTION_WORD
+            } else if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) {
+                order.validate.action = order.validate.mem_action
+                delete order.validate.mem_action
+            } else if (order.validate.action === CREATE_CLIENT_ACTION_WORD) {
+                order.validate.mem_action = order.validate.action
+                order.validate.action     = IGNORE_CLIENT_ACTION_WORD
+            } else if (order.validate.action === IGNORE_CLIENT_ACTION_WORD && order.validate.mem_action === CREATE_CLIENT_ACTION_WORD) {
+                order.validate.action = order.validate.mem_action
+                delete order.validate.mem_action
+            }
+        }
+    },
+    uploadFile:     {      // __ Кнопка загрузки
         id:             () => 'upload',
         header:         ['Загрузить', ''],
         width:          'w-[150px]',
@@ -432,7 +487,7 @@ const onFileSelected = async (formData: File) => {
         const isValidData = validateJsonByTemplate(fileData.value, ORDER_TEMPLATE)
         // DEBUG && console.log('isValidData: ', isValidData)
         if (!isValidData) {
-            modalText.value = 'Файл не соответствует структуре JSON заявок!!!'
+            modalText.value = 'Файл не соответствует структуре JSON Заявок!!!'
             appModalAsyncTS.value.show()             // показываем модалку и ждем ответ
             fileData.value     = ''                  // Очищаем данные файла
             selectedFile.value = null                // Очищаем выбранный файл

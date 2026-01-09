@@ -82,6 +82,11 @@ Route::prefix('/orders')
         Route::post('/validate', [OrderController::class, 'validateOrders']);
         Route::delete('/delete', [OrderController::class, 'deleteOrders']);
 
+        Route::get('/types', [OrderController::class, 'getOrderTypes']);
+        Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
+
+
+
 
     });
 //hr--------------------------------------------------------------------------------------------------------------------

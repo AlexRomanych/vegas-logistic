@@ -25,8 +25,9 @@ const menuData = () => {
                 [
                     {name: 'Заявки за период', path: 'orders', shown: true, isActive: true,},
                     {name: 'Загрузить с диска', path: 'orders.upload', shown: true, isActive: true,},
-                    {name: 'Загрузить из 1C', path: 'plan', shown: true, isActive: false,},
+                    {name: 'Типы заявок', path: 'orders.types', shown: true, isActive: true,},
                     {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Загрузить из 1C', path: 'plan', shown: false, isActive: false,},
                 ]
         },
         {
@@ -69,6 +70,8 @@ const menuData = () => {
                     {name: 'Производственные ячейки (ПЯ)', path: 'manufacture.cells', shown: true, isActive: true,},
                     {name: 'Список клиентов', path: 'clients', shown: true, isActive: true,},
                     {name: 'Причины изменения статуса', path: 'reasons', shown: true, isActive: true,},
+                    {name: 'Типы заявок', path: 'orders.types', shown: true, isActive: true,},
+
                     {name: 'Модели', path: 'models', shown: false, isActive: true,},
                     {name: 'Процедуры расчета', path: 'plan', shown: false, isActive: true,},
                 ]

@@ -18,6 +18,7 @@ export interface IClient {
     meta: string | null
     note: string | null
     region: IClientRegion
+    code_1c: string | null
 
     can_edit?: boolean
 }

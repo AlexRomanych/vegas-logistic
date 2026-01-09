@@ -140,7 +140,20 @@ export interface IValidatedOrderItem {
 
 export interface IValidatedOrderValidator {
     check: string
-    action: string
     advice: string
+    action: string
+    mem_action?: string
 }
 
+
+// ___ Типы Заявок
+export interface IOrderType {
+    id: number
+    type_index: string
+    name: string
+    display_name: string
+    active: boolean
+    color: string
+    comment: string | null
+    description: string
+}

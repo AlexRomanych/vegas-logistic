@@ -3,12 +3,14 @@
 namespace App\Services\Manufacture;
 
 
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -27,7 +29,7 @@ final class SewingService
         int         $orderId,
         string|null $plannedDate = null): ?SewingTask
     {
-
+        // try {
         // __ Проверяем на существование заказа
         $order = Order::query()->with(['lines', 'client'])->find($orderId);
         if (!$order) {
@@ -43,24 +45,32 @@ final class SewingService
         }
 
         $createdTask = null;
-        DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
+        // DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
 
             // __ Создаем СЗ
             $createdTask = SewingTask::query()->create([
                 'action_at' => $plannedDate,
                 'order_id'  => $order->id,
-                'position'  => 1,       // __ Устанавливаем текущую позицию в 1
+                'position'  => self::getSewingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для новой СЗ
             ]);
             if (!$createdTask) {
                 throw new Exception('Failed to create SewingTask');
             }
 
             // __ Создаем контент (строки) СЗ
+            $position = 1;
             foreach ($order->lines as $line) {
+
+                // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
+                if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
+                    $position = 0;
+                }
+
                 $createdTaskLine = SewingTaskLine::query()->create([
                     'sewing_task_id' => $createdTask->id,
                     'order_line_id'  => $line->id,
                     'amount'         => $line->amount,
+                    'position'       => $position++,
                 ]);
             }
 
@@ -72,9 +82,13 @@ final class SewingService
                 ]
             ]);
 
-        });
+        // });
+            return $createdTask;
+        // } catch (Exception|Throwable $e) {
+        //     return EndPointStaticRequestAnswer::fail($e);
+        // }
 
-        return $createdTask;
+
     }
 
 
@@ -169,5 +183,26 @@ final class SewingService
 
 
         return true;
+    }
+
+
+
+    /**
+     * ___ Получаем позицию последнего СЗ в дне
+     * @param string|Carbon|null $date Дата нужного дня
+     * @return int
+     */
+    public static function getSewingTaskLastPositionInDay(string|Carbon $date = null): int
+    {
+        if (is_null($date) || $date === '') {
+            return 0;
+        }
+
+        $date = normalizeToCarbon($date);
+
+        return SewingTask::query()
+            ->whereDate('action_at', $date)
+            ->count();
+        // return SewingTask::query()->whereDate('action_at', $date)->max('position');
     }
 }

@@ -1,6 +1,6 @@
 import auth from '@/router/routes_auth'
 import dashboard from '@/router/routes_dashboard'
-import orders from '@/router/routes_orders'
+import orders from '@/router/routes_orders.ts'
 import models from '@/router/routes_models.ts'
 import clients from '@/router/routes_clients.ts'
 import manufacture from '@/router/routes_manufacture'

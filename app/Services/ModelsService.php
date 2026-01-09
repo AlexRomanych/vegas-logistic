@@ -693,10 +693,11 @@ final class ModelsService implements VegasDataUpdateContract
      */
     public static function getElementTypeGroup(string|Model $data, string $name = ''): string
     {
+        // !!! Порядок важен
         return match (true) {
+            self::isElementCoversTypeGroup($data, $name) => ElementTypes::COVERS->value,
             self::isElementMattressTypeGroup($data)      => ElementTypes::MATTRESSES->value,
             self::isElementAccessoriesTypeGroup($data)   => ElementTypes::ACCESSORIES->value,
-            self::isElementCoversTypeGroup($data, $name) => ElementTypes::COVERS->value,
             default                                      => ElementTypes::UNDEFINED->value,
         };
     }

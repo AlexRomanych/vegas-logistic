@@ -14,12 +14,14 @@ final class Client extends Model
     // (по умолчанию 'int', но лучше явно указать)
     // protected $keyType = 'integer';
 
-    protected $fillable = [
-        'id',
-        'name', 'add_name', 'short_name', 'description',
-        'region', 'country', 'address',  'longitude', 'latitude',
-        'active', 'manager_id'
-    ];
+    // protected $fillable = [
+    //     'id',
+    //     'name', 'add_name', 'short_name', 'description',
+    //     'region', 'country', 'address',  'longitude', 'latitude',
+    //     'active', 'manager_id'
+    // ];
+
+    protected $guarded = false;
 
     protected $hidden = [
         // 'id', 'manager_id', 'order_id',

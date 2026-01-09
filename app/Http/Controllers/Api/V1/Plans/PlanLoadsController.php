@@ -123,7 +123,7 @@ class PlanLoadsController extends Controller
             $createdOrder = PlanLoad::query()->create([
                 'client_id'         => $client->id,
                 'order_type_id'     => $orderType->id,
-                'plan_load_id'      => 0, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                // 'plan_load_id'      => null, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
                 'order_no_num'      => parseNumericValue($planLoad['order_no']),
                 'order_no_str'      => $planLoad['order_no'],
                 'order_no_origin'   => $planLoad['order_no'],
