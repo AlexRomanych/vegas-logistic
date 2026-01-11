@@ -100,11 +100,15 @@ Route::get('/manufacture/cells', [CellItemController::class, 'getCells'])->middl
 
 
 // __ Блок Пошива - Sewing
-Route::prefix('/manufacture/cells/sewing')
+Route::prefix('sewing')
     ->middleware('jwt.auth')
     ->group(function () {
 
-        Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+
+        Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
+
+
+        // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
 
 
         // Route::get('/manufacture/cells/sewing/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');

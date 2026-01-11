@@ -12,16 +12,19 @@ use App\Services\OrdersService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
     protected $guarded = false;
 
-    protected $casts = [
-        'amounts' => 'json',
-        // 'amounts' => 'array',
-    ];
+    protected $casts
+        = [
+            'amounts' => 'json',
+            // 'amounts' => 'array',
+            'order_no_num' => 'float',
+        ];
 
     protected $appends = ['elements_type_render'];
 
@@ -29,32 +32,31 @@ class Order extends Model
     protected function elementsTypeRender(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, $attributes) =>  OrdersService::getElementsTypeRender($attributes['elements_type']),
+            get: fn($value, $attributes) => OrdersService::getElementsTypeRender($attributes['elements_type']),
 
-            // get: function(mixed $value, array $attributes) {
-            //     $search = [
-            //         ElementTypes::UNDEFINED->value,
-            //         ElementTypes::MATTRESSES->value,
-            //         ElementTypes::COVERS->value,
-            //         ElementTypes::ACCESSORIES->value,
-            //         ElementTypes::MIXED->value,
-            //         ElementTypes::AVERAGE->value,
-            //     ];
-            //     $replace = [
-            //         'не известно',
-            //         'матрасы',
-            //         'чехлы',
-            //         'аксессуары',
-            //         'смешанная',
-            //         'прогнозная',
-            //     ];
-            //     return str_replace($search, $replace, $attributes['elements_type']);
-            //     // return str_replace($search, $replace, $value);
+        // get: function(mixed $value, array $attributes) {
+        //     $search = [
+        //         ElementTypes::UNDEFINED->value,
+        //         ElementTypes::MATTRESSES->value,
+        //         ElementTypes::COVERS->value,
+        //         ElementTypes::ACCESSORIES->value,
+        //         ElementTypes::MIXED->value,
+        //         ElementTypes::AVERAGE->value,
+        //     ];
+        //     $replace = [
+        //         'не известно',
+        //         'матрасы',
+        //         'чехлы',
+        //         'аксессуары',
+        //         'смешанная',
+        //         'прогнозная',
+        //     ];
+        //     return str_replace($search, $replace, $attributes['elements_type']);
+        //     // return str_replace($search, $replace, $value);
 
-            // }, //->shouldCache(), // ⬅️ Результат будет вычислен только один раз,
+        // }, //->shouldCache(), // ⬅️ Результат будет вычислен только один раз,
         );
     }
-
 
 
     // Relations: Связь с Клиентом
@@ -70,10 +72,24 @@ class Order extends Model
     }
 
 
-    // Relations: Связь с содержимым
+    // Relations: Связь с Содержимым (OrderLines)
     public function lines(): HasMany
     {
         return $this->hasMany(OrderLine::class, 'order_id');
+    }
+
+
+    // Relations: Связь со Статусами
+    public function statuses(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(
+                OrderStatus::class,                // Класс, с которым связываемся
+                'order_status_pivot',                // Промежуточная Таблица, связывающая классы
+                'order_id',                 // Ключ в промежуточной таблице, связывающий с текущим классом
+                'order_status_id')          // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+            ->using(OrderStatusPivot::class)
+            ->withPivot(['started_at', 'finished_at', 'duration']);
     }
 
 

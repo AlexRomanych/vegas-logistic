@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Plans\Loads\PlanLoadsResource;
 use App\Models\Client;
 use App\Models\Order\OrderLine;
+use App\Models\Order\OrderStatus;
 use App\Models\Plan\PlanLoad;
 use App\Services\BusinessProcessesService;
 use App\Services\ClientsService;
@@ -117,7 +118,8 @@ class PlanLoadsController extends Controller
             }
 
             // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
-            $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX); // Прогнозная Заявка
+            // __  Устанавливаем Тип - Прогнозная Заявка
+            $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);
             // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
 
             $createdOrder = PlanLoad::query()->create([
@@ -148,7 +150,6 @@ class PlanLoadsController extends Controller
                 'load_at'   => PlanService::normalizeToCarbon($planLoad['load_at']),
                 'unload_at' => $planLoad['unload_at'] === '' ? null : PlanService::normalizeToCarbon($planLoad['unload_at']),
 
-
                 // 'responsible'        => null,
                 // 'manager_load_date'  => null,
                 // 'manager_start'      => null,
@@ -164,7 +165,6 @@ class PlanLoadsController extends Controller
                 // 'service'            => null,
 
                 // 'status'             => $order[''],
-
                 // 'shown'              => $order[''],
                 // 'stat_include'       => $order[''],
                 // 'service_ext'        => $order[''],
@@ -217,7 +217,16 @@ class PlanLoadsController extends Controller
             }
 
 
-            // __ Тут начинаем формировать СЗ на различные участки
+            // __ Устанавливаем статус Заявки - Создано
+            $createdOrder->statuses()->attach([
+                OrderStatus::ORDER_STATUS_CREATED_ID => [
+                    'set_at'     => now(),
+                    'created_by' => auth()->id(),
+                ]
+            ]);
+
+
+            // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
 
             // __ Создаем СЗ на Пошив
             $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);

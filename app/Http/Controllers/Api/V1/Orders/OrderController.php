@@ -12,6 +12,7 @@ use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 
 // use App\Models\Plan\PlanLoad;
+use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
 use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
@@ -201,6 +202,7 @@ class OrderController extends Controller
                     $forecastOrder->client_name_1c     = $order['client_full_name'];
                     $forecastOrder->service            = $order['service'];
                     $forecastOrder->unload_at          = $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']);
+                    $forecastOrder->is_forecast         = false;    // __ Прогнозная заявка раскрывается
 
                     // __ Вставляем именно массивом, без преобразования в json. Пока ничего не меняем
                     // $forecastOrder->amounts = [
@@ -264,8 +266,9 @@ class OrderController extends Controller
                         'service'            => $order['service'],
                         'load_at'            => Carbon::parse($order['load_at']),
                         'unload_at'          => $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']),
+                        'is_forecast'        => false,      // __ Заявка раскрывается
+
                         // 'status'             => $order[''],
-                        // 'is_forecast'        => $order[''],
                         // 'shown'              => $order[''],
                         // 'stat_include'       => $order[''],
                         // 'service_ext'        => $order[''],
@@ -330,8 +333,16 @@ class OrderController extends Controller
                             // 'meta'          => $orderLine[''],
                         ]
                     );
-
                 }
+
+                // __ Устанавливаем статус Заявки - Создано
+                $targetOrder = $needToDistribute ? $forecastOrder : $createdOrder;
+                $targetOrder->statuses()->attach([
+                    OrderStatus::ORDER_STATUS_LOADED_FROM_1C_ID => [
+                        'set_at'     => now(),
+                        'created_by' => auth()->id(),
+                    ]
+                ]);
 
 
                 // __ Тут добавляем или распределяем СЗ на нужные участки
@@ -431,7 +442,7 @@ class OrderController extends Controller
     /**
      * ___ Обновляем цвет Типа Заявки
      * @param Request $request
-     * @return string|void
+     * @return string
      */
     public function patchOrderTypeColor(Request $request)
     {
@@ -445,6 +456,8 @@ class OrderController extends Controller
             $validated = $validated['data'];
 
             OrderType::query()->findOrFail($validated['id'])->update(['color' => $validated['color']]);
+
+            return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

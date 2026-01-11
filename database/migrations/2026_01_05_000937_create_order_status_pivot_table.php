@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     use AddCommonColumnsInTableTrait;
-    private const TABLE_NAME = 'order_order_status';
+    private const TABLE_NAME = 'order_status_pivot';
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
@@ -46,6 +46,9 @@ return new class extends Migration
                 ->comment('Кто делает')
                 ->constrained('workers')
                 ->nullOnDelete();
+
+            // __ Дата установки статуса
+            $table->timestamp('set_at')->nullable()->comment('Дата установки статуса');
 
             // __ Дополнительные поля для бизнес-логики
             $table->timestamp('started_at')->nullable();

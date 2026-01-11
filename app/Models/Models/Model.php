@@ -14,7 +14,7 @@ final class Model extends LaravelModel
     protected $keyType = 'string';
     public $incrementing = false;
 
-    public const AVERAGE_MODEL_NAME = 'AVERAGE';                // Название средней (расчетной) модели
+    public const AVERAGE_MODEL_NAME = 'AVERAGE';                                                                           // Название средней (расчетной) модели
 
     //attract Определяем признаки принадлежности модели к оборудованию
     public const MACHINE_AUTO = 'Автоматы';
@@ -59,7 +59,6 @@ final class Model extends LaravelModel
     //'barcode'                         ('Штрихкод')
 
 
-
     // protected $fillable = [
     //     CODE_1C,
     //     'type', 'serial',
@@ -92,10 +91,10 @@ final class Model extends LaravelModel
     // ];
 
     protected $casts = [
-        'active' => 'boolean',
-        'line' => 'boolean',
-        'base' => 'array',
-        'cover' => 'array',
+        'active'       => 'boolean',
+        'line'         => 'boolean',
+        'base_height'  => 'float',
+        'cover_height' => 'float',
     ];
 
     protected $guarded = [];
@@ -118,7 +117,14 @@ final class Model extends LaravelModel
     // ];
 
     // __ Задаем вычисляемые свойства
-    protected $appends = ['is_auto', 'is_universal', 'is_solid', 'is_solid_light', 'is_solid_hard', 'is_undefined'];    // Задаем типы швейных машин, исходя из свойства sewing_machine
+    protected $appends = [
+        'is_auto',
+        'is_universal',
+        'is_solid',
+        'is_solid_lite',
+        'is_solid_hard',
+        'is_undefined'
+    ];                                                                                                                 // Задаем типы швейных машин, исходя из свойства sewing_machine
 
     //info Проверяем на АШМ
     public function getIsAutoAttribute(): bool
@@ -145,7 +151,7 @@ final class Model extends LaravelModel
     }
 
     //info Проверяем на Глухой простой
-    public function getIsSolidLightAttribute(): bool
+    public function getIsSolidLiteAttribute(): bool
     {
         return ($this->getIsSolidAttribute() && !$this->getIsSolidHardAttribute());
     }

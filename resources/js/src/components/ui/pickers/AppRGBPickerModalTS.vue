@@ -1,5 +1,5 @@
 <template>
-    <div class="min-w-[100px] max-h-[30px] my-0.5 cursor-pointer inline-flex items-center px-2 space-x-2  hover:bg-slate-50 rounded transition-colors border border-slate-300"
+    <div class="min-w-[100px] max-h-[30px] my-0.5 mx-0.5 cursor-pointer inline-flex items-center px-2 space-x-2 bg-white hover:bg-slate-100 rounded transition-colors border border-slate-300"
          @click="openModal">
         <div :style="{ backgroundColor: modelValue }" class="w-[20px] h-[20px] rounded-full shadow-sm border border-white"></div>
         <span class="text-mc font-medium text-slate-600">{{ modelValue }}</span>

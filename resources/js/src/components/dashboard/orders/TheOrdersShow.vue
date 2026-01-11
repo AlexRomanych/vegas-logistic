@@ -55,6 +55,7 @@
 
                         <!-- __ Фильтр: Active -->
                         <AppSelectSimpleTS
+                            id="active"
                             v-if="render.orderActive.show"
                             :select-data="orderActiveSelect"
                             :text-size="render.orderActive.headerTextSize"
@@ -77,8 +78,9 @@
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.isForecast"/>
 
-                        <!-- __ Фильтр: Active -->
+                        <!-- __ Фильтр: Прогнозный -->
                         <AppSelectSimpleTS
+                            id="is-forecast"
                             v-if="render.isForecast.show"
                             :select-data="orderForecastSelect"
                             :text-size="render.isForecast.headerTextSize"
@@ -101,8 +103,9 @@
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.isShown"/>
 
-                        <!-- __ Фильтр: Active -->
+                        <!-- __ Фильтр: Отображаемый в Планах -->
                         <AppSelectSimpleTS
+                            id="is-shown"
                             v-if="render.isShown.show"
                             :select-data="orderShownSelect"
                             :text-size="render.isShown.headerTextSize"
@@ -398,6 +401,7 @@ const render: IRenderData = reactive({
         data:           (order: IRenderOrder) => formatDateIntl(order.order_period, false, false)
     },
     orderActive:  {
+        id:             () => 'order-active',
         header:         ['Актуаль-', 'ная'],
         width:          DEFAULT_WIDTH_BOOL,
         height:         DEFAULT_HEIGHT,
@@ -412,6 +416,7 @@ const render: IRenderData = reactive({
         data:           (order: IRenderOrder) => order.active ? '✓' : '✗'
     },
     isForecast:   {
+        id:             () => 'is-forecast',
         header:         ['Прогноз-', 'ная'],
         width:          DEFAULT_WIDTH_BOOL,
         height:         DEFAULT_HEIGHT,
@@ -426,6 +431,7 @@ const render: IRenderData = reactive({
         data:           (order: IRenderOrder) => order.is_forecast ? '✓' : '✗'
     },
     isShown:      {
+        id:             () => 'is-shown',
         header:         ['Отобра-', 'жаемая '],
         width:          DEFAULT_WIDTH_BOOL,
         height:         DEFAULT_HEIGHT,

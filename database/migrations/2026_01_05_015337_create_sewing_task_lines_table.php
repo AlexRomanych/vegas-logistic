@@ -1,16 +1,17 @@
 <?php
 
+use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Traits\AddCommonColumnsInTableTrait;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
 
     use AddCommonColumnsInTableTrait;
 
     private const TABLE_NAME = 'sewing_task_lines';
+
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
@@ -60,6 +61,51 @@ return new class extends Migration
 
             // __ Причина невыполнения
             $table->string('false_reason')->nullable()->comment('Причина невыполнения');
+
+            // --- Трудозатраты на Швейную машину в момент создания СЗ в секундах
+            $defaultLaborTime = json_encode([
+                SewingTask::FIELD_UNIVERSAL => 0,
+                SewingTask::FIELD_AUTO => 0,
+                SewingTask::FIELD_SOLID_HARD => 0,
+                SewingTask::FIELD_SOLID_LITE => 0,
+                SewingTask::FIELD_UNDEFINED => 0,
+            ]);
+
+            // __ Суммарное время
+            $table->jsonb('time_labor')
+                ->nullable(false)
+                ->default($defaultLaborTime)
+                ->comment('Трудозатраты в момент создания СЗ, секунды');
+
+            // __ УШМ
+            $table->unsignedInteger(SewingTask::FIELD_UNIVERSAL)
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на УШМ, секунды');
+
+            // __ АШМ
+            $table->unsignedInteger(SewingTask::FIELD_AUTO)
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на AШМ, секунды');
+
+            // __ Глухие Сложные
+            $table->unsignedInteger(SewingTask::FIELD_SOLID_HARD)
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на Глухие Сложные, секунды');
+
+            // __ Глухие Простые
+            $table->unsignedInteger(SewingTask::FIELD_SOLID_LITE)
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на Глухие Простые, секунды');
+
+            // __ Неопознанные
+            $table->unsignedInteger(SewingTask::FIELD_UNDEFINED)
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на Неопознанные, секунды');
 
         });
 

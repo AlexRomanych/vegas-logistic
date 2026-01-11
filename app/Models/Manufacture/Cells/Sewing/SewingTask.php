@@ -12,6 +12,15 @@ class SewingTask extends Model
 {
     protected $guarded = false;
 
+    // --- Константы
+
+    // --- Поля
+    public const FIELD_UNIVERSAL = 'time_universal';
+    public const FIELD_AUTO = 'time_auto';
+    public const FIELD_SOLID_HARD = 'time_solid_hard';
+    public const FIELD_SOLID_LITE = 'time_solid_lite';
+    public const FIELD_UNDEFINED = 'time_undefined';
+
 
     // Relations: Связь с Основной Заявкой
     public function order(): BelongsTo
@@ -21,7 +30,7 @@ class SewingTask extends Model
 
 
     // Relations: Связь с содержимым (строками)
-    public function lines(): HasMany
+    public function sewingLines(): HasMany
     {
         return $this->hasMany(SewingTaskLine::class, 'sewing_task_id');
     }
@@ -32,14 +41,13 @@ class SewingTask extends Model
     {
         return $this
             ->belongsToMany(
-                SewingTaskStatus::class,                // Класс, с которым связываемся
+                SewingTaskStatus::class,                  // Класс, с которым связываемся
                 'sewing_task_status_pivot',               // Промежуточная Таблица, связывающая классы
-                'sewing_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
+                'sewing_task_id',                         // Ключ в промежуточной таблице, связывающий с текущим классом
                 'sewing_task_status_id')        // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             ->using(SewingTaskStatusPivot::class)
             ->withPivot(['started_at', 'finished_at', 'duration']);
     }
-
 
 
 }

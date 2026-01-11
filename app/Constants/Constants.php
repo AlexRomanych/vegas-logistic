@@ -15,6 +15,7 @@ const ORDERS = 'orders';                        // для логирования
 const OK_STATUS_WORD = 'success';               // отправляем при удачном запросе
 const FAIL_STATUS_WORD = 'fail';                // отправляем при неудачном запросе
 
+const RETURN_DATE_TIME_FORMAT = 'Y-m-d H:i:s';   // формат даты и времени для возврата
 
 const CLIENT_AVERAGE_MATTRESS_PREFIX = 'CMID_';  // CLIENT MATTRESS ID, должен быть 5 символов
 const CLIENT_AVERAGE_ACCESSORY_PREFIX = 'CAID_';  // CLIENT ACCESSORY ID, должен быть 5 символов

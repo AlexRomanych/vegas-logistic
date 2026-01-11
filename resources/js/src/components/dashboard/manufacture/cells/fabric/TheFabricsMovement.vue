@@ -560,7 +560,7 @@ import {
     validateInputDateHelper
 } from '@/app/helpers/helpers_date.js'
 
-import { log } from '@/app/helpers/helpers.js'
+// import { log } from '@/app/helpers/helpers.js'
 
 import AppLabel from '@/components/ui/labels/AppLabel.vue'
 import AppInputText from '@/components/ui/inputs/AppInputText.vue'

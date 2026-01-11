@@ -55,7 +55,7 @@ final class ModelsService implements VegasDataUpdateContract
     {
         if (!self::isModelsCashed()) {
             $models = Model::query()
-                ->with('modelType')
+                ->with(['modelType', 'cover', 'base'])
                 ->get();
 
             foreach ($models as $model) {

@@ -3,7 +3,7 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, computed, watch } from 'vue'
 
-import { log } from '@/app/helpers/helpers'
+// import { log } from '@/app/helpers/helpers'
 
 import { FABRIC_MACHINES } from '@/app/constants/fabrics.js'
 

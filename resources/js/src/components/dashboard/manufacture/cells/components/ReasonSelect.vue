@@ -115,7 +115,7 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers } from '@vuelidate/validators'
 
 import { type ColorName, /*colorsList*/} from '@/app/constants/colorsClasses.js'
-import { getColorClassByType, log } from '@/app/helpers/helpers.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'

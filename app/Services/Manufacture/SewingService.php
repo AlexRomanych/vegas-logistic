@@ -4,6 +4,7 @@ namespace App\Services\Manufacture;
 
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Classes\SewingTimeLabor;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
@@ -47,43 +48,57 @@ final class SewingService
         $createdTask = null;
         // DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
 
-            // __ Создаем СЗ
-            $createdTask = SewingTask::query()->create([
-                'action_at' => $plannedDate,
-                'order_id'  => $order->id,
-                'position'  => self::getSewingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для новой СЗ
-            ]);
-            if (!$createdTask) {
-                throw new Exception('Failed to create SewingTask');
+        // __ Создаем СЗ
+        $createdTask = SewingTask::query()->create([
+            'action_at' => $plannedDate,
+            'order_id'  => $order->id,
+            'position'  => self::getSewingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для новой СЗ
+        ]);
+        if (!$createdTask) {
+            throw new Exception('Failed to create SewingTask');
+        }
+
+        // __ Создаем контент (строки) СЗ
+        $position = 1;
+        foreach ($order->lines as $line) {
+
+            // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
+            if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
+                $position = 0;
             }
 
-            // __ Создаем контент (строки) СЗ
-            $position = 1;
-            foreach ($order->lines as $line) {
+            // __ Получаем трудозатраты
+            /** @noinspection DuplicatedCode */
+            $sewingTimeLabor = new SewingTimeLabor(
+                model: $line->model_code_1c,
+                size: $line->size,
+                amount: $line->amount,
+            );
 
-                // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
-                if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
-                    $position = 0;
-                }
-
-                $createdTaskLine = SewingTaskLine::query()->create([
-                    'sewing_task_id' => $createdTask->id,
-                    'order_line_id'  => $line->id,
-                    'amount'         => $line->amount,
-                    'position'       => $position++,
-                ]);
-            }
-
-            // __ Создаем запись в Статусе: Создано
-            $createdTask->statuses()->attach([
-                SewingTaskStatus::SEWING_STATUS_CREATED_ID => [
-                    'set_at'     => now(),
-                    'created_by' => auth()->id(),
-                ]
+            $createdTaskLine = SewingTaskLine::query()->create([
+                'sewing_task_id'             => $createdTask->id,
+                'order_line_id'              => $line->id,
+                'amount'                     => $line->amount,
+                'position'                   => $position++,
+                'time_labor'                 => $sewingTimeLabor->getTimeLaborArray(), // __ Записываем общие трудозатраты в jsonb в БД
+                SewingTask::FIELD_UNIVERSAL  => $sewingTimeLabor->getTimeUniversal(),
+                SewingTask::FIELD_AUTO       => $sewingTimeLabor->getTimeAuto(),
+                SewingTask::FIELD_SOLID_HARD => $sewingTimeLabor->getTimeSolidHard(),
+                SewingTask::FIELD_SOLID_LITE => $sewingTimeLabor->getTimeSolidLite(),
+                SewingTask::FIELD_UNDEFINED  => $sewingTimeLabor->getTimeUndefined(),
             ]);
+        }
+
+        // __ Создаем запись в Статусе: Создано
+        $createdTask->statuses()->attach([
+            SewingTaskStatus::SEWING_STATUS_CREATED_ID => [
+                'set_at'     => now(),
+                'created_by' => auth()->id(),
+            ]
+        ]);
 
         // });
-            return $createdTask;
+        return $createdTask;
         // } catch (Exception|Throwable $e) {
         //     return EndPointStaticRequestAnswer::fail($e);
         // }
@@ -166,11 +181,27 @@ final class SewingService
             if (isset($sewingTaskContent[$key])) {
                 $position = 1;
                 foreach ($sewingTaskContent[$key] as $line) {
+
+                    // __ Получаем трудозатраты
+                    /** @noinspection DuplicatedCode */
+                    $sewingTimeLabor = new SewingTimeLabor(
+                        model: $line->model_code_1c,
+                        size: $line->size,
+                        amount: $line->amount,
+                    );
+
                     $createdTaskLine = SewingTaskLine::query()->create([
-                        'sewing_task_id' => $sewingTask->id,
-                        'order_line_id'  => $line->id,
-                        'amount'         => $line->amount,
-                        'position'       => $position++,
+                        'sewing_task_id'             => $sewingTask->id,
+                        'order_line_id'              => $line->id,
+                        'amount'                     => $line->amount,
+                        'position'                   => $position++,
+                        'time_labor'                 => $sewingTimeLabor->getTimeLaborArray(), // __ Записываем общие трудозатраты в jsonb в БД
+                        SewingTask::FIELD_UNIVERSAL  => $sewingTimeLabor->getTimeUniversal(),
+                        SewingTask::FIELD_AUTO       => $sewingTimeLabor->getTimeAuto(),
+                        SewingTask::FIELD_SOLID_HARD => $sewingTimeLabor->getTimeSolidHard(),
+                        SewingTask::FIELD_SOLID_LITE => $sewingTimeLabor->getTimeSolidLite(),
+                        SewingTask::FIELD_UNDEFINED  => $sewingTimeLabor->getTimeUndefined(),
+
                     ]);
                 }
             } else {
@@ -179,12 +210,8 @@ final class SewingService
         }
 
 
-
-
-
         return true;
     }
-
 
 
     /**

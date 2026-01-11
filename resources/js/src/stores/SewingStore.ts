@@ -4,41 +4,37 @@ import { defineStore } from 'pinia'
 import { ref, reactive, computed, watch } from 'vue'
 
 import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
-import { openNewTab } from '@/app/helpers/helpers_service'
+import type { IPeriod } from '@/types'
 
-// Обертка на бэке
-const WRAP = 'cells'
+import { DEBUG } from '@/app/constants/common.ts'
+// import { openNewTab } from '@/app/helpers/helpers_service'
+
+
 
 // Устанавливаем глобальные переменные
 const API_PREFIX = '/api/v1/' // Префикс API
-const URL_MODELS = 'models/' // URL для получения списка моделей
-const URL_MODEL = 'model/' // URL для получения модели
+const URL_SEWING_TASKS = '/sewing/tasks' // URL для получения Сменных заданий
 
-const URL_MODELS_UPLOAD = 'models/upload/' // URL для загрузки моделей с диска
-const URL_MODELS_LOAD = 'models/load/' // URL для загрузки моделей из хранилища
-const URL_MODEL_DELETE = 'models/delete/' // URL для загрузки модели
+export const useSewingStore = defineStore('sewing', () => {
 
-export const useModelsStore = defineStore('models', () => {
-    // Список заказов, которые получили к отображению
-    let modelsShow = []
-
-    //attract: Загружаем спислк моделей из файла
-    const modelsLoad = async () => {
-        const response = await jwtGet(URL_MODELS_LOAD)
-        // openNewTab(response)
-        return response
+    // ___ Получение СЗ Пошива с сервера за период
+    const getSewingTasks = async (period: IPeriod | null = null) => {
+        let response
+        if (period) {
+            response = await jwtGet(URL_SEWING_TASKS, {period})
+        } else {
+            response = await jwtGet(URL_SEWING_TASKS)
+        }
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingTasks: ', result)
+        return result.data
     }
 
-    //attract: Получаем с API список моделей
-    const getModels = async (params) => {
-        const result = await jwtGet(URL_MODELS, params)
-        modelsShow.value = result[WRAP] // кэшируем
-        return result[WRAP] // все возвращается через Resource с ключем data
-    }
 
     return {
-        modelsLoad,
-        getModels,
+
+        getSewingTasks,
+
     }
 })
 

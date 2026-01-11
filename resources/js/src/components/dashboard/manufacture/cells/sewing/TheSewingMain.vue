@@ -26,6 +26,7 @@ import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 let menuItems: IMenuItem[] = [
     {name: 'Управление планом ШЦ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true},
+    {name: 'Управление СЗ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true},
     // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
 ]
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))

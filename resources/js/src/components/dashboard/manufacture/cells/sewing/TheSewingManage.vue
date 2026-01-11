@@ -37,6 +37,7 @@ import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import ManageWeek from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageWeek.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import { PLAN_DRAFT } from '@/app/constants/plans.ts'
+import { useSewingStore } from '@/stores/SewingStore.ts'
 
 
 const DEBUG = true
@@ -46,6 +47,7 @@ const isLoading = ref(false)
 // const router = useRouter()
 
 const planStore = usePlansStore()
+const sewingStore = useSewingStore()
 
 const {planPeriodGlobal} = storeToRefs(planStore)
 
@@ -126,17 +128,23 @@ onMounted(async () => {
 
             // await getBusinessProcessNode(businessProcessNodeIdFromRoute)    // Получаем узел бизнес-процесса
 
-            plan.value = await getPlan(businessProcessIdFromRoute, businessProcessNodeIdFromRoute)
-            await getPlanPeriod()       // Получаем период плана загрузок
+            const sewingTasks = await sewingStore.getSewingTasks()
 
-            getRenderPeriod()
-            getRenderMatrix()
-            correctRenderMatrix()
+            console.log('sewingTasks: ', sewingTasks)
 
-            // if (DEBUG) console.log('businessProcessIdFromRoute:', businessProcessIdFromRoute)
-            // if (DEBUG) console.log('businessProcessNodeIdFromRoute:', businessProcessNodeIdFromRoute)
-            // if (DEBUG) console.log('plan:', plan.value)
-            if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
+
+
+            // plan.value = await getPlan(businessProcessIdFromRoute, businessProcessNodeIdFromRoute)
+            // await getPlanPeriod()       // Получаем период плана загрузок
+            //
+            // getRenderPeriod()
+            // getRenderMatrix()
+            // correctRenderMatrix()
+            //
+            // // if (DEBUG) console.log('businessProcessIdFromRoute:', businessProcessIdFromRoute)
+            // // if (DEBUG) console.log('businessProcessNodeIdFromRoute:', businessProcessNodeIdFromRoute)
+            // // if (DEBUG) console.log('plan:', plan.value)
+            // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
 
 
         },

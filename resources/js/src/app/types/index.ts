@@ -9,6 +9,7 @@ export * from './plan_types.ts'                     // Все типы для п
 export * from './log_types.ts'                      // Все типы для логов
 export * from './business_processes_types.ts'       // Все типы для бизнес-процессов
 export * from './order_types.ts'                    // Все типы для Заявок
+export * from './sewing_types.ts'                   // Все типы для Пошива
 
 
 // ___ Константы выравнивания текста
