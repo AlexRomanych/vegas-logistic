@@ -128,9 +128,10 @@ onMounted(async () => {
 
             // await getBusinessProcessNode(businessProcessNodeIdFromRoute)    // Получаем узел бизнес-процесса
 
-            const sewingTasks = await sewingStore.getSewingTasks()
+            const sewingTasks = ref(await sewingStore.getSewingTasks())
+            sewingTasks.value.sort((a, b) => a.id - b.id)
 
-            console.log('sewingTasks: ', sewingTasks)
+            console.log('sewingTasks: ', sewingTasks.value)
 
 
 

@@ -25,17 +25,16 @@ class SewingTaskModelResource extends JsonResource
             'textile'             => $this->textile,
             'textile_composition' => $this->textile_composition,
             'cover_type'          => $this->cover_type,
-            'is_auto'       => $this->is_auto,
-            'is_solid'      => $this->is_solid,
-            'is_solid_hard' => $this->is_solid_hard,
-            'is_solid_lite' => $this->is_solid_lite,
-            'is_undefined'  => $this->is_undefined,
-            'is_universal'  => $this->is_universal,
+            'is_auto'             => $this->is_auto,
+            'is_solid'            => $this->is_solid,
+            'is_solid_hard'       => $this->is_solid_hard,
+            'is_solid_lite'       => $this->is_solid_lite,
+            'is_undefined'        => $this->is_undefined,
+            'is_universal'        => $this->is_universal,
+            'base_composition'    => $this->base_composition,
+            'kant'                => $this->kant,
+            'tkch'                => $this->tkch,
 
-
-            // 'base_composition'               => $this->base_composition,
-            // 'kant'                           => $this->kant,
-            // 'tkch'                           => $this->tkch,
             // 'model_manufacture_status_id'    => $this->model_manufacture_status_id,
             // 'model_collection_code_1c'       => $this->model_collection_code_1c,
             // 'model_type_code_1c'             => $this->model_type_code_1c,
@@ -78,7 +77,7 @@ class SewingTaskModelResource extends JsonResource
             // 'updated_at'                     => $this->updated_at,
             // 'cover_code_1c'                  => $this->cover_code_1c,
 
-            '_' => parent::toArray($request),
+            // '_' => parent::toArray($request),
         ];
     }
 }

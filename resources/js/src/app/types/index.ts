@@ -29,3 +29,11 @@ export type IDataInputObj = {
     newValue: string
     oldValue: string
 }
+
+
+// ___ Тип для размера
+export type IDims = {
+    width: number
+    length: number
+    height: number
+}

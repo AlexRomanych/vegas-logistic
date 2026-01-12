@@ -199,9 +199,5 @@ final class Model extends LaravelModel
     }
 
 
-    // public function line(): BelongsTo
-    // {
-    //     return $this->belongsTo(Line::class);
-    // }
 
 }

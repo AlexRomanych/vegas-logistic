@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Orders;
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Enums\ElementTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderCollection;
 use App\Http\Resources\Order\OrderTypes\OrderTypeResource;
@@ -335,8 +336,10 @@ class OrderController extends Controller
                     );
                 }
 
-                // __ Устанавливаем статус Заявки - Создано
+
                 $targetOrder = $needToDistribute ? $forecastOrder : $createdOrder;
+
+                // __ Устанавливаем статус Заявки - Создано
                 $targetOrder->statuses()->attach([
                     OrderStatus::ORDER_STATUS_LOADED_FROM_1C_ID => [
                         'set_at'     => now(),
@@ -344,6 +347,11 @@ class OrderController extends Controller
                     ]
                 ]);
 
+                // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+                // __ Создаем СЗ на Участки только для матрасов
+                if ($targetOrder->elements_type_ref !== ElementTypes::MATTRESSES->value) {
+                    continue;
+                }
 
                 // __ Тут добавляем или распределяем СЗ на нужные участки
                 if ($needToDistribute) {

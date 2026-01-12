@@ -26,8 +26,11 @@ class SewingTaskOrderLineResource extends JsonResource
 
             'model' => [
                 'main' => new SewingTaskModelResource($this->model),
+                // !!! Используем $this->model->getRelation('cover' и 'base'), потому что есть поле $this->model->cover и $this->model->base,
+                'base' => new SewingTaskModelResource($this->model->getRelation('base')),
+                'cover' => new SewingTaskModelResource($this->model->getRelation('cover')),
+                // 'cover' => $this->model->getRelation('cover'),
             ],
-
 
             'amount'        => $this->amount,
             'textile'       => $this->textile,

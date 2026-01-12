@@ -34,17 +34,24 @@ class CellSewingController extends Controller
             }
 
             $sewingTasks = SewingTask::query()
-                ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
-                ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
-                ->with(['order.client', 'sewingLines.orderLine.model.cover', 'statuses'])
+                ->whereBetween('action_at', [
+                    $start->startOfDay(),
+                    $end->endOfDay()
+                ])
+                // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
+                // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with([
+                    'order.client',
+                    'sewingLines.orderLine.model.cover',
+                    'sewingLines.orderLine.model.base',
+                    'statuses'
+                ])
                 // ->with(['sewingLines', 'sewingLines.orderLine','sewingLines.orderLine.model','sewingLines.orderLine.model.cover', 'statuses'])
                 ->orderBy('action_at')
                 ->get();
 
 
             return SewingTaskResource::collection($sewingTasks);
-
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -53,7 +60,7 @@ class CellSewingController extends Controller
 
     /**
      * Возвращает массив уникальных id заказов
-     * @param mixed $data
+     * @param  mixed  $data
      * @return array
      */
     private function getUniqueOrdersIds(mixed $data): array

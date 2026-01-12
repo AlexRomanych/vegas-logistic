@@ -20,6 +20,9 @@ class SewingTask extends Model
     public const FIELD_SOLID_HARD = 'time_solid_hard';
     public const FIELD_SOLID_LITE = 'time_solid_lite';
     public const FIELD_UNDEFINED = 'time_undefined';
+    public const FIELD_AVERAGE = 'time_average';
+
+    // --- -------------------------------
 
 
     // Relations: Связь с Основной Заявкой

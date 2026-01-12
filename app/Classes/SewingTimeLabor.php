@@ -17,20 +17,25 @@ class SewingTimeLabor
     private int $timeSolidHard = 0;
     private int $timeSolidLite = 0;
     private int $timeUndefined = 0;
+    private int $amount = 0;
+    private string $sewingType = '';
+
 
     /**
      * ___ Получаем трудозатраты либо по Строке СЗ, либо по Модели, Размеру и количеству
-     * @param SewingTaskLine|null $sewingTaskLine **Сменное задание (Строка СЗ (SewingLine))**
-     * @param string|Model|null $model __Модель__
-     * @param string|Size|null $size __Размер__
-     * @param int $amount __Количество__
+     * @param  SewingTaskLine|null  $sewingTaskLine  **Сменное задание (Строка СЗ (SewingLine))**
+     * @param  string|Model|null  $model  __Модель__
+     * @param  string|Size|null  $size  __Размер__
+     * @param  int  $amount  __Количество__
      */
     public function __construct(
         SewingTaskLine|null $sewingTaskLine = null,
-        string|Model|null   $model = null,
-        string|Size|null    $size = null,
-        int                 $amount = 1)
-    {
+        string|Model|null $model = null,
+        string|Size|null $size = null,
+        int $amount = 1
+    ) {
+        $this->amount = $amount;
+
         // __ Если передана строка Сменного задания
         if ($sewingTaskLine /*&& $sewingTaskLine instanceof SewingTaskLine*/) {
             $orderLine = OrderLine::query()->find($sewingTaskLine->order_line_id);  // __ Получаем Контекст Строки Заказа
@@ -53,6 +58,25 @@ class SewingTimeLabor
                     }
                 }
             }
+        }
+    }
+
+
+    // ___ Сохраняем тип ШМ
+    private function setSewingType(Model $model): void
+    {
+        if (ModelsService::isElementAverage($model)) {
+            $this->sewingType = SewingTask::FIELD_AVERAGE;
+        } else {
+            /** @noinspection PhpUndefinedFieldInspection */
+            $this->sewingType = match (true) {
+                $model->is_universal  => SewingTask::FIELD_UNIVERSAL,
+                $model->is_auto       => SewingTask::FIELD_AUTO,
+                $model->is_solid_hard => SewingTask::FIELD_SOLID_HARD,
+                $model->is_solid_lite => SewingTask::FIELD_SOLID_LITE,
+                $model->is_undefined  => SewingTask::FIELD_UNDEFINED,
+                default               => SewingTask::FIELD_UNDEFINED,
+            };
         }
     }
 
@@ -96,23 +120,33 @@ class SewingTimeLabor
 
 
         if (ModelsService::isElementAverage($model)) {
-            $this->timeUniversal = $this->getTimeLabor() * $amount;
-            $this->timeAuto      = $this->getTimeLabor() * $amount;
-            $this->timeSolidHard = $this->getTimeLabor() * $amount;
-            $this->timeSolidLite = $this->getTimeLabor() * $amount;
-            $this->timeUndefined = $this->getTimeLabor() * $amount;
+            $this->timeUniversal = /*$this->getTimeLabor()*/
+                100 * $amount * 0.4; // __ 40%
+            $this->timeAuto      = /*$this->getTimeLabor()*/
+                100 * $amount * 0.3;
+            $this->timeSolidHard = /*$this->getTimeLabor()*/
+                100 * $amount * 0.15;
+            $this->timeSolidLite = /*$this->getTimeLabor()*/
+                100 * $amount * 0.1;
+            $this->timeUndefined = /*$this->getTimeLabor()*/
+                100 * $amount * 0.05;
         } else {
             //['is_auto', 'is_universal', 'is_solid', 'is_solid_lite', 'is_solid_hard', 'is_undefined'];
             if ($model->is_universal) {
-                $this->timeUniversal = $this->getTimeLabor() * $amount;
+                $this->timeUniversal = /*$this->getTimeLabor()*/
+                    100 * $amount;
             } elseif ($model->is_auto) {
-                $this->timeAuto = $this->getTimeLabor() * $amount;
+                $this->timeAuto = /*$this->getTimeLabor()*/
+                    150 * $amount;
             } elseif ($model->is_solid_hard) {
-                $this->timeSolidHard = $this->getTimeLabor() * $amount;
+                $this->timeSolidHard = /*$this->getTimeLabor()*/
+                    200 * $amount;
             } elseif ($model->is_solid_lite) {
-                $this->timeSolidLite = $this->getTimeLabor() * $amount;
+                $this->timeSolidLite = /*$this->getTimeLabor()*/
+                    250 * $amount;
             } elseif ($model->is_undefined) {
-                $this->timeUndefined = $this->getTimeLabor() * $amount;
+                $this->timeUndefined = /*$this->getTimeLabor()*/
+                    300 * $amount;
             }
         }
     }
@@ -124,6 +158,43 @@ class SewingTimeLabor
         return mt_rand(1, $max) * $scale;
     }
 
+
+    // ___ Получаем трудозатраты в массив
+    public function getTimeLaborArray(): array
+    {
+        return $this->getLaborArray();
+    }
+
+    // ___ Получаем трудозатраты в JSON
+    public function getTimeLaborJson(): string
+    {
+        return json_encode($this->getLaborArray());
+    }
+
+    // ___ Получаем среднее количество изделий по типу ШМ
+    public function getAveragesAmount(): array
+    {
+        return [
+            SewingTask::FIELD_UNIVERSAL  => $this->amount * 0.4,
+            SewingTask::FIELD_AUTO       => $this->amount * 0.3,
+            SewingTask::FIELD_SOLID_HARD => $this->amount * 0.15,
+            SewingTask::FIELD_SOLID_LITE => $this->amount * 0.1,
+            SewingTask::FIELD_UNDEFINED  => $this->amount * 0.05,
+        ];
+    }
+
+    private function getLaborArray(): array
+    {
+        return [
+            SewingTask::FIELD_UNIVERSAL  => $this->timeUniversal,
+            SewingTask::FIELD_AUTO       => $this->timeAuto,
+            SewingTask::FIELD_SOLID_HARD => $this->timeSolidHard,
+            SewingTask::FIELD_SOLID_LITE => $this->timeSolidLite,
+            SewingTask::FIELD_UNDEFINED  => $this->timeUndefined,
+        ];
+    }
+
+    // --- Возвращаем трудозатраты в числовом формате, те, которые определены (кроме Average)
     public function getTimeUniversal(): int
     {
         return $this->timeUniversal;
@@ -149,38 +220,54 @@ class SewingTimeLabor
         return $this->timeUndefined;
     }
 
-    // ___ Получаем трудозатраты в массив
-    public function getTimeLaborArray(): array
+    // --- Возвращаем трудозатраты в ассоциативном массиве, если Average - то все, разбитые по статистике
+
+    // ___ Получаем трудозатраты в ассоциативном массиве (универсальная функция)
+    public function getTime(): array
+    {
+        return match ($this->sewingType) {
+            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversalArray(),
+            SewingTask::FIELD_AUTO       => $this->getTimeAutoArray(),
+            SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHardArray(),
+            SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLiteArray(),
+            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefinedArray(),
+            SewingTask::FIELD_AVERAGE    => $this->getTimeAverageArray(),
+            default                      => [],
+        };
+    }
+
+    public function getTimeAverageArray(): array
     {
         return $this->getLaborArray();
     }
 
-    // ___ Получаем трудозатраты в JSON
-    public function getTimeLaborJson(): string
+    public function getTimeUniversalArray(): array
     {
-        return json_encode($this->getLaborArray());
+        return [SewingTask::FIELD_UNIVERSAL => $this->timeUniversal];
     }
 
-    // ___ Получаем среднее количество изделий по типу ШМ
-    public function getAveragesAmount(): array
+    public function getTimeAutoArray(): array
     {
-        return [
-            SewingTask::FIELD_UNIVERSAL  => 0,
-            SewingTask::FIELD_AUTO       => 0,
-            SewingTask::FIELD_SOLID_HARD => 0,
-            SewingTask::FIELD_SOLID_LITE => 0,
-            SewingTask::FIELD_UNDEFINED  => 0,
-        ];
+        return [SewingTask::FIELD_AUTO => $this->timeAuto];
     }
 
-    private function getLaborArray(): array
+    public function getTimeSolidHardArray(): array
     {
-        return [
-            SewingTask::FIELD_UNIVERSAL  => $this->timeUniversal,
-            SewingTask::FIELD_AUTO       => $this->timeAuto,
-            SewingTask::FIELD_SOLID_HARD => $this->timeSolidHard,
-            SewingTask::FIELD_SOLID_LITE => $this->timeSolidLite,
-            SewingTask::FIELD_UNDEFINED  => $this->timeUndefined,
-        ];
+        return [SewingTask::FIELD_SOLID_HARD => $this->timeSolidHard];
     }
+
+    public function getTimeSolidLiteArray(): array
+    {
+        return [SewingTask::FIELD_SOLID_LITE => $this->timeSolidLite];
+    }
+
+    public function getTimeUndefinedArray(): array
+    {
+        return [SewingTask::FIELD_UNDEFINED => $this->timeUndefined];
+    }
+
 }
+
+
+
+

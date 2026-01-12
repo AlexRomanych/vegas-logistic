@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Plans;
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Enums\ElementTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Plans\Loads\PlanLoadsResource;
 use App\Models\Client;
@@ -227,6 +228,15 @@ class PlanLoadsController extends Controller
 
 
             // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
+
+            // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+            // __ Создаем СЗ на Участки только для матрасов
+
+            $typeRef = $createdOrder->elements_type_ref;
+            if ($createdOrder->elements_type_ref !== ElementTypes::MATTRESSES->value) {
+                continue;
+            }
+
 
             // __ Создаем СЗ на Пошив
             $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
