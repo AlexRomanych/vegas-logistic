@@ -888,7 +888,7 @@ const rollStatuses = {
 // __ Здесь как признак
 const changeRegistrationStatus = async (roll) => {
 
-    log(roll)
+    // log(roll)
 
     // if (roll.status === FABRIC_ROLL_STATUS.MOVED.CODE) {
     //     calloutType.value = 'danger'

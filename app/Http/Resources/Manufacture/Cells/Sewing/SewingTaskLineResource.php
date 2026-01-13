@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Manufacture\Cells\Sewing;
 
+use App\Classes\SewingTimeLabor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -15,6 +16,14 @@ class SewingTaskLineResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // __ Получаем объект с трудозатратами
+        /** @noinspection PhpUndefinedFieldInspection */
+        $labor = new SewingTimeLabor(
+            model: $this->orderLine->model,
+            size: $this->orderLine->size,
+            amount: $this->amount
+        );
+
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'id'           => $this->id,
@@ -24,6 +33,9 @@ class SewingTaskLineResource extends JsonResource
             'finished_at'  => $this->finished_at ? Carbon::parse($this->finished_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'finished_by'  => $this->finished_by ? Carbon::parse($this->finished_by)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason' => $this->false_reason,
+
+            'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
+            'time'       => $labor->getTime(),
 
             'order_line' => new SewingTaskOrderLineResource($this->orderLine),
 

@@ -20,13 +20,15 @@ export interface ISewingTask {
 // __ Связь с Содержимым СЗ
 export interface ISewingTaskLine {
     id: number
-    amount: number
-    created_at: string|null
-    false_reason: string|null
-    finished_at: string|null
-    finished_by: number|null                // __ Тут в будущем добавим объект пользователя (Worker)
+    amount: number                          // __ Общее количество в заявке
+    amount_avg: null | IAmountAvg[]         // __ Количество для средней модели по статистике
+    time: ISewingTaskLineTime[]             // __ Трудозатраты
+    created_at: string | null
+    false_reason: string | null
+    finished_at: string | null
+    finished_by: number | null              // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
-    order_line: ISewingTaskOrderLine[]
+    order_line: ISewingTaskOrderLine
 }
 
 // __ Связь с Заявкой
@@ -35,8 +37,8 @@ export interface ISewingTaskOrder {
     order_no_num: number
     order_no_origin: string
     order_no_str: string
-    load_at: string|null
-    comment_1c: string|null
+    load_at: string | null
+    comment_1c: string | null
     client: ISewingTaskClient
 }
 
@@ -45,11 +47,11 @@ export interface ISewingTaskOrderLine {
     id: number
     size: string
     amount: number
-    textile: string|null
-    composition: string|null
-    describe_1: string|null
-    describe_2: string|null
-    describe_3: string|null
+    textile: string | null
+    composition: string | null
+    describe_1: string | null
+    describe_2: string | null
+    describe_3: string | null
     dims: IDims
     model: {
 
@@ -58,11 +60,11 @@ export interface ISewingTaskOrderLine {
 
         // __ Базовая модель, если main === матрас, то base === null,
         // __ если main === чехол, то base === модель матраса, к которой относится чехол
-        base: null|ISewingTaskModel
+        base: null | ISewingTaskModel
 
         // __ Базовая модель, если main === матрас, то cover === чехол матраса базовой модели,
         // __ если main === чехол, то cover === модель чехла или null
-        cover: null|ISewingTaskModel
+        cover: null | ISewingTaskModel
     }
 }
 
@@ -81,12 +83,12 @@ export interface ISewingTaskModel {
     name_report: string
     base_height: number
     cover_height: number
-    kant: string|null
-    tkch: string|null
-    base_composition: string|null
-    cover_type: string|null
-    textile: string|null
-    textile_composition: string|null
+    kant: string | null
+    tkch: string | null
+    base_composition: string | null
+    cover_type: string | null
+    textile: string | null
+    textile_composition: string | null
     is_auto: boolean
     is_solid: boolean
     is_solid_hard: boolean
@@ -95,3 +97,17 @@ export interface ISewingTaskModel {
     is_universal: boolean
 }
 
+// __ Ключи для Типов ШМ
+type IAvgKeys =
+    'time_universal' |
+    'time_auto' |
+    'time_solid_hard' |
+    'time_solid_lite' |
+    'time_undefined' |
+    'time_average'
+
+// __ Тип для Средних значений для Average модели
+type IAmountAvg = Record<IAvgKeys, number>
+
+// __ Трудозатраты
+type ISewingTaskLineTime = Record<IAvgKeys, number>

@@ -19,6 +19,14 @@ use Throwable;
 final class ModelsService implements VegasDataUpdateContract
 {
 
+    // --- Типы моделей
+    public const TYPE_UNIVERSAL = 'universal';
+    public const TYPE_AUTO = 'auto';
+    public const TYPE_SOLID_HARD = 'solid_hard';
+    public const TYPE_SOLID_LITE = 'solid_lite';
+    public const TYPE_UNDEFINED = 'undefined';
+    public const TYPE_AVERAGE = 'average';
+
 
     private static array $modelsCollectionsCacheByCode1C = [];
     private static array $modelsCollectionsCacheByName = [];

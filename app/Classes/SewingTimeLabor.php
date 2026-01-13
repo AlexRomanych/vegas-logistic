@@ -42,6 +42,7 @@ class SewingTimeLabor
             if ($orderLine) {
                 $model = ModelsService::getModelByCode1C($orderLine->model_code_1c); // __ Получаем Модель
                 if ($model) {
+                    $this->setSewingType($model);
                     $size = new Size($orderLine->width, $orderLine->length, $orderLine->height); // __ Получаем Размер
                     // $size = $this->getSize($orderLine->size);
                     $this->calcTimeLabor($model, $size, $orderLine->amount);
@@ -52,6 +53,7 @@ class SewingTimeLabor
                 // __ Находим модель
                 $workModel = $this->getModel($model);
                 if ($workModel) {
+                    $this->setSewingType($model);
                     $workSize = $this->getSize($size);
                     if ($workSize) {
                         $this->calcTimeLabor($workModel, $workSize, $amount);

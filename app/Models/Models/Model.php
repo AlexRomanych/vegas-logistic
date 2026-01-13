@@ -3,10 +3,12 @@
 namespace App\Models\Models;
 
 use App\Models\Order\Line;
+use App\Services\ModelsService;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 final class Model extends LaravelModel
 {
@@ -123,8 +125,24 @@ final class Model extends LaravelModel
         'is_solid',
         'is_solid_lite',
         'is_solid_hard',
-        'is_undefined'
+        'is_undefined',
+        'is_average',
+        'machine_type',
     ];                                                                                                                 // Задаем типы швейных машин, исходя из свойства sewing_machine
+
+    // info Получаем тип швейной машины для матраса
+    public function getMachineTypeAttribute(): string
+    {
+        return match (true) {
+            $this->getIsAutoAttribute()      => ModelsService::TYPE_AUTO,
+            $this->getIsUniversalAttribute() => ModelsService::TYPE_UNIVERSAL,
+            $this->getIsSolidHardAttribute() => ModelsService::TYPE_SOLID_HARD,
+            $this->getIsSolidLiteAttribute() => ModelsService::TYPE_SOLID_LITE,
+            $this->getIsAverageAttribute()   => ModelsService::TYPE_AVERAGE,
+            // $this->getIsUndefinedAttribute() => ModelsService::TYPE_UNDEFINED,
+            default                          => ModelsService::TYPE_UNDEFINED
+        };
+    }
 
     //info Проверяем на АШМ
     public function getIsAutoAttribute(): bool
@@ -162,6 +180,18 @@ final class Model extends LaravelModel
         return is_null($this->sewing_machine) || $this->sewing_machine === '';
     }
 
+    // info Проверяем на то, что модель является Average
+    public function getIsAverageAttribute(): bool
+    {
+        return Str::contains(
+            mb_strtolower($this->code_1c),
+            [
+                mb_strtolower(CLIENT_AVERAGE_MATTRESS_PREFIX),
+                mb_strtolower(CLIENT_AVERAGE_ACCESSORY_PREFIX)
+            ]
+        );
+    }
+
     //h2-------------------------------------------------------------------------------
 
     // Relations: Связь с коллекцией
@@ -197,7 +227,6 @@ final class Model extends LaravelModel
     {
         return $this->hasOne(Model::class, 'cover_code_1c', CODE_1C);
     }
-
 
 
 }
