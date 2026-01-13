@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Sewing;
+namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use App\Classes\SewingTimeLabor;
 use Carbon\Carbon;

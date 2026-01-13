@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Sewing;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskResource;
+use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage\SewingTaskResource;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Services\DefaultsService;
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class CellSewingController extends Controller
                 // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
                 // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
                 ->with([
-                    'order.client',
+                    'order.client', 'order.orderType',
                     'sewingLines.orderLine.model.cover',
                     'sewingLines.orderLine.model.base',
                     'statuses'

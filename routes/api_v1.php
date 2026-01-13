@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingStatusController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructController;
@@ -104,8 +105,11 @@ Route::prefix('sewing')
     ->middleware('jwt.auth')
     ->group(function () {
 
-
         Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
+
+
+        Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);
+        Route::patch('/task/statuses/color/patch', [CellSewingStatusController::class, 'patchSewingTaskStatusColor']);
 
 
         // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');

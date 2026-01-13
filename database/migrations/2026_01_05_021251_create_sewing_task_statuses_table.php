@@ -1,15 +1,16 @@
 <?php
 
+use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
 use App\Traits\AddCommonColumnsInTableTrait;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     use AddCommonColumnsInTableTrait;
 
     private const TABLE_NAME = 'sewing_task_statuses';
+
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
@@ -26,19 +27,47 @@ return new class extends Migration
                 ->nullable(false)
                 ->default(0)
                 ->comment('Позиция (порядок) статуса');
-
-
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
 
         DB::table(self::TABLE_NAME)->insert([
-            ['name' => 'Создано', 'position' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Готово к выполнению', 'position' => 2, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Выполняется', 'position' => 3, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Выполнено', 'position' => 4, 'created_at' => now(), 'updated_at' => now()],
+            [
+                'id'         => SewingTaskStatus::SEWING_STATUS_CREATED_ID,
+                'name'       => 'Создано',
+                'position'   => SewingTaskStatus::SEWING_STATUS_CREATED_ID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id'         => SewingTaskStatus::SEWING_STATUS_ROLLING_ID,
+                'name'       => 'Создано при закрытии СЗ',
+                'position'   => SewingTaskStatus::SEWING_STATUS_ROLLING_ID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id'         => SewingTaskStatus::SEWING_STATUS_PENDING_ID,
+                'name'       => 'Готово к выполнению',
+                'position'   => SewingTaskStatus::SEWING_STATUS_PENDING_ID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id'         => SewingTaskStatus::SEWING_STATUS_RUNNING_ID,
+                'name'       => 'Выполняется',
+                'position'   => SewingTaskStatus::SEWING_STATUS_RUNNING_ID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id'         => SewingTaskStatus::SEWING_STATUS_DONE_ID,
+                'name'       => 'Выполнено',
+                'position'   => SewingTaskStatus::SEWING_STATUS_DONE_ID,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
         ]);
-
     }
 
     /**

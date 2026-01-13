@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Sewing;
+namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ class SewingTaskOrderResource extends JsonResource
             'load_at'         => Carbon::parse($this->load_at)->format(RETURN_DATE_TIME_FORMAT),
             'comment_1c'      => $this->comment_1c,
             'client'          => new SewingTaskOrderClientResource($this->client),
-
+            'order_type'      => new SewingTaskOrderTypeResource($this->orderType),
             // 'order_period'       => $this->order_period,
             // 'elements_type_ref'  => $this->elements_type_ref,
             // 'elements_type'      => $this->elements_type,

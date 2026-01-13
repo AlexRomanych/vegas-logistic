@@ -4,32 +4,42 @@ import type { IRouteMeta } from '@/types'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
-const _CELL_PREFIX = '/cell'
-const _TASK_PREFIX = '/task'
-const _SEWING_PREFIX = '/sewing'
-const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX + _SEWING_PREFIX + '/'
+const _CELL_PREFIX        = '/cell'
+const _TASK_PREFIX        = '/task'
+const _SEWING_PREFIX      = '/sewing'
+const _MAIN_PREFIX        = _MANUFACTURE_PREFIX + _CELL_PREFIX + _SEWING_PREFIX + '/'
 
 const sewing = [
     {
         // ___ Основная менюха
-        path: _MAIN_PREFIX,
-        name: 'manufacture.cell.sewing',
+        path:      _MAIN_PREFIX,
+        name:      'manufacture.cell.sewing',
         component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingMain.vue'),
-        meta: {
-            title: 'Швейный цех'
-        } as IRouteMeta,
+        meta:      {
+                       title: 'Швейный цех'
+                   } as IRouteMeta,
     },
 
     {
         // ___ Управление планом Швейного цеха
-        path: _MAIN_PREFIX + 'plan/manage',
-        name: 'manufacture.cell.sewing.plan.manage',
+        path:      _MAIN_PREFIX + 'plan/manage',
+        name:      'manufacture.cell.sewing.plan.manage',
         component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingManage.vue'),
-        meta: {
-            title: 'Управление планом Швейного цеха'
-        } as IRouteMeta,
+        meta:      {
+                       title: 'Управление планом Швейного цеха'
+                   } as IRouteMeta,
     },
 
+
+    {
+        // ___ Справочник Статусов Движения СЗ
+        path:      _MAIN_PREFIX + 'task/statuses',
+        name:      'manufacture.cell.sewing.task.statuses',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingStatusesShow.vue'),
+        meta:      {
+                       title: 'Статусы движения Сменного задания Пошива'
+                   } as IRouteMeta,
+    },
 
 
     // {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Sewing;
+namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

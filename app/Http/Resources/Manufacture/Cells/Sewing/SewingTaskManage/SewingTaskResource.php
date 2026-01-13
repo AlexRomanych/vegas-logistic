@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Sewing;
+namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,6 +27,8 @@ class SewingTaskResource extends JsonResource
             'order' => new SewingTaskOrderResource($this->order),
 
             'sewing_lines' => SewingTaskLineResource::collection($this->sewingLines), // 'sewing_lines
+
+            'statuses' => SewingTaskStatusResource::collection($this->statuses),
 
             // 'order_id'    => $this->order_id,
             // 'meta_ext'    => $this->meta_ext,

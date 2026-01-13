@@ -1,23 +1,24 @@
 // Хранилище для ПЯ Швейки
 
 import { defineStore } from 'pinia'
-import { ref, reactive, computed, watch } from 'vue'
+// import { ref, reactive, computed, watch } from 'vue'
 
-import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
+import { jwtGet, jwtPost, jwtDelete, jwtPatch } from '@/app/utils/jwt_api'
 import type { IPeriod } from '@/types'
 
 import { DEBUG } from '@/app/constants/common.ts'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 
-
 // Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/' // Префикс API
-const URL_SEWING_TASKS = '/sewing/tasks' // URL для получения Сменных заданий
+const API_PREFIX               = '/api/v1/' // Префикс API
+const URL_SEWING_TASKS         = '/sewing/tasks' // URL для получения Сменных заданий
+const URL_SEWING_TASK_STATUSES = '/sewing/task/statuses' // URL для получения Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch' // URL для получения Статуса Движения СЗ
 
 export const useSewingStore = defineStore('sewing', () => {
 
-    // ___ Получение СЗ Пошива с сервера за период
+    // __ Получение СЗ Пошива с сервера за период
     const getSewingTasks = async (period: IPeriod | null = null) => {
         let response
         if (period) {
@@ -31,9 +32,27 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
 
+    // __ Получение Статусов Движения СЗ
+    const getSewingTaskStatuses = async () => {
+        let response = await jwtGet(URL_SEWING_TASK_STATUSES)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingTaskStatuses: ', result)
+        return result.data
+    }
+
+    // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
+    const patchSewingTaskStatusColor = async (sewingTaskStatusId: number, color: string) => {
+        const result = await jwtPatch(URL_SEWING_TASK_STATUSES_COLOR_PATCH, {id: sewingTaskStatusId, color})
+        if (DEBUG) console.log('SewingStore: patchSewingTaskStatusColor', result)
+        return result.data
+    }
+
+
     return {
 
         getSewingTasks,
+        getSewingTaskStatuses,
+        patchSewingTaskStatusColor,
 
     }
 })

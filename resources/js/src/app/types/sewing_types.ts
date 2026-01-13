@@ -31,6 +31,11 @@ export interface ISewingTaskLine {
     order_line: ISewingTaskOrderLine
 }
 
+// __ Статус Движения (выполнения) Заявки
+export interface ISewingTaskStatus {
+
+}
+
 // __ Связь с Заявкой
 export interface ISewingTaskOrder {
     id: number
@@ -39,7 +44,8 @@ export interface ISewingTaskOrder {
     order_no_str: string
     load_at: string | null
     comment_1c: string | null
-    client: ISewingTaskClient
+    client: ISewingTaskOrderClient
+    order_type: ISewingTaskOrderType
 }
 
 // __ Связь со Строкой Основной Заявки (Связь с Содержимым Заявки)
@@ -69,12 +75,20 @@ export interface ISewingTaskOrderLine {
 }
 
 // __ Связь Основной Заявки с Клиентом
-export interface ISewingTaskClient {
+export interface ISewingTaskOrderClient {
     id: number
     name: string
     add_name: string
     short_name: string
 }
+
+// __ Связь Основной Заявки с Типом Заявки
+export interface ISewingTaskOrderType {
+    id: number
+    display_name: string
+    color: string
+}
+
 
 // __ Описание модели
 export interface ISewingTaskModel {
@@ -111,3 +125,22 @@ type IAmountAvg = Record<IAvgKeys, number>
 
 // __ Трудозатраты
 type ISewingTaskLineTime = Record<IAvgKeys, number>
+
+
+// --- --------------------------------------------------------------
+// --- Типы для работы с сущностями Пошива
+// --- --------------------------------------------------------------
+export interface ISewingTaskStatusEntity {
+    id: number
+    name: string
+    color: string
+    position: number
+    description?: string|null
+    active?: boolean
+    status?: number
+    comment?: string|null
+    note?: string|null
+    meta?: string|null
+    created_at?: string|null
+    updated_at?: string|null
+}

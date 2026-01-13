@@ -53,7 +53,7 @@ class SewingTimeLabor
                 // __ Находим модель
                 $workModel = $this->getModel($model);
                 if ($workModel) {
-                    $this->setSewingType($model);
+                    $this->setSewingType($workModel);
                     $workSize = $this->getSize($size);
                     if ($workSize) {
                         $this->calcTimeLabor($workModel, $workSize, $amount);

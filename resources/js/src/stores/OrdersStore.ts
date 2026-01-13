@@ -91,7 +91,7 @@ export const useOrdersStore = defineStore('orders', () => {
         return result.data
     }
 
-    // __ Получаем с API список Типов заказов (серийная, гаррмем, прогнозная и т.д.)
+    // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
     const patchOrderTypeColor = async (orderTypeId: number, color: string) => {
         const result = await jwtPatch(URL_ORDERS_TYPES_COLOR_UPDATE, {id: orderTypeId, color})
         if (DEBUG) console.log('OrdersStore: updateOrderTypeColor', result)
