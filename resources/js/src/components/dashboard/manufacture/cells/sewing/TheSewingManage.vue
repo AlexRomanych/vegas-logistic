@@ -1,75 +1,70 @@
 <template>
     <div v-if="!isLoading">
-        <div v-for="(planWeek, idx) of renderMatrix" :key="idx">
-            <ManageWeek
-                :date="getStartWeekDate(idx)"
-                :week="planWeek"
-                @drag-and-drop="correctRenderMatrix"
-            />
+
+        <!-- __ Меню -->
+        <TheSewingManageMenu/>
+
+        <!-- __ Вход данных -->
+        <div>
+            <div v-for="(planWeek, idx) of renderMatrix" :key="idx">
+                <ManageWeek
+                    :date="getStartWeekDate(idx)"
+                    :week="planWeek"
+                    @drag-and-drop="dragAndDropSewingTask"
+                />
+            </div>
         </div>
+
     </div>
 </template>
 
 <script lang="ts" setup>
-import type { IPeriod, IPlan, IPlanMatrix } from '@/types'
+import type { IPeriod, IPlanMatrix } from '@/types'
 
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, /*toRaw*/ } from 'vue'
 import { storeToRefs } from 'pinia'
+
 import { usePlansStore } from '@/stores/PlansStore.ts'
-// import { useRoute, useRouter } from 'vue-router'
-// import { useBusinessProcessesStore } from '@/stores/BusinessProcessesStore.ts'
+import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+
+import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
+import { SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
 
 import {
     getRenderMatrixForPlan,
     getRenderPeriodForPlan
 } from '@/app/helpers/plan/helpers_plan.ts'
-import { additionDays } from '@/app/helpers/helpers_date'
-
-import {
-    BUSINESS_PROCESS_NODES,
-    BUSINESS_PROCESSES
-} from '@/app/constants/business_processes.ts'
-import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
+import { additionDays, formatToYMD } from '@/app/helpers/helpers_date'
 
 import ManageWeek from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageWeek.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { PLAN_DRAFT } from '@/app/constants/plans.ts'
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import TheSewingManageMenu
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageMenu.vue'
 
 
-const DEBUG = true
+
+const DEBUG     = true
 const isLoading = ref(false)
 
-// const route = useRoute()
-// const router = useRouter()
 
-const planStore = usePlansStore()
+const planStore   = usePlansStore()
 const sewingStore = useSewingStore()
 
-const {planPeriodGlobal} = storeToRefs(planStore)
+const { planPeriodGlobal }  = storeToRefs(planStore)
+const { globalSewingTasks } = storeToRefs(sewingStore)
 
 // __ Определяем переменные
-const plan = ref<IPlan[]>([])
-let planPeriod: IPeriod = PERIOD_DRAFT          // Период плана загрузок
-let renderPeriod: IPeriod = PERIOD_DRAFT        // Период для рендера
-let renderMatrix = ref<IPlanMatrix>([])        // Матрица для рендера
-
-// __ Определяем переменные из маршрута
-let businessProcessIdFromRoute: number = BUSINESS_PROCESSES.ORDER_MOVING.ID
-let businessProcessNodeIdFromRoute: number = BUSINESS_PROCESS_NODES.SEWING.ID
-
-// __ Получаем план загрузок
-const getPlan = async (
-    businessProcessId: number = BUSINESS_PROCESSES.ORDER_MOVING.ID,
-    businessProcessNodeId: number = BUSINESS_PROCESS_NODES.LOADS.ID,
-) => plan.value = await planStore.getPlanBusinessProcessNode(businessProcessId, businessProcessNodeId)
+let planPeriod: IPeriod           = PERIOD_DRAFT                // Период плана загрузок
+let renderPeriod: IPeriod         = PERIOD_DRAFT                // Период для рендера
+let renderMatrix                  = ref<IPlanMatrix>([]) // Матрица для рендера
+let renderMatrixCopy: IPlanMatrix = []                          // Копия Матрицы для рендера
 
 
 // __ Получаем период плана загрузок с сервера
 const getDefaultPeriod = async () => planPeriod = await planStore.getPlanLoadsDefaultPeriod()
+
 const getPlanPeriod = async () => {
     // TODO: Доделать выбор периода
     await getDefaultPeriod()    //
@@ -77,39 +72,178 @@ const getPlanPeriod = async () => {
 }
 
 // __ Получаем период для рендера
-const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlan(plan.value)
+const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlan(globalSewingTasks.value)
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(plan.value, renderPeriod)
+const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(globalSewingTasks.value, renderPeriod)
+
+
+// __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
+// __ И отправлять на сервер только измененные данные
+const copyRenderMatrix = () => {
+    renderMatrixCopy = JSON.parse(JSON.stringify(renderMatrix.value))
+    // renderMatrixCopy = structuredClone(toRaw(renderMatrix.value)) // __ Не работает с реактивными объектами Vue
+}
+
+
+// __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+const clearRenderMatrix = () => {
+    renderMatrix.value.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            renderMatrix.value[weekIndex][dayIndex] = day.filter(item => item.id > 0) // __ id пустых заданий меньше нуля
+        })
+    })
+}
+
+
+// __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
+const setTaskPositionInRenderMatrix = () => {
+    renderMatrix.value.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            renderMatrix.value[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+        })
+    })
+}
+
+
+// __ Сортируем задания в матрице рендера по позиции
+const sortRenderMatrixByTaskPosition = () => {
+    renderMatrix.value.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            renderMatrix.value[weekIndex][dayIndex] = day.sort((a, b) => a.position - b.position)
+        })
+    })
+}
+
 
 // __ Проблема с draggable
 // __ Если день пустой, то перетаскивание не срабатывает
-// __ Поэтому добавляем пустой день
+// __ Поэтому добавляем пустое задание в пустой день
 const correctRenderMatrix = () => {
     let draftId = -100
     renderMatrix.value.forEach((week, weekIndex) => {
 
         week.forEach((day, dayIndex) => {
-            const filteredDay = day.filter(item => item.id !== PLAN_DRAFT.id)
+            let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
             if (filteredDay.length === 0) {
-                const draft = {...PLAN_DRAFT, id: draftId--}
+                const draft = { ...SEWING_TASK_DRAFT, id: draftId--, position: 100 }
                 filteredDay.push(draft)
+            } else {
+                // __ Сортируем по позиции (по порядку)
+                // filteredDay = filteredDay.sort((a, b) => a.position - b.position)
             }
             renderMatrix.value[weekIndex][dayIndex] = filteredDay
+            // renderMatrix.value[weekIndex][dayIndex] = {...filteredDay, fullDay: true}
         })
-
     })
+
+    // copyRenderMatrix()
 }
 
-// __ Логика
+
+// __ Разница между предыдущим и текущим состоянием
+// __ Разница по задумке должна быть только в одной Заявке
+// __ Задача найти эти дни и эту Заявку
+const getDiffsInRenderMatrix = () => {
+    const diffs = {
+        dayFrom: '',
+        dayTo:   '',
+        task:    '',
+    }
+
+
+    // __ Получаем дату отсчета
+    let workDay = new Date(renderPeriod.start)
+    console.log(renderPeriod)
+
+    for (let i = 0; i < renderMatrix.value.length; i++) {
+
+        const weekBefore = renderMatrixCopy[i]
+        const weekAfter  = JSON.parse(JSON.stringify(renderMatrix.value[i]))
+
+        // console.log('weekAfter: ', weekAfter)
+        // console.log('weekBefore: ', weekBefore)
+
+        for (let j = 0; j < 7; j++) {
+
+            const dayAfter  = weekAfter[j]
+            const dayBefore = weekBefore[j]
+
+            const maxDayIndex = Math.max(dayAfter.length, dayBefore.length)
+            // for (let k = 0; k < maxDayIndex; k++) {
+            //
+            //     const taskBefore = dayBefore[k]
+            //     const taskAfter  = dayAfter[k]
+            //
+            //
+            //
+            // }
+
+
+
+
+            if (dayAfter.length < dayBefore.length) {
+                diffs.dayFrom = formatToYMD(workDay)
+
+
+
+            } else if (dayAfter.length > dayBefore.length) {
+                diffs.dayTo = formatToYMD(workDay)
+            } else {
+
+            }
+
+
+            workDay = additionDays(workDay, 1)
+            console.log(formatToYMD(workDay))
+        }
+
+
+        // for (let j = 0; j < renderMatrix.value[i].length; j++) {
+        //     const current = renderMatrix.value[i][j]
+        //     const previous = renderMatrixCopy[i][j]
+        //
+        //     if (JSON.stringify(current) !== JSON.stringify(previous)) {
+        //         diffs.push({ week: i, day: j, current, previous })
+        //     }
+        // }
+
+
+    }
+
+
+    return diffs
+}
+
+// __ Перетаскивание мышью СЗ
+const dragAndDropSewingTask = () => {
+    // correctRenderMatrix()
+    // return
+
+    clearRenderMatrix() // __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+    setTaskPositionInRenderMatrix() // __ Перенумеровываем задания в матрице рендера
+
+    // const differences = getDiffsInRenderMatrix()    // __ Получаем разницу между предыдущим и текущим состоянием
+    // console.log('differences: ', differences)
+
+    // saveDifferences(differences) // __ Сохраняем разницу между предыдущим и текущим состоянием
+
+    copyRenderMatrix()
+    correctRenderMatrix()
+
+
+}
+
+
+// __ Получаем дату начала недели
 const getStartWeekDate = (weekOrder: number /* порядковы номер недели */) => additionDays(new Date(renderPeriod.start), weekOrder * 7)
+
 
 watch(() => renderMatrix.value, () => {
 
     // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
 
-}, {immediate: true, deep: true})
-
+}, { immediate: true, deep: true })
 
 
 onMounted(async () => {
@@ -120,34 +254,20 @@ onMounted(async () => {
         loadingService,
         async () => {
 
-            // warn: Порядок важен!
-            // await router.isReady().then(() => {
-            //     businessProcessIdFromRoute = route.params.businessProcessId as unknown as number
-            //     businessProcessNodeIdFromRoute = route.params.businessProcessNodeId as unknown as number
-            // })
+            // !!! Порядок важен
+            await sewingStore.getSewingTasks()  // __ Получаем SewingTasks и записываем в глобальную переменную в SewingStore
 
-            // await getBusinessProcessNode(businessProcessNodeIdFromRoute)    // Получаем узел бизнес-процесса
+            // console.log('globalSewingTasks: ', globalSewingTasks.value)
 
-            const sewingTasks = ref(await sewingStore.getSewingTasks())
-            sewingTasks.value.sort((a, b) => a.id - b.id)
+            await getPlanPeriod()               // __ Получаем период плана загрузок
 
-            console.log('sewingTasks: ', sewingTasks.value)
+            getRenderPeriod()
+            getRenderMatrix()
+            sortRenderMatrixByTaskPosition()
+            copyRenderMatrix()
+            correctRenderMatrix()
 
-
-
-            // plan.value = await getPlan(businessProcessIdFromRoute, businessProcessNodeIdFromRoute)
-            // await getPlanPeriod()       // Получаем период плана загрузок
-            //
-            // getRenderPeriod()
-            // getRenderMatrix()
-            // correctRenderMatrix()
-            //
-            // // if (DEBUG) console.log('businessProcessIdFromRoute:', businessProcessIdFromRoute)
-            // // if (DEBUG) console.log('businessProcessNodeIdFromRoute:', businessProcessNodeIdFromRoute)
-            // // if (DEBUG) console.log('plan:', plan.value)
-            // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
-
-
+            if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
         },
         undefined,
         // false,

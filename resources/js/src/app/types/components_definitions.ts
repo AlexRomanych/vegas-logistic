@@ -33,3 +33,12 @@ export interface ICheckboxData {
     name: string
     data: ICheckboxDataItem[]
 }
+
+
+
+// --- --------------------------------------------------------
+// ___ Данные для компонента AppRangeModalAsyncTS
+export interface IDividerItem {
+    name: string
+    amount: number
+}

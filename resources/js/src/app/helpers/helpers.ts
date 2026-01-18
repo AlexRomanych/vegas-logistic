@@ -11,7 +11,7 @@ import {
 } from '@/app/constants/colorsClasses.js'
 
 import {
-    fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
+    fontPico, fontNano, fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
 } from '@/app/constants/fontSizes.js'
 
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
@@ -93,6 +93,12 @@ export function getFontSizeClass(param = fontNormal) {
 
     let textSizeClass = ''
     switch (param) {
+        case fontPico:
+            textSizeClass = 'text-pc'
+            break
+        case fontNano:
+            textSizeClass = 'text-nn'
+            break
         case fontMicro:
             textSizeClass = 'text-mc'
             break

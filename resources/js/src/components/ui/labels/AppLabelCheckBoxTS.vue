@@ -7,7 +7,7 @@
         </label>
         <div
             :class="[width, height, backgroundColor, borderColor, currentTextColor, textSizeClass, semibold, horizontalAlign]"
-            class="flex flex-col justify-center app-div"
+            class="select-none flex flex-col justify-center app-div"
             @click="labelClick"
         >
             {{ stateChar }}
@@ -52,7 +52,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     id: 'id-label-checkbox',
-    label: 'label',
+    label: '',
     width: 'w-[200px]',
     height: 'h-[30px]',
     align: 'center',

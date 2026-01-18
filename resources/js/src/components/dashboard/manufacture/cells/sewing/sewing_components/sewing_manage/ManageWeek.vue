@@ -14,7 +14,7 @@
 
                 <ManageDay
                     :date="getDate(idx)"
-                    :day="week[idx].length ? week[idx] : []"
+                    :day="(week[idx].length ? week[idx] : []) as ISewingTask[]"
                     @drag-and-drop="dragAndDrop"
                 />
             </div>
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { IPlanMatrixWeek } from '@/types'
+import type { IPlanMatrixWeek, ISewingTask } from '@/types'
 
 import { computed, watch } from 'vue'
 

@@ -1,4 +1,4 @@
-import type { IPeriod, IPlan, IPlanMatrix } from '@/types'
+import type { IPeriod, IPlanMatrix, IPlanMatrixDay, IPlanMatrixDayItem } from '@/types'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import {
     additionDays,
@@ -9,46 +9,47 @@ import {
     getSundayAfter
 } from '@/app/helpers/helpers_date'
 
+// ___ Самое главное - это поле action_at
 
 // ___ Функция, которая возвращает период для рендера плана (находит границы данных и расширяет до ПН до и ВС после)
-export function getRenderPeriodForPlan(plan: IPlan[]): IPeriod {
+export function getRenderPeriodForPlan(plan: IPlanMatrixDayItem[]): IPeriod {
     const datesArray = getRenderArrayForPlan(plan)
     if (datesArray.length === 0) return PERIOD_DRAFT
     return {
         start: formatToYMD(getMondayBefore(datesArray[0])),
-        end: formatToYMD(getSundayAfter(datesArray[datesArray.length - 1])),
+        end:   formatToYMD(getSundayAfter(datesArray[datesArray.length - 1])),
     }
 }
 
 // ___ Функция, которая возвращает матрицу для рендера плана
 // ___ Это сортированный массив дат, на которые нужно отрисовать план
-export function getRenderArrayForPlan(plan: IPlan[]): Date[] {
-    const datesSet = new Set(plan.map(planItem => splitDate(planItem.action_at)))
+export function getRenderArrayForPlan(plan: IPlanMatrixDayItem[]): Date[] {
+    const datesSet   = new Set(plan.map(planItem => splitDate(planItem.action_at)))
     const datesArray = Array.from(datesSet).map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime())
     return datesArray
 }
 
 
 // ___ Возвращает матрицу для рендера плана
-export function getRenderMatrixForPlan(plan: IPlan[], renderPeriod: IPeriod): IPlanMatrix {
+export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod: IPeriod): IPlanMatrix {
 
     const daysDifference = getDaysDifference(renderPeriod.start, renderPeriod.end)
-    const weeksAmount = (daysDifference + 1) / 7
+    const weeksAmount    = (daysDifference + 1) / 7
 
     const renderMatrix = []
-    let workDate = new Date(renderPeriod.start)
+    let workDate       = new Date(renderPeriod.start)
 
     for (let i = 0; i < weeksAmount; i++) {
 
         const weekLoads = []
         for (let j = 0; j < 7; j++) {
 
-            const dayLoads: IPlan[] = []
-            let loadPosition = 0
+            const dayLoads: IPlanMatrixDay = []
+            let loadPosition    = 0
 
             plan.forEach(planItem => {
                 if (areDatesEqual(workDate, new Date(splitDate(planItem.action_at)))) {
-                    planItem.load_position = ++loadPosition,
+                    // planItem.load_position = ++loadPosition,
                     dayLoads.push(planItem)
                 }
             })
@@ -69,15 +70,15 @@ const splitDate = (date: string) => {
 }
 
 // ___ Функция, которая проверяет, находится ли дата в периоде
-export function ifDateInPeriod (date: Date, period: IPeriod | null): boolean {
+export function ifDateInPeriod(date: Date, period: IPeriod | null): boolean {
     if (!period) return false
 
     const startDate = new Date(period.start)
-    const endDate = new Date(period.end)
+    const endDate   = new Date(period.end)
 
     const timeToCheck = date.getTime()
-    const startTime = startDate.getTime()
-    const endTime = endDate.getTime()
+    const startTime   = startDate.getTime()
+    const endTime     = endDate.getTime()
 
     return timeToCheck >= startTime && timeToCheck <= endTime
 }

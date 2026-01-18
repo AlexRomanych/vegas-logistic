@@ -5,9 +5,10 @@
 // line -------------------------------------------------------------------
 
 
-import type { IDims } from '@/types/index.ts'
+import type { IDims, IPlanMatrixDayItem } from '@/types/index.ts'
+import { AUTO, AVERAGE, SEWING_MACHINES, SOLID_HARD, SOLID_LITE, UNDEFINED, UNIVERSAL } from '@/app/constants/sewing.ts'
 
-export interface ISewingTask {
+export interface ISewingTask extends IPlanMatrixDayItem {
     action_at: string
     active: boolean
     change: number
@@ -20,13 +21,13 @@ export interface ISewingTask {
 // __ Связь с Содержимым СЗ
 export interface ISewingTaskLine {
     id: number
-    amount: number                          // __ Общее количество в заявке
-    amount_avg: null | IAmountAvg[]         // __ Количество для средней модели по статистике
-    time: ISewingTaskLineTime[]             // __ Трудозатраты
+    amount: number                                  // __ Общее количество в заявке
+    amount_avg: null | ISewingTaskLineAmountAvg     // __ Количество для средней модели по статистике
+    time: ISewingTaskLineTime                       // __ Трудозатраты
     created_at: string | null
     false_reason: string | null
     finished_at: string | null
-    finished_by: number | null              // __ Тут в будущем добавим объект пользователя (Worker)
+    finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
     order_line: ISewingTaskOrderLine
 }
@@ -109,22 +110,28 @@ export interface ISewingTaskModel {
     is_solid_lite: boolean
     is_undefined: boolean
     is_universal: boolean
+    is_average: boolean
+    machine_type: ISewingMachineKeys
 }
 
+// __ Типы ШМ
+export type ISewingMachineKeys =
+    typeof UNIVERSAL |
+    typeof AUTO |
+    typeof SOLID_HARD |
+    typeof SOLID_LITE |
+    typeof UNDEFINED |
+    typeof AVERAGE
+
 // __ Ключи для Типов ШМ
-type IAvgKeys =
-    'time_universal' |
-    'time_auto' |
-    'time_solid_hard' |
-    'time_solid_lite' |
-    'time_undefined' |
-    'time_average'
+type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
+
 
 // __ Тип для Средних значений для Average модели
-type IAmountAvg = Record<IAvgKeys, number>
+type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
 
 // __ Трудозатраты
-type ISewingTaskLineTime = Record<IAvgKeys, number>
+type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
 
 
 // --- --------------------------------------------------------------
@@ -135,12 +142,23 @@ export interface ISewingTaskStatusEntity {
     name: string
     color: string
     position: number
-    description?: string|null
+    description?: string | null
     active?: boolean
     status?: number
-    comment?: string|null
-    note?: string|null
-    meta?: string|null
-    created_at?: string|null
-    updated_at?: string|null
+    comment?: string | null
+    note?: string | null
+    meta?: string | null
+    created_at?: string | null
+    updated_at?: string | null
 }
+
+// --- ------------------------------------------------------------
+// __ Структура для расчета Трудозатрат и Количества по ШМ для рендеринга в шаблоне
+// __ Сначала определим тип структуры данных
+export type IStatItem = {
+    time: number
+    amount: number
+};
+// __ Создаем тип для объекта amount, где ключами будут только ключи из SEWING_MACHINES
+export type IAmountAndTime = Record<keyof typeof SEWING_MACHINES, IStatItem>
+// --- ------------------------------------------------------------

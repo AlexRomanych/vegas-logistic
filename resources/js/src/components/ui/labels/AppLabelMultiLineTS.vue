@@ -11,7 +11,8 @@
             horizontalAlign,
             roundedCSS,
         ]"
-        class="flex flex-col m-0.5 app-label justify-center"
+        :style="color ? {'background-color': color} : ''"
+        class="flex flex-col m-0.5 app-label justify-center select-none"
         @click="labelClick"
     >
         <div v-for="(text, idx) in textArray" :key="idx">
@@ -45,6 +46,7 @@ interface IProps {
     bold?: boolean
     align?: IHorizontalAlign
     rounded?: string
+    color?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -56,6 +58,7 @@ const props = withDefaults(defineProps<IProps>(), {
     bold: true,
     align: 'left',
     rounded: 'rounded-lg',
+    color: '',
 })
 
 const emits = defineEmits<{

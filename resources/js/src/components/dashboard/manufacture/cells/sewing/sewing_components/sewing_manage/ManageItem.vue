@@ -1,13 +1,13 @@
 <template>
-    <div v-if="item.id > 0" class="flex" >
+    <div v-if="item.id > 0" class="flex">
 
         <!-- __ Клиент -->
-        <AppLabelTS
+        <AppLabelMultiLineTS
             v-if="render.client.show"
             :align="render.client.align"
-            :color="item.order_type.color"
-            :height="DEFAULT_HEIGHT"
-            :text="render.client.data()"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text="globalSewingTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
             :text-size="render.client.textSize"
             :type="render.client.type"
             :width="render.client.width"
@@ -16,49 +16,141 @@
         />
 
         <!-- __ Номер заявки -->
-        <AppLabelTS
+        <AppLabelMultiLineTS
             v-if="render.orderNo.show"
             :align="render.orderNo.align"
-            :color="item.order_type.color"
-            :height="DEFAULT_HEIGHT"
-            :text="render.orderNo.data()"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text="globalSewingTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
             :text-size="render.orderNo.textSize"
             :type="render.orderNo.type"
             :width="render.orderNo.width"
+            class="plan-item"
             rounded="rounded-[4px]"
+        />
+
+        <!-- __ Количество + Трудозатраты Общие -->
+        <ManageItemDataLabel
+            v-if="render.amount.show"
+            :align="render.amount.align"
+            :amount="getTotalAmount"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text-size="render.amount.textSize"
+            :time="getTotalTime"
+            :time-show="globalSewingTaskTimesShow"
+            :type="render.amount.type"
+            :width="render.amount.width"
             class="plan-item"
         />
 
-        <!-- __ Количество -->
-        <AppLabelTS
-            v-if="render.amount.show"
+
+        <!-- __ Количество + Трудозатраты УШМ -->
+        <ManageItemDataLabel
+            v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
-            :color="item.order_type.color"
-            :height="DEFAULT_HEIGHT"
-            :text="render.amount.data()"
+            :amount="amountAndTime[SEWING_MACHINES.UNIVERSAL].amount"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
             :text-size="render.amount.textSize"
+            :time="amountAndTime[SEWING_MACHINES.UNIVERSAL].time"
+            :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            rounded="rounded-[4px]"
+            class="plan-item"
+        />
+
+        <!-- __ Количество + Трудозатраты АШМ -->
+        <ManageItemDataLabel
+            v-if="globalSewingTaskFullDaysShow"
+            :align="render.amount.align"
+            :amount="amountAndTime[SEWING_MACHINES.AUTO].amount"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text-size="render.amount.textSize"
+            :time="amountAndTime[SEWING_MACHINES.AUTO].time"
+            :time-show="globalSewingTaskTimesShow"
+            :type="render.amount.type"
+            :width="render.amount.width"
+            class="plan-item"
+        />
+
+        <!-- __ Количество + Трудозатраты Solid Hard -->
+        <ManageItemDataLabel
+            v-if="globalSewingTaskFullDaysShow"
+            :align="render.amount.align"
+            :amount="amountAndTime[SEWING_MACHINES.SOLID_HARD].amount"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text-size="render.amount.textSize"
+            :time="amountAndTime[SEWING_MACHINES.SOLID_HARD].time"
+            :time-show="globalSewingTaskTimesShow"
+            :type="render.amount.type"
+            :width="render.amount.width"
+            class="plan-item"
+        />
+
+        <!-- __ Количество + Трудозатраты Solid Lite -->
+        <ManageItemDataLabel
+            v-if="globalSewingTaskFullDaysShow"
+            :align="render.amount.align"
+            :amount="amountAndTime[SEWING_MACHINES.SOLID_LITE].amount"
+            :color="item.order.order_type.color"
+            :height="dataHeight"
+            :text-size="render.amount.textSize"
+            :time="amountAndTime[SEWING_MACHINES.SOLID_LITE].time"
+            :time-show="globalSewingTaskTimesShow"
+            :type="render.amount.type"
+            :width="render.amount.width"
+            class="plan-item"
+        />
+
+        <!-- __ Количество + Трудозатраты Неопознанные -->
+        <ManageItemDataLabel
+            v-if="globalSewingTaskFullDaysShow"
+            :align="render.amount.align"
+            :amount="amountAndTime[SEWING_MACHINES.UNDEFINED].amount"
+            :color="amountAndTime[SEWING_MACHINES.UNDEFINED].amount === 0 ? item.order.order_type.color : 'red'"
+            :height="dataHeight"
+            :text-size="render.amount.textSize"
+            :time="amountAndTime[SEWING_MACHINES.UNDEFINED].time"
+            :time-show="globalSewingTaskTimesShow"
+            :type="render.amount.type"
+            :width="render.amount.width"
             class="plan-item"
         />
 
     </div>
+
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { computed, reactive, } from 'vue'
 
-import type { IHorizontalAlign, IPlan } from '@/types'
-import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-import type { IFontsType } from '@/app/constants/fontSizes.ts'
+import { storeToRefs } from 'pinia'
 
-import { PLAN_DRAFT } from '@/app/constants/plans.ts'
+import { useSewingStore } from '@/stores/SewingStore.ts'
 
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import type {
+    IHorizontalAlign,
+    ISewingTask,
+    IFontsType,
+    IColorTypes,
+    IAmountAndTime
+} from '@/types'
+
+import { SEWING_MACHINES, SEWING_TASK_DRAFT, } from '@/app/constants/sewing.ts'
+// import { DEBUG } from '@/app/constants/common.ts'
+
+import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import ManageItemDataLabel
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
 
 interface IProps {
-    item?: IPlan
+    amountAndTime: IAmountAndTime
+    item?: ISewingTask
     columnsWidth?: Record<string, string>
     index?: number
 }
@@ -75,47 +167,64 @@ interface IRenderItem {
 type IRender = Record<string, IRenderItem>
 
 const props = withDefaults(defineProps<IProps>(), {
-    item: () => PLAN_DRAFT,
+
+    item:         () => SEWING_TASK_DRAFT,
     columnsWidth: () => ({
-        client: 'w-[110px]',
-        amount: 'w-[50px]',
+        client:  'w-[90px]',
+        amount:  'w-[50px]',
         orderNo: 'w-[50px]',
-        common: 'w-[164px]',
+        common:  'w-[164px]',
     }),
-    index: 0,
+    index:        0,
 })
 
-const DEFAULT_HEIGHT = 'h-[25px]'
+// __ Данные из Хранилища
+const sewingStore = useSewingStore()
+
+const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow } = storeToRefs(sewingStore)
+
+// __ Высота данных
+const dataHeight = computed(() => globalSewingTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
 
 // __ Подготавливаем рендер
 const render: IRender = reactive({
-    client: {
-        show: true,
-        width: props.columnsWidth.client,
-        type: 'dark',
-        align: 'left',
-        data: () => props.item.client.short_name,
+    client:  {
+        show:     true,
+        width:    props.columnsWidth.client,
+        type:     'dark',
+        align:    'left',
+        data:     () => `${props.item.position}. ${props.item.order.client.short_name}`,
         textSize: 'micro',
     },
     orderNo: {
-        show: true,
-        width: props.columnsWidth.orderNo,
-        type: 'dark',
-        align: 'center',
-        data: () => props.item.order_no,
+        show:     true,
+        width:    props.columnsWidth.orderNo,
+        type:     'dark',
+        align:    'center',
+        data:     () => props.item.order.order_no_str,
         textSize: 'micro',
     },
-    amount: {
-        show: true,
-        width: props.columnsWidth.amount,
-        type: 'dark',
-        align: 'center',
-        data: () => props.item.amounts.totals ? props.item.amounts.totals.toString() : '',
+    amount:  {
+        show:     true,
+        width:    props.columnsWidth.amount,
+        type:     'dark',
+        align:    'center',
+        data:     () => props.item.sewing_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
         textSize: 'micro',
     },
 })
 
-// console.log('index: ', props.index)
+// __ Общее Количество
+const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
+
+// __ Общее Трудозатраты
+const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))
+
+// __ Подготавливаем дату отгрузки для отображения
+const formattedLoadDate = computed(() => {
+    return formatDateInFullFormat(props.item.order.load_at, true, false)
+})
+
 
 
 </script>

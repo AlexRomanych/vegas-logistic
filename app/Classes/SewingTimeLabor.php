@@ -177,11 +177,17 @@ class SewingTimeLabor
     public function getAveragesAmount(): array
     {
         return [
-            SewingTask::FIELD_UNIVERSAL  => $this->amount * 0.4,
-            SewingTask::FIELD_AUTO       => $this->amount * 0.3,
-            SewingTask::FIELD_SOLID_HARD => $this->amount * 0.15,
-            SewingTask::FIELD_SOLID_LITE => $this->amount * 0.1,
-            SewingTask::FIELD_UNDEFINED  => $this->amount * 0.05,
+            ModelsService::TYPE_UNIVERSAL  => $this->amount * 0.4,
+            ModelsService::TYPE_AUTO       => $this->amount * 0.3,
+            ModelsService::TYPE_SOLID_HARD => $this->amount * 0.15,
+            ModelsService::TYPE_SOLID_LITE => $this->amount * 0.1,
+            ModelsService::TYPE_UNDEFINED  => $this->amount * 0.05,
+
+            // SewingTask::FIELD_UNIVERSAL  => $this->amount * 0.4,
+            // SewingTask::FIELD_AUTO       => $this->amount * 0.3,
+            // SewingTask::FIELD_SOLID_HARD => $this->amount * 0.15,
+            // SewingTask::FIELD_SOLID_LITE => $this->amount * 0.1,
+            // SewingTask::FIELD_UNDEFINED  => $this->amount * 0.05,
         ];
     }
 

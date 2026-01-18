@@ -21,7 +21,12 @@ const URL_ORDERS_VALIDATE = 'orders/validate/'  // URL для проверки �
 const URL_ORDER_DELETE    = 'orders/delete/'       // URL для удаления заказов
 
 
+
+export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой прирендере расчетных значений
+
 export const useOrdersStore = defineStore('orders', () => {
+
+
 
 
     // Список заказов, которые получили к отображению
@@ -99,6 +104,8 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
     return {
+
+
         ordersShow,
         ordersShowIsChanged,
 

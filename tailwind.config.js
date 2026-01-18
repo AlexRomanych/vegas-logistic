@@ -33,7 +33,9 @@ export default {
             },
 
             fontSize: {
-                'mc': ['0.625rem', { lineHeight: '0.825rem' }],   // font-mc (micro)
+                'mc': ['0.625rem', { lineHeight: '0.825rem' }],   // text-mc (micro)
+                'nn': ['0.525rem', { lineHeight: '0.825rem' }],   // text-nn (nano)
+                'pc': ['0.425rem', { lineHeight: '0.825rem' }],   // text-pc (pico)
             },
         }
     },
@@ -42,6 +44,9 @@ export default {
     },
     plugins: [],
     safelist: [
+        'text-mc',
+        'text-nn',
+        'text-pc',
         'text-2xl',
         'text-3xl',
         {

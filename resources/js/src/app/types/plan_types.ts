@@ -72,12 +72,28 @@ export type IPlanClientRegion = 'east' | 'west'
 // __ Матрица рендера плана загрузок
 export type IPlanMatrix = IPlanMatrixWeek[]
 export type IPlanMatrixWeek = IPlanMatrixDay[]
-export type IPlanMatrixDay = IPlan[]
+export type IPlanMatrixDay = IPlanMatrixDayItem[]
+// export type IPlanMatrixDayItem = object & {action_at: string}
+export type IPlanMatrixDayItem = {
+    action_at: string;
+    [key: string]: any;
+};
+// export type IPlanMatrixDay = IPlan[]
 
 export type IPlanLoadsMatrix = IPlanLoadsMatrixWeek[]
 export type IPlanLoadsMatrixWeek = IPlanLoadsMatrixDay[]
 export type IPlanLoadsMatrixDay = IPlanLoad[]
 // export type IPlanLoadsMatrix = IPlanLoad[][][]    // То же самое
+
+
+// export type IPlanMatrix = IPlanMatrixWeek[]
+// export type IPlanMatrixWeek = IPlanMatrixDay[]
+// export type IPlanMatrixDay = IPlan[]
+//
+// export type IPlanLoadsMatrix = IPlanLoadsMatrixWeek[]
+// export type IPlanLoadsMatrixWeek = IPlanLoadsMatrixDay[]
+// export type IPlanLoadsMatrixDay = IPlanLoad[]
+// // export type IPlanLoadsMatrix = IPlanLoad[][][]    // То же самое
 
 
 // line -------------------------------------------------------------------

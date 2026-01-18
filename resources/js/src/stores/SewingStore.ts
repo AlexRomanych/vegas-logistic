@@ -1,13 +1,13 @@
 // Хранилище для ПЯ Швейки
 
-import { defineStore } from 'pinia'
-// import { ref, reactive, computed, watch } from 'vue'
+import { defineStore, storeToRefs } from 'pinia'
+import { ref, reactive, computed, watch } from 'vue'
 
 import { jwtGet, jwtPost, jwtDelete, jwtPatch } from '@/app/utils/jwt_api'
-import type { IPeriod } from '@/types'
-
+import type { IPeriod, ISewingTask, ISewingTaskLine } from '@/types'
+// import { usePlansStore } from '@/stores/PlansStore.ts'
 import { DEBUG } from '@/app/constants/common.ts'
-// import { openNewTab } from '@/app/helpers/helpers_service'
+
 
 
 // Устанавливаем глобальные переменные
@@ -18,6 +18,37 @@ const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch'
 
 export const useSewingStore = defineStore('sewing', () => {
 
+    // --- ------------------------------------------------------------------------------------------
+    // --- -- Этот функционал (Пошива) будем полностью реализовывать через Store API
+    // --- ------------------------------------------------------------------------------------------
+
+    // --- ------------------------------------------------------------------------------------------
+    // --- -- Глобальные переменные
+    // --- ------------------------------------------------------------------------------------------
+
+    // __ Массив СЗ Пошива
+    const globalSewingTasks = ref<ISewingTask[]>([])
+
+    // __ Показывать ли Трудозатраты в календаре СЗ Пошива
+    const globalSewingTaskTimesShow = ref(true)
+
+    // __ Показывать ли Раскрытый день или нет в календаре СЗ Пошива
+    const globalSewingTaskFullDaysShow = ref(true)
+
+    // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
+    const globalSewingTaskOrderTypeColor = ref(true)
+
+    // __ Текущая Запись (SewingLine) в карточке СЗ в календаре СЗ Пошива
+    const globalManageTaskCardActiveSewingLine = ref<ISewingTaskLine | null>(null)
+
+    // --- ------------------------------------------------------------------------------------------
+
+
+    // const planStore   = usePlansStore()
+    // const {planPeriodGlobal} = storeToRefs(planStore)
+
+
+
     // __ Получение СЗ Пошива с сервера за период
     const getSewingTasks = async (period: IPeriod | null = null) => {
         let response
@@ -27,6 +58,9 @@ export const useSewingStore = defineStore('sewing', () => {
             response = await jwtGet(URL_SEWING_TASKS)
         }
         const result = await response
+
+        globalSewingTasks.value = result.data   // кэшируем
+
         if (DEBUG) console.log('SewingStore: getSewingTasks: ', result)
         return result.data
     }
@@ -49,10 +83,17 @@ export const useSewingStore = defineStore('sewing', () => {
 
 
     return {
+        globalSewingTasks,
+
+        globalSewingTaskTimesShow,
+        globalSewingTaskFullDaysShow,
+        globalSewingTaskOrderTypeColor,
+        globalManageTaskCardActiveSewingLine,
 
         getSewingTasks,
         getSewingTaskStatuses,
         patchSewingTaskStatusColor,
+
 
     }
 })
