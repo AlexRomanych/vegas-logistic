@@ -9,6 +9,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.position.width"
             text="#"
+            class="field"
         />
 
         <!-- __ Размер модели -->
@@ -19,6 +20,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.size.width"
             text="Размер"
+            class="field"
         />
 
         <!-- __ Название модели -->
@@ -29,6 +31,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.model.width"
             text="Модель"
+            class="field"
         />
 
         <!-- __ Количество -->
@@ -38,7 +41,73 @@
             :text-size="DEFAULT_TEXT_SIZE"
             :type="DEFAULT_TYPE"
             :width="renderData.amount.width"
-            text="шт."
+            text="Шт."
+            class="field"
+        />
+
+        <!-- __ Трудозатраты -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.time.width"
+            text="Тр-ты"
+            class="field"
+        />
+        <!-- __ УШМ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.machine.width"
+            text="У"
+            class="field"
+        />
+
+        <!-- __ АШМ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.machine.width"
+            text="А"
+            class="field"
+        />
+
+        <!-- __ Глухие сложные -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.machine.width"
+            text="ГС"
+            class="field"
+        />
+
+        <!-- __ Глухие простые -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.machine.width"
+            text="ГП"
+            class="field"
+        />
+
+        <!-- __ Неопознанные -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="renderData.machine.width"
+            text="Н"
+            class="field"
         />
 
         <!-- __ Ткань -->
@@ -49,6 +118,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.textile.width"
             text="Ткань"
+            class="field"
         />
 
         <!-- __ Состав -->
@@ -60,6 +130,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.describe.width"
             text="Состав"
+            class="field"
         />
 
         <!-- __ Примечание 1 -->
@@ -71,6 +142,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.describe.width"
             text="Прим. 1"
+            class="field"
         />
 
         <!-- __ Примечание 2 -->
@@ -82,6 +154,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.describe.width"
             text="Прим. 2"
+            class="field"
         />
 
         <!-- __ Примечание 3 -->
@@ -93,6 +166,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.describe.width"
             text="Прим. 3"
+            class="field"
         />
 
         <!-- __ Типовая конструкция чехла (ТКЧ) -->
@@ -103,6 +177,7 @@
             :type="DEFAULT_TYPE"
             :width="renderData.tkch.width"
             text="ТКЧ"
+            class="field"
         />
 
         <!-- __ Кант -->
@@ -113,58 +188,8 @@
             :type="DEFAULT_TYPE"
             :width="renderData.kant.width"
             text="Кант"
+            class="field"
         />
-
-        <!-- __ УШМ -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.machine.width"
-            text="У"
-        />
-
-        <!-- __ АШМ -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.machine.width"
-            text="А"
-        />
-
-        <!-- __ Глухие сложные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.machine.width"
-            text="ГС"
-        />
-
-        <!-- __ Глухие простые -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.machine.width"
-            text="ГП"
-        />
-
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.machine.width"
-            text="Н"
-        />
-
 
     </div>
 
@@ -196,5 +221,7 @@ const DEFAULT_TYPE      = 'primary'
 </script>
 
 <style scoped>
-
+.field {
+    @apply cursor-pointer;
+}
 </style>

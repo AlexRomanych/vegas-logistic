@@ -141,7 +141,7 @@
             <template #item="{ element, index }">
 
                 <ManageItem
-                    :amount-and-time="getAmountAndTime(element)"
+                    :amount-and-time="getSewingTaskAmountAndTime(element)"
                     :columns-width="columnsWidth"
                     :index="index"
                     :item="element"
@@ -315,6 +315,7 @@ import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
 import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
+import { createAmountAndTimeObj, getSewingTaskAmountAndTime } from '@/app/helpers/manufacture/helpers_sewing.ts'
 
 
 type IDay = ISewingTask & IPlanMatrixDayItem
@@ -425,78 +426,79 @@ const finishDrag = (evt: any) => {
 }
 
 
-// __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-const createAmountAndTimeObj = () => Object.values(SEWING_MACHINES).reduce((acc, value) => {
-    acc[value] = { time: 0, amount: 0 }
-    return acc
-}, {} as IAmountAndTime)
+// // __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+// const createAmountAndTimeObj = () => Object.values(SEWING_MACHINES).reduce((acc, value) => {
+//     acc[value] = { time: 0, amount: 0 }
+//     return acc
+// }, {} as IAmountAndTime)
 
 // __ Создаем объект для вывода данных в шаблоне
 // __ Ключи - это типы машин, а значения - это объекты с ключами time и amount
-const getAmountAndTime = (item: ISewingTask) => {
-
-    // __ Функция для получения типа машины по ключу
-    const getMachineType = (machineType: ISewingMachineKeys) => {
-        const findMachineTypeKey = Object.keys(SEWING_MACHINES).find(key => SEWING_MACHINES[key] === machineType)
-        return findMachineTypeKey ? SEWING_MACHINES[findMachineTypeKey] : null
-    }
-
-    // __ Создаем сам объект данных и инициализируем его нулями
-    const amountAndTimeObj = createAmountAndTimeObj()
-
-    // __ Проходим по всем sewing_lines и суммируем данные
-    item.sewing_lines?.forEach(sewing_line => {
-        // __ Получаем тип машины модели
-        let machineType: ISewingMachineKeys | null = SEWING_MACHINES.UNDEFINED
-        if (sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) {         // __ Это условие того, что элемент - чехол
-            machineType = getMachineType(sewing_line.order_line.model.base.machine_type)        // __ Получаем тип машины модели по базовой модели
-        } else if (!sewing_line.order_line.model.base && sewing_line.order_line.model.cover) {  // __ Это условие того, что элемент - матрас
-            machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
-        } else if (!sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) { // __ Это условие того, что элемент - расчетный)
-            machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
-        }
-        if (!machineType) {
-            return  // __ Страховочка
-        }
-
-        // __ Получаем количество
-        if (machineType === SEWING_MACHINES.AVERAGE) {
-            if (sewing_line.amount_avg) {
-                Object.entries(sewing_line.amount_avg).forEach(([key, value]) => {
-                    const machineType = getMachineType(key as ISewingMachineKeys)
-                    if (!machineType) {
-                        return  // __ Страховочка
-                    }
-                    amountAndTimeObj[machineType].amount += value
-                })
-            } else {
-                console.log('Error! Amount_avg is not defined for: ' + sewing_line.order_line.model.main.name)
-            }
-        } else {
-            amountAndTimeObj[machineType].amount += sewing_line.amount
-        }
-
-        // __ Получаем время
-        Object.entries(sewing_line.time).forEach(([key, value]) => {
-            const machineTypeKey = key.replace('time_', '') as ISewingMachineKeys
-            const machineType    = getMachineType(machineTypeKey)
-            if (!machineType) {
-                return  // __ Страховочка
-            }
-            amountAndTimeObj[machineType].time += value
-        })
-    })
-    return amountAndTimeObj
-}
+// const getAmountAndTime = (item: ISewingTask) => {
+//
+//     // __ Функция для получения типа машины по ключу
+//     const getMachineType = (machineType: ISewingMachineKeys) => {
+//         const findMachineTypeKey = Object.keys(SEWING_MACHINES).find(key => SEWING_MACHINES[key] === machineType)
+//         return findMachineTypeKey ? SEWING_MACHINES[findMachineTypeKey] : null
+//     }
+//
+//     //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+//     const amountAndTimeObj = createAmountAndTimeObj()
+//
+//     // __ Проходим по всем sewing_lines и суммируем данные
+//     item.sewing_lines?.forEach(sewing_line => {
+//         // __ Получаем тип машины модели
+//         let machineType: ISewingMachineKeys | null = SEWING_MACHINES.UNDEFINED
+//         if (sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) {         // __ Это условие того, что элемент - чехол
+//             machineType = getMachineType(sewing_line.order_line.model.base.machine_type)        // __ Получаем тип машины модели по базовой модели
+//         } else if (!sewing_line.order_line.model.base && sewing_line.order_line.model.cover) {  // __ Это условие того, что элемент - матрас
+//             machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
+//         } else if (!sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) { // __ Это условие того, что элемент - расчетный)
+//             machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
+//         }
+//         if (!machineType) {
+//             return  // __ Страховочка
+//         }
+//
+//         // __ Получаем количество
+//         if (machineType === SEWING_MACHINES.AVERAGE) {
+//             if (sewing_line.amount_avg) {
+//                 Object.entries(sewing_line.amount_avg).forEach(([key, value]) => {
+//                     const machineType = getMachineType(key as ISewingMachineKeys)
+//                     if (!machineType) {
+//                         return  // __ Страховочка
+//                     }
+//                     amountAndTimeObj[machineType].amount += value
+//                 })
+//             } else {
+//                 console.log('Error! Amount_avg is not defined for: ' + sewing_line.order_line.model.main.name)
+//             }
+//         } else {
+//             amountAndTimeObj[machineType].amount += sewing_line.amount
+//         }
+//
+//         // __ Получаем время
+//         Object.entries(sewing_line.time).forEach(([key, value]) => {
+//             const machineTypeKey = key.replace('time_', '') as ISewingMachineKeys
+//             const machineType    = getMachineType(machineTypeKey)
+//             if (!machineType) {
+//                 return  // __ Страховочка
+//             }
+//             amountAndTimeObj[machineType].time += value
+//         })
+//     })
+//     return amountAndTimeObj
+// }
 
 // __ Общее количество и время в виде Объекта
 const amountAndTimeTotalDay = computed(() => {
 
-    // __ Создаем сам объект данных и инициализируем его нулями
+    //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
     const amountAndTimeObj = createAmountAndTimeObj()
 
     props.day.forEach(sewingTask => {
-        const amountAndTime = getAmountAndTime(sewingTask)
+        const amountAndTime = getSewingTaskAmountAndTime(sewingTask)
+        // const amountAndTime = getAmountAndTime(sewingTask)
 
         Object.entries(amountAndTime).forEach(([key, value]) => {
             amountAndTimeObj[key].amount += value.amount
@@ -525,9 +527,15 @@ const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null)    
 const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
 
 const showSewingTaskCard = async (sewingTask: ISewingTask) => {
-    modalText.value = `Расширение Файла не соответствует шаблону !!!`
-    taskCard.value = sewingTask
-    await manageTaskCard.value!.show(sewingTask)             // показываем модалку и ждем ответ
+    const sewingTaskCopy = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
+    taskCard.value = sewingTaskCopy
+    const answer = await manageTaskCard.value!.show(sewingTaskCopy)
+    if (answer) {
+
+    } else {
+        taskCard.value = SEWING_TASK_DRAFT
+    }
+
 }
 
 

@@ -1,96 +1,22 @@
 <template>
     <Teleport to="body">
 
-
-        <div v-if="showModal"
-
-
-             class="dark-container">
-
+        <div v-if="showModal" class="dark-container">
 
             <div :class="[width, height, borderColor, 'modal-container max-h-[90vh] overflow-hidden']">
 
-                <!--<div class="close-cross-container">-->
                 <div class="flex justify-between w-full h-full items-center">
-                    <div class="flex h-full  ml-[20px]">
 
-                        <!-- __ Переместить все УШМ в другую группу -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text="activePanel === LEFT_PANEL_ID ? ' УШМ ▶' : '◀ УШМ'"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            :width="MENU_ITEMS_WIDTH"
-                        />
+                    <!-- __ Меню Карточки Заявки  -->
+                    <ManageTaskCardMenu
+                        :active-panel="activePanel"
+                        @divide-element-amount="divideElementAmount"
+                    />
 
-                        <!-- __ Переместить все АШМ в другую группу -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text="activePanel === LEFT_PANEL_ID ? ' АШМ ▶' : '◀ АШМ'"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            :width="MENU_ITEMS_WIDTH"
-                        />
-
-                        <!-- __ Переместить все ГС в другую группу -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text="activePanel === LEFT_PANEL_ID ? ' ГС ▶' : '◀ ГС'"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            :width="MENU_ITEMS_WIDTH"
-                        />
-
-                        <!-- __ Переместить все ГП в другую группу -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text="activePanel === LEFT_PANEL_ID ? ' ГП ▶' : '◀ ГП'"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            :width="MENU_ITEMS_WIDTH"
-                        />
-
-
-                        <!-- __ Разбить количество -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            text="◀ Разбить кол-во ▶"
-                            width="w-[150px]"
-                            @click="divideElementAmount"
-                        />
-
-                        <!-- __ Упорядочить -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            text="Упорядочить"
-                            width="w-[150px]"
-                        />
-
-                        <!-- __ Схлопнуть -->
-                        <AppLabelTS
-                            :align="MENU_ITEMS_ALIGN"
-                            :height="MENU_ITEMS_HEIGHT"
-                            :text-size="MENU_ITEMS_TEXT_SIZE"
-                            :type="MENU_ITEMS_TYPE"
-                            text="Схлопнуть"
-                            width="w-[150px]"
-                        />
-
-                    </div>
-
+                    <!-- __ Крестик закрытия -->
                     <div class="m-1 p-1 ml-auto">
                         <AppInputButton
-                            id="close"
+                            id="terminate"
                             :type="type"
                             height="w-5"
                             title="x"
@@ -99,12 +25,11 @@
                         />
                     </div>
                 </div>
-                <!--</div>-->
 
 
                 <!--<div class="w-full flex-grow overflow-y-auto px-[4px] custom-scrollbar">-->
 
-
+                <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
                 <div class="flex h-screen w-full bg-slate-900 p-4 gap-4 overflow-hidden">
 
                     <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
@@ -124,11 +49,9 @@
                                 :render-data="renderData"
                             />
 
-
                         </div>
 
                         <div class="flex-grow overflow-y-auto custom-scrollbar">
-
 
                             <!-- __ Сами Записи (SewingLines) с возможностью перетаскивания -->
                             <draggable
@@ -165,11 +88,17 @@
 
                         </div>
 
-                        <div class="flex-none bg-slate-700 p-3 border-t border-slate-600">
-                            <div class="flex justify-between text-white font-semibold px-2">
-                                <span>Всего позиций:</span>
-                                <span>50 шт.</span>
-                            </div>
+                        <div class="flex-none bg-slate-700 py-1 border-t border-slate-600">
+
+                            <!-- __ Итого: -->
+                            <ManageTaskCardTotals
+                                :amount-and-time="panel === LEFT_PANEL_ID ? leftPanelAmountAndTimeTotal : rightPanelAmountAndTimeTotal"
+                            />
+
+                            <!--<div class="flex justify-between text-white font-semibold px-2">-->
+                            <!--    <span>Всего позиций:</span>-->
+                            <!--    <span>50 шт.</span>-->
+                            <!--</div>-->
                         </div>
 
                     </div>
@@ -178,36 +107,48 @@
                 </div>
 
 
-                <div class="w-full h-full flex justify-end">
+                <div class="flex w-full items-center">
 
-                    <div v-if="mode === 'confirm'"
-                         class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :type="type"
-                            title="Да"
-                            @buttonClick="select(true)"
-                        />
+                    <div class="flex flex-1 justify-center w-full  ">
+
+                        <!-- __ Название СЗ + Клиент + Дата отгрузки -->
+                        <div>
+                            <div class="text-blue-400 font-semibold text-center">
+                                СЗ от <span class="text-green-400">{{ footTitle.action_at }}</span>
+                                для Заявки <span class="text-green-400">{{ footTitle.order }}</span>
+                                (дата загрузки на складе: <span class="text-green-400"> {{ footTitle.load_at }}</span>)
+                            </div>
+                        </div>
                     </div>
 
-                    <div
-                        class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
-                            :type="type"
-
-                            @buttonClick="select(false)"
-                        />
+                    <div class="flex gap-1 shrink-0">
+                        <div v-if="needForSave" class="my-1 py-1">
+                            <AppInputButton
+                                id="confirm"
+                                title="Сохранить"
+                                type="danger"
+                                @buttonClick="select(true)"
+                            />
+                        </div>
+                        <div class="my-1 py-1 pr-2">
+                            <AppInputButton
+                                id="close"
+                                :type="type"
+                                title="Закрыть"
+                                @buttonClick="select(false)"
+                            />
+                        </div>
                     </div>
 
                 </div>
-            </div>
-        </div>
 
+            </div>
+
+        </div>
 
     </Teleport>
 
+    <!-- __ Разбить Количество Модальное окно  -->
     <AppRangeModalAsyncTS
         ref="appRangeModalAsyncTS"
         :item="dividerElement"
@@ -220,27 +161,31 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch, } from 'vue'
+import { computed, reactive, ref, watch, watchEffect, } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
-import type { ISewingTask, IColorTypes, ISewingTaskLine, IDividerItem } from '@/types'
+import type {
+    ISewingTask, IColorTypes, ISewingTaskLine, IDividerItem, IAmountAndTime, ISewingLinesPanel
+} from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
+import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+import { getSewingTaskAmountAndTime } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import ManageTaskCardItem
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItem.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ManageTaskCardItemsHeader
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemsHeader.vue'
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
-import logs from '@/router/routes_logs.ts'
+import ManageTaskCardMenu
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardMenu.vue'
+import ManageTaskCardTotals
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardTotals.vue'
 
-// import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-// import ManageItem from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItem.vue'
 
 interface IProps {
     type?: IColorTypes,
@@ -276,20 +221,24 @@ const { globalManageTaskCardActiveSewingLine } = storeToRefs(sewingStore)
 
 
 // __ Данные (объект) правой панели
-const targetSewingLines = ref<ISewingTask['sewing_lines']>([])
+const targetSewingLines = ref<ISewingTaskLine[]>([])
+
+// __ Копия входящих данных (объект левой панели) для отслеживания изменений
+let taskMem: ISewingTask = JSON.parse(JSON.stringify(props.task))
+
+// __ Маяк изменений (для сохранения состояния при перетаскивании)
+const needForSave = ref(false)
+
+// __ Инфа в нижней части
+const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 
 // __ Переключатель панелей
-const LEFT_PANEL_ID  = 'left'
-const RIGHT_PANEL_ID = 'right'
-const activePanel    = ref(LEFT_PANEL_ID)
+const LEFT_PANEL_ID: ISewingLinesPanel  = 'left'
+const RIGHT_PANEL_ID: ISewingLinesPanel = 'right'
+const activePanel                       = ref<ISewingLinesPanel>(LEFT_PANEL_ID)
 
-// __ Константы меню
-const MENU_ITEMS_WIDTH     = 'w-[60px]'
-const MENU_ITEMS_HEIGHT    = 'h-[35px]'
-const MENU_ITEMS_TYPE      = 'primary'
-const MENU_ITEMS_ALIGN     = 'center'
-const MENU_ITEMS_TEXT_SIZE = 'mini'
-
+const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
+const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
 
 // __ Тип для модального окна
 const modalType            = ref<IColorTypes>('primary')
@@ -298,48 +247,29 @@ const modalMode            = ref<'inform' | 'confirm'>('inform')
 const dividerElement       = ref<IDividerItem>({ name: '', amount: 0 })
 const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
 
-
+// __ Стилистика
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 
 // __ Размеры колонок
 const renderData = {
-    position: {
-        width: 'w-[25px]',
-    },
-    size:     {
-        width: 'w-[70px]',
-    },
-    model:    {
-        width: 'w-[100px]',
-    },
-    amount:   {
-        width: 'w-[30px]',
-    },
-    textile:  {
-        width: 'w-[50px]',
-    },
-    machine:  {
-        width: 'w-[25px]',
-    },
-    describe: {
-        width: 'w-[50px]',
-    },
-    tkch:     {
-        width: 'w-[35px]',
-    },
-    kant:     {
-        width: 'w-[60px]',
-    },
-
-
+    position: { width: 'w-[25px]', },
+    size:     { width: 'w-[70px]', },
+    model:    { width: 'w-[100px]', },
+    amount:   { width: 'w-[30px]', },
+    time:     { width: 'w-[50px]', },
+    textile:  { width: 'w-[50px]', },
+    machine:  { width: 'w-[25px]', },
+    describe: { width: 'w-[50px]', },
+    tkch:     { width: 'w-[35px]', },
+    kant:     { width: 'w-[60px]', },
 }
 
 
 // __ Опции для draggable
 const dragOptions = computed(() => {
     return {
-        animation: 300,
+        animation:   300,
         group:       'orders',
         ghostClass:  'ghost',
         dragClass:   'drag',
@@ -361,6 +291,12 @@ const startDrag  = (evt: any) => {
 const finishDrag = (evt: any) => {
     // const element = evt.item._underlying_vm_
     // emits('drag-and-drop')
+
+    // console.log('finishDrag')
+    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
+    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
+
+
 }
 
 const showModal = ref(false)           // реактивность видимости модального окна
@@ -380,6 +316,12 @@ const show = (sewingTask: ISewingTask | null = null) => {
 
 const select = (value: boolean) => {
     if (resolvePromise) {
+
+        // __ Очищаем массив правой части, чтобы не было случайных данных при клике на другую Заявку
+        if (!value) {
+            targetSewingLines.value = []
+        }
+
         resolvePromise(value)
         showModal.value = false
         resolvePromise  = null
@@ -401,8 +343,16 @@ const setActiveSewingLine = (sewingLine: ISewingTaskLine) => {
 // __ Разбить количество
 const divideElementAmount = async () => {
     if (globalManageTaskCardActiveSewingLine.value) {
-        dividerElement.value.name   = globalManageTaskCardActiveSewingLine.value.order_line.model.main.name_report
-        dividerElement.value.amount = globalManageTaskCardActiveSewingLine.value.amount
+
+        // __ Копируем объект, чтобы не мутировать оригинал
+        const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
+
+        dividerElement.value.name =
+            activeSewingLineCopy.order_line.size + ' ' +
+            activeSewingLineCopy.order_line.model.main.name_report + ' ' +
+            activeSewingLineCopy.order_line.amount.toString() + ' шт.'
+
+        dividerElement.value.amount = activeSewingLineCopy.amount
     }
 
     console.log('dividerElement.value: ', dividerElement.value)
@@ -410,6 +360,8 @@ const divideElementAmount = async () => {
     if (dividerElement.value.amount > 1) {
         const answer = await appRangeModalAsyncTS.value!.show()             // показываем модалку и ждем ответ
         if (answer) {
+
+            // __ Получаем диапазон
             const range = appRangeModalAsyncTS.value!.range
             console.log(range)
         }
@@ -419,10 +371,58 @@ const divideElementAmount = async () => {
 // __ Следим за входящими данными
 // __ При монтировании компонента, они еще undefined
 watch(() => props.task, (value) => {
-    globalManageTaskCardActiveSewingLine.value = props.task?.sewing_lines[0]
+    globalManageTaskCardActiveSewingLine.value = props.task?.sewing_lines[0]        // __ Задаем активную запись
+
+    // __ Копируем входящие данные для отслеживания изменений
+    taskMem = JSON.parse(JSON.stringify(props.task))
+
+    // __ Обновляем инфу в нижней части
+    footTitle.action_at = formatDateInFullFormat(props.task.action_at)
+    footTitle.order     = props.task.order.client.short_name + ' №' + props.task.order.order_no_str
+    footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
+
+
+    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
+    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
+
+    // console.log('leftPanelAmountAndTimeTotal.value: ', leftPanelAmountAndTimeTotal.value)
+    // console.log('rightPanelAmountAndTimeTotal.value: ', rightPanelAmountAndTimeTotal.value)
+
+    // footTitle.value =
+    //     'СЗ от ' + formatDateInFullFormat(props.task.action_at) +
+    //     ' для Заявки ' + props.task.order.client.short_name + ' №' + props.task.order.order_no_str +
+    //     '(дата загрузки на складе: ' + formatDateInFullFormat(props.task.order.load_at) + ')'
+
 
     // console.log('activeSewingLine ++: ', globalManageTaskCardActiveSewingLine.value)
     // console.log(props.task)
+})
+
+// __ Следим за необходимостью сохранения данных
+watchEffect(() => {
+
+    needForSave.value = true
+
+    // __ Ситуация, когда мы перетаскиваем строки в правую часть
+    if (targetSewingLines.value.length > 0) {
+        return
+    }
+
+    // __ Ситуация, когда мы меняем порядок строк в левой части
+    // __ Сравниваем длину массивов (исходного и копии)
+    if (props.task?.sewing_lines.length !== taskMem.sewing_lines.length) {
+        return
+    }
+
+    // __ Сравниваем содержимое массивов
+    for (let i = 0; i < props.task?.sewing_lines.length; i++) {
+        const isEqual = JSON.stringify(props.task?.sewing_lines[i]) === JSON.stringify(taskMem.sewing_lines[i])
+        if (!isEqual) {
+            return
+        }
+    }
+
+    needForSave.value = false
 })
 
 
@@ -438,20 +438,7 @@ watch(() => props.task, (value) => {
     @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8
 }
 
-.close-cross-container {
-    @apply flex justify-end w-full h-full
-}
-
-.text-container {
-    @apply flex items-end
-}
-
-.text-data {
-    @apply border-2 border-slate-800 w-full h-full text-white
-}
-
-
-/* Кастомизация скроллбара для темной темы */
+/* __ Кастомизация скроллбара для темной темы */
 .overflow-y-auto::-webkit-scrollbar {
     width: 8px;
 }
@@ -468,7 +455,7 @@ watch(() => props.task, (value) => {
     @apply bg-slate-500;
 }
 
-/* Стили для draggable */
+/* __ Стили для draggable */
 .ghost {
     opacity: 0.5;
     background: #1E293B;
@@ -489,7 +476,7 @@ watch(() => props.task, (value) => {
     min-width: 0;
 }
 
-/* Кастомный скроллбар, как мы делали ранее */
+/* __ Кастомный скроллбар, как мы делали ранее */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
@@ -502,9 +489,5 @@ watch(() => props.task, (value) => {
     @apply bg-slate-600 rounded-full;
 }
 
-/*
-.close-button-container {
-    @apply w-full h-full flex justify-end
-}
-*/
+
 </style>

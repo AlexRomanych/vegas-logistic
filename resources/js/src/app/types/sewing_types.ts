@@ -162,3 +162,8 @@ export type IStatItem = {
 // __ Создаем тип для объекта amount, где ключами будут только ключи из SEWING_MACHINES
 export type IAmountAndTime = Record<keyof typeof SEWING_MACHINES, IStatItem>
 // --- ------------------------------------------------------------
+
+
+// --- ------------------------------------------------------------
+// __ Типы панелей меню в карточке Заказа в Пошиве в календаре
+export type ISewingLinesPanel = 'left' | 'right'

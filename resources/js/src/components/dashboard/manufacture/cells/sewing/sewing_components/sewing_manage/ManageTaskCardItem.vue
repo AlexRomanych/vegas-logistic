@@ -44,6 +44,71 @@
             class="field"
         />
 
+        <!-- __ Трудозатраты -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text="getTime"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.time.width"
+        />
+
+        <!-- __ УШМ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getTypeForMachine(SEWING_MACHINES.UNIVERSAL)"
+            :width="renderData.machine.width"
+            class="field"
+            text="У"
+        />
+
+        <!-- __ АШМ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getTypeForMachine(SEWING_MACHINES.AUTO)"
+            :width="renderData.machine.width"
+            class="field"
+            text="А"
+        />
+
+        <!-- __ Глухие сложные -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getTypeForMachine(SEWING_MACHINES.SOLID_HARD)"
+            :width="renderData.machine.width"
+            class="field"
+            text="ГС"
+        />
+
+        <!-- __ Глухие простые -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getTypeForMachine(SEWING_MACHINES.SOLID_LITE)"
+            :width="renderData.machine.width"
+            class="field"
+            text="ГП"
+        />
+
+        <!-- __ Неопознанные -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getTypeForMachine(SEWING_MACHINES.UNKNOWN)"
+            :width="renderData.machine.width"
+            class="field"
+            text="Н"
+        />
+
         <!-- __ Ткань -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -121,61 +186,6 @@
             class="field"
         />
 
-        <!-- __ УШМ -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(sewingLine.order_line.model.main.is_universal)"
-            :width="renderData.machine.width"
-            text="У"
-            class="field"
-        />
-
-        <!-- __ АШМ -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(sewingLine.order_line.model.main.is_auto)"
-            :width="renderData.machine.width"
-            text="А"
-            class="field"
-        />
-
-        <!-- __ Глухие сложные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(sewingLine.order_line.model.main.is_solid_hard)"
-            :width="renderData.machine.width"
-            text="ГС"
-            class="field"
-        />
-
-        <!-- __ Глухие простые -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(sewingLine.order_line.model.main.is_solid_lite)"
-            :width="renderData.machine.width"
-            text="ГП"
-            class="field"
-        />
-
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :width="renderData.machine.width"
-            text="Н"
-            :type="getTypeForMachine()"
-            class="field"
-        />
-
     </div>
 
 </template>
@@ -184,12 +194,14 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSewingStore } from '@/stores/SewingStore.ts'
-import type { ISewingTaskLine } from '@/types'
+import type { ISewingMachineKeys, ISewingTaskLine } from '@/types'
 import type {
     IRenderSewingLineData
 } from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import { getSewingLineMachineType, getTimeString } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { AVERAGE, SEWING_MACHINES } from '@/app/constants/sewing.ts'
 
 
 interface IProps {
@@ -212,19 +224,41 @@ const DEFAULT_TEXT_SIZE = 'micro'
 const DEFAULT_ROUNDED   = '4'
 const ACCENT_TYPE       = 'success'
 const ACTIVE_TYPE       = 'primary'
-const DEFAULT_TYPE      = 'primary'
+// const DEFAULT_TYPE      = 'primary'
 
-// __ Тип для основного элемента
+// __ Тип подсветки для основного элемента
 const getType = computed(() =>
     props.sewingLine === globalManageTaskCardActiveSewingLine.value ? ACTIVE_TYPE : 'dark')
 
-// __ Тип для стегальной машины элемента
-const getTypeForMachine = (condition: boolean = false) => {
-    if (condition) {
+// __ Получаем тип стегальной машины
+const machineType = computed(() => getSewingLineMachineType(props.sewingLine))
+
+// __ Тип подсветки для стегальной машины элемента
+const getTypeForMachine = (sewingMachineTarget: ISewingMachineKeys) => {
+
+    // !!! Порядок важен !!!
+
+    if (machineType.value === SEWING_MACHINES.AVERAGE) {
+        if (sewingMachineTarget === SEWING_MACHINES.UNKNOWN) {
+            return 'danger'
+        }
         return ACCENT_TYPE
     }
+
+    if (machineType.value === sewingMachineTarget) {
+        if (sewingMachineTarget === SEWING_MACHINES.UNKNOWN) {
+            return 'danger'
+        }
+
+        return ACCENT_TYPE
+    }
+
     return props.sewingLine === globalManageTaskCardActiveSewingLine.value ? ACTIVE_TYPE : 'dark'
 }
+
+// __ Получаем трудозатраты
+const getTime = computed(() => getTimeString(props.sewingLine, true))
+
 // console.log('activeSewingLine: ', globalManageTaskCardActiveSewingLine.value)
 
 </script>
