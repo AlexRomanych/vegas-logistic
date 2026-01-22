@@ -1,7 +1,12 @@
 <template>
     <Teleport to="body">
 
-        <div v-if="showModal" class="dark-container">
+        <div v-if="showModal"
+             ref="mainDiv"
+             class="dark-container"
+             tabindex="-1"
+             @keydown.esc="select(false)"
+        >
 
             <div :class="[width, height, borderColor, 'modal-container max-h-[90vh] overflow-hidden']">
 
@@ -10,14 +15,20 @@
                     <!-- __ Меню Карточки Заявки  -->
                     <ManageTaskCardMenu
                         :active-panel="activePanel"
+                        :show-comments="showComments"
+                        :show-details="showDetails"
                         @divide-element-amount="divideElementAmount"
+                        @show-comments="showComments = !showComments"
+                        @show-details="showDetails = !showDetails"
+                        @reload-data="reloadData"
+                        @move-to-panel="moveToPanel(activePanel, $event)"
                     />
 
                     <!-- __ Крестик закрытия -->
                     <div class="m-1 p-1 ml-auto">
                         <AppInputButton
                             id="terminate"
-                            :type="type"
+                            :type="needForSave ? 'danger' : type"
                             height="w-5"
                             title="x"
                             width="w-[30px]"
@@ -30,7 +41,7 @@
                 <!--<div class="w-full flex-grow overflow-y-auto px-[4px] custom-scrollbar">-->
 
                 <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
-                <div class="flex h-screen w-full bg-slate-900 p-4 gap-4 overflow-hidden">
+                <div class="flex h-screen w-full    bg-slate-900 p-4 gap-4 overflow-x-auto">
 
                     <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
                          :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
@@ -45,8 +56,27 @@
                             <!--    <span class="w-1/3 text-right">Статус</span>-->
                             <!--</div>-->
 
+                            <!-- __ Заголовок (Шапка изделий) Панели -->
                             <ManageTaskCardItemsHeader
+                                :active-panel="activePanel"
+                                :panel="panel"
                                 :render-data="renderData"
+                                :show-comments="showComments"
+                                :show-details="showDetails"
+                                :sort-amount="sortAmount"
+                                :sort-auto="sortAuto"
+                                :sort-kant="sortKant"
+                                :sort-name="sortName"
+                                :sort-position="sortPosition"
+                                :sort-size="sortSize"
+                                :sort-solid-hard="sortSolidHard"
+                                :sort-solid-lite="sortSolidLite"
+                                :sort-textile="sortTextile"
+                                :sort-time="sortTime"
+                                :sort-tkch="sortTkch"
+                                :sort-universal="sortUniversal"
+                                @sort-by-field="sortByField(panel, $event)"
+                                @sort-by-size="sortBySize(panel)"
                             />
 
                         </div>
@@ -57,7 +87,7 @@
                             <draggable
                                 :="dragOptions"
                                 :disabled="!isDragging"
-                                :list="panel === LEFT_PANEL_ID ? task.sewing_lines : targetSewingLines"
+                                :list="panel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
                                 :move="checkMove"
                                 class="min-h-[25px]"
                                 item-key="id"
@@ -67,16 +97,29 @@
                             >
                                 <template #item="{ element, index }">
 
-                                    <ManageTaskCardItem
-                                        :render-data="renderData"
-                                        :sewing-line="element"
-                                        @click="setActiveSewingLine(element)"
-                                    />
+                                    <div :key="element.id"
+                                         @click="setActiveSewingLine(element, panel)"
+                                         @dblclick="showLineInfo(element)"
+                                    >
+
+                                        <ManageTaskCardItem
+                                            :render-data="renderData"
+                                            :sewing-line="element"
+                                            :show-comments="showComments"
+                                            :show-details="showDetails"
+                                        />
+
+                                    </div>
 
                                 </template>
 
                             </draggable>
 
+                            <!--<ManageTaskCardItem-->
+                            <!--    :render-data="renderData"-->
+                            <!--    :sewing-line="element"-->
+                            <!--    @click="setActiveSewingLine(element)"-->
+                            <!--/>-->
 
                             <!--<div v-for="n in 50" :key="n"-->
                             <!--     class="flex justify-between p-3 mb-2 bg-slate-750 hover:bg-slate-600 rounded border border-slate-700 text-slate-200 transition-colors">-->
@@ -102,7 +145,6 @@
                         </div>
 
                     </div>
-
 
                 </div>
 
@@ -157,22 +199,39 @@
         :type="modalType"
     />
 
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+    />
+
+    <!-- __ Модальное окно для информации о записи -->
+    <ManageTaskCardItemInfo
+        ref="manageTaskCardItemInfo"
+        :order-line="orderLine"
+    />
 
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch, watchEffect, } from 'vue'
+import { computed, nextTick, reactive, ref, watch, watchEffect, } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
 import type {
-    ISewingTask, IColorTypes, ISewingTaskLine, IDividerItem, IAmountAndTime, ISewingLinesPanel
+    ISewingTask, IColorTypes, ISewingTaskLine, IDividerItem, IAmountAndTime, ISewingLinesPanel, ISewingTaskCardSort,
+    ISewingTaskOrderLine
 } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
-import { getSewingTaskAmountAndTime } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import {
+    getCoverSizeString,
+    getSewingTaskAmountAndTime, getSewingTaskModelCover, getSewingTimes, isAverage, sortSewingTaskLinesBySize
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
@@ -185,6 +244,9 @@ import ManageTaskCardMenu
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardMenu.vue'
 import ManageTaskCardTotals
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardTotals.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import ManageTaskCardItemInfo
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemInfo.vue'
 
 
 interface IProps {
@@ -222,6 +284,7 @@ const { globalManageTaskCardActiveSewingLine } = storeToRefs(sewingStore)
 
 // __ Данные (объект) правой панели
 const targetSewingLines = ref<ISewingTaskLine[]>([])
+const sourceSewingLines = ref<ISewingTaskLine[]>([])
 
 // __ Копия входящих данных (объект левой панели) для отслеживания изменений
 let taskMem: ISewingTask = JSON.parse(JSON.stringify(props.task))
@@ -240,12 +303,45 @@ const activePanel                       = ref<ISewingLinesPanel>(LEFT_PANEL_ID)
 const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
 const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
 
-// __ Тип для модального окна
+// __ Главное окно
+const mainDiv = ref<HTMLDivElement | null>(null)
+
+
+// __ Тип для модального окна "Разбить количество"
 const modalType            = ref<IColorTypes>('primary')
 const modalText            = ref<string>('')
 const modalMode            = ref<'inform' | 'confirm'>('inform')
 const dividerElement       = ref<IDividerItem>({ name: '', amount: 0 })
 const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+
+// __ Тип для модального окна Сообщений
+const orderLine              = ref<ISewingTaskOrderLine | null>(null)
+const manageTaskCardItemInfo = ref<InstanceType<typeof ManageTaskCardItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+
+// __ Функционал меню + Сортировка
+const showComments  = ref(false)
+const showDetails   = ref(false)
+const sortPosition  = ref<ISewingTaskCardSort>('none')
+const sortName      = ref<ISewingTaskCardSort>('none')
+const sortUniversal = ref<ISewingTaskCardSort>('none')
+const sortAuto      = ref<ISewingTaskCardSort>('none')
+const sortSolidHard = ref<ISewingTaskCardSort>('none')
+const sortSolidLite = ref<ISewingTaskCardSort>('none')
+const sortTextile   = ref<ISewingTaskCardSort>('none')
+const sortKant      = ref<ISewingTaskCardSort>('none')
+const sortTkch      = ref<ISewingTaskCardSort>('none')
+const sortAmount    = ref<ISewingTaskCardSort>('none')
+const sortTime      = ref<ISewingTaskCardSort>('none')
+const sortSize      = ref<ISewingTaskCardSort>('none')
+
 
 // __ Стилистика
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
@@ -253,58 +349,32 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 // __ Размеры колонок
 const renderData = {
-    position: { width: 'w-[25px]', },
-    size:     { width: 'w-[70px]', },
-    model:    { width: 'w-[100px]', },
-    amount:   { width: 'w-[30px]', },
-    time:     { width: 'w-[50px]', },
-    textile:  { width: 'w-[50px]', },
-    machine:  { width: 'w-[25px]', },
-    describe: { width: 'w-[50px]', },
-    tkch:     { width: 'w-[35px]', },
-    kant:     { width: 'w-[60px]', },
+    position: { width: 'min-w-[25px] max-w-[25px]', },
+    size:     { width: 'min-w-[70px] max-w-[70px]', },
+    model:    { width: 'min-w-[150px] max-w-[150px]', },
+    amount:   { width: 'min-w-[30px] max-w-[30px]', },
+    time:     { width: 'min-w-[50px] max-w-[50px]', },
+    textile:  { width: 'min-w-[50px] max-w-[50px]', },
+    machine:  { width: 'min-w-[25px] max-w-[25px]', },
+    describe: { width: 'min-w-[50px] max-w-[50px]', },
+    tkch:     { width: 'min-w-[35px] max-w-[35px]', },
+    kant:     { width: 'min-w-[60px] max-w-[60px]', },
 }
 
 
-// __ Опции для draggable
-const dragOptions = computed(() => {
-    return {
-        animation:   300,
-        group:       'orders',
-        ghostClass:  'ghost',
-        dragClass:   'drag',
-        chosenClass: 'chosen',
-        // sort: true,
-        // disabled: false, // Выносим в отдельное свойство
-    }
-})
-const isDragging  = ref(true)
-
-const checkMove  = (evt: any) => {
-    return true
-}
-const startDrag  = (evt: any) => {
-    // const element = evt.item._underlying_vm_
-    // console.log('startDrag: ', evt.oldIndex)
-    // console.log('element: ', element)
-}
-const finishDrag = (evt: any) => {
-    // const element = evt.item._underlying_vm_
-    // emits('drag-and-drop')
-
-    // console.log('finishDrag')
-    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
-    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
-
-
-}
-
+// --- -------------------------------------------------------------------------------------
+// --- ------------------------ Управление модальным окном ---------------------------------
+// --- -------------------------------------------------------------------------------------
 const showModal = ref(false)           // реактивность видимости модального окна
 
-
 let resolvePromise: ((value: boolean) => void) | null
-const show = (sewingTask: ISewingTask | null = null) => {
+const show = async (sewingTask: ISewingTask | null = null) => {
     showModal.value = true
+
+    // __ Для выхода по ESC
+    // await nextTick()            // __ Ждем, пока отрисуется mainDiv
+    // mainDiv.value?.focus()      // __ Перемещаем фокус на mainDiv
+    // console.log(mainDiv)
 
     // __ Можно получить активную строку здесь
     // globalManageTaskCardActiveSewingLine.value = sewingTask?.sewing_lines[0]
@@ -314,12 +384,33 @@ const show = (sewingTask: ISewingTask | null = null) => {
     })
 }
 
-const select = (value: boolean) => {
+const select = async (value: boolean) => {
     if (resolvePromise) {
 
         // __ Очищаем массив правой части, чтобы не было случайных данных при клике на другую Заявку
         if (!value) {
+
+            // __ Проверяем, есть ли несохраненные изменения
+            if (needForSave.value) {
+                modalInfoText.value = ['В сменном задании есть несохраненные изменения.', ' ', 'Все изменения будут потеряны.', 'Продолжить?']
+                modalInfoType.value = 'danger'
+                const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
+                if (!answer) {
+                    return
+                }
+            }
+
             targetSewingLines.value = []
+            sourceSewingLines.value = []
+        } else {
+            modalInfoText.value = ['Все изменения будут сохранены.', ' ', 'Продолжить?']
+            modalInfoType.value = 'primary'
+            const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
+            if (!answer) {
+                return
+            }
+
+
         }
 
         resolvePromise(value)
@@ -328,17 +419,34 @@ const select = (value: boolean) => {
     }
 }
 
-
 defineExpose({
     show,
 })
+// --- -------------------------------------------------------------------------------------
 
 
-// __ Устанавливаем активную строку СЗ (клик по строке)
-const setActiveSewingLine = (sewingLine: ISewingTaskLine) => {
-    globalManageTaskCardActiveSewingLine.value = sewingLine
+// --- -------------------------------------------------------------------------------------
+// --- ------------------------------- Функционал ------------------------------------------
+// --- -------------------------------------------------------------------------------------
+
+// __ Пересчитываем Итого
+const calculateTotals = () => {
+    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(sourceSewingLines.value)
+    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
 }
 
+// __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
+const setActiveSewingLine = (sewingLine: ISewingTaskLine, panel: ISewingLinesPanel) => {
+    globalManageTaskCardActiveSewingLine.value = sewingLine
+    activePanel.value                          = panel
+}
+
+// __ Показать информацию о записи
+const showLineInfo = async (sewingLine: ISewingTaskLine) => {
+    orderLine.value = sewingLine.order_line
+    await manageTaskCardItemInfo.value!.show()             // показываем модалку и ждем ответ
+
+}
 
 // __ Разбить количество
 const divideElementAmount = async () => {
@@ -347,9 +455,10 @@ const divideElementAmount = async () => {
         // __ Копируем объект, чтобы не мутировать оригинал
         const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
 
+        const modelCoverExt       = getSewingTaskModelCover(activeSewingLineCopy.order_line.model)
         dividerElement.value.name =
-            activeSewingLineCopy.order_line.size + ' ' +
-            activeSewingLineCopy.order_line.model.main.name_report + ' ' +
+            getCoverSizeString(activeSewingLineCopy) + ' ' +
+            modelCoverExt?.name_report + ' ' +
             activeSewingLineCopy.order_line.amount.toString() + ' шт.'
 
         dividerElement.value.amount = activeSewingLineCopy.amount
@@ -368,6 +477,296 @@ const divideElementAmount = async () => {
     }
 }
 
+// __ Перезагрузить данные
+const reloadData = () => {
+    sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
+    targetSewingLines.value = []
+
+    calculateTotals()
+}
+
+
+// __ Переместить в другую панель
+const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {
+    let sourceArray = []
+    let targetArray = []
+
+    if (activePanel === LEFT_PANEL_ID) {
+        sourceArray = [...sourceSewingLines.value]
+        targetArray = [...targetSewingLines.value]
+    } else {
+        targetArray = [...sourceSewingLines.value]
+        sourceArray = [...targetSewingLines.value]
+    }
+
+    for (let i = 0; i < sourceArray.length; i++) {
+        let compareValue = false
+
+        switch (sewingType) {
+            case 'all':
+                compareValue = true
+                break
+            case 'universal':
+                compareValue = sourceArray[i].order_line.model.main.is_universal
+                break
+            case 'auto':
+                compareValue = sourceArray[i].order_line.model.main.is_auto
+                break
+            case 'solid_hard':
+                compareValue = sourceArray[i].order_line.model.main.is_solid_hard
+                break
+            case 'solid_lite':
+                compareValue = sourceArray[i].order_line.model.main.is_solid_lite
+                break
+        }
+
+        if (compareValue) {
+            const moveElement = { ...sourceArray[i] }
+            targetArray.push(moveElement)
+            sourceArray[i].amount = 0
+        }
+    }
+
+    sourceArray = sourceArray.filter(item => item.amount > 0)
+
+    if (activePanel === LEFT_PANEL_ID) {
+        sourceSewingLines.value = [...sourceArray]
+        targetSewingLines.value = [...targetArray]
+    } else {
+        sourceSewingLines.value = [...targetArray]
+        targetSewingLines.value = [...sourceArray]
+    }
+
+    calculateTotals()
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// --- ------------------------ Сортировка -------------------------------------------------
+// --- -------------------------------------------------------------------------------------
+
+// __ Меняем направление сортировки
+const changeSortDirection = (sortDirection: ISewingTaskCardSort) => {
+    sortPosition.value  = 'none'
+    sortName.value      = 'none'
+    sortUniversal.value = 'none'
+    sortAuto.value      = 'none'
+    sortSolidHard.value = 'none'
+    sortSolidLite.value = 'none'
+    sortTextile.value   = 'none'
+    sortKant.value      = 'none'
+    sortTkch.value      = 'none'
+    sortAmount.value    = 'none'
+    sortTime.value      = 'none'
+    sortSize.value      = 'none'
+
+    return ['none', 'desc'].includes(sortDirection) ? 'asc' : 'desc'
+}
+
+// __ Определяем допустимые типы данных для сортировки
+type SortType = 'number' | 'string' | 'boolean'
+
+interface SortConfig {
+    type: SortType
+    getValue: (item: ISewingTaskLine) => string | number | boolean
+}
+
+// __ Карта конфигураций. Ключи — это произвольные идентификаторы (ID колонок)
+const sortConfigs: Record<string, SortConfig> = {
+    position:    {
+        type:     'number',
+        getValue: (item) => item.position
+    },
+    amount:      {
+        type:     'number',
+        getValue: (item) => item.amount
+    },
+    name_report: {
+        type:     'string',
+        getValue: (item) => {
+            const modelCover = getSewingTaskModelCover(item)    // __ Получаем название модели
+            if (!modelCover) return ''
+
+            return modelCover
+                ? isAverage(modelCover)
+                    ? 'Чехол для Планового матраса'
+                    : modelCover.name_report
+                : ''
+        }
+    },
+    universal:   {
+        type:     'boolean',
+        getValue: (item) => item.order_line.model.main.is_universal
+    },
+    auto:        {
+        type:     'boolean',
+        getValue: (item) => item.order_line.model.main.is_auto
+    },
+    solid_hard:  {
+        type:     'boolean',
+        getValue: (item) => item.order_line.model.main.is_solid_hard
+    },
+    solid_lite:  {
+        type:     'boolean',
+        getValue: (item) => item.order_line.model.main.is_solid_lite
+    },
+    tkch:        {
+        type:     'string',
+        getValue: (item) => item.order_line.model.main.tkch ?? ''
+    },
+    kant:        {
+        type:     'string',
+        getValue: (item) => item.order_line.model.main.kant ?? ''
+    },
+    textile:     {
+        type:     'string',
+        getValue: (item) => item.order_line.textile ?? ''
+    },
+    time:        {
+        type:     'number',
+        getValue: (item) => Object.values(getSewingTimes(item)).reduce((acc, value) => acc + value.time, 0)
+    }
+}
+
+// __ Helper
+const compareValues = (a: any, b: any, type: SortType, modifier: number) => {
+    if (a === b) return 0
+
+    // Boolean и Number обрабатываются одинаково
+    if (type === 'number' || type === 'boolean') {
+        return (Number(a) - Number(b)) * modifier
+    }
+
+    // numeric: true позволяет правильно сортировать "Размер 2" и "Размер 10"
+    return String(a).localeCompare(String(b), undefined, {
+        numeric:     true,
+        sensitivity: 'base'
+    }) * modifier
+}
+
+// __ Сортировка
+const sortByField = (panel: ISewingLinesPanel, configKey: string) => {
+    const config = sortConfigs[configKey]
+    if (!config) return
+
+    let direction = 'none'
+
+    switch (configKey) {
+        case 'position':
+            sortPosition.value = changeSortDirection(sortPosition.value)
+            direction          = sortPosition.value
+            break
+        case 'amount':
+            sortAmount.value = changeSortDirection(sortAmount.value)
+            direction        = sortAmount.value
+            break
+        case 'name_report':
+            sortName.value = changeSortDirection(sortName.value)
+            direction      = sortName.value
+            break
+        case 'universal':
+            sortUniversal.value = changeSortDirection(sortUniversal.value)
+            direction           = sortUniversal.value
+            break
+        case 'auto':
+            sortAuto.value = changeSortDirection(sortAuto.value)
+            direction      = sortAuto.value
+            break
+        case 'solid_hard':
+            sortSolidHard.value = changeSortDirection(sortSolidHard.value)
+            direction           = sortSolidHard.value
+            break
+        case 'solid_lite':
+            sortSolidLite.value = changeSortDirection(sortSolidLite.value)
+            direction           = sortSolidLite.value
+            break
+        case 'textile':
+            sortTextile.value = changeSortDirection(sortTextile.value)
+            direction         = sortTextile.value
+            break
+        case 'tkch':
+            sortTkch.value = changeSortDirection(sortTkch.value)
+            direction      = sortTkch.value
+            break
+        case 'kant':
+            sortKant.value = changeSortDirection(sortKant.value)
+            direction      = sortKant.value
+            break
+        case 'time':
+            sortTime.value = changeSortDirection(sortTime.value)
+            direction      = sortTime.value
+            break
+    }
+
+    const workArray = panel === LEFT_PANEL_ID
+        ? [...sourceSewingLines.value]
+        : [...targetSewingLines.value]
+
+    const modifier = direction === 'asc' ? 1 : -1
+
+    workArray.sort((a, b) => {
+        return compareValues(config.getValue(a), config.getValue(b), config.type, modifier)
+    })
+
+    if (panel === LEFT_PANEL_ID) {
+        sourceSewingLines.value = workArray
+    } else {
+        targetSewingLines.value = workArray
+    }
+}
+
+// __ Сортировка по размеру
+const sortBySize = (panel: ISewingLinesPanel) => {
+    sortSize.value = changeSortDirection(sortSize.value)
+
+    let sourceArray = panel === LEFT_PANEL_ID
+        ? [...sourceSewingLines.value]
+        : [...targetSewingLines.value]
+
+    sourceArray = sortSewingTaskLinesBySize(sourceArray, sortSize.value)
+
+    if (panel === LEFT_PANEL_ID) {
+        sourceSewingLines.value = sourceArray
+    } else {
+        targetSewingLines.value = sourceArray
+    }
+}
+// --- -------------------------------------------------------------------------------------
+
+// --- -------------------------------------------------------------------------------------
+// --- ------------------------------- Drag and Drop ---------------------------------------
+// --- -------------------------------------------------------------------------------------
+// __ Опции для draggable
+const dragOptions = computed(() => {
+    return {
+        animation:   300,
+        group:       'cards',
+        ghostClass:  'ghost',
+        dragClass:   'drag',
+        chosenClass: 'chosen',
+        // sort: true,
+        // disabled: false, // Выносим в отдельное свойство
+    }
+})
+const isDragging  = ref(true)
+
+const checkMove  = (evt: any) => {
+    return true
+}
+const startDrag  = (evt: any) => {
+    // console.log('startDrag: evt: ', evt)
+    // const element = evt.item._underlying_vm_
+    // console.log('startDrag: ', evt.oldIndex)
+    // console.log('element: ', element)
+}
+const finishDrag = (evt: any) => {
+    calculateTotals()
+    // const element = evt.item._underlying_vm_
+    // emits('drag-and-drop')
+    // console.log('finishDrag')
+}
+// --- -------------------------------------------------------------------------------------
+
 // __ Следим за входящими данными
 // __ При монтировании компонента, они еще undefined
 watch(() => props.task, (value) => {
@@ -381,10 +780,17 @@ watch(() => props.task, (value) => {
     footTitle.order     = props.task.order.client.short_name + ' №' + props.task.order.order_no_str
     footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
 
+    // __ Копируем данные для левой и правой панели
+    sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
+    targetSewingLines.value = []
 
-    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
-    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
+    // __ Обновляем суммы
+    calculateTotals()
 
+    // leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(sourceSewingLines.value)
+    // rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
+
+    // leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
     // console.log('leftPanelAmountAndTimeTotal.value: ', leftPanelAmountAndTimeTotal.value)
     // console.log('rightPanelAmountAndTimeTotal.value: ', rightPanelAmountAndTimeTotal.value)
 
@@ -398,8 +804,39 @@ watch(() => props.task, (value) => {
     // console.log(props.task)
 })
 
+
+// __ Обработка нажатия клавиши Esc
+// const handleKeyDown = (event: KeyboardEvent) => {
+//     if (event.key === 'Escape' && showModal.value) {
+//         select(false) // Ваша функция закрытия
+//     }
+// }
+
+
+// __ Добавляем обработчик для Esc
+// watch(showModal, (isOpen) => {
+//     if (isOpen) {
+//         window.addEventListener('keydown', handleKeyDown)
+//     } else {
+//         window.removeEventListener('keydown', handleKeyDown)
+//     }
+// })
+
+
+// watch(() => props.task.sewing_lines, (value) => {
+//     // sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
+//     // console.log('watch: task.sewing_lines: ', props.task.sewing_lines)
+// })
+
+
+// watch(() => props.task.sewing_lines, (value) => {
+//     console.log('watch: task.sewing_lines: ', props.task.sewing_lines)
+// })
+
+
 // __ Следим за необходимостью сохранения данных
 watchEffect(() => {
+
 
     needForSave.value = true
 
@@ -410,21 +847,31 @@ watchEffect(() => {
 
     // __ Ситуация, когда мы меняем порядок строк в левой части
     // __ Сравниваем длину массивов (исходного и копии)
-    if (props.task?.sewing_lines.length !== taskMem.sewing_lines.length) {
+    if (sourceSewingLines.value.length !== taskMem.sewing_lines.length) {
         return
     }
 
+    // if (props.task?.sewing_lines.length !== taskMem.sewing_lines.length) {
+    //     return
+    // }
+
     // __ Сравниваем содержимое массивов
-    for (let i = 0; i < props.task?.sewing_lines.length; i++) {
-        const isEqual = JSON.stringify(props.task?.sewing_lines[i]) === JSON.stringify(taskMem.sewing_lines[i])
+    for (let i = 0; i < sourceSewingLines.value.length; i++) {
+        const isEqual = JSON.stringify(sourceSewingLines.value[i]) === JSON.stringify(taskMem.sewing_lines[i])
         if (!isEqual) {
             return
         }
     }
 
+    // for (let i = 0; i < props.task?.sewing_lines.length; i++) {
+    //     const isEqual = JSON.stringify(props.task?.sewing_lines[i]) === JSON.stringify(taskMem.sewing_lines[i])
+    //     if (!isEqual) {
+    //         return
+    //     }
+    // }
+
     needForSave.value = false
 })
-
 
 </script>
 
@@ -470,7 +917,6 @@ watchEffect(() => {
     cursor: grabbing;
 }
 
-
 .flex-1 {
     flex: 1 1 0;
     min-width: 0;
@@ -478,7 +924,8 @@ watchEffect(() => {
 
 /* __ Кастомный скроллбар, как мы делали ранее */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 6px; /* __ Ширина вертикального */
+    height: 6px; /* __ Высота горизонтального */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -487,6 +934,30 @@ watchEffect(() => {
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-600 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+}
+
+/* __ Стилизует стык двух скроллбаров */
+.custom-scrollbar::-webkit-scrollbar-corner {
+    @apply bg-slate-900;
+
+}
+
+.custom-scrollbar {
+    /* __ Резервирует место под вертикальный скроллбар заранее.*/
+    /* __ Ситуация когда появляется скроллбар справа и автоматически появляется внизу*/
+    /* __ Это свойство автоматически резервирует месть под правый скроллбар*/
+    scrollbar-gutter: stable;
+}
+
+/* __ Если нужно применить ко всем overflow-y-auto в компоненте */
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
 

@@ -9,7 +9,8 @@
             textSizeClass,
             semibold,
             horizontalAlign,
-            roundedCSS
+            roundedCSS,
+            textSelectAvailable,
         ]"
         :title="title"
         :style="color ? {'background-color': color} : ''"
@@ -24,8 +25,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { IColorTypes } from '@/app/constants/colorsClasses.js'
-import type { IFontsType } from '@/app/constants/fontSizes.js'
+import type { IColorTypes, IFontsType } from '@/types'
 
 import {
     getColorClassByType,
@@ -45,8 +45,8 @@ interface IProps {
     title?: string
     rounded?: string
     color?: string
+    textSelect?: boolean
 }
-
 
 const props = withDefaults(defineProps<IProps>(), {
     text: 'Enter...',
@@ -59,6 +59,7 @@ const props = withDefaults(defineProps<IProps>(), {
     title: '',
     rounded: 'rounded-lg',
     color: '',
+    textSelect: false
 })
 
 const emits = defineEmits<{
@@ -78,6 +79,7 @@ const currentTextColor = computed(() => getTextColorClassByType(props.type))
 const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 const horizontalAlign = computed(() => getHorizontalAlignText(props.align))
 const semibold = computed(() => props.bold ? 'font-semibold' : '')
+const textSelectAvailable = computed(() => props.textSelect ? '' : 'select-none')
 
 const roundedCSS = computed(() => getRoundedClass(props.rounded))
 

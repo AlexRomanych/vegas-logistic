@@ -1,11 +1,20 @@
 // info Тут все, что связано с Пошивом
 
+import type {
+    IAmountAndTime, ISewingLinesPanel,
+    ISewingMachineKeys,
+    ISewingTask,
+    ISewingTaskLine,
+    ISewingTaskModel,
+    ISewingTaskOrderLine
+} from '@/types'
 
-import type { IAmountAndTime, ISewingMachineKeys, ISewingTask, ISewingTaskLine } from '@/types'
 import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 
+// __ Функция для получения трудозатрат для Записи (SewingLine) в СЗ
 export function getSewingTimes(sewingLine: ISewingTaskLine): IAmountAndTime {
 
     //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
@@ -86,13 +95,13 @@ export function getSewingLineMachineType(sewingLine: ISewingTaskLine) {
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
 export function getTimeString(sewingLine: ISewingTaskLine, twoLines: boolean = false) {
 
-    const machineType      = getSewingLineMachineType(sewingLine)
+    const machineType = getSewingLineMachineType(sewingLine)
     if (!machineType) {
         return 'н/д'
     }
 
     const amountAndTimeObj = getSewingTimes(sewingLine)
-    let time = 0
+    let time               = 0
 
     // __ Получаем количество
     if (machineType === SEWING_MACHINES.AVERAGE) {
@@ -169,4 +178,127 @@ export function getSewingTaskAmountAndTime(item: ISewingTask | ISewingTaskLine[]
         })
     })
     return amountAndTimeObj
+}
+
+
+// __ Возвращаем Чехол модели. Вспомогалочка, когда приходит в Заявку Чехол
+export function getSewingTaskModelCover(
+    item: ISewingTaskLine | ISewingTaskOrderLine | ISewingTaskOrderLine['model']) {
+
+    let target = null
+    if (isSewingTaskLine(item)) {
+        target = item.order_line.model
+    } else if (isSewingTaskOrderLine(item)) {
+        target = item.model
+    } else if (isSewingTaskOrderLineModel(item)) {
+        target = item
+    }
+
+    if (!target) {
+        return null
+    }
+
+    // __ Сужаем тип, чтобы TS не ругался
+    const model = ('main' in target && 'base' in target && 'cover' in target) ? target : null
+
+    if (model && model.base && !model.cover) {           // __ Это условие того, что элемент - чехол (есть база)
+        return model.main
+    } else if (model && !model.base && model.cover) {    // __ Это условие того, что элемент - матрас (есть чехол)
+        return model.cover
+    } else if (model && !model.base && !model.cover) {   // __ Это условие того, что либо элемент - расчетный, либо чехол без базы ('Чехол ЖК'), либо база без чехла
+        if (isCover(model.main)) return model.main       // __ Дополнительно проверяем, является ли модель Чехлом
+        if (isAverage(model.main)) return model.main     // __ Дополнительно проверяем, является ли модель Расчетной, тоже возвращаем
+    }
+
+    return null
+}
+
+
+// __ Сортируем массив строк по размерам
+export function sortSewingTaskLinesBySize(item: ISewingTask | ISewingTaskLine[], direction: 'asc' | 'desc' = 'asc') {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.sewing_lines
+    }
+
+    let isFind = true
+    while (isFind) {
+        isFind = false
+
+        for (let i = 0; i < sourceArray.length; i++) {
+            for (let j = i + 1; j < sourceArray.length; j++) {
+                if (direction === 'asc') {
+                    if ((sourceArray[i].order_line.dims.width > sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length > sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height > sourceArray[j].order_line.dims.height)) {
+
+                        const temp     = sourceArray[i]
+                        sourceArray[i] = sourceArray[j]
+                        sourceArray[j] = temp
+                        isFind         = true
+                    }
+                } else {
+                    if ((sourceArray[i].order_line.dims.width < sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length < sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height < sourceArray[j].order_line.dims.height)) {
+
+                        const temp     = sourceArray[i]
+                        sourceArray[i] = sourceArray[j]
+                        sourceArray[j] = temp
+                        isFind         = true
+                    }
+                }
+            }
+        }
+    }
+
+    return sourceArray
+}
+
+
+// __ Получаем размеры Чехла модели в текстовом представлении
+export function getCoverSizeString(item: ISewingTaskLine | ISewingTaskOrderLine) {
+    let workData = null
+    if (isSewingTaskLine(item)) {
+        workData = item.order_line
+    } else if (isSewingTaskOrderLine(item)) {
+        workData = item
+    } else {
+        return ''
+    }
+
+    return workData.dims.width.toString() + 'x' +
+        workData.dims.length.toString() + 'x' +
+        (workData.model.main.cover_height * 100).toString()
+}
+
+
+// __ Дополнительно проверяем, является ли модель Чехлом
+export function isCover(element: ISewingTaskModel) {
+    return element.name.toLowerCase().includes('чехол')
+}
+
+// __ Дополнительно проверяем, является ли модель Чехлом
+export function isAverage(element: ISewingTaskModel) {
+    return element.machine_type === SEWING_MACHINES.AVERAGE
+}
+
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine
+function isSewingTaskLine(item: any): item is ISewingTaskLine {
+    return item && typeof item === 'object' && 'order_line' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine
+function isSewingTaskOrderLine(item: any): item is ISewingTaskOrderLine {
+    return item && typeof item === 'object' && 'models' in item && 'dims' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrderLine['model']
+function isSewingTaskOrderLineModel(item: any): item is ISewingTaskOrderLine['model'] {
+    return item && typeof item === 'object' && 'main' in item && 'base' in item && 'cover' in item
 }

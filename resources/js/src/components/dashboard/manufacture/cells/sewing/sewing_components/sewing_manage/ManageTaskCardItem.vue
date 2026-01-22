@@ -1,5 +1,8 @@
 <template>
-    <div class="flex">
+
+    <!-- __ Отрисовываем только те строки, у которых есть чехол -->
+    <div v-if="modelCover" class="flex">
+        <!--<div class="flex">-->
 
         <!-- __ № п/п -->
         <AppLabelTS
@@ -16,7 +19,7 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.size"
+            :text="getSize"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.size.width"
@@ -26,7 +29,7 @@
         <!-- __ Название модели -->
         <AppLabelTS
             :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.model.main.name_report"
+            :text="coverName"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.model.width"
@@ -111,6 +114,7 @@
 
         <!-- __ Ткань -->
         <AppLabelTS
+            v-if="showDetails"
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text="sewingLine.order_line.textile ?? ''"
@@ -120,52 +124,9 @@
             class="field"
         />
 
-        <!-- __ Состав -->
-        <AppLabelTS
-            v-if="describeShow"
-            :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.composition ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 1 -->
-        <AppLabelTS
-            v-if="describeShow"
-            :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.describe_1 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 2 -->
-        <AppLabelTS
-            v-if="describeShow"
-            :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.describe_2 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 3 -->
-        <AppLabelTS
-            v-if="describeShow"
-            :rounded="DEFAULT_ROUNDED"
-            :text="sewingLine.order_line.describe_3 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
         <!-- __ Типовая конструкция чехла (ТКЧ) -->
         <AppLabelTS
+            v-if="showDetails"
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text="sewingLine.order_line.model.main.tkch ?? ''"
@@ -177,6 +138,7 @@
 
         <!-- __ Кант -->
         <AppLabelTS
+            v-if="showDetails"
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text="sewingLine.order_line.model.main.kant ?? ''"
@@ -186,33 +148,89 @@
             class="field"
         />
 
+        <!-- __ Состав -->
+        <AppLabelTS
+            v-if="showComments"
+            :rounded="DEFAULT_ROUNDED"
+            :text="sewingLine.order_line.composition ?? ''"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.describe.width"
+            class="describe field"
+        />
+
+        <!-- __ Примечание 1 -->
+        <AppLabelTS
+            v-if="showComments"
+            :rounded="DEFAULT_ROUNDED"
+            :text="sewingLine.order_line.describe_1 ?? ''"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.describe.width"
+            class="describe field"
+        />
+
+        <!-- __ Примечание 2 -->
+        <AppLabelTS
+            v-if="showComments"
+            :rounded="DEFAULT_ROUNDED"
+            :text="sewingLine.order_line.describe_2 ?? ''"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.describe.width"
+            class="describe field"
+        />
+
+        <!-- __ Примечание 3 -->
+        <AppLabelTS
+            v-if="showComments"
+            :rounded="DEFAULT_ROUNDED"
+            :text="sewingLine.order_line.describe_3 ?? ''"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.describe.width"
+            class="describe field"
+        />
+
     </div>
 
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useSewingStore } from '@/stores/SewingStore.ts'
+
 import type { ISewingMachineKeys, ISewingTaskLine } from '@/types'
 import type {
     IRenderSewingLineData
 } from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
 
+import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+
+
+import { storeToRefs } from 'pinia'
+import { useSewingStore } from '@/stores/SewingStore.ts'
+import {
+    getCoverSizeString,
+    getSewingLineMachineType, getSewingTaskModelCover, getTimeString, isAverage
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
+
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { getSewingLineMachineType, getTimeString } from '@/app/helpers/manufacture/helpers_sewing.ts'
-import { AVERAGE, SEWING_MACHINES } from '@/app/constants/sewing.ts'
 
 
 interface IProps {
     sewingLine: ISewingTaskLine
     renderData: IRenderSewingLineData
-    describeShow?: boolean,
+    showComments?: boolean,
+    showDetails?: boolean,
 }
 
+
 const props = withDefaults(defineProps<IProps>(), {
-    describeShow: false,
+    showComments: false,
+    showDetails:  false,
 })
+
+// console.log('props.sewingLine: ', props.sewingLine)
 
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
@@ -225,6 +243,20 @@ const DEFAULT_ROUNDED   = '4'
 const ACCENT_TYPE       = 'success'
 const ACTIVE_TYPE       = 'primary'
 // const DEFAULT_TYPE      = 'primary'
+
+
+// __ Получаем чехол модели
+// const modelCover = null
+const modelCover = computed(() => getSewingTaskModelCover(props.sewingLine))
+
+// __ Получаем название модели
+const coverName = computed(() => {
+    return modelCover.value
+        ? isAverage(modelCover.value)
+            ? 'Чехол для Планового матраса'
+            : modelCover.value.name_report
+        : ''
+})
 
 // __ Тип подсветки для основного элемента
 const getType = computed(() =>
@@ -257,9 +289,13 @@ const getTypeForMachine = (sewingMachineTarget: ISewingMachineKeys) => {
 }
 
 // __ Получаем трудозатраты
-const getTime = computed(() => getTimeString(props.sewingLine, true))
+const getTime = computed(() => getTimeString(props.sewingLine, true).replaceAll('.', ''))
+
+// __ Получаем размер чехла (Высота из размеров чехла модели)
+const getSize = computed(() => getCoverSizeString(props.sewingLine))
 
 // console.log('activeSewingLine: ', globalManageTaskCardActiveSewingLine.value)
+
 
 </script>
 

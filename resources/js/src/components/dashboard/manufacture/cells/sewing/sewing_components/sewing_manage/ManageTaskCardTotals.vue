@@ -9,12 +9,12 @@
             text="Всего:"
             text-size="mini"
             type="primary"
-            width="w-[202px]"
+            width="w-[252px]"
         />
 
         <!-- __ Количество в штуках -->
         <AppLabelTS
-            :text="`${getTotalAmount.toString()} шт.`"
+            :text="getTotalAmount === 0 ? '' : `${getTotalAmount.toFixed(0)} шт.`"
             align="center"
             height="h-[60px]"
             rounded="4"
@@ -80,12 +80,13 @@
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
         <ManageItemDataLabel
+            v-if="amountAndTime[SEWING_MACHINES.UNKNOWN].time"
             :align="TOTAL_ITEMS_ALIGN"
             :amount="amountAndTime[SEWING_MACHINES.UNKNOWN].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
             :time="amountAndTime[SEWING_MACHINES.UNKNOWN].time"
-            :type="TOTAL_ITEMS_TYPE"
+            type="danger"
             :width="TOTAL_ITEMS_WIDTH"
         />
 

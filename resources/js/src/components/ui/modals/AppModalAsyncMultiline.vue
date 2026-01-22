@@ -59,40 +59,40 @@
 
 <script setup>
 
-import {computed, ref, watch,} from 'vue'
+import { computed, ref, watch, } from 'vue'
 
-import {colorsList} from '@/app/constants/colorsClasses.js'
-import {getColorClassByType} from '@/app/helpers/helpers.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
 const props = defineProps({
-    width: {
-        type: String,
+    width:  {
+        type:     String,
         required: false,
-        default: 'min-w-[500px]',
+        default:  'min-w-[500px]',
     },
     height: {
-        type: String,
+        type:     String,
         required: false,
-        default: 'min-h-[300px]',
+        default:  'min-h-[300px]',
     },
-    type: {
-        type: String,
-        required: false,
-        default: 'primary',
+    type:   {
+        type:      String,
+        required:  false,
+        default:   'primary',
         validator: (type) => colorsList.includes(type)
     },
-    text: {
-        type: [String, Array],
-        required: false,
-        default: 'This is a Modal Window. Type text here',
+    text:   {
+        type:      [String, Array],
+        required:  false,
+        default:   'This is a Modal Window. Type text here',
         validator: (text) => Array.isArray(text) || typeof text === 'string'
     },
-    mode: {
-        type: String,
-        required: false,
-        default: 'inform',
+    mode:   {
+        type:      String,
+        required:  false,
+        default:   'inform',
         validator: (mode) => ['inform', 'confirm'].includes(mode)
     }
 
@@ -104,11 +104,11 @@ const getDisplayText = (text) => Array.isArray(text) ? text : [text]
 let displayTextArray = ref(getDisplayText(props.text))
 
 const showModal = ref(false)           // реактивность видимости модального окна
-const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
+const showText  = ref(props.text)              // реактивность текста сообщения в модальном окне
 
 let resolvePromise
 const show = () => {
-    showModal.value = true;
+    showModal.value = true
     return new Promise((resolve) => {
         resolvePromise = resolve
     })
@@ -116,9 +116,9 @@ const show = () => {
 
 const select = (value) => {
     if (resolvePromise) {
-        resolvePromise(value);
-        showModal.value = false;
-        resolvePromise = null;
+        resolvePromise(value)
+        showModal.value = false
+        resolvePromise  = null
     }
 }
 
