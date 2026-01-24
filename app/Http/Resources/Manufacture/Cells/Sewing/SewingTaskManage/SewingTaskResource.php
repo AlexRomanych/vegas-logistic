@@ -24,11 +24,11 @@ class SewingTaskResource extends JsonResource
             'change'    => $this->change,
             'active'    => $this->active,
 
-            'order' => new SewingTaskOrderResource($this->order),
+            'order' => new SewingTaskOrderResource($this->whenLoaded('order')),
 
-            'sewing_lines' => SewingTaskLineResource::collection($this->sewingLines), // 'sewing_lines
+            'sewing_lines' => SewingTaskLineResource::collection($this->whenLoaded('sewingLines')), // 'sewing_lines
 
-            'statuses' => SewingTaskStatusResource::collection($this->statuses),
+            'statuses' => SewingTaskStatusResource::collection($this->whenLoaded('statuses')),
 
             // 'order_id'    => $this->order_id,
             // 'meta_ext'    => $this->meta_ext,

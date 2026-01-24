@@ -277,8 +277,8 @@
     <!-- __ Карточка СЗ -->
     <ManageTaskCard
         ref="manageTaskCard"
-        :task="taskCard"
         :mode="modalMode"
+        :task="taskCard"
         :text="modalText"
         :type="modalType"
     />
@@ -288,10 +288,10 @@
 <script lang="ts" setup>
 import type {
     IColorTypes,
-    IAmountAndTime,
     IPlanMatrixDayItem,
-    ISewingMachineKeys,
     ISewingTask,
+    // IAmountAndTime,
+    // ISewingMachineKeys,
     // IPlanMatrixDay,
     // ISewingTaskLine
 } from '@/types'
@@ -510,12 +510,12 @@ const amountAndTimeTotalDay = computed(() => {
 })
 
 // __ Общее Количество за день
-const getTotalAmountDay = computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.amount + acc, 0))
+const getTotalAmountDay =
+          computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.amount + acc, 0))
 
 // __ Общие Трудозатраты за день
-const getTotalTimeDay = computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.time + acc, 0))
-
-
+const getTotalTimeDay =
+          computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.time + acc, 0))
 
 
 // __ Тип для модального окна
@@ -524,17 +524,32 @@ const modalText      = ref<string>('')
 const modalMode      = ref<'inform' | 'confirm'>('inform')
 const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
 
+
+// __ Карточка СЗ
 const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
 
 const showSewingTaskCard = async (sewingTask: ISewingTask) => {
-    const sewingTaskCopy = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
-    taskCard.value = sewingTaskCopy
-    const answer = await manageTaskCard.value!.show(sewingTaskCopy)
-    if (answer) {
+    taskCard.value = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
+    // const sewingTaskCopy = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
+    // taskCard.value       = sewingTaskCopy
 
-    } else {
-        taskCard.value = SEWING_TASK_DRAFT
+    const answer = await manageTaskCard.value!.show()
+    if (!answer) {
+        return
     }
+
+    const leftPanel  = manageTaskCard.value!.leftPanel
+    const rightPanel = manageTaskCard.value!.rightPanel
+
+    console.log('leftPanel: ', leftPanel)
+    console.log('rightPanel: ', rightPanel)
+
+
+    // if (answer) {
+    //
+    // } else {
+    //     taskCard.value = SEWING_TASK_DRAFT
+    // }
 
 }
 

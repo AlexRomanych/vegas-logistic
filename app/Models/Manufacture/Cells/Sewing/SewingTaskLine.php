@@ -12,6 +12,7 @@ class SewingTaskLine extends Model
 
     protected $casts = [
         'time_labor' => 'array',
+        'phantom_json' => 'array',
     ];
 
     // Relations: Связь с Контекстом Заявки (OrderLine)

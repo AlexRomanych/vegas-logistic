@@ -2,9 +2,9 @@
 
 import type {
     IAmountAndTime, ISewingLinesPanel,
-    ISewingMachineKeys,
+    ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask,
-    ISewingTaskLine,
+    ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
     ISewingTaskModel,
     ISewingTaskOrderLine
 } from '@/types'
@@ -12,6 +12,7 @@ import type {
 import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
 
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 // __ Функция для получения трудозатрат для Записи (SewingLine) в СЗ
@@ -187,6 +188,10 @@ export function getSewingTaskModelCover(
 
     let target = null
     if (isSewingTaskLine(item)) {
+        // __ Динамическое свойство средней модели
+        if (isAverage(item)) {
+            return item.order_line.model.main
+        }
         target = item.order_line.model
     } else if (isSewingTaskOrderLine(item)) {
         target = item.model
@@ -277,13 +282,60 @@ export function getCoverSizeString(item: ISewingTaskLine | ISewingTaskOrderLine)
 }
 
 
+/**
+ * __ Функция, которая возвращает высчитанный объект количества при разделении строки на количество
+ * __ Возвращает новый экземпляр с пересчитанными данными
+ * @param sewingLine    __Входная строка__
+ * @param newAmount     __Новое количество__
+ */
+export function calculateDividedAmountAndTime(sewingLine: ISewingTaskLine, newAmount: number) {
+
+    // __ Создаем копию строки (референсная)
+    const refSewingLine = { ...sewingLine }
+
+    let newAmountAvg: ISewingTaskLineAmountAvg | null = null
+    const newTime: ISewingTaskLineTime                = {} as ISewingTaskLineTime
+
+    // __ Средняя модель
+    if (refSewingLine.amount_avg) {
+
+        newAmountAvg = {} as ISewingTaskLineAmountAvg
+        Object.entries(refSewingLine.amount_avg).forEach(([key, value]) => {
+            const amount                             = refSewingLine.amount ? value / refSewingLine.amount * newAmount : 0
+            newAmountAvg![key as ISewingMachineKeys] = amount
+
+            const arrKey: ISewingMachineTimesKeys = `time_${key}` as ISewingMachineTimesKeys
+            newTime[arrKey]                       = value ? round(refSewingLine.time[arrKey] / value * amount) : 0 // __ Уже новое пересчитанное количество
+        })
+
+        // Object.entries(refSewingLine.time).forEach(([key, value]) => {
+        //     const arrKey: ISewingMachineTimesKeys = `time_${key}` as ISewingMachineTimesKeys
+        //     let amount                            = 0
+        //     if (newAmountAvg && newAmountAvg[key as ISewingMachineKeys]) amount = newAmountAvg[key as ISewingMachineKeys]
+        //     // newTime[arrKey] = value ? refSewingLine.time[arrKey] / value * amount : 0 // __ Уже новое пересчитанное количество
+        // })
+    } else {
+        Object.entries(sewingLine.time).forEach(([key, value]) => {
+            newTime[key as ISewingMachineTimesKeys] = sewingLine.amount ? round(value / sewingLine.amount) * newAmount : 0
+        })
+    }
+
+    refSewingLine.amount     = newAmount
+    refSewingLine.amount_avg = newAmountAvg
+    refSewingLine.time       = newTime
+
+    return refSewingLine
+}
+
+
 // __ Дополнительно проверяем, является ли модель Чехлом
 export function isCover(element: ISewingTaskModel) {
     return element.name.toLowerCase().includes('чехол')
 }
 
 // __ Дополнительно проверяем, является ли модель Чехлом
-export function isAverage(element: ISewingTaskModel) {
+export function isAverage(element: ISewingTaskModel | ISewingTaskLine) {
+    if (isSewingTaskLine(element)) return element.is_average
     return element.machine_type === SEWING_MACHINES.AVERAGE
 }
 

@@ -37,9 +37,6 @@
                     </div>
                 </div>
 
-
-                <!--<div class="w-full flex-grow overflow-y-auto px-[4px] custom-scrollbar">-->
-
                 <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
                 <div class="flex h-screen w-full    bg-slate-900 p-4 gap-4 overflow-x-auto">
 
@@ -50,11 +47,6 @@
                     >
 
                         <div class="flex-none bg-slate-700 shadow-md">
-                            <!--<div class="flex justify-between text-slate-300 font-bold px-2">-->
-                            <!--    <span class="w-1/3">Наименование</span>-->
-                            <!--    <span class="w-1/3 text-center">Кол-во</span>-->
-                            <!--    <span class="w-1/3 text-right">Статус</span>-->
-                            <!--</div>-->
 
                             <!-- __ Заголовок (Шапка изделий) Панели -->
                             <ManageTaskCardItemsHeader
@@ -90,12 +82,12 @@
                                 :list="panel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
                                 :move="checkMove"
                                 class="min-h-[25px]"
-                                item-key="id"
+                                item-key="position"
                                 tag="div"
                                 @end="finishDrag"
                                 @start="startDrag"
                             >
-                                <template #item="{ element, index }">
+                                <template #item="{ element, /*index*/ }">
 
                                     <div :key="element.id"
                                          @click="setActiveSewingLine(element, panel)"
@@ -115,20 +107,6 @@
 
                             </draggable>
 
-                            <!--<ManageTaskCardItem-->
-                            <!--    :render-data="renderData"-->
-                            <!--    :sewing-line="element"-->
-                            <!--    @click="setActiveSewingLine(element)"-->
-                            <!--/>-->
-
-                            <!--<div v-for="n in 50" :key="n"-->
-                            <!--     class="flex justify-between p-3 mb-2 bg-slate-750 hover:bg-slate-600 rounded border border-slate-700 text-slate-200 transition-colors">-->
-                            <!--    <span class="w-1/3">Задача #{{ n }}</span>-->
-                            <!--    <span class="w-1/3 text-center">{{ Math.floor(Math.random() * 100) }}</span>-->
-                            <!--    <span class="w-1/3 text-right text-green-400">В работе</span>-->
-                            <!--</div>-->
-
-
                         </div>
 
                         <div class="flex-none bg-slate-700 py-1 border-t border-slate-600">
@@ -138,16 +116,11 @@
                                 :amount-and-time="panel === LEFT_PANEL_ID ? leftPanelAmountAndTimeTotal : rightPanelAmountAndTimeTotal"
                             />
 
-                            <!--<div class="flex justify-between text-white font-semibold px-2">-->
-                            <!--    <span>Всего позиций:</span>-->
-                            <!--    <span>50 шт.</span>-->
-                            <!--</div>-->
                         </div>
 
                     </div>
 
                 </div>
-
 
                 <div class="flex w-full items-center">
 
@@ -161,6 +134,7 @@
                                 (дата загрузки на складе: <span class="text-green-400"> {{ footTitle.load_at }}</span>)
                             </div>
                         </div>
+
                     </div>
 
                     <div class="flex gap-1 shrink-0">
@@ -216,21 +190,32 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, reactive, ref, watch, watchEffect, } from 'vue'
+import { computed, reactive, ref, watch, watchEffect, /*nextTick,*/ } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
 import type {
-    ISewingTask, IColorTypes, ISewingTaskLine, IDividerItem, IAmountAndTime, ISewingLinesPanel, ISewingTaskCardSort,
-    ISewingTaskOrderLine
+    ISewingTask,
+    IColorTypes,
+    ISewingTaskLine,
+    IDividerItem,
+    IAmountAndTime,
+    ISewingLinesPanel,
+    ISewingTaskCardSort,
+    ISewingTaskOrderLine,
 } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
+    calculateDividedAmountAndTime,
     getCoverSizeString,
-    getSewingTaskAmountAndTime, getSewingTaskModelCover, getSewingTimes, isAverage, sortSewingTaskLinesBySize
+    getSewingTaskAmountAndTime,
+    getSewingTaskModelCover,
+    getSewingTimes,
+    isAverage,
+    sortSewingTaskLinesBySize,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -247,6 +232,7 @@ import ManageTaskCardTotals
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import ManageTaskCardItemInfo
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemInfo.vue'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 interface IProps {
@@ -265,7 +251,6 @@ interface IRenderSewingLineDataItem {
 
 export type IRenderSewingLineData = Record<string, IRenderSewingLineDataItem>
 
-
 const props = withDefaults(defineProps<IProps>(), {
     type:   'primary',
     width:  'min-w-[1000px]',
@@ -276,6 +261,7 @@ const props = withDefaults(defineProps<IProps>(), {
 // const emits = defineEmits<{
 //     (e: 'select'): void
 // }>()
+
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
 
@@ -306,7 +292,6 @@ const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
 
-
 // __ Тип для модального окна "Разбить количество"
 const modalType            = ref<IColorTypes>('primary')
 const modalText            = ref<string>('')
@@ -320,11 +305,9 @@ const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
-
 // __ Тип для модального окна Сообщений
 const orderLine              = ref<ISewingTaskOrderLine | null>(null)
 const manageTaskCardItemInfo = ref<InstanceType<typeof ManageTaskCardItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
-
 
 // __ Функционал меню + Сортировка
 const showComments  = ref(false)
@@ -365,10 +348,12 @@ const renderData = {
 // --- -------------------------------------------------------------------------------------
 // --- ------------------------ Управление модальным окном ---------------------------------
 // --- -------------------------------------------------------------------------------------
-const showModal = ref(false)           // реактивность видимости модального окна
+
+// __ реактивность видимости модального окна
+const showModal = ref(false)
 
 let resolvePromise: ((value: boolean) => void) | null
-const show = async (sewingTask: ISewingTask | null = null) => {
+const show = async (/*sewingTask: ISewingTask | null = null*/) => {
     showModal.value = true
 
     // __ Для выхода по ESC
@@ -384,6 +369,7 @@ const show = async (sewingTask: ISewingTask | null = null) => {
     })
 }
 
+// __ Обработка нажатия выбора и выход из модального окна
 const select = async (value: boolean) => {
     if (resolvePromise) {
 
@@ -394,6 +380,7 @@ const select = async (value: boolean) => {
             if (needForSave.value) {
                 modalInfoText.value = ['В сменном задании есть несохраненные изменения.', ' ', 'Все изменения будут потеряны.', 'Продолжить?']
                 modalInfoType.value = 'danger'
+                modalInfoMode.value = 'confirm'
                 const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
                 if (!answer) {
                     return
@@ -405,12 +392,11 @@ const select = async (value: boolean) => {
         } else {
             modalInfoText.value = ['Все изменения будут сохранены.', ' ', 'Продолжить?']
             modalInfoType.value = 'primary'
+            modalInfoMode.value = 'confirm'
             const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
             if (!answer) {
                 return
             }
-
-
         }
 
         resolvePromise(value)
@@ -421,6 +407,12 @@ const select = async (value: boolean) => {
 
 defineExpose({
     show,
+    get leftPanel() {
+        return sourceSewingLines.value
+    },
+    get rightPanel() {
+        return targetSewingLines.value
+    }
 })
 // --- -------------------------------------------------------------------------------------
 
@@ -445,35 +437,94 @@ const setActiveSewingLine = (sewingLine: ISewingTaskLine, panel: ISewingLinesPan
 const showLineInfo = async (sewingLine: ISewingTaskLine) => {
     orderLine.value = sewingLine.order_line
     await manageTaskCardItemInfo.value!.show()             // показываем модалку и ждем ответ
-
 }
 
 // __ Разбить количество
 const divideElementAmount = async () => {
-    if (globalManageTaskCardActiveSewingLine.value) {
 
-        // __ Копируем объект, чтобы не мутировать оригинал
-        const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
-
-        const modelCoverExt       = getSewingTaskModelCover(activeSewingLineCopy.order_line.model)
-        dividerElement.value.name =
-            getCoverSizeString(activeSewingLineCopy) + ' ' +
-            modelCoverExt?.name_report + ' ' +
-            activeSewingLineCopy.order_line.amount.toString() + ' шт.'
-
-        dividerElement.value.amount = activeSewingLineCopy.amount
+    // __ Проверяем, есть ли активная строка
+    if (!globalManageTaskCardActiveSewingLine.value) {
+        return
     }
 
-    console.log('dividerElement.value: ', dividerElement.value)
+    // __ Проверяем, больше ли количество, чем 1
+    if (globalManageTaskCardActiveSewingLine.value.amount <= 1) {
+        return
+    }
 
-    if (dividerElement.value.amount > 1) {
-        const answer = await appRangeModalAsyncTS.value!.show()             // показываем модалку и ждем ответ
-        if (answer) {
+    // __ Копируем объект, чтобы не мутировать оригинал
+    const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
 
-            // __ Получаем диапазон
-            const range = appRangeModalAsyncTS.value!.range
-            console.log(range)
+    const modelCoverExt       = getSewingTaskModelCover(activeSewingLineCopy.order_line.model)
+    dividerElement.value.name =
+        getCoverSizeString(activeSewingLineCopy) + ' ' +
+        modelCoverExt?.name_report + ' ' +
+        activeSewingLineCopy.order_line.amount.toString() + ' шт.'
+
+    dividerElement.value.amount = activeSewingLineCopy.amount
+
+    // console.log('dividerElement.value: ', dividerElement.value)
+
+    const answer = await appRangeModalAsyncTS.value!.show()             // показываем модалку и ждем ответ
+    if (answer) {
+
+        // __ Получаем диапазон + проверяем его (страховочка)
+        const range = appRangeModalAsyncTS.value!.range
+        if (!range || range.take === 0 || range.keep === 0) {
+            return
         }
+
+        // console.log(range)
+
+        // __ Логика разделения
+        // __ Получаем целевой массив по ссылке
+        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceSewingLines.value : targetSewingLines.value
+        const dividerElementIndex = workArray.findIndex(item => item.id === activeSewingLineCopy.id && item.position === activeSewingLineCopy.position)
+        if (dividerElementIndex === -1) {
+            return // страховка
+        }
+
+        // __ Обрабатываем тот кейс, когда разделяем ужу разделенную строку
+        // __ Десятичное значение позиции должно быть меньше xx.9
+        const workElement = workArray[dividerElementIndex]
+
+        // __ Ищем сразу по 2 массивам, потому что строка уже может быть перемещена в другую панель
+        const filteredSourceSewingLines = sourceSewingLines.value.filter(item => item.id === workElement.id)
+        const filteredTargetSewingLines = targetSewingLines.value.filter(item => item.id === workElement.id)
+
+        const maxPosition = [...filteredSourceSewingLines, ...filteredTargetSewingLines]
+            .filter(item => item.id === workElement.id)
+            .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
+
+        let fraction = ((maxPosition - Math.trunc(maxPosition)) * 10 | 0) / 10
+
+        // __ Если позиция больше 0.9, то не даем разделить
+        if (fraction > 0.8) {
+            modalInfoText.value = [
+                'Максимальное количество разделений',
+                'одной строки - 9.',
+                'Для продолжения разделения',
+                'необходимо сохранить промежуточные результаты.'
+            ]
+            modalInfoType.value = 'danger'
+            modalInfoMode.value = 'inform'
+            await appModalAsyncMultiline.value!.show()
+            return
+        }
+
+        let newSewingLine = { ...workArray[dividerElementIndex] }                   // __ Копируем объект
+
+        newSewingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
+
+        // __ Пересчитываем время и количество
+        newSewingLine                  = calculateDividedAmountAndTime(newSewingLine, range.take)
+        workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
+
+        workArray.splice(dividerElementIndex + 1, 0, newSewingLine)
+
+        // console.log(activeSewingLineCopy)
+        // console.log(workArray[dividerElementIndex])
+        // console.log(workArray[dividerElementIndex + 1])
     }
 }
 
@@ -485,11 +536,9 @@ const reloadData = () => {
     calculateTotals()
 }
 
-
 // __ Переместить в другую панель
 const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {
-    let sourceArray = []
-    let targetArray = []
+    let sourceArray, targetArray
 
     if (activePanel === LEFT_PANEL_ID) {
         sourceArray = [...sourceSewingLines.value]
@@ -769,8 +818,10 @@ const finishDrag = (evt: any) => {
 
 // __ Следим за входящими данными
 // __ При монтировании компонента, они еще undefined
-watch(() => props.task, (value) => {
-    globalManageTaskCardActiveSewingLine.value = props.task?.sewing_lines[0]        // __ Задаем активную запись
+watch(() => props.task, () => {
+
+    // __ Задаем активную запись
+    globalManageTaskCardActiveSewingLine.value = props.task?.sewing_lines[0]
 
     // __ Копируем входящие данные для отслеживания изменений
     taskMem = JSON.parse(JSON.stringify(props.task))
@@ -784,24 +835,11 @@ watch(() => props.task, (value) => {
     sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
     targetSewingLines.value = []
 
+    // console.log(sourceSewingLines.value)
+    // console.log(targetSewingLines.value)
+
     // __ Обновляем суммы
     calculateTotals()
-
-    // leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(sourceSewingLines.value)
-    // rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
-
-    // leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(props.task.sewing_lines)
-    // console.log('leftPanelAmountAndTimeTotal.value: ', leftPanelAmountAndTimeTotal.value)
-    // console.log('rightPanelAmountAndTimeTotal.value: ', rightPanelAmountAndTimeTotal.value)
-
-    // footTitle.value =
-    //     'СЗ от ' + formatDateInFullFormat(props.task.action_at) +
-    //     ' для Заявки ' + props.task.order.client.short_name + ' №' + props.task.order.order_no_str +
-    //     '(дата загрузки на складе: ' + formatDateInFullFormat(props.task.order.load_at) + ')'
-
-
-    // console.log('activeSewingLine ++: ', globalManageTaskCardActiveSewingLine.value)
-    // console.log(props.task)
 })
 
 
@@ -823,20 +861,8 @@ watch(() => props.task, (value) => {
 // })
 
 
-// watch(() => props.task.sewing_lines, (value) => {
-//     // sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
-//     // console.log('watch: task.sewing_lines: ', props.task.sewing_lines)
-// })
-
-
-// watch(() => props.task.sewing_lines, (value) => {
-//     console.log('watch: task.sewing_lines: ', props.task.sewing_lines)
-// })
-
-
 // __ Следим за необходимостью сохранения данных
 watchEffect(() => {
-
 
     needForSave.value = true
 
@@ -851,10 +877,6 @@ watchEffect(() => {
         return
     }
 
-    // if (props.task?.sewing_lines.length !== taskMem.sewing_lines.length) {
-    //     return
-    // }
-
     // __ Сравниваем содержимое массивов
     for (let i = 0; i < sourceSewingLines.value.length; i++) {
         const isEqual = JSON.stringify(sourceSewingLines.value[i]) === JSON.stringify(taskMem.sewing_lines[i])
@@ -862,13 +884,6 @@ watchEffect(() => {
             return
         }
     }
-
-    // for (let i = 0; i < props.task?.sewing_lines.length; i++) {
-    //     const isEqual = JSON.stringify(props.task?.sewing_lines[i]) === JSON.stringify(taskMem.sewing_lines[i])
-    //     if (!isEqual) {
-    //         return
-    //     }
-    // }
 
     needForSave.value = false
 })

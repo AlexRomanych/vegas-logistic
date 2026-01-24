@@ -21,15 +21,15 @@ final class SewingService
 
     /**
      * ___ Создать СЗ для Пошива из основного Заказа
-     * @param int $orderId ID основного Заказа
-     * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
+     * @param  int  $orderId  ID основного Заказа
+     * @param  string|null  $plannedDate  Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
      * @return SewingTask|null
      * @throws Throwable
      */
     public static function createSewingTaskFromOrderId(
-        int         $orderId,
-        string|null $plannedDate = null): ?SewingTask
-    {
+        int $orderId,
+        string|null $plannedDate = null
+    ): ?SewingTask {
         // try {
         // __ Проверяем на существование заказа
         $order = Order::query()->with(['lines', 'client'])->find($orderId);
@@ -61,11 +61,10 @@ final class SewingService
         // __ Создаем контент (строки) СЗ
         $position = 1;
         foreach ($order->lines as $line) {
-
             // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
-            if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
-                $position = 0;
-            }
+            // if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
+            //     $position = 0;
+            // }
 
             // __ Получаем трудозатраты
             /** @noinspection DuplicatedCode */
@@ -75,18 +74,65 @@ final class SewingService
                 amount: $line->amount,
             );
 
-            $createdTaskLine = SewingTaskLine::query()->create([
-                'sewing_task_id'             => $createdTask->id,
-                'order_line_id'              => $line->id,
-                'amount'                     => $line->amount,
-                'position'                   => $position++,
-                'time_labor'                 => $sewingTimeLabor->getTimeLaborArray(), // __ Записываем общие трудозатраты в jsonb в БД
-                SewingTask::FIELD_UNIVERSAL  => $sewingTimeLabor->getTimeUniversal(),
-                SewingTask::FIELD_AUTO       => $sewingTimeLabor->getTimeAuto(),
-                SewingTask::FIELD_SOLID_HARD => $sewingTimeLabor->getTimeSolidHard(),
-                SewingTask::FIELD_SOLID_LITE => $sewingTimeLabor->getTimeSolidLite(),
-                SewingTask::FIELD_UNDEFINED  => $sewingTimeLabor->getTimeUndefined(),
-            ]);
+
+            // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
+            // __ Для каждой ШМ записываем отдельно
+            $sewingMachines = [
+                SewingTask::FIELD_UNIVERSAL  => [
+                    'time'   => $sewingTimeLabor->getTimeUniversal(),
+                    'amount' => $sewingTimeLabor->getAmountUniversal()
+                ],
+                SewingTask::FIELD_AUTO       => [
+                    'time'   => $sewingTimeLabor->getTimeAuto(),
+                    'amount' => $sewingTimeLabor->getAmountAuto()
+                ],
+                SewingTask::FIELD_SOLID_HARD => [
+                    'time'   => $sewingTimeLabor->getTimeSolidHard(),
+                    'amount' => $sewingTimeLabor->getAmountSolidHard()
+                ],
+                SewingTask::FIELD_SOLID_LITE => [
+                    'time'   => $sewingTimeLabor->getTimeSolidLite(),
+                    'amount' => $sewingTimeLabor->getAmountSolidLite()
+                ],
+                SewingTask::FIELD_UNDEFINED  => [
+                    'time'   => $sewingTimeLabor->getTimeUndefined(),
+                    'amount' => $sewingTimeLabor->getAmountUndefined()
+                ],
+            ];
+
+            foreach ($sewingMachines as $machine => $data) {
+                if ($data['amount'] < 1) {
+                    continue;
+                }
+                $createdTaskLine = SewingTaskLine::query()->create([
+                    'sewing_task_id' => $createdTask->id,
+                    'order_line_id'  => $line->id,
+                    'amount'         => $data['amount'],
+                    'position'       => $position++,
+                    'time'           => $data['time'],
+
+                    // __ Задаем подмену свойств
+                    'phantom'        => $machine,
+                    'phantom_json'   => ['is_'.$machine => true],
+
+                ]);
+            }
+
+            // __ !!! Старая логика, когда в СЗ записывали общие трудозатраты
+            // $createdTaskLine = SewingTaskLine::query()->create([
+            //     'sewing_task_id'             => $createdTask->id,
+            //     'order_line_id'              => $line->id,
+            //     'amount'                     => $line->amount,
+            //     'position'                   => $position++,
+            //     'time_labor'                 => $sewingTimeLabor->getTimeLaborArray(), // __ Записываем общие трудозатраты в jsonb в БД
+            //
+            //     // __ Эти поля убрал
+            //     // SewingTask::FIELD_UNIVERSAL  => $sewingTimeLabor->getTimeUniversal(),
+            //     // SewingTask::FIELD_AUTO       => $sewingTimeLabor->getTimeAuto(),
+            //     // SewingTask::FIELD_SOLID_HARD => $sewingTimeLabor->getTimeSolidHard(),
+            //     // SewingTask::FIELD_SOLID_LITE => $sewingTimeLabor->getTimeSolidLite(),
+            //     // SewingTask::FIELD_UNDEFINED  => $sewingTimeLabor->getTimeUndefined(),
+            // ]);
         }
 
         // __ Создаем запись в Статусе: Создано
@@ -139,7 +185,6 @@ final class SewingService
         $sewingTaskContent = [];
         $idx               = 0;
         foreach ($sewingTasks as $key => $sewingTask) {
-
             if (!isset($sewingTaskContent[$key])) { // __ Если еще не создан массив для Части СЗ (не сработало нижнее условие)
                 $sewingTaskContent[$key] = [];      // __ Создаем пустой массив для Части СЗ (инициализируем)
             }
@@ -177,11 +222,9 @@ final class SewingService
 
         // __ Записываем содержимое в Части СЗ в БД
         foreach ($sewingTasks as $key => $sewingTask) {
-
             if (isset($sewingTaskContent[$key])) {
                 $position = 1;
                 foreach ($sewingTaskContent[$key] as $line) {
-
                     // __ Получаем трудозатраты
                     /** @noinspection DuplicatedCode */
                     $sewingTimeLabor = new SewingTimeLabor(
@@ -216,7 +259,7 @@ final class SewingService
 
     /**
      * ___ Получаем позицию последнего СЗ в дне
-     * @param string|Carbon|null $date Дата нужного дня
+     * @param  string|Carbon|null  $date  Дата нужного дня
      * @return int
      */
     public static function getSewingTaskLastPositionInDay(string|Carbon $date = null): int

@@ -24,6 +24,7 @@ class SewingTaskLineResource extends JsonResource
             amount: $this->amount
         );
 
+
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'id'           => $this->id,
@@ -34,10 +35,21 @@ class SewingTaskLineResource extends JsonResource
             'finished_by'  => $this->finished_by ? Carbon::parse($this->finished_by)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason' => $this->false_reason,
 
-            'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
-            'time'       => $labor->getTime(),
+            'amount_avg' => null,
+            'time'       => ['time_' . $this->phantom => $this->time],
 
-            'order_line' => new SewingTaskOrderLineResource($this->orderLine),
+            // 'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
+            // 'time'       => $labor->getTime(),
+
+            'order_line' => (new SewingTaskOrderLineResource($this->whenLoaded('orderLine')))
+                ->additional([
+                    'phantom_data' => [
+                        'phantom'      => $this->phantom,
+                        'phantom_json' => $this->phantom_json,
+                    ]
+                ]),        // __ Добавляем подмену свойств в потомке
+
+            'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная
 
             // 'order_line_id' => $this->order_line_id,
             // 'sewing_task_id' => $this->sewing_task_id,

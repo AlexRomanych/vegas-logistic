@@ -149,8 +149,8 @@ const props = withDefaults(defineProps<IProps>(), {
         amount: 100,
     }),
     units:          'штуки',
-    dividerTitle:   'Разбить количество',
-    dividerConfirm: 'Разбить количество',
+    dividerTitle:   'Изменить количество',
+    dividerConfirm: 'Изменить количество',
     remainingTitle: 'Остаток в текущем',
     splitTitle:     'Количество в новом',
 })
@@ -165,6 +165,7 @@ const showModal = ref(false)           // реактивность видимо�
 let resolvePromise: ((value: boolean) => void) | null
 const show = () => {
     showModal.value = true
+    splitValue.value = 0        // сбрасываем значение при открытии модального окна
     return new Promise((resolve) => {
         resolvePromise = resolve
     })
@@ -176,6 +177,11 @@ const select = (value: boolean) => {
         resolvePromise(value)
         showModal.value = false
         resolvePromise  = null
+
+        if (!value) {
+            splitValue.value = 0
+
+        }
     }
 }
 

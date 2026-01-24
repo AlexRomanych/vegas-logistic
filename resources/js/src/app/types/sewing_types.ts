@@ -24,6 +24,7 @@ export interface ISewingTaskLine {
     amount: number                                  // __ Общее количество в заявке
     amount_avg: null | ISewingTaskLineAmountAvg     // __ Количество для средней модели по статистике
     time: ISewingTaskLineTime                       // __ Трудозатраты
+    is_average: boolean                             // __ Флаг для расчетной модели
     created_at: string | null
     false_reason: string | null
     finished_at: string | null
@@ -124,14 +125,14 @@ export type ISewingMachineKeys =
     typeof AVERAGE
 
 // __ Ключи для Типов ШМ
-type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
+export type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
 
 
 // __ Тип для Средних значений для Average модели
-type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
+export type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
 
 // __ Трудозатраты
-type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
+export type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
 
 
 // --- --------------------------------------------------------------

@@ -15,12 +15,12 @@ class SewingTask extends Model
     // --- Константы
 
     // --- Поля
-    public const FIELD_UNIVERSAL = 'time_universal';
-    public const FIELD_AUTO = 'time_auto';
-    public const FIELD_SOLID_HARD = 'time_solid_hard';
-    public const FIELD_SOLID_LITE = 'time_solid_lite';
-    public const FIELD_UNDEFINED = 'time_undefined';
-    public const FIELD_AVERAGE = 'time_average';
+    public const FIELD_UNIVERSAL = 'universal';
+    public const FIELD_AUTO = 'auto';
+    public const FIELD_SOLID_HARD = 'solid_hard';
+    public const FIELD_SOLID_LITE = 'solid_lite';
+    public const FIELD_UNDEFINED = 'undefined';
+    public const FIELD_AVERAGE = 'average';
 
     // --- -------------------------------
 
@@ -44,12 +44,13 @@ class SewingTask extends Model
     {
         return $this
             ->belongsToMany(
-                SewingTaskStatus::class,                // Класс, с которым связываемся
+                SewingTaskStatus::class,                  // Класс, с которым связываемся
                 'sewing_task_status_pivot',               // Промежуточная Таблица, связывающая классы
-                'sewing_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
-                'sewing_task_status_id')         // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+                'sewing_task_id',                         // Ключ в промежуточной таблице, связывающий с текущим классом
+                'sewing_task_status_id'
+            )         // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             ->using(SewingTaskStatusPivot::class)
-            ->withPivot(['set_at','started_at', 'finished_at', 'duration']);
+            ->withPivot(['set_at', 'started_at', 'finished_at', 'duration']);
     }
 
 

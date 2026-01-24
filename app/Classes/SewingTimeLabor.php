@@ -12,12 +12,30 @@ use App\Services\SizeService;
 
 class SewingTimeLabor
 {
+    // --- Трудозатраты на единицу изделия для ШМ
+    // !!! TODO: Эти значения нужно брать из БД для средней модели и рассчитывать для конкретной модели
+    private int $timeUniversalPerPic = 0;
+    private int $timeAutoPerPic = 0;
+    private int $timeSolidHardPerPic = 0;
+    private int $timeSolidLitePerPic = 0;
+    private int $timeUndefinedPerPic = 0;
+
+    // --- Трудозатраты на общее количество изделий для ШМ
     private int $timeUniversal = 0;
     private int $timeAuto = 0;
     private int $timeSolidHard = 0;
     private int $timeSolidLite = 0;
     private int $timeUndefined = 0;
-    private int $amount = 0;
+
+    // --- Количество изделий по типам ШМ
+    private int $amount = 0;            // __ Общее Количество (То, что было передано в конструкторе)
+    private float $amountUniversal = 0;
+    private float $amountAuto = 0;
+    private float $amountSolidHard = 0;
+    private float $amountSolidLite = 0;
+    private float $amountUndefined = 0;
+
+    // --- Тип ШМ
     private string $sewingType = '';
 
 
@@ -34,6 +52,7 @@ class SewingTimeLabor
         string|Size|null $size = null,
         int $amount = 1
     ) {
+        // __ Устанавливаем количество
         $this->amount = $amount;
 
         // __ Если передана строка Сменного задания
@@ -42,21 +61,28 @@ class SewingTimeLabor
             if ($orderLine) {
                 $model = ModelsService::getModelByCode1C($orderLine->model_code_1c); // __ Получаем Модель
                 if ($model) {
-                    $this->setSewingType($model);
+                    // !!! Порядок важен
+                    $this->setSewingType($model);               // __ Устанавливаем тип ШМ
+                    $this->calcAmounts();                       // __ Считаем количество
+
                     $size = new Size($orderLine->width, $orderLine->length, $orderLine->height); // __ Получаем Размер
                     // $size = $this->getSize($orderLine->size);
-                    $this->calcTimeLabor($model, $size, $orderLine->amount);
+                    $this->calcTimePerPic($size);                                                // __ Считаем трудозатраты на ед.
+                    $this->calcTimeLabor();                                                      // __ Считаем трудозатраты на общее количество
                 }
             }
         } else {
             if ($model && $size && $amount !== 0) {
-                // __ Находим модель
-                $workModel = $this->getModel($model);
+                $workModel = $this->getModel($model);           // __ Находим модель
                 if ($workModel) {
-                    $this->setSewingType($workModel);
+                    // !!! Порядок важен
+                    $this->setSewingType($workModel);           // __ Устанавливаем тип ШМ
+                    $this->calcAmounts();                       // __ Считаем количество
+
                     $workSize = $this->getSize($size);
                     if ($workSize) {
-                        $this->calcTimeLabor($workModel, $workSize, $amount);
+                        $this->calcTimePerPic($workSize);       // __ Считаем трудозатраты на ед.
+                        $this->calcTimeLabor();                 // __ Считаем трудозатраты на общее количество
                     }
                 }
             }
@@ -76,7 +102,7 @@ class SewingTimeLabor
                 $model->is_auto       => SewingTask::FIELD_AUTO,
                 $model->is_solid_hard => SewingTask::FIELD_SOLID_HARD,
                 $model->is_solid_lite => SewingTask::FIELD_SOLID_LITE,
-                $model->is_undefined  => SewingTask::FIELD_UNDEFINED,
+                // $model->is_undefined  => SewingTask::FIELD_UNDEFINED,
                 default               => SewingTask::FIELD_UNDEFINED,
             };
         }
@@ -110,56 +136,125 @@ class SewingTimeLabor
         return $workSize;
     }
 
-    // ___ Получаем сами трудозатраты
+
+    // ___ Получаем количество единиц по типам ШМ
 
     /** @noinspection PhpUndefinedFieldInspection */
-    private function calcTimeLabor(Model $model, Size $size, int $amount): void
+    private function calcAmounts(): void
     {
-        // !!! __ TODO: Тут вся логика по трудозатратам
-        // !!! __ TODO: Нужно сходить в БД и получить трудозатраты - Сходим
+        // !!! __ TODO: Тут вся логика по количеству
+        // !!! __ TODO: Нужно сходить в БД и получить количество и трудозатраты - Сходим
         // !!! __ TODO: Нужно привязать модель к размеру - Привязываем
         // !!! __ TODO: Нужно сделать массив с расчетным количеством изделий - Считаем и Выдаем
 
 
-        if (ModelsService::isElementAverage($model)) {
-            $this->timeUniversal = /*$this->getTimeLabor()*/
-                100 * $amount * 0.4; // __ 40%
-            $this->timeAuto      = /*$this->getTimeLabor()*/
-                100 * $amount * 0.3;
-            $this->timeSolidHard = /*$this->getTimeLabor()*/
-                100 * $amount * 0.15;
-            $this->timeSolidLite = /*$this->getTimeLabor()*/
-                100 * $amount * 0.1;
-            $this->timeUndefined = /*$this->getTimeLabor()*/
-                100 * $amount * 0.05;
+        if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
+            $this->amountUniversal = $this->amount * 0.4;
+            $this->amountAuto      = $this->amount * 0.35;
+            $this->amountSolidHard = $this->amount * 0.15;
+            $this->amountSolidLite = $this->amount * 0.1;
+            $this->amountUndefined = $this->amount * 0.0;
+            $this->correctAmounts();    // __ Корректируем количество
         } else {
-            //['is_auto', 'is_universal', 'is_solid', 'is_solid_lite', 'is_solid_hard', 'is_undefined'];
-            if ($model->is_universal) {
-                $this->timeUniversal = /*$this->getTimeLabor()*/
-                    100 * $amount;
-            } elseif ($model->is_auto) {
-                $this->timeAuto = /*$this->getTimeLabor()*/
-                    150 * $amount;
-            } elseif ($model->is_solid_hard) {
-                $this->timeSolidHard = /*$this->getTimeLabor()*/
-                    200 * $amount;
-            } elseif ($model->is_solid_lite) {
-                $this->timeSolidLite = /*$this->getTimeLabor()*/
-                    250 * $amount;
-            } elseif ($model->is_undefined) {
-                $this->timeUndefined = /*$this->getTimeLabor()*/
-                    300 * $amount;
+            if ($this->sewingType === SewingTask::FIELD_UNIVERSAL) {
+                $this->amountUniversal = $this->amount;
+            } elseif ($this->sewingType === SewingTask::FIELD_AUTO) {
+                $this->amountAuto = $this->amount;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_HARD) {
+                $this->amountSolidHard = $this->amount;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_LITE) {
+                $this->amountSolidLite = $this->amount;
+            } elseif ($this->sewingType === SewingTask::FIELD_UNDEFINED) {
+                $this->amountUndefined = $this->amount;
             }
         }
     }
 
-    private function getTimeLabor(): int
+
+    // ___ Получаем трудозатраты на единицу изделия
+    private function calcTimePerPic(Size $size): void
     {
-        $scale = 1;
-        $max   = 100;
-        return mt_rand(1, $max) * $scale;
+        // !!! __ TODO: Тут вся логика по трудозатратам на единицу
+        // !!! __ TODO: Нужно сходить в БД и получить трудозатраты - Сходим
+        // !!! __ TODO: Нужно привязать модель к размеру - Привязываем
+        // !!! __ TODO: Нужно сделать массив с расчетным количеством изделий - Считаем и Выдаем
+
+        $this->timeUniversalPerPic = 100;
+        $this->timeAutoPerPic      = 150;
+        $this->timeSolidHardPerPic = 200;
+        $this->timeSolidLitePerPic = 250;
+        $this->timeUndefinedPerPic = 0;
     }
 
+    // ___ Получаем сами трудозатраты
+
+    /** @noinspection PhpUndefinedFieldInspection */
+    private function calcTimeLabor(): void
+    {
+        if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
+            $this->timeUniversal = $this->timeUniversalPerPic * $this->amountUniversal;
+            $this->timeAuto      = $this->timeAutoPerPic * $this->amountAuto;
+            $this->timeSolidHard = $this->timeSolidHardPerPic * $this->amountSolidHard;
+            $this->timeSolidLite = $this->timeSolidLitePerPic * $this->amountSolidLite;
+            $this->timeUndefined = $this->timeUndefinedPerPic * $this->amountUndefined;
+        } else {
+            if ($this->sewingType === SewingTask::FIELD_UNIVERSAL) {
+                $this->timeUniversal = $this->timeUniversalPerPic * $this->amountUniversal;
+            } elseif ($this->sewingType === SewingTask::FIELD_AUTO) {
+                $this->timeAuto = $this->timeAutoPerPic * $this->amountAuto;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_HARD) {
+                $this->timeSolidHard = $this->timeSolidHardPerPic * $this->amountSolidHard;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_LITE) {
+                $this->timeSolidLite = $this->timeSolidLitePerPic * $this->amountSolidLite;
+            } elseif ($this->sewingType === SewingTask::FIELD_UNDEFINED) {
+                $this->timeUndefined = $this->timeUndefinedPerPic * $this->amountUndefined;
+            }
+        }
+    }
+
+
+    // --- Количество
+
+    // ___ Получаем среднее количество изделий по типу ШМ
+    public function getAveragesAmount(): array
+    {
+        return [
+            ModelsService::TYPE_UNIVERSAL  => $this->getAmountUniversal(),
+            ModelsService::TYPE_AUTO       => $this->getAmountAuto(),
+            ModelsService::TYPE_SOLID_HARD => $this->getAmountSolidHard(),
+            ModelsService::TYPE_SOLID_LITE => $this->getAmountSolidLite(),
+            ModelsService::TYPE_UNDEFINED  => $this->getAmountUndefined(),
+        ];
+    }
+
+    // --- Возвращаем количество в числовом формате, те, которые определены (кроме Average)
+    public function getAmountUniversal(): int
+    {
+        return $this->amountUniversal;
+    }
+
+    public function getAmountAuto(): int
+    {
+        return $this->amountAuto;
+    }
+
+    public function getAmountSolidHard(): int
+    {
+        return $this->amountSolidHard;
+    }
+
+    public function getAmountSolidLite(): int
+    {
+        return $this->amountSolidLite;
+    }
+
+    public function getAmountUndefined(): int
+    {
+        return $this->amountUndefined;
+    }
+
+
+    // --- Трудозатраты
 
     // ___ Получаем трудозатраты в массив
     public function getTimeLaborArray(): array
@@ -173,32 +268,15 @@ class SewingTimeLabor
         return json_encode($this->getLaborArray());
     }
 
-    // ___ Получаем среднее количество изделий по типу ШМ
-    public function getAveragesAmount(): array
-    {
-        return [
-            ModelsService::TYPE_UNIVERSAL  => $this->amount * 0.4,
-            ModelsService::TYPE_AUTO       => $this->amount * 0.3,
-            ModelsService::TYPE_SOLID_HARD => $this->amount * 0.15,
-            ModelsService::TYPE_SOLID_LITE => $this->amount * 0.1,
-            ModelsService::TYPE_UNDEFINED  => $this->amount * 0.05,
-
-            // SewingTask::FIELD_UNIVERSAL  => $this->amount * 0.4,
-            // SewingTask::FIELD_AUTO       => $this->amount * 0.3,
-            // SewingTask::FIELD_SOLID_HARD => $this->amount * 0.15,
-            // SewingTask::FIELD_SOLID_LITE => $this->amount * 0.1,
-            // SewingTask::FIELD_UNDEFINED  => $this->amount * 0.05,
-        ];
-    }
-
+    // ___ Получаем трудозатраты в ассоциативном массиве
     private function getLaborArray(): array
     {
         return [
-            SewingTask::FIELD_UNIVERSAL  => $this->timeUniversal,
-            SewingTask::FIELD_AUTO       => $this->timeAuto,
-            SewingTask::FIELD_SOLID_HARD => $this->timeSolidHard,
-            SewingTask::FIELD_SOLID_LITE => $this->timeSolidLite,
-            SewingTask::FIELD_UNDEFINED  => $this->timeUndefined,
+            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversal(),
+            SewingTask::FIELD_AUTO       => $this->getTimeAuto(),
+            SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHard(),
+            SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLite(),
+            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefined(),
         ];
     }
 
@@ -272,6 +350,53 @@ class SewingTimeLabor
     public function getTimeUndefinedArray(): array
     {
         return [SewingTask::FIELD_UNDEFINED => $this->timeUndefined];
+    }
+
+
+
+    // ___ Корректируем количество, если оно не целое
+    private function correctAmounts(): void
+    {
+        // __ 1. Список свойств для обработки
+        $propertyNames = [
+            'amountUniversal',
+            'amountAuto',
+            'amountSolidHard',
+            'amountSolidLite',
+            'amountUndefined'
+        ];
+
+        $data       = [];
+        $currentSum = 0;
+
+        foreach ($propertyNames as $name) {
+            $value = $this->$name;
+            $floorValue = (int)floor($value);
+
+            $data[$name] = [
+                'int' => $floorValue,
+                'fraction' => $value - $floorValue // Дробный "хвост"
+            ];
+
+            $currentSum += $floorValue;
+        }
+
+        // __ 2. Считаем, сколько единиц потеряли при округлении floor()
+        $shortfall = $this->amount - $currentSum;
+
+        // __ 3. Сортируем названия свойств по убыванию дробной части
+        // __ Тот, у кого было 10.9, приоритетнее на получение +1, чем тот, у кого 10.1
+        uasort($data, fn($a, $b) => $b['fraction'] <=> $a['fraction']);
+
+        // __ 4. Распределяем недостачу
+        foreach ($data as $name => $info) {
+            if ($shortfall > 0) {
+                $this->$name = (float)($info['int'] + 1);
+                $shortfall--;
+            } else {
+                $this->$name = (float)$info['int'];
+            }
+        }
     }
 
 }

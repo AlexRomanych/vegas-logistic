@@ -37,15 +37,39 @@ return new class extends Migration {
                 ->default(0)
                 ->comment('Количество одной части при разбиении записи Заявки на части или все количество в Заявке');
 
-            // __ Порядок в списке по порядку (позиция)
+            // __ Фантом (призрак, фейк, фиктивный)
+            // __ Поле, которое показывает, на что подменять свойства той или иной модели в записи
+            $table->string('phantom')
+                ->nullable()
+                ->comment('Подмена свойств модели');
+
+            // __ Фантом (призрак, фейк, фиктивный)
+            // __ Поле, которое показывает, на что подменять свойства той или иной модели в записи
+            $table->jsonb('phantom_json')
+                ->nullable(false)
+                ->default('[]')
+                ->comment('Подмена свойств модели в JSON');
+
+            // __ Порядок в списке по порядку (позиция) в конкретном СЗ
             $table->unsignedInteger('position')
                 ->nullable(false)
                 ->default(1)
-                ->comment('Порядок в списке по порядку (позиция)');
+                ->comment('Порядок в списке по порядку (позиция) в конкретном СЗ');
+
+            // __ Порядок в списке по порядку (позиция) в дне
+            // __ Ситуация когда в одном дне несколько СЗ и они объединяются в одно
+            $table->unsignedInteger('position_day')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Порядок в списке по порядку (позиция) в дне');
 
             // __ Ставим ограничение уникальности по позиции (порядковый номер Элемента в сочетании с id - Части СЗ - SewingTask)
             // __ должно быть уникальным
             $table->unique(['sewing_task_id', 'position']);
+
+            // __ Ставим ограничение уникальности по позиции (порядковый номер Элемента в сочетании с id - Части СЗ - SewingTask)
+            // __ должно быть уникальным в рамках одного дня. Пока оставляем так
+            // $table->unique(['sewing_task_id', 'position_day']);
 
             // __ Время завершения работы по данному элементу в СЗ
             $table->timestamp('finished_at')
@@ -63,19 +87,30 @@ return new class extends Migration {
             $table->string('false_reason')->nullable()->comment('Причина невыполнения');
 
             // --- Трудозатраты на Швейную машину в момент создания СЗ в секундах
+
+            // __ Трудозатраты на ШМ отдельное поле
+            $table->unsignedInteger('time')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Трудозатраты на УШМ, секунды');
+
+            // !!! Пока не используем
+            /*
+            // __ Суммарное время
             $defaultLaborTime = json_encode([
-                SewingTask::FIELD_UNIVERSAL => 0,
-                SewingTask::FIELD_AUTO => 0,
+                SewingTask::FIELD_UNIVERSAL  => 0,
+                SewingTask::FIELD_AUTO       => 0,
                 SewingTask::FIELD_SOLID_HARD => 0,
                 SewingTask::FIELD_SOLID_LITE => 0,
-                SewingTask::FIELD_UNDEFINED => 0,
+                SewingTask::FIELD_UNDEFINED  => 0,
             ]);
 
-            // __ Суммарное время
             $table->jsonb('time_labor')
                 ->nullable(false)
                 ->default($defaultLaborTime)
                 ->comment('Трудозатраты в момент создания СЗ, секунды');
+
+
 
             // __ УШМ
             $table->unsignedInteger(SewingTask::FIELD_UNIVERSAL)
@@ -106,7 +141,7 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Трудозатраты на Неопознанные, секунды');
-
+*/
         });
 
         $this->addCommonColumns(self::TABLE_NAME);

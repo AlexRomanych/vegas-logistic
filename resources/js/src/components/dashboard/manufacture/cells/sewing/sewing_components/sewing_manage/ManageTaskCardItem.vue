@@ -252,7 +252,7 @@ const modelCover = computed(() => getSewingTaskModelCover(props.sewingLine))
 // __ Получаем название модели
 const coverName = computed(() => {
     return modelCover.value
-        ? isAverage(modelCover.value)
+        ? isAverage(props.sewingLine)
             ? 'Чехол для Планового матраса'
             : modelCover.value.name_report
         : ''

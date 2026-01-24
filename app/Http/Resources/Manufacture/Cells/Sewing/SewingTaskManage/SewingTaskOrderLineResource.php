@@ -16,28 +16,32 @@ class SewingTaskOrderLineResource extends JsonResource
     {
         /** @noinspection PhpUndefinedFieldInspection */
         return [
-            'id'            => $this->id,
-            'size'          => $this->size,
-            'dims'          => [
-                'width'         => $this->width,
-                'length'        => $this->length,
-                'height'        => $this->height,
+            'id'   => $this->id,
+            'size' => $this->size,
+            'dims' => [
+                'width'  => $this->width,
+                'length' => $this->length,
+                'height' => $this->height,
             ],
 
             'model' => [
-                'main' => new SewingTaskModelResource($this->model),
+                'main'  => (new SewingTaskModelResource($this->whenLoaded('model')))
+                    ->additional(['phantom_data' => $this->additional['phantom_data']]),
+
                 // !!! Используем $this->model->getRelation('cover' и 'base'), потому что есть поле $this->model->cover и $this->model->base,
-                'base' => new SewingTaskModelResource($this->model->getRelation('base')),
+                'base'  => new SewingTaskModelResource($this->model->getRelation('base')),
                 'cover' => new SewingTaskModelResource($this->model->getRelation('cover')),
+                // 'cover' => new SewingTaskModelResource($this->whenLoaded('cover')),
+                // 'base' => new SewingTaskModelResource($this->whenLoaded('base')),
                 // 'cover' => $this->model->getRelation('cover'),
             ],
 
-            'amount'        => $this->amount,
-            'textile'       => $this->textile,
-            'composition'   => $this->composition,
-            'describe_1'    => $this->describe_1,
-            'describe_2'    => $this->describe_2,
-            'describe_3'    => $this->describe_3,
+            'amount'      => $this->amount,
+            'textile'     => $this->textile,
+            'composition' => $this->composition,
+            'describe_1'  => $this->describe_1,
+            'describe_2'  => $this->describe_2,
+            'describe_3'  => $this->describe_3,
 
             // 'model_name'    => $this->model_name,
             // 'model_code_1c' => $this->model_code_1c,
