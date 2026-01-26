@@ -17,6 +17,7 @@
                     :day="(week[idx].length ? week[idx] : []) as ISewingTask[]"
                     @drag-and-drop="dragAndDrop"
                 />
+
             </div>
 
         </div>
@@ -27,14 +28,14 @@
 <script lang="ts" setup>
 import type { IPlanMatrixWeek, ISewingTask } from '@/types'
 
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 
 import { additionDays, getWeekNumber } from '@/app/helpers/helpers_date'
 
 import ManageDay from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageDay.vue'
 
 interface IProps {
-    date: Date                      // Дата начала недели
+    date: Date                      // __ Дата начала недели
     week?: IPlanMatrixWeek
 }
 

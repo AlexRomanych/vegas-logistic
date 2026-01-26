@@ -109,6 +109,7 @@ class SewingTaskModelResource extends JsonResource
             'is_undefined'        => $this->setPhantomMachineTypeUndefined(),
             'is_average'          => $this->setPhantomMachineTypeAverage(),
             'machine_type'        => $this->getPhantomMachineType(),
+            'machine_type_ref'    => $this->machine_type,       // __ референсный тип машины (оригинальный)
 
             // 'model_manufacture_status_id'    => $this->model_manufacture_status_id,
             // 'model_collection_code_1c'       => $this->model_collection_code_1c,

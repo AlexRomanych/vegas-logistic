@@ -866,6 +866,19 @@ final class ModelsService implements VegasDataUpdateContract
 
 
     /**
+     * ___ Проверка, является ли элемент МЭ (матрас или наматрасник, но не чехол)
+     * @param string|Model $data
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementBase(string|Model $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+        return self::isElementMattress($model) || self::isElementUpMattress($model);
+    }
+
+
+    /**
      * ___ Проверка, является ли элемент Прогнозной моделью ($name - возможность определить чехол по имени)
      * @param string|Model $data
      * @param string $name

@@ -48,6 +48,75 @@ export const useSewingStore = defineStore('sewing', () => {
     // const {planPeriodGlobal} = storeToRefs(planStore)
 
 
+    // --- ------------------------------------------------------------------------------------------
+    // --- ---------------- Тут вся логика по управлению и сохранению частей СЗ ---------------------
+    // --- ------------------------------------------------------------------------------------------
+    const processSewingTaskManageActions = (
+        dateFrom: string, leftPanel: ISewingTaskLine[]) => {
+
+        // __ Создание новой части СЗ + изменение существующего порядка
+        // __   1. Создание новой части СЗ (правая панель)
+        // __   2. Перенумеровка позиций (правая панель)
+        // __   3. Сохранение изменений (правая панель)
+        // __   4. Перенумеровка позиций (левая панель) (с учетом разбитых линий)
+        // __   5. Сохранение изменений (левая панель)
+    }
+
+
+    // __ Добавление новой части СЗ
+    const addSewingTaskToGlobal = (sewingTask: ISewingTask) => {
+
+        // __ Переопределяем порядок СЗ.
+        // __ Находим все СЗ в глабальной переменной с датой созданного СЗ и меняем порядок
+
+        globalSewingTasks.value.push(sewingTask)
+        globalSewingTasks.value
+            // __ Отбираем только объекты на нужную дату
+            .filter(item => item.action_at === sewingTask.action_at)
+            // __ Сортируем их по возрастанию текущей позиции (включая x.1)
+            .sort((a, b) => a.position - b.position)
+            // __ Мутируем каждый объект, присваивая новый порядковый номер
+            .forEach((item, index) => {
+                item.position = index + 1
+            })
+
+        /*
+        // !!! Через блокировку watcher, но лучше работает напрямую
+        // __ Копируем массив, чтобы не вызывать watcher
+        // const copyData = JSON.parse(JSON.stringify(globalSewingTasks.value))
+
+        // __ Добавляем новый объект в массив
+        //  copyData.push(sewingTask)
+
+        // const changedData = (copyData as ISewingTask[])
+        //     // __ Отбираем только объекты на нужную дату
+        //     .filter(item => item.action_at === sewingTask.action_at)
+        //     // __ Сортируем их по возрастанию текущей позиции (включая x.1)
+        //     .sort((a, b) => a.position - b.position)
+
+        // __ Мутируем каждый объект, присваивая новый порядковый номер
+        // changedData
+        //     .forEach((item, index) => {
+        //         item.position = index + 1
+        //     })
+
+        // __ Мутируем каждый объект в copyData, присваивая новый порядковый номер
+        // changedData.forEach(item => {
+        //     const findTask = copyData.find((el: ISewingTask) => el.id === item.id)
+        //     if (findTask) {
+        //         findTask.position = item.position
+        //     }
+        // })
+
+        // __ Запускаем реактивность
+        // globalSewingTasks.value = copyData
+        */
+
+    }
+
+    // --- ------------------------------------------------------------------------------------------
+
+
 
     // __ Получение СЗ Пошива с сервера за период
     const getSewingTasks = async (period: IPeriod | null = null) => {
@@ -82,6 +151,16 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
 
+    // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
+    watch(() => globalSewingTasks.value, () => {
+
+        console.log('save task')
+
+
+    }, { immediate: true, deep: true })
+
+
+
     return {
         globalSewingTasks,
 
@@ -94,7 +173,7 @@ export const useSewingStore = defineStore('sewing', () => {
         getSewingTaskStatuses,
         patchSewingTaskStatusColor,
 
-
+        addSewingTaskToGlobal,
     }
 })
 

@@ -2,7 +2,7 @@
 
 namespace App\Models\Models;
 
-use App\Models\Order\Line;
+// use App\Models\Order\Line;
 use App\Services\ModelsService;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

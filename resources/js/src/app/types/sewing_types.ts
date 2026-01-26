@@ -24,7 +24,12 @@ export interface ISewingTaskLine {
     amount: number                                  // __ Общее количество в заявке
     amount_avg: null | ISewingTaskLineAmountAvg     // __ Количество для средней модели по статистике
     time: ISewingTaskLineTime                       // __ Трудозатраты
-    is_average: boolean                             // __ Флаг для расчетной модели
+    element_type: {
+        is_average: boolean                         // __ Флаг для расчетной модели
+        is_base: boolean                            // __ Флаг для базы
+        is_cover: boolean                           // __ Флаг для чехла
+        type: ISewingTaskElementTypes               // __ Тип элемента в строковом представлении ('base' | 'cover' | 'average' | 'unknown')
+    }
     created_at: string | null
     false_reason: string | null
     finished_at: string | null
@@ -113,6 +118,7 @@ export interface ISewingTaskModel {
     is_universal: boolean
     is_average: boolean
     machine_type: ISewingMachineKeys
+    machine_type_ref: ISewingMachineKeys        // __ референсный тип машины (оригинальный)
 }
 
 // __ Типы ШМ
@@ -133,6 +139,10 @@ export type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
 
 // __ Трудозатраты
 export type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
+
+
+// __ Типы моделей
+export type ISewingTaskElementTypes = 'base' | 'cover' | 'average' | 'unknown'
 
 
 // --- --------------------------------------------------------------
@@ -175,3 +185,36 @@ export type ISewingLinesPanel = 'left' | 'right'
 export type ISewingTaskCardSort = 'none' | 'asc' | 'desc'
 // --- ------------------------------------------------------------
 
+// --- ------------------------------------------------------------
+// __ Тип для разницы между матрицами отображения календаря в Пошиве
+export interface IRenderMatrixDiff {
+    taskId: number
+    dayFromOffset?: number
+    dayToOffset?: number
+    oldTaskPosition?: number
+    newTaskPosition?: number
+    isPositionChanged?: boolean
+    isMoved?: boolean
+    lineDiffs?: IRenderMatrixLineDiffs[]
+
+    // __ Это для создания новой заявки (Не используется в данный момент)
+    type?: null | 'NEW_TASK'
+    newPosition?: number | null
+
+    // __ Не используется в данный момент
+    areLinesChanged?: boolean
+}
+
+export interface IRenderMatrixLineDiffs {
+    lineId: number
+    type: IRenderMatrixLineDiffsType
+    oldPosition?: number
+    newPosition?: number
+    oldAmount?: number
+    newAmount?: number
+    isPositionChanged?: boolean
+    isAmountChanged?: boolean
+}
+
+export type IRenderMatrixLineDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
+// --- ------------------------------------------------------------

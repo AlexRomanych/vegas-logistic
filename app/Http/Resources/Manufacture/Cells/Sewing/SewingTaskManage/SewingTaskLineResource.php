@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use App\Classes\SewingTimeLabor;
+use App\Services\ModelsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -36,7 +37,7 @@ class SewingTaskLineResource extends JsonResource
             'false_reason' => $this->false_reason,
 
             'amount_avg' => null,
-            'time'       => ['time_' . $this->phantom => $this->time],
+            'time'       => ['time_'.$this->phantom => $this->time],
 
             // 'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
             // 'time'       => $labor->getTime(),
@@ -49,7 +50,19 @@ class SewingTaskLineResource extends JsonResource
                     ]
                 ]),        // __ Добавляем подмену свойств в потомке
 
-            'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная
+            'element_type' => [
+                'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная
+                'is_base'    => ModelsService::isElementBase($this->orderLine->model->code_1c),
+                'is_cover'   => ModelsService::isElementCover($this->orderLine->model->code_1c),
+                'type'       =>
+                    match (true) {
+                        $this->orderLine->model->is_average                             => 'average',
+                        ModelsService::isElementBase($this->orderLine->model->code_1c)  => 'base',
+                        ModelsService::isElementCover($this->orderLine->model->code_1c) => 'cover',
+                        default                                                         => 'unknown',
+                    },
+            ],
+
 
             // 'order_line_id' => $this->order_line_id,
             // 'sewing_task_id' => $this->sewing_task_id,

@@ -140,13 +140,17 @@
         >
             <template #item="{ element, index }">
 
-                <ManageItem
-                    :amount-and-time="getSewingTaskAmountAndTime(element)"
-                    :columns-width="columnsWidth"
-                    :index="index"
-                    :item="element"
+                <div
                     @click="showSewingTaskCard(element)"
-                />
+                >
+                    <ManageItem
+                        :amount-and-time="getSewingTaskAmountAndTime(element)"
+                        :columns-width="columnsWidth"
+                        :index="index"
+                        :item="element"
+
+                    />
+                </div>
 
             </template>
 
@@ -283,20 +287,28 @@
         :type="modalType"
     />
 
+    <!-- __ Модальное Меню -->
+    <AppModalMenuTS
+        ref="appModalMenuTS"
+        :menu="modalMenu"
+        :type="modalMenuType"
+    />
+
+
 </template>
 
 <script lang="ts" setup>
 import type {
-    IColorTypes,
+    IColorTypes, IModalAsyncMenu, IPlanMatrix,
     IPlanMatrixDayItem,
-    ISewingTask,
+    ISewingTask, ISewingTaskLine,
     // IAmountAndTime,
     // ISewingMachineKeys,
     // IPlanMatrixDay,
     // ISewingTaskLine
 } from '@/types'
 
-import { computed, ref, } from 'vue'
+import { computed, inject, nextTick, type Ref, ref, } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
@@ -315,7 +327,13 @@ import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
 import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
-import { createAmountAndTimeObj, getSewingTaskAmountAndTime } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import {
+    clearRenderMatrix,
+    createAmountAndTimeObj, getDiffsInRenderMatrix, getDiffsInRenderMatrixs, getDiffsWithPositions,
+    getSewingTaskAmountAndTime,
+    repositionSewingTaskLines, setTaskPositionInRenderMatrix
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
+import AppModalMenuTS from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 
 
 type IDay = ISewingTask & IPlanMatrixDayItem
@@ -334,6 +352,13 @@ const emits = defineEmits<{
     (e: 'drag-and-drop'): void,
 }>()
 
+// __ Получаем данные из родителя
+// const renderMatrix = inject('renderMatrix', [])
+const renderMatrix     = inject<Ref<IPlanMatrix>>('renderMatrix', ref([]))
+const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
+
+// console.log('renderMatrix: ', renderMatrix)
+// console.log('renderMatrixCopy: ', renderMatrixCopy)
 
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
@@ -396,34 +421,6 @@ const shadowColor = computed(() => {
             return 'shadow-slate-400'
     }
 })
-
-
-// __ Опции для draggable
-const dragOptions = computed(() => {
-    return {
-        animation:   300,
-        group:       'orders',
-        ghostClass:  'ghost',
-        dragClass:   'drag',
-        chosenClass: 'chosen',
-        // sort: true,
-        // disabled: false, // Выносим в отдельное свойство
-    }
-})
-const isDragging  = ref(true)
-
-const checkMove  = (evt: any) => {
-    return true
-}
-const startDrag  = (evt: any) => {
-    // const element = evt.item._underlying_vm_
-    // console.log('startDrag: ', evt.oldIndex)
-    // console.log('element: ', element)
-}
-const finishDrag = (evt: any) => {
-    // const element = evt.item._underlying_vm_
-    emits('drag-and-drop')
-}
 
 
 // // __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
@@ -525,6 +522,12 @@ const modalMode      = ref<'inform' | 'confirm'>('inform')
 const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
 
 
+// __ Тип для модального Меню
+const modalMenuType  = ref<IColorTypes>('primary')
+const modalMenu      = ref<IModalAsyncMenu>({data: []})
+const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+
+
 // __ Карточка СЗ
 const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
 
@@ -538,8 +541,37 @@ const showSewingTaskCard = async (sewingTask: ISewingTask) => {
         return
     }
 
-    const leftPanel  = manageTaskCard.value!.leftPanel
-    const rightPanel = manageTaskCard.value!.rightPanel
+    let leftPanel  = manageTaskCard.value!.leftPanel
+    let rightPanel = manageTaskCard.value!.rightPanel
+
+
+    // __ Если есть правая панель, то это создание нового СЗ
+    if (rightPanel.length > 0) {
+
+        // __ Создаем новое СЗ на основе копии
+        const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
+
+        // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+        newSewingTask.position += 0.1
+
+        // __ Устанавливаем id
+        // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+        newSewingTask.id = 0
+
+        // __ Пересчитываем позиции для строк СЗ (SewingLines[])
+        leftPanel  = repositionSewingTaskLines(leftPanel)
+        rightPanel = repositionSewingTaskLines(rightPanel)
+
+        // __ Обновляем СЗ
+        sewingTask.sewing_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+        newSewingTask.sewing_lines = rightPanel
+
+        // __ Добавляем СЗ в глобальный массив
+        sewingStore.addSewingTaskToGlobal(newSewingTask)    // __ Тут реактивное перерисовывание
+
+        console.log(taskCard.value)
+    }
+
 
     console.log('leftPanel: ', leftPanel)
     console.log('rightPanel: ', rightPanel)
@@ -552,6 +584,103 @@ const showSewingTaskCard = async (sewingTask: ISewingTask) => {
     // }
 
 }
+
+
+
+
+// --- ------------------------------------------------------
+// --- ----------- Управление Druggable ---------------------
+// --- ------------------------------------------------------
+// __ Опции для draggable
+const dragOptions = computed(() => {
+    return {
+        animation:   300,
+        group:       'orders',
+        ghostClass:  'ghost',
+        dragClass:   'drag',
+        chosenClass: 'chosen',
+        // sort: true,
+        // disabled: false, // Выносим в отдельное свойство
+    }
+})
+const isDragging  = ref(true)
+
+const checkMove = (evt: any) => {
+    return true
+}
+
+
+// __ Начало перетаскивания СЗ
+const startDrag = (evt: any) => {
+    // const element = evt.item._underlying_vm_
+    // console.log('startDrag: ', evt.oldIndex)
+    // console.log('element: ', element)
+}
+
+
+// __ Окончание перетаскивания СЗ
+const finishDrag = async (evt: any) => {
+    // const element = evt.item._underlying_vm_
+
+    // __ Выясняем, что перетаскивали и куда перемещали
+    let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
+    renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
+    renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
+
+    console.log('renderMatrixCleared: ', renderMatrixCloned)
+    console.log('renderMatrixCopy: ', renderMatrixCopy.value)
+
+    // __ Получаем разницу между матрицами
+    const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
+    console.log('diffs: ', diffs)
+
+    // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
+    let isOneDayAction = true
+    for (const diff of diffs) {
+        if (diff.dayFromOffset !== diff.dayToOffset) {
+            isOneDayAction = false
+            break
+        }
+    }
+
+    if (isOneDayAction) {
+
+        // __ Перемещаем СЗ без вывода дополнительной информации
+        emits('drag-and-drop')
+    } else {
+
+        // __ Показываем модальное меню и обрабатываем результаты
+        modalMenuType.value = 'primary'
+        modalMenu.value = {
+            data: [
+                {id: 1, title: 'Переместить все'},
+                {id: 2, title: 'Переместить часть'},
+                {id: 3, title: 'Отмена'},
+            ]
+        }
+
+        const result = await appModalMenuTS.value!.show()
+
+        console.log('result: ', result)
+
+        if (result === false || result === 3) {
+            return
+        } else if (result === 1) {
+
+        } else if (result === 2) {
+
+        }
+
+
+    }
+
+
+
+
+
+}
+
+
 
 
 // watchEffect(() => {

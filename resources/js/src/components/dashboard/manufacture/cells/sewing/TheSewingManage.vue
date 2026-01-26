@@ -21,7 +21,7 @@
 <script lang="ts" setup>
 import type { IPeriod, IPlanMatrix } from '@/types'
 
-import { onMounted, ref, watch, /*toRaw*/ } from 'vue'
+import { onMounted, provide, ref, watch, /*toRaw*/ } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
@@ -44,7 +44,6 @@ import TheSewingManageMenu
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageMenu.vue'
 
 
-
 const DEBUG     = true
 const isLoading = ref(false)
 
@@ -56,11 +55,13 @@ const { planPeriodGlobal }  = storeToRefs(planStore)
 const { globalSewingTasks } = storeToRefs(sewingStore)
 
 // __ Определяем переменные
-let planPeriod: IPeriod           = PERIOD_DRAFT                // Период плана загрузок
-let renderPeriod: IPeriod         = PERIOD_DRAFT                // Период для рендера
-let renderMatrix                  = ref<IPlanMatrix>([]) // Матрица для рендера
-let renderMatrixCopy: IPlanMatrix = []                          // Копия Матрицы для рендера
+let planPeriod: IPeriod   = PERIOD_DRAFT                // Период плана загрузок
+let renderPeriod: IPeriod = PERIOD_DRAFT                // Период для рендера
+let renderMatrix          = ref<IPlanMatrix>([]) // Матрица для рендера
+let renderMatrixCopy      = ref<IPlanMatrix>([]) // Копия Матрицы для рендера. Делаем реактивной, потому что прокидываем в дочерние компоненты
 
+provide('renderMatrix', renderMatrix)
+provide('renderMatrixCopy', renderMatrixCopy)
 
 // __ Получаем период плана загрузок с сервера
 const getDefaultPeriod = async () => planPeriod = await planStore.getPlanLoadsDefaultPeriod()
@@ -81,7 +82,7 @@ const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(global
 // __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
 // __ И отправлять на сервер только измененные данные
 const copyRenderMatrix = () => {
-    renderMatrixCopy = JSON.parse(JSON.stringify(renderMatrix.value))
+    renderMatrixCopy.value = JSON.parse(JSON.stringify(renderMatrix.value))
     // renderMatrixCopy = structuredClone(toRaw(renderMatrix.value)) // __ Не работает с реактивными объектами Vue
 }
 
@@ -90,7 +91,7 @@ const copyRenderMatrix = () => {
 const clearRenderMatrix = () => {
     renderMatrix.value.forEach((week, weekIndex) => {
         week.forEach((day, dayIndex) => {
-            renderMatrix.value[weekIndex][dayIndex] = day.filter(item => item.id > 0) // __ id пустых заданий меньше нуля
+            renderMatrix.value[weekIndex][dayIndex] = day.filter(item => item.id > -1) // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
         })
     })
 }
@@ -124,7 +125,8 @@ const correctRenderMatrix = () => {
     renderMatrix.value.forEach((week, weekIndex) => {
 
         week.forEach((day, dayIndex) => {
-            let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
+            let filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
+            // let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
             if (filteredDay.length === 0) {
                 const draft = { ...SEWING_TASK_DRAFT, id: draftId--, position: 100 }
                 filteredDay.push(draft)
@@ -142,23 +144,28 @@ const correctRenderMatrix = () => {
 
 
 // __ Разница между предыдущим и текущим состоянием
-// __ Разница по задумке должна быть только в одной Заявке
+// __ Разница по задумке должна быть только в одной Заявке:
+// __ Либо перемещение в рамках одного дня, либо из одного дня в другой
 // __ Задача найти эти дни и эту Заявку
 const getDiffsInRenderMatrix = () => {
+    return
+
     const diffs = {
         dayFrom: '',
         dayTo:   '',
         task:    '',
     }
 
+    console.log('catch diffs')
+    // return
 
     // __ Получаем дату отсчета
     let workDay = new Date(renderPeriod.start)
-    console.log(renderPeriod)
+    // console.log(renderPeriod)
 
     for (let i = 0; i < renderMatrix.value.length; i++) {
 
-        const weekBefore = renderMatrixCopy[i]
+        const weekBefore = renderMatrixCopy.value[i]
         const weekAfter  = JSON.parse(JSON.stringify(renderMatrix.value[i]))
 
         // console.log('weekAfter: ', weekAfter)
@@ -180,11 +187,8 @@ const getDiffsInRenderMatrix = () => {
             // }
 
 
-
-
             if (dayAfter.length < dayBefore.length) {
                 diffs.dayFrom = formatToYMD(workDay)
-
 
 
             } else if (dayAfter.length > dayBefore.length) {
@@ -216,7 +220,16 @@ const getDiffsInRenderMatrix = () => {
 }
 
 // __ Перетаскивание мышью СЗ
+// __ Находим разницу между предыдущим и текущим состоянием и отправляем в хранилище
 const dragAndDropSewingTask = () => {
+
+    const diffs = getDiffsInRenderMatrix()
+
+    console.log('diffs: ', diffs)
+
+    return
+
+
     // correctRenderMatrix()
     // return
 
@@ -243,6 +256,27 @@ watch(() => renderMatrix.value, () => {
 
     // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
 
+    getDiffsInRenderMatrix()
+
+}, { immediate: true, deep: true })
+
+
+// __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
+watch(() => globalSewingTasks.value, () => {
+
+    if (!globalSewingTasks.value) {
+        return
+    }
+
+    // __ Выполняем всю подготовку и преобразование данных для рендера
+    getRenderPeriod()
+    getRenderMatrix()
+    sortRenderMatrixByTaskPosition()
+    copyRenderMatrix()
+    correctRenderMatrix()
+
+    if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
+
 }, { immediate: true, deep: true })
 
 
@@ -261,13 +295,15 @@ onMounted(async () => {
 
             await getPlanPeriod()               // __ Получаем период плана загрузок
 
-            getRenderPeriod()
-            getRenderMatrix()
-            sortRenderMatrixByTaskPosition()
-            copyRenderMatrix()
-            correctRenderMatrix()
+            // __ Дальше все через watcher
 
-            if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
+            // getRenderPeriod()
+            // getRenderMatrix()
+            // sortRenderMatrixByTaskPosition()
+            // copyRenderMatrix()
+            // correctRenderMatrix()
+
+            // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
         },
         undefined,
         // false,

@@ -1,7 +1,7 @@
 // info Тут все, что связано с Пошивом
 
 import type {
-    IAmountAndTime, ISewingLinesPanel,
+    IAmountAndTime, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs,
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
@@ -328,6 +328,368 @@ export function calculateDividedAmountAndTime(sewingLine: ISewingTaskLine, newAm
 }
 
 
+// __ Пересчитываем позицию по порядку записей в массиве строк (SewingTaskLine[]) по ссылке
+// __ Пересчитываем позицию именно в том порядке, в котором они находятся в исходно массиве
+// __ (как определил специалист ОПП при перетаскивании строк или упорядочивании или сортировке)
+export function repositionSewingTaskLines(items: ISewingTaskLine[]) {
+    items.forEach((_, index, arr) => {
+        arr[index].position = index + 1
+    })
+    return items
+}
+
+
+// __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+export function clearRenderMatrix(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            matrix[weekIndex][dayIndex] = day.filter(item => item.id > -1) // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+        })
+    })
+    return matrix
+}
+
+
+// __ Разница между предыдущим и текущим состоянием
+// __ Разница по задумке должна быть только в одной Заявке:
+// __ Либо перемещение в рамках одного дня, либо из одного дня в другой
+// __ Задача найти эти дни и эту Заявку
+
+// --- ------------------------------------------------------------------------------------
+//__  Функция поиска различий с детальными данными по позициям
+export function getDiffsWithPositions(currentMatrix: IPlanMatrix, copyMatrix: IPlanMatrix) {
+    const diffs: IRenderMatrixDiff[] = []
+
+    // __ 1. Индексируем копию (старые данные)
+    const copyMap = new Map()
+    copyMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const dayOffset = weekIdx * 7 + dayIdx
+            dayTasks.forEach(task => {
+
+                // __ Сохраняем "слепок" состояния для сравнения
+                copyMap.set(task.id, {
+                    dayOffset,
+                    position: task.position,
+                    lines:    JSON.parse(JSON.stringify(task.sewing_lines)) // __ глубокая копия строк
+                })
+            })
+        })
+    })
+
+    // __ 2. Сравниваем с текущим состоянием
+    currentMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const currentDayOffset = weekIdx * 7 + dayIdx
+
+            dayTasks.forEach((task) => {
+                const old = copyMap.get(task.id)
+
+                if (!old) {
+
+                    // __ Обработка совершенно новой задачи (если такое возможно)
+                    diffs.push({ type: 'NEW_TASK', taskId: task.id, newPosition: task.position })
+                    return
+                }
+
+                const isMoved      = old.dayOffset !== currentDayOffset
+                const isPosChanged = old.position !== task.position
+
+                // __ Проверяем детальные изменения в строках (sewing_lines)
+                const lineDiffs = getLinesDetailedDiff(old.lines, task.sewing_lines)
+
+                // __ Если хоть что-то изменилось — фиксируем
+                if (isMoved || isPosChanged || lineDiffs.length > 0) {
+                    diffs.push({
+                        taskId: task.id,
+
+                        // __ Информация по датам
+                        dayFromOffset: old.dayOffset,
+                        dayToOffset:   currentDayOffset,
+
+                        // __ Информация по позиции самой задачи
+                        oldTaskPosition:   old.position,
+                        newTaskPosition:   task.position,
+                        isPositionChanged: isPosChanged,
+                        isMoved:           isMoved,
+
+                        // __ Детализация по строкам
+                        lineDiffs: lineDiffs
+                    })
+                }
+            })
+        })
+    })
+
+    return diffs
+}
+
+
+// __ Вспомогательная функция для детального сравнения позиций и данных строк
+function getLinesDetailedDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) {
+    const changes: IRenderMatrixLineDiffs[] = []
+
+    newLines.forEach((newLine) => {
+        const oldLine = oldLines.find(l => l.id === newLine.id)
+
+        if (!oldLine) {
+            changes.push({ lineId: newLine.id, type: 'ADDED', newPosition: newLine.position })
+        } else {
+            const isAmountChanged = oldLine.amount !== newLine.amount
+            const isPosChanged    = oldLine.position !== newLine.position
+
+            if (isAmountChanged || isPosChanged) {
+                changes.push({
+                    lineId:            newLine.id,
+                    type:              'UPDATED',
+                    oldPosition:       oldLine.position,
+                    newPosition:       newLine.position,
+                    oldAmount:         oldLine.amount,
+                    newAmount:         newLine.amount,
+                    isPositionChanged: isPosChanged,
+                    isAmountChanged:   isAmountChanged
+                })
+            }
+        }
+    })
+
+    // Проверка на удаление (если нужно для БД)
+    oldLines.forEach(oldLine => {
+        if (!newLines.find(l => l.id === oldLine.id)) {
+            changes.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return changes
+}
+// --- ------------------------------------------------------------------------------------
+
+
+
+// __ Получаем разницу между текущим и копией матрицы рендера без деталей
+export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: IPlanMatrix) {
+    const diffs: IRenderMatrixDiff[] = []
+
+    // 1. Создаем плоскую карту из копии для быстрого поиска исходного состояния по ID
+    // Это поможет нам понять, откуда пришла задача, если она переместилась
+    const copyMap = new Map()
+    copyMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const dayOffset = weekIdx * 7 + dayIdx
+            dayTasks.forEach(task => {
+                copyMap.set(task.id, {
+                    task,
+                    dayOffset,
+                    linesHash: JSON.stringify(task.sewing_lines) // Хэш строк для быстрого сравнения
+                })
+            })
+        })
+    })
+
+    // 2. Обходим текущую матрицу
+    currentMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const currentDayOffset = weekIdx * 7 + dayIdx
+
+            dayTasks.forEach((task) => {
+                const original = copyMap.get(task.id)
+
+                // Если задачи не было в исходной матрице (новое СЗ)
+                if (!original) {
+                    diffs.push({
+                        type:         'NEW_TASK',
+                        taskId:       task.id,
+                        dayToOffset: currentDayOffset,
+                        newPosition:  task.position
+                    })
+                    return
+                }
+
+                const isMoved           = original.dayOffset !== currentDayOffset
+                const isPositionChanged = original.task.position !== task.position
+                const currentLinesHash  = JSON.stringify(task.sewing_lines)
+                const areLinesChanged   = original.linesHash !== currentLinesHash
+
+                // Если есть хоть одно изменение — фиксируем объект
+                if (isMoved || isPositionChanged || areLinesChanged) {
+                    diffs.push({
+                        taskId:        task.id,
+                        dayFromOffset: original.dayOffset,
+                        dayToOffset:   currentDayOffset,
+                        isMoved,
+                        isPositionChanged,
+                        areLinesChanged,
+
+                        // __ Детальные изменения строк, если они были
+                        lineDiffs: areLinesChanged ? getLinesDiff(original.task.sewing_lines, task.sewing_lines) : []
+                    })
+                }
+            })
+        })
+    })
+
+    return diffs
+}
+
+/**
+ * Вспомогательная функция для сравнения массива строк пошива
+ */
+function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) {
+    const lineChanges: IRenderMatrixLineDiffs[] = []
+
+    // Проверяем каждую строку в задаче
+    newLines.forEach((newLine) => {
+        const oldLine = oldLines.find(l => l.id === newLine.id)
+
+        if (!oldLine) {
+            lineChanges.push({ lineId: newLine.id, type: 'ADDED' })
+        } else if (
+            oldLine.amount !== newLine.amount ||
+            oldLine.position !== newLine.position
+        ) {
+            lineChanges.push({
+                lineId: newLine.id,
+                type: 'UPDATED',
+                //@ts-ignore
+                old:    { amount: oldLine.amount, pos: oldLine.position },
+                new:    { amount: newLine.amount, pos: newLine.position }
+            })
+        }
+    })
+
+    // Проверка на удаление строк
+    oldLines.forEach(oldLine => {
+        if (!newLines.find(l => l.id === oldLine.id)) {
+            lineChanges.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return lineChanges
+}
+
+// --- ------------------------------------------------------------------------------------
+
+
+
+
+
+// __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
+export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            matrix[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+        })
+    })
+    return matrix
+}
+
+
+// __ Сортируем задания в матрице рендера по позиции
+export function sortRenderMatrixByTaskPosition(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            matrix[weekIndex][dayIndex] = day.sort((a, b) => a.position - b.position)
+        })
+    })
+
+}
+
+
+export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: IPlanMatrix) {
+
+    const diffs: IRenderMatrixDiff = {
+        dayFromOffset: 0,
+        dayToOffset:   0,
+        taskId:        0,
+    }
+
+    // __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+    currentMatrix = clearRenderMatrix(currentMatrix)
+
+    console.log('catch diffs')
+    // return
+
+    // // __ Получаем дату отсчета
+    // let workDay = new Date(renderPeriod.start)
+    // console.log(renderPeriod)
+
+    // __ Проходим по всем неделям
+    for (let i = 0; i < currentMatrix.length; i++) {
+
+        // const workWeek = currentMatrix[i]
+
+        const weekBefore = currentMatrix[i]
+        const weekAfter  = memMatrix[i]
+
+        // console.log('weekAfter: ', weekAfter)
+        // console.log('weekBefore: ', weekBefore)
+
+        // __ Проходим по всем дням
+        for (let j = 0; j < 7; j++) {
+
+            // __ Получаем дни для сравнения
+            const dayAfter  = weekAfter[j]
+            const dayBefore = weekBefore[j]
+
+            // __ Получаем максимальный индекс для двух массивов
+            const maxDayIndex = Math.max(dayAfter.length, dayBefore.length)
+
+            // __ Проходим по всем СЗ
+            for (let k = 0; k < maxDayIndex; k++) {
+
+                // __ Проверяем, что есть оба элемента
+                if (dayAfter[k] && dayBefore[k]) {
+
+                    // ___ Оба элемента есть
+
+
+                    // __ Проверяем, что элементы одинаковые по id и позиции
+                    if (dayAfter[k].id === dayBefore[k].id &&
+                        dayAfter[k].position === dayBefore[k].position) {
+
+                        // ___ Элементы одинаковые по id и позиции
+
+
+                        // __ Проверяем, что количество строк одинаковое проверяем на содержимое
+                        if (dayAfter[k].sewing_lines.length === dayBefore[k].sewing_lines.length) {
+
+                            // ___ Количество строк совпадает. Проверяем, что строки одинаковые
+
+
+                        } else {
+
+                            // ___ Количество строк не совпадает. Проверяем, что строки одинаковые
+
+
+                        }
+
+
+                    } else {
+
+                        // ___ Элементы разные по id и позиции
+
+                    }
+
+
+                } else {
+
+                    // ___ Один из элементов в каком-то дне отсутствует
+
+
+                }
+
+
+            }
+
+        }
+
+    }
+
+
+    return diffs
+}
+
+
 // __ Дополнительно проверяем, является ли модель Чехлом
 export function isCover(element: ISewingTaskModel) {
     return element.name.toLowerCase().includes('чехол')
@@ -335,8 +697,8 @@ export function isCover(element: ISewingTaskModel) {
 
 // __ Дополнительно проверяем, является ли модель Чехлом
 export function isAverage(element: ISewingTaskModel | ISewingTaskLine) {
-    if (isSewingTaskLine(element)) return element.is_average
-    return element.machine_type === SEWING_MACHINES.AVERAGE
+    if (isSewingTaskLine(element)) return element.element_type.is_average
+    return element.machine_type_ref === SEWING_MACHINES.AVERAGE
 }
 
 

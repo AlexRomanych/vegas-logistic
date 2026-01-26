@@ -378,7 +378,7 @@ const select = async (value: boolean) => {
 
             // __ Проверяем, есть ли несохраненные изменения
             if (needForSave.value) {
-                modalInfoText.value = ['В сменном задании есть несохраненные изменения.', ' ', 'Все изменения будут потеряны.', 'Продолжить?']
+                modalInfoText.value = ['В сменном задании есть несохраненные изменения.', 'Все изменения будут потеряны.', 'Продолжить?']
                 modalInfoType.value = 'danger'
                 modalInfoMode.value = 'confirm'
                 const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
@@ -390,7 +390,18 @@ const select = async (value: boolean) => {
             targetSewingLines.value = []
             sourceSewingLines.value = []
         } else {
-            modalInfoText.value = ['Все изменения будут сохранены.', ' ', 'Продолжить?']
+
+            // __ Левая часть не должна быть пуста
+            if (sourceSewingLines.value.length === 0) {
+                modalInfoText.value = ['Левая часть должна содержать хотя бы одну строку!']
+                modalInfoType.value = 'danger'
+                modalInfoMode.value = 'inform'
+                await appModalAsyncMultiline.value!.show()
+                return
+            }
+
+
+            modalInfoText.value = ['Все изменения будут сохранены.', 'Продолжить?']
             modalInfoType.value = 'primary'
             modalInfoMode.value = 'confirm'
             const answer        = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ

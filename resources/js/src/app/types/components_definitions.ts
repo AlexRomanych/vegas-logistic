@@ -42,3 +42,17 @@ export interface IDividerItem {
     name: string
     amount: number
 }
+
+
+
+// --- --------------------------------------------------------
+// ___ Данные для компонента AppModalAsyncMenuTS
+export interface IModalAsyncMenu {
+    name?: string
+    data: IModalAsyncMenuItem[]
+}
+
+export interface IModalAsyncMenuItem {
+    id: number
+    title: string | string[]
+}
