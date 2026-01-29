@@ -211,7 +211,10 @@ import { storeToRefs } from 'pinia'
 import { useSewingStore } from '@/stores/SewingStore.ts'
 import {
     getCoverSizeString,
-    getSewingLineMachineType, getSewingTaskModelCover, getTimeString, isAverage
+    getSewingLineMachineType,
+    getSewingTaskModelCover,
+    getSewingTaskModelCoverName,
+    getTimeString
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -250,13 +253,15 @@ const ACTIVE_TYPE       = 'primary'
 const modelCover = computed(() => getSewingTaskModelCover(props.sewingLine))
 
 // __ Получаем название модели
-const coverName = computed(() => {
-    return modelCover.value
-        ? isAverage(props.sewingLine)
-            ? 'Чехол для Планового матраса'
-            : modelCover.value.name_report
-        : ''
-})
+const coverName = computed(() => getSewingTaskModelCoverName(props.sewingLine))
+
+// const coverName = computed(() => {
+//     return modelCover.value
+//         ? isAverage(props.sewingLine)
+//             ? 'Чехол для Планового матраса'
+//             : modelCover.value.name_report
+//         : ''
+// })
 
 // __ Тип подсветки для основного элемента
 const getType = computed(() =>

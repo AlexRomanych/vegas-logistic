@@ -51,14 +51,14 @@ return new class extends Migration {
                 ->comment('Подмена свойств модели в JSON');
 
             // __ Порядок в списке по порядку (позиция) в конкретном СЗ
-            $table->unsignedInteger('position')
+            $table->bigInteger('position')
                 ->nullable(false)
                 ->default(1)
                 ->comment('Порядок в списке по порядку (позиция) в конкретном СЗ');
 
             // __ Порядок в списке по порядку (позиция) в дне
             // __ Ситуация когда в одном дне несколько СЗ и они объединяются в одно
-            $table->unsignedInteger('position_day')
+            $table->bigInteger('position_day')
                 ->nullable(false)
                 ->default(0)
                 ->comment('Порядок в списке по порядку (позиция) в дне');

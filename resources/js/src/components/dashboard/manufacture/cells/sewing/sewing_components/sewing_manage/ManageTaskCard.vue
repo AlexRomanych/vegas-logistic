@@ -212,7 +212,7 @@ import {
     calculateDividedAmountAndTime,
     getCoverSizeString,
     getSewingTaskAmountAndTime,
-    getSewingTaskModelCover,
+    getSewingTaskModelCover, getSewingTaskModelCoverName,
     getSewingTimes,
     isAverage,
     sortSewingTaskLinesBySize,
@@ -466,10 +466,11 @@ const divideElementAmount = async () => {
     // __ Копируем объект, чтобы не мутировать оригинал
     const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
 
-    const modelCoverExt       = getSewingTaskModelCover(activeSewingLineCopy.order_line.model)
+    const modelCoverExt       = getSewingTaskModelCoverName(activeSewingLineCopy.order_line.model)
+
     dividerElement.value.name =
         getCoverSizeString(activeSewingLineCopy) + ' ' +
-        modelCoverExt?.name_report + ' ' +
+        modelCoverExt + ' ' +
         activeSewingLineCopy.order_line.amount.toString() + ' шт.'
 
     dividerElement.value.amount = activeSewingLineCopy.amount
@@ -500,11 +501,11 @@ const divideElementAmount = async () => {
         const workElement = workArray[dividerElementIndex]
 
         // __ Ищем сразу по 2 массивам, потому что строка уже может быть перемещена в другую панель
-        const filteredSourceSewingLines = sourceSewingLines.value.filter(item => item.id === workElement.id)
-        const filteredTargetSewingLines = targetSewingLines.value.filter(item => item.id === workElement.id)
+        const filteredSourceSewingLines = sourceSewingLines.value.filter(item => item.id_ref === workElement.id_ref)
+        const filteredTargetSewingLines = targetSewingLines.value.filter(item => item.id_ref === workElement.id_ref)
 
         const maxPosition = [...filteredSourceSewingLines, ...filteredTargetSewingLines]
-            .filter(item => item.id === workElement.id)
+            .filter(item => /*item.id === workElement.id ||*/ item.id_ref === workElement.id_ref)   // __ у новых строк ID = 0
             .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
 
         let fraction = ((maxPosition - Math.trunc(maxPosition)) * 10 | 0) / 10
@@ -523,8 +524,8 @@ const divideElementAmount = async () => {
             return
         }
 
-        let newSewingLine = { ...workArray[dividerElementIndex] }                   // __ Копируем объект
-
+        let newSewingLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
+        newSewingLine.id       = 0                                                  // __ Устанавливаем новый ID
         newSewingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
         // __ Пересчитываем время и количество

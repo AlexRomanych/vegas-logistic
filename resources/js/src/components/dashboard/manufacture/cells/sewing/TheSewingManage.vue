@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { IPeriod, IPlanMatrix } from '@/types'
+import type { IPeriod, IPlanMatrix, ISewingTaskLine } from '@/types'
 
 import { onMounted, provide, ref, watch, /*toRaw*/ } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -51,15 +51,20 @@ const isLoading = ref(false)
 const planStore   = usePlansStore()
 const sewingStore = useSewingStore()
 
-const { planPeriodGlobal }  = storeToRefs(planStore)
-const { globalSewingTasks } = storeToRefs(sewingStore)
+const { planPeriodGlobal } = storeToRefs(planStore)
+
+const {
+          globalSewingTasks,        // __ Все задания (Global State)
+          globalRenderPeriod,       // __ Период для рендера
+      } = storeToRefs(sewingStore)
 
 // __ Определяем переменные
-let planPeriod: IPeriod   = PERIOD_DRAFT                // Период плана загрузок
-let renderPeriod: IPeriod = PERIOD_DRAFT                // Период для рендера
-let renderMatrix          = ref<IPlanMatrix>([]) // Матрица для рендера
-let renderMatrixCopy      = ref<IPlanMatrix>([]) // Копия Матрицы для рендера. Делаем реактивной, потому что прокидываем в дочерние компоненты
+let planPeriod: IPeriod = PERIOD_DRAFT                // Период плана загрузок
+// let renderPeriod: IPeriod = PERIOD_DRAFT                // Период для рендера
+let renderMatrix     = ref<IPlanMatrix>([]) // Матрица для рендера
+let renderMatrixCopy = ref<IPlanMatrix>([]) // Копия Матрицы для рендера. Делаем реактивной, потому что прокидываем в дочерние компоненты
 
+// __ Передаем в дочерние компоненты
 provide('renderMatrix', renderMatrix)
 provide('renderMatrixCopy', renderMatrixCopy)
 
@@ -73,10 +78,10 @@ const getPlanPeriod = async () => {
 }
 
 // __ Получаем период для рендера
-const getRenderPeriod = () => renderPeriod = getRenderPeriodForPlan(globalSewingTasks.value)
+const getRenderPeriod = () => globalRenderPeriod.value = getRenderPeriodForPlan(globalSewingTasks.value)
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(globalSewingTasks.value, renderPeriod)
+const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(globalSewingTasks.value, globalRenderPeriod.value)
 
 
 // __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
@@ -112,6 +117,9 @@ const sortRenderMatrixByTaskPosition = () => {
     renderMatrix.value.forEach((week, weekIndex) => {
         week.forEach((day, dayIndex) => {
             renderMatrix.value[weekIndex][dayIndex] = day.sort((a, b) => a.position - b.position)
+            renderMatrix.value[weekIndex][dayIndex].forEach(sewingTask => {
+                sewingTask.sewing_lines = sewingTask.sewing_lines.sort((a: ISewingTaskLine, b: ISewingTaskLine) => a.position - b.position)
+            })
         })
     })
 }
@@ -160,7 +168,7 @@ const getDiffsInRenderMatrix = () => {
     // return
 
     // __ Получаем дату отсчета
-    let workDay = new Date(renderPeriod.start)
+    let workDay = new Date(globalRenderPeriod.value.start)
     // console.log(renderPeriod)
 
     for (let i = 0; i < renderMatrix.value.length; i++) {
@@ -222,12 +230,10 @@ const getDiffsInRenderMatrix = () => {
 // __ Перетаскивание мышью СЗ
 // __ Находим разницу между предыдущим и текущим состоянием и отправляем в хранилище
 const dragAndDropSewingTask = () => {
-
+    return
     const diffs = getDiffsInRenderMatrix()
 
     console.log('diffs: ', diffs)
-
-    return
 
 
     // correctRenderMatrix()
@@ -249,7 +255,7 @@ const dragAndDropSewingTask = () => {
 
 
 // __ Получаем дату начала недели
-const getStartWeekDate = (weekOrder: number /* порядковы номер недели */) => additionDays(new Date(renderPeriod.start), weekOrder * 7)
+const getStartWeekDate = (weekOrder: number /* порядковы номер недели */) => additionDays(new Date(globalRenderPeriod.value.start), weekOrder * 7)
 
 
 watch(() => renderMatrix.value, () => {

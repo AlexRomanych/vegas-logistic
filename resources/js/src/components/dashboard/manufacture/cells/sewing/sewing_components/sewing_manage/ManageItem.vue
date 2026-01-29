@@ -1,18 +1,18 @@
 <template>
     <!-- __ Тут именно -1, т.к. id = 0 - это заглушка для добавления нового элемента -->
-    <div v-if="item.id > -1" class="flex">
+    <div v-if="item.id > -1" class="flex" :class="[orderId === item.order.id ? 'rounded-[3px] border-[1px] bg-green-300/80' : '']">
 
         <!-- __ Клиент -->
         <AppLabelMultiLineTS
             v-if="render.client.show"
             :align="render.client.align"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text="globalSewingTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
             :text-size="render.client.textSize"
             :type="render.client.type"
             :width="render.client.width"
-            class="plan-item truncate"
+            class="plan-item truncate bg-blue-700"
             rounded="rounded-[4px]"
         />
 
@@ -20,7 +20,7 @@
         <AppLabelMultiLineTS
             v-if="render.orderNo.show"
             :align="render.orderNo.align"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text="globalSewingTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
             :text-size="render.orderNo.textSize"
@@ -35,7 +35,7 @@
             v-if="render.amount.show"
             :align="render.amount.align"
             :amount="getTotalAmount"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="getTotalTime"
@@ -51,7 +51,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.UNIVERSAL].amount"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[SEWING_MACHINES.UNIVERSAL].time"
@@ -66,7 +66,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.AUTO].amount"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[SEWING_MACHINES.AUTO].time"
@@ -81,7 +81,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.SOLID_HARD].amount"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[SEWING_MACHINES.SOLID_HARD].time"
@@ -96,7 +96,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.SOLID_LITE].amount"
-            :color="item.order.order_type.color"
+            :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[SEWING_MACHINES.SOLID_LITE].time"
@@ -111,7 +111,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.UNDEFINED].amount"
-            :color="amountAndTime[SEWING_MACHINES.UNDEFINED].amount === 0 ? item.order.order_type.color : 'red'"
+            :color="amountAndTime[SEWING_MACHINES.UNDEFINED].amount === 0 ? color : 'red'"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[SEWING_MACHINES.UNDEFINED].time"
@@ -154,6 +154,7 @@ interface IProps {
     item?: ISewingTask
     columnsWidth?: Record<string, string>
     index?: number
+    orderId?: number | null     // __ Для подсветки СЗ для Заявки
 }
 
 interface IRenderItem {
@@ -177,6 +178,7 @@ const props = withDefaults(defineProps<IProps>(), {
         common:  'w-[164px]',
     }),
     index:        0,
+    orderId:      null,
 })
 
 // __ Данные из Хранилища
@@ -226,6 +228,13 @@ const formattedLoadDate = computed(() => {
     return formatDateInFullFormat(props.item.order.load_at, true, false)
 })
 
+// __ Цвет
+const color = computed(() => {
+    if (props.item.order.id === props.orderId) {
+        return 'red'
+    }
+    return props.item.order.order_type.color
+})
 
 
 </script>

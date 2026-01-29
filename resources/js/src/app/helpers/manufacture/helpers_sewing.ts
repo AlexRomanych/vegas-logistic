@@ -3,16 +3,17 @@
 import type {
     IAmountAndTime, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs,
     ISewingMachineKeys, ISewingMachineTimesKeys,
-    ISewingTask,
+    ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
     ISewingTaskModel,
     ISewingTaskOrderLine
 } from '@/types'
 
-import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+import { SEWING_MACHINES, SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
 
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
+import logs from '@/router/routes_logs.ts'
 
 
 // __ Функция для получения трудозатрат для Записи (SewingLine) в СЗ
@@ -216,6 +217,18 @@ export function getSewingTaskModelCover(
     }
 
     return null
+}
+
+
+// __ Возвращаем имя Чехла модели.
+export function getSewingTaskModelCoverName(
+    item: ISewingTaskLine | ISewingTaskOrderLine | ISewingTaskOrderLine['model']) {
+    const modelCover = getSewingTaskModelCover(item)
+
+    if (modelCover) {
+        return isAverage(modelCover) ? 'Чехол для Планового матраса' : modelCover.name_report
+    }
+    return ''
 }
 
 
@@ -462,16 +475,16 @@ function getLinesDetailedDiff(oldLines: ISewingTaskLine[], newLines: ISewingTask
 
     return changes
 }
-// --- ------------------------------------------------------------------------------------
 
+// --- ------------------------------------------------------------------------------------
 
 
 // __ Получаем разницу между текущим и копией матрицы рендера без деталей
 export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: IPlanMatrix) {
     const diffs: IRenderMatrixDiff[] = []
 
-    // 1. Создаем плоскую карту из копии для быстрого поиска исходного состояния по ID
-    // Это поможет нам понять, откуда пришла задача, если она переместилась
+    // __ 1. Создаем плоскую карту из копии для быстрого поиска исходного состояния по ID
+    // __ Это поможет нам понять, откуда пришла задача, если она переместилась
     const copyMap = new Map()
     copyMatrix.forEach((week, weekIdx) => {
         week.forEach((dayTasks, dayIdx) => {
@@ -486,7 +499,7 @@ export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: I
         })
     })
 
-    // 2. Обходим текущую матрицу
+    // __ 2. Обходим текущую матрицу
     currentMatrix.forEach((week, weekIdx) => {
         week.forEach((dayTasks, dayIdx) => {
             const currentDayOffset = weekIdx * 7 + dayIdx
@@ -497,10 +510,10 @@ export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: I
                 // Если задачи не было в исходной матрице (новое СЗ)
                 if (!original) {
                     diffs.push({
-                        type:         'NEW_TASK',
-                        taskId:       task.id,
+                        type:        'NEW_TASK',
+                        taskId:      task.id,
                         dayToOffset: currentDayOffset,
-                        newPosition:  task.position
+                        newPosition: task.position
                     })
                     return
                 }
@@ -531,13 +544,12 @@ export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: I
     return diffs
 }
 
-/**
- * Вспомогательная функция для сравнения массива строк пошива
- */
+
+// __ Вспомогательная функция для сравнения массива строк пошива
 function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) {
     const lineChanges: IRenderMatrixLineDiffs[] = []
 
-    // Проверяем каждую строку в задаче
+    // __ Проверяем каждую строку в задаче
     newLines.forEach((newLine) => {
         const oldLine = oldLines.find(l => l.id === newLine.id)
 
@@ -549,15 +561,15 @@ function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) 
         ) {
             lineChanges.push({
                 lineId: newLine.id,
-                type: 'UPDATED',
+                type:   'UPDATED',
                 //@ts-ignore
-                old:    { amount: oldLine.amount, pos: oldLine.position },
-                new:    { amount: newLine.amount, pos: newLine.position }
+                old: { amount: oldLine.amount, pos: oldLine.position },
+                new: { amount: newLine.amount, pos: newLine.position }
             })
         }
     })
 
-    // Проверка на удаление строк
+    // __ Проверка на удаление строк
     oldLines.forEach(oldLine => {
         if (!newLines.find(l => l.id === oldLine.id)) {
             lineChanges.push({ lineId: oldLine.id, type: 'DELETED' })
@@ -570,7 +582,30 @@ function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) 
 // --- ------------------------------------------------------------------------------------
 
 
+// __ Проблема с draggable
+// __ Если день пустой, то перетаскивание не срабатывает
+// __ Поэтому добавляем пустое задание в пустой день
+export function correctRenderMatrix(matrix: IPlanMatrix) {
+    let draftId = -100
+    matrix.forEach((week, weekIndex) => {
 
+        week.forEach((day, dayIndex) => {
+            let filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
+            // let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
+            if (filteredDay.length === 0) {
+                const draft = { ...SEWING_TASK_DRAFT, id: draftId--, position: 100 }
+                filteredDay.push(draft)
+            } else {
+                // __ Сортируем по позиции (по порядку)
+                // filteredDay = filteredDay.sort((a, b) => a.position - b.position)
+            }
+            matrix[weekIndex][dayIndex] = filteredDay
+            // matrix[weekIndex][dayIndex] = {...filteredDay, fullDay: true}
+        })
+    })
+
+    return matrix
+}
 
 
 // __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
@@ -584,17 +619,20 @@ export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
 }
 
 
-// __ Сортируем задания в матрице рендера по позиции
+// __ Сортируем задания в матрице рендера по позиции + сортируем строки по позиции
 export function sortRenderMatrixByTaskPosition(matrix: IPlanMatrix) {
     matrix.forEach((week, weekIndex) => {
         week.forEach((day, dayIndex) => {
             matrix[weekIndex][dayIndex] = day.sort((a, b) => a.position - b.position)
+            matrix[weekIndex][dayIndex].forEach(sewingTask => {
+                sewingTask.sewing_lines = sewingTask.sewing_lines.sort((a: ISewingTaskLine, b: ISewingTaskLine) => a.position - b.position)
+            })
         })
     })
-
+    return matrix
 }
 
-
+// ___ Не доделанаа, используем другую
 export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: IPlanMatrix) {
 
     const diffs: IRenderMatrixDiff = {
@@ -687,6 +725,152 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
 
 
     return diffs
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+/**
+ *  __Находим глубокую разницу между массивами СЗ (текущим и копией)__
+ * @param {ISewingTask[]} currentTasks  - __Массив после манипуляций (vuedraggable и т.д.)__
+ * @param {ISewingTask[]} originalTasks - __Глубокая копия (tasksCopy)__
+ */
+export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: ISewingTask[]) {
+    const diffs: ISewingTaskArrayDiff[] = []
+
+    // console.log(currentTasks)
+    // console.log(originalTasks)
+
+    // __ Индексируем оригинал по ID для быстрого доступа
+    const originalMap = new Map(originalTasks.map(task => [task.id, task]))
+    const currentMap  = new Map(currentTasks.map(task => [task.id, task]))
+
+    currentTasks.forEach((task) => {
+        const original = originalMap.get(task.id)
+
+        if (!original) {
+            // __ Если задачи не было в исходном массиве
+
+            const lineChanges: ISewingTaskArrayLineDiffs[] = []
+            task.sewing_lines.forEach(line => lineChanges.push({
+                lineId:    line.id,
+                lineIdRef: line.id_ref,
+                type:      'ADDED',
+                amount:   { old: null, new: line.amount },
+                position: { old: null, new: line.position }
+            }))
+
+            diffs.push({
+                taskId:      task.id,
+                taskIdRef:   task.id_ref,
+                type:        'ADDED',
+                // current:     task,
+                taskChanges: {
+                    action_at: { old: null, new: task.action_at },
+                    position:  { old: null, new: task.position },
+                },
+                lineChanges,
+            })
+            return
+        }
+
+        // __ Сравниваем основные поля задачи
+        const hasDateChanged     = task.action_at !== original.action_at
+        const hasPositionChanged = task.position !== original.position
+
+        // __ Сравниваем строки пошива (детально)
+        const lineDiffs = getTaskLinesDiff(task.sewing_lines, original.sewing_lines)
+
+        // __ Если есть изменения хотя бы в одном месте
+        if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0) {
+            diffs.push({
+                taskId: task.id,
+                type:   'UPDATED',
+
+                // __ Поля задачи
+                taskChanges: {
+                    action_at: hasDateChanged ? { old: original.action_at, new: task.action_at } : null,
+                    position:  hasPositionChanged ? { old: original.position, new: task.position } : null,
+                },
+                // __ Массив изменений в строках
+                lineChanges: lineDiffs
+            })
+        }
+    })
+
+    // __ 3. ПРОВЕРКА НА УДАЛЕНИЕ ЗАДАЧ (Новый блок)
+    originalTasks.forEach((oldTask) => {
+        if (!currentMap.has(oldTask.id)) {
+            diffs.push({
+                taskId: oldTask.id,
+                type:   'DELETED' // Указываем серверу, что эту задачу нужно удалить
+            })
+        }
+    })
+
+    return diffs
+}
+
+/**
+ * __ Сравнение внутренних строк ISewingTaskLine
+ * @param currentLines
+ * @param originalLines
+ */
+function getTaskLinesDiff(currentLines: ISewingTaskLine[], originalLines: ISewingTaskLine[]) {
+    const diffs: ISewingTaskArrayLineDiffs[] = []
+    const originalLinesMap                   = new Map(originalLines.map(l => [l.id, l]))
+
+    currentLines.forEach((line) => {
+        const originalLine = originalLinesMap.get(line.id)
+
+        if (!originalLine) {
+            diffs.push({
+                lineId:    line.id,
+                lineIdRef: line.id_ref,
+                type:      'ADDED',
+                // newPosition: line.position,
+                amount:   { old: null, new: line.amount },
+                position: { old: null, new: line.position }
+            })
+        } else {
+            const isAmountChanged = line.amount !== originalLine.amount
+            const isPosChanged    = line.position !== originalLine.position
+
+            if (isAmountChanged || isPosChanged) {
+                diffs.push({
+                    lineId:   line.id,
+                    type:     'UPDATED',
+                    amount:   isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
+                    position: isPosChanged ? { old: originalLine.position, new: line.position } : null
+                })
+            }
+        }
+    })
+
+    // __ Проверка на удаление строк
+    originalLines.forEach(oldLine => {
+        if (!currentLines.find(l => l.id === oldLine.id)) {
+            diffs.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return diffs
+}
+
+// --- ------------------------------------------------------------------------------------
+
+
+// __ Проверяем, есть ли в массиве изменений хотя бы одна сущность для создания в БД
+export function isAddItemsInDiffsPresents(diffs: ISewingTaskArrayDiff[]) {
+    return diffs.some(taskDiff => {
+
+        // __ 1. Проверяем саму задачу
+        if (taskDiff.type === 'ADDED') return true
+
+        // __ 2. Безопасно проверяем строки (используем опциональную цепочку ?. )
+        // __ Проверяем, есть ли среди изменений строк хотя бы одно с типом 'ADDED'
+        return taskDiff.lineChanges?.some(lineDiff => lineDiff.type === 'ADDED') ?? false
+    })
 }
 
 

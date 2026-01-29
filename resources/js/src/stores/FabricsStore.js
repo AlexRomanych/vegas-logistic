@@ -509,7 +509,7 @@ export const useFabricsStore = defineStore('fabrics', () => {
             machine: machineId,
             context: contextData
         })
-        log('changeContextOrder: ', result)
+        console.log('changeContextOrder: ', result)
         return result
     }
 

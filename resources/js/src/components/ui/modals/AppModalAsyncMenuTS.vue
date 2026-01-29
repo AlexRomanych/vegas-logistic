@@ -54,7 +54,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, } from 'vue'
-import type { IModalAsyncMenu, IColorTypes, IModalAsyncMenuItem } from '@/types'
+import type { IModalAsyncMenu, IColorTypes } from '@/types'
 
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 

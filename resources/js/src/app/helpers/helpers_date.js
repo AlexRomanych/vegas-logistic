@@ -3,15 +3,15 @@
 import { PERIOD_LENGTH } from '/resources/js/src/app/constants/dates.js'
 
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
-const GMT_0 = ':00Z'
+const GMT_0               = ':00Z'
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // возвращает отображаемый период производства
 export function getPeriod() {
     const tempDate = new Date()
-    const day = tempDate.getDate()
-    const month = tempDate.getMonth()
-    const year = tempDate.getFullYear()
+    const day      = tempDate.getDate()
+    const month    = tempDate.getMonth()
+    const year     = tempDate.getFullYear()
 
     const periodStart = new Date(year, month, '01')
     periodStart.setMonth(periodStart.getMonth() - 1) // отнимаем месяц от предыдущего, то есть минус месяц от текущего
@@ -19,41 +19,41 @@ export function getPeriod() {
     const periodEnd = new Date(year, month, '00')
     periodEnd.setMonth(periodStart.getMonth() + PERIOD_LENGTH)
 
-    const periodStartText_Day =
-        periodStart.getDate() < 10
-            ? '0' + periodStart.getDate().toString()
-            : periodStart.getDate().toString()
+    const periodStartText_Day   =
+              periodStart.getDate() < 10
+                  ? '0' + periodStart.getDate().toString()
+                  : periodStart.getDate().toString()
     const periodStartText_Month =
-        periodStart.getMonth() < 9
-            ? '0' + (periodStart.getMonth() + 1).toString()
-            : (periodStart.getMonth() + 1).toString()
+              periodStart.getMonth() < 9
+                  ? '0' + (periodStart.getMonth() + 1).toString()
+                  : (periodStart.getMonth() + 1).toString()
 
-    const periodEndText_Day =
-        periodEnd.getDate() < 10
-            ? '0' + periodEnd.getDate().toString()
-            : periodEnd.getDate().toString()
+    const periodEndText_Day   =
+              periodEnd.getDate() < 10
+                  ? '0' + periodEnd.getDate().toString()
+                  : periodEnd.getDate().toString()
     const periodEndText_Month =
-        periodEnd.getMonth() < 9
-            ? '0' + (periodEnd.getMonth() + 1).toString()
-            : (periodEnd.getMonth() + 1).toString()
+              periodEnd.getMonth() < 9
+                  ? '0' + (periodEnd.getMonth() + 1).toString()
+                  : (periodEnd.getMonth() + 1).toString()
 
     const periodStartText =
-        periodStart.getFullYear().toString() +
-        '-' +
-        periodStartText_Month +
-        '-' +
-        periodStartText_Day
-    const periodEndText =
-        periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
+              periodStart.getFullYear().toString() +
+              '-' +
+              periodStartText_Month +
+              '-' +
+              periodStartText_Day
+    const periodEndText   =
+              periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
 
-    return {periodStart, periodEnd, periodStartText, periodEndText}
+    return { periodStart, periodEnd, periodStartText, periodEndText }
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает номер недели для указанной даты
 export function getWeekNumber(date) {
     // Копируем дату, чтобы не изменять исходную
-    const d = new Date(date)
+    const d      = new Date(date)
     // Получаем день недели (0 - воскресенье, 6 - суббота)
     const dayNum = d.getDay()
     // Получаем первый день года
@@ -106,7 +106,7 @@ export function compareDates(dateString1, dateString2) {
 // inDate - дата, может быть в формате объекта или строки
 export function subtractDays(inDate = new Date(), days = 1) {
     const workDate =
-        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
+              !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
     // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
 
     // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
@@ -122,7 +122,7 @@ export function subtractDays(inDate = new Date(), days = 1) {
 // inDate - дата, может быть в формате объекта или строки
 export function addDays(inDate = new Date(), days = 1) {
     const workDate =
-        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
+              !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
     // if (!inDate instanceof Date && inDate instanceof String) workDate = new Date(inDate)
 
     // const timeInMs = workDate.getTime()                                 // Получаем текущее время в миллисекундах
@@ -137,8 +137,7 @@ export function addDays(inDate = new Date(), days = 1) {
 // attract Возвращает ближайший понедельник до заданной даты
 // inDate - дата, может быть в формате объекта или строки
 export function getMondayBefore(inDate = new Date()) {
-    let workDate =
-        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
+    let workDate = !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 
     while (workDate.getDay() !== 1) {
         workDate = subtractDays(workDate)
@@ -151,8 +150,7 @@ export function getMondayBefore(inDate = new Date()) {
 // attract Возвращает ближайшее воскресенье после заданной даты
 // inDate - дата, может быть в формате объекта или строки
 export function getSundayAfter(inDate = new Date()) {
-    let workDate =
-        !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
+    let workDate = !(inDate instanceof Date) && typeof inDate === 'string' ? new Date(inDate) : inDate
 
     while (workDate.getDay() !== 0) {
         workDate = addDays(workDate)
@@ -170,10 +168,10 @@ export function getDateIntervalMatrix(startInterval = new Date(), endInterval = 
     console.log(startInterval, endInterval)
 
     const mondayStart = getMondayBefore(startInterval)
-    const sundayEnd = getSundayAfter(endInterval)
+    const sundayEnd   = getSundayAfter(endInterval)
 
     const weeksAmount =
-        (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY) // добавляем 1 день к разности
+              (compareDates(mondayStart, sundayEnd) + MILLISECONDS_IN_DAY) / (7 * MILLISECONDS_IN_DAY) // добавляем 1 день к разности
 
     // console.log(weeksAmount)
 
@@ -220,10 +218,10 @@ export function formatDate(inDate = new Date()) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает перевод даты в формате "2025-04-17 20:58:57" в формат "17 апреля 2025 года"
 export function formatDateInFullFormat(dateTimeString, monthShort = false, fullYearLabel = true) {
-    const date = new Date(dateTimeString)
-    const day = date.getDate()
+    const date       = new Date(dateTimeString)
+    const day        = date.getDate()
     const monthIndex = date.getMonth()
-    const year = date.getFullYear()
+    const year       = date.getFullYear()
 
     const monthsArray = [
         'января',
@@ -263,11 +261,11 @@ export function formatDateAndTimeInShortFormat(dateTimeString, fullYear = true) 
 
     const dateObject = new Date(dateTimeString)
 
-    const day = dateObject.getDate()
+    const day   = dateObject.getDate()
     const month = dateObject.getMonth()
-    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
+    const year  = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
 
-    const hours = dateObject.getHours()
+    const hours   = dateObject.getHours()
     const minutes = dateObject.getMinutes()
     const seconds = dateObject.getSeconds()
 
@@ -287,9 +285,9 @@ export function getDateFromDateTimeString(dateTimeString, fullYear = true) {
     // const dateObject = new Date(dateTimeString)
     const dateObject = getDate(dateTimeString)
 
-    const day = dateObject.getDate()
+    const day   = dateObject.getDate()
     const month = dateObject.getMonth()
-    const year = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
+    const year  = fullYear ? dateObject.getFullYear() : dateObject.getFullYear().toString().slice(2)
 
     // const hours = dateObject.getHours();
     // const minutes = dateObject.getMinutes();
@@ -305,7 +303,7 @@ export function getDateFromDateTimeString(dateTimeString, fullYear = true) {
 export function formatTimeInFullFormat(dateTimeString) {
     const dateObject = new Date(dateTimeString)
 
-    const hours = dateObject.getHours() // Получить часы (0-23)
+    const hours   = dateObject.getHours() // Получить часы (0-23)
     const minutes = dateObject.getMinutes() // Получить минуты (0-59)
     const seconds = dateObject.getSeconds() // Получить секунды (0-59)
 
@@ -425,9 +423,9 @@ export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
         tempTime = Math.round(tempTime * 60 * 60, 0)
     }
 
-    const hours = Math.floor(tempTime / 3600)
+    const hours   = Math.floor(tempTime / 3600)
     const minutes = Math.floor((tempTime % 3600) / 60)
-    const secs = tempTime % 60
+    const secs    = tempTime % 60
 
     const pad = (num) => num.toString().padStart(2, '0')
 
@@ -443,9 +441,9 @@ export function formatTimeWithLeadingZeros(inTime = 0, type = 'sec') {
 // attract: absMode - модуль или нет,
 // attract: truncMode - отсекать ли дробную часть или нет
 export function getDateDiffInDays(
-    inDate1 = new Date(),
-    inDate2 = new Date(),
-    absMode = false,
+    inDate1   = new Date(),
+    inDate2   = new Date(),
+    absMode   = false,
     truncMode = true,
 ) {
     const MS_IN_DAY = 1000 * 60 * 60 * 24
@@ -860,9 +858,9 @@ export function formatToYMD(date) {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
         return ''
     }
-    const year = date.getFullYear()
+    const year  = date.getFullYear()
     const month = date.getMonth() + 1
-    const day = date.getDate()
+    const day   = date.getDate()
 
     const pad = (num) => num.toString().padStart(2, '0')
     return `${year}-${pad(month)}-${pad(day)}`
@@ -908,10 +906,10 @@ export function formatToYMD_UTC(date) {
  */
 export function getDaysDifference(dateString1, dateString2) {
     // Константы для преобразования
-    const MS_PER_SECOND = 1000
+    const MS_PER_SECOND      = 1000
     const SECONDS_PER_MINUTE = 60
-    const MINUTES_PER_HOUR = 60
-    const HOURS_PER_DAY = 24
+    const MINUTES_PER_HOUR   = 60
+    const HOURS_PER_DAY      = 24
 
     // Общее количество миллисекунд в одном дне
     const MS_PER_DAY = MS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY
@@ -987,6 +985,77 @@ export function additionDays(originalDate, days) {
     newDate.setDate(currentDay + days)
 
     return newDate
+}
+
+
+/**
+ * ___ **Функция для изменения даты на N дней для формата "YYYY-MM-DD HH:mm:ss"**
+ * @param {string} dateStr  - __Исходная дата "YYYY-MM-DD HH:mm:ss"__
+ * @param {number} days     - __Количество дней (положительное или отрицательное)__
+ * @returns {string}        - __Новая дата в том же формате__
+ */
+export function additionDaysInStrFormat(dateStr, days) {
+
+    // 1. Разбиваем строку на части: "2026-01-13" и "00:00:00"
+    let [datePart, timePart] = dateStr.split(' ');
+
+    if (!timePart) timePart = '00:00:00'    // если нет времени, то добавляем
+
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+
+    // 2. Создаем дату, передавая числа (месяцы в JS начинаются с 0, поэтому month - 1)
+    // Конструктор new Date(year, month, day...) всегда работает в локальном времени
+    const date = new Date(year, month - 1, day, hours, minutes, seconds);
+
+    // 3. Прибавляем дни
+    date.setDate(date.getDate() + days);
+
+    // 4. Форматируем обратно
+    const pad = (num) => String(num).padStart(2, '0');
+
+    const YYYY = date.getFullYear();
+    const MM   = pad(date.getMonth() + 1);
+    const DD   = pad(date.getDate());
+    const HH   = pad(date.getHours());
+    const mm   = pad(date.getMinutes());
+    const ss   = pad(date.getSeconds());
+
+    return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`;
+
+
+    //
+    // // console.log(dateStr, days)
+    //
+    // // 1. Создаем объект даты.
+    // // Чтобы избежать сюрпризов, работаем с ней как с UTC
+    // const date = new Date(dateStr.replace(' ', 'T'))
+    //
+    // // 2. Прибавляем/отнимаем дни
+    // date.setDate(date.getDate() + days)
+    // // date.setUTCDate(date.getUTCDate() + days)
+    //
+    // // 3. Форматируем обратно, используя UTC методы
+    // const pad = (num) => String(num).padStart(2, '0')
+    //
+    // // Используем getUTC..., чтобы получить ровно те цифры, которые лежат в объекте
+    // const YYYY = date.getFullYear()
+    // const MM   = pad(date.getMonth() + 1)
+    // const DD   = pad(date.getDate())
+    // const HH   = pad(date.getHours())
+    // const mm   = pad(date.getMinutes())
+    // const ss   = pad(date.getSeconds())
+    //
+    // // const YYYY = date.getUTCFullYear()
+    // // const MM   = pad(date.getUTCMonth() + 1)
+    // // const DD   = pad(date.getUTCDate())
+    // // const HH   = pad(date.getUTCHours())
+    // // const mm   = pad(date.getUTCMinutes())
+    // // const ss   = pad(date.getUTCSeconds())
+    //
+    // const result = `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`
+    // // console.log(result);
+    // return result
 }
 
 

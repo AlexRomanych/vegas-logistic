@@ -141,14 +141,15 @@
             <template #item="{ element, index }">
 
                 <div
-                    @click="showSewingTaskCard(element)"
+                    @dblclick="showSewingTaskCard(element)"
+                    @click="selectSewingTask(element)"
                 >
                     <ManageItem
                         :amount-and-time="getSewingTaskAmountAndTime(element)"
                         :columns-width="columnsWidth"
                         :index="index"
                         :item="element"
-
+                        :order-id="globalSewingTaskActiveOrderId"
                     />
                 </div>
 
@@ -294,9 +295,18 @@
         :type="modalMenuType"
     />
 
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+    />
+
 
 </template>
 
+<!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
 <script lang="ts" setup>
 import type {
     IColorTypes, IModalAsyncMenu, IPlanMatrix,
@@ -315,7 +325,7 @@ import draggable from 'vuedraggable'
 import { usePlansStore } from '@/stores/PlansStore.ts'
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
-import { formatDateInFullFormat, isHoliday, isToday } from '@/app/helpers/helpers_date'
+import { additionDaysInStrFormat, formatDateInFullFormat, isHoliday, isToday } from '@/app/helpers/helpers_date'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
 import { SEWING_MACHINES, SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
@@ -329,11 +339,14 @@ import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
 import {
     clearRenderMatrix,
-    createAmountAndTimeObj, getDiffsInRenderMatrix, getDiffsInRenderMatrixs, getDiffsWithPositions,
+    correctRenderMatrix,
+    createAmountAndTimeObj,
+    getDiffsWithPositions,
     getSewingTaskAmountAndTime,
-    repositionSewingTaskLines, setTaskPositionInRenderMatrix
+    setTaskPositionInRenderMatrix
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import AppModalMenuTS from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 type IDay = ISewingTask & IPlanMatrixDayItem
@@ -363,7 +376,7 @@ const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
 
-const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow } = storeToRefs(sewingStore)
+const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow, /*globalDiffs,*/ globalSewingTasks, globalSewingTaskActiveOrderId } = storeToRefs(sewingStore)
 
 const planStore            = usePlansStore()
 const { planPeriodGlobal } = storeToRefs(planStore)
@@ -524,8 +537,20 @@ const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null)    
 
 // __ Тип для модального Меню
 const modalMenuType  = ref<IColorTypes>('primary')
-const modalMenu      = ref<IModalAsyncMenu>({data: []})
+const modalMenu      = ref<IModalAsyncMenu>({ data: [] })
 const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+
+// __ Установка активного Заказа
+const selectSewingTask = (sewingTask: ISewingTask) => {
+    globalSewingTaskActiveOrderId.value = sewingTask.order.id
+}
 
 
 // __ Карточка СЗ
@@ -533,14 +558,14 @@ const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
 
 const showSewingTaskCard = async (sewingTask: ISewingTask) => {
     taskCard.value = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
-    // const sewingTaskCopy = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
-    // taskCard.value       = sewingTaskCopy
 
+    // __ Показываем модальное окно обработки СЗ
     const answer = await manageTaskCard.value!.show()
     if (!answer) {
         return
     }
 
+    // __ Получаем ссылки на панели
     let leftPanel  = manageTaskCard.value!.leftPanel
     let rightPanel = manageTaskCard.value!.rightPanel
 
@@ -559,33 +584,30 @@ const showSewingTaskCard = async (sewingTask: ISewingTask) => {
         newSewingTask.id = 0
 
         // __ Пересчитываем позиции для строк СЗ (SewingLines[])
-        leftPanel  = repositionSewingTaskLines(leftPanel)
-        rightPanel = repositionSewingTaskLines(rightPanel)
+        // leftPanel  = repositionSewingTaskLines(leftPanel)
+        // rightPanel = repositionSewingTaskLines(rightPanel)
 
-        // __ Обновляем СЗ
-        sewingTask.sewing_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
-        newSewingTask.sewing_lines = rightPanel
+        // __ Обновляем глобальный state СЗ
+        // sewingTask.sewing_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+        // newSewingTask.sewing_lines = rightPanel
 
-        // __ Добавляем СЗ в глобальный массив
-        sewingStore.addSewingTaskToGlobal(newSewingTask)    // __ Тут реактивное перерисовывание
+        // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+        sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
 
-        console.log(taskCard.value)
+        // console.log(taskCard.value)
+    } else {
+        // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+
+        // __ Пересчитываем позиции для строк СЗ (SewingLines[])
+        // leftPanel = repositionSewingTaskLines(leftPanel)
+
+        // __ Обновляем глобальный state СЗ
+        sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
+
     }
 
 
-    console.log('leftPanel: ', leftPanel)
-    console.log('rightPanel: ', rightPanel)
-
-
-    // if (answer) {
-    //
-    // } else {
-    //     taskCard.value = SEWING_TASK_DRAFT
-    // }
-
 }
-
-
 
 
 // --- ------------------------------------------------------
@@ -621,67 +643,167 @@ const startDrag = (evt: any) => {
 // __ Окончание перетаскивания СЗ
 const finishDrag = async (evt: any) => {
     // const element = evt.item._underlying_vm_
+    // console.log('evt: ', evt)
 
     // __ Выясняем, что перетаскивали и куда перемещали
     let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
     renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
     renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
 
-    console.log('renderMatrixCleared: ', renderMatrixCloned)
-    console.log('renderMatrixCopy: ', renderMatrixCopy.value)
+    // console.log('renderMatrixCleared: ', renderMatrixCloned)
+    // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
 
     // __ Получаем разницу между матрицами
     const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
     console.log('diffs: ', diffs)
 
+
     // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
-    let isOneDayAction = true
-    for (const diff of diffs) {
-        if (diff.dayFromOffset !== diff.dayToOffset) {
-            isOneDayAction = false
-            break
-        }
-    }
+    const isOneDayAction = !diffs.some(diff => diff.isMoved)
+    // let isOneDayAction = true
+    // for (const diff of diffs) {
+    //     if (diff.dayFromOffset !== diff.dayToOffset) {
+    //         isOneDayAction = false
+    //         break
+    //     }
+    // }
+
+
+    // TODO: !!! проверка на количество > 1
 
     if (isOneDayAction) {
 
         // __ Перемещаем СЗ без вывода дополнительной информации
-        emits('drag-and-drop')
+
+        // globalDiffs.value = diffs               // __ Записываем изменения в хранилище
+        sewingStore.applyChanges(diffs)              // __ Применяем изменения
+
+        // emits('drag-and-drop')
     } else {
+
+
+        // __ Находим те изменения, которые относятся к перемещаемой СЗ
+        const diffsForSewingTask = diffs.find(diff => diff.isMoved)
+        if (!diffsForSewingTask) {
+            // __ Откатываем изменения
+            console.error('Не найдено изменений для перемещения СЗ')
+            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            return
+        }
+
+        // __ Получаем СЗ, которое перемещают
+        const sewingTask = globalSewingTasks.value.find(task => task.id === diffsForSewingTask.taskId)              // __ Получаем СЗ, которое перемещают, здесь не мутируем
+        if (!sewingTask) {
+            // __ Откатываем изменения
+            console.error('Не найдено СЗ для перемещения')
+            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            return
+        }
+
+        // __ Находим количество для формирования динамического меню
+        const totalAmount = sewingTask.sewing_lines.reduce((acc, item) => acc + item.amount, 0)
 
         // __ Показываем модальное меню и обрабатываем результаты
         modalMenuType.value = 'primary'
-        modalMenu.value = {
+        modalMenu.value     = {
             data: [
-                {id: 1, title: 'Переместить все'},
-                {id: 2, title: 'Переместить часть'},
-                {id: 3, title: 'Отмена'},
+                { id: 1, title: 'Переместить все' },
+                { id: 2, title: 'Переместить часть' },
+                { id: 3, title: 'Отмена' },
             ]
         }
 
-        const result = await appModalMenuTS.value!.show()
-
-        console.log('result: ', result)
-
-        if (result === false || result === 3) {
+        // __ Если количество < 1, то перемещаем без меню
+        if (totalAmount === 1) {
+            sewingStore.applyChanges(diffs)         // __ Применяем изменения
             return
-        } else if (result === 1) {
+        }
 
-        } else if (result === 2) {
+        // __ Показываем модальное меню
+        const result = await appModalMenuTS.value!.show()
+        // console.log('result: ', result)
+
+
+        // __ 'Отмена'
+        if (result.value === false || result.menuItem === 3) {
+
+            // __ Откатываем изменения
+            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            return
+
+        } else if (result.menuItem === 1) {
+
+            // __ Перемещаем все СЗ
+            // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
+
+            // globalDiffs.value = diffs               // __ Записываем изменения в хранилище
+            sewingStore.applyChanges(diffs)         // __ Применяем изменения
+
+        } else if (result.menuItem === 2) {
+
+            // __ Перемещаем часть СЗ в другой день
+            // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
+
+
+            taskCard.value = JSON.parse(JSON.stringify(sewingTask)) // __ Копируем объект, чтобы не мутировал оригинал
+
+            // __ Показываем модальное окно обработки СЗ
+            const answer = await manageTaskCard.value!.show()
+            if (!answer) {
+                // __ Откатываем изменения
+                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                return
+            }
+
+            // __ Получаем правую и левую панели
+            let leftPanel  = manageTaskCard.value!.leftPanel
+            let rightPanel = manageTaskCard.value!.rightPanel
+
+            // __ Если есть правая панель, то это создание нового СЗ
+            if (rightPanel.length > 0) {
+
+                // __ Создаем новое СЗ на основе копии
+                const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
+
+                // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+                newSewingTask.position = (diffsForSewingTask.newTaskPosition ?? 1) - 0.1
+
+                // __ Устанавливаем новую дату, высчитываем новую дату по смещению
+                newSewingTask.action_at = additionDaysInStrFormat(
+                    newSewingTask.action_at,
+                    (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0))
+
+                // __ Устанавливаем id
+                // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+                newSewingTask.id = 0
+
+                // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+                // console.log(sewingTask)
+                // console.log(newSewingTask)
+                sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
+            } else {
+
+                // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+                // __ Игнорируем это поведение и просто показываем сообщение об ошибке
+                modalInfoType.value = 'danger'
+                modalInfoText.value = ['Ошибка!', 'Правая часть не может быть пустой!']
+                modalInfoMode.value = 'inform'
+                await appModalAsyncMultiline.value!.show()
+
+                // __ Откатываем изменения
+                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+
+                // __ Обновляем глобальный state СЗ
+                // sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
+
+                return
+            }
 
         }
 
 
     }
-
-
-
-
-
 }
-
-
-
 
 // watchEffect(() => {
 //

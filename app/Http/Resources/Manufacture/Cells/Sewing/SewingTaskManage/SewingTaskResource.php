@@ -19,6 +19,7 @@ class SewingTaskResource extends JsonResource
         return [
 
             'id'        => $this->id,
+            'id_ref'    => $this->id,
             'action_at' => Carbon::parse($this->action_at)->format(RETURN_DATE_TIME_FORMAT),
             'position'  => $this->position,
             'change'    => $this->change,

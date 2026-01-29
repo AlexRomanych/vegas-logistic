@@ -9,10 +9,11 @@ import type { IDims, IPlanMatrixDayItem } from '@/types/index.ts'
 import { AUTO, AVERAGE, SEWING_MACHINES, SOLID_HARD, SOLID_LITE, UNDEFINED, UNIVERSAL } from '@/app/constants/sewing.ts'
 
 export interface ISewingTask extends IPlanMatrixDayItem {
+    id: number
+    id_ref: number                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
     action_at: string
     active: boolean
     change: number
-    id: number
     position: number
     order: ISewingTaskOrder
     sewing_lines: ISewingTaskLine[]
@@ -21,6 +22,7 @@ export interface ISewingTask extends IPlanMatrixDayItem {
 // __ Связь с Содержимым СЗ
 export interface ISewingTaskLine {
     id: number
+    id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
     amount: number                                  // __ Общее количество в заявке
     amount_avg: null | ISewingTaskLineAmountAvg     // __ Количество для средней модели по статистике
     time: ISewingTaskLineTime                       // __ Трудозатраты
@@ -207,7 +209,7 @@ export interface IRenderMatrixDiff {
 
 export interface IRenderMatrixLineDiffs {
     lineId: number
-    type: IRenderMatrixLineDiffsType
+    type: IDiffsType
     oldPosition?: number
     newPosition?: number
     oldAmount?: number
@@ -216,5 +218,44 @@ export interface IRenderMatrixLineDiffs {
     isAmountChanged?: boolean
 }
 
-export type IRenderMatrixLineDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
+// --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Тип для разницы между массивами СЗ Пошиве
+export interface ISewingTaskArrayDiff {
+    taskId: number
+    taskIdRef?: number
+    type?: IDiffsType
+    // current?: ISewingTask
+    taskChanges?: {
+        action_at?: {
+            old: string | null
+            new: string
+        } | null
+        position?: {
+            old: number | null
+            new: number
+        } | null
+    }
+    lineChanges?: ISewingTaskArrayLineDiffs[]
+}
+
+export interface ISewingTaskArrayLineDiffs {
+    lineId: number
+    lineIdRef?: number
+    type: IDiffsType
+    amount?: {
+        old: number | null
+        new: number
+    } | null
+    position?: {
+        old: number | null
+        new: number
+    } | null
+}
+// --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Типы для разницы для каждой записи в матрице Пошива
+export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
 // --- ------------------------------------------------------------

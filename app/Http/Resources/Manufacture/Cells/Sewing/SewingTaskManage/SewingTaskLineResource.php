@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
 use App\Classes\SewingTimeLabor;
+use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Services\ModelsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class SewingTaskLineResource extends JsonResource
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'id'           => $this->id,
+            'id_ref'       => $this->id,
             'amount'       => $this->amount,
             'position'     => $this->position,
             'created_at'   => $this->created_at ? Carbon::parse($this->created_at)->format(RETURN_DATE_TIME_FORMAT) : null,
@@ -37,10 +39,11 @@ class SewingTaskLineResource extends JsonResource
             'false_reason' => $this->false_reason,
 
             'amount_avg' => null,
-            'time'       => ['time_'.$this->phantom => $this->time],
+            'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTime(),
+            // 'time'       => ['time_'.$this->phantom => $this->time],
+            // 'time'       => $labor->getTime(),
 
             // 'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
-            // 'time'       => $labor->getTime(),
 
             'order_line' => (new SewingTaskOrderLineResource($this->whenLoaded('orderLine')))
                 ->additional([

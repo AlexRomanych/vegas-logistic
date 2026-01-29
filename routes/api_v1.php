@@ -106,6 +106,7 @@ Route::prefix('sewing')
     ->group(function () {
 
         Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
+        Route::post('tasks/update', [CellSewingController::class, 'updateSewingTasks']);
 
 
         Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);

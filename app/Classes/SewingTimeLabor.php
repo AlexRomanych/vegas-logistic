@@ -137,7 +137,7 @@ class SewingTimeLabor
     }
 
 
-    // ___ Получаем количество единиц по типам ШМ
+    // ___ Получаем количество единиц по типам ШМ (разбиваем общее на веса)
 
     /** @noinspection PhpUndefinedFieldInspection */
     private function calcAmounts(): void
@@ -322,36 +322,53 @@ class SewingTimeLabor
         };
     }
 
+
+    // ___ Получаем трудозатраты в ассоциативном массиве по подменен типа ШМ
+    public function getTimeByPhantom(string $phantom): array
+    {
+        $totalAmount = true;
+        /** @noinspection PhpConditionAlreadyCheckedInspection */
+        return match ($phantom) {
+            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversalArray($totalAmount),
+            SewingTask::FIELD_AUTO       => $this->getTimeAutoArray($totalAmount),
+            SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHardArray($totalAmount),
+            SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLiteArray($totalAmount),
+            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefinedArray($totalAmount),
+            SewingTask::FIELD_AVERAGE    => $this->getTimeAverageArray(),
+            default                      => [],
+        };
+    }
+
+
     public function getTimeAverageArray(): array
     {
         return $this->getLaborArray();
     }
 
-    public function getTimeUniversalArray(): array
+    public function getTimeUniversalArray(bool $totalAmount = false): array
     {
-        return [SewingTask::FIELD_UNIVERSAL => $this->timeUniversal];
+        return [SewingTask::FIELD_UNIVERSAL => $totalAmount ? $this->amount * $this->timeUniversalPerPic : $this->timeUniversal];
     }
 
-    public function getTimeAutoArray(): array
+    public function getTimeAutoArray(bool $totalAmount = false): array
     {
-        return [SewingTask::FIELD_AUTO => $this->timeAuto];
+        return [SewingTask::FIELD_AUTO => $totalAmount ? $this->amount * $this->timeAutoPerPic : $this->timeAuto];
     }
 
-    public function getTimeSolidHardArray(): array
+    public function getTimeSolidHardArray(bool $totalAmount = false): array
     {
-        return [SewingTask::FIELD_SOLID_HARD => $this->timeSolidHard];
+        return [SewingTask::FIELD_SOLID_HARD => $totalAmount ? $this->amount * $this->timeSolidHardPerPic : $this->timeSolidHard];
     }
 
-    public function getTimeSolidLiteArray(): array
+    public function getTimeSolidLiteArray(bool $totalAmount = false): array
     {
-        return [SewingTask::FIELD_SOLID_LITE => $this->timeSolidLite];
+        return [SewingTask::FIELD_SOLID_LITE => $totalAmount ? $this->amount * $this->timeSolidLitePerPic : $this->timeSolidLite];
     }
 
-    public function getTimeUndefinedArray(): array
+    public function getTimeUndefinedArray(bool $totalAmount = false): array
     {
-        return [SewingTask::FIELD_UNDEFINED => $this->timeUndefined];
+        return [SewingTask::FIELD_UNDEFINED => $totalAmount ? $this->amount * $this->timeUndefinedPerPic : $this->timeUndefined];
     }
-
 
 
     // ___ Корректируем количество, если оно не целое
@@ -370,11 +387,11 @@ class SewingTimeLabor
         $currentSum = 0;
 
         foreach ($propertyNames as $name) {
-            $value = $this->$name;
+            $value      = $this->$name;
             $floorValue = (int)floor($value);
 
             $data[$name] = [
-                'int' => $floorValue,
+                'int'      => $floorValue,
                 'fraction' => $value - $floorValue // Дробный "хвост"
             ];
 

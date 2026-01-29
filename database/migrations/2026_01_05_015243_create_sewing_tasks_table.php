@@ -25,7 +25,7 @@ return new class extends Migration {
 
             // __ Порядок выполнения в производственном дне
             // __ Если разные дни, то порядок можно определить по дате
-            $table->integer('position')
+            $table->bigInteger('position')
                 ->nullable(false)
                 ->default(1)
                 ->comment('Порядок выполнения в производственном дне');
