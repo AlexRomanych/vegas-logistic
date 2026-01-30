@@ -5,7 +5,7 @@ import type {
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
-    ISewingTaskModel,
+    ISewingTaskModel, ISewingTaskOrder,
     ISewingTaskOrderLine
 } from '@/types'
 
@@ -344,7 +344,16 @@ export function calculateDividedAmountAndTime(sewingLine: ISewingTaskLine, newAm
 // __ Пересчитываем позицию по порядку записей в массиве строк (SewingTaskLine[]) по ссылке
 // __ Пересчитываем позицию именно в том порядке, в котором они находятся в исходно массиве
 // __ (как определил специалист ОПП при перетаскивании строк или упорядочивании или сортировке)
-export function repositionSewingTaskLines(items: ISewingTaskLine[]) {
+export function repositionSewingTaskLines(entity: ISewingTask | ISewingTaskLine[]) {
+    let items
+    if (isSewingTask(entity)) {
+        items = entity.sewing_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        return []
+    }
+
     items.forEach((_, index, arr) => {
         arr[index].position = index + 1
     })
@@ -731,7 +740,7 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
 
 // --- ------------------------------------------------------------------------------------
 /**
- *  __Находим глубокую разницу между массивами СЗ (текущим и копией)__
+ *  __Находим глубокую разницу между массивами СЗ (текущим и копией)__ !!! Используется эта!
  * @param {ISewingTask[]} currentTasks  - __Массив после манипуляций (vuedraggable и т.д.)__
  * @param {ISewingTask[]} originalTasks - __Глубокая копия (tasksCopy)__
  */
@@ -756,14 +765,14 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
                 lineId:    line.id,
                 lineIdRef: line.id_ref,
                 type:      'ADDED',
-                amount:   { old: null, new: line.amount },
-                position: { old: null, new: line.position }
+                amount:    { old: null, new: line.amount },
+                position:  { old: null, new: line.position }
             }))
 
             diffs.push({
-                taskId:      task.id,
-                taskIdRef:   task.id_ref,
-                type:        'ADDED',
+                taskId:    task.id,
+                taskIdRef: task.id_ref,
+                type:      'ADDED',
                 // current:     task,
                 taskChanges: {
                     action_at: { old: null, new: task.action_at },
@@ -859,7 +868,7 @@ function getTaskLinesDiff(currentLines: ISewingTaskLine[], originalLines: ISewin
 
 // --- ------------------------------------------------------------------------------------
 
-
+// --- ------------------------------------------------------------------------------------
 // __ Проверяем, есть ли в массиве изменений хотя бы одна сущность для создания в БД
 export function isAddItemsInDiffsPresents(diffs: ISewingTaskArrayDiff[]) {
     return diffs.some(taskDiff => {
@@ -872,6 +881,129 @@ export function isAddItemsInDiffsPresents(diffs: ISewingTaskArrayDiff[]) {
         return taskDiff.lineChanges?.some(lineDiff => lineDiff.type === 'ADDED') ?? false
     })
 }
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, есть ли в конкретном дне СЗ для какой-то конкретной Заявки
+export function getSewingTasksSameOrderInDay(
+    entity: ISewingTask | ISewingTaskOrder | number,
+    tasksList: ISewingTask[],
+    date: string | null = null) {
+
+    let item
+    if (isSewingTask(entity)) {
+        item = entity.order.id
+        if (!date) date = entity.action_at
+
+    } else if (isSewingTaskOrder(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        return []
+        // throw new Error('Invalid entity type')
+    }
+
+    if (!date) {
+        return []
+    }
+
+    return tasksList.filter(task => task.action_at === date && task.order.id === item)
+}
+
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем СЗ с одинаковыми Заявками
+export function mergeSewingTasks(tasks: ISewingTask[]): ISewingTask[] {
+    const grouped = tasks.reduce((acc, task) => {
+        const orderId = task.order.id
+
+        if (!acc[orderId]) {
+
+            // __ Если заказа еще нет в словаре, клонируем объект задачи
+            // __ Используем структурированное клонирование, чтобы не мутировать исходный массив
+            acc[orderId] = JSON.parse(JSON.stringify(task))
+
+        } else {
+
+            // __ Если заказ уже есть, объединяем его sewing_lines
+            const targetTask = acc[orderId]
+
+            task.sewing_lines.forEach((newLine) => {
+                const existingLine = targetTask.sewing_lines.find(
+                    (l) =>
+                        // __ Ищем строку с тем же order_line.id и типом машины
+                        l.order_line.id === newLine.order_line.id &&
+                        // __ Смотрим, чтобы совпадали ШМ для average моделей
+                        l.order_line.model.main.machine_type === newLine.order_line.model.main.machine_type
+                )
+
+                if (existingLine) {
+                    // __ Если такая строка заказа уже есть — суммируем количество
+                    existingLine.amount += newLine.amount
+                } else {
+                    // __ Если такой строки еще нет — добавляем её целиком
+                    targetTask.sewing_lines.push(JSON.parse(JSON.stringify(newLine)))
+                }
+            })
+        }
+
+        return acc
+    }, {} as Record<number, ISewingTask>)
+
+    // __Возвращаем массив, сохраняя порядок первого появления каждого order.id
+    return Object.values(grouped)
+}
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем строки СЗ с принадлежностью к одной и той же строке Заявки
+export function mergeSewingLines(lines: ISewingTaskLine[]): ISewingTaskLine[] {
+
+    const grouped = lines.reduce((acc, line) => {
+
+        // __ Создаем составной ключ: ID + Тип машины
+        const machineType = line.order_line.model.main.machine_type
+        const groupKey = `${line.order_line.id}_${machineType}`
+
+        if (!acc[groupKey]) {
+            acc[groupKey] = JSON.parse(JSON.stringify(line))
+        } else {
+
+            // __ Складываем количество
+            acc[groupKey].amount += line.amount
+
+            // __ Складываем трудозатраты (time)
+            // if (acc[groupKey].time && line.time) {
+            //     for (const key in line.time) {
+            //         acc[groupKey].time[key] = (acc[groupKey].time[key] || 0) + line.time[key];
+            //     }
+            // }
+        }
+
+        return acc
+    }, {} as Record<string, ISewingTaskLine>)
+
+    return Object.values(grouped)
+}
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Пересчитываем позиции СЗ в массиве СЗ на определенный день
+export function repositionSewingTaskInDay(tasks: ISewingTask[], action_at: string) {
+    tasks
+        // __ Отбираем только объекты на нужную дату
+        .filter(item => item.action_at === action_at)
+        // __ Сортируем их по возрастанию текущей позиции (включая x.1)
+        .sort((a, b) => a.position - b.position)
+        // __ Мутируем каждый объект, присваивая новый порядковый номер
+        .forEach((item, index) => {
+            item.position = index + 1
+        })
+    return tasks
+}
+// --- ------------------------------------------------------------------------------------
 
 
 // __ Дополнительно проверяем, является ли модель Чехлом
@@ -891,7 +1023,7 @@ function isSewingTaskLine(item: any): item is ISewingTaskLine {
     return item && typeof item === 'object' && 'order_line' in item
 }
 
-// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrderLine
 function isSewingTaskOrderLine(item: any): item is ISewingTaskOrderLine {
     return item && typeof item === 'object' && 'models' in item && 'dims' in item
 }
@@ -899,4 +1031,14 @@ function isSewingTaskOrderLine(item: any): item is ISewingTaskOrderLine {
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrderLine['model']
 function isSewingTaskOrderLineModel(item: any): item is ISewingTaskOrderLine['model'] {
     return item && typeof item === 'object' && 'main' in item && 'base' in item && 'cover' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTask
+function isSewingTask(item: any): item is ISewingTask {
+    return item && typeof item === 'object' && 'order' in item && 'sewing_lines' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrder
+function isSewingTaskOrder(item: any): item is ISewingTaskOrder {
+    return item && typeof item === 'object' && 'client' in item && 'order_type' in item
 }

@@ -17,11 +17,13 @@
                         :active-panel="activePanel"
                         :show-comments="showComments"
                         :show-details="showDetails"
+                        :sewing-lines="activePanel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
                         @divide-element-amount="divideElementAmount"
                         @show-comments="showComments = !showComments"
                         @show-details="showDetails = !showDetails"
                         @reload-data="reloadData"
                         @move-to-panel="moveToPanel(activePanel, $event)"
+                        @merge-lines="mergeLines(activePanel)"
                     />
 
                     <!-- __ Крестик закрытия -->
@@ -214,7 +216,7 @@ import {
     getSewingTaskAmountAndTime,
     getSewingTaskModelCover, getSewingTaskModelCoverName,
     getSewingTimes,
-    isAverage,
+    isAverage, mergeSewingLines,
     sortSewingTaskLinesBySize,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
@@ -547,6 +549,22 @@ const reloadData = () => {
 
     calculateTotals()
 }
+
+// __ Объединить строки
+const mergeLines = (activePanel: ISewingLinesPanel) => {
+    const workArray = activePanel === LEFT_PANEL_ID
+        ? [...sourceSewingLines.value]
+        : [...targetSewingLines.value]
+
+    const mergedSewingLines = mergeSewingLines(workArray)
+
+    if (activePanel === LEFT_PANEL_ID) {
+        sourceSewingLines.value = [...mergedSewingLines]
+    } else {
+        targetSewingLines.value = [...mergedSewingLines]
+    }
+}
+
 
 // __ Переместить в другую панель
 const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {

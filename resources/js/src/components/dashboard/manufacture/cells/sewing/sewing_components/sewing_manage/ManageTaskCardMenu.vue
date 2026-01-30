@@ -120,15 +120,16 @@
             width="w-[90px]"
         />
 
-        <!-- __ Схлопнуть -->
+        <!-- __ Объединить дубликаты -->
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
             :text-size="MENU_ITEMS_TEXT_SIZE"
-            :type="MENU_ITEMS_TYPE"
+            :type="canMerge ? MENU_ITEMS_TYPE : 'danger'"
             class="field"
-            text="Схлопнуть"
+            text="Объединить"
             width="w-[90px]"
+            @click="mergeLines"
         />
 
     </div>
@@ -144,9 +145,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
-import type { IColorTypes, ISewingLinesPanel } from '@/types'
+import type { IColorTypes, ISewingLinesPanel, ISewingTaskLine } from '@/types'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
@@ -154,12 +155,12 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 
 interface IProps {
     activePanel: ISewingLinesPanel
+    sewingLines: ISewingTaskLine[],
     showComments?: boolean,
     showDetails?: boolean,
 }
 
-/*const props =*/
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
     showComments: false,
     showDetails:  false,
 })
@@ -170,6 +171,7 @@ const emits = defineEmits<{
     (e: 'showComments'): void                   // __ Показать Комментарии
     (e: 'reloadData'): void                     // __ Перегрузить данные
     (e: 'moveToPanel', type: string): void      // __ Переместить в другую панель
+    (e: 'mergeLines'): void                     // __ Объединить строки
 }>()
 
 
@@ -198,6 +200,23 @@ const reloadData = async () => {
         emits('reloadData')
     }
 }
+
+const canMerge = computed(() => props.sewingLines.length > 1)
+
+// __ Объединить строки
+const mergeLines = async () => {
+    if (!canMerge.value) {
+        return
+    }
+    modalText.value = ['Все строки, принадлежащие одинаковым', 'элементам, будут объединены.', 'Продолжить?']
+    modalType.value = 'danger'
+    const answer    = await appModalAsyncMultiline.value!.show()             // показываем модалку и ждем ответ
+    if (answer) {
+        emits('mergeLines')
+    }
+}
+
+
 
 
 </script>

@@ -63,6 +63,10 @@ return new class extends Migration
             $table->string('describe_2')->nullable()->comment('Описание 2');
             $table->string('describe_3')->nullable()->comment('Описание 3');
 
+            // __ Порядковый номер, на всякий случай
+            $table->integer('position')->nullable()->comment('Порядковый номер');
+
+
             // Relations: Связь с Заказом
             $table->foreignIdFor(Order::class)
                 ->nullable(false)

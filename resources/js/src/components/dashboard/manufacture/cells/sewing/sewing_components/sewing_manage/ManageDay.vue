@@ -141,8 +141,8 @@
             <template #item="{ element, index }">
 
                 <div
-                    @dblclick="showSewingTaskCard(element)"
                     @click="selectSewingTask(element)"
+                    @dblclick="showSewingTaskCard(element)"
                 >
                     <ManageItem
                         :amount-and-time="getSewingTaskAmountAndTime(element)"
@@ -311,14 +311,15 @@
 import type {
     IColorTypes, IModalAsyncMenu, IPlanMatrix,
     IPlanMatrixDayItem,
-    ISewingTask, ISewingTaskLine,
+    ISewingTask,
+    // ISewingTaskLine,
     // IAmountAndTime,
     // ISewingMachineKeys,
     // IPlanMatrixDay,
     // ISewingTaskLine
 } from '@/types'
 
-import { computed, inject, nextTick, type Ref, ref, } from 'vue'
+import { computed, inject, type Ref, ref, } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
@@ -327,6 +328,16 @@ import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { additionDaysInStrFormat, formatDateInFullFormat, isHoliday, isToday } from '@/app/helpers/helpers_date'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
+import {
+    clearRenderMatrix,
+    correctRenderMatrix,
+    createAmountAndTimeObj,
+    getDiffsWithPositions,
+    getSewingTaskAmountAndTime,
+    getSewingTasksSameOrderInDay,
+    repositionSewingTaskLines,
+    setTaskPositionInRenderMatrix
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
 
 import { SEWING_MACHINES, SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
 
@@ -337,15 +348,7 @@ import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
 import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
-import {
-    clearRenderMatrix,
-    correctRenderMatrix,
-    createAmountAndTimeObj,
-    getDiffsWithPositions,
-    getSewingTaskAmountAndTime,
-    setTaskPositionInRenderMatrix
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
-import AppModalMenuTS from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
+import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
@@ -361,9 +364,9 @@ const props = withDefaults(defineProps<IProps>(), {
     day: () => [],
 })
 
-const emits = defineEmits<{
-    (e: 'drag-and-drop'): void,
-}>()
+// const emits = defineEmits<{
+//     (e: 'drag-and-drop'): void,
+// }>()
 
 // __ Получаем данные из родителя
 // const renderMatrix = inject('renderMatrix', [])
@@ -434,71 +437,6 @@ const shadowColor = computed(() => {
             return 'shadow-slate-400'
     }
 })
-
-
-// // __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-// const createAmountAndTimeObj = () => Object.values(SEWING_MACHINES).reduce((acc, value) => {
-//     acc[value] = { time: 0, amount: 0 }
-//     return acc
-// }, {} as IAmountAndTime)
-
-// __ Создаем объект для вывода данных в шаблоне
-// __ Ключи - это типы машин, а значения - это объекты с ключами time и amount
-// const getAmountAndTime = (item: ISewingTask) => {
-//
-//     // __ Функция для получения типа машины по ключу
-//     const getMachineType = (machineType: ISewingMachineKeys) => {
-//         const findMachineTypeKey = Object.keys(SEWING_MACHINES).find(key => SEWING_MACHINES[key] === machineType)
-//         return findMachineTypeKey ? SEWING_MACHINES[findMachineTypeKey] : null
-//     }
-//
-//     //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-//     const amountAndTimeObj = createAmountAndTimeObj()
-//
-//     // __ Проходим по всем sewing_lines и суммируем данные
-//     item.sewing_lines?.forEach(sewing_line => {
-//         // __ Получаем тип машины модели
-//         let machineType: ISewingMachineKeys | null = SEWING_MACHINES.UNDEFINED
-//         if (sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) {         // __ Это условие того, что элемент - чехол
-//             machineType = getMachineType(sewing_line.order_line.model.base.machine_type)        // __ Получаем тип машины модели по базовой модели
-//         } else if (!sewing_line.order_line.model.base && sewing_line.order_line.model.cover) {  // __ Это условие того, что элемент - матрас
-//             machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
-//         } else if (!sewing_line.order_line.model.base && !sewing_line.order_line.model.cover) { // __ Это условие того, что элемент - расчетный)
-//             machineType = getMachineType(sewing_line.order_line.model.main.machine_type)        // __ Получаем тип машины модели по основной модели
-//         }
-//         if (!machineType) {
-//             return  // __ Страховочка
-//         }
-//
-//         // __ Получаем количество
-//         if (machineType === SEWING_MACHINES.AVERAGE) {
-//             if (sewing_line.amount_avg) {
-//                 Object.entries(sewing_line.amount_avg).forEach(([key, value]) => {
-//                     const machineType = getMachineType(key as ISewingMachineKeys)
-//                     if (!machineType) {
-//                         return  // __ Страховочка
-//                     }
-//                     amountAndTimeObj[machineType].amount += value
-//                 })
-//             } else {
-//                 console.log('Error! Amount_avg is not defined for: ' + sewing_line.order_line.model.main.name)
-//             }
-//         } else {
-//             amountAndTimeObj[machineType].amount += sewing_line.amount
-//         }
-//
-//         // __ Получаем время
-//         Object.entries(sewing_line.time).forEach(([key, value]) => {
-//             const machineTypeKey = key.replace('time_', '') as ISewingMachineKeys
-//             const machineType    = getMachineType(machineTypeKey)
-//             if (!machineType) {
-//                 return  // __ Страховочка
-//             }
-//             amountAndTimeObj[machineType].time += value
-//         })
-//     })
-//     return amountAndTimeObj
-// }
 
 // __ Общее количество и время в виде Объекта
 const amountAndTimeTotalDay = computed(() => {
@@ -660,27 +598,15 @@ const finishDrag = async (evt: any) => {
 
     // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
     const isOneDayAction = !diffs.some(diff => diff.isMoved)
-    // let isOneDayAction = true
-    // for (const diff of diffs) {
-    //     if (diff.dayFromOffset !== diff.dayToOffset) {
-    //         isOneDayAction = false
-    //         break
-    //     }
-    // }
 
-
-    // TODO: !!! проверка на количество > 1
+    console.log('isOneDayAction: ', isOneDayAction)
 
     if (isOneDayAction) {
 
         // __ Перемещаем СЗ без вывода дополнительной информации
-
-        // globalDiffs.value = diffs               // __ Записываем изменения в хранилище
         sewingStore.applyChanges(diffs)              // __ Применяем изменения
 
-        // emits('drag-and-drop')
     } else {
-
 
         // __ Находим те изменения, которые относятся к перемещаемой СЗ
         const diffsForSewingTask = diffs.find(diff => diff.isMoved)
@@ -691,14 +617,25 @@ const finishDrag = async (evt: any) => {
             return
         }
 
-        // __ Получаем СЗ, которое перемещают
-        const sewingTask = globalSewingTasks.value.find(task => task.id === diffsForSewingTask.taskId)              // __ Получаем СЗ, которое перемещают, здесь не мутируем
+        // __ Получаем СЗ, которое перемещаем, здесь не мутируем
+        const sewingTask = globalSewingTasks.value.find(task => task.id === diffsForSewingTask.taskId)
         if (!sewingTask) {
             // __ Откатываем изменения
             console.error('Не найдено СЗ для перемещения')
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
             return
         }
+
+        // __ Получаем дату, на которую нужно переместить СЗ
+        const targetDAte = additionDaysInStrFormat(
+            sewingTask.action_at,
+            (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0))
+
+        // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
+        const existingSewingTasks = getSewingTasksSameOrderInDay(sewingTask, globalSewingTasks.value, targetDAte)
+
+        // __ Формируем текст для модального окна
+        const orderInfo = `${sewingTask.order.client.short_name} №${sewingTask.order.order_no_str}`
 
         // __ Находим количество для формирования динамического меню
         const totalAmount = sewingTask.sewing_lines.reduce((acc, item) => acc + item.amount, 0)
@@ -713,16 +650,13 @@ const finishDrag = async (evt: any) => {
             ]
         }
 
-        // __ Если количество < 1, то перемещаем без меню
-        if (totalAmount === 1) {
-            sewingStore.applyChanges(diffs)         // __ Применяем изменения
-            return
+        let result = {menuItem: 1, value: true} as IModalResponse
+
+        // __ Если количество СЗ больше 1, то показываем меню, иначе сразу перемещаем
+        if (totalAmount > 1) {
+            // __ Показываем модальное меню
+            result = await appModalMenuTS.value!.show()
         }
-
-        // __ Показываем модальное меню
-        const result = await appModalMenuTS.value!.show()
-        // console.log('result: ', result)
-
 
         // __ 'Отмена'
         if (result.value === false || result.menuItem === 3) {
@@ -731,12 +665,32 @@ const finishDrag = async (evt: any) => {
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
             return
 
-        } else if (result.menuItem === 1) {
+        } else if (result.menuItem === 1 || totalAmount === 1) {
 
             // __ Перемещаем все СЗ
             // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
-            // globalDiffs.value = diffs               // __ Записываем изменения в хранилище
+            // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
+            if (existingSewingTasks.length) {
+
+                // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
+                modalInfoType.value = 'success'
+                modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
+                modalInfoMode.value = 'confirm'
+
+                const result = await appModalAsyncMultiline.value!.show()
+
+                if (result) {
+                    // __ С объединением
+                    console.warn('Union SewingTasks')
+
+                    // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
+                    sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask])   // __ Объединяем СЗ с первой
+                    // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
+                    return
+                }
+            }
+
             sewingStore.applyChanges(diffs)         // __ Применяем изменения
 
         } else if (result.menuItem === 2) {
@@ -777,10 +731,39 @@ const finishDrag = async (evt: any) => {
                 // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
                 newSewingTask.id = 0
 
+                // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
+                if (existingSewingTasks.length) {
+
+                    // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
+                    modalInfoType.value = 'success'
+                    modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
+                    modalInfoMode.value = 'confirm'
+
+                    const result = await appModalAsyncMultiline.value!.show()
+
+                    if (result) {
+                        // __ С объединением
+                        console.warn('Union SewingTasks')
+
+                        // __ Переносим правую панель в новый СЗ
+                        rightPanel = repositionSewingTaskLines(rightPanel)
+                        newSewingTask.sewing_lines = rightPanel
+
+                        // __ Изменяем содержимое в СЗ
+                        leftPanel = repositionSewingTaskLines(leftPanel)
+                        sewingStore.setSewingTasksLines(sewingTask, leftPanel)  // __ Делаем это в родителе
+
+                        // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
+                        sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask])   // __ Объединяем СЗ с первой
+                        // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
+                        return
+                    }
+
+                }
+
                 // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-                // console.log(sewingTask)
-                // console.log(newSewingTask)
                 sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
+
             } else {
 
                 // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
@@ -793,9 +776,6 @@ const finishDrag = async (evt: any) => {
                 // __ Откатываем изменения
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
 
-                // __ Обновляем глобальный state СЗ
-                // sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
-
                 return
             }
 
@@ -804,10 +784,6 @@ const finishDrag = async (evt: any) => {
 
     }
 }
-
-// watchEffect(() => {
-//
-// })
 
 
 </script>

@@ -1015,9 +1015,11 @@ final class ModelsService implements VegasDataUpdateContract
         }
 
         if ($modelType === ElementTypes::MATTRESSES->value) {
-            $PREFIX  =  ElementTypes::MATTRESSES->value;
+            $PREFIX  =  CLIENT_AVERAGE_MATTRESS_PREFIX;
+            // $PREFIX  =  ElementTypes::MATTRESSES->value;
         } elseif ($modelType === ElementTypes::ACCESSORIES->value) {
-            $PREFIX  =  ElementTypes::ACCESSORIES->value;
+            $PREFIX  =  CLIENT_AVERAGE_ACCESSORY_PREFIX;
+            // $PREFIX  =  ElementTypes::ACCESSORIES->value;
         } else {
             return null;
         }
@@ -1029,7 +1031,7 @@ final class ModelsService implements VegasDataUpdateContract
             $clientId = $client;
         }
 
-        return str_pad($clientId, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
+        return $PREFIX . str_pad($clientId, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
     }
 
 }

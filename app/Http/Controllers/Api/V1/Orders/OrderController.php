@@ -149,8 +149,9 @@ class OrderController extends Controller
 
             // DB::transaction(function () use ($order, $client) {
 
-            // __ Если нужно добавить заявку, то добавляем
-            if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD) {
+            // __ Если нужно добавить заявку или обновить, то добавляем или обновляем
+            if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD ||
+                $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_UPDATE) {
 
                 // __ При добавлении в БД Заявки, может возникнуть следующие ситуации:
                 // ___ 1. Заявка уже есть в БД, но она прогнозная, возможно, Сменные задания,
@@ -369,12 +370,12 @@ class OrderController extends Controller
                     // __ Распределяем СЗ на Сборку
                     // __ ...
 
-                    // __ И только после этого удаляем строки с кодом средней модели и автоматом!!! удаляем их из всех СЗ
+                    // __ И только после этого удаляем строки с кодом средней модели и !!! автоматом удаляем их из всех СЗ
                     // __ Получаем код средней модели по клиенту и типу элементов в Заявке
-                    $averageModelCode = ModelsService::getAverageModelCodeByClientAndElementsType($order->client, $order->elements_type_ref);
+                    $averageModelCode = ModelsService::getAverageModelCodeByClientAndElementsType($client->id, $forecastOrder->elements_type_ref);
 
                     // __ Удаляем строки с кодом средней модели и автоматом удаляем их из СЗ
-                    $order->lines()->where('model_code_1c', $averageModelCode)->delete();
+                    $forecastOrder->lines()->where('model_code_1c', $averageModelCode)->delete();
 
 
                 } else {

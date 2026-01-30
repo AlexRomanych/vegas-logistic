@@ -1,6 +1,6 @@
 <template>
     <!-- __ Тут именно -1, т.к. id = 0 - это заглушка для добавления нового элемента -->
-    <div v-if="item.id > -1" class="flex" :class="[orderId === item.order.id ? 'rounded-[3px] border-[1px] bg-green-300/80' : '']">
+    <div v-if="item.id > -1" class="flex">
 
         <!-- __ Клиент -->
         <AppLabelMultiLineTS
@@ -44,7 +44,6 @@
             :width="render.amount.width"
             class="plan-item"
         />
-
 
         <!-- __ Количество + Трудозатраты УШМ -->
         <ManageItemDataLabel

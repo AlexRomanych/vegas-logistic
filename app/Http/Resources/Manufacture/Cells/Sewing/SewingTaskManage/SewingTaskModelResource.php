@@ -11,7 +11,7 @@ class SewingTaskModelResource extends JsonResource
 
     private function isPhantomMachineTypeSet(): bool
     {
-        return !is_null($this->additional['phantom_data']['phantom']);
+        return isset($this->additional['phantom_data']['phantom']);
     }
 
     // __ Возвращаем тип машины по подмене свойств

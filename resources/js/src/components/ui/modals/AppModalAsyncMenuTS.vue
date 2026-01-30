@@ -78,7 +78,7 @@ const showModal = ref(false)           // реактивность видимо�
 
 
 // __ 1. Описываем структуру возвращаемых данных
-interface IModalResponse {
+export interface IModalResponse {
     value: boolean
     menuItem: number | null // Разрешаем null, если ничего не выбрали
 }

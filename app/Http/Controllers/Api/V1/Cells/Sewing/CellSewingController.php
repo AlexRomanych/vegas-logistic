@@ -92,7 +92,8 @@ class CellSewingController extends Controller
 
                 foreach ($diffs as $diff) {
 
-                    $currentTaskId = null;
+                    $currentTaskId = null;  // __ Маяк созданного СЗ (Если флаг в lines - ADDED и в tasks - ADDED)
+                    $updatedTaskId = null;  // __ Маяк обновляемого СЗ (Если флаг в lines - ADDED, но эти lines приходят из DELETED task и в tasks - UPDATED)
 
                     // --- 1. ОБРАБОТКА ЗАДАЧИ ---
 
@@ -135,6 +136,9 @@ class CellSewingController extends Controller
                                 ];
 
                             }
+
+                            $currentTaskId = $diff['taskId'];
+                            // $updatedTaskId = $diff['taskId'];
                             break;
 
                         case 'DELETED':
@@ -203,6 +207,7 @@ class CellSewingController extends Controller
                                         'id'       => $lineDiff['lineId'],
                                         'amount'   => $lineDiff['amount']['new'] ?? null,
                                         'position' => $lineDiff['position']['new'] ?? null,
+                                        // 'sewing_task_id' => $updatedTaskId ?? null,
                                     ];
                                     break;
 
@@ -299,7 +304,7 @@ class CellSewingController extends Controller
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
             $sql               = "UPDATE {$table} SET ".implode(', ', $setParts)." WHERE id IN ({$wherePlaceholders})";
 
-            // Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
+            // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
         });
 
@@ -340,6 +345,8 @@ class CellSewingController extends Controller
             $paramsAmount   = [];
             $casesPosition  = [];
             $paramsPosition = [];
+            // $casesTaskId    = [];
+            // $paramsTaskId   = [];
 
             foreach ($rows as $row) {
                 if (isset($row['amount'])) {
@@ -350,6 +357,10 @@ class CellSewingController extends Controller
                     $casesPosition[] = "WHEN id = ? THEN ?";
                     array_push($paramsPosition, $row['id'], $row['position']);
                 }
+                // if (isset($row['sewing_task_id'])) {
+                //     $casesTaskId[] = "WHEN id = ? THEN ?";
+                //     array_push($paramsTaskId, $row['id'], $row['sewing_task_id']);
+                // }
             }
 
             $setParts    = [];
@@ -364,6 +375,11 @@ class CellSewingController extends Controller
                 $setParts[]  = "position = CASE ".implode(' ', $casesPosition)." ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
+
+            // if (!empty($casesTaskId)) {
+            //     $setParts[]  = "sewing_task_id = CASE ".implode(' ', $casesTaskId)." ELSE sewing_task_id END";
+            //     $finalParams = array_merge($finalParams, $paramsTaskId);
+            // }
 
             if (empty($setParts)) {
                 return;

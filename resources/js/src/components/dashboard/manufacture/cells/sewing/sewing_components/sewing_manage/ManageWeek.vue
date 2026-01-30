@@ -15,7 +15,6 @@
                 <ManageDay
                     :date="getDate(idx)"
                     :day="(week[idx].length ? week[idx] : []) as ISewingTask[]"
-                    @drag-and-drop="dragAndDrop"
                 />
 
             </div>
@@ -43,16 +42,16 @@ const props = withDefaults(defineProps<IProps>(), {
     week: () => []
 })
 
-const emits = defineEmits<{
-    (e: 'drag-and-drop'): void,
-}>()
+// const emits = defineEmits<{
+//     (e: 'drag-and-drop'): void,
+// }>()
 
 
 // __ Логика
 const getDate = (dayNumber: number /* порядковый день недели*/) => additionDays(props.date, dayNumber)
 const weekNumber = computed(() => getWeekNumber(props.date).toString())
 
-const dragAndDrop = () => emits('drag-and-drop')
+// const dragAndDrop = () => emits('drag-and-drop')
 
 
 </script>

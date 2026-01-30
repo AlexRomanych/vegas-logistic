@@ -309,7 +309,21 @@ class SewingTimeLabor
     // --- Возвращаем трудозатраты в ассоциативном массиве, если Average - то все, разбитые по статистике
 
     // ___ Получаем трудозатраты в ассоциативном массиве (универсальная функция)
-    public function getTime(): array
+    public function getTime(): int
+    {
+        return match ($this->sewingType) {
+            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversal(),
+            SewingTask::FIELD_AUTO       => $this->getTimeAuto(),
+            SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHard(),
+            SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLite(),
+            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefined(),
+            default                      => 0,
+        };
+    }
+
+
+    // ___ Получаем трудозатраты в ассоциативном массиве (универсальная функция)
+    public function getTimeArray(): array
     {
         return match ($this->sewingType) {
             SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversalArray(),

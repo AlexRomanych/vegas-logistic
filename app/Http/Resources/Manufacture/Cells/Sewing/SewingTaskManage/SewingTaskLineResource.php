@@ -39,7 +39,7 @@ class SewingTaskLineResource extends JsonResource
             'false_reason' => $this->false_reason,
 
             'amount_avg' => null,
-            'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTime(),
+            'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
             // 'time'       => ['time_'.$this->phantom => $this->time],
             // 'time'       => $labor->getTime(),
 

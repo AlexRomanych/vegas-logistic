@@ -199,9 +199,9 @@ return new class extends Migration {
             // $table->timestamp('manuf_date')->nullable()->comment('дата производства из ЕПС');
 
             // __ Порядок заявки в плане - Перенесем в каждый план отдельно
-            // $table->unsignedSmallInteger('position')
-            //     ->nullable()
-            //     ->comment('Порядок заявки в плане');
+            $table->integer('position')
+                ->nullable()
+                ->comment('Порядок заявки в плане');
 
         });
     }
