@@ -162,7 +162,6 @@ final class SewingService
      */
     public static function distributeSewingTaskFromOrderId(int $orderId): bool
     {
-
         // __ Получаем саму Заявку
         $order = Order::query()
             ->with(['lines', 'client'])
@@ -420,8 +419,6 @@ final class SewingService
                     $sewingTask->delete();
                 }
             }
-
-            return true;
         });
 
         return true;
