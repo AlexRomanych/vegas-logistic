@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingStatusController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
@@ -107,6 +108,11 @@ Route::prefix('sewing')
 
         Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
         Route::post('tasks/update', [CellSewingController::class, 'updateSewingTasks']);
+
+        Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
+        Route::get('operation/{id}', [CellSewingOperationController::class, 'getSewingOperation']);
+        Route::post('operation', [CellSewingOperationController::class, 'createSewingOperation']);
+        Route::put('operation', [CellSewingOperationController::class, 'updateSewingOperation']);
 
 
         Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);

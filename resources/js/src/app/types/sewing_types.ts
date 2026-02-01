@@ -259,3 +259,19 @@ export interface ISewingTaskArrayLineDiffs {
 // __ Типы для разницы для каждой записи в матрице Пошива
 export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
 // --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Тип для Типовой операции Пошива
+export interface ISewingOperation {
+    active: boolean
+    description : string | null
+    id: number
+    machine: string
+    name: string
+    time: number
+    type: ICalcMode
+    color: string
+}
+
+export type ICalcMode = 'dynamic' | 'static'
+// --- ------------------------------------------------------------

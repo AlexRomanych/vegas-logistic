@@ -1,4 +1,5 @@
-<?php /** @noinspection DuplicatedCode */
+<?php
+/** @noinspection DuplicatedCode */
 
 namespace App\Http\Controllers\Api\V1;
 
@@ -17,6 +18,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\App;
+
 // use Illuminate\Support\Facades\DB;
 
 
@@ -38,7 +40,7 @@ class ClientController extends Controller
 
     /**
      * ___ Отдаем список клиентов
-     * @param $status : нет (null) - все, 0 (false) - неактивные, 1 (true) - активные
+     * @param $status  : нет (null) - все, 0 (false) - неактивные, 1 (true) - активные
      * @return AnonymousResourceCollection|string
      */
     public function getClients($status = null)
@@ -57,8 +59,8 @@ class ClientController extends Controller
             $status = is_null($status) ? -1 : (int)$status;
 
             match ($status) {
-                0 => $result = Client::query()->where('active', false)->get(),
-                1 => $result = Client::query()->where('active', true)->get(),
+                0       => $result = Client::query()->where('active', false)->get(),
+                1       => $result = Client::query()->where('active', true)->get(),
                 default => $result = Client::all(),
             };
 
@@ -71,7 +73,7 @@ class ClientController extends Controller
 
     /**
      * ___ Отдаем клиента по id
-     * @param int $id
+     * @param  int  $id
      * @return ClientResource|string
      */
     public function getClient(int $id)
@@ -97,7 +99,7 @@ class ClientController extends Controller
 
     /**
      * ___ Сохраняем клиента
-     * @param StoreClientRequest $request
+     * @param  StoreClientRequest  $request
      * @return string
      * @noinspection PhpUndefinedFieldInspection
      */
@@ -107,12 +109,12 @@ class ClientController extends Controller
             $data = $request->validated();
 
             if ($data['id'] == 0 || ($data['id'] < 0 && $data['id'] != -1)) {
-                throw new Exception('Неверный id = ' . $data['id']);
+                throw new Exception('Неверный id = '.$data['id']);
             }
 
             $client = Client::query()->find($data['id']);
             if ($client) {
-                throw new Exception('Клиент c id = ' . $data['id'] . ' уже существует');
+                throw new Exception('Клиент c id = '.$data['id'].' уже существует');
             }
 
             $client = Client::query()
@@ -121,7 +123,7 @@ class ClientController extends Controller
                 ->first();
 
             if ($client) {
-                throw new Exception('Дубликат имен: '.  $data['name'] . ' / ' . $data['add_name']);
+                throw new Exception('Дубликат имен: '.$data['name'].' / '.$data['add_name']);
             }
 
             $client = Client::query()
@@ -129,7 +131,7 @@ class ClientController extends Controller
                 ->first();
 
             if ($client) {
-                throw new Exception('Дубликат отображаемых имен: '.  $data['short_name']);
+                throw new Exception('Дубликат отображаемых имен: '.$data['short_name']);
             }
 
             // __ Сырой код по вставке клиента
@@ -170,13 +172,13 @@ class ClientController extends Controller
                 $client->id = $data['id'];          // Задаем id вручную нового клиента
             }
 
-            $client->name = $data['name'];
-            $client->add_name = $data['add_name'] ?? '';
-            $client->short_name = $data['short_name'];
-            $client->active = $data['active'];
-            $client->region = $data['region'];
+            $client->name        = $data['name'];
+            $client->add_name    = $data['add_name'] ?? '';
+            $client->short_name  = $data['short_name'];
+            $client->active      = $data['active'];
+            $client->region      = $data['region'];
             $client->description = $data['description'];
-            $client->comment = $data['comment'];
+            $client->comment     = $data['comment'];
 
             $client->save();
 
@@ -193,26 +195,26 @@ class ClientController extends Controller
 
     /**
      * ___ Обновляем клиента
-     * @param StoreClientRequest $request
+     * @param  StoreClientRequest  $request
      * @return string
      */
     public function updateClient(StoreClientRequest $request)
     {
         try {
             // $all = $request->all();
-            $data = $request->validated();
+            $data   = $request->validated();
             $client = Client::query()->find($data['id']);
             if (!$client) {
-                throw new Exception('Клиент c id = ' . $data['id'] . ' не найден');
+                throw new Exception('Клиент c id = '.$data['id'].' не найден');
             }
 
-            $client->name = $data['name'];
-            $client->add_name = $data['add_name'] ?? '';
-            $client->short_name = $data['short_name'];
-            $client->active = $data['active'];
-            $client->region = $data['region'];
+            $client->name        = $data['name'];
+            $client->add_name    = $data['add_name'] ?? '';
+            $client->short_name  = $data['short_name'];
+            $client->active      = $data['active'];
+            $client->region      = $data['region'];
             $client->description = $data['description'];
-            $client->comment = $data['comment'];
+            $client->comment     = $data['comment'];
 
             $client->save();
 
@@ -224,20 +226,20 @@ class ClientController extends Controller
 
     /**
      * ___ Удаляем клиента
-     * @param Request $request
+     * @param  Request  $request
      * @return string
      */
     public function deleteClient(Request $request)
     {
         try {
-                $validatedData = $request->validate([
+            $validatedData = $request->validate([
                 'id' => 'required|integer|min:1|exists:clients,id',
             ]);
 
             $client = Client::query()->find($validatedData['id']);
 
             if (!$client) {
-                throw new Exception('Клиент c id = ' . $validatedData['id'] . ' не найден');
+                throw new Exception('Клиент c id = '.$validatedData['id'].' не найден');
             }
 
             $client->delete();

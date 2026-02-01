@@ -12,7 +12,7 @@
 
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 
 interface IMenuItem {
     name: string,
@@ -25,9 +25,11 @@ import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 
 let menuItems: IMenuItem[] = [
-    {name: 'Управление планом ШЦ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true},
-    {name: 'Управление СЗ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true},
-    {name: 'Статусы движения СЗ', path: 'manufacture.cell.sewing.task.statuses', shown: true, isActive: true},
+    { name: 'Управление планом ШЦ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
+    { name: 'Управление СЗ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
+    { name: 'Статусы движения СЗ', path: 'manufacture.cell.sewing.task.statuses', shown: true, isActive: true },
+    { name: 'Типовые операции', path: 'manufacture.cell.sewing.operations', shown: true, isActive: true },
+    { name: 'Схемы типовых операций', path: 'manufacture.cell.sewing.operation.schemas', shown: true, isActive: true },
     // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
 ]
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))

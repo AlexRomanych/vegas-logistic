@@ -31,6 +31,7 @@ return new class extends Migration {
             $table->float('ratio')->nullable()->comment('Коэффициент');
             $table->float('amount')->nullable()->comment('Количество');
             $table->string('condition')->nullable()->comment('Дополнительные условия');
+            $table->integer('position')->nullable()->comment('Позиция');
 
             // __ Уникальный индекс: одна схема—операция
             $table->unique(['sewing_operation_schema_id', 'sewing_operation_id']);

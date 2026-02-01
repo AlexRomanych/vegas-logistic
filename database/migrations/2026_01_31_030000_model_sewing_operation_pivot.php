@@ -29,7 +29,9 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             $table->float('ratio')->nullable()->comment('Коэффициент');
+            $table->float('amount')->nullable()->comment('Количество');
             $table->string('condition')->nullable()->comment('Дополнительные условия');
+            $table->integer('position')->nullable()->comment('Позиция');
 
             // __ Уникальный индекс: одна модель—операция
             $table->unique(['model_code_1c', 'sewing_operation_id']);

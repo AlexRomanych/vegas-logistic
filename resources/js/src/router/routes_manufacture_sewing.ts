@@ -1,6 +1,7 @@
 // Info Участок швейки
 
 import type { IRouteMeta } from '@/types'
+import { ROUTER_PAGE_MODE } from '@/app/constants/common.ts'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
@@ -30,7 +31,6 @@ const sewing = [
                    } as IRouteMeta,
     },
 
-
     {
         // ___ Справочник Статусов Движения СЗ
         path:      _MAIN_PREFIX + 'task/statuses',
@@ -41,17 +41,49 @@ const sewing = [
                    } as IRouteMeta,
     },
 
+    {
+        // ___ Справочник Типовых операций
+        path:      _MAIN_PREFIX + 'operations',
+        name:      'manufacture.cell.sewing.operations',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingOperationsShow.vue'),
+        meta:      {
+                       title: 'Типовые операции в Швейном цеху'
+                   } as IRouteMeta,
+    },
 
-    // {
-    //     // ___ Управление планом Швейного цеха
-    //     path: _MAIN_PREFIX + 'plan/manage',
-    //     name: 'manufacture.cell.sewing.plan.manage',
-    //     component: () => import('@/components/dashboard/plans/ThePlanManageSewing.vue'),
-    //     // component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingPlanManage.vue'),
-    //     meta: {
-    //         title: 'Управление планом Швейного цеха'
-    //     } as IRouteMeta,
-    // },
+    {
+        // ___ Редактирование Типовой операции
+        path:      _MAIN_PREFIX + 'operations/edit/:id',
+        name:      'manufacture.cell.sewing.operations.edit',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingOperationEdit.vue'),
+        meta:      {
+                       title: 'Редактирование Типовой операции',
+                       mode:  ROUTER_PAGE_MODE.EDIT,
+                   } as IRouteMeta,
+    },
+
+    {
+        // ___ Создание Типовой операции
+        path:      _MAIN_PREFIX + 'operations/create',
+        name:      'manufacture.cell.sewing.operations.create',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingOperationEdit.vue'),
+        meta:      {
+                       title: 'Создание Типовой операции',
+                       mode:  ROUTER_PAGE_MODE.CREATE,
+                   } as IRouteMeta,
+    },
+
+    {
+        // ___ Справочник Схем Типовых операций
+        path:      _MAIN_PREFIX + 'operation/schemas',
+        name:      'manufacture.cell.sewing.operation.schemas',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingOperationSchemasShow.vue'),
+        meta:      {
+                       title: 'Схемы Типовых операций в Швейном цеху',
+                   } as IRouteMeta,
+    },
+
 ]
+
 
 export default sewing

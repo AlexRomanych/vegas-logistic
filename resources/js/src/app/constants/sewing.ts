@@ -1,14 +1,15 @@
 // Info Константы для работы с Пошивом (Sewing)
 
 
-import type { ISewingMachineKeys, ISewingTask } from '@/types'
+import type { ISewingMachineKeys, ISewingOperation, ISewingTask } from '@/types'
 
 
 export const SEWING_TASK_DRAFT: ISewingTask = {
+    id:           0,
+    id_ref:       0,
     action_at:    '',
     active:       true,
     change:       1,
-    id:           0,
     position:     0,
     order:        {
         id:              0,
@@ -50,5 +51,17 @@ export const SEWING_MACHINES: Record<string, ISewingMachineKeys> = {
     AVERAGE,
 }
 
+
+// __ Объект Типовой операции
+export const SEWING_OPERATION_DRAFT: ISewingOperation = {
+    active: true,
+    description:  null,
+    id: 0,
+    machine: '',
+    name: '',
+    time: 0,
+    type: 'dynamic',
+    color: '#64748B'
+}
 
 

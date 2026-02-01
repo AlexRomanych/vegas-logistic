@@ -237,7 +237,7 @@ export const FABRIC_TASKS_EXECUTE = Object.freeze({
 })
 
 
-// descr Константы режима работы компонента
+// ___ Константы режима работы компонента
 export const FABRIC_PAGE_MODE = Object.freeze({
     CREATE: 'create',
     EDIT: 'edit',

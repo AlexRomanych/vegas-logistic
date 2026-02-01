@@ -166,4 +166,11 @@ watch(() => props.textSize, (newSize) => textSizeClass.value = getFontSizeClass(
 .select {
     @apply h-full w-full rounded-lg
 }
+
+
+select:focus {
+    outline: none;
+    /* Если это не помогло для Safari/Chrome, добавьте: */
+    box-shadow: none;
+}
 </style>
