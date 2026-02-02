@@ -24,7 +24,7 @@ const URL_SEWING_TASKS_UPDATE              = '/sewing/tasks/update' // URL дл�
 const URL_SEWING_TASK_STATUSES             = '/sewing/task/statuses' // URL для получения Статуса Движения СЗ
 const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch' // URL для получения Статуса Движения СЗ
 const URL_SEWING_OPERATIONS                = '/sewing/operations' // URL для получения Типовых операций швейки
-const URL_SEWING_OPERATION                 = '/sewing/operation'  // URL для получения Типовой операции
+const URL_SEWING_OPERATION                 = '/sewing/operations'  // URL для получения Типовой операции
 const URL_SEWING_OPERATION_SCHEMAS         = '/sewing/operation/schemas' // URL для получения Схем Типовых операций швейки
 
 export const useSewingStore = defineStore('sewing', () => {
@@ -265,14 +265,14 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-    // __ Создаем клиента
+    // __ Создаем Типовую операцию
     const createSewingOperation = async (sewingoperation: ISewingOperation) => {
         const result = await jwtPost(URL_SEWING_OPERATION, sewingoperation)
         if (DEBUG) console.log('SewingStore: createSewingOperation: ', result)
         return result
     }
 
-    // __ Обновляем клиента
+    // __ Обновляем Типовую операцию
     const updateSewingOperation = async (sewingoperation: ISewingOperation) => {
         const result = await jwtPut_(URL_SEWING_OPERATION, sewingoperation)
         if (DEBUG) console.log('SewingStore: updateSewingOperation: ', result)
@@ -280,7 +280,22 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
 
+    // __ Получение Схем Типовых опрераций
+    const getSewingOperationSchemas = async () => {
+        let response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingOperations: ', result)
+        return result.data
+    }
 
+    // __ Получение Схемы Типовой опрерации
+    const getSewingOperationSchema = async (id: string|number) => {
+        let response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS + '/' + id)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingOperation: ', result)
+        return result.data
+    }
+    //
 
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
@@ -310,6 +325,9 @@ export const useSewingStore = defineStore('sewing', () => {
         getSewingOperation,
         createSewingOperation,
         updateSewingOperation,
+
+        getSewingOperationSchemas,
+        getSewingOperationSchema,
 
         addSewingTaskToGlobal,
         applyChanges,

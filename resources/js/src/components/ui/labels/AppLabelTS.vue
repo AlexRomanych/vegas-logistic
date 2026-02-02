@@ -11,6 +11,7 @@
             horizontalAlign,
             roundedCSS,
             textSelectAvailable,
+            textDirection,
         ]"
         :title="title"
         :style="color ? {'background-color': color} : ''"
@@ -46,6 +47,7 @@ interface IProps {
     rounded?: string
     color?: string
     textSelect?: boolean
+    direction?: 'row' | 'column'
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -59,7 +61,8 @@ const props = withDefaults(defineProps<IProps>(), {
     title: '',
     rounded: 'rounded-lg',
     color: '',
-    textSelect: false
+    textSelect: false,
+    direction: 'row',
 })
 
 const emits = defineEmits<{
@@ -82,6 +85,9 @@ const semibold = computed(() => props.bold ? 'font-semibold' : '')
 const textSelectAvailable = computed(() => props.textSelect ? '' : 'select-none')
 
 const roundedCSS = computed(() => getRoundedClass(props.rounded))
+
+// __ Вертикальный текст
+const textDirection = computed(() => props.direction === 'column' ? '[writing-mode:vertical-rl] rotate-180 whitespace-normal' : '')
 
 </script>
 

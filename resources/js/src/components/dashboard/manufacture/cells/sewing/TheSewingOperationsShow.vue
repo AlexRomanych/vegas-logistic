@@ -72,7 +72,7 @@
                     </div>
 
                     <div>
-                        <!-- __ + Клиент -->
+                        <!-- __ + Типовая операция -->
                         <router-link :to="{ name: 'manufacture.cell.sewing.operations.create' }">
                             <AppLabelMultiLineTS
                                 :text="['➕', '']"

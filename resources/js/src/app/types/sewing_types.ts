@@ -275,3 +275,17 @@ export interface ISewingOperation {
 
 export type ICalcMode = 'dynamic' | 'static'
 // --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Тип для Схемы Типовых операций Пошива
+export interface ISewingOperationSchema {
+    id: number
+    active: boolean
+    name: string
+    description : string | null
+    operations: {
+        id: number
+
+    }[]
+}
+// --- ------------------------------------------------------------

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationSchemaController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingStatusController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
@@ -48,7 +49,6 @@ Route::prefix('/models')
         Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
 
-
     });
 
 
@@ -87,9 +87,6 @@ Route::prefix('/orders')
         Route::get('/types', [OrderController::class, 'getOrderTypes']);
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
 
-
-
-
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -99,22 +96,26 @@ Route::get('/manufacture/cells/groups', [CellsGroupController::class, 'getCellsG
 Route::get('/manufacture/cells', [CellItemController::class, 'getCells'])->middleware('jwt.auth');
 
 
-
-
 // __ Блок Пошива - Sewing
 Route::prefix('sewing')
     ->middleware('jwt.auth')
     ->group(function () {
 
+        // __ СЗ Пошива
         Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
         Route::post('tasks/update', [CellSewingController::class, 'updateSewingTasks']);
 
+        // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
-        Route::get('operation/{id}', [CellSewingOperationController::class, 'getSewingOperation']);
-        Route::post('operation', [CellSewingOperationController::class, 'createSewingOperation']);
-        Route::put('operation', [CellSewingOperationController::class, 'updateSewingOperation']);
+        Route::get('operations/{id}', [CellSewingOperationController::class, 'getSewingOperation']);
+        Route::post('operations', [CellSewingOperationController::class, 'createSewingOperation']);
+        Route::put('operations', [CellSewingOperationController::class, 'updateSewingOperation']);
 
+        // __ Схемы Типовых операций
+        Route::get('operation/schemas', [CellSewingOperationSchemaController::class, 'getSewingOperationSchemas']);
+        Route::get('operation/schemas/{id}', [CellSewingOperationSchemaController::class, 'getSewingOperationSchema']);
 
+        // __ Статусы СЗ Пошива
         Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);
         Route::patch('/task/statuses/color/patch', [CellSewingStatusController::class, 'patchSewingTaskStatusColor']);
 
@@ -138,7 +139,7 @@ Route::prefix('/plan')
     ->middleware('jwt.auth')
     ->group(function () {
 
-        Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);  // ___ Загрузка плана
+        Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);      // ___ Загрузка плана
         Route::post('/loads/validate', [PlanLoadsController::class, 'validateLoads']);  // ___ Проверка плана с Бэка
 
         Route::get('/loads', [PlanLoadsController::class, 'getPlanLoads']);
@@ -146,7 +147,6 @@ Route::prefix('/plan')
 
 
         Route::get('/business-process-node', [PlanController::class, 'getPlanBusinessProcessNode']);
-
 
     });
 

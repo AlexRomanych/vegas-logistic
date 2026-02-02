@@ -14,13 +14,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
-            $table->id();
+            $table->id()->from(1);
             $table->string('name')->unique()->nullable(false)->comment('Название схемы');
 
             $table->string('additional')->nullable()->comment('Для дополнительной информации');
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
+
+        DB::table(self::TABLE_NAME)->insert(
+            [
+                'id' => 0,
+                'name' => 'Без схемы',
+            ]
+        );
+
     }
 
     /**
@@ -28,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sewing_operation_schemas');
+        Schema::dropIfExists(self::TABLE_NAME);
     }
 };
