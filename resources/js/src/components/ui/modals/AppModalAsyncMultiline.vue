@@ -1,59 +1,60 @@
 <template>
     <Teleport to="body">
+        <Transition name="modal">
+            <div v-if="showModal"
+                 class="dark-container">
 
-        <div v-if="showModal"
-             class="dark-container">
+                <div :class="[width, height, borderColor, 'modal-container']">
 
-            <div :class="[width, height, borderColor, 'modal-container']">
-
-                <div class="close-cross-container">
-                    <div class="m-1 p-1">
-                        <AppInputButton
-                            id="close"
-                            :type="type"
-                            height="w-5"
-                            title="x"
-                            width="w-[30px]"
-                            @buttonClick="select(false)"
-                        />
-                    </div>
-                </div>
-
-                <div class="text-container">
-                    <div class="text-data flex-col">
-                        <div v-for="(showText, index) in displayTextArray" :key="index">
-                            <span>{{ showText }}</span>
+                    <div class="close-cross-container">
+                        <div class="m-1 p-1">
+                            <AppInputButton
+                                id="close"
+                                :type="type"
+                                height="w-5"
+                                title="x"
+                                width="w-[30px]"
+                                @buttonClick="select(false)"
+                            />
                         </div>
                     </div>
-                </div>
 
-
-                <div class="w-full h-full flex justify-end">
-
-                    <div v-if="mode === 'confirm'"
-                         class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :type="type"
-                            title="Да"
-                            @buttonClick="select(true)"
-                        />
+                    <div class="text-container">
+                        <div class="text-data flex-col">
+                            <div v-for="(showText, index) in displayTextArray" :key="index">
+                                <span>{{ showText }}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div
-                        class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
-                            :type="type"
-                            @buttonClick="select(false)"
-                        />
-                    </div>
 
+                    <div class="w-full h-full flex justify-end">
+
+                        <div v-if="mode === 'confirm'"
+                             class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :type="type"
+                                title="Да"
+                                @buttonClick="select(true)"
+                            />
+                        </div>
+
+                        <div
+                            class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
+                                :type="type"
+                                @buttonClick="select(false)"
+                            />
+                        </div>
+
+                    </div>
                 </div>
             </div>
-        </div>
 
+        </Transition>
     </Teleport>
 </template>
 
@@ -159,5 +160,18 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 .close-button-container {
     @apply w-full h-full flex justify-end
+}
+
+/* Состояние появления и исчезновения */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.5s ease;
+}
+
+/* Стартовое состояние при появлении / Финальное при исчезновении */
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
 }
 </style>

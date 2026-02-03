@@ -4,7 +4,9 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_ } from '@/app/utils/jwt_api'
-import type { IPeriod, IRenderMatrixDiff, ISewingOperation, ISewingTask, ISewingTaskLine } from '@/types'
+import type {
+    IPeriod, IRenderMatrixDiff, ISewingOperation, ISewingOperationUpdateObject, ISewingTask, ISewingTaskLine
+} from '@/types'
 
 // import { usePlansStore } from '@/stores/PlansStore.ts'
 
@@ -26,6 +28,8 @@ const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch'
 const URL_SEWING_OPERATIONS                = '/sewing/operations' // URL для получения Типовых операций швейки
 const URL_SEWING_OPERATION                 = '/sewing/operations'  // URL для получения Типовой операции
 const URL_SEWING_OPERATION_SCHEMAS         = '/sewing/operation/schemas' // URL для получения Схем Типовых операций швейки
+const URL_SEWING_OPERATION_SCHEMAS_DELETE  = '/sewing/operation/schemas/delete' // URL для удаления Типовой операции из Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_ADD     = '/sewing/operation/schemas/add' // URL для добавления/изменения Типовой операции в Схеме Типовых операций
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -282,21 +286,35 @@ export const useSewingStore = defineStore('sewing', () => {
 
     // __ Получение Схем Типовых опрераций
     const getSewingOperationSchemas = async () => {
-        let response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS)
+        const response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS)
         const result = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperations: ', result)
+        if (DEBUG) console.log('SewingStore: getSewingOperationSchemas: ', result)
         return result.data
     }
 
     // __ Получение Схемы Типовой опрерации
     const getSewingOperationSchema = async (id: string|number) => {
-        let response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS + '/' + id)
+        const response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS + '/' + id)
         const result = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperation: ', result)
+        if (DEBUG) console.log('SewingStore: getSewingOperationSchema: ', result)
         return result.data
     }
-    //
 
+    // __ Удаление Типовой опрерации из схемы
+    const deleteSewingOperationFromSchema = async (deleteObject: ISewingOperationUpdateObject) => {
+        const response = await jwtPost(URL_SEWING_OPERATION_SCHEMAS_DELETE, deleteObject)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: deleteSewingOperationFromSchema: ', result)
+        return result.data
+    }
+
+    // __ Обновелние Типовой опрерации в схеме
+    const addSewingOperationToSchema = async (deleteObject: ISewingOperationUpdateObject) => {
+        const response = await jwtPost(URL_SEWING_OPERATION_SCHEMAS_ADD, deleteObject)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: addSewingOperationToSchema: ', result)
+        return result.data
+    }
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalSewingTasks.value, () => {
@@ -328,6 +346,8 @@ export const useSewingStore = defineStore('sewing', () => {
 
         getSewingOperationSchemas,
         getSewingOperationSchema,
+        deleteSewingOperationFromSchema,
+        addSewingOperationToSchema,
 
         addSewingTaskToGlobal,
         applyChanges,

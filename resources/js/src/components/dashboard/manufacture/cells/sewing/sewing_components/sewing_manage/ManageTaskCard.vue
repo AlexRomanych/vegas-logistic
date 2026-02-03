@@ -307,7 +307,7 @@ const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
-// __ Тип для модального окна Сообщений
+// __ Тип для модального окна информации о записи в Заявке
 const orderLine              = ref<ISewingTaskOrderLine | null>(null)
 const manageTaskCardItemInfo = ref<InstanceType<typeof ManageTaskCardItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 

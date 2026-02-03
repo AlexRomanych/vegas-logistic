@@ -114,6 +114,8 @@ Route::prefix('sewing')
         // __ Схемы Типовых операций
         Route::get('operation/schemas', [CellSewingOperationSchemaController::class, 'getSewingOperationSchemas']);
         Route::get('operation/schemas/{id}', [CellSewingOperationSchemaController::class, 'getSewingOperationSchema']);
+        Route::post('operation/schemas/delete', [CellSewingOperationSchemaController::class, 'deleteSewingOperationFromSchema']);
+        Route::post('operation/schemas/add', [CellSewingOperationSchemaController::class, 'addSewingOperationToSchema']);
 
         // __ Статусы СЗ Пошива
         Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);

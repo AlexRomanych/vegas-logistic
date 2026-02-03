@@ -229,13 +229,13 @@ export interface ISewingTaskArrayDiff {
     // current?: ISewingTask
     taskChanges?: {
         action_at?: {
-            old: string | null
-            new: string
-        } | null
+                        old: string | null
+                        new: string
+                    } | null
         position?: {
-            old: number | null
-            new: number
-        } | null
+                       old: number | null
+                       new: number
+                   } | null
     }
     lineChanges?: ISewingTaskArrayLineDiffs[]
 }
@@ -245,14 +245,15 @@ export interface ISewingTaskArrayLineDiffs {
     lineIdRef?: number
     type: IDiffsType
     amount?: {
-        old: number | null
-        new: number
-    } | null
+                 old: number | null
+                 new: number
+             } | null
     position?: {
-        old: number | null
-        new: number
-    } | null
+                   old: number | null
+                   new: number
+               } | null
 }
+
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
@@ -264,7 +265,7 @@ export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
 // __ Тип для Типовой операции Пошива
 export interface ISewingOperation {
     active: boolean
-    description : string | null
+    description: string | null
     id: number
     machine: string
     name: string
@@ -282,10 +283,28 @@ export interface ISewingOperationSchema {
     id: number
     active: boolean
     name: string
-    description : string | null
-    operations: {
-        id: number
-
-    }[]
+    description: string | null
+    operations: ISewingOperationSchemaItem[]
 }
+
+// __ Тип для Типовой операции в Схеме
+export interface ISewingOperationSchemaItem {
+    id: number
+    pivot: ISewingOperationSchemaItemPivot
+}
+
+export interface ISewingOperationSchemaItemPivot {
+    amount: number | null
+    condition: string | null
+    position: number | null
+    ratio: number | null
+}
+
+// __ Объект для обновления Схемы Типовых операций на сервере
+export interface ISewingOperationUpdateObject {
+    operation_id: number
+    target_id: number | string      // __ id Схемы (number) или CODE_1C Модели (string)
+    pivot: null | ISewingOperationSchemaItemPivot
+}
+
 // --- ------------------------------------------------------------
