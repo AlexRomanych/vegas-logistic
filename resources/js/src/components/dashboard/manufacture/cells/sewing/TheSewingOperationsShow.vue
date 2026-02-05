@@ -290,8 +290,6 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Active...',
         data:           (sewingOperation: ISewingOperation) => sewingOperation.active ? '✓' : '✗'
     },
-
-
     type:        {
         id:         () => 'type-search',
         header:     ['Тип', 'расчета'],
@@ -300,7 +298,18 @@ const render: IRenderData = reactive({
         show:       true,
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        type:       (sewingOperation: ISewingOperation) => {
+            if (!sewingOperation) {
+                return 'dark'
+            }
+            switch (sewingOperation.type) {
+                case 'dynamic':
+                    return 'indigo'
+                case 'static':
+                    return 'warning'
+            }
+        },
+        // type:       () => DEFAULT_TYPE,
         // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
@@ -324,7 +333,18 @@ const render: IRenderData = reactive({
         show:       true,
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        type:       (sewingOperation: ISewingOperation) => {
+            if (!sewingOperation) {
+                return 'dark'
+            }
+            switch (sewingOperation.type) {
+                case 'dynamic':
+                    return 'indigo'
+                case 'static':
+                    return 'warning'
+            }
+        },
+        // type:       () => DEFAULT_TYPE,
         // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,

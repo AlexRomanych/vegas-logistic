@@ -2,7 +2,7 @@
     <div v-if="!isLoading" class="ml-2 mt-2">
 
         <!-- __ Сама таблица -->
-        <div class="  table-container">
+        <div class="table-container">
 
             <div class="flex-table">
 
@@ -19,6 +19,7 @@
                             text="Добавить схему"
                             text-size="normal"
                             type="primary"
+                            @click="addSchema"
                         />
                     </div>
 
@@ -27,12 +28,12 @@
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
                             :text="`${operation.name} (${operation.machine})`"
+                            :type="operation.active ? 'stone' : 'danger'"
                             :width="CELL_WIDTH"
                             align="center"
                             direction="column"
                             rounded="4"
                             text-size="mini"
-                            type="stone"
                         />
                     </div>
 
@@ -51,11 +52,10 @@
                             rounded="4"
                             text-size="mini"
                             type="orange"
-                            @click="editSchema(schema)"
+                            @dblclick="editSchema(schema)"
                         />
                     </div>
 
-                    <!--@click="toggleOperation(schema, operation)"-->
                     <!-- __ Ячейки строки -->
                     <div v-for="operation of sewingOperations" :key="operation.id" class="flex">
                         <AppLabelTS
@@ -67,7 +67,7 @@
                             rounded="4"
                             text-size="mini"
 
-                            @click="editOperation(schema, operation)"
+                            @dblclick="editOperation(schema, operation)"
                         />
                     </div>
 
@@ -107,7 +107,7 @@ import { onMounted, ref } from 'vue'
 
 import type {
     IColorTypes,
-    ISewingOperation, ISewingOperationSchema, ISewingOperationSchemaItem, ISewingOperationUpdateObject,
+    ISewingOperation, ISewingOperationSchema, ISewingOperationItem, ISewingOperationUpdateObject,
 } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
@@ -118,17 +118,18 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import SewingOperationItemEdit
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationItemEdit.vue'
-
-// __ Loader
-import { useLoading } from 'vue-loading-overlay'
-import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import SewingOperationSchemaDataEdit
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationSchemaDataEdit.vue'
 
 
-const isLoading = ref(false)
+// __ Loader
+import { useLoading } from 'vue-loading-overlay'
+import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+
 
 const sewingStore = useSewingStore()
+
+const isLoading = ref(false)
 
 const DEBUG = true
 
@@ -152,16 +153,16 @@ const sewingOperationsRender = ref<ISewingOperation[]>([])
 // __ Тип для модального окна ячейки
 const modalOperation          = ref<ISewingOperation | null>(null)
 const modalSchema             = ref<ISewingOperationSchema | null>(null)
-const sewingOperationItemEdit = ref<InstanceType<typeof SewingOperationItemEdit> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const sewingOperationItemEdit = ref<InstanceType<typeof SewingOperationItemEdit> | null>(null)
 
 // __ Тип для модального окна Сообщений
 const modalInfoType          = ref<IColorTypes>('danger')
 const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
 // __ Тип для модального окна изменения данных Схемы
-const sewingOperationSchemaDataEdit = ref<InstanceType<typeof SewingOperationSchemaDataEdit> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const sewingOperationSchemaDataEdit = ref<InstanceType<typeof SewingOperationSchemaDataEdit> | null>(null)
 
 
 // __ Получаем значение текста для отображения в ячейке
@@ -178,38 +179,26 @@ const getOperationValue = (schema: ISewingOperationSchema, operation: ISewingOpe
 const getType = (schema: ISewingOperationSchema, operation: ISewingOperation) => {
     for (let i = 0; i < schema.operations.length; i++) {
         if (schema.operations[i].id === operation.id) {
+            if (!operation.active) {
+                return 'danger'
+            }
             return schema.operations[i].pivot.ratio === null ? 'success' : 'warning'
         }
     }
     return 'dark'
 }
 
-// __ Переключаем значение в ячейке
-const toggleOperation = (schema: ISewingOperationSchema, operation: ISewingOperation) => {
-    for (let i = 0; i < schema.operations.length; i++) {
-        if (schema.operations[i].id === operation.id) {
-            schema.operations.splice(i, 1)
-            return
-        }
-    }
-
-    schema.operations.push({ id: operation.id } as ISewingOperationSchemaItem)
-}
-
-
 // __ Показываем сообщение об ошибке
-const showError = async () => {
+const showError = async (error: string | null = null) => {
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'inform'
-    modalInfoText.value = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
     await appModalAsyncMultiline.value!.show()
 }
 
 
-// __ Редактируем операцию или удаляем
+// __ Редактируем операцию или удаляем или переключаем
 const editOperation = async (schema: ISewingOperationSchema, operation: ISewingOperation) => {
-    console.log('editOperation')
-
     modalOperation.value = operation
     modalSchema.value    = schema
     const result         = await sewingOperationItemEdit.value?.show()
@@ -281,19 +270,52 @@ const editOperation = async (schema: ISewingOperationSchema, operation: ISewingO
                         condition: null,
                         position:  null
                     }
-                } as ISewingOperationSchemaItem)
+                } as ISewingOperationItem)
             }
-
-
         }
     }
-
-
 }
 
+
+// __ Добавляем схему
+const addSchema = async () => {
+    const newSchema: ISewingOperationSchema = {
+        id:          0,
+        name:        'Новая схема',
+        active:      true,
+        description: '',
+        operations:  [] as ISewingOperationItem[],
+    }
+
+    const result = await sewingStore.createSewingOperationSchema(newSchema)
+
+    if (checkCRUD(result)) {
+        sewingOperationSchemas.value.push(result.data)
+    } else {
+        await showError(result.error)
+        return
+    }
+}
+
+
+// __ Редактируем схему (название + описание)
 const editSchema = async (schema: ISewingOperationSchema) => {
     modalSchema.value = schema
-    const result      = await sewingOperationSchemaDataEdit.value!.show()
+    const answer      = await sewingOperationSchemaDataEdit.value!.show()
+    if (answer) {
+        const schemaName        = sewingOperationSchemaDataEdit.value!.name
+        const schemaDescription = sewingOperationSchemaDataEdit.value!.description
+
+        const result = await sewingStore.updateSewingOperationSchema({ ...schema, name: schemaName, description: schemaDescription })
+        if (checkCRUD(result)) {
+            schema.name        = schemaName
+            schema.description = schemaDescription
+        } else {
+            await showError(result.error)
+            return
+        }
+
+    }
 }
 
 
@@ -306,7 +328,8 @@ const getData = async () => {
 
     sewingOperations.value = sewingOperations.value
         .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
-        .sort((a, b) => a.id - b.id)
+        .sort((a, b) => a.name.localeCompare(b.name))
+    // .sort((a, b) => a.id - b.id)
 
     sewingOperationSchemas.value = sewingOperationSchemas.value
         .filter(schema => schema.id !== 0)
@@ -314,9 +337,9 @@ const getData = async () => {
 
 
 // __ Формируем отображение Типовых операций
-const getDataRender = () => {
-    sewingOperationsRender.value = sewingOperations.value
-}
+// const getDataRender = () => {
+//     sewingOperationsRender.value = sewingOperations.value
+// }
 
 // __ Удаляем типовую операцию
 const deleteOperation = async (sewingOperation: ISewingOperation) => {
@@ -338,7 +361,7 @@ onMounted(async () => {
         async () => {
 
             await getData()
-            getDataRender()
+            // getDataRender()
             if (DEBUG) console.log('sewingOperationSchemas: ', sewingOperationSchemas.value)
             if (DEBUG) console.log('sewingOperations: ', sewingOperations.value)
 

@@ -10,15 +10,15 @@ class SewingOperationSchema extends Model
     protected $guarded = [];
 
 
-    // Relations: Связь со Статусами
+    // Relations: Связь с Операциями
     public function operations(): BelongsToMany
     {
         return $this
             ->belongsToMany(
-                SewingOperation::class,                  // Класс, с которым связываемся
-                SewingOperationSchemaPivot::TABLE,               // Промежуточная Таблица, связывающая классы
-                'sewing_operation_schema_id',                         // Ключ в промежуточной таблице, связывающий с текущим классом
-                'sewing_operation_id' // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+                SewingOperation::class,                // Класс, с которым связываемся
+                SewingOperationSchemaPivot::TABLE,       // Промежуточная Таблица, связывающая классы
+                'sewing_operation_schema_id',   // Ключ в промежуточной таблице, связывающий с текущим классом
+                'sewing_operation_id'           // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(SewingOperationSchemaPivot::class)
             ->withPivot(['ratio', 'amount', 'position', 'condition']);

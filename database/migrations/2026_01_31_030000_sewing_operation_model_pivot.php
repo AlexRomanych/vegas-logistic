@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     use AddCommonColumnsInTableTrait;
 
-    private const TABLE_NAME = 'model_sewing_operation_pivot';
+    private const TABLE_NAME = 'sewing_operation_model_pivot';
 
     public function up(): void
     {

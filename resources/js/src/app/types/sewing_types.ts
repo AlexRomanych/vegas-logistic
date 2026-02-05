@@ -284,16 +284,16 @@ export interface ISewingOperationSchema {
     active: boolean
     name: string
     description: string | null
-    operations: ISewingOperationSchemaItem[]
+    operations: ISewingOperationItem[]
 }
 
 // __ Тип для Типовой операции в Схеме
-export interface ISewingOperationSchemaItem {
+export interface ISewingOperationItem {
     id: number
-    pivot: ISewingOperationSchemaItemPivot
+    pivot: ISewingOperationItemPivot
 }
 
-export interface ISewingOperationSchemaItemPivot {
+export interface ISewingOperationItemPivot {
     amount: number | null
     condition: string | null
     position: number | null
@@ -304,7 +304,24 @@ export interface ISewingOperationSchemaItemPivot {
 export interface ISewingOperationUpdateObject {
     operation_id: number
     target_id: number | string      // __ id Схемы (number) или CODE_1C Модели (string)
-    pivot: null | ISewingOperationSchemaItemPivot
+    pivot: null | ISewingOperationItemPivot
+}
+
+// --- ---------------------- Модели ------------------------------
+// __ Тип для Объекта для отображения Списка моделей в Выборе Схемы ТО или просто ТО
+export interface ISewingOperationModelsCollection {
+    collection: string
+    items: ISewingOperationModel[]
+    collapsed?: boolean
+}
+
+// __ Тип для модели в объекте для отображения Списка моделей
+export interface ISewingOperationModel {
+    code_1c: string
+    name: string
+    name_report: string
+    sewing_schema_id: number
+    operations: ISewingOperationItem[]
 }
 
 // --- ------------------------------------------------------------

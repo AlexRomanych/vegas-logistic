@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Models;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Contracts\VegasDataGetContract;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Model\Labors\CollectionGroupResource;
 use App\Http\Resources\Model\ModelResource;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
@@ -53,9 +54,10 @@ class ModelController extends Controller
                 if (!$modelsCollection) {
                     throw new Exception(
                         'Fail to insert model collection: '
-                        . $item['model_collection_code_1c']
-                        . ' => '
-                        . $item['model_collection_name']);
+                        .$item['model_collection_code_1c']
+                        .' => '
+                        .$item['model_collection_name']
+                    );
                 }
 
                 // __ Вставляем новый тип модели, если он не существует, иначе обновляем
@@ -70,9 +72,10 @@ class ModelController extends Controller
                 if (!$modelType) {
                     throw new Exception(
                         'Fail to insert model type: '
-                        . $item['model_type_code_1c']
-                        . ' => '
-                        . $item['model_type_name']);
+                        .$item['model_type_code_1c']
+                        .' => '
+                        .$item['model_type_name']
+                    );
                 }
 
                 // __ Вставляем новый Тип производства, если он не существует, иначе обновляем
@@ -87,8 +90,9 @@ class ModelController extends Controller
                 if (!$modelManufactureType) {
                     throw new Exception(
                         'Fail to insert model manufacture type: '
-                        . $item['model_manufacture_type_code_1c']
-                        . ' => ' . $item['model_manufacture_type_name']);
+                        .$item['model_manufacture_type_code_1c']
+                        .' => '.$item['model_manufacture_type_name']
+                    );
                 }
 
                 // __ Вставляем новый Статус производства, если он не существует, иначе обновляем
@@ -103,9 +107,10 @@ class ModelController extends Controller
                 if (!$modelManufactureStatus) {
                     throw new Exception(
                         'Fail to insert model manufacture status: '
-                        . $item['model_manufacture_status_id']
-                        . ' => '
-                        . $item['model_manufacture_status_name']);
+                        .$item['model_manufacture_status_id']
+                        .' => '
+                        .$item['model_manufacture_status_name']
+                    );
                 }
 
                 // __ Проверяем есть ли Группа сортировки производства в базе
@@ -114,7 +119,7 @@ class ModelController extends Controller
                 if (!$modelManufactureGroup) {
                     throw new Exception(
                         'Fail to find model manufacture group: '
-                        . $item['model_manufacture_group_id']
+                        .$item['model_manufacture_group_id']
                     // . ' =>'
                     // . $item['model_manufacture_type_name']
                     );
@@ -134,15 +139,15 @@ class ModelController extends Controller
                         'model_type_code_1c' => $item['model_type_code_1c'],
                         // 'model_type_name'             => $item['model_type_name'],
 
-                        'serial'              => $item['serial'] === '' ? null : $item['serial'],
-                        'name'                => $item['name'],
-                        'name_short'          => $item['name_short'] === '' ? null : $item['name_short'],
-                        'name_common'         => $item['name_common'] === '' ? null : $item['name_common'],
-                        'name_report'         => $item['name_report'] === '' ? null : $item['name_report'],
+                        'serial'             => $item['serial'] === '' ? null : $item['serial'],
+                        'name'               => $item['name'],
+                        'name_short'         => $item['name_short'] === '' ? null : $item['name_short'],
+                        'name_common'        => $item['name_common'] === '' ? null : $item['name_common'],
+                        'name_report'        => $item['name_report'] === '' ? null : $item['name_report'],
 
                         // __ Заполняем отдельным проходом внешний ключ, а здесь заполняем копию
                         // 'cover_code_1c'       => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
-                        'cover_code_1c_copy'       => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
+                        'cover_code_1c_copy' => $item['cover_code_1c'] === '' ? null : $item['cover_code_1c'],
 
                         'cover_name_1c'       => $item['cover_name_1c'] === '' ? null : $item['cover_name_1c'],
                         'base_height'         => $item['base_height'],
@@ -216,11 +221,138 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
 
-        // $data = $request->all();
-
-        // return 'uploaded...';
-
     }
+
+
+    // ___ Получение моделей для трудозатрат (изначально такая идея)
+    public function getModelsForLabors()
+    {
+        try {
+            $models = Model::query()
+                ->basics()      // __ Базовые модели (Швейка)
+                ->with(['collection', 'sewingSchema', 'operations'])
+                ->orderBy('name')
+                ->get();
+
+            $grouped = $models
+                ->groupBy(fn($item) => $item->collection->name ?? 'Прочее')
+                ->sortKeys();
+
+
+            // $grouped = $models->groupBy(function ($item) {
+            //     // Если коллекции может не быть, используем проверку или optional
+            //     return $item->collection ? $item->collection->name : 'Прочее';
+            // });
+
+            return new CollectionGroupResource($grouped);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Обновление Схему Типовой операции Пошива для Модели
+     * @param  Request  $request
+     * @return string
+     */
+    public function updateModelSewingOperationSchema(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'data'           => 'required|array',
+                'data.code_1c'   => 'required|string|exists:models,code_1c',
+                'data.schema_id' => 'required|integer|exists:sewing_operation_schemas,id',
+            ]);
+
+            Model::query()
+                ->where('code_1c', $data['data']['code_1c'])
+                ->update(['sewing_operation_schema_id' => $data['data']['schema_id']]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+    /**
+     * ___ Удаляем операцию (pivot) из Модели (промежуточной таблицы)
+     * @param  Request  $request
+     * @return string
+     */
+    public function deleteSewingOperationFromModel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'operation_id' => 'required|integer|exists:sewing_operations,id',
+                'target_id'    => 'required|string|exists:models,code_1c',
+                // Проверяем сам pivot: он может отсутствовать или быть null
+                'pivot'        => 'nullable|array',
+
+            ]);
+
+            $model = Model::query()->find($data['target_id']);
+            $model->operations()->detach($data['operation_id']);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Добавляем или обновляем операцию (pivot) в Модель (промежуточную таблицу)
+     * @param  Request  $request
+     * @return string
+     */
+    public function addSewingOperationToModel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'operation_id'    => 'required|integer|exists:sewing_operations,id',
+                'target_id'       => 'required|string|exists:models,code_1c',
+
+                // Проверяем сам pivot: он может отсутствовать или быть null
+                'pivot'           => 'nullable|array',
+
+                // Если pivot — это массив, проверяем его внутренности
+                'pivot.ratio'     => 'exclude_if:pivot,null|nullable|numeric',
+                'pivot.amount'    => 'exclude_if:pivot,null|nullable|integer',
+                'pivot.condition' => 'exclude_if:pivot,null|nullable|string',
+                'pivot.position'  => 'exclude_if:pivot,null|nullable|integer',
+            ]);
+
+            $model = Model::query()->find($data['target_id']);
+            $model->operations()->syncWithoutDetaching([
+                $data['operation_id'] => [
+                    'ratio'     => $data['pivot']['ratio'],
+                    'amount'    => $data['pivot']['amount'],
+                    'condition' => $data['pivot']['condition'],
+                    'position'  => $data['pivot']['position'],
+                ]
+            ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //

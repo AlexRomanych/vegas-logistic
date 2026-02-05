@@ -52,6 +52,69 @@ class CellSewingOperationSchemaController extends Controller
 
 
     /**
+     * ___ Создаем Схему Типовых операций по швейке
+     * @param  Request  $request
+     * @return SewingOperationSchemaResource|string
+     */
+    public function createSewingOperationSchema(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'name'        => 'required|string|unique:sewing_operation_schemas,name', // __ Нет еще в базе
+                'description' => 'nullable|string'
+            ], [
+                'name.unique' => 'Ошибка! Схема ":input" уже существует.',
+            ]);
+
+            $newSewingOperationSchema = SewingOperationSchema::query()->create($data);
+
+            return new SewingOperationSchemaResource($newSewingOperationSchema);
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Обновляем Схему Типовых операций по швейке
+     * @param  Request  $request
+     * @return string
+     */
+    public function updateSewingOperationSchema(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'data'             => 'required|array',
+                'data.id'          => 'required|integer|exists:sewing_operation_schemas,id',
+                'data.name'        => 'required|string', // __ Нет еще в базе
+                'data.description' => 'nullable|string'
+            ]);
+
+            $sewingOperationSchema = SewingOperationSchema::query()->findOrFail($data['data']['id']);
+            $sameNameSchema        = SewingOperationSchema::query()->where('name', $data['data']['name'])->first();
+
+            if ($sameNameSchema) {
+                if ($sameNameSchema->id !== $sewingOperationSchema->id) {
+                    throw new Exception('Ошибка! Схема "'.$data['data']['name'].'" уже существует.');
+                }
+            }
+
+            $sewingOperationSchema->name = $data['data']['name'];
+            if (isset($data['data']['description'])) {
+                $sewingOperationSchema->description = $data['data']['description'];
+            }
+
+            $sewingOperationSchema->save();
+            return EndPointStaticRequestAnswer::ok();
+
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Удаляем операцию (pivot) из Схемы
      * @param  Request  $request
      * @return string
@@ -60,10 +123,10 @@ class CellSewingOperationSchemaController extends Controller
     {
         try {
             $data = $request->validate([
-                'operation_id'    => 'required|integer|exists:sewing_operations,id',
-                'target_id'       => 'required|integer|exists:sewing_operation_schemas,id',
+                'operation_id' => 'required|integer|exists:sewing_operations,id',
+                'target_id'    => 'required|integer|exists:sewing_operation_schemas,id',
                 // Проверяем сам pivot: он может отсутствовать или быть null
-                'pivot'           => 'nullable|array',
+                'pivot'        => 'nullable|array',
 
             ]);
 
@@ -85,7 +148,6 @@ class CellSewingOperationSchemaController extends Controller
     public function addSewingOperationToSchema(Request $request)
     {
         try {
-
             $data = $request->validate([
                 'operation_id'    => 'required|integer|exists:sewing_operations,id',
                 'target_id'       => 'required|integer|exists:sewing_operation_schemas,id',

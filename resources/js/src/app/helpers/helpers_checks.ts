@@ -7,6 +7,15 @@ import { isRef } from 'vue'
 export function checkCRUD(data: any) {
     if (typeof data === 'string') {
         return data.toLowerCase().indexOf('success') !== -1
+    } else if (typeof data === 'object') {
+        if ('error' in data) {
+            return  data.error === null
+        } else if('status' in data) {
+            return data.status === 200
+        } else {
+            return true
+        }
+
     }
 
 

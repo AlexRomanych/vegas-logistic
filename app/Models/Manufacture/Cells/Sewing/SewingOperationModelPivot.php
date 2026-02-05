@@ -4,8 +4,10 @@ namespace App\Models\Manufacture\Cells\Sewing;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 // use Illuminate\Database\Eloquent\Model;
 
-class ModelSewingOperationPivot extends Pivot
+class SewingOperationModelPivot extends Pivot
 {
-    protected $table = 'model_sewing_operation_pivot';
+    const TABLE = 'sewing_operation_model_pivot';
+
+    protected $table = self::TABLE;
 
 }

@@ -83,6 +83,16 @@ const sewing = [
                    } as IRouteMeta,
     },
 
+    {
+        // ___ Справочник Моделей и Типовых операций (Трудозатраты моделей)
+        path:      _MAIN_PREFIX + 'operation/models',
+        name:      'manufacture.cell.sewing.operation.models',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingOperationModelsShow.vue'),
+        meta:      {
+                       title: 'Трудозатраты моделей',
+                   } as IRouteMeta,
+    },
+
 ]
 
 

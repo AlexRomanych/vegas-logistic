@@ -108,6 +108,7 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const showModal = ref(false)
+
 const formData = reactive({
     title: '',
     content: ''
@@ -141,8 +142,8 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 defineExpose({
     show,
-    get title() { return formData.title },
-    get content() { return formData.content }
+    get name() { return formData.title },
+    get description() { return formData.content }
 })
 </script>
 
