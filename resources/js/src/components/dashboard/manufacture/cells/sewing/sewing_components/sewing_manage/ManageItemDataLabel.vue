@@ -10,9 +10,10 @@
             semibold,
             horizontalAlign,
             roundedCSS,
+            class_,
         ]"
         :style="color ? {'background-color': color} : ''"
-        class="flex flex-col m-0.5 app-label justify-center"
+        class="flex flex-col m-0.5 app-label justify-center select-none"
         @click="labelClick"
     >
         <div v-if="amountShow"><span>{{ amount.toFixed(TOTAL_PRECISION) }}</span></div>
@@ -56,6 +57,7 @@ interface IProps {
     align?: IHorizontalAlign
     rounded?: string
     color?: string
+    class_?: string
 
     amount?: number         // __ Количество в штуках
     time?: number           // __ Трудозатраты в секундах
@@ -73,6 +75,7 @@ const props = withDefaults(defineProps<IProps>(), {
     align:    'center',
     rounded:  'rounded-[4px]',
     color:    '',
+    class_:   '',
 
     amount:    0,
     time:      0,

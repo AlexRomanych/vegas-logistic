@@ -44,14 +44,16 @@ class SewingTask extends Model
     {
         return $this
             ->belongsToMany(
-                SewingTaskStatus::class,                  // Класс, с которым связываемся
-                'sewing_task_status_pivot',               // Промежуточная Таблица, связывающая классы
-                'sewing_task_id',                         // Ключ в промежуточной таблице, связывающий с текущим классом
-                'sewing_task_status_id'
-            )         // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+                SewingTaskStatus::class,         // Класс, с которым связываемся
+                'sewing_task_status_pivot',      // Промежуточная Таблица, связывающая классы
+                'sewing_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
+                'sewing_task_status_id' // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+            )
             ->using(SewingTaskStatusPivot::class)
-            ->withPivot(['set_at', 'started_at', 'finished_at', 'duration']);
+            ->withPivot(['id', 'set_at', 'started_at', 'finished_at', 'duration', 'created_at', 'updated_at']);
     }
+
+
 
 
 }

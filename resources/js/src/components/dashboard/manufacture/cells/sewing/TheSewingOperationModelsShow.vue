@@ -115,7 +115,7 @@
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
                             :text="`${operation.name} (${operation.machine})`"
-                            :type="operation.active ? 'stone' : 'danger'"
+                            :type="getOperationType(operation)"
                             :width="CELL_WIDTH"
                             align="center"
                             direction="column"
@@ -221,7 +221,7 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        @click="selectSchema(model)"
+                                        @dblclick="selectSchema(model)"
                                     />
 
                                 </div>
@@ -237,7 +237,7 @@
                                     align="center"
                                     rounded="4"
                                     text-size="mini"
-                                    @click="editOperation(model, operation)"
+                                    @dblclick="editOperation(model, operation)"
                                 />
                             </div>
 
@@ -389,6 +389,18 @@ const getOperationValue = (model: ISewingOperationModel, operation: ISewingOpera
     return ''
 }
 
+
+// __ Получаем раскраску операции
+const getOperationType = (operation: ISewingOperation) => {
+    if (!operation.active) {
+        return 'danger'
+    } else if (operation.type === 'static') {
+        return 'warning'
+    } else {
+        return 'stone'
+    }
+}
+
 // __ Получаем тип ячейки
 const getType = (model: ISewingOperationModel, operation: ISewingOperation) => {
     const targetOperations = getTargetOperations(model)
@@ -430,13 +442,13 @@ const editOperation = async (model: ISewingOperationModel, operation: ISewingOpe
     if (!schema) {
         return
     }
-    const sourceSchema = JSON.parse(JSON.stringify(schema))
+    const sourceSchema      = JSON.parse(JSON.stringify(schema))
     sourceSchema.operations = model.operations
 
     modalOperation.value = operation
     modalSchema.value    = sourceSchema
 
-    const result         = await sewingOperationItemEdit.value?.show()
+    const result = await sewingOperationItemEdit.value?.show()
     if (result) {
         const present = sewingOperationItemEdit.value!.present
 
@@ -560,12 +572,11 @@ const getData = async () => {
 
     sewingOperations.value = sewingOperations.value
         .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    // .sort((a, b) => a.id - b.id)
+        .sort((a, b) => a.id - b.id)
+    // .sort((a, b) => a.name.localeCompare(b.name))
 
     // sewingOperationSchemas.value = sewingOperationSchemas.value
     //     .filter(schema => schema.id !== 0)
-
 
     models.value = models.value.map(collection => ({ ...collection, collapsed: true }))
 }

@@ -51,7 +51,8 @@ return new class extends Migration
             $table->integer('duration')->nullable()->comment('Длительность в минутах');
 
             // __ Уникальный индекс: одна заявка — один конкретный статус
-            $table->unique(['sewing_task_id', 'sewing_task_status_id']);
+            // __ Пока не ставим, потому что будем писать всю историю
+            // $table->unique(['sewing_task_id', 'sewing_task_status_id']);
 
         });
 

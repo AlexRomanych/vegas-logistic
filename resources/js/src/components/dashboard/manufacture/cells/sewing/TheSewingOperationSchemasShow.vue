@@ -28,7 +28,7 @@
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
                             :text="`${operation.name} (${operation.machine})`"
-                            :type="operation.active ? 'stone' : 'danger'"
+                            :type="getOperationType(operation)"
                             :width="CELL_WIDTH"
                             align="center"
                             direction="column"
@@ -134,8 +134,8 @@ const isLoading = ref(false)
 const DEBUG = true
 
 // __ Права изменения
-const CAN_EDIT   = true
-const CAN_DELETE = true
+// const CAN_EDIT   = true
+// const CAN_DELETE = true
 
 // __ Константы
 const HEADER_COLUMNS_HEIGHT = 'h-[200px]'
@@ -143,12 +143,9 @@ const HEADER_ROWS_WIDTH     = 'w-[200px]'
 const CELL_WIDTH            = 'w-[50px]'
 const CELL_HEIGHT           = 'h-[25px]'
 
-
 // __ Определяем переменные
 const sewingOperationSchemas = ref<ISewingOperationSchema[]>([])
 const sewingOperations       = ref<ISewingOperation[]>([])
-const sewingOperationsRender = ref<ISewingOperation[]>([])
-
 
 // __ Тип для модального окна ячейки
 const modalOperation          = ref<ISewingOperation | null>(null)
@@ -174,6 +171,19 @@ const getOperationValue = (schema: ISewingOperationSchema, operation: ISewingOpe
     }
     return ''
 }
+
+
+// __ Получаем раскраску операции
+const getOperationType = (operation: ISewingOperation) => {
+    if (!operation.active) {
+        return 'danger'
+    } else if (operation.type === 'static') {
+        return 'warning'
+    } else {
+        return 'stone'
+    }
+}
+
 
 // __ Получаем тип ячейки
 const getType = (schema: ISewingOperationSchema, operation: ISewingOperation) => {
@@ -328,8 +338,8 @@ const getData = async () => {
 
     sewingOperations.value = sewingOperations.value
         .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    // .sort((a, b) => a.id - b.id)
+        .sort((a, b) => a.id - b.id)
+        // .sort((a, b) => a.name.localeCompare(b.name))
 
     sewingOperationSchemas.value = sewingOperationSchemas.value
         .filter(schema => schema.id !== 0)
@@ -342,15 +352,15 @@ const getData = async () => {
 // }
 
 // __ Удаляем типовую операцию
-const deleteOperation = async (sewingOperation: ISewingOperation) => {
-    return
-}
+// const deleteOperation = async (sewingOperation: ISewingOperation) => {
+//     return
+// }
 
 // __ Сохраняем данные по цвету
-const saveSewingOperationColor = async (event: string, sewingOperation: ISewingOperation) => {
-    return
-    // await sewingStore.patchSewingOperationColor(sewingOperation.id, event)
-}
+// const saveSewingOperationColor = async (event: string, sewingOperation: ISewingOperation) => {
+//     return
+//     // await sewingStore.patchSewingOperationColor(sewingOperation.id, event)
+// }
 
 
 onMounted(async () => {

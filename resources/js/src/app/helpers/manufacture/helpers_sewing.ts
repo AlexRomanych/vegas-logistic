@@ -1,19 +1,18 @@
 // info Тут все, что связано с Пошивом
 
 import type {
-    IAmountAndTime, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs,
+    IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs,
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
     ISewingTaskModel, ISewingTaskOrder,
-    ISewingTaskOrderLine
+    ISewingTaskOrderLine, ISewingTaskStatus
 } from '@/types'
 
-import { SEWING_MACHINES, SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
+import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatTimeWithLeadingZeros, getDaysDifference } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
-import logs from '@/router/routes_logs.ts'
 
 
 // __ Функция для получения трудозатрат для Записи (SewingLine) в СЗ
@@ -371,6 +370,11 @@ export function clearRenderMatrix(matrix: IPlanMatrix) {
     return matrix
 }
 
+// __ Очищаем день матрицы рендера от пустых сменных заданий, которые добавляем для рендеринга
+export function clearRenderMatrixDay(day: IDay[]) {
+    return [...day.filter(item => item.id > -1)] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+}
+
 
 // __ Разница между предыдущим и текущим состоянием
 // __ Разница по задумке должна быть только в одной Заявке:
@@ -621,7 +625,33 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
 export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
     matrix.forEach((week, weekIndex) => {
         week.forEach((day, dayIndex) => {
-            matrix[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+
+            // __ Новая сортировка по позиции (СЗ статусы, которые не равны "Создано" - остаются на своих местах)
+            const nonCreatedStatusTasks: ISewingTask[] = []
+            const createdStatusTasks: ISewingTask[]    = []
+            const resultDay: ISewingTask[]             = []
+
+            // __ Фильтруем по статусу
+            for (let i = 0; i < day.length; i++) {
+                if (isTaskStatusCreated(day[i] as ISewingTask)) {
+                    createdStatusTasks.push(day[i] as ISewingTask)
+                } else {
+                    nonCreatedStatusTasks.push(day[i] as ISewingTask)
+                }
+            }
+
+            nonCreatedStatusTasks.forEach(task => resultDay.push(task))
+            createdStatusTasks.forEach(task => resultDay.push(task))
+
+            // console.log('nonCreatedStatusTasks: ', nonCreatedStatusTasks)
+            // console.log('createdStatusTasks: ', createdStatusTasks)
+            // console.log('resultDay: ', resultDay)
+            // matrix[weekIndex][dayIndex] = resultDay
+
+            matrix[weekIndex][dayIndex] = resultDay.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+
+            // __ Старая сортировка по позиции без учета всплытия статусов - без первой части
+            // matrix[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
         })
     })
     return matrix
@@ -885,11 +915,42 @@ export function isAddItemsInDiffsPresents(diffs: ISewingTaskArrayDiff[]) {
 // --- ------------------------------------------------------------------------------------
 
 // --- ------------------------------------------------------------------------------------
+// __ Превращаем массив объектов ISewingTask [{}, {}, ...] в массив массивов объектов [[...], [...]]
+// __ которые сгруппированы по одинаковой Заявке с возможностью учитывать статусы Заявок в определенном дне
+export function getSewingTasksGroupedByOrder(sewingTasks: ISewingTask[], applyStatus: boolean = true) {
+    const clearDay = clearRenderMatrixDay(sewingTasks) // __ Возвращаем новый массив без пустых элементов
+    const grouped = clearDay.reduce((acc, item) => {
+
+        // __ Создаем уникальный составной ключ
+        let key: string
+        if (applyStatus) {
+            key = `${item.order.id}-${item.current_status.id}`;
+        } else {
+            key = `${item.order.id}`;
+        }
+
+        // __ Если такого task_id еще нет в аккумуляторе, создаем пустой массив
+        if (!acc[key]) {
+            acc[key] = []
+        }
+        // __ Добавляем текущий объект в массив соответствующего task_id
+        acc[key].push(item)
+        return acc
+    }, {} as ISewingTask)
+
+    // __ Превращаем объект { 1: [...], 2: [...] } в массив массивов [[...], [...]]
+    return Object.values(grouped)
+}
+
+
+// --- ------------------------------------------------------------------------------------
 // __ Проверяем, есть ли в конкретном дне СЗ для какой-то конкретной Заявки
+// __ Если передан entity типа ISewingTask и applyStatus = true, то проверяем еще на одинаковость статусов
 export function getSewingTasksSameOrderInDay(
     entity: ISewingTask | ISewingTaskOrder | number,
     tasksList: ISewingTask[],
-    date: string | null = null) {
+    date: string | null  = null,
+    applyStatus: boolean = false) {
 
     let item
     if (isSewingTask(entity)) {
@@ -909,12 +970,19 @@ export function getSewingTasksSameOrderInDay(
         return []
     }
 
+    if (isSewingTask(entity) && applyStatus) {
+        return tasksList.filter(task =>
+            task.action_at === date &&
+            task.order.id === item &&
+            task.current_status.id === entity.current_status.id)
+    }
+
     return tasksList.filter(task => task.action_at === date && task.order.id === item)
 }
 
 
 // --- ------------------------------------------------------------------------------------
-// __ Объединяем СЗ с одинаковыми Заявками
+// __ Объединяем СЗ с одинаковыми Заявками (Заявки, к которым принадлежит СЗ)
 export function mergeSewingTasks(tasks: ISewingTask[]): ISewingTask[] {
     const grouped = tasks.reduce((acc, task) => {
         const orderId = task.order.id
@@ -955,6 +1023,7 @@ export function mergeSewingTasks(tasks: ISewingTask[]): ISewingTask[] {
     // __Возвращаем массив, сохраняя порядок первого появления каждого order.id
     return Object.values(grouped)
 }
+
 // --- ------------------------------------------------------------------------------------
 
 // --- ------------------------------------------------------------------------------------
@@ -965,7 +1034,7 @@ export function mergeSewingLines(lines: ISewingTaskLine[]): ISewingTaskLine[] {
 
         // __ Создаем составной ключ: ID + Тип машины
         const machineType = line.order_line.model.main.machine_type
-        const groupKey = `${line.order_line.id}_${machineType}`
+        const groupKey    = `${line.order_line.id}_${machineType}`
 
         if (!acc[groupKey]) {
             acc[groupKey] = JSON.parse(JSON.stringify(line))
@@ -987,6 +1056,7 @@ export function mergeSewingLines(lines: ISewingTaskLine[]): ISewingTaskLine[] {
 
     return Object.values(grouped)
 }
+
 // --- ------------------------------------------------------------------------------------
 
 // --- ------------------------------------------------------------------------------------
@@ -1003,7 +1073,31 @@ export function repositionSewingTaskInDay(tasks: ISewingTask[], action_at: strin
         })
     return tasks
 }
+
 // --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+export function isTaskStatusCreated(entity: ISewingTask | ISewingTaskStatus | number) {
+    let item: number
+    if (isSewingTask(entity)) {
+        item = entity.current_status.id
+    } else if (isSewingTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === SEWING_TASK_STATUSES.CREATED.ID || item === SEWING_TASK_STATUSES.CREATED_CLOSE.ID
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем разницу в днях между двумя датами в формате "YYYY-MM-DD HH:mm:ss"
+export function getDaysDifferenceFromSewingDates(date1: string, date2: string) {
+        const d1 = date1.split(' ')[0]
+        const d2 = date2.split(' ')[0]
+        return getDaysDifference(d1, d2, true)
+}
+// --- -------------------------------------------------------------------------------------
 
 
 // __ Дополнительно проверяем, является ли модель Чехлом
@@ -1041,4 +1135,9 @@ function isSewingTask(item: any): item is ISewingTask {
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrder
 function isSewingTaskOrder(item: any): item is ISewingTaskOrder {
     return item && typeof item === 'object' && 'client' in item && 'order_type' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskStatus
+function isSewingTaskStatus(item: any): item is ISewingTaskStatus {
+    return item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
 }

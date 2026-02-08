@@ -1,8 +1,7 @@
 <template>
     <Teleport to="body">
 
-        <div v-if="showModal"
-             class="dark-container">
+        <div v-if="showModal" class="dark-container" @click.self="select(false)">
 
             <div :class="[width, height, borderColor, 'modal-container']">
 

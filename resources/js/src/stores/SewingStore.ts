@@ -6,7 +6,7 @@ import { ref } from 'vue'
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut } from '@/app/utils/jwt_api'
 import type {
     IPeriod, IRenderMatrixDiff, ISewingOperation, ISewingOperationSchema, ISewingOperationUpdateObject, ISewingTask,
-    ISewingTaskLine
+    ISewingTaskLine, ISewingTaskStatusEntity, ISewingTaskStatusesSet
 } from '@/types'
 
 // import { usePlansStore } from '@/stores/PlansStore.ts'
@@ -25,6 +25,7 @@ import {
 const URL_SEWING_TASKS                     = '/sewing/tasks'                     // URL для получения Сменных заданий
 const URL_SEWING_TASKS_UPDATE              = '/sewing/tasks/update'              // URL для обновления Сменных заданий
 const URL_SEWING_TASK_STATUSES             = '/sewing/task/statuses'             // URL для получения Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_SET         = '/sewing/task/statuses/set'         // URL для изменения/добавления Статуса Движения СЗ
 const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch' // URL для получения Статуса Движения СЗ
 const URL_SEWING_OPERATIONS                = '/sewing/operations'                // URL для получения Типовых операций швейки
 const URL_SEWING_OPERATION                 = '/sewing/operations'                // URL для получения Типовой операции
@@ -37,6 +38,7 @@ const URL_SEWING_OPERATION_SCHEMAS_MODEL   = '/sewing/operation/schemas/models' 
 const URL_SEWING_OPERATION_MODELS          = '/sewing/operation/models'          // URL для получения моделей для Типовых операций швейки
 const URL_SEWING_OPERATION_MODELS_DELETE   = '/sewing/operation/models/delete'   // URL для удаления Типовой операции из Модели
 const URL_SEWING_OPERATION_MODELS_ADD      = '/sewing/operation/models/add'      // URL для добавления ТО для моделей
+const URL_SEWING_DAY                       = '/sewing/day'                       // URL для получения рабочего дня
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -64,7 +66,7 @@ export const useSewingStore = defineStore('sewing', () => {
     const globalSewingTaskFullDaysShow = ref(true)
 
     // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
-    const globalSewingTaskOrderTypeColor = ref(true)
+    const globalSewingTaskOrderTypeColor = ref(false)
 
     // __ Текущая Запись (SewingLine) в карточке СЗ в календаре СЗ Пошива
     const globalManageTaskCardActiveSewingLine = ref<ISewingTaskLine | null>(null)
@@ -74,6 +76,9 @@ export const useSewingStore = defineStore('sewing', () => {
 
     // __ Глобальное состояние разницы состояний до и после редактирования в карточке СЗ или перетаскивания в календаре
     // const globalDiffs = ref<IRenderMatrixDiff[]>([])
+
+    // __ Статусы Движения СЗ
+    const globalSewingTaskStatuses = ref<ISewingTaskStatusEntity[]>([])
 
     // --- ------------------------------------------------------------------------------------------
 
@@ -93,7 +98,7 @@ export const useSewingStore = defineStore('sewing', () => {
      * @param oldSewingTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
      * @param rightPanel        - __ контент в старом СЗ (левая панель)__
      */
-    const addSewingTaskToGlobal = (
+    const addSewingTaskToGlobal = async (
         oldSewingTask: ISewingTask,
         leftPanel: ISewingTaskLine[],
         addSewingTask: ISewingTask | null    = null,
@@ -120,7 +125,7 @@ export const useSewingStore = defineStore('sewing', () => {
 
         }
 
-        saveChanges()   // __ Сохраняем изменения
+        await saveChanges()   // __ Сохраняем изменения
     }
 
 
@@ -131,7 +136,7 @@ export const useSewingStore = defineStore('sewing', () => {
 
 
     // __ Применение изменений
-    const applyChanges = (diffs: IRenderMatrixDiff[] = []) => {
+    const applyChanges = async (diffs: IRenderMatrixDiff[] = []) => {
 
         // __ Если нет изменений, то выход
         if (diffs.length === 0) {
@@ -157,11 +162,16 @@ export const useSewingStore = defineStore('sewing', () => {
             }
         })
 
-        saveChanges()   // __ Сохраняем изменения
+        await saveChanges()   // __ Сохраняем изменения
     }
 
     // __ Объединение СЗ для одинаковых Заявок в одном календарном дне
-    const applyMergeTasks = (sewingTasks: ISewingTask[]) => {
+    const mergeTasks = (sewingTasks: ISewingTask[]) => {
+
+        // __ Если массив СЗ меньше 2, то выход
+        if (sewingTasks.length < 2) {
+            return
+        }
 
         // __ Объединяем СЗ
         let mergedTasks = mergeSewingTasks(sewingTasks)
@@ -195,27 +205,44 @@ export const useSewingStore = defineStore('sewing', () => {
         // __ Переопределяем порядок СЗ в дне, в котором добавили
         globalSewingTasks.value = repositionSewingTaskInDay(globalSewingTasks.value, mergedTasks[0].action_at)
 
-        saveChanges()
+    }
+
+    // __ Применение объединения СЗ для массива СЗ
+    const applyMergeTasks = async (sewingTasks: ISewingTask[]) => {
+
+        mergeTasks(sewingTasks)
+        await saveChanges()
+    }
+
+    // __ Применение объединения СЗ для массива массивов СЗ  [[...], [...]]
+    const applyMergeTasksGroups = async (sewingTasksGroups: ISewingTask[][]) => {
+        sewingTasksGroups.forEach(sewingTasks => mergeTasks(sewingTasks))
+        await saveChanges()
     }
 
 
     // __ Сохранение изменений (Синхронизация с сервером)
     const saveChanges = async () => {
-        const diffsInClobalSewingTasks = getSewingTasksDiff(globalSewingTasks.value, globalSewingTasksCopy)
+        const diffsInGlobalSewingTasks = getSewingTasksDiff(globalSewingTasks.value, globalSewingTasksCopy)
 
-        console.log(diffsInClobalSewingTasks)
+        // __ Если нет изменений, то выход
+        if (diffsInGlobalSewingTasks.length === 0) {
+            return
+        }
+
+        console.log(diffsInGlobalSewingTasks)
         console.log('Сохраняем изменения')
 
-        const result = await jwtPost(URL_SEWING_TASKS_UPDATE, { diffs: diffsInClobalSewingTasks })
+        const result = await jwtPost(URL_SEWING_TASKS_UPDATE, { diffs: diffsInGlobalSewingTasks })
         if (DEBUG) console.log('saveChanges: ', result)
 
 
         // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
         // __ Если это изменение позиции, то просто пишем в базу
-        if (isAddItemsInDiffsPresents(diffsInClobalSewingTasks)) {
+        if (isAddItemsInDiffsPresents(diffsInGlobalSewingTasks)) {
 
             // __ Получаем СЗ с сервера и реактивное обновление
-            getSewingTasks()
+            await getSewingTasks()
             console.log('Server data updated')
         } else {
 
@@ -244,21 +271,6 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-
-    // __ Получение Статусов Движения СЗ
-    const getSewingTaskStatuses = async () => {
-        let response = await jwtGet(URL_SEWING_TASK_STATUSES)
-        const result = await response
-        if (DEBUG) console.log('SewingStore: getSewingTaskStatuses: ', result)
-        return result.data
-    }
-
-    // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
-    const patchSewingTaskStatusColor = async (sewingTaskStatusId: number, color: string) => {
-        const result = await jwtPatch(URL_SEWING_TASK_STATUSES_COLOR_PATCH, { id: sewingTaskStatusId, color })
-        if (DEBUG) console.log('SewingStore: patchSewingTaskStatusColor', result)
-        return result.data
-    }
 
     // __ Получение Типовых опрераций
     const getSewingOperations = async () => {
@@ -351,7 +363,7 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
     // __ Обновление Схемы Типовых операций для модели
-        const updateModelSewingOperationSchema = async (code_1c: string, schema_id: number) => {
+    const updateModelSewingOperationSchema = async (code_1c: string, schema_id: number) => {
         const response = await jwtPatch(URL_SEWING_OPERATION_SCHEMAS_MODEL, { code_1c, schema_id })
         const result   = await response
         if (DEBUG) console.log('SewingStore: updateModelSewingOperationSchema: ', result)
@@ -374,6 +386,51 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
+    // --- ----------------------------------------------------------
+    // --- ------------------- Статусы СЗ ---------------------------
+    // --- ----------------------------------------------------------
+
+    // __ Получение Статусов Движения СЗ
+    const getSewingTaskStatuses = async () => {
+        let response = await jwtGet(URL_SEWING_TASK_STATUSES)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingTaskStatuses: ', result)
+        globalSewingTaskStatuses.value = result.data    // __ кэшируем
+        return result.data
+    }
+
+    // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
+    const patchSewingTaskStatusColor = async (sewingTaskStatusId: number, color: string) => {
+        const result = await jwtPatch(URL_SEWING_TASK_STATUSES_COLOR_PATCH, { id: sewingTaskStatusId, color })
+        if (DEBUG) console.log('SewingStore: patchSewingTaskStatusColor', result)
+        await getSewingTaskStatuses()   // __ Обновляем статусы, чтобы был актуальный цвет
+        return result.data
+    }
+
+    // __ Устанавливаем статусы для СЗ.
+    // __ data: [{ task: number, status: number }]
+    const setSewingTasksStatuses = async (data: ISewingTaskStatusesSet[]) => {
+        const response = await jwtPost(URL_SEWING_TASK_STATUSES_SET, data)
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: setStatuses: ', result)
+        return result.data
+    }
+
+
+    // --- ----------------------------------------------------------
+    // --- ------------------- Производственный день ----------------
+    // --- ----------------------------------------------------------
+
+    // __ Получение производственного дня по дате и смене
+    const getSewingDayByDateAndChange = async (date: string, change: number = 1) => {
+        let response = await jwtGet(`${URL_SEWING_DAY}/${date}/${change}`)
+        const result = await response
+        if (DEBUG) console.log('SewingStore: getSewingDayByDateAndChange: ', result)
+        return result.data
+    }
+
+
+
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalSewingTasks.value, () => {
@@ -386,6 +443,7 @@ export const useSewingStore = defineStore('sewing', () => {
 
     return {
         globalSewingTasks,
+        globalSewingTaskStatuses,
         globalRenderPeriod,
 
         globalSewingTaskTimesShow,
@@ -415,9 +473,14 @@ export const useSewingStore = defineStore('sewing', () => {
         deleteSewingOperationFromModel,
         addSewingOperationToModel,
 
+        setSewingTasksStatuses,
+
+        getSewingDayByDateAndChange,
+
         addSewingTaskToGlobal,
         applyChanges,
         applyMergeTasks,
+        applyMergeTasksGroups,
         setSewingTasksLines,
     }
 })

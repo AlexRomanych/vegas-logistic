@@ -12,7 +12,7 @@
             roundedCSS,
         ]"
         :style="color ? {'background-color': color} : ''"
-        class="flex flex-col m-0.5 app-label justify-center select-none"
+        class="flex flex-col m-0.5 app-label justify-center select-none transition-colors duration-200 ease-in-out"
         @click="labelClick"
     >
         <div v-for="(text, idx) in textArray" :key="idx">

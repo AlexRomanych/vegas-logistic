@@ -15,6 +15,20 @@ class SewingTaskResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+        // __ Получаем последний статус из уже загруженной коллекции (если statuses есть)
+        // __ Получаем текущий статус, сортируя по дате в ПИВОТ-таблице
+        $currentStatus = $this->whenLoaded('statuses', function() {
+            return $this->statuses->sortByDesc(function ($status) {
+                return $status->pivot->id;
+            })->first();
+
+            // return $this->statuses->sortByDesc(function ($status) {
+            //     // Сортируем по полю created_at внутри промежуточной таблицы
+            //     return $status->pivot->created_at;
+            // })->first();
+        });
+
         /** @noinspection PhpUndefinedFieldInspection */
         return [
 
@@ -30,6 +44,8 @@ class SewingTaskResource extends JsonResource
             'sewing_lines' => SewingTaskLineResource::collection($this->whenLoaded('sewingLines')), // 'sewing_lines
 
             'statuses' => SewingTaskStatusResource::collection($this->whenLoaded('statuses')),
+            'current_status' => $currentStatus ? new SewingTaskStatusResource($currentStatus) : null,
+
 
             // 'order_id'    => $this->order_id,
             // 'meta_ext'    => $this->meta_ext,

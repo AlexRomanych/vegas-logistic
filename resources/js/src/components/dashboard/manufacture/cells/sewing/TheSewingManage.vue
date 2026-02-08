@@ -35,7 +35,7 @@ import {
     getRenderMatrixForPlan,
     getRenderPeriodForPlan
 } from '@/app/helpers/plan/helpers_plan.ts'
-import { additionDays } from '@/app/helpers/helpers_date'
+import { additionDays, formatToYMD, getSundayAfter } from '@/app/helpers/helpers_date'
 import { correctRenderMatrix, sortRenderMatrixByTaskPosition } from '@/app/helpers/manufacture/helpers_sewing.ts'
 
 import ManageWeek from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageWeek.vue'
@@ -78,6 +78,22 @@ const getPlanPeriod = async () => {
 // __ Получаем период для рендера
 const getRenderPeriod = () => globalRenderPeriod.value = getRenderPeriodForPlan(globalSewingTasks.value)
 
+// __ Корректируем период для рендера. находим самую позднюю дату отгрузки и пересчитываем конец периода до воскресенья
+const correctRenderPeriod = () => {
+    if (!globalSewingTasks.value.length) {
+        return
+    }
+    const maxDateObj = globalSewingTasks.value.reduce((maxDateObj, task) => {
+        if (task.order.load_at && new Date(task.order.load_at).getTime() > maxDateObj.value) {
+            maxDateObj.value = new Date(task.order.load_at).getTime()
+            maxDateObj.date = task.order.load_at
+        }
+        return maxDateObj
+    }, {value: 0, date: ''})
+
+    globalRenderPeriod.value.end = formatToYMD(getSundayAfter(new Date(maxDateObj.date)))
+}
+
 // __ Получаем матрицу для рендера
 const getRenderMatrix = () => renderMatrix.value = getRenderMatrixForPlan(globalSewingTasks.value, globalRenderPeriod.value)
 
@@ -108,12 +124,15 @@ watch(() => globalSewingTasks.value, () => {
     // __ Выполняем всю подготовку и преобразование данных для рендера
     // __ !!! Порядок важен
     getRenderPeriod()
+    console.log(globalRenderPeriod.value)
+    correctRenderPeriod()
     getRenderMatrix()
     renderMatrix.value = sortRenderMatrixByTaskPosition(renderMatrix.value)
     copyRenderMatrix()
     renderMatrix.value = correctRenderMatrix(renderMatrix.value)
 
     if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
+    if (DEBUG) console.log('globalSewingTasks:', globalSewingTasks.value)
 
 }, { immediate: true, deep: true })
 

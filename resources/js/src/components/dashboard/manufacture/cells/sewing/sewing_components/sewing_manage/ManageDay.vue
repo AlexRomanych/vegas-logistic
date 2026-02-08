@@ -15,6 +15,7 @@
                 rounded="rounded-[4px]"
                 text-size="small"
                 width="w-full"
+                @click="actionDayMenu"
             />
         </div>
 
@@ -309,9 +310,9 @@
 <!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
 <script lang="ts" setup>
 import type {
-    IColorTypes, IModalAsyncMenu, IPlanMatrix,
-    IPlanMatrixDayItem,
-    ISewingTask,
+    IColorTypes, IDay, IModalAsyncMenu, IPlanMatrix,
+    ISewingTask, ISewingTaskStatusesSet,
+    // IPlanMatrixDayItem,
     // ISewingTaskLine,
     // IAmountAndTime,
     // ISewingMachineKeys,
@@ -326,20 +327,32 @@ import draggable from 'vuedraggable'
 import { usePlansStore } from '@/stores/PlansStore.ts'
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
-import { additionDaysInStrFormat, formatDateInFullFormat, isHoliday, isToday } from '@/app/helpers/helpers_date'
+import {
+    additionDaysInStrFormat,
+    formatDateInFullFormat,
+    formatDateIntl,
+    formatToYMD,
+    isHoliday,
+    isToday,
+    splitDate
+} from '@/app/helpers/helpers_date'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 import {
     clearRenderMatrix,
+    clearRenderMatrixDay,
     correctRenderMatrix,
     createAmountAndTimeObj,
+    getDaysDifferenceFromSewingDates,
     getDiffsWithPositions,
     getSewingTaskAmountAndTime,
+    getSewingTasksGroupedByOrder,
     getSewingTasksSameOrderInDay,
+    isTaskStatusCreated,
     repositionSewingTaskLines,
     setTaskPositionInRenderMatrix
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 
-import { SEWING_MACHINES, SEWING_TASK_DRAFT } from '@/app/constants/sewing.ts'
+import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
 import ManageItem from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItem.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -350,9 +363,10 @@ import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
 import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
-type IDay = ISewingTask & IPlanMatrixDayItem
+// type IDay = ISewingTask & IPlanMatrixDayItem
 
 interface IProps {
     date: Date,
@@ -379,7 +393,14 @@ const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
 
-const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow, /*globalDiffs,*/ globalSewingTasks, globalSewingTaskActiveOrderId } = storeToRefs(sewingStore)
+const {
+          globalSewingTaskTimesShow,
+          globalSewingTaskFullDaysShow,
+          /*globalDiffs,*/
+          globalSewingTasks,
+          globalSewingTaskActiveOrderId,
+          globalSewingTaskStatuses,
+      } = storeToRefs(sewingStore)
 
 const planStore            = usePlansStore()
 const { planPeriodGlobal } = storeToRefs(planStore)
@@ -530,7 +551,7 @@ const showSewingTaskCard = async (sewingTask: ISewingTask) => {
         // newSewingTask.sewing_lines = rightPanel
 
         // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-        sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
+        await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
 
         // console.log(taskCard.value)
     } else {
@@ -540,7 +561,7 @@ const showSewingTaskCard = async (sewingTask: ISewingTask) => {
         // leftPanel = repositionSewingTaskLines(leftPanel)
 
         // __ Обновляем глобальный state СЗ
-        sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
+        await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
 
     }
 
@@ -566,6 +587,29 @@ const dragOptions = computed(() => {
 const isDragging  = ref(true)
 
 const checkMove = (evt: any) => {
+    // console.log('checkMove: ', evt)
+    const movedElement = evt.draggedContext.element
+    // console.log(movedElement)
+    // return true
+    // __ Проверяем, что перемещаемый элемент со статусом 'Создано'
+    if (!isTaskStatusCreated(movedElement)) {
+        return false
+    }
+
+    // __ Проверяем, что перемещаемый элемент не в прошлом
+    const nowDate  = formatToYMD(new Date())
+    const dateDiff = getDaysDifferenceFromSewingDates(movedElement.action_at, nowDate)
+
+    // console.log('movedElement.action_at: ', movedElement.action_at)
+    // console.log('nowDate: ', nowDate)
+    // console.log('dateDiff: ', dateDiff)
+
+    if (dateDiff < 0) {
+        // await showError(['Ошибка!', 'Прошлое не ворошим!'])
+        // renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        return false
+    }
+
     return true
 }
 
@@ -599,12 +643,12 @@ const finishDrag = async (evt: any) => {
     // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
     const isOneDayAction = !diffs.some(diff => diff.isMoved)
 
-    console.log('isOneDayAction: ', isOneDayAction)
+    // console.log('isOneDayAction: ', isOneDayAction)
 
     if (isOneDayAction) {
 
         // __ Перемещаем СЗ без вывода дополнительной информации
-        sewingStore.applyChanges(diffs)              // __ Применяем изменения
+        await sewingStore.applyChanges(diffs)              // __ Применяем изменения
 
     } else {
 
@@ -627,12 +671,49 @@ const finishDrag = async (evt: any) => {
         }
 
         // __ Получаем дату, на которую нужно переместить СЗ
-        const targetDAte = additionDaysInStrFormat(
+        const targetDate = additionDaysInStrFormat(
             sewingTask.action_at,
             (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0))
 
+        // __ Проверяем, на даты СЗ и отгрузки
+        let dateDiff = getDaysDifferenceFromSewingDates(sewingTask.order.load_at ?? targetDate, targetDate)
+
+        // console.log('targetDate: ', targetDate)
+        // console.log('sewingTask.order.load_at: ', sewingTask.order.load_at)
+        // console.log('dateDiff: ', dateDiff)
+
+
+        if (dateDiff < 0) {
+            await showError([
+                'Ошибка!',
+                'Дата СЗ не может быть позднее даты загрузки',
+                'на складе!',
+                `Дата загрузки на складе: ${formatDateIntl(splitDate(sewingTask.order.load_at ?? targetDate), true)}`
+            ])
+            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            return
+        }
+
+        // __ Проверяем, на даты СЗ и текущую дату (чтобы не было в прошлом)
+        const nowDate = formatToYMD(new Date())
+        dateDiff      = getDaysDifferenceFromSewingDates(targetDate, nowDate)
+
+        // console.log('targetDate: ', targetDate)
+        // console.log('nowDate: ', nowDate)
+        // console.log('dateDiff: ', dateDiff)
+
+        if (dateDiff < 0) {
+            await showError(['Ошибка!', 'Дата СЗ не может быть в прошлом!'])
+            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            return
+        }
+
+        // console.log('targetDAte: ', targetDAte)
+
+
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
-        const existingSewingTasks = getSewingTasksSameOrderInDay(sewingTask, globalSewingTasks.value, targetDAte)
+        // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
+        const existingSewingTasks = getSewingTasksSameOrderInDay(sewingTask, globalSewingTasks.value, targetDate, true)
 
         // __ Формируем текст для модального окна
         const orderInfo = `${sewingTask.order.client.short_name} №${sewingTask.order.order_no_str}`
@@ -650,7 +731,7 @@ const finishDrag = async (evt: any) => {
             ]
         }
 
-        let result = {menuItem: 1, value: true} as IModalResponse
+        let result = { menuItem: 1, value: true } as IModalResponse
 
         // __ Если количество СЗ больше 1, то показываем меню, иначе сразу перемещаем
         if (totalAmount > 1) {
@@ -685,13 +766,13 @@ const finishDrag = async (evt: any) => {
                     console.warn('Union SewingTasks')
 
                     // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                    sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask])   // __ Объединяем СЗ с первой
+                    await sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask])   // __ Объединяем СЗ с первой
                     // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
                     return
                 }
             }
 
-            sewingStore.applyChanges(diffs)         // __ Применяем изменения
+            await sewingStore.applyChanges(diffs)         // __ Применяем изменения
 
         } else if (result.menuItem === 2) {
 
@@ -746,7 +827,7 @@ const finishDrag = async (evt: any) => {
                         console.warn('Union SewingTasks')
 
                         // __ Переносим правую панель в новый СЗ
-                        rightPanel = repositionSewingTaskLines(rightPanel)
+                        rightPanel                 = repositionSewingTaskLines(rightPanel)
                         newSewingTask.sewing_lines = rightPanel
 
                         // __ Изменяем содержимое в СЗ
@@ -754,7 +835,7 @@ const finishDrag = async (evt: any) => {
                         sewingStore.setSewingTasksLines(sewingTask, leftPanel)  // __ Делаем это в родителе
 
                         // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                        sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask])   // __ Объединяем СЗ с первой
+                        await sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask])   // __ Объединяем СЗ с первой
                         // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
                         return
                     }
@@ -762,16 +843,17 @@ const finishDrag = async (evt: any) => {
                 }
 
                 // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-                sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
+                await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
 
             } else {
 
                 // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
                 // __ Игнорируем это поведение и просто показываем сообщение об ошибке
-                modalInfoType.value = 'danger'
-                modalInfoText.value = ['Ошибка!', 'Правая часть не может быть пустой!']
-                modalInfoMode.value = 'inform'
-                await appModalAsyncMultiline.value!.show()
+                await showError(['Ошибка!', 'Правая часть не может быть пустой!'])
+                // modalInfoType.value = 'danger'
+                // modalInfoText.value = ['Ошибка!', 'Правая часть не может быть пустой!']
+                // modalInfoMode.value = 'inform'
+                // await appModalAsyncMultiline.value!.show()
 
                 // __ Откатываем изменения
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
@@ -783,6 +865,144 @@ const finishDrag = async (evt: any) => {
 
 
     }
+}
+
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
+
+
+// __ Вспомогалка. Устанавливаем статусы для СЗ
+const setStatuses = async (setStatuses: ISewingTaskStatusesSet[]) => {
+    if (setStatuses.length) {
+
+        // __ Отправляем запрос на сервер
+        const result = await sewingStore.setSewingTasksStatuses(setStatuses)
+
+        // __ Установка статусов на лету
+        if (checkCRUD(result)) {
+
+            // __ Получаем статусы, если не получили их ранее
+            if (!globalSewingTaskStatuses.value.length) {
+                await sewingStore.getSewingTaskStatuses()
+            }
+
+            setStatuses.forEach(item => {
+                const task   = globalSewingTasks.value.find(task => task.id === item.task)
+                const status = globalSewingTaskStatuses.value.find(status => status.id === item.status)
+
+                if (task && status) {
+                    task.current_status.id    = item.status
+                    task.current_status.color = status.color
+                }
+            })
+        } else {
+            await showError()
+        }
+    }
+}
+
+
+// __ Вызываем меню для дня
+const actionDayMenu = async () => {
+
+    console.log('props.day: ', props.day)
+
+    const clearDay = clearRenderMatrixDay(props.day) // __ Возвращаем новый массив без пустых элементов
+
+    // __ Проверяем, есть ли СЗ в дне
+    if (!clearDay.length) {
+        return
+    }
+
+    // __ Показываем модальное меню и обрабатываем результаты
+    modalMenuType.value = 'success'
+    modalMenu.value     = {
+        data: [
+            { id: 1, title: 'Отправить на выполнение' },
+            { id: 2, title: 'Вернуть для редактирования' },
+            { id: 3, title: 'Объединить СЗ для одной Заявки' },
+            { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
+            { id: 5, title: 'Отмена' },
+        ]
+    }
+
+    // let result = {menuItem: null, value: false} as IModalResponse
+
+    // __ Показываем модальное меню
+    const result = await appModalMenuTS.value!.show()
+
+    // __ Отмена + terminate
+    if (result.value === false || result.menuItem === 5) {
+        return
+    }
+
+    // __ Отправка на выполнение
+    if (result.menuItem === 1) {
+        const setStatusesData = clearDay
+            .flatMap(task => {
+                // return { task: task.id, status: 1 }
+                // __ Отправляем на выполнение то, что создано или создано при закрытии смены
+                if (isTaskStatusCreated(task)) {
+                    return { task: task.id, status: SEWING_TASK_STATUSES.PENDING.ID }
+                }
+
+                return []
+            })
+
+        await setStatuses(setStatusesData)
+        return
+    }
+
+    // __ Возврат для редактирования
+    if (result.menuItem === 2) {
+        const setStatusesData = clearDay
+            .flatMap(task => {
+                // return { task: task.id, status: 1 }
+                // __ Отправляем на выполнение то, что создано или создано при закрытии смены
+                if (task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID) {
+                    return { task: task.id, status: SEWING_TASK_STATUSES.CREATED.ID }
+                }
+
+                return []
+            })
+
+        await setStatuses(setStatusesData)
+        return
+    }
+
+    // __ Объединение СЗ для одной Заявки
+    if (result.menuItem === 3) {
+        const grouped = getSewingTasksGroupedByOrder(clearDay)  // __ Получаем массив массивов СЗ по одинаковым Заявкам
+        // console.log('target: ', grouped)
+        await sewingStore.applyMergeTasksGroups(grouped)
+        return
+    }
+
+    // __ Сохранение комментария
+    if (result.menuItem === 4) {
+
+        // __ Получаем день
+        const day =  await sewingStore.getSewingDayByDateAndChange(formatToYMD(props.date))
+        console.log('day: ', day)
+        return
+    }
+
+    console.log('result: ', result)
+
 }
 
 

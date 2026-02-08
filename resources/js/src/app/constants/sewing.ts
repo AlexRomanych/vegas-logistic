@@ -30,7 +30,21 @@ export const SEWING_TASK_DRAFT: ISewingTask = {
             color:        '',
         }
     },
-    sewing_lines: []
+    sewing_lines: [],
+    statuses: [],
+    current_status: {
+        id: 0,
+        name: '',
+        color: '',
+        pivot: {
+            created_at: null,
+            duration:  null,
+            finished_at:  null,
+            set_at:  null,
+            started_at:  null,
+        }
+
+    }
 }
 
 // __ Константы полей швейных машин и трудозатрат, которые приходят с сервера
@@ -63,5 +77,32 @@ export const SEWING_OPERATION_DRAFT: ISewingOperation = {
     type: 'dynamic',
     color: '#64748B'
 }
+
+
+
+// __ Статусы движения СЗ на Пошиве
+export const SEWING_TASK_STATUSES = {
+    CREATED: {
+        ID: 1,
+        TITLE: 'Создано'
+    },
+    CREATED_CLOSE: {
+        ID: 2,
+        TITLE: 'Создано при закрытии СЗ'
+    },
+    PENDING: {
+        ID: 3,
+        TITLE: 'Готово к выполнению'
+    },
+    RUNNING: {
+        ID: 4,
+        TITLE: 'Выполняется'
+    },
+    DONE: {
+        ID: 5,
+        TITLE: 'Выполнено'
+    }
+}
+
 
 

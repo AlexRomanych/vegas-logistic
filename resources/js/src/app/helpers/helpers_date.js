@@ -893,6 +893,12 @@ export function formatToYMD_UTC(date) {
     return date.toISOString().slice(0, 10)
 }
 
+// ___ Функция, которая возвращает дату без времени
+// ___ Например, 2024-01-01 12:00:00 -> 2024-01-01
+export const splitDate = (date) => {
+    if (date.includes(' ')) return date.split(' ')[0].trim()
+    return date.trim()
+}
 
 /**
  * ___ Функция для вычисления разницы в днях между двумя датами,
@@ -902,9 +908,10 @@ export function formatToYMD_UTC(date) {
  * ___ проблемы с локальным часовым поясом и летним временем при сравнении.
  * @param {string} dateString1 - Первая дата в формате YYYY-MM-DD.
  * @param {string} dateString2 - Вторая дата в формате YYYY-MM-DD.
+ * @param {boolean} applySign  - Возвратить отрицательное значение или модуль
  * @returns {number} - Количество полных дней между датами (целое число).
  */
-export function getDaysDifference(dateString1, dateString2) {
+export function getDaysDifference(dateString1, dateString2, applySign = false) {
     // Константы для преобразования
     const MS_PER_SECOND      = 1000
     const SECONDS_PER_MINUTE = 60
@@ -927,8 +934,12 @@ export function getDaysDifference(dateString1, dateString2) {
     }
 
     // 2. Вычисление разницы в миллисекундах
-    // Используем Math.abs(), чтобы разница всегда была положительной, независимо от порядка ввода дат.
-    const diffInMilliseconds = Math.abs(date1.getTime() - date2.getTime())
+    let diffInMilliseconds
+    if (applySign) {
+        diffInMilliseconds = date1.getTime() - date2.getTime()
+    } else {
+        diffInMilliseconds = Math.abs(date1.getTime() - date2.getTime())
+    }
 
     // 3. Преобразование миллисекунд в дни. Используем Math.floor() для округления до меньшего целого, чтобы получить количество полных дней.
     const diffInDays = Math.floor(diffInMilliseconds / MS_PER_DAY)
@@ -997,31 +1008,31 @@ export function additionDays(originalDate, days) {
 export function additionDaysInStrFormat(dateStr, days) {
 
     // 1. Разбиваем строку на части: "2026-01-13" и "00:00:00"
-    let [datePart, timePart] = dateStr.split(' ');
+    let [datePart, timePart] = dateStr.split(' ')
 
     if (!timePart) timePart = '00:00:00'    // если нет времени, то добавляем
 
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+    const [year, month, day]        = datePart.split('-').map(Number)
+    const [hours, minutes, seconds] = timePart.split(':').map(Number)
 
     // 2. Создаем дату, передавая числа (месяцы в JS начинаются с 0, поэтому month - 1)
     // Конструктор new Date(year, month, day...) всегда работает в локальном времени
-    const date = new Date(year, month - 1, day, hours, minutes, seconds);
+    const date = new Date(year, month - 1, day, hours, minutes, seconds)
 
     // 3. Прибавляем дни
-    date.setDate(date.getDate() + days);
+    date.setDate(date.getDate() + days)
 
     // 4. Форматируем обратно
-    const pad = (num) => String(num).padStart(2, '0');
+    const pad = (num) => String(num).padStart(2, '0')
 
-    const YYYY = date.getFullYear();
-    const MM   = pad(date.getMonth() + 1);
-    const DD   = pad(date.getDate());
-    const HH   = pad(date.getHours());
-    const mm   = pad(date.getMinutes());
-    const ss   = pad(date.getSeconds());
+    const YYYY = date.getFullYear()
+    const MM   = pad(date.getMonth() + 1)
+    const DD   = pad(date.getDate())
+    const HH   = pad(date.getHours())
+    const mm   = pad(date.getMinutes())
+    const ss   = pad(date.getSeconds())
 
-    return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`;
+    return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`
 
 
     //

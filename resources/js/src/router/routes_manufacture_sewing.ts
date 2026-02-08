@@ -93,6 +93,15 @@ const sewing = [
                    } as IRouteMeta,
     },
 
+    {
+        // ___ Выполнение сменных заданий
+        path:      _MAIN_PREFIX + 'tasks/execute',
+        name:      'manufacture.cell.sewing.tasks.execute',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingExecute.vue'),
+        meta:      {
+                       title: 'Выполнение сменных заданий',
+                   } as IRouteMeta,
+    },
 ]
 
 

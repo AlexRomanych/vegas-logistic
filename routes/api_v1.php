@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationSchemaController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingStatusController;
@@ -129,6 +130,12 @@ Route::prefix('sewing')
         // __ Статусы СЗ Пошива
         Route::get('/task/statuses', [CellSewingStatusController::class, 'getSewingTaskStatuses']);
         Route::patch('/task/statuses/color/patch', [CellSewingStatusController::class, 'patchSewingTaskStatusColor']);
+        Route::post('/task/statuses/set', [CellSewingStatusController::class, 'setSewingTasksStatuses']);
+
+
+        // __ Производственный день
+        Route::get('/day/{date}/{change}', [CellSewingDayController::class, 'getSewingDayByDateAndChange']);
+
 
 
         // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');

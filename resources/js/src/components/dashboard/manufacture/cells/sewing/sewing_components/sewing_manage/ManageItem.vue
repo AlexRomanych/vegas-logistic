@@ -6,13 +6,13 @@
         <AppLabelMultiLineTS
             v-if="render.client.show"
             :align="render.client.align"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text="globalSewingTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
             :text-size="render.client.textSize"
             :type="render.client.type"
             :width="render.client.width"
-            class="plan-item truncate bg-blue-700"
             rounded="rounded-[4px]"
         />
 
@@ -26,7 +26,7 @@
             :text-size="render.orderNo.textSize"
             :type="render.orderNo.type"
             :width="render.orderNo.width"
-            class="plan-item"
+            :class="animatedClass"
             rounded="rounded-[4px]"
         />
 
@@ -35,6 +35,7 @@
             v-if="render.amount.show"
             :align="render.amount.align"
             :amount="getTotalAmount"
+            :class_="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -42,7 +43,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
         <!-- __ Количество + Трудозатраты УШМ -->
@@ -50,6 +50,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.UNIVERSAL].amount"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -57,7 +58,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
         <!-- __ Количество + Трудозатраты АШМ -->
@@ -65,6 +65,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.AUTO].amount"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -72,7 +73,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
         <!-- __ Количество + Трудозатраты Solid Hard -->
@@ -80,6 +80,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.SOLID_HARD].amount"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -87,7 +88,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
         <!-- __ Количество + Трудозатраты Solid Lite -->
@@ -95,6 +95,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.SOLID_LITE].amount"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -102,7 +103,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
@@ -110,6 +110,7 @@
             v-if="globalSewingTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[SEWING_MACHINES.UNDEFINED].amount"
+            :class="animatedClass"
             :color="amountAndTime[SEWING_MACHINES.UNDEFINED].amount === 0 ? color : 'red'"
             :height="dataHeight"
             :text-size="render.amount.textSize"
@@ -117,7 +118,6 @@
             :time-show="globalSewingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
-            class="plan-item"
         />
 
     </div>
@@ -183,7 +183,7 @@ const props = withDefaults(defineProps<IProps>(), {
 // __ Данные из Хранилища
 const sewingStore = useSewingStore()
 
-const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow } = storeToRefs(sewingStore)
+const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow, globalSewingTaskOrderTypeColor } = storeToRefs(sewingStore)
 
 // __ Высота данных
 const dataHeight = computed(() => globalSewingTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
@@ -229,10 +229,20 @@ const formattedLoadDate = computed(() => {
 
 // __ Цвет
 const color = computed(() => {
+    // if (props.item.order.id === props.orderId) {
+    //     return 'red'
+    // }
+
+    // __ Если цвет по типу заявки, то берем его, или по статусу движения
+    return globalSewingTaskOrderTypeColor.value ? props.item.order.order_type.color : props.item.current_status.color
+})
+
+// __ Анимация, СЗ для текущей Заявки
+const animatedClass = computed(() => {
     if (props.item.order.id === props.orderId) {
-        return 'red'
+        return 'plan-item  animate-pulse'
     }
-    return props.item.order.order_type.color
+    return 'plan-item'
 })
 
 
@@ -240,6 +250,8 @@ const color = computed(() => {
 
 <style scoped>
 .plan-item {
-    @apply cursor-pointer;
+    @apply cursor-pointer truncate;
 }
+
+
 </style>

@@ -1,6 +1,6 @@
 <template>
     <!-- __ Менюха -->
-    <div class="sticky top-0 p-1 mx-1 bg-blue-100 border-2 rounded-lg border-blue-400 w-full">
+    <div class="sticky top-0 p-1 mx-1 bg-blue-100 border-2 rounded-lg border-blue-400 w-[calc(100%-6px)]">
         <div>
             <div class="flex ml-0.5">
 

@@ -8,6 +8,8 @@
 import type { IDims, IPlanMatrixDayItem } from '@/types/index.ts'
 import { AUTO, AVERAGE, SEWING_MACHINES, SOLID_HARD, SOLID_LITE, UNDEFINED, UNIVERSAL } from '@/app/constants/sewing.ts'
 
+export type IDay = ISewingTask & IPlanMatrixDayItem
+
 export interface ISewingTask extends IPlanMatrixDayItem {
     id: number
     id_ref: number                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
@@ -17,6 +19,8 @@ export interface ISewingTask extends IPlanMatrixDayItem {
     position: number
     order: ISewingTaskOrder
     sewing_lines: ISewingTaskLine[]
+    statuses: ISewingTaskStatus[]
+    current_status: ISewingTaskStatus
 }
 
 // __ Связь с Содержимым СЗ
@@ -42,7 +46,19 @@ export interface ISewingTaskLine {
 
 // __ Статус Движения (выполнения) Заявки
 export interface ISewingTaskStatus {
+    id: number
+    color: string
+    name: string
+    pivot: ISewingTaskStatusPivot
+}
 
+// __ Дополнительная инфа
+export interface ISewingTaskStatusPivot {
+    created_at: string | null
+    duration: number | null
+    finished_at: string | null
+    set_at: string | null
+    started_at: string | null
 }
 
 // __ Связь с Заявкой
@@ -325,3 +341,6 @@ export interface ISewingOperationModel {
 }
 
 // --- ------------------------------------------------------------
+
+// __ Тип для обновления статуса заявки
+export type ISewingTaskStatusesSet = {task: number, status: number}

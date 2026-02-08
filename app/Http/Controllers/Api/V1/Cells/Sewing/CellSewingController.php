@@ -8,6 +8,7 @@ use App\Http\Requests\Manufacture\Sewing\Sync\SyncSewingTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage\SewingTaskResource;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
+use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
 use App\Services\DefaultsService;
 use Carbon\Carbon;
 use Exception;
@@ -49,7 +50,7 @@ class CellSewingController extends Controller
                     'order.orderType',
                     'sewingLines.orderLine.model.cover',
                     'sewingLines.orderLine.model.base',
-                    'statuses'
+                    'statuses',
                 ])
                 // ->with(['sewingLines', 'sewingLines.orderLine','sewingLines.orderLine.model','sewingLines.orderLine.model.cover', 'statuses'])
                 ->orderBy('action_at')
@@ -111,6 +112,14 @@ class CellSewingController extends Controller
                             $newTask->save();
                             $newTask->position = $newTask->id * (-1);
                             $newTask->save();
+
+                            // __ Создаем запись в Статусе: Создано
+                            $newTask->statuses()->attach([
+                                SewingTaskStatus::SEWING_STATUS_CREATED_ID => [
+                                    'set_at'     => now(),
+                                    'created_by' => auth()->id(),
+                                ]
+                            ]);
 
                             $tasksToUpdate[] = [
                                 'id'        => $newTask->id,
