@@ -27,6 +27,7 @@ class SewingDayResource extends JsonResource
             'finish_at'     => $this->finish_at,
             'duration'      => $this->duration,
             'description'   => $this->description,
+            'comment'       => $this->comment,
             'responsible'   => new SewingDayWorkerResource($this->whenLoaded('responsible')),
             'workers'       => SewingDayWorkerResource::collection($this->whenLoaded('workers')),
 
@@ -34,7 +35,6 @@ class SewingDayResource extends JsonResource
             // 'meta_ext'       => $this->meta_ext,
             // 'active'         => $this->active,
             // 'status'         => $this->status,
-            // 'comment'        => $this->comment,
             // 'note'           => $this->note,
             // 'meta'           => $this->meta,
             // 'color'          => $this->color,

@@ -1,169 +1,175 @@
 <template>
     <Teleport to="body">
+        <Transition name="modal">
 
-        <div v-if="showModal"
-             ref="mainDiv"
-             class="dark-container"
-             tabindex="-1"
-             @keydown.esc="select(false)"
-        >
+            <div v-if="showModal"
+                 ref="mainDiv"
+                 class="dark-container"
+                 tabindex="-1"
+                 @keydown.esc="select(false)"
+            >
 
-            <div :class="[width, height, borderColor, 'modal-container max-h-[90vh] overflow-hidden']">
+                <div :class="[width, height, borderColor, 'modal-container max-h-[90vh] overflow-hidden']">
 
-                <div class="flex justify-between w-full h-full items-center">
+                    <div class="flex justify-between w-full h-full items-center">
 
-                    <!-- __ Меню Карточки Заявки  -->
-                    <ManageTaskCardMenu
-                        :active-panel="activePanel"
-                        :show-comments="showComments"
-                        :show-details="showDetails"
-                        :sewing-lines="activePanel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
-                        @divide-element-amount="divideElementAmount"
-                        @show-comments="showComments = !showComments"
-                        @show-details="showDetails = !showDetails"
-                        @reload-data="reloadData"
-                        @move-to-panel="moveToPanel(activePanel, $event)"
-                        @merge-lines="mergeLines(activePanel)"
-                    />
-
-                    <!-- __ Крестик закрытия -->
-                    <div class="m-1 p-1 ml-auto">
-                        <AppInputButton
-                            id="terminate"
-                            :type="needForSave ? 'danger' : type"
-                            height="w-5"
-                            title="x"
-                            width="w-[30px]"
-                            @buttonClick="select(false)"
+                        <!-- __ Меню Карточки Заявки  -->
+                        <ManageTaskCardMenu
+                            :active-panel="activePanel"
+                            :sewing-lines="activePanel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
+                            :show-comments="showComments"
+                            :show-details="showDetails"
+                            :sewing-task="props.task"
+                            @divide-element-amount="divideElementAmount"
+                            @show-comments="showComments = !showComments"
+                            @show-details="showDetails = !showDetails"
+                            @reload-data="reloadData"
+                            @move-to-panel="moveToPanel(activePanel, $event)"
+                            @merge-lines="mergeLines(activePanel)"
+                            @add-comment="addComment"
                         />
-                    </div>
-                </div>
 
-                <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
-                <div class="flex h-screen w-full    bg-slate-900 p-4 gap-4 overflow-x-auto">
-
-                    <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
-                         :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
-                         class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden"
-                         @click="activePanel = panel"
-                    >
-
-                        <div class="flex-none bg-slate-700 shadow-md">
-
-                            <!-- __ Заголовок (Шапка изделий) Панели -->
-                            <ManageTaskCardItemsHeader
-                                :active-panel="activePanel"
-                                :panel="panel"
-                                :render-data="renderData"
-                                :show-comments="showComments"
-                                :show-details="showDetails"
-                                :sort-amount="sortAmount"
-                                :sort-auto="sortAuto"
-                                :sort-kant="sortKant"
-                                :sort-name="sortName"
-                                :sort-position="sortPosition"
-                                :sort-size="sortSize"
-                                :sort-solid-hard="sortSolidHard"
-                                :sort-solid-lite="sortSolidLite"
-                                :sort-textile="sortTextile"
-                                :sort-time="sortTime"
-                                :sort-tkch="sortTkch"
-                                :sort-universal="sortUniversal"
-                                @sort-by-field="sortByField(panel, $event)"
-                                @sort-by-size="sortBySize(panel)"
-                            />
-
-                        </div>
-
-                        <div class="flex-grow overflow-y-auto custom-scrollbar">
-
-                            <!-- __ Сами Записи (SewingLines) с возможностью перетаскивания -->
-                            <draggable
-                                :="dragOptions"
-                                :disabled="!isDragging"
-                                :list="panel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
-                                :move="checkMove"
-                                class="min-h-[25px]"
-                                item-key="position"
-                                tag="div"
-                                @end="finishDrag"
-                                @start="startDrag"
-                            >
-                                <template #item="{ element, /*index*/ }">
-
-                                    <div :key="element.id"
-                                         @click="setActiveSewingLine(element, panel)"
-                                         @dblclick="showLineInfo(element)"
-                                    >
-
-                                        <ManageTaskCardItem
-                                            :render-data="renderData"
-                                            :sewing-line="element"
-                                            :show-comments="showComments"
-                                            :show-details="showDetails"
-                                        />
-
-                                    </div>
-
-                                </template>
-
-                            </draggable>
-
-                        </div>
-
-                        <div class="flex-none bg-slate-700 py-1 border-t border-slate-600">
-
-                            <!-- __ Итого: -->
-                            <ManageTaskCardTotals
-                                :amount-and-time="panel === LEFT_PANEL_ID ? leftPanelAmountAndTimeTotal : rightPanelAmountAndTimeTotal"
-                            />
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="flex w-full items-center">
-
-                    <div class="flex flex-1 justify-center w-full  ">
-
-                        <!-- __ Название СЗ + Клиент + Дата отгрузки -->
-                        <div>
-                            <div class="text-blue-400 font-semibold text-center">
-                                СЗ от <span class="text-green-400">{{ footTitle.action_at }}</span>
-                                для Заявки <span class="text-green-400">{{ footTitle.order }}</span>
-                                (дата загрузки на складе: <span class="text-green-400"> {{ footTitle.load_at }}</span>)
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="flex gap-1 shrink-0">
-                        <div v-if="needForSave" class="my-1 py-1">
+                        <!-- __ Крестик закрытия -->
+                        <div class="m-1 p-1 ml-auto">
                             <AppInputButton
-                                id="confirm"
-                                title="Сохранить"
-                                type="danger"
-                                @buttonClick="select(true)"
-                            />
-                        </div>
-                        <div class="my-1 py-1 pr-2">
-                            <AppInputButton
-                                id="close"
-                                :type="type"
-                                title="Закрыть"
+                                id="terminate"
+                                :type="needForSave ? 'danger' : type"
+                                height="w-5"
+                                title="x"
+                                width="w-[30px]"
                                 @buttonClick="select(false)"
                             />
                         </div>
+                    </div>
+
+                    <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
+                    <div class="flex h-screen w-full    bg-slate-900 p-4 gap-4 overflow-x-auto">
+
+                        <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
+                             :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
+                             class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden"
+                             @click="activePanel = panel"
+                        >
+
+                            <div class="flex-none bg-slate-700 shadow-md">
+
+                                <!-- __ Заголовок (Шапка изделий) Панели -->
+                                <ManageTaskCardItemsHeader
+                                    :active-panel="activePanel"
+                                    :panel="panel"
+                                    :render-data="renderData"
+                                    :show-comments="showComments"
+                                    :show-details="showDetails"
+                                    :sort-amount="sortAmount"
+                                    :sort-auto="sortAuto"
+                                    :sort-kant="sortKant"
+                                    :sort-name="sortName"
+                                    :sort-position="sortPosition"
+                                    :sort-size="sortSize"
+                                    :sort-solid-hard="sortSolidHard"
+                                    :sort-solid-lite="sortSolidLite"
+                                    :sort-textile="sortTextile"
+                                    :sort-time="sortTime"
+                                    :sort-tkch="sortTkch"
+                                    :sort-universal="sortUniversal"
+                                    @sort-by-field="sortByField(panel, $event)"
+                                    @sort-by-size="sortBySize(panel)"
+                                />
+
+                            </div>
+
+                            <div class="flex-grow overflow-y-auto custom-scrollbar">
+
+                                <!-- __ Сами Записи (SewingLines) с возможностью перетаскивания -->
+                                <draggable
+                                    :="dragOptions"
+                                    :disabled="!isDragging"
+                                    :list="panel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
+                                    :move="checkMove"
+                                    class="min-h-[25px]"
+                                    item-key="position"
+                                    tag="div"
+                                    @end="finishDrag"
+                                    @start="startDrag"
+                                >
+                                    <template #item="{ element, /*index*/ }">
+
+                                        <div :key="element.id"
+                                             @click="setActiveSewingLine(element, panel)"
+                                             @dblclick="showLineInfo(element)"
+                                        >
+
+                                            <ManageTaskCardItem
+                                                :render-data="renderData"
+                                                :sewing-line="element"
+                                                :show-comments="showComments"
+                                                :show-details="showDetails"
+                                            />
+
+                                        </div>
+
+                                    </template>
+
+                                </draggable>
+
+                            </div>
+
+                            <div class="flex-none bg-slate-700 py-1 border-t border-slate-600">
+
+                                <!-- __ Итого: -->
+                                <ManageTaskCardTotals
+                                    :amount-and-time="panel === LEFT_PANEL_ID ? leftPanelAmountAndTimeTotal : rightPanelAmountAndTimeTotal"
+                                />
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="flex w-full items-center">
+
+                        <div class="flex flex-1 justify-center w-full">
+
+                            <!-- __ Название СЗ + Клиент + Дата отгрузки -->
+                            <div>
+                                <div class="text-blue-400 font-semibold text-center mx-2">
+                                    СЗ от <span class="text-green-400">{{ footTitle.action_at }}</span>
+                                    для Заявки <span class="text-green-400">{{ footTitle.order }}</span>
+                                    (дата загрузки на складе: <span class="text-green-400"> {{
+                                        footTitle.load_at
+                                    }}</span>)
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="flex gap-1 shrink-0">
+                            <div v-if="needForSave" class="my-1 py-1">
+                                <AppInputButton
+                                    id="confirm"
+                                    title="Сохранить"
+                                    type="danger"
+                                    @buttonClick="select(true)"
+                                />
+                            </div>
+                            <div class="my-1 py-1 pr-2">
+                                <AppInputButton
+                                    id="close"
+                                    :type="type"
+                                    title="Закрыть"
+                                    @buttonClick="select(false)"
+                                />
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
 
             </div>
 
-        </div>
-
+        </Transition>
     </Teleport>
 
     <!-- __ Разбить Количество Модальное окно  -->
@@ -189,12 +195,19 @@
         :order-line="orderLine"
     />
 
+    <!-- __ Модальное окно для изменения/добавления комментария -->
+    <CommentEdit
+        ref="commentEdit"
+        :comment="comment"
+        label="Комментарий к Сменному Заданию"
+    />
+
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch, watchEffect, /*nextTick,*/ } from 'vue'
-import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
+import { storeToRefs } from 'pinia'
 
 import type {
     ISewingTask,
@@ -235,6 +248,8 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 import ManageTaskCardItemInfo
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemInfo.vue'
 import { round } from '@/app/helpers/helpers_lib.ts'
+import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
 interface IProps {
@@ -310,6 +325,10 @@ const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> |
 // __ Тип для модального окна информации о записи в Заявке
 const orderLine              = ref<ISewingTaskOrderLine | null>(null)
 const manageTaskCardItemInfo = ref<InstanceType<typeof ManageTaskCardItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна изменения Комментария
+const comment     = ref('')
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
 // __ Функционал меню + Сортировка
 const showComments  = ref(false)
@@ -468,7 +487,7 @@ const divideElementAmount = async () => {
     // __ Копируем объект, чтобы не мутировать оригинал
     const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
 
-    const modelCoverExt       = getSewingTaskModelCoverName(activeSewingLineCopy.order_line.model)
+    const modelCoverExt = getSewingTaskModelCoverName(activeSewingLineCopy.order_line.model)
 
     dividerElement.value.name =
         getCoverSizeString(activeSewingLineCopy) + ' ' +
@@ -618,6 +637,42 @@ const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {
 
     calculateTotals()
 }
+
+
+// __ Добавить комментарий
+const addComment = async () => {
+
+    comment.value = props.task.comment ?? '' // __ Устанавливаем комментарий
+
+    const answer = await commentEdit.value!.show()
+    if (answer) {
+
+        const newComment = commentEdit.value!.comment.trim()
+
+        const result = await sewingStore.setSewingTaskComment(props.task.id, newComment)
+
+        if (!checkCRUD(result)) {
+
+            modalInfoText.value = [
+                'Упс! Что-то пошло не так.',
+                'Попробуйте повторить операцию позже.',
+            ]
+            modalInfoType.value = 'danger'
+            modalInfoMode.value = 'inform'
+            await appModalAsyncMultiline.value!.show()
+
+            return
+        }
+
+        // __ Обновляем комментарий в глобальном массиве
+        sewingStore.applySewingTaskComment(props.task.id, newComment)
+
+        // __ Обновляем комментарий в текущей строке, потому что теряем где-то реактивность
+        // __ из-за передачи параметров в SFC по глубокой копии
+        props.task.comment = newComment
+    }
+}
+
 
 
 // --- -------------------------------------------------------------------------------------
@@ -1005,5 +1060,17 @@ watchEffect(() => {
     height: 8px;
 }
 
+/* Состояние появления и исчезновения */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.5s ease;
+}
+
+/* Стартовое состояние при появлении / Финальное при исчезновении */
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
+}
 
 </style>

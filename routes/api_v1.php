@@ -105,6 +105,7 @@ Route::prefix('sewing')
         // __ СЗ Пошива
         Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
         Route::post('tasks/update', [CellSewingController::class, 'updateSewingTasks']);
+        Route::post('tasks/comment', [CellSewingController::class, 'setSewingTaskComment']);
 
         // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
@@ -135,6 +136,7 @@ Route::prefix('sewing')
 
         // __ Производственный день
         Route::get('/day/{date}/{change}', [CellSewingDayController::class, 'getSewingDayByDateAndChange']);
+        Route::post('/day/comment', [CellSewingDayController::class, 'setSewingDayComment']);
 
 
 

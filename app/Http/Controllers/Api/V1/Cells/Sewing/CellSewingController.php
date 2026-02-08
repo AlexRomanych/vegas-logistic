@@ -404,6 +404,37 @@ class CellSewingController extends Controller
     }
 
 
+
+    /**
+     * ___ Устанавливает комментарий к Сменному Заданию
+     * @param  Request  $request
+     * @return string
+     */
+    public function setSewingTaskComment(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'      => 'required|integer|exists:sewing_tasks,id',
+                'comment' => 'present|nullable|string',
+            ]);
+
+            $sewingTask = SewingTask::query()->find($validated['id']);
+            if (!$sewingTask) {
+                throw new Exception('Missing sewing task with id: '.$validated['id'].'.');
+            }
+
+            $sewingTask->comment = $validated['comment'];
+            $sewingTask->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
     /**
      * Возвращает массив уникальных id заказов
      * @param  mixed  $data

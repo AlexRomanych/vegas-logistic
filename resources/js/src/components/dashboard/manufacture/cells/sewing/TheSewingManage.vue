@@ -117,7 +117,7 @@ const getStartWeekDate = (weekOrder: number /* порядковы номер н�
 // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
 watch(() => globalSewingTasks.value, () => {
 
-    if (!globalSewingTasks.value) {
+    if (!globalSewingTasks.value.length) {
         return
     }
 

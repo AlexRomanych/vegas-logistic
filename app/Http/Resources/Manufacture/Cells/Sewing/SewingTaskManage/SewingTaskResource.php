@@ -18,7 +18,7 @@ class SewingTaskResource extends JsonResource
 
         // __ Получаем последний статус из уже загруженной коллекции (если statuses есть)
         // __ Получаем текущий статус, сортируя по дате в ПИВОТ-таблице
-        $currentStatus = $this->whenLoaded('statuses', function() {
+        $currentStatus = $this->whenLoaded('statuses', function () {
             return $this->statuses->sortByDesc(function ($status) {
                 return $status->pivot->id;
             })->first();
@@ -38,12 +38,13 @@ class SewingTaskResource extends JsonResource
             'position'  => $this->position,
             'change'    => $this->change,
             'active'    => $this->active,
+            'comment'   => $this->comment,
 
             'order' => new SewingTaskOrderResource($this->whenLoaded('order')),
 
             'sewing_lines' => SewingTaskLineResource::collection($this->whenLoaded('sewingLines')), // 'sewing_lines
 
-            'statuses' => SewingTaskStatusResource::collection($this->whenLoaded('statuses')),
+            'statuses'       => SewingTaskStatusResource::collection($this->whenLoaded('statuses')),
             'current_status' => $currentStatus ? new SewingTaskStatusResource($currentStatus) : null,
 
 
@@ -51,7 +52,7 @@ class SewingTaskResource extends JsonResource
             // 'meta_ext'    => $this->meta_ext,
             // 'status'      => $this->status,
             // 'description' => $this->description,
-            // 'comment'     => $this->comment,
+
             // 'note'        => $this->note,
             // 'meta'        => $this->meta,
             // 'color'       => $this->color,

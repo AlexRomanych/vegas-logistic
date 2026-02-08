@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Validator;
 class CellSewingDayController extends Controller
 {
 
-
+    /**
+     * ___ Возвращает производственный день по дате и смене
+     * @param  string  $date
+     * @param  string  $change
+     * @return SewingDayResource|string
+     */
     public function getSewingDayByDateAndChange(string $date, string $change)
     {
         try {
@@ -33,14 +38,39 @@ class CellSewingDayController extends Controller
             $day = SewingDay::query()
                 ->with(['workers', 'responsible'])
                 ->firstOrCreate([
-                    'action_at' => Carbon::parse($date)->format(RETURN_DATE_TIME_FORMAT),
+                    'action_at'     => Carbon::parse($date)->format(RETURN_DATE_TIME_FORMAT),
                     'action_at_str' => $date,
                     'change'        => $change,
                 ]);
 
-
             return new SewingDayResource($day);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
+    /**
+     * ___ Устанавливает комментарий к производственному дню
+     * @param  Request  $request
+     * @return string
+     */
+    public function setSewingDayComment(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'      => 'required|integer|exists:sewing_days,id',
+                'comment' => 'present|nullable|string',
+            ]);
+
+            $sewingDay = SewingDay::query()->find($validated['id']);
+            if (!$sewingDay) {
+                throw new Exception('Missing sewing day with id: '.$validated['id'].'.');
+            }
+
+            $sewingDay->comment = $validated['comment'];
+            $sewingDay->save();
+
+            return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

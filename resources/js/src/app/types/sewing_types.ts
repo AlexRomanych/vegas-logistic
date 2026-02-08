@@ -17,6 +17,7 @@ export interface ISewingTask extends IPlanMatrixDayItem {
     active: boolean
     change: number
     position: number
+    comment: string | null,
     order: ISewingTaskOrder
     sewing_lines: ISewingTaskLine[]
     statuses: ISewingTaskStatus[]
@@ -343,4 +344,36 @@ export interface ISewingOperationModel {
 // --- ------------------------------------------------------------
 
 // __ Тип для обновления статуса заявки
-export type ISewingTaskStatusesSet = {task: number, status: number}
+export type ISewingTaskStatusesSet = { task: number, status: number }
+
+
+// --- ----------- Производственный день ---------------------------
+// __ Тип для Производственного Дня
+export type ISewingDay = {
+    id: number
+    action_at: string
+    action_at_str: string
+    change: number
+    description: string | null
+    comment: string | null
+    start_at: string | null
+    paused_at: string | null
+    resume_at: string | null
+    finish_at: string | null
+    duration: number
+    responsible :ISewingDayWorker
+    workers: ISewingDayWorker[]
+}
+
+export type ISewingDayWorker = {
+    id: number
+    surname: string
+    name: string
+    patronymic: string
+    pivot?: ISewingDayWorkerPivot
+}
+
+export type ISewingDayWorkerPivot = {
+    id: number
+    working_time: number | null
+}

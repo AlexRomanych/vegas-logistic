@@ -81,7 +81,7 @@
             :type="showDetails ? MENU_ITEMS_ACTIVE_TYPE : MENU_ITEMS_TYPE"
             class="field"
             text="Детали"
-            width="w-[90px]"
+            width="w-[60px]"
             @click="emits('showDetails')"
         />
 
@@ -92,8 +92,8 @@
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="showComments ? MENU_ITEMS_ACTIVE_TYPE : MENU_ITEMS_TYPE"
             class="field"
-            text="Комментарии"
-            width="w-[100px]"
+            text="Примечание"
+            width="w-[85px]"
             @click="emits('showComments')"
         />
 
@@ -105,7 +105,7 @@
             :type="MENU_ITEMS_TYPE"
             class="field"
             text="Обновить"
-            width="w-[90px]"
+            width="w-[65px]"
             @click="reloadData"
         />
 
@@ -117,7 +117,7 @@
             :type="MENU_ITEMS_TYPE"
             class="field"
             text="Упорядочить"
-            width="w-[90px]"
+            width="w-[85px]"
         />
 
         <!-- __ Объединить дубликаты -->
@@ -128,8 +128,20 @@
             :type="canMerge ? MENU_ITEMS_TYPE : 'danger'"
             class="field"
             text="Объединить"
-            width="w-[90px]"
+            width="w-[85px]"
             @click="mergeLines"
+        />
+
+        <!-- __ Добавить комментарий к СЗ -->
+        <AppLabelTS
+            :align="MENU_ITEMS_ALIGN"
+            :height="MENU_ITEMS_HEIGHT"
+            :text-size="MENU_ITEMS_TEXT_SIZE"
+            :type="sewingTask.comment ? 'orange' : MENU_ITEMS_TYPE"
+            class="field"
+            text="Комментарий"
+            width="w-[90px]"
+            @click="emits('addComment')"
         />
 
     </div>
@@ -147,7 +159,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 
-import type { IColorTypes, ISewingLinesPanel, ISewingTaskLine } from '@/types'
+import type { IColorTypes, ISewingLinesPanel, ISewingTask, ISewingTaskLine } from '@/types'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
@@ -156,6 +168,7 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 interface IProps {
     activePanel: ISewingLinesPanel
     sewingLines: ISewingTaskLine[],
+    sewingTask: ISewingTask,
     showComments?: boolean,
     showDetails?: boolean,
 }
@@ -172,6 +185,7 @@ const emits = defineEmits<{
     (e: 'reloadData'): void                     // __ Перегрузить данные
     (e: 'moveToPanel', type: string): void      // __ Переместить в другую панель
     (e: 'mergeLines'): void                     // __ Объединить строки
+    (e: 'addComment'): void                     // __ Добавить комментарий к СЗ
 }>()
 
 

@@ -304,6 +304,13 @@
         :type="modalInfoType"
     />
 
+    <!-- __ Модальное окно для изменения/добавления комментария -->
+    <CommentEdit
+        ref="commentEdit"
+        :comment="comment"
+        label="Комментарий к производственному дню"
+    />
+
 
 </template>
 
@@ -336,7 +343,6 @@ import {
     isToday,
     splitDate
 } from '@/app/helpers/helpers_date'
-import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 import {
     clearRenderMatrix,
     clearRenderMatrixDay,
@@ -351,6 +357,8 @@ import {
     repositionSewingTaskLines,
     setTaskPositionInRenderMatrix
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
 import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
@@ -363,7 +371,9 @@ import ManageTaskCard
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
 import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
+
+import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
 
 
 // type IDay = ISewingTask & IPlanMatrixDayItem
@@ -505,6 +515,9 @@ const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
+// __ Тип для модального окна изменения Комментария
+const comment     = ref('')
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Установка активного Заказа
 const selectSewingTask = (sewingTask: ISewingTask) => {
@@ -996,13 +1009,24 @@ const actionDayMenu = async () => {
     if (result.menuItem === 4) {
 
         // __ Получаем день
-        const day =  await sewingStore.getSewingDayByDateAndChange(formatToYMD(props.date))
-        console.log('day: ', day)
+        const sewingDay = await sewingStore.getSewingDayByDateAndChange(formatToYMD(props.date))
+        console.log('day: ', sewingDay)
+
+        comment.value = sewingDay.comment ?? '' // __ Устанавливаем комментарий
+        const answer = await commentEdit.value!.show()
+        if (answer) {
+            const newComment = commentEdit.value!.comment.trim()
+            const result = await sewingStore.setSewingDayComment(sewingDay.id, newComment)
+            if (!checkCRUD(result)) {
+                await showError()
+                return
+            }
+        }
+
         return
     }
 
-    console.log('result: ', result)
-
+    throw new Error('Unknown menu item!')
 }
 
 
