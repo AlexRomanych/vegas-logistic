@@ -9,8 +9,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Worker extends Model
 {
-    public $guarded = [];
+    protected $guarded = [];
 
+    protected $casts = [
+        'active' => 'boolean',
+    ];
+
+
+    // ___ Scopes
+    public function scopeActive($query)
+    {
+        // __ Возвращаем только активных сотрудников
+        return $query->where('active', true);
+    }
+
+
+
+    // Relations: Связь с Производственной ячейкой
     public function cellItem(): BelongsTo
     {
         return $this->belongsTo(CellItem::class);

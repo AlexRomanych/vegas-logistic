@@ -149,7 +149,6 @@ import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSim
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
-import logs from '@/router/routes_logs.ts'
 
 
 const sewingStore = useSewingStore()

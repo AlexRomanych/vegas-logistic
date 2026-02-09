@@ -403,7 +403,7 @@
 
 import { computed, /*onMounted,*/ onUnmounted, reactive, ref, watch } from 'vue'
 
-import { useWorkersStore } from '@/stores/WorkersStore.js'
+import { useWorkersStore } from '@/stores/WorkersStore.ts'
 import { useFabricsStore } from '@/stores/FabricsStore.js'
 
 import {

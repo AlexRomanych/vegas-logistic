@@ -6,7 +6,7 @@ import type { IHorizontalAlign } from '@/app/types'
 
 export interface IRenderDataItem {
     id?: string | ((...args: any[]) => string)
-    header: string | string[]
+    header: string | string[] | ((...args: any[]) => string | string[])
     headerType: ((...args: any[]) => IColorTypes) | IColorTypes
     width: string
     show: boolean

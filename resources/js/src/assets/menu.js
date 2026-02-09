@@ -59,7 +59,7 @@ const menuData = () => {
             items:
                 [
                     {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
-                    {name: 'Добавить сотрудника', path: 'workers.add', shown: true, isActive: true,},
+                    {name: 'Добавить сотрудника', path: 'worker.create', shown: true, isActive: true,},
                 ]
         },
         {

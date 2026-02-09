@@ -2,7 +2,11 @@
     <AppLabelMultiLineTS
         v-if="renderObject.show"
         :align="renderObject.headerAlign"
-        :text="renderObject.header"
+        :text="renderObject.header
+            ? typeof renderObject.header === 'function'
+            ? renderObject.header()
+            : renderObject.header
+            : header"
         :text-size="renderObject.headerTextSize"
         :title="renderObject.title"
         :type="
@@ -27,10 +31,12 @@ import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 interface IProps {
     renderObject: IRenderDataItem
     headerType?: IColorTypes
+    header?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    headerType: 'primary'
+    headerType: 'primary',
+    header: ''
 })
 
 

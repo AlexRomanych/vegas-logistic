@@ -11,6 +11,7 @@ export const SEWING_TASK_DRAFT: ISewingTask = {
     active:       true,
     change:       1,
     position:     0,
+    comment:      null,
     order:        {
         id:              0,
         order_no_num:    0,

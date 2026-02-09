@@ -211,4 +211,15 @@ export async function jwtPatch(url, data = {}) {
     }
 }
 
+export async function jwtPatch_(url, data = {}) {
+    try {
+        const response = await jwtAxios.patch(url, data)
+        const res = await response.data
+        return res
+    } catch (error) {
+        console.log('jwtPatch: ', error)
+        debugger
+    }
+}
+
 // export default jwtAxios

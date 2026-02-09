@@ -3,12 +3,16 @@
 // ___ Блок Персонала
 use App\Http\Controllers\Api\V1\WorkerController;
 
-Route::get('/workers', [WorkerController::class, 'workers'])->middleware('jwt.auth');
-Route::get('/worker/{id}', [WorkerController::class, 'show'])->middleware('jwt.auth');
-Route::get('/worker/edit/{id}', [WorkerController::class, 'show'])->middleware('jwt.auth');
-Route::put('/worker', [WorkerController::class, 'update'])->middleware('jwt.auth');
-Route::post('/worker', [WorkerController::class, 'create'])->middleware('jwt.auth');
-Route::delete('/worker', [WorkerController::class, 'destroy'])->middleware('jwt.auth');
+Route::prefix('workers')
+    ->middleware('jwt.auth')
+    ->group(function () {
 
-// __ Заполняем таблицу тестовыми данные
-Route::get('/workers/test/fill', [WorkerController::class, 'testFill']);
+        Route::get('/', [WorkerController::class, 'getWorkers']);
+        Route::get('/{id}', [WorkerController::class, 'getWorkerById']);
+        Route::patch('/', [WorkerController::class, 'updateWorker']);
+        Route::post('/', [WorkerController::class, 'createWorker']);
+        Route::delete('/', [WorkerController::class, 'deleteWorker']);
+
+        // __ Заполняем таблицу тестовыми данные
+        Route::get('/workers/test/fill', [WorkerController::class, 'testFill']);
+    });

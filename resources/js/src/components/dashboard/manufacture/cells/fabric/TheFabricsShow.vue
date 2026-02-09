@@ -44,14 +44,26 @@
                     />
                 </div>
 
-                <!-- attract: Рисунок -->
-                <AppLabelMultiLine
-                    :text="['Рис.', '']"
-                    align="center"
-                    text-size="small"
-                    type="primary"
-                    width="w-[40px]"
-                />
+                <div>
+                    <!-- attract: Рисунок -->
+                    <AppLabelMultiLine
+                        :text="['Рис.', '']"
+                        align="center"
+                        text-size="small"
+                        type="primary"
+                        width="w-[50px]"
+                    />
+
+                    <!-- attract: Фильтр: Рисунок -->
+                    <AppInputText
+                        id="name-search"
+                        v-model.trim="pictureFilter"
+                        placeholder="Рис"
+                        text-size="mini"
+                        type="primary"
+                        width="w-[50px]"
+                    />
+                </div>
 
                 <div>
                     <!-- attract: Ткань -->
@@ -135,12 +147,13 @@
 
                 <!-- attract: Производительность -->
                 <AppLabelMultiLine
-                    :text="['Пр-сть', 'м.п./ч.']"
+                    :text="productivitySort === null ? ['Пр-сть', 'м.п./ч.'] : productivitySort ? ['Пр-сть', 'м.п./ч. ▲'] : ['Пр-сть', 'м.п./ч. ▼']"
                     align="center"
                     text-size="small"
                     title="Производительность"
                     type="primary"
-                    width="w-[60px]"
+                    width="w-[70px]"
+                    @click="changeProductivitySort"
                 />
 
                 <div>
@@ -328,7 +341,7 @@
                             :text="fabric.picture.name"
                             align="center"
                             text-size="mini"
-                            width="w-[40px]"
+                            width="w-[50px]"
                         />
 
                         <AppLabel
@@ -388,7 +401,7 @@
                             :type="!(!fabric.buffer.productivity && fabric.active) ? 'dark' : 'danger'"
                             align="center"
                             text-size="mini"
-                            width="w-[60px]"
+                            width="w-[70px]"
                         />
 
                         <AppLabel
@@ -513,7 +526,7 @@ import AppSelectSimple from '@/components/ui/selects/AppSelectSimple.vue'
 const fabricsStore = useFabricsStore()
 
 const getAllFabrics = async () => await fabricsStore.getFabrics()
-const allFabrics = ref(await getAllFabrics())
+const allFabrics    = ref(await getAllFabrics())
 
 const getFabrics = () => {
     const tempFabrics = ref(allFabrics.value)
@@ -523,7 +536,7 @@ const getFabrics = () => {
     tempFabrics.value.sort((fabric) => fabric.active, true)
     return tempFabrics.value
 }
-const fabrics = ref(getFabrics())
+const fabrics    = ref(getFabrics())
 
 console.log('allFabrics: ', allFabrics.value)
 
@@ -538,52 +551,70 @@ fabrics.value.sort((fabric) => fabric.active, true)
 // union.sort((a, b) => a.element.model.localeCompare(b.element.model))
 
 // attract: Переменные для фильтрации
-const codeFilter = ref('')
-const nameFilter = ref('')
-const textileFilter = ref('')
-const statusFilter = ref(1)
-const mainMachineFilter = ref(0)
+const codeFilter         = ref('')
+const pictureFilter      = ref('')
+const nameFilter         = ref('')
+const textileFilter      = ref('')
+const statusFilter       = ref(1)
+const mainMachineFilter  = ref(0)
 const altMachineFilter_1 = ref(0)
 const altMachineFilter_2 = ref(0)
+
+
+// __ Сортировка
+const productivitySort = ref(null)
+
+const changeProductivitySort = () => {
+    if (productivitySort.value === null) {
+        productivitySort.value = true
+    } else if (productivitySort.value === true) {
+        productivitySort.value = false
+    } else {
+        productivitySort.value = null
+    }
+}
+
+
 
 // attract: Селект для статуса
 const statusSelectData = {
     name: 'status',
     data: [
-        {id: 1, name: 'Все', selected: true, disabled: false},
-        {id: 2, name: 'Активный', selected: true, disabled: false},
-        {id: 3, name: 'Архив', selected: true, disabled: false},
+        { id: 1, name: 'Все', selected: true, disabled: false },
+        { id: 2, name: 'Активный', selected: true, disabled: false },
+        { id: 3, name: 'Архив', selected: true, disabled: false },
     ],
 }
 
 // attract: Селекты для фильтрации СМ
 const machinesData = [
-    {id: 0, name: 'Все', selected: true, disabled: false},
-    {id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false},
-    {id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false},
+    { id: 0, name: 'Все', selected: true, disabled: false },
+    { id: -1, name: 'Любая ШМ', selected: false, disabled: false },
+    { id: FABRIC_MACHINES.AMERICAN.ID, name: FABRIC_MACHINES.AMERICAN.NAME, selected: false, disabled: false },
+    { id: FABRIC_MACHINES.GERMAN.ID, name: FABRIC_MACHINES.GERMAN.NAME, selected: false, disabled: false },
+    { id: FABRIC_MACHINES.CHINA.ID, name: FABRIC_MACHINES.CHINA.NAME, selected: false, disabled: false },
+    { id: FABRIC_MACHINES.KOREAN.ID, name: FABRIC_MACHINES.KOREAN.NAME, selected: false, disabled: false },
 ]
 
-const mainMachine = {name: 'mainMachine', data: machinesData}
-const altMachine_1 = {name: 'altMachine_1', data: machinesData}
-const altMachine_2 = {name: 'altMachine_2', data: machinesData}
+const mainMachine  = { name: 'mainMachine', data: machinesData }
+// const altMachine_1 = { name: 'altMachine_1', data: machinesData }
+// const altMachine_2 = { name: 'altMachine_2', data: machinesData }
 
 console.log('fabrics', fabrics.value)
 
-const modalShow = ref(false)
+const modalShow   = ref(false)
 const modalAnswer = ref(false)
 const calloutShow = ref(false)
 const calloutText = ref('')
 const calloutType = ref('')
 
 let deleteFabricId = 0
-let fabric = ref(null)
+let fabric         = ref(null)
 
 // Удаляем работника
 const fabricDelete = (id) => {
     modalShow.value = true
-    deleteFabricId = id
+    deleteFabricId  = id
     // console.log(id)
     // console.log(modalShow.value)
 }
@@ -591,13 +622,13 @@ const fabricDelete = (id) => {
 // Удаляем рабочего после модального окна
 const closeModal = async (answer) => {
     modalAnswer.value = answer
-    modalShow.value = false
+    modalShow.value   = false
     // console.log('answer', modalAnswer.value)
 
     if (answer) {
-        const fabric = fabrics.value.find((fabric) => fabric.id === deleteFabricId)
+        const fabric  = fabrics.value.find((fabric) => fabric.id === deleteFabricId)
         fabrics.value = fabrics.value.filter((fabric) => fabric.id !== deleteFabricId)
-        const result = await fabricsStore.deleteFabric(deleteFabricId)
+        const result  = await fabricsStore.deleteFabric(deleteFabricId)
 
         if (result === 'success') {
             calloutType.value = 'success'
@@ -637,7 +668,7 @@ const filterByMachine = (event, machineOrder /* 0 - основная СМ, 1 - �
 const updateBuffer = async () => {
     await fabricsStore.updateFabricsBuffer()
     allFabrics.value = await getAllFabrics()
-    fabrics.value = getFabrics()
+    fabrics.value    = getFabrics()
 }
 
 // attract: Реализация фильтра
@@ -645,49 +676,79 @@ watch(
     [
         () => codeFilter.value,
         () => nameFilter.value,
+        () => pictureFilter.value,
         () => textileFilter.value,
         () => statusFilter.value,
         () => mainMachineFilter.value,
         () => altMachineFilter_1.value,
         () => altMachineFilter_2.value,
+        () => productivitySort.value,
     ],
     ([
          newCodeFilter,
          newNameFilter,
+         newPictureFilter,
          newTextileFilter,
          newStatusFilter,
          newMainMachineFilter,
          newAltMachineFilter_1,
          newAltMachineFilter_2,
+         newProductivitySort,
      ]) => {
         fabrics.value = allFabrics.value
             .filter((fabric) => fabric.code_1C.includes(newCodeFilter.toLowerCase()))
             .filter((fabric) => fabric.display_name.toLowerCase().includes(newNameFilter.toLowerCase()))
             .filter((fabric) => fabric.textile.toLowerCase().includes(newTextileFilter.toLowerCase()))
+            .filter((fabric) => fabric.picture.name.toLowerCase().includes(newPictureFilter.toLowerCase()))
 
-        // Фильтр по статусу
+        // __ Фильтр по статусу
         if (newStatusFilter === 2 || newStatusFilter === 3) {
             newStatusFilter === 2
                 ? (fabrics.value = fabrics.value.filter((fabric) => fabric.active))
                 : (fabrics.value = fabrics.value.filter((fabric) => !fabric.active))
         }
 
-        // Фильтр по основной СМ
+        // __ Фильтр по основной СМ
         if (newMainMachineFilter !== 0) {
-            fabrics.value = fabrics.value.filter((fabric) => fabric.machines[0].id === newMainMachineFilter)
+            if (newMainMachineFilter !== -1) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[0].id === newMainMachineFilter)
+            } else {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[0].id)
+            }
         }
 
-        // Фильтр по альт. СМ 1
+        // __ Фильтр по альт. СМ 1
         if (newAltMachineFilter_1 !== 0) {
-            fabrics.value = fabrics.value.filter((fabric) => fabric.machines[1].id === newAltMachineFilter_1)
+            if (newAltMachineFilter_1 !== -1) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[1].id === newAltMachineFilter_1)
+            } else {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[1].id)
+            }
         }
 
-        // Фильтр по альт. СМ 2
+        // __ Фильтр по альт. СМ 2
         if (newAltMachineFilter_2 !== 0) {
-            fabrics.value = fabrics.value.filter((fabric) => fabric.machines[2].id === newAltMachineFilter_2)
+            if (newAltMachineFilter_2 !== -1) {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[2].id === newAltMachineFilter_2)
+            } else {
+                fabrics.value = fabrics.value.filter((fabric) => fabric.machines[2].id)
+            }
         }
+
+
+        if (newProductivitySort === null) {
+            fabrics.value.sort((fabric1, fabric2) =>
+                fabric1.machines[0].short_name.localeCompare(fabric2.machines[0].short_name)
+            )
+            fabrics.value.sort((fabric) => fabric.active, true)
+        } else if (newProductivitySort === true) {
+            fabrics.value.sort((a, b) => a.buffer.productivity - b.buffer.productivity)
+        } else {
+            fabrics.value.sort((a, b) => b.buffer.productivity - a.buffer.productivity)
+        }
+
     },
-    {deep: true}
+    { deep: true }
 )
 </script>
 
