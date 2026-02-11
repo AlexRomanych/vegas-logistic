@@ -36,4 +36,22 @@ readonly class Size
     {
         return $this->height;
     }
+
+    /**
+     *  __ Возвращаем периметр в сантиметрах
+     * @return int
+     */
+    public function getPerimeter_SM(): int
+    {
+        return ($this->width + $this->length) * 2;
+    }
+
+    /**
+     * __ Возвращаем периметр в метрах
+     * @return float
+     */
+    public function getPerimeter(): float
+    {
+        return $this->getPerimeter_SM() / 100;
+    }
 }

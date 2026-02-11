@@ -208,7 +208,7 @@ const showError = async (error: string | null = null) => {
 
 
 // __ Редактируем операцию или удаляем или переключаем
-const editOperation = async (schema: ISewingOperationSchema, operation: ISewingOperation) => {
+const editOperation = async (schema: ISewingOperationSchema | null, operation: ISewingOperation) => {
     modalOperation.value = operation
     modalSchema.value    = schema
     const result         = await sewingOperationItemEdit.value?.show()

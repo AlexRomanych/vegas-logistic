@@ -154,8 +154,8 @@ import type {
 } from '@/types'
 
 interface IProps {
-    operation: ISewingOperation
-    schema: ISewingOperationSchema
+    operation: ISewingOperation | null,
+    schema: ISewingOperationSchema | null,
 
     type?: IColorTypes,
     width?: string,
@@ -182,6 +182,9 @@ let resolvePromise: ((value: boolean) => void) | null
 
 // __ Функция для установки данных в зависимости от наличия операции в схеме
 const setEditableData = () => {
+    if (!props.schema || !props.operation) {
+        return
+    }
     const findIndex = props.schema.operations.findIndex(item => item.id === props.operation.id)
     if (findIndex !== -1) {
         editableData.present = true

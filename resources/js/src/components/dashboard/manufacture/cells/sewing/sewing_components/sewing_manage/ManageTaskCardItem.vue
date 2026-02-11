@@ -53,7 +53,7 @@
             :rounded="DEFAULT_ROUNDED"
             :text="getTime"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
+            :type="getTime === '00с' ? 'danger' : getType"
             :width="renderData.time.width"
         />
 

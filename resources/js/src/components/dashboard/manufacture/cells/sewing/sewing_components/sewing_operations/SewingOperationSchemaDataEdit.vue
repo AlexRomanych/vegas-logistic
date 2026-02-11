@@ -98,7 +98,7 @@ interface IProps {
     type?: IColorTypes,
     width?: string,
     height?: string,
-    schema: ISewingOperationSchema
+    schema: ISewingOperationSchema | null
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -117,6 +117,9 @@ const formData = reactive({
 let resolvePromise: ((value: boolean) => void) | null
 
 const show = async () => {
+    if (!props.schema) {
+        return
+    }
 
     await nextTick()
 

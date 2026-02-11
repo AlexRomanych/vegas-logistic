@@ -66,37 +66,6 @@ final class Model extends LaravelModel
     //'barcode'                         ('Штрихкод')
 
 
-    // protected $fillable = [
-    //     CODE_1C,
-    //     'type', 'serial',
-    //     'name', 'name_1C',
-    //     'base_height', 'cover_height',
-    //     'textile', 'textile_combination', 'cover_type', 'zipper', 'spacer', 'stitch_pattern',
-    //     'pack_type', 'pack_density',
-    //     'base_composition', 'base_block', 'side_foam',
-    //     'load',
-    //     'guarantee',
-    //     'life',
-    //     'cover_mark', 'model_mark',
-    //     'group',
-    //     'owner',
-    //     'line',
-    //     'sewing_machine',
-    //     'side_height',
-    //     'pack_weight_rb', 'pack_weight_ex',
-    //     'manufacture_type',
-    //     'weight',
-    //     'barcode',
-    //     'collection_id',
-    //     'base', 'cover',
-    //     'active'
-    // ];
-
-    // protected $hidden = [
-    //     'collection_id',
-    //     'created_at', 'updated_at',
-    // ];
-
     protected $casts = [
         'active'       => 'boolean',
         'line'         => 'boolean',
@@ -105,23 +74,6 @@ final class Model extends LaravelModel
     ];
 
     protected $guarded = [];
-
-    // protected $attributes = [
-    //     CODE_1C => '000000000',
-    //     'type' => 'Матрас',
-    //     'serial' => 'МВ 314',
-    //     'name' => 'Матрас',
-    //     'name_1C' => 'МВ 314.Матрас.',
-    //     'owner' => 'Матрасы ортопедические обшитые тип МВ314',
-    //     'base_height' => 0.2,
-    //     'cover_height' => 0.2,
-    //     'pack_density' => 0,
-    //     'pack_weight_rb' => 0,
-    //     'pack_weight_ex' => 0,
-    //     'weight' => 0,
-    //     'active' => 1,
-    //     'collection_id' => '000000000',
-    // ];
 
     // __ Задаем вычисляемые свойства
     protected $appends = [
@@ -259,28 +211,6 @@ final class Model extends LaravelModel
     }
 
 
-    // Relations: Связь Модели со Схемой Типовых операций Пошива
-    public function sewingSchema(): BelongsTo {
-        return $this->belongsTo(SewingOperationSchema::class, 'sewing_operation_schema_id', 'id');
-    }
-
-
-    // Relations: Связь с Операциями
-    public function operations(): BelongsToMany
-    {
-        return $this
-            ->belongsToMany(
-                SewingOperation::class,           // Класс, с которым связываемся
-                SewingOperationModelPivot::TABLE,   // Промежуточная Таблица, связывающая классы
-                'model_code_1c',           // Ключ в промежуточной таблице, связывающий с текущим классом
-                'sewing_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
-            )
-            ->using(SewingOperationModelPivot::class)
-            ->withPivot(['ratio', 'amount', 'position', 'condition']);
-    }
-
-
-
     // Relations: Связь с Типом модели
     public function modelType(): BelongsTo
     {
@@ -292,6 +222,27 @@ final class Model extends LaravelModel
     public function modelManufactureStatus(): BelongsTo
     {
         return $this->belongsTo(ModelManufactureStatus::class, 'model_manufacture_status_id', 'id');
+    }
+
+
+    // Relations: Связь Модели со Схемой Типовых операций Пошива
+    public function sewingSchema(): BelongsTo {
+        return $this->belongsTo(SewingOperationSchema::class, 'sewing_operation_schema_id', 'id');
+    }
+
+
+    // Relations: Связь с Операциями
+    public function sewingOperations(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(
+                SewingOperation::class,           // Класс, с которым связываемся
+                SewingOperationModelPivot::TABLE,   // Промежуточная Таблица, связывающая классы
+                'model_code_1c',           // Ключ в промежуточной таблице, связывающий с текущим классом
+                'sewing_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+            )
+            ->using(SewingOperationModelPivot::class)
+            ->withPivot(['ratio', 'amount', 'position', 'condition']);
     }
 
 }

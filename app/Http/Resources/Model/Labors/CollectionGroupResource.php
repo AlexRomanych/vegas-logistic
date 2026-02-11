@@ -14,15 +14,15 @@ class CollectionGroupResource extends JsonResource
      */
     public function toArray($request): array
     {
-        // $this в данном случае — это массив/коллекция,
-        // где ключ — название коллекции, а значение — список моделей
+        // __ $this в данном случае — это массив/коллекция,
+        // __ где ключ — название коллекции, а значение — список моделей
         return $this->map(function ($models, $collectionName) {
             return [
                 'collection' => $collectionName,
-                'items' => ModelLaborResource::collection($models), // Используем ресурс для самих моделей
+                'items' => ModelLaborResource::collection($models),  // __ Используем ресурс для самих моделей
             ];
         })
-            ->values() // values() сбросит ключи в массив [0, 1, 2]
+            ->values() // __ values() сбросит ключи в массив [0, 1, 2]
             ->all();   // <--- КРИТИЧНО: превращаем коллекцию обратно в массив
     }
 }

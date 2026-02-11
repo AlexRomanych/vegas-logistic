@@ -102,6 +102,20 @@ const sewing = [
                        title: 'Выполнение сменных заданий',
                    } as IRouteMeta,
     },
+
+
+    {
+        // ___ Тест
+        path:      _MAIN_PREFIX + 'test',
+        name:      'manufacture.cell.sewing.test',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/Test.vue'),
+        meta:      {
+                       title: 'Тестовая страница',
+                   } as IRouteMeta,
+    },
+
+
+
 ]
 
 

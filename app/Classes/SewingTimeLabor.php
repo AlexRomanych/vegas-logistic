@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Models\Manufacture\Cells\Sewing\SewingOperation;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Models\Model;
@@ -10,7 +11,7 @@ use App\Models\Shared\Size;
 use App\Services\ModelsService;
 use App\Services\SizeService;
 
-class SewingTimeLabor
+final class SewingTimeLabor
 {
     // --- Трудозатраты на единицу изделия для ШМ
     // !!! TODO: Эти значения нужно брать из БД для средней модели и рассчитывать для конкретной модели
@@ -38,6 +39,10 @@ class SewingTimeLabor
     // --- Тип ШМ
     private string $sewingType = '';
 
+
+    // --- Модель + Размер
+    private string $modelCode1C = '';   // __ Код 1С Модели, не сохраняем всю модель, чтобы экономить память
+    // private Size $size;
 
     /**
      * ___ Получаем трудозатраты либо по Строке СЗ, либо по Модели, Размеру и количеству
@@ -120,6 +125,8 @@ class SewingTimeLabor
             $workModel = ModelsService::getElementByNameOrCode1C($model);
         }
 
+        /** @noinspection PhpUndefinedFieldInspection */
+        $this->modelCode1C = $workModel->code_1c;
         return $workModel;
     }
 
@@ -133,6 +140,8 @@ class SewingTimeLabor
         } elseif (is_string($size)) {
             $workSize = SizeService::getDimensions($size);
         }
+
+        // $this->size = $workSize;
         return $workSize;
     }
 
@@ -179,11 +188,62 @@ class SewingTimeLabor
         // !!! __ TODO: Нужно привязать модель к размеру - Привязываем
         // !!! __ TODO: Нужно сделать массив с расчетным количеством изделий - Считаем и Выдаем
 
-        $this->timeUniversalPerPic = 100;
-        $this->timeAutoPerPic      = 150;
-        $this->timeSolidHardPerPic = 200;
-        $this->timeSolidLitePerPic = 250;
+        $model = $this->getModel($this->modelCode1C);
+
+        $this->timeUniversalPerPic = 0;
+        $this->timeAutoPerPic      = 0;
+        $this->timeSolidHardPerPic = 0;
+        $this->timeSolidLitePerPic = 0;
         $this->timeUndefinedPerPic = 0;
+
+        if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
+
+            $this->timeUniversalPerPic = 100;
+            $this->timeAutoPerPic      = 150;
+            $this->timeSolidHardPerPic = 200;
+            $this->timeSolidLitePerPic = 250;
+            $this->timeUndefinedPerPic = 0;
+
+        } else {
+
+            // __ Получаем операции (Если нет схемы (schema_id === 0), то операции из модели, иначе из схемы)
+            $operations = $model->sewingSchema->id !== 0 ? $model->sewingSchema->operations : $model->sewingOperations;
+
+            $m = $model->toArray();
+
+            // $op = [];
+            // $operations->each(function ($operation) use ($op) {$op[] = $operation->all();});
+
+            $timePerPic = 0;
+            foreach ($operations as $operation) {
+
+                $o = $operation->toArray();
+
+                // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
+                $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;
+                $time  = 0;
+
+                if ($operation->type === SewingOperation::DYNAMIC_TYPE) {
+                    $time = $operation->time * $size->getPerimeter();
+                } elseif ($operation->type === SewingOperation::STATIC_TYPE) {
+                    $time = $operation->time;
+                }
+
+                $timePerPic += $time * $ratio;
+            }
+
+            if ($this->sewingType === SewingTask::FIELD_UNIVERSAL) {
+                $this->timeUniversalPerPic = $timePerPic;
+            } elseif ($this->sewingType === SewingTask::FIELD_AUTO) {
+                $this->timeAutoPerPic = $timePerPic;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_HARD) {
+                $this->timeSolidHardPerPic = $timePerPic;
+            } elseif ($this->sewingType === SewingTask::FIELD_SOLID_LITE) {
+                $this->timeSolidLitePerPic = $timePerPic;
+            } elseif ($this->sewingType === SewingTask::FIELD_UNDEFINED) {
+                $this->timeUndefinedPerPic = $timePerPic;
+            }
+        }
     }
 
     // ___ Получаем сами трудозатраты

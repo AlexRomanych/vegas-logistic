@@ -25,6 +25,7 @@ import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 
 let menuItems: IMenuItem[] = [
+    { name: 'Тест', path: 'manufacture.cell.sewing.test', shown: true, isActive: true },
     { name: 'Управление планом ШЦ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
     { name: 'Управление СЗ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
     { name: 'Выполнение СЗ', path: 'manufacture.cell.sewing.tasks.execute', shown: true, isActive: true },

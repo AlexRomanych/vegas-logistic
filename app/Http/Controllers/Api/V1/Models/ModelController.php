@@ -230,7 +230,7 @@ class ModelController extends Controller
         try {
             $models = Model::query()
                 ->basics()      // __ Базовые модели (Швейка)
-                ->with(['collection', 'sewingSchema', 'operations'])
+                ->with(['collection', 'sewingSchema', 'sewingOperations'])
                 ->orderBy('name')
                 ->get();
 
@@ -295,7 +295,7 @@ class ModelController extends Controller
             ]);
 
             $model = Model::query()->find($data['target_id']);
-            $model->operations()->detach($data['operation_id']);
+            $model->sewingOperations()->detach($data['operation_id']);
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
@@ -327,7 +327,7 @@ class ModelController extends Controller
             ]);
 
             $model = Model::query()->find($data['target_id']);
-            $model->operations()->syncWithoutDetaching([
+            $model->sewingOperations()->syncWithoutDetaching([
                 $data['operation_id'] => [
                     'ratio'     => $data['pivot']['ratio'],
                     'amount'    => $data['pivot']['amount'],

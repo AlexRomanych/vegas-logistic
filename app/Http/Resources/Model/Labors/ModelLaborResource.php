@@ -21,7 +21,7 @@ class ModelLaborResource extends JsonResource
             'name'             => $this->name,
             'name_report'      => $this->name_report,
             'sewing_schema_id' => $this->sewingSchema->id,
-            'operations'       => SewingOperationForSchemaResource::collection($this->operations),
+            'operations'       => SewingOperationForSchemaResource::collection($this->sewingOperations),
             // 'operations'       => $this->operations
             // '_' => parent::toArray($request)
         ];

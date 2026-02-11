@@ -63,7 +63,7 @@ final class ModelsService implements VegasDataUpdateContract
     {
         if (!self::isModelsCashed()) {
             $models = Model::query()
-                ->with(['modelType', 'cover', 'base'])
+                ->with(['modelType', 'cover', 'base', 'sewingSchema.operations', 'sewingOperations'])
                 ->get();
 
             foreach ($models as $model) {

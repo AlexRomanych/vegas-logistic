@@ -1046,7 +1046,6 @@ const register1CAtFilter = ref('')
 // attract: Обработка выбора фильтра статуса
 const filterByStatus = (item) => {
     statusFilter.value = item.id
-    log(item)
 
     if (item.id === 0) {
         statusFilterType.value = 'light'

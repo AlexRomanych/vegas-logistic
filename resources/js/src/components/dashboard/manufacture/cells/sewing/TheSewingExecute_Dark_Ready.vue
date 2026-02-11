@@ -1,18 +1,18 @@
 <template>
     <div
-        class="max-h-[800px] bg-gray-50 p-8 text-slate-700 relative overflow-hidden flex flex-col font-sans"
+        class="max-h-[800px] bg-slate-950 p-8 text-slate-300 relative overflow-hidden flex flex-col"
         @contextmenu.prevent="openContextMenu"
     >
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Task Manager Pro</h1>
-                <p class="text-sm text-slate-400 font-medium">Выбрано задач: {{ selectedIds.size }}</p>
+                <h1 class="text-2xl font-bold text-white">Task Manager Pro</h1>
+                <p class="text-sm text-slate-500">Выбрано задач: {{ selectedIds.size }}</p>
             </div>
             <div class="flex gap-3">
                 <button
                     @click="completeSelected"
                     :disabled="selectedIds.size === 0"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-200 disabled:text-gray-400 px-6 py-2 rounded-xl font-bold transition-all active:scale-95 shadow-sm shadow-indigo-200"
+                    class="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 px-6 py-2 rounded-xl font-bold transition-all active:scale-95"
                 >
                     Завершить выбранные
                 </button>
@@ -21,7 +21,7 @@
 
         <div
             ref="scrollContainer"
-            class="flex-1 overflow-y-auto border border-gray-200 rounded-2xl bg-white select-none custom-scroll relative shadow-sm"
+            class="flex-1 overflow-y-auto border border-slate-800 rounded-lg bg-slate-900 select-none custom-scroll relative"
         >
             <div
                 v-for="(task, index) in tasks"
@@ -29,32 +29,32 @@
                 :data-task-id="task.id"
                 @mousedown="startSelection(index, $event)"
                 @mouseenter="updateSelection(index)"
-                class="h-14 flex items-center px-6 border-b border-gray-100 transition-colors relative"
+                class="h-14 flex items-center px-4 border-b border-slate-800/50 transition-colors relative"
                 :class="[
-                  selectedIds.has(task.id) ? 'bg-indigo-50 text-indigo-900' : 'hover:bg-gray-50',
-                  task.completed ? 'opacity-50' : ''
+                  selectedIds.has(task.id) ? 'bg-blue-600/20 text-blue-100' : 'hover:bg-slate-800/50',
+                  task.completed ? 'opacity-40' : ''
                 ]"
             >
-                <span class="mr-4 text-xs font-bold text-slate-300 w-6">{{ index + 1 }}</span>
+                <span class="mr-4 text-xs font-mono text-slate-600 w-6">{{ index + 1 }}</span>
 
-                <div class="flex items-center gap-4 flex-1">
+                <div class="flex items-center gap-3 flex-1">
                     <div
-                        class="w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all"
+                        class="w-5 h-5 border rounded flex items-center justify-center transition-colors"
                         :class="[
-                          selectedIds.has(task.id) ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white',
-                          task.completed ? 'bg-emerald-500 border-emerald-500' : ''
+                          selectedIds.has(task.id) ? 'bg-blue-500 border-blue-500' : 'border-slate-600',
+                          task.completed ? 'bg-green-600 border-green-600' : ''
                         ]"
                     >
                         <span v-if="task.completed" class="text-[10px] text-white">✔</span>
                     </div>
-                    <span :class="['font-semibold text-sm transition-all', task.completed ? 'line-through text-slate-400' : 'text-slate-700']">
+                    <span :class="['font-medium', task.completed ? 'line-through' : '']">
                         {{ task.title }}
                     </span>
                 </div>
 
                 <div
                     v-if="selectedIds.has(task.id)"
-                    class="absolute inset-y-0 left-0 w-1 bg-indigo-500 pointer-events-none"
+                    class="absolute inset-0 border-l-2 border-r-2 border-blue-500 pointer-events-none animate-select"
                 ></div>
             </div>
         </div>
@@ -65,39 +65,40 @@
                     v-if="showMenu"
                     ref="menuRef"
                     :style="{ top: `${menuPosition.y}px`, left: `${menuPosition.x}px` }"
-                    class="fixed z-[100] w-64 bg-white border border-gray-200 shadow-xl rounded-2xl overflow-hidden py-1.5 backdrop-blur-xl"
+                    class="fixed z-[100] w-64 bg-slate-800/95 border border-slate-700 shadow-2xl rounded-xl overflow-hidden py-1 backdrop-blur-md"
                     @click.stop
                 >
-                    <div class="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+                    <div class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-700/50 mb-1">
                         Действия ({{ selectedIds.size }})
                     </div>
                     <button
                         @click="handleMenuAction('complete')"
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                        class="w-full flex items-center px-4 py-2 text-sm hover:bg-blue-600 hover:text-white transition-colors"
                     >
-                        <span class="mr-3 text-lg">✅</span> Завершить
+                        <span class="mr-3">✅</span> Завершить задачи
                     </button>
                     <button
                         @click="handleMenuAction('reset')"
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-100 transition-colors"
+                        class="w-full flex items-center px-4 py-2 text-sm hover:bg-slate-700 transition-colors"
                     >
-                        <span class="mr-3 text-lg">⏳</span> Сбросить статус
+                        <span class="mr-3">⏳</span> Сбросить статус
                     </button>
-                    <div class="h-[1px] bg-gray-100 my-1"></div>
+                    <div class="h-[1px] bg-slate-700 my-1"></div>
                     <button
                         @click="handleMenuAction('delete')"
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-500 hover:text-white transition-colors"
+                        class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-600 hover:text-white transition-colors"
                     >
-                        <span class="mr-3 text-lg">🗑️</span> Удалить
+                        <span class="mr-3">🗑️</span> Удалить из списка
                     </button>
                 </div>
             </Transition>
         </Teleport>
 
-        <div class="mt-4 text-[11px] font-bold text-slate-400 flex gap-6 px-2">
-            <span class="flex items-center gap-1.5"><span class="bg-gray-200 px-1 rounded text-[10px]">DRAG</span> Выделение</span>
-            <span class="flex items-center gap-1.5"><span class="bg-gray-200 px-1 rounded text-[10px]">CTRL</span> Выбор вразнобой</span>
-            <span class="flex items-center gap-1.5"><span class="bg-gray-200 px-1 rounded text-[10px]">SHIFT</span> Диапазон</span>
+        <div class="mt-4 text-xs text-slate-600 flex gap-6">
+            <span>🖱️ Drag для выделения</span>
+            <span>⌨️ Ctrl + Click для выбора вразнобой</span>
+            <span>⌨️ Shift + Click для диапазонов</span>
+            <span>🖱️ ПКМ для меню</span>
         </div>
     </div>
 </template>
@@ -265,32 +266,35 @@ onUnmounted(() => {
     background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-    background: #e2e8f0; /* Светлый скролл */
+    background: #334155;
     border-radius: 10px;
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    background: #475569;
 }
 
 .fade-enter-active, .fade-leave-active {
-    transition: opacity 0.1s ease, transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .fade-enter-from, .fade-leave-to {
     opacity: 0;
-    transform: translateY(-8px) scale(0.95);
+    transform: translateY(-5px) scale(0.98);
 }
 
+/* Отключаем стандартное выделение текста во время работы */
 .select-none {
     user-select: none;
+    -webkit-user-select: none;
 }
 
-/* Измененная анимация выделения для светлой темы */
-@keyframes select-blink-light {
-    0% { background-color: rgba(79, 70, 229, 0.05); }
-    100% { background-color: rgba(79, 70, 229, 0.1); }
+
+@keyframes select-blink {
+    0% { opacity: 0; transform: scaleX(0.98); }
+    50% { opacity: 1; background-color: rgba(59, 130, 246, 0.3); }
+    100% { opacity: 1; transform: scaleX(1); }
 }
 
 .animate-select {
-    animation: select-blink-light 0.3s ease-out forwards;
+    animation: select-blink 0.4s ease-out forwards;
 }
 </style>
