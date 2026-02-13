@@ -209,15 +209,16 @@ final class SewingTimeLabor
             // __ Получаем операции (Если нет схемы (schema_id === 0), то операции из модели, иначе из схемы)
             $operations = $model->sewingSchema->id !== 0 ? $model->sewingSchema->operations : $model->sewingOperations;
 
-            $m = $model->toArray();
-
+            // $m = $model->toArray();
             // $op = [];
             // $operations->each(function ($operation) use ($op) {$op[] = $operation->all();});
 
             $timePerPic = 0;
             foreach ($operations as $operation) {
 
-                $o = $operation->toArray();
+                if (!$operation->active) continue;  // __ Если операция не активна, то пропускаем ее
+
+                // $o = $operation->toArray();
 
                 // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
                 $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;

@@ -1,7 +1,88 @@
 // Info Константы для работы с Пошивом (Sewing)
 
 
-import type { ISewingMachineKeys, ISewingOperation, ISewingTask } from '@/types'
+import type {
+    ISewingMachineKeys,
+    ISewingOperation,
+    ISewingTask,
+    ISewingTaskStatusItem,
+    ISewingTaskStatusKeys
+} from '@/types'
+
+
+export const SEWING_TASK_STATUS_CREATED = 'CREATED'     // __ Создано
+export const SEWING_TASK_STATUS_ROLLING = 'ROLLING'     // __ Переходящий
+export const SEWING_TASK_STATUS_PENDING = 'PENDING'     // __ Готово к выполнению
+export const SEWING_TASK_STATUS_RUNNING = 'RUNNING'     // __ Выполняется
+export const SEWING_TASK_STATUS_DONE = 'DONE'           // __ Выполнено
+
+// __ Статусы движения СЗ на Пошиве
+export const SEWING_TASK_STATUSES: Record<ISewingTaskStatusKeys, ISewingTaskStatusItem> = {
+    CREATED: {
+        ID: 1,
+        TITLE: 'Создано',
+        WORD: 'created',
+        TYPE: 'dark',
+    },
+    ROLLING: {
+        ID: 2,
+        TITLE: 'Создано при закрытии СЗ',
+        WORD: 'rolling',
+        TYPE: 'orange',
+    },
+    PENDING: {
+        ID: 3,
+        TITLE: 'Готово к выполнению',
+        WORD: 'pending',
+        TYPE: 'primary',
+    },
+    RUNNING: {
+        ID: 4,
+        TITLE: 'Выполняется',
+        WORD: 'running',
+        TYPE: 'warning',
+    },
+    DONE: {
+        ID: 5,
+        TITLE: 'Создано',
+        WORD: 'created',
+        TYPE: 'success',
+    },
+}
+
+// const SEWING_STATUS_CREATED_ID = 1;     // __ Создано
+// const SEWING_STATUS_ROLLING_ID = 2;     // __ Переходящий
+// const SEWING_STATUS_PENDING_ID = 3;     // __ Готово к выполнению
+// const SEWING_STATUS_RUNNING_ID = 4;     // __ Выполняется
+// const SEWING_STATUS_DONE_ID = 5;        // __ Выполнено
+
+// __ Статусы движения СЗ на Пошиве
+// export const SEWING_TASK_STATUSES = {
+//     CREATED: {
+//         ID: 1,
+//         TITLE: 'Создано'
+//     },
+//     CREATED_CLOSE: {
+//         ID: 2,
+//         TITLE: 'Создано при закрытии СЗ'
+//     },
+//     PENDING: {
+//         ID: 3,
+//         TITLE: 'Готово к выполнению'
+//     },
+//     RUNNING: {
+//         ID: 4,
+//         TITLE: 'Выполняется'
+//     },
+//     DONE: {
+//         ID: 5,
+//         TITLE: 'Выполнено'
+//     }
+// }
+
+
+
+
 
 
 export const SEWING_TASK_DRAFT: ISewingTask = {
@@ -81,29 +162,7 @@ export const SEWING_OPERATION_DRAFT: ISewingOperation = {
 
 
 
-// __ Статусы движения СЗ на Пошиве
-export const SEWING_TASK_STATUSES = {
-    CREATED: {
-        ID: 1,
-        TITLE: 'Создано'
-    },
-    CREATED_CLOSE: {
-        ID: 2,
-        TITLE: 'Создано при закрытии СЗ'
-    },
-    PENDING: {
-        ID: 3,
-        TITLE: 'Готово к выполнению'
-    },
-    RUNNING: {
-        ID: 4,
-        TITLE: 'Выполняется'
-    },
-    DONE: {
-        ID: 5,
-        TITLE: 'Выполнено'
-    }
-}
+
 
 
 

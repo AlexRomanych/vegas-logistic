@@ -338,7 +338,7 @@ import {
     additionDaysInStrFormat,
     formatDateInFullFormat,
     formatDateIntl,
-    formatToYMD,
+    formatToYMD, getDayOfWeek,
     isHoliday,
     isToday,
     splitDate
@@ -427,7 +427,7 @@ const REFERENCE_TIME           = 10.5 * 60 * 60 // в секунды
 const heightTotals = computed(() => globalSewingTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]')
 
 // __ Дата
-const renderDate = computed(() => formatDateInFullFormat(props.date, !globalSewingTaskFullDaysShow.value))
+const renderDate = computed(() => formatDateInFullFormat(props.date, !globalSewingTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
 // const renderDate = computed(() => getDateFromDateTimeString(props.date))
 
 // TODO: Переписать все в dateType()

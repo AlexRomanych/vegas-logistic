@@ -22,7 +22,33 @@ class SewingTask extends Model
     public const FIELD_UNDEFINED = 'undefined';
     public const FIELD_AVERAGE = 'average';
 
+
     // --- -------------------------------
+
+    // --- -------------------------------
+    // --- ---------- Scopes -------------
+    // --- -------------------------------
+    public function scopeByStatus($query, array|string|int $statusIds = null)
+    {
+        if (empty($statusIds)) return $query;
+
+        $statusIds = collect($statusIds)->flatten()->map(fn($id) => (int)$id)->toArray();
+        // $statusIds = is_string($statusIds) ? [(int) $statusIds] : [$statusIds];
+
+        // Магия: join-им только ОДНУ последнюю запись из истории статусов
+        return $query->whereHas('latestTaskStatus', function ($q) use ($statusIds) {
+            $q->whereIn('sewing_task_status_id', $statusIds);
+        });
+
+
+        // return $query->whereHas('statuses', function ($q) use ($statusIds) {
+        //     // Мы фильтруем прямо по полю status_id в промежуточной таблице
+        //     // Это быстрее, так как не нужно джойнить таблицу statuses
+        //     $q->whereIn('sewing_task_status_id', $statusIds);
+        // });
+    }
+
+
 
 
     // Relations: Связь с Основной Заявкой
@@ -45,7 +71,7 @@ class SewingTask extends Model
         return $this
             ->belongsToMany(
                 SewingTaskStatus::class,         // Класс, с которым связываемся
-                'sewing_task_status_pivot',      // Промежуточная Таблица, связывающая классы
+                SewingTaskStatusPivot::TABLE,      // Промежуточная Таблица, связывающая классы
                 'sewing_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
                 'sewing_task_status_id' // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
@@ -54,6 +80,15 @@ class SewingTask extends Model
     }
 
 
+    // Relations: Связь с последним статусом
+    public function latestTaskStatus()
+    {
+        // Указываем, что последнюю запись ищем по максимальному ID в пивоте
+        return $this->hasOne(SewingTaskStatusPivot::class)->latestOfMany('id');
+
+        // ИЛИ, если хочешь по дате создания:
+        // return $this->hasOne(TaskStatus::class)->latestOfMany('created_at');
+    }
 
 
 }

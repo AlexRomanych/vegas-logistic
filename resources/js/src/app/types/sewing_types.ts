@@ -5,8 +5,22 @@
 // line -------------------------------------------------------------------
 
 
-import type { IDims, IPlanMatrixDayItem } from '@/types/index.ts'
-import { AUTO, AVERAGE, SEWING_MACHINES, SOLID_HARD, SOLID_LITE, UNDEFINED, UNIVERSAL } from '@/app/constants/sewing.ts'
+import type { IColorTypes, IDims, IPlanMatrixDayItem } from '@/types/index.ts'
+import {
+    SEWING_MACHINES,
+    UNIVERSAL,
+    AUTO,
+    SOLID_HARD,
+    SOLID_LITE,
+    AVERAGE,
+    UNDEFINED,
+    SEWING_TASK_STATUS_CREATED,
+    SEWING_TASK_STATUS_ROLLING,
+    SEWING_TASK_STATUS_PENDING,
+    SEWING_TASK_STATUS_RUNNING,
+    SEWING_TASK_STATUS_DONE,
+
+} from '@/app/constants/sewing.ts'
 
 export type IDay = ISewingTask & IPlanMatrixDayItem
 
@@ -22,6 +36,8 @@ export interface ISewingTask extends IPlanMatrixDayItem {
     sewing_lines: ISewingTaskLine[]
     statuses: ISewingTaskStatus[]
     current_status: ISewingTaskStatus
+
+    collapsed?: boolean
 }
 
 // __ Связь с Содержимым СЗ
@@ -159,10 +175,27 @@ export type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
 // __ Трудозатраты
 export type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
 
-
 // __ Типы моделей
 export type ISewingTaskElementTypes = 'base' | 'cover' | 'average' | 'unknown'
 
+// --- --------------------------------------------------------------
+// --- Типы для работы со статусами СЗ
+// --- --------------------------------------------------------------
+
+export type ISewingTaskStatusKeys =
+    typeof SEWING_TASK_STATUS_CREATED |
+    typeof SEWING_TASK_STATUS_ROLLING |
+    typeof SEWING_TASK_STATUS_PENDING |
+    typeof SEWING_TASK_STATUS_RUNNING |
+    typeof SEWING_TASK_STATUS_DONE
+
+
+export interface ISewingTaskStatusItem{
+    ID: number,
+    WORD: string
+    TITLE: string
+    TYPE: IColorTypes
+}
 
 // --- --------------------------------------------------------------
 // --- Типы для работы с сущностями Пошива
@@ -361,8 +394,11 @@ export type ISewingDay = {
     resume_at: string | null
     finish_at: string | null
     duration: number
-    responsible :ISewingDayWorker
+    sewing_tasks: ISewingTask[]
+    responsible: ISewingDayWorker
     workers: ISewingDayWorker[]
+
+    collapsed?: boolean
 }
 
 export type ISewingDayWorker = {

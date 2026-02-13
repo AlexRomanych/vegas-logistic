@@ -99,7 +99,7 @@ const sewing = [
         name:      'manufacture.cell.sewing.tasks.execute',
         component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingExecute.vue'),
         meta:      {
-                       title: 'Выполнение сменных заданий',
+                       title: 'Выполнение сменных заданий Пошива',
                    } as IRouteMeta,
     },
 

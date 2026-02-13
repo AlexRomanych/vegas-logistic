@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
-use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingController;
+use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationSchemaController;
@@ -103,9 +103,10 @@ Route::prefix('sewing')
     ->group(function () {
 
         // __ СЗ Пошива
-        Route::get('tasks', [CellSewingController::class, 'getSewingTasks']);
-        Route::post('tasks/update', [CellSewingController::class, 'updateSewingTasks']);
-        Route::post('tasks/comment', [CellSewingController::class, 'setSewingTaskComment']);
+        Route::get('tasks', [CellSewingTaskController::class, 'getSewingTasks']);
+        Route::get('tasks/status', [CellSewingTaskController::class, 'getSewingTasksByStatus']);
+        Route::post('tasks/update', [CellSewingTaskController::class, 'updateSewingTasks']);
+        Route::post('tasks/comment', [CellSewingTaskController::class, 'setSewingTaskComment']);
 
         // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
@@ -137,6 +138,7 @@ Route::prefix('sewing')
         // __ Производственный день
         Route::get('/day/{date}/{change}', [CellSewingDayController::class, 'getSewingDayByDateAndChange']);
         Route::post('/day/comment', [CellSewingDayController::class, 'setSewingDayComment']);
+        Route::get('/day/dates', [CellSewingDayController::class, 'getSewingDaysByDates']);
 
 
 

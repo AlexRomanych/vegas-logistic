@@ -36,6 +36,13 @@ export function isNumeric(str: string) {
     return !isNaN(parseFloat(str)) && isFinite(Number(str))
 }
 
+
+// __ Проверка на число
+export function isNumber(value: any): value is number {
+    return typeof value === 'number' && !Number.isNaN(value);
+}
+
+
 // descr: Поверхностное клонирование объекта
 export function cloneShallow(obj: object) {
     return JSON.parse(JSON.stringify(obj))

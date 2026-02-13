@@ -1,17 +1,17 @@
 // info Тут все, что связано с Пошивом
 
 import type {
-    IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs,
+    IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ISewingDay,
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
     ISewingTaskModel, ISewingTaskOrder,
-    ISewingTaskOrderLine, ISewingTaskStatus
+    ISewingTaskOrderLine, ISewingTaskStatus, ISewingTaskStatusKeys
 } from '@/types'
 
 import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
-import { formatTimeWithLeadingZeros, getDaysDifference } from '@/app/helpers/helpers_date'
+import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
 
@@ -1087,7 +1087,7 @@ export function isTaskStatusCreated(entity: ISewingTask | ISewingTaskStatus | nu
     } else {
         throw new Error('Invalid entity type')
     }
-    return item === SEWING_TASK_STATUSES.CREATED.ID || item === SEWING_TASK_STATUSES.CREATED_CLOSE.ID
+    return item === SEWING_TASK_STATUSES.CREATED.ID || item === SEWING_TASK_STATUSES.ROLLING.ID
 }
 
 // --- -------------------------------------------------------------------------------------
@@ -1097,7 +1097,52 @@ export function getDaysDifferenceFromSewingDates(date1: string, date2: string) {
         const d2 = date2.split(' ')[0]
         return getDaysDifference(d1, d2, true)
 }
+
 // --- -------------------------------------------------------------------------------------
+// __ Получаем массив дней дат, на которые есть СЗ
+export function getSewingDates(tasks: ISewingTask[]) {
+    if (tasks.length > 0) {
+        const days = tasks.map(item => item.action_at.split(' ')[0])
+        return [...new Set(days)]
+    } else {
+        return []
+    }
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем на вход массив СЗ и массив дат и делаем из них массив дат
+// __ с добавлением туда массива СЗ на соответствующую дату
+// __ добавляем по ссылке + заодно и сортируем
+export function unionDatesWithSewingTasks(days: ISewingDay[], tasks: ISewingTask[]) {
+    days.sort((a, b) => new Date(a.action_at).getTime() - new Date(b.action_at).getTime())
+    tasks.sort((a, b) => new Date(a.action_at).getTime() - new Date(b.action_at).getTime())
+
+    tasks.forEach(task => {
+        task.sewing_lines.sort((a, b) => a.position - b.position)
+    })
+
+    for (const day of days) {
+        day.sewing_tasks = []
+        for (const task of tasks) {
+            if (splitDate(task.action_at) === splitDate(day.action_at)) {
+                day.sewing_tasks.push(task)
+            }
+        }
+    }
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статус СЗ по его ID
+export function getTaskStatusById(id: number) {
+    const statusKey = Object.keys(SEWING_TASK_STATUSES).find(key => SEWING_TASK_STATUSES[key as ISewingTaskStatusKeys].ID === id)
+    if (statusKey) {
+        return SEWING_TASK_STATUSES[statusKey as ISewingTaskStatusKeys]
+    }
+    return null
+}
+
+
 
 
 // __ Дополнительно проверяем, является ли модель Чехлом

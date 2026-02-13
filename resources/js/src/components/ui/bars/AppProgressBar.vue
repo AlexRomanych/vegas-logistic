@@ -1,14 +1,14 @@
 <template>
-    <div class="w-full select-none">
+    <div :class="width" class="select-none m-0.5">
 
         <div v-if="label" class="flex justify-between items-end mb-1.5 px-1">
-          <span class="text-slate-500 uppercase tracking-widest text-[10px] font-bold">
-            {{ label }}
-          </span>
+            <span class="text-slate-500 uppercase tracking-widest text-[10px] font-bold">
+                {{ label }}
+            </span>
         </div>
 
         <div
-            :class="[height, 'w-full bg-slate-900 border border-slate-700/50 rounded-lg overflow-hidden relative flex items-center shadow-inner']">
+            :class="[height, width,'bg-slate-900 border border-slate-700/50 rounded-[3px] overflow-hidden relative flex items-center shadow-inner']">
 
             <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                 <span :class="clampedProgress > 40 ? 'text-white' : 'text-slate-400'"
@@ -39,13 +39,15 @@ interface IProps {
     progress: number
     label?: string
     height?: string
+    width?: string
     animated?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
     progress: 0,
     label:    '',
-    height:   'h-10',
+    height:   'h-[30px]',
+    width:    'w-[100px]',
     animated: true
 })
 

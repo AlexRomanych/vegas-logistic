@@ -158,9 +158,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref, /*watchEffect*/ } from 'vue'
 
-import type { IWorker } from '@/types/worker_types.ts'
 import type {
-    IRenderData, ISelectData, ISelectDataItem,
+    IWorker, IRenderData, ISelectData, ISelectDataItem,
 } from '@/types'
 
 import { useWorkersStore } from '@/stores/WorkersStore.ts'

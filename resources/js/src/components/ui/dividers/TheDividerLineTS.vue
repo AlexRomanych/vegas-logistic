@@ -1,9 +1,24 @@
 <template>
     <!-- __ Разделительная линия -->
-    <div style="width: calc(100% - 8px)" class="mt-2 mb-2 mr-2 bg-slate-400 min-h-[2px] rounded-lg"></div>
+    <div
+        :class="[mTop, mBottom]"
+        class="mx-auto bg-slate-400 min-h-[2px] rounded-lg "
+        style="width: calc(100% - 8px)"
+    >
+    </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+
+interface IProps {
+    mTop?: string
+    mBottom?: string
+}
+
+withDefaults(defineProps<IProps>(), {
+    mTop:    'mt-2',
+    mBottom: 'mb-2'
+})
 
 </script>
 

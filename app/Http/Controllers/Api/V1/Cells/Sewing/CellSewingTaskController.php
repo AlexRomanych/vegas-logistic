@@ -13,10 +13,12 @@ use App\Services\DefaultsService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\Validator;
 use Throwable;
 
-class CellSewingController extends Controller
+class CellSewingTaskController extends Controller
 {
 
     // ___ Получаем СЗ на Пошив
@@ -55,6 +57,63 @@ class CellSewingController extends Controller
                 // ->with(['sewingLines', 'sewingLines.orderLine','sewingLines.orderLine.model','sewingLines.orderLine.model.cover', 'statuses'])
                 ->orderBy('action_at')
                 ->get();
+
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return SewingTaskResource::collection($sewingTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * __ Получаем СЗ на Пошив по статусам
+     * @param  Request  $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getSewingTasksByStatus(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:sewing_task_statuses,id',
+            ]);
+
+            $data = $validated['statuses'] ?? null;
+            $sewingTasks = SewingTask::query()
+                ->byStatus($data)
+                // ->whereBetween('action_at', [
+                //     $start->startOfDay(),
+                //     $end->endOfDay()
+                // ])
+                // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
+                // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with([
+                    'order.client',
+                    'order.orderType',
+                    'sewingLines.orderLine.model.cover',
+                    'sewingLines.orderLine.model.base',
+                    'statuses',
+                ])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
 
 
             return SewingTaskResource::collection($sewingTasks);
@@ -404,7 +463,6 @@ class CellSewingController extends Controller
     }
 
 
-
     /**
      * ___ Устанавливает комментарий к Сменному Заданию
      * @param  Request  $request
@@ -431,8 +489,6 @@ class CellSewingController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
 
 
     /**

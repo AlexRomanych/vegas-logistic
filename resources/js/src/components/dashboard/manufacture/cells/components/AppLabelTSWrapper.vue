@@ -2,8 +2,9 @@
     <AppLabelTS
         v-if="renderObject.show"
         :align="header ? renderObject.headerAlign : renderObject.dataAlign"
-        :color="color"
         :class="renderObject.class || ''"
+        :color="color"
+        :height="renderObject.height"
         :text="header ? (renderObject.header as string): renderObject.data!(arg)"
         :text-size="header ? renderObject.headerTextSize : renderObject.dataTextSize"
         :title="title"
@@ -31,8 +32,8 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     headerType: 'primary',
-    arg: undefined,
-    header: false,
+    arg:        undefined,
+    header:     false,
 })
 
 
