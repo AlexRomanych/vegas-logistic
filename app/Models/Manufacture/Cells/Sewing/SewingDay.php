@@ -9,13 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class SewingDay extends Model
+class   SewingDay extends Model
 {
     protected $guarded = false;
 
     protected $casts = [
-        'change' => 'integer',
-        // 'action_at' => 'datetime',
+        'change'    => 'integer',
+        'action_at' => 'datetime',
+        'start_at'  => 'datetime',
+        'paused_at' => 'datetime',
+        'resume_at' => 'datetime',
+        'finish_at' => 'datetime',
     ];
 
     // protected function casts(): array
@@ -32,7 +36,7 @@ class SewingDay extends Model
      * @param  int  $change
      * @return SewingDay
      */
-    public static function findOrCreateByDate($date, int $change = 1): self
+    public static function findOrCreateByDateAndChange($date, int $change = 1): self
     {
         return self::query()
             ->with(['workers', 'responsible'])
@@ -76,7 +80,7 @@ class SewingDay extends Model
     }
 
 
-    // Relations: Связь с Операциями
+    // Relations: Связь с Рабочими
     public function workers(): BelongsToMany
     {
         return $this
@@ -89,5 +93,18 @@ class SewingDay extends Model
             ->using(SewingDayWorkerPivot::class)
             ->withPivot(['id', 'working_time']);
     }
+
+
+    // Relations: Связь с Активными Рабочими
+    public function activeWorkers(): BelongsToMany
+    {
+        // __ Получаем имя таблицы из модели Worker (обычно 'workers')
+        // __ Используем ее для построения запроса, так как в Pivot тоже есть active
+        $workerTable = (new Worker)->getTable();
+
+        // __ Указываем 'workers.active'
+        return $this->workers()->where("$workerTable.active", true);
+    }
+
 
 }

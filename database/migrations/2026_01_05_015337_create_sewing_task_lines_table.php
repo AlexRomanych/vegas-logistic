@@ -76,6 +76,12 @@ return new class extends Migration {
                 ->nullable()
                 ->comment('Время завершения работы по данному элементу в СЗ');
 
+            // __ Время завершения работы по данному элементу в СЗ
+            $table->timestamp('false_at')
+                ->nullable()
+                ->comment('Время метки невыполнения');
+
+
             // __ Связь с Ответственным за выполнение
             $table->foreignId('finished_by')
                 ->comment('Ответственный за выполнение')
@@ -85,6 +91,9 @@ return new class extends Migration {
 
             // __ Причина невыполнения
             $table->string('false_reason')->nullable()->comment('Причина невыполнения');
+
+            // __ Причина невыполнения
+            $table->string('false_history')->nullable()->comment('История невыполнения');
 
             // --- Трудозатраты на Швейную машину в момент создания СЗ в секундах
 

@@ -37,6 +37,27 @@ class WorkerController extends Controller
 
 
     /**
+     * ___ Получаем список всех сотрудников
+     * @return AnonymousResourceCollection|string
+     */
+    public function getActiveWorkers()
+    {
+        try {
+            $workers = Worker::query()
+                ->active()
+                ->orderBy('surname')
+                ->orderBy('name')
+                // ->with('cellItem')
+                ->get();
+
+            return WorkerResource::collection($workers);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Возвращаем сотрудника
      * @param  string  $id
      * @return WorkerResource|string
@@ -164,16 +185,6 @@ class WorkerController extends Controller
             ['surname' => 'Мятто', 'name' => 'Роман', 'patronymic' => 'Юрьевич'],
             ['surname' => 'Шульга', 'name' => 'Наталья', 'patronymic' => 'Владимировна'],
         ]);
-
-
-        //        DB::table('workers')->insert([
-        //            ['surname' => 'Иванов', 'name' => 'Иван', 'patronymic' =>'Иванович'],
-        //            ['surname' => 'Петров', 'name' => 'Петр', 'patronymic' =>'Петрович'],
-        //            ['surname' => 'Сидоров', 'name' => 'Сидор', 'patronymic' =>'Сидорович'],
-        //            ['surname' => 'Никитюк', 'name' => 'Никита', 'patronymic' =>'Никитич'],
-        //            ['surname' => 'Стаханов', 'name' => 'Алексей', 'patronymic' =>'Григорьевич'],
-        //            ['surname' => 'Мухина', 'name' => 'Вера', 'patronymic' =>'Игнатьевна'],
-        //        ]);
     }
 
 }

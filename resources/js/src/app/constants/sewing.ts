@@ -2,6 +2,7 @@
 
 
 import type {
+    ISewingDay, ISewingDayWorker,
     ISewingMachineKeys,
     ISewingOperation,
     ISewingTask,
@@ -161,6 +162,28 @@ export const SEWING_OPERATION_DRAFT: ISewingOperation = {
 }
 
 
+// __ Объект производственного дня Пошива
+export const SEWING_DAY_DRAFT: ISewingDay = {
+    id: 0,
+    action_at: '',
+    action_at_str: '',
+    change: 0,
+    description:  null,
+    comment: null,
+    start_at:  null,
+    paused_at: null,
+    resume_at: null,
+    finish_at: null,
+    duration: 0,
+    sewing_tasks: [],
+    responsible: {
+        name: '',
+        surname: '',
+        patronymic: '',
+        id: 0,
+    },
+    workers: [],
+}
 
 
 

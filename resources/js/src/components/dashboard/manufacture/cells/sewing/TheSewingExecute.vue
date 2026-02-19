@@ -40,7 +40,13 @@
 
         <!-- __ Данные -->
         <div v-for="sewingDay of renderSewingDays" :key="sewingDay.id" class="ml-2 max-w-fit">
-            <div class="flex ">
+
+            <TheDividerLineTS
+                v-if="!sewingDay.collapsed"
+                m-bottom="mb-4"
+            />
+
+            <div class="flex">
 
                 <!-- __ collapsed -->
                 <AppLabelTSWrapper
@@ -50,26 +56,25 @@
                 />
 
                 <!-- __ id -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.id"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.id" @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Дата пр-ва -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.date"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.date" @click="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Старт -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.start_at"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.start_at" @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Финиш -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.finish_at"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.finish_at" @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Продолжительность -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.duration"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.duration" @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
                     :progress="40"
                     :width="render.progressTotal.width"
                 />
-                <!--<AppLabelTSWrapper :arg="sewingDay" :render-object="render.progressTotal"/>-->
 
                 <!-- __ Опережение / отставание -->
                 <AppLabelTSWrapper :arg="sewingDay" :render-object="render.progressDelta"/>
@@ -83,24 +88,95 @@
             <div v-if="!sewingDay.collapsed" class="ml-[34px]">
 
                 <!-- __ Персонал -->
+                <div class="mt-1">
+                    <AppLabelTS
+                        :text="!personalShow ? 'Персонал ▲' : 'Персонал ▼'"
+                        align="center"
+                        rounded="4"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[218px]"
+                        @click="personalShow = !personalShow"
 
-                <!-- __ СЗ -->
-                <div class="my-2">
-                    <!-- __ Шапка СЗ -->
-                    <ExecuteTaskHeader
-                        :fields-width="sewingTaskFieldsWidth"
                     />
-
-                    <!-- __ Сами СЗ -->
-                    <div v-for="sewingTask of sewingDay.sewing_tasks" :key="sewingTask.id" class=" bg-green-100">
-                        <ExecuteTask
-                            :fields-width="sewingTaskFieldsWidth"
-                            :sewing-task="sewingTask"
-                        />
-                    </div>
                 </div>
 
+                <!-- __ Персонал -->
+                <template v-if="personalShow">
+                    <div class="mt-2 mb-2">
+                        <ExecutePersonal
+                            :sewing-day="sewingDay"
+                            @add-worker="addWorker(sewingDay, $event)"
+                            @remove-worker="removeWorker(sewingDay, $event)"
+                            @add-responsible="addResponsible(sewingDay, $event)"
+                        />
+                    </div>
+                </template>
+
+                <!-- __ СЗ -->
+                <div class="mt-1">
+                    <AppLabelTS
+                        :text="!tasksShow ? 'Список СЗ ▲' : 'Список СЗ ▼'"
+                        align="center"
+                        rounded="4"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[218px]"
+                        @click="tasksShow = !tasksShow"
+
+                    />
+                </div>
+
+                <!-- __ СЗ -->
+                <template v-if="tasksShow">
+                    <div class="my-2">
+                        <!-- __ Шапка СЗ -->
+                        <ExecuteTaskHeader
+                            :fields-width="sewingTaskFieldsWidth"
+                        />
+
+                        <!-- __ Сами СЗ -->
+                        <div v-for="sewingTask of sewingDay.sewing_tasks" :key="sewingTask.id" class=" bg-green-100">
+                            <ExecuteTask
+                                :fields-width="sewingTaskFieldsWidth"
+                                :sewing-task="sewingTask"
+                            />
+                        </div>
+                    </div>
+                </template>
+
+                <!-- __ Общие данные -->
+                <div class="mt-1">
+                    <AppLabelTS
+                        :text="!commonShow ? 'Общие данные ▲' : 'Общие данные ▼'"
+                        align="center"
+                        rounded="4"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[218px]"
+                        @click="commonShow = !commonShow"
+
+                    />
+                </div>
+
+                <!-- __ Общие данные -->
+                <template v-if="commonShow">
+                    <div class="my-2">
+                        <ExecuteTaskCommon
+                            :sewing-day="sewingDay"
+                        />
+
+                    </div>
+                </template>
+
+
             </div>
+
+            <TheDividerLineTS
+                v-if="!sewingDay.collapsed"
+                m-top="mt-4"
+            />
+
 
         </div>
     </div>
@@ -110,8 +186,9 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
-import type { IRenderData, ISewingDay } from '@/types'
+import type { IRenderData, ISewingDay, ISewingDayWorker } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
@@ -133,6 +210,13 @@ import ExecuteTask
 import ExecuteTaskHeader
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskHeader.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import ExecutePersonal
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecutePersonal.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import ExecuteTaskCommon
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskCommon.vue'
+
 
 // import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
 // import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
@@ -145,6 +229,7 @@ const DEBUG     = true
 const isLoading = ref(false)
 
 const sewingStore = useSewingStore()
+const router      = useRouter()
 
 const {
           globalSewingTasksPending,        // __ Все задания (Global State)
@@ -158,6 +243,11 @@ const sewingDays = ref<ISewingDay[]>([])
 const renderSewingDays = computed<ISewingDay[]>(() => {
     return sewingDays.value
 })
+
+// __ Переменные для рендера
+const personalShow = ref(false)
+const tasksShow    = ref(false)
+const commonShow   = ref(false)
 
 
 // __ Объект отображения данных
@@ -222,6 +312,7 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍collapsed...',
         data:           (sewingDay: ISewingDay) => sewingDay.collapsed ? '▲' : '▼',
+        class:          'cursor-pointer',
     },
     id:            {
         id:             () => 'id-search',
@@ -238,6 +329,7 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍id...',
         data:           (sewingDay: ISewingDay) => sewingDay.id.toString(),
+        class:          'cursor-pointer',
     },
     date:          {
         id:             () => 'date-search',
@@ -253,7 +345,8 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Дата...',
-        data:           (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`
+        data:           (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`,
+        class:          'cursor-pointer',
     },
     start_at:      {
         id:             () => 'start-at-search',
@@ -270,6 +363,7 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍Старт...',
         data:           (sewingDay: ISewingDay) => '07ч. 00м. 00с.',
+        class:          'cursor-pointer',
     },
     finish_at:     {
         id:             () => 'finish-at-search',
@@ -286,6 +380,7 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍Финиш...',
         data:           (sewingDay: ISewingDay) => '16ч. 00м. 00с.',
+        class:          'cursor-pointer',
     },
     duration:      {
         id:             () => 'duration-search',
@@ -302,6 +397,7 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍Дата...',
         data:           (sewingDay: ISewingDay) => '07ч. 59м. 59с.',
+        class:          'cursor-pointer',
     },
 
     progressTotal: {
@@ -386,8 +482,8 @@ const collapseAll = () => sewingDays.value.forEach(sewingDay => sewingDay.collap
 
 // __ Получаем производственные дни
 const getSewingDays = async () => {
-    const dates      = getSewingDates(globalSewingTasksPending.value)                    // __ Получаем даты из СЗ
-    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)                // __ Получаем дни по этим датам
+    const dates      = getSewingDates(globalSewingTasksPending.value)                // __ Получаем даты из СЗ
+    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)                 // __ Получаем дни по этим датам
 }
 
 // __ Добавляем свернутость
@@ -395,8 +491,7 @@ const addCollapsed = () => {
     sewingDays.value = sewingDays.value.map(day => {
         return {
             ...day,
-            collapsed: true,
-            // Проверяем, есть ли задачи, и проходим по ним
+            collapsed:    true,
             sewing_tasks: day.sewing_tasks.map(task => ({
                 ...task,
                 collapsed: true
@@ -405,6 +500,35 @@ const addCollapsed = () => {
     })
 }
 
+// __ Добавляем работника
+const addWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
+    const existWorker = sewingDay.workers.find(w => w.id === worker.id)
+    if (!existWorker) {
+        sewingDay.workers.push(worker)
+    }
+}
+
+// __ Удаляем работника
+const removeWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
+    const findIndex = sewingDay.workers.findIndex(w => w.id === worker.id)
+    if (findIndex !== -1) {
+        sewingDay.workers.splice(findIndex, 1)
+    }
+}
+
+// __ Добавляем Ответственного
+const addResponsible = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
+    sewingDay.responsible = worker
+}
+
+
+// __ Переходим на страницу непосредственного выполнения СЗ
+const goToSewingDay = (sewingDay: ISewingDay) => {
+    router.push({
+        name:   'manufacture.cell.sewing.tasks.execute.day',
+        params: { date: sewingDay.action_at.split(' ')[0] } // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+    })
+}
 
 onMounted(async () => {
     isLoading.value = true
@@ -439,6 +563,8 @@ onMounted(async () => {
 
     isLoading.value = false
 })
+
+
 </script>
 
 

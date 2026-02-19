@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Sewing;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Sewing\Sync\SyncSewingTasksRequest;
+use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskExecute\SewingTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage\SewingTaskResource;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
@@ -15,6 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+
 // use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -59,7 +61,6 @@ class CellSewingTaskController extends Controller
                 ->get();
 
 
-
             // !!!!!!!!!!!!!!!!!!!!!
             // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
             // !!! __ То автоматом переносить на следующий день
@@ -89,7 +90,7 @@ class CellSewingTaskController extends Controller
                 'statuses.*' => 'integer|exists:sewing_task_statuses,id',
             ]);
 
-            $data = $validated['statuses'] ?? null;
+            $data        = $validated['statuses'] ?? null;
             $sewingTasks = SewingTask::query()
                 ->byStatus($data)
                 // ->whereBetween('action_at', [
@@ -98,6 +99,58 @@ class CellSewingTaskController extends Controller
                 // ])
                 // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
                 // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with([
+                    'order.client',
+                    'order.orderType',
+                    'sewingLines.orderLine.model.cover',
+                    'sewingLines.orderLine.model.base',
+                    'statuses',
+                ])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return SewingTaskResource::collection($sewingTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * __ Получаем СЗ на Пошив по статусам до определенной даты
+     * @param  Request  $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getSewingTasksByStatusBeforeDate(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'date' — это дата
+                'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:sewing_task_statuses,id',
+            ]);
+
+            $data        = $validated['statuses'] ?? null;
+            $action_date = Carbon::parse($validated['date'])->startOfDay();
+
+            $sewingTasks = SewingTask::query()
+                ->whereDate('action_at', '<', $action_date)
+                ->byStatus($data)
+                // ->whereBetween('action_at', [
+                //     $start->startOfDay(),
+                //     $end->endOfDay()
+                // ])
                 ->with([
                     'order.client',
                     'order.orderType',
@@ -485,6 +538,103 @@ class CellSewingTaskController extends Controller
             $sewingTask->save();
 
             return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    public function setSewingTaskLinesDone(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:sewing_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+
+                $line = SewingTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                }
+
+                $line->finished_at = now();
+                $line->save();
+            }
+
+            $lines = SewingTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return SewingTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    public function setSewingTaskLinesFalse(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'    => 'required|array',
+                'ids.*'  => 'required|integer|exists:sewing_task_lines,id',
+                'reason' => 'required|string',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+
+                $line = SewingTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                }
+
+                $line->false_at        = now();
+                $line->false_reason    = $validated['reason'];
+
+                $history = $line->false_history;
+                if (is_null($history)) {
+                    $history = [];
+                }
+
+                $history[] = [
+                    'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
+                    'by'     => auth()->id(),
+                    'reason' => $validated['reason'],
+                ];
+                $line->false_history = $history;
+                $line->save();
+            }
+
+            $lines = SewingTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return SewingTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    public function setSewingTaskLinesReset(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:sewing_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+
+                $line = SewingTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                }
+
+                $line->finished_at  = null;
+                $line->false_at     = null;
+                $line->false_reason = null;
+                $line->save();
+            }
+
+            $lines = SewingTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return SewingTaskLineResource::collection($lines);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

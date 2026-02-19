@@ -56,9 +56,12 @@ export interface ISewingTaskLine {
     created_at: string | null
     false_reason: string | null
     finished_at: string | null
+    false_at: string | null
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
     order_line: ISewingTaskOrderLine
+
+    completed?: boolean                             // __ Флаг для SFC выполнения СЗ
 }
 
 // __ Статус Движения (выполнения) Заявки
@@ -412,4 +415,18 @@ export type ISewingDayWorker = {
 export type ISewingDayWorkerPivot = {
     id: number
     working_time: number | null
+}
+
+
+// --- ----------- Статистика выполнения СЗ (прогресс) ---------------------------
+// __ Вспомогательный Тип для вычисления статистики по СЗ
+export interface ISewingTaskExecuteStatistics {
+    amount: ISewingTaskExecuteStatisticsItem,
+    time: ISewingTaskExecuteStatisticsItem,
+}
+
+export interface ISewingTaskExecuteStatisticsItem {
+    finished: number
+    unfinished: number
+    total: number
 }

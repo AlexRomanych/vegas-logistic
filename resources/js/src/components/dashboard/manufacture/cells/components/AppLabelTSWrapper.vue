@@ -5,7 +5,13 @@
         :class="renderObject.class || ''"
         :color="color"
         :height="renderObject.height"
-        :text="header ? (renderObject.header as string): renderObject.data!(arg)"
+        :text="
+            header ?
+                (typeof renderObject.header === 'function' ?
+                    (renderObject.header() as string ) :
+                    (renderObject.header as string)) :
+                renderObject.data!(arg)
+"
         :text-size="header ? renderObject.headerTextSize : renderObject.dataTextSize"
         :title="title"
         :type="colorType"

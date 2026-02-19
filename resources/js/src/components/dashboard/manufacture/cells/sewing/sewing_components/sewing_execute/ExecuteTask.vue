@@ -126,8 +126,8 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍collapsed...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.collapsed ? '▲' : '▼'
-
+        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.collapsed ? '▲' : '▼',
+        class:          'cursor-pointer',
     },
     id:            {
         id:             () => 'id-search',

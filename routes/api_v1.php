@@ -105,8 +105,12 @@ Route::prefix('sewing')
         // __ СЗ Пошива
         Route::get('tasks', [CellSewingTaskController::class, 'getSewingTasks']);
         Route::get('tasks/status', [CellSewingTaskController::class, 'getSewingTasksByStatus']);
+        Route::get('tasks/status/date/before', [CellSewingTaskController::class, 'getSewingTasksByStatusBeforeDate']);
         Route::post('tasks/update', [CellSewingTaskController::class, 'updateSewingTasks']);
         Route::post('tasks/comment', [CellSewingTaskController::class, 'setSewingTaskComment']);
+        Route::post('tasks/line/done', [CellSewingTaskController::class, 'setSewingTaskLinesDone']);
+        Route::post('tasks/line/false', [CellSewingTaskController::class, 'setSewingTaskLinesFalse']);
+        Route::post('tasks/line/reset', [CellSewingTaskController::class, 'setSewingTaskLinesReset']);
 
         // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
@@ -137,8 +141,13 @@ Route::prefix('sewing')
 
         // __ Производственный день
         Route::get('/day/{date}/{change}', [CellSewingDayController::class, 'getSewingDayByDateAndChange']);
-        Route::post('/day/comment', [CellSewingDayController::class, 'setSewingDayComment']);
         Route::get('/day/dates', [CellSewingDayController::class, 'getSewingDaysByDates']);
+        Route::post('/day/comment', [CellSewingDayController::class, 'setSewingDayComment']);
+        Route::post('/day/worker/add', [CellSewingDayController::class, 'addWorkerToSewingDay']);
+        Route::post('/day/worker/remove', [CellSewingDayController::class, 'removeWorkerFromSewingDay']);
+        Route::patch('/day/responsible/add', [CellSewingDayController::class, 'addResponsibleToSewingDay']);
+        Route::patch('/day/responsible/remove', [CellSewingDayController::class, 'removeResponsibleFromSewingDay']);
+        Route::patch('/day/start', [CellSewingDayController::class, 'startSewingDay']);
 
 
 

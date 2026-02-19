@@ -3,7 +3,7 @@
 import type {
     IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ISewingDay,
     ISewingMachineKeys, ISewingMachineTimesKeys,
-    ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs,
+    ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs, ISewingTaskExecuteStatistics,
     ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
     ISewingTaskModel, ISewingTaskOrder,
     ISewingTaskOrderLine, ISewingTaskStatus, ISewingTaskStatusKeys
@@ -1128,6 +1128,9 @@ export function unionDatesWithSewingTasks(days: ISewingDay[], tasks: ISewingTask
                 day.sewing_tasks.push(task)
             }
         }
+
+        day.sewing_tasks.sort((a, b) => a.position - b.position)
+
     }
 }
 
@@ -1141,6 +1144,70 @@ export function getTaskStatusById(id: number) {
     }
     return null
 }
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статистику по выполнению СЗ
+export function getExecuteTaskStatustics (item: ISewingTask | ISewingTaskLine[]) {
+
+    const statistics: ISewingTaskExecuteStatistics = {
+        amount: {
+            finished: 0,
+            unfinished: 0,
+            total: 0
+        },
+        time: {
+            finished: 0,
+            unfinished: 0,
+            total: 0
+        }
+    }
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.sewing_lines
+    }
+
+    // __ Получаем суммарное количество и трудозатраты
+    const totalAmountAndTimeObj = getSewingTaskAmountAndTime(itemArr)
+
+    // __ Общее Количество
+    statistics.amount.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Общее Трудозатраты
+    statistics.time.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Выполненные
+    const finished = itemArr.filter(line => line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для выполненных
+    const finishedAmountAndTimeObj = getSewingTaskAmountAndTime(finished)
+
+    // __ Выполненные Количество
+    statistics.amount.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Выполненные Трудозатраты
+    statistics.time.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Не Выполненные
+    const unfinished = itemArr.filter(line => !line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для Не выполненных
+    const unfinishedAmountAndTimeObj = getSewingTaskAmountAndTime(unfinished)
+
+    // __ Не Выполненные Количество
+    statistics.amount.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Не Выполненные Трудозатраты
+    statistics.time.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    return statistics
+}
+
+
 
 
 

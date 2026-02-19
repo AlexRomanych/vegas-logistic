@@ -17,6 +17,7 @@ class SewingDayWorkerResource extends JsonResource
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'id'         => $this->id,
+            'active'     => $this->active,
             'surname'    => $this->surname,
             'name'       => $this->name,
             'patronymic' => $this->patronymic,

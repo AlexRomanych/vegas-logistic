@@ -94,12 +94,22 @@ const sewing = [
     },
 
     {
-        // ___ Выполнение сменных заданий
+        // ___ Выполнение сменных заданий (Общая)
         path:      _MAIN_PREFIX + 'tasks/execute',
         name:      'manufacture.cell.sewing.tasks.execute',
         component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingExecute.vue'),
         meta:      {
                        title: 'Выполнение сменных заданий Пошива',
+                   } as IRouteMeta,
+    },
+
+    {
+        // ___ Выполнение сменных заданий (Производственный день)
+        path:      _MAIN_PREFIX + 'tasks/execute/day/:date',
+        name:      'manufacture.cell.sewing.tasks.execute.day',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingExecuteDay.vue'),
+        meta:      {
+                       title: 'Выполнение СЗ Пошива: Производственный день',
                    } as IRouteMeta,
     },
 

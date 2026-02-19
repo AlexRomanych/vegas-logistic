@@ -8,6 +8,7 @@ Route::prefix('workers')
     ->group(function () {
 
         Route::get('/', [WorkerController::class, 'getWorkers']);
+        Route::get('/active', [WorkerController::class, 'getActiveWorkers']);
         Route::get('/{id}', [WorkerController::class, 'getWorkerById']);
         Route::patch('/', [WorkerController::class, 'updateWorker']);
         Route::post('/', [WorkerController::class, 'createWorker']);

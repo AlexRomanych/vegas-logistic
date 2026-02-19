@@ -4,15 +4,15 @@ import ErrorClass from '@/app/classes/ErrorClass.js'
 
 const versionBaseUrl = '/api/v1'
 
-const jwtAxios = axios.create({
+const   jwtAxios = axios.create({
     withCredentials: false,
-    baseURL: versionBaseUrl,
+    baseURL:         versionBaseUrl,
 })
 
 // Настраиваем конфиг для экземпляра axios
 // Добавляем в заголовки токен
 const onFulfilled = (config) => {
-    const token = localStorage.getItem('token')
+    const token                  = localStorage.getItem('token')
     config.headers.Authorization = `Bearer ${token}`
     // config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return config
@@ -56,7 +56,7 @@ const onRejected = (error) => {
         // return []    // todo Тут надо подумать еще, что возвращать в случае ошибки или как-то ее обрабатывать, прокидывая Callout
 
         //warning ключ data - обязательный
-        return {data: {name: 'Ошибка загрузки данных', status: 600}}
+        return { data: { name: 'Ошибка загрузки данных', status: 600 } }
     }
 }
 
@@ -78,7 +78,9 @@ export async function jwtGet(url, params = {}) {
     // console.log(params)
 
     try {
-        const res = await jwtAxios.get(url, {params: params})
+        const res  = await jwtAxios.get(url, { params: params, /*paramsSerializer: {
+                indexes: null // Это заставит axios выводить dates[]= вместо ничего
+            }*/ })
         const data = await res.data
         return data
     } catch (error) {
@@ -112,7 +114,7 @@ export async function jwtPost(url, data = {}, headers = {}) {
     // console.log('reached...')
 
     const response = await jwtAxios.post(url, data)
-    const result = await response.data
+    const result   = await response.data
 
     return result
 
@@ -124,7 +126,7 @@ export async function jwtPost(url, data = {}, headers = {}) {
 // Формируем свой DELETE
 export async function jwtDelete(url, data = {}) {
     try {
-        const response = await jwtAxios.delete(url, {data: data})
+        const response = await jwtAxios.delete(url, { data: data })
 
         // console.log(response)
 
@@ -140,7 +142,7 @@ export async function jwtDelete(url, data = {}) {
 
 export async function jwtUpdate(url, data = {}) {
     try {
-        const response = await jwtAxios.put(url, {data: data})
+        const response = await jwtAxios.put(url, { data: data })
 
         console.log(response)
 
@@ -197,7 +199,7 @@ export async function jwtPut_(url, data = {}) {
 
 export async function jwtPatch(url, data = {}) {
     try {
-        const response = await jwtAxios.patch(url, {data: data})
+        const response = await jwtAxios.patch(url, { data: data })
 
         console.log(response)
 
@@ -214,7 +216,7 @@ export async function jwtPatch(url, data = {}) {
 export async function jwtPatch_(url, data = {}) {
     try {
         const response = await jwtAxios.patch(url, data)
-        const res = await response.data
+        const res      = await response.data
         return res
     } catch (error) {
         console.log('jwtPatch: ', error)
