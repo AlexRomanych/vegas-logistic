@@ -351,11 +351,13 @@ class CellSewingTaskController extends Controller
                     $this->bulkUpdateTasks($tasksToUpdate);
                 }
 
+                return EndPointStaticRequestAnswer::ok();
+
                 // TODO: Разобраться с ответом
-                return response()->json([
-                    'status' => 'success',
-                    'idMap'  => $idMap
-                ]);
+                // return response()->json([
+                //     'status' => 'success',
+                //     'idMap'  => $idMap
+                // ]);
             });
 
         } catch (Throwable $e) {

@@ -1,5 +1,11 @@
 // Info Константы для работы с Пошивом (Sewing)
 
+// __ Продолжительность смены в часах
+export const TOTAL_SHIFT_DURATION = 12
+
+// __ Время начала смены
+export const START_SHIFT_TIME     = '07:30'
+
 
 import type {
     ISewingDay, ISewingDayWorker,

@@ -3,20 +3,15 @@
 
     <div class="flex items-center">
         <div
-            :class="[ getCheckClass(sewingLine)]"
+            :class="[getCheckClass(sewingLine)]"
             class="w-[25px] h-[25px] rounded flex items-center justify-center transition-all"
         >
-                        <span :class="getCheckClass(sewingLine)"
-                              class="text-[12px] font-semibold text-white">{{ getCheckSymbol(sewingLine) }}</span>
-
-            <!--<span v-if="sewingLine.completed" class="text-[10px] text-white">✔</span>-->
-            <!--<span v-else class="text-[10px] text-white">✘</span>-->
-
+            <span :class="getCheckClass(sewingLine)" class="text-[12px] font-semibold text-white">
+                {{ getCheckSymbol(sewingLine) }}
+            </span>
         </div>
 
-        <!--<span class="m-2 text-xs font-bold text-slate-300 w-6">{{ sewingLine.position }}</span>-->
-
-        <div class="min-w-[10px]"></div>
+        <div :class="fieldWidths.space"></div>
 
         <!-- __ Позиция -->
         <AppLabelTS
@@ -24,9 +19,9 @@
             :text="sewingLine.position.toString()"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.position"
             align="center"
             rounded="4"
-            width="w-[30px]"
         />
 
         <!-- __ Размер -->
@@ -35,9 +30,9 @@
             :text="getCoverSizeString(sewingLine)"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.size"
             align="center"
             rounded="4"
-            width="w-[80px]"
         />
 
         <!-- __ Название чехла -->
@@ -46,8 +41,8 @@
             :text="getSewingTaskModelCoverName(sewingLine)"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.coverName"
             rounded="4"
-            width="w-[250px]"
         />
 
         <!-- __ Количество -->
@@ -56,9 +51,9 @@
             :text="sewingLine.amount.toString()"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.amount"
             align="center"
             rounded="4"
-            width="w-[30px]"
         />
 
         <!-- __ Трудозатраты -->
@@ -67,9 +62,20 @@
             :text="time"
             :text-size="LINE_TEXT_SIZE"
             :type="time === '00с' ? 'danger' : getCheckType(sewingLine)"
+            :width="fieldWidths.time"
             align="center"
             rounded="4"
-            width="w-[70px]"
+        />
+
+        <!-- __ Швейная машина -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text="sewingMachine"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(sewingLine)"
+            :width="fieldWidths.machine"
+            align="center"
+            rounded="4"
         />
 
         <!-- __ Ткань -->
@@ -78,31 +84,31 @@
             :text="sewingLine.order_line.textile ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.textile"
             align="center"
             rounded="4"
-            width="w-[70px]"
         />
 
         <!-- __ ТКЧ -->
         <AppLabelTS
             :height="LINE_HEIGHT"
-            :text="sewingLine.order_line.model.main.tkch ?? '' ?? ''"
+            :text="sewingLine.order_line.model.main.tkch ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.tkch"
             align="center"
             rounded="4"
-            width="w-[70px]"
         />
 
         <!-- __ Кант -->
         <AppLabelTS
             :height="LINE_HEIGHT"
-            :text="sewingLine.order_line.model.main.kant ?? '' ?? ''"
+            :text="sewingLine.order_line.model.main.kant ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.kant"
             align="center"
             rounded="4"
-            width="w-[70px]"
         />
 
         <!-- __ Состав -->
@@ -111,10 +117,10 @@
             :text="sewingLine.order_line.composition ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.composition"
             align="center"
             class="truncate"
             rounded="4"
-            :width="DESCRIBE_WIDTH"
         />
 
         <!-- __ Примечание 1 -->
@@ -123,10 +129,10 @@
             :text="sewingLine.order_line.describe_1 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.describe_1"
             align="center"
             class="truncate"
             rounded="4"
-            :width="DESCRIBE_WIDTH"
         />
 
         <!-- __ Примечание 2 -->
@@ -135,10 +141,10 @@
             :text="sewingLine.order_line.describe_2 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.describe_2"
             align="center"
             class="truncate"
             rounded="4"
-            :width="DESCRIBE_WIDTH"
         />
 
         <!-- __ Примечание 3 -->
@@ -147,22 +153,28 @@
             :text="sewingLine.order_line.describe_3 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.describe_3"
             align="center"
             class="truncate"
             rounded="4"
-            :width="DESCRIBE_WIDTH"
         />
 
         <!-- __ finished_at -->
         <AppLabelTS
             :height="LINE_HEIGHT"
-            :text="sewingLine.finished_at ? formatTimeInFullFormat(sewingLine.finished_at) : ''"
+            :text="
+                sewingLine.finished_at ?
+                    formatTimeInFullFormat(sewingLine.finished_at) :
+                    sewingLine.false_at ?
+                        formatTimeInFullFormat(sewingLine.false_at) :
+                        ''
+            "
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.timeLabel"
             align="center"
             class="truncate"
             rounded="4"
-            width="w-[80px]"
         />
 
         <!-- __ Причина не выполнения -->
@@ -171,25 +183,26 @@
             :text="sewingLine.false_reason ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(sewingLine)"
+            :width="fieldWidths.reason"
             align="left"
             class="truncate"
             rounded="4"
-            width="w-[250px]"
         />
 
     </div>
 
 
-
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from 'vue'
 
 import type { IColorTypes, ISewingTaskLine } from '@/types'
 
+import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+
 import {
-    getCoverSizeString,
+    getCoverSizeString, getSewingLineMachineType,
     getSewingTaskModelCoverName,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
@@ -198,8 +211,10 @@ import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 
+
 interface IProps {
     sewingLine: ISewingTaskLine
+    fieldWidths: Record<string, string>
 }
 
 const props = defineProps<IProps>()
@@ -207,9 +222,6 @@ const props = defineProps<IProps>()
 const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
 const LINE_TEXT_SIZE = 'micro'
-const DESCRIBE_WIDTH = 'w-[70px]'
-
-
 
 
 // __ Получаем символ завершенности
@@ -256,6 +268,24 @@ const getCheckType = (sewingLine: ISewingTaskLine): IColorTypes => {
 
 // __ Получаем трудозатраты
 const time = computed(() => getTimeString(props.sewingLine, true).replaceAll('.', ''))
+
+const sewingMachine = computed(() => {
+    const machine = getSewingLineMachineType(props.sewingLine)
+
+    switch (machine) {
+        case SEWING_MACHINES.UNIVERSAL:
+            return 'У'
+        case SEWING_MACHINES.AUTO:
+            return 'А'
+        case SEWING_MACHINES.SOLID_HARD:
+            return 'ГС'
+        case SEWING_MACHINES.SOLID_LITE:
+            return 'ГП'
+    }
+
+    return '??'
+})
+
 
 </script>
 

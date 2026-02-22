@@ -44,7 +44,7 @@
                             class="m-1 p-1">
                             <AppInputButton
                                 id="confirm"
-                                :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
+                                :title="mode === 'confirm' ? 'Отмена' : okWord"
                                 :type="type"
                                 @buttonClick="select(false)"
                             />
@@ -95,6 +95,11 @@ const props = defineProps({
         required:  false,
         default:   'inform',
         validator: (mode) => ['inform', 'confirm'].includes(mode)
+    },
+    okWord: {
+        type:     String,
+        required: false,
+        default:  'Закрыть'
     }
 
 })

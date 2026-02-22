@@ -4,20 +4,43 @@
         @contextmenu.prevent="openContextMenu"
     >
         <div class="flex justify-between items-center mb-2">
-            <div>
-                <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">
-                    {{
-                        `${sewingTask.position}. ${sewingTask.order.client.short_name} №${sewingTask.order.order_no_num}`
-                    }}
-                </h1>
-                <p class="text-sm text-slate-400 font-medium">Выбрано элементов: {{ selectedIds.size }}</p>
+            <div class="flex justify-between items-center gap-3 w-full">
+
+                <!-- __ Название Заявки -->
+                <div>
+                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">{{ taskTitle }} </h1>
+                    <p class="text-sm text-slate-400 font-medium">Выбрано элементов: {{ selectedIds.size }}</p>
+                </div>
+
             </div>
 
             <div class="flex gap-0.5">
 
+                <!-- __ Прогресс по каждой заявке -->
+                <AppProgressBar
+                    :progress="statistics.time.finished / statistics.time.total * 100"
+                    :text="`${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`"
+                    height="h-[50px]"
+                    text-size="mini"
+                    width="w-[200px]"
+                />
+
+                <!-- __ Комментарий -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :text="sewingTask.comment ?? ''"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="mini"
+                    type="indigo"
+                    width="min-w-[300px]"
+                />
+
                 <!-- __ Выполнено -->
                 <AppLabelTS
                     :disabled="selectedIds.size === 0"
+                    :height="MENU_HEIGHT"
                     :type="selectedIds.size === 0 ? 'dark' : 'success'"
                     :width="MENU_WIDTH"
                     align="center"
@@ -31,6 +54,7 @@
                 <!-- __ Не Выполнено -->
                 <AppLabelTS
                     :disabled="selectedIds.size === 0"
+                    :height="MENU_HEIGHT"
                     :type="selectedIds.size === 0 ? 'dark' : 'danger'"
                     :width="MENU_WIDTH"
                     align="center"
@@ -44,6 +68,7 @@
                 <!-- __ Сброс отметки -->
                 <AppLabelTS
                     :disabled="selectedIds.size === 0"
+                    :height="MENU_HEIGHT"
                     :type="selectedIds.size === 0 ? 'dark' : 'stone'"
                     :width="MENU_WIDTH"
                     align="center"
@@ -57,6 +82,7 @@
                 <!-- __ Разбить количество -->
                 <AppLabelTS
                     :disabled="selectedIds.size === 0"
+                    :height="MENU_HEIGHT"
                     :type="selectedIds.size === 0 ? 'dark' : 'indigo'"
                     :width="MENU_WIDTH"
                     align="center"
@@ -64,18 +90,18 @@
                     rounded="4"
                     text="⛏ Разбить"
                     text-size="small"
-                    @click="unCompleteSelected"
+                    @click="divideElementAmount"
                 />
 
-                <!--<button-->
-                <!--    :disabled="selectedIds.size === 0"-->
-                <!--    class="bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-200 disabled:text-gray-400 px-6 py-2 rounded-xl font-bold transition-all active:scale-95 shadow-sm shadow-indigo-200"-->
-                <!--    @click="completeSelected"-->
-                <!--&gt;-->
-                <!--    Завершить выбранные-->
-                <!--</button>-->
             </div>
 
+        </div>
+
+        <!-- __ Заголовок для Линий -->
+        <div class="ml-[23px]">
+            <ExecuteDayTaskLineHeader
+                :field-widths="fieldWidths"
+            />
         </div>
 
         <div
@@ -85,30 +111,31 @@
 
             <div v-for="(sewingLine, index) of  sewingLines" :key="sewingLine.id"
                  :class="[
-                  selectedIds.has(sewingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
-                  sewingLine.completed ? '' : '',
-                ]"
+                      selectedIds.has(sewingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
+                      sewingLine.completed ? '' : '',
+                 ]"
                  :data-task-id="sewingLine.id"
                  class="h-[30px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
                  @mousedown="startSelection(index, $event)"
-                 @mouseenter="updateSelection(index)"
+                 @mouseenter="updateSelection(index, $event)"
             >
 
-                <!-- __ Cтрока СЗ -->
+                <!-- __ Строка СЗ -->
                 <ExecuteDayTaskLine
+                    :field-widths="fieldWidths"
                     :sewing-line="sewingLine"
+                    @dblclick="showLineInfo(sewingLine)"
                 />
 
                 <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
-                <div
-                    v-if="selectedIds.has(sewingLine.id)"
-
-                    class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
-
+                <div v-if="selectedIds.has(sewingLine.id)"
+                     class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
                 ></div>
             </div>
         </div>
 
+
+        <!-- __ Меню по правой кнопке мыши -->
         <Teleport to="body">
             <Transition name="fade">
                 <div
@@ -123,23 +150,29 @@
                         Действия ({{ selectedIds.size }})
                     </div>
                     <button
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
-                        @click="handleMenuAction('complete')"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-green-600 hover:text-white transition-colors"
+                        @click="handleMenuAction('done')"
                     >
-                        <span class="mr-3 text-lg">✅</span> Завершить
+                        <span class="mr-3 text-lg">✓</span> Выполнено
                     </button>
                     <button
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-100 transition-colors"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-red-600 hover:text-white transition-colors"
+                        @click="handleMenuAction('false')"
+                    >
+                        <span class="mr-3 text-lg">✘</span> Не выполнено
+                    </button>
+                    <!--<div class="h-[1px] bg-gray-100 my-1"></div>-->
+                    <button
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
                         @click="handleMenuAction('reset')"
                     >
-                        <span class="mr-3 text-lg">⏳</span> Сбросить статус
+                        <span class="mr-3 text-lg">↺</span> Сбросить
                     </button>
-                    <div class="h-[1px] bg-gray-100 my-1"></div>
                     <button
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-500 hover:text-white transition-colors"
-                        @click="handleMenuAction('delete')"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                        @click="handleMenuAction('divide')"
                     >
-                        <span class="mr-3 text-lg">🗑️</span> Удалить
+                        <span class="mr-3 text-lg">⛏</span> Разбить
                     </button>
                 </div>
             </Transition>
@@ -159,42 +192,80 @@
         label="Причина не выполнения"
     />
 
+    <!-- __ Модальное окно для информации о записи -->
+    <OrderItemInfo
+        ref="orderItemInfo"
+        :order-line="orderLine"
+    />
+
+    <!-- __ Разбить Количество Модальное окно  -->
+    <AppRangeModalAsyncTS
+        ref="appRangeModalAsyncTS"
+        :item="dividerElement"
+        :mode="modalMode"
+        :text="modalText"
+        :type="modalType"
+    />
+
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount } from 'vue'
 
-import type { ISewingTask, ISewingTaskLine } from '@/types'
+import type { IColorTypes, IDividerItem, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
+
+import {
+    getCoverSizeString, getExecuteTaskStatustics, getSewingTaskModelCoverName
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import {  useRoute, useRouter } from 'vue-router'
 import ExecuteDayFalseReason
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayFalseReason.vue'
 import ExecuteDayTaskLine
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayTaskLine.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
+import ExecuteDayTaskLineHeader
+    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayTaskLineHeader.vue'
+import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
+import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+
 
 interface IProps {
     sewingTask: ISewingTask
 }
 
 const props = defineProps<IProps>()
-console.log('sewingTask: ', props.sewingTask)
+
 
 const emits = defineEmits<{
     (e: 'setFinishStatus', payload: number[]): void
     (e: 'setFalseStatus', payload: number[], falseReason: string): void
     (e: 'resetStatus', payload: number[]): void
+    (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number, keep: number }): void
 }>()
 
 
-const MENU_WIDTH = 'w-[130px]'
-
-const router = useRouter()
-const route  = useRoute()
+const MENU_WIDTH  = 'w-[130px]'
+const MENU_HEIGHT = 'h-[50px]'
 
 
-// __ Тип для модального окна изменения Комментария
+// __ Тип для модального окна информации о записи в Заявке
+const orderLine     = ref<ISewingTaskOrderLine | null>(null)
+const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна изменения Причины не выполнения
 const falseReason           = ref('')
 const executeDayFalseReason = ref<InstanceType<typeof ExecuteDayFalseReason> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна "Разбить количество"
+const modalType            = ref<IColorTypes>('primary')
+const modalText            = ref<string>('')
+const modalMode            = ref<'inform' | 'confirm'>('inform')
+const dividerElement       = ref<IDividerItem>({ name: '', amount: 0 })
+const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+
+const statistics = computed(() => getExecuteTaskStatustics(props.sewingTask))
 
 // --- Инициализация данных ---
 // const tasks = ref(Array.from({ length: 40 }, (_, i) => ({
@@ -209,39 +280,131 @@ const sewingLines = ref<ISewingTaskLine[]>([])
 const getSewingLines = () => {
     sewingLines.value = props.sewingTask.sewing_lines
         .map(line => ({ ...line, completed: false }))
-        .sort((a, b) => a.position - b.position)
+        .sort((a, b) => {
+
+            // __ 1. Сначала сравниваем по времени
+            const compA    = a.finished_at || a.false_at || '2050-01-01 00:00:00'
+            const compB    = b.finished_at || b.false_at || '2050-01-01 00:00:00'
+            const timeDiff = (new Date(compA)).getTime() - (new Date(compB)).getTime()
+
+            // 2. __ Если время разное (не 0), возвращаем результат сравнения времени
+            if (timeDiff !== 0) {
+                return timeDiff
+            }
+
+            // __ 3. Если время совпало, сортируем по позиции
+            return a.position - b.position
+        })
+}
+
+// __ Название заявок
+const taskTitle = computed(() => {
+    if (props.sewingTask.id === 0) {
+        return 'Объединение СЗ'
+    }
+    return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
+})
+
+
+// __ Показать информацию о записи
+const showLineInfo = async (sewingLine: ISewingTaskLine) => {
+    orderLine.value = sewingLine.order_line
+    await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
+}
+
+
+// __ Поля данных
+const fieldWidths: Record<string, string> = {
+    check:       'min-w-[25px] max-w-[25px]',
+    space:       'min-w-[10px] max-w-[10px]',
+    position:    'min-w-[30px] max-w-[30px]',
+    size:        'min-w-[80px] max-w-[80px]',
+    coverName:   'min-w-[250px] max-w-[250px]',
+    amount:      'min-w-[30px] max-w-[30px]',
+    time:        'min-w-[70px] max-w-[70px]',
+    machine:     'min-w-[30px] max-w-[30px]',
+    textile:     'min-w-[70px] max-w-[70px]',
+    tkch:        'min-w-[70px] max-w-[70px]',
+    kant:        'min-w-[70px] max-w-[70px]',
+    composition: 'min-w-[70px] max-w-[70px]',
+    describe_1:  'min-w-[70px] max-w-[70px]',
+    describe_2:  'min-w-[70px] max-w-[70px]',
+    describe_3:  'min-w-[70px] max-w-[70px]',
+    timeLabel:   'min-w-[80px] max-w-[80px]',
+    reason:      'min-w-[250px] max-w-[250px]',
 }
 
 
 // --- Состояние выделения ---
-const scrollContainer  = ref(null)
+const scrollContainer  = ref<HTMLElement | null>(null)
 const selectedIds      = ref(new Set<number>())
 const isDragging       = ref(false)
-const startIndex       = ref(null)
-const lastClickedIndex = ref(null)
+const startIndex       = ref<number | null>(null)
+const lastClickedIndex = ref<number | null>(null)
 
 // --- Состояние меню ---
 const showMenu     = ref(false)
 const menuPosition = ref({ x: 0, y: 0 })
-const menuRef      = ref(null)
+const menuRef      = ref<HTMLElement | null>(null)
 
-// --- Логика автоскролла ---
-let scrollInterval    = null
-const startAutoScroll = (direction) => {
-    if (scrollInterval) return
-    scrollInterval = setInterval(() => {
+
+// --- Логика автоскролла на requestAnimationFrame ---
+let scrollId: number | null = null
+
+/**
+ * __ Запуск автоскролла
+ * @param direction - 1 для скролла вниз, -1 для скролла вверх
+ */
+const startAutoScroll = (direction: 1 | -1): void => {
+    if (scrollId !== null) return
+
+    const scrollStep = () => {
         if (scrollContainer.value) {
+            // __ 12px — это базовая скорость. Можно умножить на коэффициент для ускорения
             scrollContainer.value.scrollTop += direction * 12
+
+            // __ Рекурсивно вызываем следующий кадр
+            scrollId = requestAnimationFrame(scrollStep)
         }
-    }, 16)
+    }
+
+    scrollId = requestAnimationFrame(scrollStep)
 }
-const stopAutoScroll  = () => {
-    clearInterval(scrollInterval)
-    scrollInterval = null
+
+const stopAutoScroll = (): void => {
+    if (scrollId !== null) {
+        cancelAnimationFrame(scrollId)
+        scrollId = null
+    }
 }
+
+
+// --- Логика автоскролла на setInterval ---
+// __ Используем ReturnType для максимальной точности или просто number | null
+// let scrollInterval: ReturnType<typeof setInterval> | null  = null;
+//
+// /**
+//  * Запуск автоскролла
+//  * @param direction - 1 для скролла вниз, -1 для скролла вверх
+//  */
+// const startAutoScroll = (direction: 1 | -1) => {
+//     if (scrollInterval) return
+//     scrollInterval = setInterval(() => {
+//         if (scrollContainer.value) {
+//             scrollContainer.value.scrollTop += direction * 12
+//         }
+//     }, 16)
+// }
+// const stopAutoScroll = (): void => {
+//     if (scrollInterval !== null) {
+//         clearInterval(scrollInterval);
+//         scrollInterval = null;
+//     }
+// }
+
 
 // --- Методы выделения ---
-const startSelection = (index, event) => {
+const startSelection = (index: number, event: MouseEvent) => {
     // Если клик правой кнопкой — игнорируем здесь (обработает contextmenu)
     if (event.button === 2) return
 
@@ -263,12 +426,16 @@ const startSelection = (index, event) => {
     lastClickedIndex.value = index
 }
 
-const updateSelection = (currentIndex) => {
+const updateSelection = (currentIndex: number, event: MouseEvent) => {
     if (!isDragging.value) return
-    applyRangeSelection(startIndex.value, currentIndex, window.event.ctrlKey || window.event.metaKey)
+
+    // __ Используем ключи из переданного объекта события
+    const isMultiSelect = event.ctrlKey || event.metaKey
+
+    applyRangeSelection(startIndex.value!, currentIndex, isMultiSelect)
 }
 
-const applyRangeSelection = (startIdx, endIdx, isCumulative) => {
+const applyRangeSelection = (startIdx: number, endIdx: number, isCumulative: boolean) => {
     const start = Math.min(startIdx, endIdx)
     const end   = Math.max(startIdx, endIdx)
 
@@ -280,7 +447,7 @@ const applyRangeSelection = (startIdx, endIdx, isCumulative) => {
 }
 
 // --- Обработка мыши и скролла ---
-const handleMouseMove = (event) => {
+const handleMouseMove = (event: MouseEvent) => {
     if (!isDragging.value || !scrollContainer.value) return
 
     const rect      = scrollContainer.value.getBoundingClientRect()
@@ -296,9 +463,13 @@ const handleMouseMove = (event) => {
 }
 
 // --- Контекстное меню ---
-const openContextMenu = async (event) => {
-    const target = event.target.closest('[data-task-id]')
+const openContextMenu = async (event: MouseEvent) => {
+
+    // __ Типизируем поиск ближайшего элемента с ID задачи
+    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-task-id]')
     if (target) {
+
+        // __ Извлекаем ID из dataset (в HTML это data-task-id)
         const id = Number(target.dataset.taskId)
         if (!selectedIds.value.has(id)) {
             selectedIds.value.clear()
@@ -307,29 +478,35 @@ const openContextMenu = async (event) => {
     }
 
     showMenu.value = true
+
+    // __ Ждем, пока Vue обновит DOM, чтобы измерить размеры меню
     await nextTick()
 
-    let x            = event.clientX
-    let y            = event.clientY
+    let x = event.clientX
+    let y = event.clientY
+
     const menuWidth  = menuRef.value?.offsetWidth || 250
     const menuHeight = menuRef.value?.offsetHeight || 180
 
+    // __ Логика предотвращения выхода меню за границы экрана 🖥️
     if (x + menuWidth > window.innerWidth) x -= menuWidth
     if (y + menuHeight > window.innerHeight) y -= menuHeight
 
     menuPosition.value = { x, y }
 }
 
-// --- Действия ---
-const handleMenuAction = (action) => {
-    if (action === 'complete') completeSelected()
-    if (action === 'reset') {
-        sewingLines.value.forEach(t => selectedIds.value.has(t.id) && (t.completed = false))
+// __ Меню
+const handleMenuAction = (action: string) => {
+    if (action === 'done') {
+        completeSelected()
+    } else if (action === 'false') {
+        unCompleteSelected()
+    } else if (action === 'reset') {
+        resetStatus()
+    } else if (action === 'divide') {
+        divideElementAmount()
     }
-    if (action === 'delete') {
-        sewingLines.value = sewingLines.value.filter(t => !selectedIds.value.has(t.id))
-        selectedIds.value.clear()
-    }
+
     showMenu.value = false
 }
 
@@ -383,11 +560,10 @@ const unCompleteSelected = async () => {
 
         emits('setFalseStatus', ids, falseReason.value)
         showMenu.value = false
-
     }
 }
 
-// __ Не Выполнено
+// __ Сброс статуса
 const resetStatus = async () => {
     const ids: number[] = []
 
@@ -408,16 +584,50 @@ const resetStatus = async () => {
     showMenu.value = false
 }
 
+// __ Разбить количество
+const divideElementAmount = async () => {
 
-// const unCompleteSelected = () => {
-//     sewingLines.value.forEach(t => {
-//         if (selectedIds.value.has(t.id)) {
-//             t.finished_at = null
-//         }
-//         // if (selectedIds.value.has(t.id)) t.completed = true
-//     })
-//     showMenu.value = false
-// }
+    // __ Проверяем, что есть выделенные элементы
+    if (selectedIds.value.size === 0) {
+        return
+    }
+
+    // __ Проверяем, что это не объединение СЗ
+    if (props.sewingTask.id === 0) {
+        return
+    }
+
+    // __ Берем первый элемент из выделенных
+    const findElement = JSON.parse(JSON.stringify(sewingLines.value.find(line => line.id === Array.from(selectedIds.value)[0])))
+
+    // __ Проверяем, что элемент не завершен
+    if (findElement && (findElement.finished_at || findElement.false_at || findElement.amount === 1)) {
+        return
+    }
+
+    // __ Формируем название для модального окна
+    const modelCover = getSewingTaskModelCoverName(findElement.order_line.model)
+
+    dividerElement.value.name =
+        getCoverSizeString(findElement) + ' ' +
+        modelCover + ' ' +
+        findElement.order_line.amount.toString() + ' шт.'
+
+    dividerElement.value.amount = findElement.amount
+
+    const answer = await appRangeModalAsyncTS.value!.show()             // показываем модалку и ждем ответ
+    if (answer) {
+
+        // __ Получаем диапазон + проверяем его (страховочка)
+        const range = appRangeModalAsyncTS.value!.range
+        if (!range || range.take === 0 || range.keep === 0) {
+            return
+        }
+
+        emits('divideLine', props.sewingTask.id, findElement.id, range)
+        selectedIds.value.clear()
+    }
+}
 
 
 const stopGlobalSelection = () => {
@@ -428,27 +638,24 @@ const stopGlobalSelection = () => {
 watch(() => props.sewingTask, () => {
     selectedIds.value.clear()   // __ Очистка выделения
     getSewingLines()
+    // console.log('sewingTask__: ', props.sewingTask)
 }, { deep: true, immediate: true })
 
 // --- Жизненный цикл ---
 onMounted(async () => {
-    // await router.isReady().then(() => {
-    //     const meta = route.meta /*as unknown as string*/
-    //     // editMode.value = route.meta.mode === 'edit' // определяем режим работы формы (редактирование или создание)
-    //     console.log('meta: ', meta)
-    //     route.meta.title = '123'
-    // })
-
-    // getSewingLines()    // __ Инициализация данных
-
     window.addEventListener('mouseup', stopGlobalSelection)
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('click', () => (showMenu.value = false))
 })
 
+onBeforeUnmount(() => {
+    stopAutoScroll()
+})
+
 onUnmounted(() => {
     window.removeEventListener('mouseup', stopGlobalSelection)
     window.removeEventListener('mousemove', handleMouseMove)
+    stopAutoScroll()
 })
 
 

@@ -28,10 +28,12 @@
 
         <!-- __ Прогресс общий -->
         <AppProgressBar
-            :height="render.progressTotal.height"
-            :progress="70"
+            :progress="statistics.time.finished / statistics.time.total * 100"
+            :text="`${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`"
             :width="render.progressTotal.width"
+            text-size="micro"
         />
+
         <!--<AppLabelTSWrapper :render-object="render.progressTotal"/>-->
 
         <!-- __ Комментарий  -->
@@ -76,8 +78,10 @@ import { computed, reactive } from 'vue'
 
 import type { IRenderData, ISewingTask } from '@/types'
 
-import { getSewingTaskAmountAndTime, getTaskStatusById } from '@/app/helpers/manufacture/helpers_sewing.ts'
-import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+import {
+    getExecuteTaskStatustics, getSewingTaskAmountAndTime, getTaskStatusById
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import ExecuteTaskLine
@@ -102,7 +106,7 @@ const props = defineProps<IProps>()
 // __ Объект отображения данных
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 // const COLLAPSED_WIDTH    = 'w-[30px]'
-const DEFAULT_HEIGHT   = 'h-[25px]'
+const DEFAULT_HEIGHT   = 'h-[30px]'
 const HEADER_TYPE      = 'primary'
 const DATA_TYPE        = 'primary'
 const DEFAULT_TYPE     = 'dark'
@@ -295,9 +299,11 @@ const sewingLineFieldsWidth = {
 // __ Пересчитываем Итого
 const calculateTotals = computed(() => getSewingTaskAmountAndTime(props.sewingTask.sewing_lines))
 
-
 // __ Цвет от статуса СЗ
 const color = computed<string>(() => props.sewingTask.current_status.color)
+
+// __ Объект статистики
+const statistics = computed(() => getExecuteTaskStatustics(props.sewingTask))
 
 
 </script>

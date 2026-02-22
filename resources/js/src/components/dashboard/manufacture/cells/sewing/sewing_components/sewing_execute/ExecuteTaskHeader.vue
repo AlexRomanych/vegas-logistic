@@ -41,7 +41,6 @@ import type { IRenderData } from '@/types'
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 
 interface IProps {
-    // sewingTask: ISewingTask
     fieldsWidth: Record<string, string>
 }
 
@@ -55,7 +54,7 @@ const DEFAULT_TYPE     = 'indigo'
 const HEADER_TEXT_SIZE = 'mini'
 const DATA_TEXT_SIZE   = 'mini'
 const HEADER_ALIGN     = 'center'
-const DATA_ALIGN       = 'left'
+const DATA_ALIGN       = 'center'
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 // const COLLAPSED_WIDTH    = 'w-[40px]'
 
@@ -73,7 +72,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍collapsed...',
         data:           (/*sewingTask: ISewingTask*/) => '',
         // data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.collapsed ? '▲' : '▼'
@@ -91,7 +90,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍id...',
         data:           (/*sewingTask: ISewingTask*/) => 'ID'
     },
@@ -107,7 +106,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
         data:           (/*sewingTask: ISewingTask*/) => '#',
     },
@@ -123,7 +122,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
         data:           (/*sewingTask: ISewingTask*/) => 'Клиент',
     },
@@ -139,7 +138,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
         data:           (/*sewingTask: ISewingTask*/) => '№',
     },
@@ -155,7 +154,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
         data:           (/*sewingTask: ISewingTask*/) => 'Статус'
     },
@@ -171,7 +170,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
         data:           (/*sewingTask: ISewingTask*/) => 'Дата загрузки'
     },
@@ -187,7 +186,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
         data:           (/*sewingTask: ISewingTask*/) => 'Прогресс',
     },
@@ -203,93 +202,11 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
+        dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
         data:           (/*sewingTask: ISewingTask*/) => 'Комментарий к СЗ',
     },
-    //
-    // date:      {
-    //     id:             () => 'date-search',
-    //     header:         ['Дата', 'производства'],
-    //     width:          'w-[200px]',
-    //     height:         DEFAULT_HEIGHT,
-    //     show:           true,
-    //     headerType:     () => HEADER_TYPE,
-    //     dataType:       () => DATA_TYPE,
-    //     type:           () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize:   DATA_TEXT_SIZE,
-    //     headerAlign:    HEADER_ALIGN,
-    //     dataAlign:      'center',
-    //     placeholder:    '🔍Дата...',
-    //     data:           (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at)
-    // },
-    // start_at:  {
-    //     id:             () => 'start-at-search',
-    //     header:         ['Старт', ''],
-    //     width:          'w-[100px]',
-    //     height:         DEFAULT_HEIGHT,
-    //     show:           true,
-    //     headerType:     () => HEADER_TYPE,
-    //     dataType:       () => DATA_TYPE,
-    //     type:           () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize:   DATA_TEXT_SIZE,
-    //     headerAlign:    HEADER_ALIGN,
-    //     dataAlign:      'center',
-    //     placeholder:    '🔍Старт...',
-    //     data:           (sewingDay: ISewingDay) => '07ч. 00м. 00с.',
-    // },
-    // finish_at: {
-    //     id:             () => 'finish-at-search',
-    //     header:         ['Финиш', ''],
-    //     width:          'w-[100px]',
-    //     height:         DEFAULT_HEIGHT,
-    //     show:           true,
-    //     headerType:     () => HEADER_TYPE,
-    //     dataType:       () => DATA_TYPE,
-    //     type:           () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize:   DATA_TEXT_SIZE,
-    //     headerAlign:    HEADER_ALIGN,
-    //     dataAlign:      'center',
-    //     placeholder:    '🔍Финиш...',
-    //     data:           (sewingDay: ISewingDay) => '16ч. 00м. 00с.',
-    // },
-    // duration:  {
-    //     id:             () => 'duration-search',
-    //     header:         ['Продолжи-', 'тельность'],
-    //     width:          'w-[100px]',
-    //     height:         DEFAULT_HEIGHT,
-    //     show:           true,
-    //     headerType:     () => HEADER_TYPE,
-    //     dataType:       () => DATA_TYPE,
-    //     type:           () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize:   DATA_TEXT_SIZE,
-    //     headerAlign:    HEADER_ALIGN,
-    //     dataAlign:      'center',
-    //     placeholder:    '🔍Дата...',
-    //     data:           (sewingDay: ISewingDay) => '07ч. 59м. 59с.',
-    // },
-    //
-    //
-    // progressDelta: {
-    //     id:             () => 'progress-delta-search',
-    //     header:         ['Опережение или', 'отставание'],  // __ (Темп выполнения СЗ, остаток смены - остаток задания) Опережение или отставание (отношение оставшегося времени смены к оставшемуся времени СЗ)
-    //     width:          'w-[200px]',
-    //     height:         DEFAULT_HEIGHT,
-    //     show:           true,
-    //     headerType:     () => HEADER_TYPE,
-    //     dataType:       () => DATA_TYPE,
-    //     type:           () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize:   DATA_TEXT_SIZE,
-    //     headerAlign:    HEADER_ALIGN,
-    //     dataAlign:      'center',
-    //     placeholder:    '🔍Дата...',
-    //     data:           (sewingDay: ISewingDay) => sewingDay.comment ?? '',
-    // },
+
 })
 
 

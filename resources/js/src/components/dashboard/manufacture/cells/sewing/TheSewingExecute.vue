@@ -62,22 +62,34 @@
                 <AppLabelTSWrapper :arg="sewingDay" :render-object="render.date" @click="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Старт -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.start_at" @dblclick="goToSewingDay(sewingDay)"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.start_at"
+                                   @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Финиш -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.finish_at" @dblclick="goToSewingDay(sewingDay)"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.finish_at"
+                                   @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Продолжительность -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.duration" @dblclick="goToSewingDay(sewingDay)"/>
+                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.duration"
+                                   @dblclick="goToSewingDay(sewingDay)"/>
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
-                    :progress="40"
+                    :height="DEFAULT_HEIGHT"
+                    :progress="getProgressDayTotal(sewingDay)"
+                    :text="getProgressDayTotalText(sewingDay)"
                     :width="render.progressTotal.width"
+                    text-size="mini"
                 />
 
-                <!-- __ Опережение / отставание -->
-                <AppLabelTSWrapper :arg="sewingDay" :render-object="render.progressDelta"/>
+                <!-- __ Опережение/Отставание -->
+                <DeviationBar
+                    :deviation="getDeviationDayTotal(sewingDay)"
+                    :height="DEFAULT_HEIGHT"
+                    :text="getDeviationDayTotalText(sewingDay)"
+                    :width="render.progressTotal.width"
+                    text-size="mini"
+                />
 
                 <!-- __ Комментарий -->
                 <AppLabelTSWrapper :arg="sewingDay" :render-object="render.comment"/>
@@ -188,16 +200,19 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-import type { IRenderData, ISewingDay, ISewingDayWorker } from '@/types'
+import type { IRenderData, ISewingDay, ISewingDayWorker, ISewingTaskLine } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
-import { SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
+import { SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
 
 import {
+    getExecuteTaskStatustics,
     getSewingDates, unionDatesWithSewingTasks
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
-import { formatDateInFullFormat, getDayOfWeek, isHoliday, isToday } from '@/app/helpers/helpers_date'
+import {
+    formatDateInFullFormat, formatTimeInFullFormat, formatTimeWithLeadingZeros, getDayOfWeek, isHoliday, isToday
+} from '@/app/helpers/helpers_date'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -216,6 +231,8 @@ import ExecutePersonal
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ExecuteTaskCommon
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskCommon.vue'
+import { round } from '@/app/helpers/helpers_lib.ts'
+import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 
 
 // import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
@@ -244,6 +261,7 @@ const renderSewingDays = computed<ISewingDay[]>(() => {
     return sewingDays.value
 })
 
+
 // __ Переменные для рендера
 const personalShow = ref(false)
 const tasksShow    = ref(false)
@@ -251,8 +269,9 @@ const commonShow   = ref(false)
 
 
 // __ Объект отображения данных
-const DEFAULT_HEIGHT   = 'h-[30px]'
+const DEFAULT_HEIGHT   = 'h-[50px]'
 const COLLAPSED_WIDTH  = 'w-[30px]'
+const PROGRESS_WIDTH   = 'w-[200px]'
 const HEADER_TYPE      = 'primary'
 const DATA_TYPE        = 'primary'
 const DEFAULT_TYPE     = 'dark'
@@ -345,7 +364,8 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Дата...',
-        data:           (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`,
+        data:           (sewingDay: ISewingDay) =>
+                            formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`,
         class:          'cursor-pointer',
     },
     start_at:      {
@@ -362,7 +382,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Старт...',
-        data:           (sewingDay: ISewingDay) => '07ч. 00м. 00с.',
+        data:           (sewingDay: ISewingDay) => sewingDay.start_at ? formatTimeInFullFormat(sewingDay.start_at) : '',
         class:          'cursor-pointer',
     },
     finish_at:     {
@@ -379,7 +399,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Финиш...',
-        data:           (sewingDay: ISewingDay) => '16ч. 00м. 00с.',
+        data:           (sewingDay: ISewingDay) => sewingDay.finish_at ? formatTimeInFullFormat(sewingDay.finish_at) : '',
         class:          'cursor-pointer',
     },
     duration:      {
@@ -396,14 +416,13 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Дата...',
-        data:           (sewingDay: ISewingDay) => '07ч. 59м. 59с.',
+        data:           (sewingDay: ISewingDay) => getDuration(sewingDay),
         class:          'cursor-pointer',
     },
-
     progressTotal: {
         id:             () => 'progress-total-search',
         header:         ['Прогресс выполнения от', 'общего времени СЗ'],
-        width:          'w-[265px]',
+        width:          PROGRESS_WIDTH,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
@@ -419,7 +438,7 @@ const render: IRenderData = reactive({
     progressDelta: {
         id:             () => 'progress-delta-search',
         header:         ['Опережение или', 'отставание'],  // __ (Темп выполнения СЗ, остаток смены - остаток задания) Опережение или отставание (отношение оставшегося времени смены к оставшемуся времени СЗ)
-        width:          'w-[150px]',
+        width:          PROGRESS_WIDTH,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
@@ -432,8 +451,7 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Дата...',
         data:           (sewingDay: ISewingDay) => sewingDay.comment ?? '',
     },
-
-    comment: {
+    comment:       {
         id:             () => 'comment-search',
         header:         ['Комментарий к', 'производственному дню'],
         width:          'w-[312px]',
@@ -451,6 +469,7 @@ const render: IRenderData = reactive({
     },
 })
 
+
 // __ Ширина полей для вывода СЗ
 const sewingTaskFieldsWidth = {
     collapsed:     COLLAPSED_WIDTH,
@@ -459,7 +478,7 @@ const sewingTaskFieldsWidth = {
     client:        'w-[190px]',
     order_no:      'w-[50px]',
     status:        'w-[90px]',
-    progressTotal: 'w-[265px]',
+    progressTotal: PROGRESS_WIDTH,
     load_at:       'w-[143px]',
     comment:       'w-[466px]',
 }
@@ -480,11 +499,7 @@ const dateType = (sewingDay: ISewingDay) => {
 const expandAll   = () => sewingDays.value.forEach(sewingDay => sewingDay.collapsed = false)
 const collapseAll = () => sewingDays.value.forEach(sewingDay => sewingDay.collapsed = true)
 
-// __ Получаем производственные дни
-const getSewingDays = async () => {
-    const dates      = getSewingDates(globalSewingTasksPending.value)                // __ Получаем даты из СЗ
-    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)                 // __ Получаем дни по этим датам
-}
+
 
 // __ Добавляем свернутость
 const addCollapsed = () => {
@@ -529,6 +544,87 @@ const goToSewingDay = (sewingDay: ISewingDay) => {
         params: { date: sewingDay.action_at.split(' ')[0] } // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
     })
 }
+
+// __ Получаем продолжительность СЗ
+const getDuration = (sewingDay: ISewingDay) => {
+    if (!sewingDay.start_at) {
+        return ''
+    }
+
+    const startSec  = new Date(sewingDay.start_at.replace(' ', 'T')).getTime() / 1000
+    const finishSec = sewingDay.finish_at ? new Date(sewingDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
+
+    return formatTimeWithLeadingZeros(round(finishSec - startSec))
+}
+
+
+// __ Получаем объект статистики для дня
+const getDayStatistics = (sewingDay: ISewingDay) => {
+    const allSewingTasksLines: ISewingTaskLine[] = []
+    sewingDay.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLines.push(line)))
+    return getExecuteTaskStatustics(allSewingTasksLines)
+}
+
+
+// __ Получаем прогресс выполнения СЗ по дню
+const getProgressDayTotal = (sewingDay: ISewingDay) => {
+    const statistics = getDayStatistics(sewingDay)
+    return statistics.time.finished / statistics.time.total * 100
+}
+
+// __ Получаем текст прогресса выполнения СЗ по дню
+const getProgressDayTotalText = (sewingDay: ISewingDay) => {
+    const statistics = getDayStatistics(sewingDay)
+    return `${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`
+}
+
+// __ Получаем отклонение прогресса выполнения СЗ по дню в секундах
+const getDeviationDay = (sewingDay: ISewingDay) => {
+    const statistics = getDayStatistics(sewingDay)
+
+    if (sewingDay.start_at && !sewingDay.finish_at) {
+
+        // __ Находим время окончания смены
+        const endShiftTime     = new Date(sewingDay.start_at.replace(' ', 'T'))
+        const [hours, minutes] = START_SHIFT_TIME.split(':')
+        endShiftTime.setHours(Number(hours), Number(minutes) + TOTAL_SHIFT_DURATION * 60, 0, 0)
+
+        // __ Оставшееся время до окончания смены в секундах
+        const remainingTime = (endShiftTime.getTime() - new Date().getTime()) / 1000
+
+        // __ Опережение или отставание
+        if (statistics.time.unfinished === 0) return 0
+        return round(remainingTime - statistics.time.unfinished)
+    }
+
+    return 0
+}
+
+
+// __ Получаем отклонение прогресса выполнения СЗ по дню в %
+const getDeviationDayTotal = (sewingDay: ISewingDay) => {
+    const statistics = getDayStatistics(sewingDay)
+    return statistics.time.unfinished !== 0 ? getDeviationDay(sewingDay) / statistics.time.unfinished * 100 : 0
+}
+
+
+// __ Текст для опережения/отставания
+const getDeviationDayTotalText = (sewingDay: ISewingDay) => {
+    const deviation = getDeviationDay(sewingDay)
+    if (deviation === 0) {
+        return 'В графике'
+    }
+
+    return deviation > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation))
+}
+
+
+// __ Получаем производственные дни
+const getSewingDays = async () => {
+    const dates      = getSewingDates(globalSewingTasksPending.value)                // __ Получаем даты из СЗ
+    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)                 // __ Получаем дни по этим датам
+}
+
 
 onMounted(async () => {
     isLoading.value = true

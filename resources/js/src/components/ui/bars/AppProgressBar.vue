@@ -11,10 +11,11 @@
             :class="[height, width,'bg-slate-900 border border-slate-700/50 rounded-[3px] overflow-hidden relative flex items-center shadow-inner']">
 
             <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                <span :class="clampedProgress > 40 ? 'text-white' : 'text-slate-400'"
-                      class="text-[10px] font-black uppercase tracking-tighter drop-shadow-md transition-colors duration-300">
-                   {{ statusText }}
-                </span>
+                <div :class="[clampedProgress > 40 ? 'text-white' : 'text-slate-400', textSizeClass]"
+                      class="text-center font-black  tracking-tighter drop-shadow-md transition-colors duration-300">
+                   <div class="uppercase">{{ statusText }}</div>
+                   <div v-if="text">{{ text }}</div>
+                </div>
             </div>
 
             <div
@@ -34,22 +35,30 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import type { IFontsType } from '@/app/constants/fontSizes.ts'
+import { getFontSizeClass } from '@/app/helpers/helpers.ts'
 
 interface IProps {
     progress: number
     label?: string
+    text?: string
     height?: string
     width?: string
     animated?: boolean
+    textSize?: IFontsType
 }
 
 const props = withDefaults(defineProps<IProps>(), {
     progress: 0,
     label:    '',
+    text:     '',
     height:   'h-[30px]',
     width:    'w-[100px]',
-    animated: true
+    animated: true,
+    textSize: 'mini'
 })
+
+const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 
 const clampedProgress = computed(() => Math.max(0, Math.min(100, props.progress)))
 

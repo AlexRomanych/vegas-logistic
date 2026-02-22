@@ -398,7 +398,7 @@ export type ISewingDay = {
     finish_at: string | null
     duration: number
     sewing_tasks: ISewingTask[]
-    responsible: ISewingDayWorker
+    responsible: ISewingDayWorker | null
     workers: ISewingDayWorker[]
 
     collapsed?: boolean

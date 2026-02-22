@@ -606,7 +606,12 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
             let filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
             // let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
             if (filteredDay.length === 0) {
-                const draft = { ...SEWING_TASK_DRAFT, id: draftId--, position: 100 }
+                const draft = {
+                    ...SEWING_TASK_DRAFT,
+                    id: draftId--,
+                    position: 100,
+                    sewing_lines: [],  /* !!! Тут пустой массив, потому что где-то по ссылке сохраняется  */
+                }
                 filteredDay.push(draft)
             } else {
                 // __ Сортируем по позиции (по порядку)
@@ -1206,6 +1211,39 @@ export function getExecuteTaskStatustics (item: ISewingTask | ISewingTaskLine[])
 
     return statistics
 }
+
+
+
+/**
+ * __ Вычисляет время завершения смены и возвращает таймстемп
+ * startTime - Объект Date фактического начала смены
+ * totalChangeDurationHours - Длительность смены в миллисекундах
+ * return - Таймстемп конца смены (.getTime())
+ */
+// export function getShiftEndTime(startTime: Date, totalChangeDurationHours: number = 12) {
+//
+//     // 1. __ Берем дату из startTime
+//     const endOfShift = new Date(startTime);
+//
+//     // 2. Устанавливаем "базу" — 08:00 того же дня
+//     endOfShift.setHours(8, 0, 0, 0);
+//
+//     // Нюанс: если смена началась до 08:00 (например в 06:00),
+//     // то 08:00 этого же дня — это и есть наша база.
+//     // Но если смена началась поздно вечером (например в 22:00),
+//     // база 08:00 должна быть уже СЛЕДУЮЩЕГО дня.
+//
+//     if (startTime.getHours() >= 8 && startTime.getTime() > endOfShift.getTime()) {
+//         // Если начали после 08:00, значит плановое "08:00" для завершения будет завтра
+//         // Однако, если логика «завершается всегда в 08:00 + DURATION»
+//         // подразумевает 08:00 текущих суток, этот блок можно пропустить.
+//         // Обычно в таких системах смена привязана к началу рабочего дня.
+//     }
+//
+//     // 3. Добавляем продолжительность к базе 08:00
+//     return endOfShift.getTime() + totalChangeDurationMs;
+// }
+
 
 
 

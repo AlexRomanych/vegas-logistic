@@ -72,6 +72,7 @@
                             @buttonClick="select(false)"
                         />
                         <AppInputButton
+                            v-if="formData.falseReason"
                             id="confirm"
                             :type="type"
                             title="Сохранить"

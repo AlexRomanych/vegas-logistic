@@ -16,9 +16,10 @@
 
             <div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
 
-                <span class="text-white text-[10px] font-black uppercase tracking-tighter drop-shadow-md">
-                   {{ Math.abs(clampedDeviation) }}%
-                </span>
+                <div :class="textSizeClass" class="text-white text-center font-black tracking-tighter drop-shadow-md">
+                    <div>{{ text }}</div>
+                    <div>{{ Math.round(deviation) }}%</div>
+                </div>
 
                 <!--<span class="text-white text-[10px] font-black uppercase tracking-tighter drop-shadow-md">-->
                 <!--   {{ Math.abs(clampedDeviation) }}%-->
@@ -62,22 +63,30 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
+import type { IFontsType } from '@/app/constants/fontSizes.ts'
+import { getFontSizeClass } from '@/app/helpers/helpers.ts'
 
 interface IProps {
     deviation: number // от -50 до 50 (где 0 - в графике)
+    text?: string
     label?: string
     height?: string
     width?: string
     animated?: boolean
+    textSize?: IFontsType
 }
 
 const props = withDefaults(defineProps<IProps>(), {
     deviation: 0,
-    label:    '',
-    height:   'h-[30px]',
-    width:    'w-[150px]', // Чуть шире для наглядности отклонения
-    animated: true
+    text:      '',
+    label:     '',
+    height:    'h-[30px]',
+    width:     'w-[150px]', // Чуть шире для наглядности отклонения
+    animated:  true,
+    textSize:  'mini'
 })
+
+const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 
 // Ограничиваем отклонение, чтобы бар не вылез за границы (макс 50% в одну сторону)
 const clampedDeviation = computed(() => Math.max(-50, Math.min(50, props.deviation)))
@@ -112,7 +121,11 @@ const deviationText = computed(() => {
 }
 
 @keyframes progress-stripes {
-    from { background-position: 1.5rem 0; }
-    to { background-position: 0 0; }
+    from {
+        background-position: 1.5rem 0;
+    }
+    to {
+        background-position: 0 0;
+    }
 }
 </style>

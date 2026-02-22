@@ -17,9 +17,9 @@
                         <ManageTaskCardMenu
                             :active-panel="activePanel"
                             :sewing-lines="activePanel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
+                            :sewing-task="props.task"
                             :show-comments="showComments"
                             :show-details="showDetails"
-                            :sewing-task="props.task"
                             @divide-element-amount="divideElementAmount"
                             @show-comments="showComments = !showComments"
                             @show-details="showDetails = !showDetails"
@@ -190,8 +190,8 @@
     />
 
     <!-- __ Модальное окно для информации о записи -->
-    <ManageTaskCardItemInfo
-        ref="manageTaskCardItemInfo"
+    <OrderItemInfo
+        ref="orderItemInfo"
         :order-line="orderLine"
     />
 
@@ -234,6 +234,9 @@ import {
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
+import { round } from '@/app/helpers/helpers_lib.ts'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import ManageTaskCardItem
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItem.vue'
@@ -245,11 +248,12 @@ import ManageTaskCardMenu
 import ManageTaskCardTotals
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardTotals.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import ManageTaskCardItemInfo
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemInfo.vue'
-import { round } from '@/app/helpers/helpers_lib.ts'
 import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
+// import ManageTaskCardItemInfo
+//     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/_ManageTaskCardItemInfo.vue'
+
+
 
 
 interface IProps {
@@ -323,8 +327,8 @@ const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна информации о записи в Заявке
-const orderLine              = ref<ISewingTaskOrderLine | null>(null)
-const manageTaskCardItemInfo = ref<InstanceType<typeof ManageTaskCardItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const orderLine     = ref<ISewingTaskOrderLine | null>(null)
+const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна изменения Комментария
 const comment     = ref('')
@@ -468,7 +472,7 @@ const setActiveSewingLine = (sewingLine: ISewingTaskLine, panel: ISewingLinesPan
 // __ Показать информацию о записи
 const showLineInfo = async (sewingLine: ISewingTaskLine) => {
     orderLine.value = sewingLine.order_line
-    await manageTaskCardItemInfo.value!.show()             // показываем модалку и ждем ответ
+    await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 }
 
 // __ Разбить количество
@@ -553,6 +557,7 @@ const divideElementAmount = async () => {
         newSewingLine                  = calculateDividedAmountAndTime(newSewingLine, range.take)
         workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
 
+        // __ Вставляем новую строку
         workArray.splice(dividerElementIndex + 1, 0, newSewingLine)
 
         // console.log(activeSewingLineCopy)
@@ -672,7 +677,6 @@ const addComment = async () => {
         props.task.comment = newComment
     }
 }
-
 
 
 // --- -------------------------------------------------------------------------------------

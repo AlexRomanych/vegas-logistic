@@ -148,6 +148,7 @@ Route::prefix('sewing')
         Route::patch('/day/responsible/add', [CellSewingDayController::class, 'addResponsibleToSewingDay']);
         Route::patch('/day/responsible/remove', [CellSewingDayController::class, 'removeResponsibleFromSewingDay']);
         Route::patch('/day/start', [CellSewingDayController::class, 'startSewingDay']);
+        Route::patch('/day/finish', [CellSewingDayController::class, 'finishSewingDay']);
 
 
 

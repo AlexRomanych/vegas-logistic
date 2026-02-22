@@ -57,6 +57,7 @@ const URL_SEWING_DAY_WORKER_REMOVE         = '/sewing/day/worker/remove'        
 const URL_SEWING_DAY_RESPONSIBLE_ADD       = '/sewing/day/responsible/add'       // URL для добавления ответственного к дню
 const URL_SEWING_DAY_RESPONSIBLE_REMOVE    = '/sewing/day/responsible/remove'    // URL для удаления ответственного к дню
 const URL_SEWING_DAY_START                 = '/sewing/day/start'                 // URL для старта дня СЗ
+const URL_SEWING_DAY_FINISH                = '/sewing/day/finish'                // URL для финиш дня СЗ
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -76,6 +77,9 @@ export const useSewingStore = defineStore('sewing', () => {
 
     // __ Массив СЗ, готовых к выполнению
     const globalSewingTasksPending = ref<ISewingTask[]>([])
+
+    // __ Копия массива СЗ Пошива для отслеживания изменений
+    let globalSewingTasksPendingCopy: ISewingTask[] = []
 
     // __ Период рендеринга календаря
     const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
@@ -257,7 +261,38 @@ export const useSewingStore = defineStore('sewing', () => {
 
 
     // __ Сохранение изменений (Синхронизация с сервером)
-    const saveChanges = async () => {
+    const saveChanges = async (globalArray = globalSewingTasks.value, globalArrayCopy = globalSewingTasksCopy) => {
+        const diffsInGlobalSewingTasks = getSewingTasksDiff(globalArray, globalArrayCopy)
+
+        // __ Если нет изменений, то выход
+        if (diffsInGlobalSewingTasks.length === 0) {
+            return
+        }
+
+        console.log(diffsInGlobalSewingTasks)
+        console.log('Сохраняем изменения')
+
+        const result = await jwtPost(URL_SEWING_TASKS_UPDATE, { diffs: diffsInGlobalSewingTasks })
+        if (DEBUG) console.log('saveChanges: ', result)
+
+
+        // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
+        // __ Если это изменение позиции, то просто пишем в базу
+        if (isAddItemsInDiffsPresents(diffsInGlobalSewingTasks)) {
+
+            // __ Получаем СЗ с сервера и реактивное обновление
+            await getSewingTasks()
+            console.log('Server data updated')
+        } else {
+
+            globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+        }
+
+        return result
+    }
+
+    // __ Сохранение изменений (Синхронизация с сервером)
+    const saveChanges_Old = async () => {
         const diffsInGlobalSewingTasks = getSewingTasksDiff(globalSewingTasks.value, globalSewingTasksCopy)
 
         // __ Если нет изменений, то выход
@@ -343,6 +378,20 @@ export const useSewingStore = defineStore('sewing', () => {
     // --- ------ Сменные задания к выполнению (Pending) ------------
     // --- ----------------------------------------------------------
 
+    // __ Разделение линий СЗ при выполнении СЗ
+    const divideLineInSewingTaskPending = async (sewingTask: ISewingTask) => {
+
+        const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === sewingTask.id)
+        if (!findTask) {
+            return
+        }
+        console.log('findTask: ', findTask)
+
+        repositionSewingTaskLines(findTask)
+        return saveChanges()
+        // return saveChanges(globalSewingTasksPending.value, globalSewingTasksPendingCopy)
+    }
+
     // __ Получение СЗ Пошива по статусу или массиву статусов
     const getSewingTasksByStatus = async (status: number[] | number | null = null) => {
         let response
@@ -359,6 +408,8 @@ export const useSewingStore = defineStore('sewing', () => {
         const result = await response
 
         globalSewingTasksPending.value = result.data                                   // __ кэшируем
+        globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+
 
         if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
         return result.data
@@ -382,13 +433,12 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-
     // __ Устанавливаем "Выполнено" на SewingTaskLines
     const setSewingTaskLinesDone = async (sewingTaskLinesIds: number[]) => {
         if (!sewingTaskLinesIds.length) {
             return []
         }
-        const result = await jwtPost(URL_SEWING_TASK_LINE_DONE, {ids: sewingTaskLinesIds})
+        const result = await jwtPost(URL_SEWING_TASK_LINE_DONE, { ids: sewingTaskLinesIds })
         if (DEBUG) console.log('SewingStore: setSewingTaskLinesDone: ', result)
         return result.data
     }
@@ -399,7 +449,7 @@ export const useSewingStore = defineStore('sewing', () => {
         if (!sewingTaskLinesIds.length && !falseReason) {
             return []
         }
-        const result = await jwtPost(URL_SEWING_TASK_LINE_FALSE, {ids: sewingTaskLinesIds, reason: falseReason})
+        const result = await jwtPost(URL_SEWING_TASK_LINE_FALSE, { ids: sewingTaskLinesIds, reason: falseReason })
         if (DEBUG) console.log('SewingStore: setSewingTaskLinesFalse: ', result)
         return result.data
     }
@@ -409,7 +459,7 @@ export const useSewingStore = defineStore('sewing', () => {
         if (!sewingTaskLinesIds.length) {
             return []
         }
-        const result = await jwtPost(URL_SEWING_TASK_LINE_RESET, {ids: sewingTaskLinesIds})
+        const result = await jwtPost(URL_SEWING_TASK_LINE_RESET, { ids: sewingTaskLinesIds })
         if (DEBUG) console.log('SewingStore: setSewingTaskLinesReset: ', result)
         return result.data
     }
@@ -614,7 +664,6 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-
     // __ Добавление Рабочего в Производственный день
     const addWorkerToSewingDay = async (day_id: number, worker_id: number) => {
         let response = await jwtPost(URL_SEWING_DAY_WORKER_ADD, { day_id, worker_id })
@@ -630,7 +679,6 @@ export const useSewingStore = defineStore('sewing', () => {
         if (DEBUG) console.log('SewingStore: removeWorkerToSewingDay: ', result)
         return result.data
     }
-
 
     // __ Добавление Ответственного в Производственный день
     const addResponsibleToSewingDay = async (day_id: number, worker_id: number) => {
@@ -656,6 +704,13 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
+    // __ Старт СЗ
+    const finishSewingDay = async (id: number) => {
+        let response = await jwtPatch_(URL_SEWING_DAY_FINISH, { id })
+        const result = await response
+        if (DEBUG) console.log('SewingStore: finishSewingDay: ', result)
+        return result.data
+    }
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalSewingTasks.value, () => {
@@ -719,6 +774,8 @@ export const useSewingStore = defineStore('sewing', () => {
         addResponsibleToSewingDay,
         removeResponsibleFromSewingDay,
         startSewingDay,
+        finishSewingDay,
+        divideLineInSewingTaskPending,
 
         addSewingTaskToGlobal,
         applyChanges,

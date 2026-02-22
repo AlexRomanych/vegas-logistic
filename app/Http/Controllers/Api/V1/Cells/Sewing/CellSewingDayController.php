@@ -167,7 +167,15 @@ class CellSewingDayController extends Controller
             ]);
 
             $sewingDay = SewingDay::query()->find($validated['day_id']);
+
+            // __ Отвязываем рабочего от производственного дня
             $sewingDay->workers()->detach($validated['worker_id']);
+
+            // __ Если рабочий был ответственным, то убираем его
+            if ($sewingDay->responsible_id == $validated['worker_id']) {
+                $sewingDay->responsible_id = null;
+                $sewingDay->save();
+            }
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
@@ -229,6 +237,54 @@ class CellSewingDayController extends Controller
      * @return SewingDayResource|string
      */
     public function startSewingDay(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:sewing_days,id',
+            ]);
+
+            $sewingDay           = SewingDay::query()->find($validated['id']);
+            $sewingDay->start_at = now();
+
+            // __ Сохраняем
+            DB::transaction(function () use ($sewingDay) {
+                $sewingDay->save();
+
+                // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
+                $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
+
+                $pendingSewingTasks = SewingTask::query()
+                    ->whereDate('action_at', '<', $action_date)
+                    ->byStatus(SewingTaskStatus::SEWING_STATUS_PENDING_ID)
+                    ->with(['statuses',])
+                    ->get();
+
+                foreach ($pendingSewingTasks as $task) {
+
+                    // __ Создаем запись в Статусе: Выполняется
+                    $task->statuses()->syncWithoutDetaching([
+                        SewingTaskStatus::SEWING_STATUS_RUNNING_ID => [
+                            'set_at'     => $sewingDay->start_at,
+                            'created_by' => auth()->id(),
+                        ]
+                    ]);
+                }
+
+            });
+
+            return new SewingDayResource($sewingDay);
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Заканчиваем СЗ производственного дня
+     * @param  Request  $request
+     * @return SewingDayResource|string
+     */
+    public function finishSewingDay(Request $request)
     {
         try {
             $validated = $request->validate([

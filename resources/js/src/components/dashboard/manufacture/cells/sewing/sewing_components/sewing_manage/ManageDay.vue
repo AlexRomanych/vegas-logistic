@@ -205,7 +205,6 @@
                 :time-show="globalSewingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
-
                 class="plan-item"
             />
 
