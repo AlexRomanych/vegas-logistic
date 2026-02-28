@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string('name')->unique()->nullable(false)->comment('Название');
             $table->string('display_name')->unique()->nullable(false)->comment('Отображаемое название');
             $table->string('type_index')->nullable(false)->comment('Индекс после точки');
-            $table->string('color', 7)->default('#64748B')->comment('Цвет рендера');
+            // $table->string('color', 7)->default('#64748B')->comment('Цвет рендера');
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
