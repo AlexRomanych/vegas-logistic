@@ -40,6 +40,10 @@ return new class extends Migration
 
             $table->json('meta')->nullable()->comment('Meta-информация');
         });
+
+
+        DB::table(self::TABLE_NAME)->insert(['id' => 0, 'name' => 'Не определен']);
+
     }
 
     /**
