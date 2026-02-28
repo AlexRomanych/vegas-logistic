@@ -42,7 +42,7 @@ return new class extends Migration
         });
 
 
-        DB::table(self::TABLE_NAME)->insert(['id' => 0, 'name' => 'Не определен']);
+        DB::table(self::TABLE_NAME)->insert(['id' => 0, 'name' => 'Не определен', 'short_name' => 'Не определен']);
 
     }
 
