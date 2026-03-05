@@ -26,7 +26,12 @@ export const useClientsStore = defineStore('clients', () => {
 
     //__ Загружает клиентов из файла в базу данных
     const clientsLoad = async () => {
+
+        console.log('clientsLoad')
         const response = await jwtGet(URL_CLIENTS_LOAD)
+
+        console.log('response: ', response)
+
         return response
     }
 

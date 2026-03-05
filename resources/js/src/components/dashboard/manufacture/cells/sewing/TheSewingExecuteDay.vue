@@ -413,7 +413,9 @@ const handleStartAction = async () => {
 
         for (const task of sewingDay.value!.sewing_tasks) {
             for (const line of task.sewing_lines) {
-                if (!line.finished_at || !line.false_at) {
+                if (!line.finished_at && !line.false_at) {
+                    console.log('line: ', line)
+
                     await showError([
                         'Нет отметки выполнения!',
                         `СЗ: ${task.order.client.short_name} №${task.order.order_no_num}`,

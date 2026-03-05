@@ -8,6 +8,7 @@ use App\Http\Resources\Manufacture\Cells\Sewing\Days\SewingDayResource;
 use App\Models\Manufacture\Cells\Sewing\SewingDay;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
+use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,8 +22,8 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Возвращает производственный день по дате и смене
-     * @param  string  $date
-     * @param  string  $change
+     * @param string $date
+     * @param string $change
      * @return SewingDayResource|string
      */
     public function getSewingDayByDateAndChange(string $date, string $change)
@@ -64,7 +65,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Устанавливает комментарий к производственному дню
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function setSewingDayComment(Request $request)
@@ -77,7 +78,7 @@ class CellSewingDayController extends Controller
 
             $sewingDay = SewingDay::query()->find($validated['id']);
             if (!$sewingDay) {
-                throw new Exception('Missing sewing day with id: '.$validated['id'].'.');
+                throw new Exception('Missing sewing day with id: ' . $validated['id'] . '.');
             }
 
             $sewingDay->comment = $validated['comment'];
@@ -92,7 +93,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Возвращает производственные дни по массиву дат
-     * @param  Request  $request
+     * @param Request $request
      * @return AnonymousResourceCollection|string
      */
     public function getSewingDaysByDates(Request $request)
@@ -130,7 +131,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Добавляет рабочего к производственному дню
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function addWorkerToSewingDay(Request $request)
@@ -155,7 +156,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Удаляем рабочего из производственного дня
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function removeWorkerFromSewingDay(Request $request)
@@ -185,7 +186,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Добавляет Ответственного к производственному дню
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function addResponsibleToSewingDay(Request $request)
@@ -196,7 +197,7 @@ class CellSewingDayController extends Controller
                 'worker_id' => 'required|integer|exists:workers,id',
             ]);
 
-            $sewingDay                 = SewingDay::query()->find($validated['day_id']);
+            $sewingDay = SewingDay::query()->find($validated['day_id']);
             $sewingDay->responsible_id = $validated['worker_id'];
             $sewingDay->save();
 
@@ -209,7 +210,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Удаляем Ответственного из производственного дня
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function removeResponsibleFromSewingDay(Request $request)
@@ -220,7 +221,7 @@ class CellSewingDayController extends Controller
                 'worker_id' => 'required|integer|exists:workers,id',
             ]);
 
-            $sewingDay                 = SewingDay::query()->find($validated['day_id']);
+            $sewingDay = SewingDay::query()->find($validated['day_id']);
             $sewingDay->responsible_id = null;
             $sewingDay->save();
 
@@ -233,7 +234,7 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Стартуем СЗ производственного дня
-     * @param  Request  $request
+     * @param Request $request
      * @return SewingDayResource|string
      */
     public function startSewingDay(Request $request)
@@ -243,7 +244,7 @@ class CellSewingDayController extends Controller
                 'id' => 'required|integer|exists:sewing_days,id',
             ]);
 
-            $sewingDay           = SewingDay::query()->find($validated['id']);
+            $sewingDay = SewingDay::query()->find($validated['id']);
             $sewingDay->start_at = now();
 
             // __ Сохраняем
@@ -254,7 +255,11 @@ class CellSewingDayController extends Controller
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
 
                 $pendingSewingTasks = SewingTask::query()
-                    ->whereDate('action_at', '<', $action_date)
+                    ->whereBetween('action_at', [
+                        $action_date->startOfDay(),
+                        $action_date->endOfDay()
+                    ])
+                    // ->whereDate('action_at', '<', $action_date)
                     ->byStatus(SewingTaskStatus::SEWING_STATUS_PENDING_ID)
                     ->with(['statuses',])
                     ->get();
@@ -281,18 +286,28 @@ class CellSewingDayController extends Controller
 
     /**
      * ___ Заканчиваем СЗ производственного дня
-     * @param  Request  $request
+     * @param Request $request
      * @return SewingDayResource|string
      */
     public function finishSewingDay(Request $request)
     {
+
+        // __ Завершаем день со СЗ
+        // __ 1. Находим производственный день
+        // __ 2. Находим СЗ для этого Дня со статусом Выполняется
+        // __ 3. Проверяем все Линии на статус Выполнено
+        // __ 4. Закрываем СЗ
+
+
         try {
             $validated = $request->validate([
                 'id' => 'required|integer|exists:sewing_days,id',
             ]);
 
-            $sewingDay           = SewingDay::query()->find($validated['id']);
-            $sewingDay->start_at = now();
+            // __ Находим производственный день
+            $sewingDay = SewingDay::query()
+                ->find($validated['id']);
+            $sewingDay->finish_at = now();
 
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
@@ -302,20 +317,125 @@ class CellSewingDayController extends Controller
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
 
                 $pendingSewingTasks = SewingTask::query()
-                    ->whereDate('action_at', '<', $action_date)
-                    ->byStatus(SewingTaskStatus::SEWING_STATUS_PENDING_ID)
-                    ->with(['statuses',])
+                    ->whereBetween('action_at', [
+                        $action_date->startOfDay(),
+                        $action_date->endOfDay()
+                    ])
+                    // ->whereDate('action_at', '<', $action_date)
+                    ->byStatus(SewingTaskStatus::SEWING_STATUS_RUNNING_ID)
+                    ->with(['statuses', 'sewingLines'])
                     ->get();
+
+
+                // __ Собираем невыполненные СЗ
+                $falseTasks = [];
 
                 foreach ($pendingSewingTasks as $task) {
 
-                    // __ Создаем запись в Статусе: Выполняется
+                    // __ Собираем невыполненный контент
+                    $falseSewingLines = [];
+                    $falseSewingLinesAmounts = 0;
+                    $totalSewingLinesAmounts = 0;
+
+
+                    foreach ($task->sewingLines as $line) {
+
+                        // __ Проверка на то, чтобы строка была или выполнена или указана причина невыполнения
+                        if (is_null($line->finished_at) && is_null($line->false_at)) {
+                            throw new Exception('Missing done or false status for line with id: ' . $line->id);
+                        }
+
+                        // __ Собираем все невыполненные строчки
+                        if (!is_null($line->false_at)) {
+                            $falseSewingLines[] = $line;
+                            $falseSewingLinesAmounts += $line->amount;
+                        }
+
+                        $totalSewingLinesAmounts += $line->amount;
+                    }
+
+                    // __ Если есть невыполненные - переносим на следующий день и ставим первыми
+                    if (count($falseSewingLines) === 0) {
+
+                        $falseTasks[] = [
+                            'task'        => $task,
+                            'false_lines' => $falseSewingLines,
+                            // __ Все задания невыполненные
+                            // __ Флаг, что нужно перенести все СЗ на другую дату
+                            'all_false'   => $falseSewingLinesAmounts === $totalSewingLinesAmounts,
+                        ];
+
+                    }
+
+                    // __ Создаем запись в Статусе: Выполнено
                     $task->statuses()->syncWithoutDetaching([
-                        SewingTaskStatus::SEWING_STATUS_RUNNING_ID => [
-                            'set_at'     => $sewingDay->start_at,
+                        SewingTaskStatus::SEWING_STATUS_DONE_ID => [
+                            'set_at'     => $sewingDay->finish_at,
                             'created_by' => auth()->id(),
                         ]
                     ]);
+
+                }
+
+
+                // __ Обрабатываем все невыполненное
+                if (count($falseTasks) !== 0) {
+
+                    // __ Получаем следующую смену
+                    $nextChange = SewingService::getNextChange($sewingDay->action_at, $sewingDay->change);
+
+                    // __ Получаем все СЗ следующей смены
+                    $existingTasks = SewingTask::query()
+                        ->whereBetween('action_at', [
+                            $nextChange->getManufactureDay()->startOfDay(),
+                            $nextChange->getManufactureDay()->endOfDay()
+                        ])
+                        ->orderBy('position')
+                        ->get();
+
+                    // __ Объединяем в один массив существующие СЗ и перенесенные
+                    // __ из предыдущего дня, располагая а начале массива
+                    // __ и перенумеровываем заново
+                    $position      = 1;
+                    $tasksToUpdate = [];
+
+                    // __ Добавляем перенесенные СЗ
+                    foreach ($falseTasks as $task) {
+
+                        // __ Создаем новые СЗ и сохраняем в БД
+                        $newTask = $task->replicate();
+                        $newTask->position *= -1;
+                        $newTask->save();
+                        $newTask->position = $newTask->id * (-1);
+                        $newTask->save();
+
+                        // __ Тут получили id уже нового СЗ
+                        // __ Привязываем невыполненные линии к новому СЗ
+                        // TODO: Warn!! Тут можно попробовать сделать одним запросом
+                        foreach ($falseTasks['false_lines'] as $line) {
+                            $line->task_id = $newTask->id;
+                            $line->save();
+                        }
+
+                        // __ Переносим на следующий день
+                        $tasksToUpdate[] = [
+                            'id'        => $newTask->id,
+                            'action_at' => $nextChange->getManufactureDay(),
+                            'position'  => $position++,
+                        ];
+                    }
+
+                    // __ Добавляем существующие СЗ
+                    foreach ($existingTasks as $task) {
+                        $tasksToUpdate[] = [
+                            'id'        => $task->id,
+                            'action_at' => null,        // оставляем дату прежней
+                            'position'  => $position++,
+                        ];
+                    }
+
+                    // __ Применяем изменения
+                    SewingService::bulkUpdateTasks($tasksToUpdate);
                 }
 
             });

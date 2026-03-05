@@ -27,6 +27,7 @@ const opType = ref('')
 
 const loadFromStorage = async () => {
     const clientsStore = useClientsStore()
+
     const res = await clientsStore.clientsLoad()
 
     console.log(res)

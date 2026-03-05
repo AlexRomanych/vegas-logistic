@@ -778,6 +778,7 @@ export const useSewingStore = defineStore('sewing', () => {
         divideLineInSewingTaskPending,
 
         addSewingTaskToGlobal,
+        saveChanges,
         applyChanges,
         applyMergeTasks,
         applyMergeTasksGroups,

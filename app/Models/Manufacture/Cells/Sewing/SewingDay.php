@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class   SewingDay extends Model
+class SewingDay extends Model
 {
     protected $guarded = false;
 
@@ -33,10 +33,10 @@ class   SewingDay extends Model
     /**
      * __ Поиск или создание записи по дате и смене
      * @param $date
-     * @param  int  $change
-     * @return SewingDay
+     * @param int $change
+     * @return SewingDay|Model
      */
-    public static function findOrCreateByDateAndChange($date, int $change = 1): self
+    public static function findOrCreateByDateAndChange($date, int $change = 1): SewingDay|Model
     {
         return self::query()
             ->with(['workers', 'responsible'])

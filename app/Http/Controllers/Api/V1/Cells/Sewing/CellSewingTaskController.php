@@ -546,6 +546,11 @@ class CellSewingTaskController extends Controller
     }
 
 
+    /**
+     * ___ Устанавливаем статус Выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function setSewingTaskLinesDone(Request $request)
     {
         try {
@@ -572,7 +577,11 @@ class CellSewingTaskController extends Controller
         }
     }
 
-
+    /**
+     * ___ Устанавливаем статус Не выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function setSewingTaskLinesFalse(Request $request)
     {
         try {
@@ -613,7 +622,11 @@ class CellSewingTaskController extends Controller
         }
     }
 
-
+    /**
+     * ___ Сбрасываем отметку Выполнено/Не выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
     public function setSewingTaskLinesReset(Request $request)
     {
         try {

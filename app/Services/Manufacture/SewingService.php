@@ -4,6 +4,7 @@ namespace App\Services\Manufacture;
 
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Classes\ManufactureDayAndChange;
 use App\Classes\SewingTimeLabor;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
@@ -21,15 +22,16 @@ final class SewingService
 
     /**
      * ___ Создать СЗ для Пошива из основного Заказа
-     * @param  int  $orderId  ID основного Заказа
-     * @param  string|null  $plannedDate  Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
+     * @param int $orderId ID основного Заказа
+     * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
      * @return SewingTask|null
      * @throws Throwable
      */
     public static function createSewingTaskFromOrderId(
-        int $orderId,
+        int         $orderId,
         string|null $plannedDate = null
-    ): ?SewingTask {
+    ): ?SewingTask
+    {
         // try {
         // __ Проверяем на существование заказа
         $order = Order::query()->with(['lines', 'client'])->find($orderId);
@@ -41,7 +43,7 @@ final class SewingService
             $plannedDate = normalizeToCarbon($plannedDate);
         } else {
             // __ Получаем смещение в днях для Пошива
-            $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(SEWING_NODE_ID, $order->client->id);
+            $offset = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(SEWING_NODE_ID, $order->client->id);
             $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
         }
 
@@ -113,7 +115,7 @@ final class SewingService
 
                     // __ Задаем подмену свойств
                     'phantom'        => $machine,
-                    'phantom_json'   => ['is_'.$machine => true],
+                    'phantom_json'   => ['is_' . $machine => true],
 
                 ]);
             }
@@ -156,7 +158,7 @@ final class SewingService
     /**
      *  ___ Распределяем СЗ по Частям СЗ
      *  ___ Сюда приходим тогда, когда есть прогнозное СЗ, а поверх него загружаем Заявку
-     * @param  int  $orderId
+     * @param int $orderId
      * @return bool
      * @throws Throwable
      */
@@ -190,27 +192,27 @@ final class SewingService
 
         // __ Разбиваем Заявку на ШМ
         $universals = [];
-        $autos      = [];
+        $autos = [];
         $solidHards = [];
         $solidLites = [];
-        $unknowns   = [];
+        $unknowns = [];
 
         foreach ($order->lines as $orderLine) {
             $model = ModelsService::getModelByCode1C($orderLine->model_code_1c);
 
             if (!ModelsService::isElementAverage($model)) {
                 match ($model->machine_type) {
-                    SewingTask::FIELD_UNIVERSAL  => $universals[] = $orderLine,
-                    SewingTask::FIELD_AUTO       => $autos[] = $orderLine,
+                    SewingTask::FIELD_UNIVERSAL => $universals[] = $orderLine,
+                    SewingTask::FIELD_AUTO => $autos[] = $orderLine,
                     SewingTask::FIELD_SOLID_HARD => $solidHards[] = $orderLine,
                     SewingTask::FIELD_SOLID_LITE => $solidLites[] = $orderLine,
-                    default                      => $unknowns[] = $orderLine,
+                    default => $unknowns[] = $orderLine,
                 };
 
             }
         }
 
-        $FIELD_DATA   = 'data';
+        $FIELD_DATA = 'data';
         $FIELD_MEMORY = 'memory';
         $FIELD_MERGED = 'merged';
 
@@ -258,17 +260,17 @@ final class SewingService
 
                     if ($item->amount <= $lineAmount) {
                         // __ Если есть куда распределить
-                        $data[]     = $item;
+                        $data[] = $item;
                         $lineAmount -= $item->amount;
                     } else {
                         // __ Если не хватает для распределения
-                        $newItem         = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
+                        $newItem = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
                         $newItem->amount = $lineAmount;
 
                         $data[] = $newItem;
 
                         $item->amount -= $lineAmount;    // Уменьшаем остаток в оригинале
-                        $workArray[]  = $item;           // Возвращаем остаток в массив
+                        $workArray[] = $item;           // Возвращаем остаток в массив
 
                         $lineAmount = 0;
                     }
@@ -293,11 +295,11 @@ final class SewingService
                 foreach ($sewingTask->sewingLines as $sewingLine) {
 
                     $workField = match ($sewingLine->phantom) {
-                        SewingTask::FIELD_UNIVERSAL  => SewingTask::FIELD_UNIVERSAL,
-                        SewingTask::FIELD_AUTO       => SewingTask::FIELD_AUTO,
+                        SewingTask::FIELD_UNIVERSAL => SewingTask::FIELD_UNIVERSAL,
+                        SewingTask::FIELD_AUTO => SewingTask::FIELD_AUTO,
                         SewingTask::FIELD_SOLID_HARD => SewingTask::FIELD_SOLID_HARD,
                         SewingTask::FIELD_SOLID_LITE => SewingTask::FIELD_SOLID_LITE,
-                        default                      => SewingTask::FIELD_UNDEFINED,
+                        default => SewingTask::FIELD_UNDEFINED,
                     };
 
                     $lineAmount = $sewingTaskContent[$key][$workField][$FIELD_MEMORY];
@@ -314,13 +316,13 @@ final class SewingService
                             $lineAmount -= $item->amount;
                         } else {
                             // __ Если не хватает для распределения
-                            $newItem         = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
+                            $newItem = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
                             $newItem->amount = $lineAmount;
 
                             $sewingTaskContent[$key][$workField][$FIELD_DATA][] = $newItem;
 
                             $item->amount -= $lineAmount;       // Уменьшаем остаток в оригинале
-                            $rest[]       = $item;              // Возвращаем остаток в массив []
+                            $rest[] = $item;              // Возвращаем остаток в массив []
 
                             $lineAmount = 0;
                         }
@@ -348,11 +350,11 @@ final class SewingService
             foreach ($sewingTask->sewingLines as $sewingLine) {
 
                 $workField = match ($sewingLine->phantom) {
-                    SewingTask::FIELD_UNIVERSAL  => SewingTask::FIELD_UNIVERSAL,
-                    SewingTask::FIELD_AUTO       => SewingTask::FIELD_AUTO,
+                    SewingTask::FIELD_UNIVERSAL => SewingTask::FIELD_UNIVERSAL,
+                    SewingTask::FIELD_AUTO => SewingTask::FIELD_AUTO,
                     SewingTask::FIELD_SOLID_HARD => SewingTask::FIELD_SOLID_HARD,
                     SewingTask::FIELD_SOLID_LITE => SewingTask::FIELD_SOLID_LITE,
-                    default                      => SewingTask::FIELD_UNDEFINED,
+                    default => SewingTask::FIELD_UNDEFINED,
                 };
 
                 // __ Сгружаем в кучу
@@ -427,7 +429,7 @@ final class SewingService
 
     /**
      * ___ Получаем позицию последнего СЗ в дне
-     * @param  string|Carbon|null  $date  Дата нужного дня
+     * @param string|Carbon|null $date Дата нужного дня
      * @return int
      */
     public static function getSewingTaskLastPositionInDay(string|Carbon $date = null): int
@@ -443,4 +445,108 @@ final class SewingService
             ->count();
         // return SewingTask::query()->whereDate('action_at', $date)->max('position');
     }
+
+
+    /**
+     * __ Возвращаем следующую производственную смену
+     * @param ManufactureDayAndChange|Carbon|string $manufactureEntity
+     * @param int|null $change
+     * @return ManufactureDayAndChange
+     */
+    public static function getNextChange(
+        ManufactureDayAndChange|Carbon|string $manufactureEntity,
+        int                             $change = null
+    ): ManufactureDayAndChange
+    {
+        $manufDateAndChange = null;
+        if ($manufactureEntity instanceof ManufactureDayAndChange) {
+            $manufDateAndChange = new ManufactureDayAndChange($manufactureEntity->getManufactureDay()->addDay(), 1);
+        } else  {
+            $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), 1);
+            // $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), $change);
+        }
+
+        return $manufDateAndChange;
+    }
+
+
+    /**
+     * ___ Массовое обновление СЗ
+     * @param  array  $rows
+     * @return void
+     * @throws Throwable
+     */
+    public static function bulkUpdateTasks(array $rows): void
+    {
+
+        // ___ Формат входных данных:
+        // $tasksToUpdate[] = [
+        //     'id'        => taskId,
+        //     'action_at' => new_action_at ?? null,
+        //     'position'  => new_position ?? null,
+        // ];
+
+
+        // __ Получаем имя таблицы
+        $table = (new SewingTask)->getTable();
+
+        // __ 1. Находим только те ID, у которых действительно меняется позиция (чтобы не уводить в минус лишнее)
+        $idsForMinus = array_column(array_filter($rows, fn($r) => isset($r['position'])), 'id');
+
+        // __ 2. Находим все ID, которые участвуют в обновлении (хоть позиция, хоть amount)
+        $allIds = array_column($rows, 'id');
+
+        DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
+
+            // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
+            if (!empty($idsForMinus)) {
+                $placeholders = implode(',', array_fill(0, count($idsForMinus), '?'));
+                DB::update("UPDATE {$table} SET position = (id * -1) WHERE id IN ({$placeholders})", $idsForMinus);
+            }
+
+            // __ ШАГ 2: Собираем финальный запрос
+            $casesActionAt  = [];
+            $paramsActionAt = [];
+            $casesPosition  = [];
+            $paramsPosition = [];
+
+            foreach ($rows as $row) {
+                if (isset($row['action_at'])) {
+                    $casesActionAt[] = "WHEN id = ? THEN ?";
+                    array_push($paramsActionAt, $row['id'], $row['action_at']);
+                }
+                if (isset($row['position'])) {
+                    $casesPosition[] = "WHEN id = ? THEN ?";
+                    array_push($paramsPosition, $row['id'], $row['position']);
+                }
+            }
+
+            $setParts    = [];
+            $finalParams = [];
+
+            if (!empty($casesActionAt)) {
+                $setParts[]  = "action_at = CASE ".implode(' ', $casesActionAt)." ELSE action_at END";
+                $finalParams = array_merge($finalParams, $paramsActionAt);
+            }
+
+            if (!empty($casesPosition)) {
+                $setParts[]  = "position = CASE ".implode(' ', $casesPosition)." ELSE position END";
+                $finalParams = array_merge($finalParams, $paramsPosition);
+            }
+
+            if (empty($setParts)) {
+                return;
+            }
+
+            $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
+            $sql               = "UPDATE {$table} SET ".implode(', ', $setParts)." WHERE id IN ({$wherePlaceholders})";
+
+            // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
+            DB::update($sql, array_merge($finalParams, $allIds));
+        });
+
+    }
+
+
+
 }

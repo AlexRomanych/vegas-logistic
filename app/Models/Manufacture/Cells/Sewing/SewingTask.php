@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SewingTask extends Model
 {
     protected $guarded = false;
+    protected $casts = [
+        'action_at' => 'datetime',
+    ];
+
 
     // --- Константы
 
@@ -47,8 +51,6 @@ class SewingTask extends Model
         //     $q->whereIn('sewing_task_status_id', $statusIds);
         // });
     }
-
-
 
 
     // Relations: Связь с Основной Заявкой
