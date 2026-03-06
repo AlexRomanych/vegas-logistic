@@ -245,22 +245,28 @@ class CellSewingDayController extends Controller
             ]);
 
             $sewingDay = SewingDay::query()->find($validated['id']);
-            $sewingDay->start_at = now();
 
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
-                $sewingDay->save();
+
+                // __ Или начинаем, если не начато, или продолжаем
+                if (is_null($sewingDay->start_at)) {
+                    $sewingDay->start_at = now();
+                    $sewingDay->save();
+                }
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
 
                 $pendingSewingTasks = SewingTask::query()
-                    ->whereBetween('action_at', [
-                        $action_date->startOfDay(),
-                        $action_date->endOfDay()
-                    ])
-                    // ->whereDate('action_at', '<', $action_date)
+                    // ->whereBetween('action_at', [
+                    //     $action_date->startOfDay(),
+                    //     $action_date->endOfDay()
+                    // ])
+                    ->whereDate('action_at', '>=', $action_date->startOfDay())
+                    ->whereDate('action_at', '<=', $action_date->endOfDay())
                     ->byStatus(SewingTaskStatus::SEWING_STATUS_PENDING_ID)
+                    // ->byStatus(SewingTaskStatus::SEWING_STATUS_RUNNING_ID)
                     ->with(['statuses',])
                     ->get();
 
@@ -307,24 +313,28 @@ class CellSewingDayController extends Controller
             // __ Находим производственный день
             $sewingDay = SewingDay::query()
                 ->find($validated['id']);
-            $sewingDay->finish_at = now();
 
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
+
+                $sewingDay->finish_at = now();
                 $sewingDay->save();
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
 
                 $pendingSewingTasks = SewingTask::query()
-                    ->whereBetween('action_at', [
-                        $action_date->startOfDay(),
-                        $action_date->endOfDay()
-                    ])
-                    // ->whereDate('action_at', '<', $action_date)
+                    // ->whereBetween('action_at', [
+                    //     $action_date->startOfDay(),
+                    //     $action_date->endOfDay()
+                    // ])
+                    ->whereDate('action_at', '>=', $action_date->startOfDay())
+                    ->whereDate('action_at', '<=', $action_date->endOfDay())
                     ->byStatus(SewingTaskStatus::SEWING_STATUS_RUNNING_ID)
                     ->with(['statuses', 'sewingLines'])
                     ->get();
+
+                $pendTaskArr = $pendingSewingTasks->toArray();
 
 
                 // __ Собираем невыполненные СЗ
@@ -355,7 +365,7 @@ class CellSewingDayController extends Controller
                     }
 
                     // __ Если есть невыполненные - переносим на следующий день и ставим первыми
-                    if (count($falseSewingLines) === 0) {
+                    if (count($falseSewingLines) !== 0) {
 
                         $falseTasks[] = [
                             'task'        => $task,
@@ -386,12 +396,16 @@ class CellSewingDayController extends Controller
 
                     // __ Получаем все СЗ следующей смены
                     $existingTasks = SewingTask::query()
-                        ->whereBetween('action_at', [
-                            $nextChange->getManufactureDay()->startOfDay(),
-                            $nextChange->getManufactureDay()->endOfDay()
-                        ])
+                        ->whereDate('action_at', '>=', $nextChange->getManufactureDay()->startOfDay())
+                        ->whereDate('action_at', '<=', $nextChange->getManufactureDay()->endOfDay())
+                        // ->whereBetween('action_at', [
+                        //     $nextChange->getManufactureDay()->startOfDay(),
+                        //     $nextChange->getManufactureDay()->endOfDay()
+                        // ])
                         ->orderBy('position')
                         ->get();
+
+                    // $existTasksArray = $existingTasks->toArray();
 
                     // __ Объединяем в один массив существующие СЗ и перенесенные
                     // __ из предыдущего дня, располагая а начале массива
@@ -400,20 +414,41 @@ class CellSewingDayController extends Controller
                     $tasksToUpdate = [];
 
                     // __ Добавляем перенесенные СЗ
-                    foreach ($falseTasks as $task) {
+                    foreach ($falseTasks as $falseTask) {
+
+                        // __ Ситуация, когда перенесли все линии СЗ (Просто переносим на другую дату)
+                        if ($falseTask['all_false']) {
+                            $tasksToUpdate[] = [
+                                'id'        => $falseTask['task']->id,
+                                'action_at' => $nextChange->getManufactureDay(),
+                                'position'  => $position++,
+                            ];
+                            continue;
+                        }
 
                         // __ Создаем новые СЗ и сохраняем в БД
-                        $newTask = $task->replicate();
+                        $newTask = $falseTask['task']->replicate();
                         $newTask->position *= -1;
                         $newTask->save();
                         $newTask->position = $newTask->id * (-1);
                         $newTask->save();
 
+                        // __ Создаем запись в Статусе: Создано при закрытии СЗ
+                        $newTask->statuses()->syncWithoutDetaching([
+                            SewingTaskStatus::SEWING_STATUS_ROLLING_ID => [
+                                'set_at'     => $sewingDay->finish_at,
+                                'created_by' => auth()->id(),
+                            ]
+                        ]);
+
+
                         // __ Тут получили id уже нового СЗ
                         // __ Привязываем невыполненные линии к новому СЗ
                         // TODO: Warn!! Тут можно попробовать сделать одним запросом
-                        foreach ($falseTasks['false_lines'] as $line) {
-                            $line->task_id = $newTask->id;
+                        $positionLine = 1;
+                        foreach ($falseTask['false_lines'] as $line) {
+                            $line->sewing_task_id = $newTask->id;
+                            $line->position = $positionLine++;
                             $line->save();
                         }
 

@@ -63,7 +63,9 @@ class SewingTask extends Model
     // Relations: Связь с содержимым (строками)
     public function sewingLines(): HasMany
     {
-        return $this->hasMany(SewingTaskLine::class, 'sewing_task_id');
+        return $this
+            ->hasMany(SewingTaskLine::class, 'sewing_task_id')
+            ->orderBy('position');
     }
 
 
