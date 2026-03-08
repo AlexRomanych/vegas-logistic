@@ -35,7 +35,7 @@
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
-                    :progress="90"
+                    :progress="getMachinePercent(key)"
                     :width="PROGRESS_WIDTH"
                 />
             </div>
@@ -75,11 +75,11 @@
             type="success"
         />
 
-        <!-- __ Прогресс общий -->
-        <AppProgressBar
-            :progress="90"
-            :width="PROGRESS_WIDTH"
-        />
+        <!--&lt;!&ndash; __ Прогресс общий &ndash;&gt;-->
+        <!--<AppProgressBar-->
+        <!--    :progress="dayStatistics.time.finished / dayStatistics.time.total * 100"-->
+        <!--    :width="PROGRESS_WIDTH"-->
+        <!--/>-->
     </div>
 
 
@@ -92,7 +92,9 @@ import type { ISewingDay, ISewingMachineKeys, ISewingTaskLine } from '@/types'
 
 import { AVERAGE, SEWING_MACHINES, UNDEFINED } from '@/app/constants/sewing.ts'
 
-import { getSewingTaskAmountAndTime } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import {
+    getExecuteTaskStatustics, getSewingLineMachineType, getSewingTaskAmountAndTime
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -120,6 +122,16 @@ const commonSewingLines = computed(() => {
 
 // __ Пересчитываем Итого
 const calculateTotals = computed(() => getSewingTaskAmountAndTime(commonSewingLines.value))
+
+// __ Получаем процент выполнения по каждой машине
+const getMachinePercent = (key: string) => {
+    const sewingLinesByMachine = commonSewingLines.value.filter(item => getSewingLineMachineType(item) === key)
+
+    // __ Получаем объект статистики
+    const statistics = getExecuteTaskStatustics(sewingLinesByMachine)
+    // console.log('statistics: ', statistics)
+    return statistics.time.total !==0 ? statistics.time.finished / statistics.time.total * 100 : 0
+}
 
 // __ Общее Количество
 const totalAmount = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.amount + acc, 0))

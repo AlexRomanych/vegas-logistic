@@ -59,6 +59,9 @@
         <!-- __ Время выполнения -->
         <AppLabelTSWrapper :render-object="render.finished_at"/>
 
+        <!-- __ Причина невыполнения -->
+        <AppLabelTSWrapper :render-object="render.false_reason"/>
+
     </div>
 
 
@@ -393,6 +396,22 @@ const render: IRenderData = reactive({
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍...',
         data:           (/*sewingLine: ISewingTaskLine*/) => 'Завершено'
+    },
+    false_reason:  {
+        id:             () => 'false-reason-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.false_reason,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      DATA_ALIGN,
+        placeholder:    '🔍Причина...',
+        data:           (/*sewingLine: ISewingTaskLine*/) => 'Причина',
     },
 })
 

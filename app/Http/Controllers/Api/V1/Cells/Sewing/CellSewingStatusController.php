@@ -78,6 +78,7 @@ class CellSewingStatusController extends Controller
                 $sewingTask->statuses()->attach($item['status'], [
                     'set_at'     => now(),
                     'created_at' => now(),
+                    'created_by' => auth()->id(),
                 ]);
             }
             return EndPointStaticRequestAnswer::ok();

@@ -256,7 +256,7 @@ class CellSewingDayController extends Controller
                 }
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
-                $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
+                $action_date = Carbon::parse($sewingDay->action_at)->startOfDay();
 
                 $pendingSewingTasks = SewingTask::query()
                     // ->whereBetween('action_at', [
@@ -269,6 +269,8 @@ class CellSewingDayController extends Controller
                     // ->byStatus(SewingTaskStatus::SEWING_STATUS_RUNNING_ID)
                     ->with(['statuses',])
                     ->get();
+
+                $pendSewingTasksArr = $pendingSewingTasks->toArray();
 
                 foreach ($pendingSewingTasks as $task) {
 

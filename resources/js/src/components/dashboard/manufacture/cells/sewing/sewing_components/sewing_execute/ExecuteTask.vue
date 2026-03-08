@@ -54,6 +54,7 @@
                 <ExecuteTaskLine
                     :fields-width="sewingLineFieldsWidth"
                     :sewing-line="sewingLine"
+                    @dblclick="showLineInfo(sewingLine)"
                 />
             </div>
 
@@ -71,12 +72,21 @@
         </div>
 
     </div>
+
+
+    <!-- __ Модальное окно для информации о записи -->
+    <OrderItemInfo
+        ref="orderItemInfo"
+        :order-line="orderLine"
+    />
+
+
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
-import type { IRenderData, ISewingTask } from '@/types'
+import type { IRenderData, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
 
 import {
     getExecuteTaskStatustics, getSewingTaskAmountAndTime, getTaskStatusById
@@ -92,6 +102,7 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import ExecuteTaskTotals
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskTotals.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
@@ -102,6 +113,12 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
+
+
+// __ Тип для модального окна информации о записи в Заявке
+const orderLine     = ref<ISewingTaskOrderLine | null>(null)
+const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'
@@ -278,22 +295,23 @@ const render: IRenderData = reactive({
 
 // __ Ширина полей для вывода СЗ
 const sewingLineFieldsWidth = {
-    checker:     'w-[30px]',
-    id:          'w-[30px]',
-    position:    'w-[30px]',
-    size:        'w-[70px]',
-    cover:       'w-[230px]',
-    amount:      'w-[30px]',
-    textile:     'w-[80px]',
-    composition: 'w-[100px]',
-    describe_1:  'w-[90px]',
-    describe_2:  'w-[90px]',
-    describe_3:  'w-[90px]',
-    finished_at: 'w-[80px]',
-    machine:     'w-[25px]',
-    time:        'w-[50px]',
-    tkch:        'w-[50px]',
-    kant:        'w-[70px]',
+    checker:      'w-[30px]',
+    id:           'w-[30px]',
+    position:     'w-[30px]',
+    size:         'w-[70px]',
+    cover:        'w-[230px]',
+    amount:       'w-[30px]',
+    textile:      'w-[80px]',
+    composition:  'w-[100px]',
+    describe_1:   'w-[90px]',
+    describe_2:   'w-[90px]',
+    describe_3:   'w-[90px]',
+    finished_at:  'w-[80px]',
+    machine:      'w-[25px]',
+    time:         'w-[50px]',
+    tkch:         'w-[50px]',
+    kant:         'w-[70px]',
+    false_reason: 'w-[110px]',
 }
 
 // __ Пересчитываем Итого
@@ -304,6 +322,12 @@ const color = computed<string>(() => props.sewingTask.current_status.color)
 
 // __ Объект статистики
 const statistics = computed(() => getExecuteTaskStatustics(props.sewingTask))
+
+// __ Показать информацию о записи
+const showLineInfo = async (sewingLine: ISewingTaskLine) => {
+    orderLine.value = sewingLine.order_line
+    await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
+}
 
 
 </script>

@@ -1,6 +1,6 @@
 <template>
     <div v-if="!isLoading" class="ml-2 mt-2">
-        <div class="sticky top-0 p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-400 max-w-fit">
+        <div class="sticky top-0 p-1 mb-1 bg-blue-100 border-2 rounded-lg border-blue-400 max-w-fit z-50">
             <div>
                 <div class="flex ml-0.5">
 
@@ -233,6 +233,7 @@ import ExecuteTaskCommon
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskCommon.vue'
 import { round } from '@/app/helpers/helpers_lib.ts'
 import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
+// import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
 
 
 // import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
@@ -252,6 +253,8 @@ const {
           globalSewingTasksPending,        // __ Все задания (Global State)
       } = storeToRefs(sewingStore)
 
+
+
 // __ Определяем переменные
 const sewingDays = ref<ISewingDay[]>([])
 
@@ -260,6 +263,8 @@ const sewingDays = ref<ISewingDay[]>([])
 const renderSewingDays = computed<ISewingDay[]>(() => {
     return sewingDays.value
 })
+
+
 
 
 // __ Переменные для рендера
@@ -271,7 +276,7 @@ const commonShow   = ref(false)
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[50px]'
 const COLLAPSED_WIDTH  = 'w-[30px]'
-const PROGRESS_WIDTH   = 'w-[200px]'
+const PROGRESS_WIDTH   = 'w-[266px]'
 const HEADER_TYPE      = 'primary'
 const DATA_TYPE        = 'primary'
 const DEFAULT_TYPE     = 'dark'
@@ -480,7 +485,7 @@ const sewingTaskFieldsWidth = {
     status:        'w-[90px]',
     progressTotal: PROGRESS_WIDTH,
     load_at:       'w-[143px]',
-    comment:       'w-[466px]',
+    comment:       'w-[578px]',
 }
 
 
