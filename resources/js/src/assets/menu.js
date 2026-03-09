@@ -26,7 +26,7 @@ const menuData = () => {
                     {name: 'Заявки за период', path: 'orders', shown: true, isActive: true,},
                     {name: 'Загрузить с диска', path: 'orders.upload', shown: true, isActive: true,},
                     {name: 'Типы заявок', path: 'orders.types', shown: true, isActive: true,},
-                    {name: 'Новая заявка', path: 'plan', shown: true, isActive: true,},
+                    {name: 'Новая заявка', path: 'orders.average.add', shown: true, isActive: true,}, // __ Добавить прогнозную Заявку
                     {name: 'Загрузить из 1C', path: 'plan', shown: false, isActive: false,},
                 ]
         },
@@ -37,7 +37,7 @@ const menuData = () => {
                     {name: 'Список моделей', path: 'models', shown: true, isActive: true,},
                     {name: 'Список материалов', path: 'materials', shown: true, isActive: true,},
                     {name: 'Список процедур расчета', path: 'procedures', shown: true, isActive: true,},
-                    {name: 'Список специфиакций', path: 'constructs', shown: true, isActive: true,},
+                    {name: 'Список спецификаций', path: 'constructs', shown: true, isActive: true,},
                     {name: 'Обновление списка моделей', path: 'models.upload', shown: true, isActive: true,},
                     {name: 'Обновление списка материалов', path: 'materials.upload', shown: true, isActive: true,},
                     {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},

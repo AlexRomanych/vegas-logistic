@@ -25,6 +25,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class OrderController extends Controller
@@ -91,6 +92,7 @@ class OrderController extends Controller
      * ___ Загружаем заказы из браузера
      * @param Request $request
      * @return string
+     * @throws Throwable
      */
     public function uploadOrders(Request $request)
     {
@@ -411,7 +413,33 @@ class OrderController extends Controller
     }
 
 
-    public function deleteOrders(Request $request)
+    /**
+     * ___ Удаляем Заявку
+     * @param string $id
+     * @return string
+     * @throws Throwable
+     */
+    public function deleteOrders(string $id)
+    {
+        try {
+            $validated = Validator::make([
+                'id'   => $id,
+            ], [
+                'id'   => 'required|numeric|exists:orders,id',
+            ])->validate();
+
+            $data = $validated->passes()['id'];
+
+            $order = Order::query()->findOrFail($id);
+            $order->deleteOrFail();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    public function deleteOrders_Old(Request $request)
     {
         $ids = $request->input('ids');
 
@@ -432,6 +460,27 @@ class OrderController extends Controller
 
         //        return $ids;
     }
+
+
+
+    public function addOrdersAverage(Request $request)
+    {
+        try {
+            $all = $request->all();
+
+            // !!! Останавливаемся на контроллере и добавлении прогнозного Заказа
+
+            $data = $validated->passes()['id'];
+
+            $order = Order::query()->findOrFail($id);
+            $order->deleteOrFail();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
 
     /**

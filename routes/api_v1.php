@@ -83,7 +83,8 @@ Route::prefix('/orders')
         Route::get('/', [OrderController::class, 'getOrders']);
         Route::post('/upload', [OrderController::class, 'uploadOrders']);
         Route::post('/validate', [OrderController::class, 'validateOrders']);
-        Route::delete('/delete', [OrderController::class, 'deleteOrders']);
+        Route::delete('/delete/{id}', [OrderController::class, 'deleteOrders']);
+        Route::post('/add/average', [OrderController::class, 'addOrdersAverage']);
 
         Route::get('/types', [OrderController::class, 'getOrderTypes']);
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);

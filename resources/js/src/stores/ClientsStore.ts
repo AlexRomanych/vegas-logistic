@@ -1,9 +1,11 @@
 // INFO Хранилище для клиентов
-
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 // import { ref, reactive, computed, watch } from 'vue'
 
 import { jwtGet, jwtPost, jwtPut, jwtPut_, jwtPatch, jwtDelete } from '@/app/utils/jwt_api'
+import type { IClient } from '@/types'
+
 
 const SHOW_LOGS = true
 
@@ -22,7 +24,8 @@ const URL_CLIENT_DELETE = 'client/delete'       // удаление клиент
 const URL_CLIENTS_LOAD = 'clients/load' // URL для загрузки клиентов из хранилища
 
 export const useClientsStore = defineStore('clients', () => {
-    let clientsShow = []
+
+    let globalClients = ref<IClient[]>([])
 
     //__ Загружает клиентов из файла в базу данных
     const clientsLoad = async () => {
@@ -36,12 +39,7 @@ export const useClientsStore = defineStore('clients', () => {
     }
 
     //__ Получаем с API всех клиентов
-    /**
-     *
-     * @param {boolean | null} status // нет параметра - все, true - активные, false - неактивные
-     * @returns {Promise<*>}
-     */
-    const getClients = async (status = null) => {
+    const getClients = async (status: boolean|null = null) => {
         const params = status === true
             ? '1'
             : status === false
@@ -49,38 +47,31 @@ export const useClientsStore = defineStore('clients', () => {
                 : ''
         const result = await jwtGet(`${URL_CLIENTS}/${params}`)
 
-        clientsShow.value = result.data // кэшируем
+        globalClients.value = result.data // кэшируем
 
         if (SHOW_LOGS) console.log('useClientsStore: getClients: ', result)
 
-        return result.data // все возвращается через Resource с ключем data
+        return result.data // все возвращается через Resource с ключом data
     }
 
     //__ Получаем с API клиента по id
     const getClient = async (id = 0) => {
-        if (id == 0) return null
+        if (id === 0) return null
         const result = await jwtGet(`${URL_CLIENT}/${id}`)
         if (SHOW_LOGS) console.log('useClientsStore: getClient: ', result)
         return result.data
     }
 
-    /**
-     * __ Создаем клиента
-     * @param {IClient} client
-     * @returns {Promise<*>}
-     */
-    const createClient = async (client) => {
+    // __ Создаем клиента
+    const createClient = async (client: IClient) => {
         const result = await jwtPost(URL_CLIENT_CREATE, client)
         if (SHOW_LOGS) console.log('clientsStore: createClient: ', result)
         return result
     }
 
-    /**
-     * __ Обновляем клиента
-     * @param {IClient} client
-     * @returns {Promise<*>}
-     */
-    const updateClient = async (client) => {
+
+    // __ Обновляем клиента
+    const updateClient = async (client: IClient) => {
         const result = await jwtPut_(URL_CLIENT_UPDATE, client)
         if (SHOW_LOGS) console.log('clientsStore: updateClient: ', result)
         return result
@@ -92,18 +83,27 @@ export const useClientsStore = defineStore('clients', () => {
      * @param {number} id
      * @returns {Promise<*>}
      */
-    const deleteClient = async (id) => {
+    const deleteClient = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+
         console.log('deleteClient!:', id)
-        const result = await jwtDelete(URL_CLIENT_DELETE, {id})
+        const result = await jwtDelete(URL_CLIENT_DELETE, { id })
         // const result = await jwtDelete(URL_CLIENT_DELETE, id)
         if (SHOW_LOGS) console.log('clientsStore: deleteClient: ', result)
         return result
     }
 
 
-
     return {
-        getClients, getClient, createClient, updateClient, deleteClient,
+        globalClients,
+
+        getClients,
+        getClient,
+        createClient,
+        updateClient,
+        deleteClient,
         clientsLoad,
     }
 })

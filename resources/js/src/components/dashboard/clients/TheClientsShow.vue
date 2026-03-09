@@ -416,7 +416,7 @@ import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 // import { useRouter } from 'vue-router'
 
-import { useClientsStore } from '@/stores/ClientsStore'
+import { useClientsStore } from '@/stores/ClientsStore.ts'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'

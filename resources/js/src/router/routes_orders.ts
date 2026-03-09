@@ -1,5 +1,7 @@
 // info Orders
 
+import type { IRouteMeta } from '@/types'
+
 const orders = [
     {   // __ Заявки за период
         path: '/orders',
@@ -20,6 +22,15 @@ const orders = [
         name: 'orders.types',
         component: () => import('@/components/dashboard/orders/TheOrdersTypesShow.vue'),
         meta: { title: 'Типы заявок' },
+    },
+
+    {
+        // ___ Добавление прогнозной Заявки
+        path: '/orders/average/add',
+        name: 'orders.average.add',
+        component: () => import('@/components/dashboard/orders/TheOrderAverageAdd.vue'),        meta:      {
+            title: 'Добавление прогнозной Заявки',
+        } as IRouteMeta,
     },
 
 ]

@@ -156,6 +156,12 @@
                         <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description"/>
                     </div>
 
+                    <!-- __ Добавить заявку -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.order_service" @click="$router.push({name: 'orders.average.add'})"/>
+                    </div>
+
+
                 </div>
             </div>
         </div>
@@ -215,6 +221,9 @@
                     <!-- __ Описание -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
 
+                    <!-- __ Удалить -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="deleteOrder(order)"/>
+
                 </div>
 
                 <!-- __ Сами данные по Содержимому Заявки -->
@@ -228,15 +237,35 @@
 
     </div>
 
+
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        ok-word="Понятно"
+    />
+
+
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
-import type { IDataInputObj, IRenderData, IRenderOrder, IRenderOrderLine, ISelectData, ISelectDataItem } from '@/types'
+import type {
+    IColorTypes,
+    IDataInputObj,
+    IRenderData,
+    IRenderOrder,
+    IRenderOrderLine,
+    ISelectData,
+    ISelectDataItem,
+} from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { formatDateIntl, getDateFromDateTimeString, validateInputDateHelper } from '@/app/helpers/helpers_date.js'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
@@ -245,14 +274,42 @@ import AppInputTextTSWrapper from '@/components/dashboard/orders/components/AppI
 import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+import router from '@/router/router'
 
 const isLoading = ref(false)
 
 const ordersStore = useOrdersStore()
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Ошибки                         !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
 
 // __ Глобальный Collapse
 const collapseAll = ref(true)
@@ -509,6 +566,22 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Описание...',
         data:           (order: IRenderOrder) => order.description ?? ''
     },
+    order_service:  {
+        id:             () => 'order-add-search',
+        header:         ['Добавить', 'заявку'],
+        width:          'w-[80px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => 'orange',
+        dataType:       () => DATA_TYPE,
+        type:           () => 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Добавить прогнозную заявку...',
+        data:           (/*order: IRenderOrder*/) => '🗑️'
+    },
 })
 
 // __ Фильтры
@@ -627,6 +700,41 @@ const getOrdersRender = () => {
     // ordersRender.value = orders.value
     // ordersRender.value = orders.value.sort((a, b) => a.no_1c.localeCompare(b.no_1c))
     ordersRender.value = orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
+}
+
+// __ Удаление заявки
+const deleteOrder = async (order: IRenderOrder) => {
+
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Заявка ${order.client.short_name} №${order.order_no_str}`,
+        'будет удалена!',
+        'Продолжить?',
+    ]
+    const answer = await appModalAsyncMultiline.value!.show()
+
+    if (answer) {
+        // const result = await ordersStore.deleteOrders(order.id)
+        const result = null
+        console.log('function delete order')
+
+        if (checkCRUD(result)) {
+            // __ Удаляем из массивов
+            let findIndex = orders.value.findIndex(item => item.id = order.id)
+            if (findIndex !== -1) {
+                orders.value.splice(findIndex, 1)
+            }
+
+            findIndex = ordersRender.value.findIndex(item => item.id = order.id)
+            if (findIndex !== -1) {
+                ordersRender.value.splice(findIndex, 1)
+            }
+        } else {
+            await showError()
+            return
+        }
+    }
 }
 
 

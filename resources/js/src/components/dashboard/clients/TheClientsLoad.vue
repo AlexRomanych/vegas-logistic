@@ -17,7 +17,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useClientsStore } from '@/stores/ClientsStore'
+import { useClientsStore } from '@/stores/ClientsStore.ts'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 

@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { useClientsStore } from '@/stores/ClientsStore'
+import { useClientsStore } from '@/stores/ClientsStore.ts'
 import AppTable from '@/components/ui/tables/AppTable.vue'
 
 const clientsStore = useClientsStore()

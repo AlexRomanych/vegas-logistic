@@ -5,6 +5,8 @@ import { isRef } from 'vue'
 // Проверка на успешный ответ сервера
 // warning: Пока так
 export function checkCRUD(data: any) {
+    if (!data) return false
+
     if (typeof data === 'string') {
         return data.toLowerCase().indexOf('success') !== -1
     } else if (typeof data === 'object') {

@@ -1,6 +1,11 @@
 // ___ Тут все тиы для Заказов
 
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
+import { ACCESSORIES_TYPE, MATTRESSES_TYPE } from '@/app/constants/orders.ts'
+
+// __ Тип изделий
+export type IElementTypeUnion = typeof ACCESSORIES_TYPE | typeof MATTRESSES_TYPE
+
 
 export interface IRenderOrder {
     id: number
@@ -93,7 +98,7 @@ export interface IRenderOrderLineModel {
 }
 
 
-// ___ Проверенная Заявка, котороая вернулась с сервера
+// ___ Проверенная Заявка, которая вернулась с сервера
 export interface IValidatedOrder {
     client_id: number
     client_full_name: string

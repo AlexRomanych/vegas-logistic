@@ -145,7 +145,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers, minValue, integer } from '@vuelidate/validators'
 
-import { useClientsStore } from '@/stores/ClientsStore'
+import { useClientsStore } from '@/stores/ClientsStore.ts'
 
 import { CLIENT_DRAFT } from '@/app/constants/clients.ts'
 
