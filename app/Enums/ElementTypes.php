@@ -15,5 +15,13 @@ enum ElementTypes: string
     case UNDEFINED = 'undefined';           // Заявка не понятно из каких элементов
     case MIXED = 'mixed';                   // Заявка из матрасов и аксессуаров
 
+
+    public function isProduct(): bool
+    {
+        return match($this) {
+            self::MATTRESSES, self::ACCESSORIES => true,
+            default => false,
+        };
+    }
 }
 

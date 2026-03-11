@@ -54,205 +54,213 @@ class PlanLoadsController extends Controller
      */
     public function uploadLoads(Request $request)
     {
-        // try {
-        // $all = $request->all();
+        try {
+            $validated = $request->validate([
+                'data' => 'required|json'
+            ]);
 
-        $validated = $request->validate([
-            'data' => 'required|json'
-        ]);
+            // DB::table('orders')->truncate();
+            // $loadsUpdated = []; // Массив обновленных отгрузок, а не созданных для ответа
 
-        // DB::table('orders')->truncate();
+            $planLoads = json_decode($validated['data'], true);
 
-        $planLoads = json_decode($validated['data'], true);
-
-        // Дополнительная проверка структуры JSON
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Invalid JSON structure');
-        }
-
-        $loadsUpdated = []; // Массив обновленных отгрузок, а не созданных для ответа
-
-        foreach ($planLoads as $planLoad) {
-
-            // __ Проверяем действие
-            if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_NONE ||
-                $planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_ORDER_IGNORE
-            ) {
-                continue;
-            }
-            if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] !== ACTION_ORDER_ADD) {
-                continue;
+            // __ Дополнительная проверка структуры JSON
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Invalid JSON structure');
             }
 
-            // __ Проверяем наличие клиента на всякий случай
-            // __ Пробуем получить клиента по ID
-            $client = null;
-            if ($planLoad['client_id'] !== 0) {
-                $client = Client::query()->find($planLoad['client_id']);
-            }
-            if (!$client) {
-                throw new Exception('Client with id = ' . $planLoad['client_id'] . ' not found');
-            }
+            foreach ($planLoads as $planLoad) {
 
-            // __ Получаем Тип изделий в Заявках
-            $elementsType = OrdersService::getElementsTypeFromRender($planLoad['elements_type']);
-
-            // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
-            // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
-            // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
-            $existOrder = OrdersService::getOrderByClientIdOrderNoElementsTypeLoadAt(
-                $client->id,
-                $planLoad['order_no'],
-                $elementsType,
-                $planLoad['load_at']
-            );
-
-            // __ Проверка на всякий случай
-            // __ Если не нашли Заявку с таким номером в БД и она прогнозная - создаем ее
-            if (!$existOrder && $planLoad['amounts']['averages'] !== 0) {
-
-                $averageModel = ModelsService::createAverageModel($client->id, $elementsType);
-                if (!$averageModel) {
-                    throw new Exception('Error while creating average model with Client id = ' . $planLoad['client_id']);
-
+                // __ Проверяем действие
+                if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_NONE ||
+                    $planLoad[VALIDATE_FIELD][ACTION_FIELD] === ACTION_ORDER_IGNORE
+                ) {
+                    continue;
                 }
+                if ($planLoad[VALIDATE_FIELD][ACTION_FIELD] !== ACTION_ORDER_ADD) {
+                    continue;
+                }
+
+                // __ Создаем новую прогнозную Заявку
+                OrdersService::addAverageOrder(
+                    $planLoad['client_id'],
+                    $planLoad['order_no'],
+                    $planLoad['elements_type'],
+                    $planLoad['load_at'],
+                    $planLoad['amounts']['averages'],
+                    $planLoad['unload_at'],
+                );
+
+                //!!! --------------------------------------------------------------
+/*
+
+                // __ Проверяем наличие клиента на всякий случай
+                // __ Пробуем получить клиента по ID
+                $client = null;
+                if ($planLoad['client_id'] !== 0) {
+                    $client = Client::query()->find($planLoad['client_id']);
+                }
+                if (!$client) {
+                    throw new Exception('Client with id = ' . $planLoad['client_id'] . ' not found');
+                }
+
+                // __ Получаем Тип изделий в Заявках
+                $elementsType = OrdersService::getElementsTypeFromRender($planLoad['elements_type']);
+
+                // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
+                // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
+                // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
+                $existOrder = OrdersService::getOrderByClientIdOrderNoElementsTypeLoadAt(
+                    $client->id,
+                    $planLoad['order_no'],
+                    $elementsType,
+                    $planLoad['load_at']
+                );
+
+                // __ Проверка на всякий случай
+                // __ Если не нашли Заявку с таким номером в БД и она прогнозная - создаем ее
+                if (!$existOrder && $planLoad['amounts']['averages'] !== 0) {
+
+                    $averageModel = ModelsService::createAverageModel($client->id, $elementsType);
+                    if (!$averageModel) {
+                        throw new Exception('Error while creating average model with Client id = ' . $planLoad['client_id']);
+
+                    }
+                }
+
+                // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
+                // __  Устанавливаем Тип - Прогнозная Заявка
+                $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);
+                // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
+
+                $createdOrder = PlanLoad::query()->create([
+                    'client_id'         => $client->id,
+                    'order_type_id'     => $orderType->id,
+                    // 'plan_load_id'      => null, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                    'order_no_num'      => parseNumericValue($planLoad['order_no']),
+                    'order_no_str'      => $planLoad['order_no'],
+                    'order_no_origin'   => $planLoad['order_no'],
+                    'no_1c'             => '',   // Используем на фронте
+                    'is_forecast'       => true, // Прогнозная Заявка
+                    'order_period'      => PlanService::getOrderPeriod($planLoad['load_at']),
+                    'elements_type'     => $elementsType,
+                    'elements_type_ref' => OrdersService::getOrderElementsTypeReference($elementsType),
+
+                    // __ Вставляем именно массивом, без преобразования в json
+                    'amounts'           => [
+                        'mattresses' => 0,
+                        'up_covers'  => 0,
+                        'averages'   => $planLoad['amounts']['averages'],
+                        'covers'     => 0,
+                        'children'   => 0,
+                        'formats'    => 0,
+                        'unknowns'   => 0,
+                        'totals'     => $planLoad['amounts']['averages'],
+                    ],
+
+                    'load_at'   => PlanService::normalizeToCarbon($planLoad['load_at']),
+                    'unload_at' => $planLoad['unload_at'] === '' ? null : PlanService::normalizeToCarbon($planLoad['unload_at']),
+
+                    // 'responsible'        => null,
+                    // 'manager_load_date'  => null,
+                    // 'manager_start'      => null,
+                    // 'manager_end'        => null,
+                    // 'design_start'       => null,
+                    // 'design_end'         => null,
+                    // 'no_1c'              => null,
+                    // 'code_1c'            => null,
+                    // 'base_order_code_1c' => null,
+                    // 'comment_1c'         => null,
+                    // 'client_code_1c'     => null,
+                    // 'client_name_1c'     => null,
+                    // 'service'            => null,
+
+                    // 'status'             => $order[''],
+                    // 'shown'              => $order[''],
+                    // 'stat_include'       => $order[''],
+                    // 'service_ext'        => $order[''],
+                    // 'extended_meta'      => $order[''],
+                    // 'description'        => $order[''],
+                    // 'comment'            => $order[''],
+                    // 'note'               => $order[''],
+                    // 'meta'               => $order[''],
+                    // 'history'            => $order[''],
+                    // 'meta_ext'           => $order[''],
+                    // 'active'             => $order[''],
+                ]);
+
+                if (!$createdOrder) {
+                    throw new Exception('Error while creating Average Order with Client id = ' . $planLoad['client_id'] . ' is failed');
+                }
+
+                // __ Вставляем содержимое Прогнозной Заявки
+                // __ Получаем размеры
+                $AVERAGE_SIZE_STR = '0x0x0';
+                $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
+
+
+                $createLine = OrderLine::query()->create(
+                    [
+                        'order_id'      => $createdOrder->id,
+                        'size'          => $AVERAGE_SIZE_STR,
+                        'width'         => $dims->getWidth(),
+                        'length'        => $dims->getLength(),
+                        'height'        => $dims->getHeight(),
+                        'model_name'    => $averageModel->name,
+                        'model_code_1c' => $averageModel->code_1c,
+                        'amount'        => $planLoad['amounts']['averages'],
+                        // 'textile'       => $orderLine['t'],
+                        // 'composition'   => $orderLine['d'],
+                        // 'describe_1'    => $orderLine['d1'],
+                        // 'describe_2'    => $orderLine['d2'],
+                        // 'describe_3'    => $orderLine['d3'],
+                        // 'active'        => $orderLine[''],
+                        // 'status'        => $orderLine[''],
+                        // 'description'   => $orderLine[''],
+                        // 'comment'       => $orderLine[''],
+                        // 'note'          => $orderLine[''],
+                        // 'meta'          => $orderLine[''],
+                    ]
+                );
+
+                if (!$createLine) {
+                    throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
+                }
+
+
+                // __ Устанавливаем статус Заявки - Создано
+                $createdOrder->statuses()->attach([
+                    OrderStatus::ORDER_STATUS_CREATED_ID => [
+                        'set_at'     => now(),
+                        'created_by' => auth()->id(),
+                    ]
+                ]);
+
+
+                // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
+
+                // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+                // __ Создаем СЗ на Участки только для матрасов
+
+                $typeRef = $createdOrder->elements_type_ref;
+                if ($createdOrder->elements_type_ref !== ElementTypes::MATTRESSES->value) {
+                    continue;
+                }
+
+
+                // __ Создаем СЗ на Пошив
+                $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
+                if (!$sewingTask) {
+                    throw new Exception('Error while creating Sewing Task with Client id = ' . $planLoad['client_id']);
+                }
+*/
+                //!!! --------------------------------------------------------------
             }
 
-            // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
-            // __  Устанавливаем Тип - Прогнозная Заявка
-            $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);
-            // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
-
-            $createdOrder = PlanLoad::query()->create([
-                'client_id'         => $client->id,
-                'order_type_id'     => $orderType->id,
-                // 'plan_load_id'      => null, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
-                'order_no_num'      => parseNumericValue($planLoad['order_no']),
-                'order_no_str'      => $planLoad['order_no'],
-                'order_no_origin'   => $planLoad['order_no'],
-                'no_1c'             => '',   // Используем на фронте
-                'is_forecast'       => true, // Прогнозная Заявка
-                'order_period'      => PlanService::getOrderPeriod($planLoad['load_at']),
-                'elements_type'     => $elementsType,
-                'elements_type_ref' => OrdersService::getOrderElementsTypeReference($elementsType),
-
-                // __ Вставляем именно массивом, без преобразования в json
-                'amounts'           => [
-                    'mattresses' => 0,
-                    'up_covers'  => 0,
-                    'averages'   => $planLoad['amounts']['averages'],
-                    'covers'     => 0,
-                    'children'   => 0,
-                    'formats'    => 0,
-                    'unknowns'   => 0,
-                    'totals'     => $planLoad['amounts']['averages'],
-                ],
-
-                'load_at'   => PlanService::normalizeToCarbon($planLoad['load_at']),
-                'unload_at' => $planLoad['unload_at'] === '' ? null : PlanService::normalizeToCarbon($planLoad['unload_at']),
-
-                // 'responsible'        => null,
-                // 'manager_load_date'  => null,
-                // 'manager_start'      => null,
-                // 'manager_end'        => null,
-                // 'design_start'       => null,
-                // 'design_end'         => null,
-                // 'no_1c'              => null,
-                // 'code_1c'            => null,
-                // 'base_order_code_1c' => null,
-                // 'comment_1c'         => null,
-                // 'client_code_1c'     => null,
-                // 'client_name_1c'     => null,
-                // 'service'            => null,
-
-                // 'status'             => $order[''],
-                // 'shown'              => $order[''],
-                // 'stat_include'       => $order[''],
-                // 'service_ext'        => $order[''],
-                // 'extended_meta'      => $order[''],
-                // 'description'        => $order[''],
-                // 'comment'            => $order[''],
-                // 'note'               => $order[''],
-                // 'meta'               => $order[''],
-                // 'history'            => $order[''],
-                // 'meta_ext'           => $order[''],
-                // 'active'             => $order[''],
-            ]);
-
-            if (!$createdOrder) {
-                throw new Exception('Error while creating Average Order with Client id = ' . $planLoad['client_id'] . ' is failed');
-            }
-
-            // __ Вставляем содержимое Прогнозной Заявки
-            // __ Получаем размеры
-            $AVERAGE_SIZE_STR = '0x0x0';
-            $dims = SizeService::getDimensions($AVERAGE_SIZE_STR);
-
-            /** @noinspection PhpUndefinedVariableInspection */
-            $createLine = OrderLine::query()->create(
-                [
-                    'order_id'      => $createdOrder->id,
-                    'size'          => $AVERAGE_SIZE_STR,
-                    'width'         => $dims->getWidth(),
-                    'length'        => $dims->getLength(),
-                    'height'        => $dims->getHeight(),
-                    'model_name'    => $averageModel->name,
-                    'model_code_1c' => $averageModel->code_1c,
-                    'amount'        => $planLoad['amounts']['averages'],
-                    // 'textile'       => $orderLine['t'],
-                    // 'composition'   => $orderLine['d'],
-                    // 'describe_1'    => $orderLine['d1'],
-                    // 'describe_2'    => $orderLine['d2'],
-                    // 'describe_3'    => $orderLine['d3'],
-                    // 'active'        => $orderLine[''],
-                    // 'status'        => $orderLine[''],
-                    // 'description'   => $orderLine[''],
-                    // 'comment'       => $orderLine[''],
-                    // 'note'          => $orderLine[''],
-                    // 'meta'          => $orderLine[''],
-                ]
-            );
-
-            if (!$createLine) {
-                throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
-            }
-
-
-            // __ Устанавливаем статус Заявки - Создано
-            $createdOrder->statuses()->attach([
-                OrderStatus::ORDER_STATUS_CREATED_ID => [
-                    'set_at'     => now(),
-                    'created_by' => auth()->id(),
-                ]
-            ]);
-
-
-            // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
-
-            // __ Если тип элементов в Заявке - не матрасы, то пропускаем
-            // __ Создаем СЗ на Участки только для матрасов
-
-            $typeRef = $createdOrder->elements_type_ref;
-            if ($createdOrder->elements_type_ref !== ElementTypes::MATTRESSES->value) {
-                continue;
-            }
-
-
-            // __ Создаем СЗ на Пошив
-            $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
-            if (!$sewingTask) {
-                throw new Exception('Error while creating Sewing Task with Client id = ' . $planLoad['client_id']);
-            }
-
-
-
-
+            return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
         }
-
-        // return EndPointStaticRequestAnswer::ok();
-        // } catch (Exception $e) {
-        //     return EndPointStaticRequestAnswer::fail($e);
-        // }
     }
 
 
@@ -305,11 +313,11 @@ class PlanLoadsController extends Controller
 
                     $loadAtMemory = $workload->load_at; // Запоминаем дату загрузки, чтобы потом сравнить с новой
 
-                    $workload->load_at = PlanService::normalizeToCarbon($load['load_at']);
-                    $workload->period = PlanService::getOrderPeriod($load['load_at']);
+                    $workload->load_at       = PlanService::normalizeToCarbon($load['load_at']);
+                    $workload->period        = PlanService::getOrderPeriod($load['load_at']);
                     $workload->order_type_id = $orderType->id;
-                    $workload->unload_at = $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']);
-                    $workload->amounts = $load['amounts'];
+                    $workload->unload_at     = $load['unload_at'] === '' ? null : PlanService::normalizeToCarbon($load['unload_at']);
+                    $workload->amounts       = $load['amounts'];
                     $workload->save();
 
                     $oldDate = Carbon::parse($loadAtMemory);
@@ -372,11 +380,11 @@ class PlanLoadsController extends Controller
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
-                $end = Carbon::parse($validated['period']['end']);
+                $end   = Carbon::parse($validated['period']['end']);
             } else {
                 $period = DefaultsService::getDefaultPeriodPlanLoads();
-                $start = Carbon::parse($period->getStart());
-                $end = Carbon::parse($period->getEnd());
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
             }
 
             $planLoads = PlanLoad::query()

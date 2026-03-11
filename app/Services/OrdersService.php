@@ -3,13 +3,20 @@
 namespace App\Services;
 
 
+use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Models\Client;
 use App\Models\Order\Order;
+use App\Models\Order\OrderLine;
+use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
+use App\Models\Plan\PlanLoad;
+use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 final class OrdersService
 {
@@ -238,10 +245,11 @@ final class OrdersService
      * @return Order|null
      */
     public static function getOrderByClientIdOrderNoElementsTypeLoadAt(
-        int    $clientId,
-        string $orderNo,
-        string $elementsType,
-        string $loadAt): ?Order
+        int           $clientId,
+        string        $orderNo,
+        string        $elementsType,
+        string|Carbon $loadAt
+    ): ?Order
     {
         // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
         // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
@@ -354,9 +362,9 @@ final class OrdersService
     public static function getOrderElementsTypeReference(string $orderType): string
     {
         return match (true) {
-            self::isOrderMattressesType($orderType)  => ElementTypes::MATTRESSES->value,
+            self::isOrderMattressesType($orderType) => ElementTypes::MATTRESSES->value,
             self::isOrderAccessoriesType($orderType) => ElementTypes::ACCESSORIES->value,
-            default                                  => ElementTypes::UNDEFINED->value,
+            default => ElementTypes::UNDEFINED->value,
         };
     }
 
@@ -555,7 +563,7 @@ final class OrdersService
     public static function normalizeToCarbon(string|Carbon|Order $entity): Carbon
     {
         return match (true) {
-            is_string($entity)        => (function () use ($entity) {
+            is_string($entity) => (function () use ($entity) {
                 try {
                     return Carbon::parse($entity);
                 } catch (\Exception $e) {
@@ -563,8 +571,8 @@ final class OrdersService
                 }
             })(),
             $entity instanceof Carbon => $entity,
-            $entity instanceof Order  => Carbon::parse($entity->load_at),
-            default                   => Carbon::now(),
+            $entity instanceof Order => Carbon::parse($entity->load_at),
+            default => Carbon::now(),
             // default => throw new \InvalidArgumentException(
             //     'Ожидается строка, Carbon или PlanLoad, получен: ' . get_debug_type($entity)
             // )
@@ -617,6 +625,208 @@ final class OrdersService
 
         return ElementTypes::UNDEFINED->value;
     }
+
+
+    /**
+     *  __ Добавляем прогнозную заявку
+     * @param int $clientId
+     * @param string $orderNo
+     * @param string|ElementTypes $elementType
+     * @param string|Carbon $loadAt
+     * @param int $amount
+     * @param string|Carbon|null $unloadAt
+     * @return void
+     * @throws Throwable
+     */
+    public static function addAverageOrder(
+        int                 $clientId,
+        string              $orderNo,
+        string|ElementTypes $elementType,
+        string|Carbon       $loadAt,
+        int                 $amount,
+        string|Carbon|null  $unloadAt = null,
+    ): void
+    {
+        // __ Находим Клиента
+        $client = null;
+        if ($clientId !== 0) {
+            $client = Client::query()->findOrFail($clientId);
+        }
+        if (!$client) {
+            throw new Exception('Client with id = ' . $clientId . ' not found');
+        }
+
+        // __ Проверяем тип на соответствие
+        if (is_string($elementType)) {
+            $enumValue = ElementTypes::tryFrom($elementType);
+
+            // __ Если не нашли по оригиналу, получаем Тип изделий из Типа рендера: "матрасы" или "аксессуары"
+            if (!$enumValue) {
+                $enumValue = ElementTypes::tryFrom(OrdersService::getElementsTypeFromRender($elementType));
+            }
+
+            if (!$enumValue || !$enumValue->isProduct()) {
+                throw new Exception('Element type not found or wrong');
+            }
+            $elementType = $enumValue; // Теперь здесь гарантированно нужный Enum
+        }
+
+        // __ Нормализуем дату загрузки
+        $loadAt = normalizeToCarbon($loadAt);
+
+        // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
+        // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
+        // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
+        $existOrder = OrdersService::getOrderByClientIdOrderNoElementsTypeLoadAt(
+            $clientId,
+            $orderNo,
+            $elementType->value,
+            $loadAt,
+        );
+
+        // __ Обрабатываем ошибку существующего заказа
+        if ($existOrder) {
+            throw new Exception('Заказ с таким номером уже существует');
+        }
+
+        // __ Проверяем наличие средней модели
+        $averageModel = ModelsService::createAverageModel($client->id, $elementType->value);
+        if (!$averageModel) {
+            throw new Exception('Error while creating average model with Client id = ' . $clientId);
+
+        }
+
+        // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
+        // __  Устанавливаем Тип - Прогнозная Заявка
+        $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);
+        // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
+
+        DB::transaction(function () use ($averageModel, $orderType, $loadAt, $unloadAt, $amount, $elementType, $orderNo, $client) {
+
+            $createdOrder = PlanLoad::query()->create([
+                'client_id'         => $client->id,
+                'order_type_id'     => $orderType->id,
+                // 'plan_load_id'      => null, // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущностью
+                'order_no_num'      => parseNumericValue($orderNo),
+                'order_no_str'      => $orderNo,
+                'order_no_origin'   => $orderNo,
+                'no_1c'             => '',   // Используем на фронте
+                'is_forecast'       => true, // Прогнозная Заявка
+                'order_period'      => PlanService::getOrderPeriod($loadAt),
+                'elements_type'     => $elementType->value,
+                'elements_type_ref' => OrdersService::getOrderElementsTypeReference($elementType->value),
+
+                // __ Вставляем именно массивом, без преобразования в json
+                'amounts'           => [
+                    'averages'   => $amount,
+                    'mattresses' => 0,
+                    'up_covers'  => 0,
+                    'covers'     => 0,
+                    'children'   => 0,
+                    'formats'    => 0,
+                    'unknowns'   => 0,
+                    'totals'     => $amount,
+                ],
+
+                'load_at'   => $loadAt,
+                'unload_at' => empty($unloadAt) ? null : normalizeToCarbon($unloadAt),
+                // 'unload_at' => null,
+
+                // 'responsible'        => null,
+                // 'manager_load_date'  => null,
+                // 'manager_start'      => null,
+                // 'manager_end'        => null,
+                // 'design_start'       => null,
+                // 'design_end'         => null,
+                // 'no_1c'              => null,
+                // 'code_1c'            => null,
+                // 'base_order_code_1c' => null,
+                // 'comment_1c'         => null,
+                // 'client_code_1c'     => null,
+                // 'client_name_1c'     => null,
+                // 'service'            => null,
+
+                // 'status'             => $order[''],
+                // 'shown'              => $order[''],
+                // 'stat_include'       => $order[''],
+                // 'service_ext'        => $order[''],
+                // 'extended_meta'      => $order[''],
+                // 'description'        => $order[''],
+                // 'comment'            => $order[''],
+                // 'note'               => $order[''],
+                // 'meta'               => $order[''],
+                // 'history'            => $order[''],
+                // 'meta_ext'           => $order[''],
+                // 'active'             => $order[''],
+            ]);
+
+            if (!$createdOrder) {
+                throw new Exception('Error while creating Average Order with Client id = ' . $client->id . ' is failed');
+            }
+
+            // __ Вставляем содержимое Прогнозной Заявки
+            // __ Получаем размеры
+            $AVERAGE_SIZE_STR = '0x0x0';
+            $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
+
+            $createLine = OrderLine::query()->create(
+                [
+                    'order_id'      => $createdOrder->id,
+                    'size'          => $AVERAGE_SIZE_STR,
+                    'width'         => $dims->getWidth(),
+                    'length'        => $dims->getLength(),
+                    'height'        => $dims->getHeight(),
+                    'model_name'    => $averageModel->name,
+                    'model_code_1c' => $averageModel->code_1c,
+                    'amount'        => $amount,
+                    // 'textile'       => $orderLine['t'],
+                    // 'composition'   => $orderLine['d'],
+                    // 'describe_1'    => $orderLine['d1'],
+                    // 'describe_2'    => $orderLine['d2'],
+                    // 'describe_3'    => $orderLine['d3'],
+                    // 'active'        => $orderLine[''],
+                    // 'status'        => $orderLine[''],
+                    // 'description'   => $orderLine[''],
+                    // 'comment'       => $orderLine[''],
+                    // 'note'          => $orderLine[''],
+                    // 'meta'          => $orderLine[''],
+                ]
+            );
+
+            if (!$createLine) {
+                throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
+            }
+
+
+            // __ Устанавливаем статус Заявки - Создано
+            $createdOrder->statuses()->attach([
+                OrderStatus::ORDER_STATUS_CREATED_ID => [
+                    'set_at'     => now(),
+                    'created_by' => auth()->id(),
+                ]
+            ]);
+
+
+            // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
+
+            // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+            // __ Создаем СЗ на Участки только для матрасов
+            $typeRef = $createdOrder->elements_type_ref;
+            if ($createdOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
+
+                // __ Создаем СЗ на Пошив
+                $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
+                if (!$sewingTask) {
+                    throw new Exception('Error while creating Sewing Task with Client id = ' . $planLoad['client_id']);
+                };
+
+            }
+        });
+
+
+    }
+
+
 }
 
 

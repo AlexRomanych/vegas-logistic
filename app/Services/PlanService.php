@@ -2,13 +2,18 @@
 
 namespace App\Services;
 
+use App\Enums\ElementTypes;
+use App\Models\Client;
+use App\Models\Order\OrderLine;
+use App\Models\Order\OrderStatus;
 use App\Models\Plan\PlanLoad;
+use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 final class PlanService
 {
-
 
 
     /**
@@ -16,7 +21,7 @@ final class PlanService
      * @param Collection|null $loads
      * @return bool
      */
-    public static function isLoadsCollisionsPresent(Collection | null $loads): bool
+    public static function isLoadsCollisionsPresent(Collection|null $loads): bool
     {
         if (is_null($loads)) return false;
         if ($loads->count() === 0 || $loads->count() === 1) return false;
@@ -38,7 +43,7 @@ final class PlanService
      * @param string|Carbon|PlanLoad $entity
      * @return Carbon
      */
-    public static function getOrderPeriod(string | Carbon | PlanLoad $entity): Carbon
+    public static function getOrderPeriod(string|Carbon|PlanLoad $entity): Carbon
     {
         $period = self::normalizeToCarbon($entity);
         return $period->copy()->startOfMonth();
@@ -51,13 +56,13 @@ final class PlanService
      * @param string|Carbon|PlanLoad $entity
      * @return Carbon
      */
-    public static function normalizeToCarbon(string | Carbon | PlanLoad $entity ): Carbon
+    public static function normalizeToCarbon(string|Carbon|PlanLoad $entity): Carbon
     {
         return match (true) {
-            is_string($entity) => (function() use ($entity) {
+            is_string($entity) => (function () use ($entity) {
                 try {
                     return Carbon::parse($entity);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     return Carbon::now();
                 }
             })(),
@@ -69,5 +74,6 @@ final class PlanService
             // )
         };
     }
+
 
 }

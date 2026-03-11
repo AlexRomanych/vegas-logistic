@@ -206,7 +206,7 @@ class OrderController extends Controller
                     $forecastOrder->client_name_1c     = $order['client_full_name'];
                     $forecastOrder->service            = $order['service'];
                     $forecastOrder->unload_at          = $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']);
-                    $forecastOrder->is_forecast         = false;    // __ Прогнозная заявка раскрывается
+                    $forecastOrder->is_forecast        = false;    // __ Прогнозная заявка раскрывается
 
                     // __ Вставляем именно массивом, без преобразования в json. Пока ничего не меняем
                     // $forecastOrder->amounts = [
@@ -423,42 +423,20 @@ class OrderController extends Controller
     {
         try {
             $validated = Validator::make([
-                'id'   => $id,
+                'id' => $id,
             ], [
-                'id'   => 'required|numeric|exists:orders,id',
+                'id' => 'required|numeric|exists:orders,id',
             ])->validate();
 
-            $data = $validated->passes()['id'];
+            // $data = $validated['id'];
 
-            $order = Order::query()->findOrFail($id);
+            $order = Order::query()->findOrFail($validated['id']);
             $order->deleteOrFail();
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-    }
-
-    public function deleteOrders_Old(Request $request)
-    {
-        $ids = $request->input('ids');
-
-        try {
-            Order::whereIn('id', $ids)->delete();
-            return response()->json([
-                'success' => 'Заказы удалены'
-            ]);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        //        $data = $request->all();
-        //        return view('dd', ['data' => $data]);
-
-        //        return $ids;
     }
 
 
@@ -468,19 +446,28 @@ class OrderController extends Controller
         try {
             $all = $request->all();
 
-            // !!! Останавливаемся на контроллере и добавлении прогнозного Заказа
+            $validated = $request->validate([
+                'client'  => 'required|integer|exists:clients,id',
+                'order'   => 'required|string|numeric',
+                'load_at' => 'required|date|date_format:Y-m-d',
+                'amount'  => 'required|numeric|min:1',
+                'type'    => 'required|in:' . ElementTypes::MATTRESSES->value . ',' . ElementTypes::ACCESSORIES->value,
+            ]);
 
-            $data = $validated->passes()['id'];
+            // __ Создаем прогнозную Заявку
+            OrdersService::addAverageOrder(
+                $validated['client'],
+                $validated['order'],
+                $validated['type'],
+                $validated['load_at'],
+                $validated['amount'],
+            );
 
-            $order = Order::query()->findOrFail($id);
-            $order->deleteOrFail();
-
-            return EndPointStaticRequestAnswer::ok();
-        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::ok('Заявка успешно создана');
+        } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
     /**

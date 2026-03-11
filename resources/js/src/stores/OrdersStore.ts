@@ -109,11 +109,11 @@ export const useOrdersStore = defineStore('orders', () => {
         }
 
         const response = await jwtPost(URL_ORDERS_ADD_AVERAGE, {
-            client: clientId,
-            order: orderNo,
+            client:  clientId,
+            order:   orderNo,
             amount,
-            type: elementType,
-            load: loadDate,
+            type:    elementType,
+            load_at: loadDate,
         })
         const result   = await response
 

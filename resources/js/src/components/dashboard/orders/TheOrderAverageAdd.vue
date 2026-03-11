@@ -63,7 +63,7 @@
 
                 <!-- __ К списку -->
                 <div class="m-3 mt-5 flex justify-between">
-                    <router-link :to="{ name: 'manufacture.cell.sewing.operations' }">
+                    <router-link :to="{ name: 'orders' }">
                         <AppInputButton
                             id="returnButton"
                             func="button"
@@ -139,13 +139,12 @@ import AppModalAsyncSelectTSFuncUpgraded from '@/components/ui/modals/AppModalAs
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
-import logs from '@/router/routes_logs.ts'
 import { formatDateTime, getISOFromLocaleDate } from '@/app/helpers/helpers_date'
 
 const DEFAULT_WIDTH = 'w-[500px]'
 
 // __ Тип для модального окна выбора Клиента
-const selectedClientId      = ref<number | null>(null)
+const selectedClientId      = ref<number | null>(0)
 const appModalAsyncSelectTS = ref<any>(null)
 
 const clientsStore = useClientsStore()
@@ -244,7 +243,6 @@ const elementTypesCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[
 // __ Выбираем Клиента
 const selectClient = async () => {
     await appModalAsyncSelectTS.value!.show(selectedClientId.value)
-    console.log(selectedClientId.value)
 }
 
 
@@ -295,7 +293,12 @@ onMounted(async () => {
 
     if (globalClients.value.length === 0) {
         await clientsStore.getClients(true)
-        selectedClientId.value = globalClients.value?.[0].id
+        const zeroClientIndex =  globalClients.value.findIndex(item => item.id === 0)
+        if (zeroClientIndex !== -1) {
+            selectedClientId.value = globalClients.value[zeroClientIndex].id
+        } else {
+            selectedClientId.value = globalClients.value?.[0].id
+        }
     }
 
     fillSelects()

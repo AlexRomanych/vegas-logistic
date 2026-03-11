@@ -437,7 +437,7 @@
 
         const result = await plansStore.uploadLoads(JSON.stringify(planLoadsVerified.value))
 
-        if (checkCRUD(result.data)) {
+        if (checkCRUD(result)) {
             calloutMessage.value = result.payload
             calloutType.value = 'success'
         } else {
