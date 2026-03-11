@@ -794,7 +794,7 @@ final class OrdersService
             );
 
             if (!$createLine) {
-                throw new Exception('Error while creating Average Order Line with Client id = ' . $planLoad['client_id'] . ' is failed');
+                throw new Exception('Error while creating Average Order Line with Client id = ' . $client->id . ' is failed');
             }
 
 
@@ -817,7 +817,7 @@ final class OrdersService
                 // __ Создаем СЗ на Пошив
                 $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
                 if (!$sewingTask) {
-                    throw new Exception('Error while creating Sewing Task with Client id = ' . $planLoad['client_id']);
+                    throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
                 };
 
             }

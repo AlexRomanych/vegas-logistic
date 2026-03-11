@@ -10,16 +10,16 @@ import { jwtGet, jwtPost, jwtDelete, jwtPatch } from '@/app/utils/jwt_api'
 
 // __ Устанавливаем глобальные переменные
 const API_PREFIX                    = '/api/v1/'     // Префикс API
-const URL_ORDERS                    = 'orders/'      // URL для получения списка заказов
-const URL_ORDER                     = 'order/'       // URL для получения заказа
+const URL_ORDERS                    = 'orders'       // URL для получения списка заказов
+const URL_ORDER                     = 'order'        // URL для получения заказа
 const URL_ORDERS_TYPES              = 'orders/types' // URL для получения типа заказов
 const URL_ORDERS_TYPES_COLOR_UPDATE = 'orders/types/color/patch' // URL для обновления цвета типа заказов
 
 
-const URL_ORDERS_UPLOAD      = 'orders/upload/'        // URL для загрузки заказов с диска
+const URL_ORDERS_UPLOAD      = 'orders/upload/'      // URL для загрузки заказов с диска
 const URL_ORDERS_VALIDATE    = 'orders/validate/'    // URL для проверки заказов с диска
-const URL_ORDERS_DELETE      = 'orders/delete/'         // URL для удаления заказов
-const URL_ORDERS_ADD_AVERAGE = 'orders/add/average'         // URL для добавления прогнозной Заявки
+const URL_ORDERS_DELETE      = 'orders/delete/'      // URL для удаления заказов
+const URL_ORDERS_ADD_AVERAGE = 'orders/add/average'  // URL для добавления прогнозной Заявки
 
 
 export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой прирендере расчетных значений
@@ -123,6 +123,17 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
 
+    // __ Получаем Заказ по id
+    const getOrderById = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+        const result = await jwtGet(`${URL_ORDERS}/${id}`)
+        if (DEBUG) console.log('OrdersStore: getOrderById', result)
+        return result.data
+    }
+
+
     // __ Получаем с API список Типов заказов (серийная, гаррмем, прогнозная и т.д.)
     const getOrderTypes = async () => {
         const result = await jwtGet(URL_ORDERS_TYPES)
@@ -146,6 +157,7 @@ export const useOrdersStore = defineStore('orders', () => {
         ordersShowIsChanged,
 
         getOrders,
+        getOrderById,
         uploadOrders,
         validateOrders,
         deleteOrders,

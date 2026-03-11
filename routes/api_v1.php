@@ -76,11 +76,19 @@ Route::prefix('/materials')
 //hr--------------------------------------------------------------------------------------------------------------------
 // __ Блок Заказов
 
+// Route::prefix('/order')
+//     ->middleware('jwt.auth')
+//     ->group(function () {
+//
+//         Route::get('/{id}', [OrderController::class, 'getOrderById']);
+//     });
+
 Route::prefix('/orders')
     ->middleware('jwt.auth')
     ->group(function () {
 
         Route::get('/', [OrderController::class, 'getOrders']);
+        Route::get('/{id}', [OrderController::class, 'getOrderById']);
         Route::post('/upload', [OrderController::class, 'uploadOrders']);
         Route::post('/validate', [OrderController::class, 'validateOrders']);
         Route::delete('/delete/{id}', [OrderController::class, 'deleteOrders']);

@@ -175,7 +175,7 @@ const operation = ref<ISewingOperation>(SEWING_OPERATION_DRAFT)
 let activeCheckboxData: ICheckboxData         // выбор активности
 let calcModeCheckboxData: ICheckboxData       // выбор типа расчета
 
-// __ Подгружаем данные по типу отхода, если мы в режиме редактирования
+// __ Подгружаем данные по операции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
     if (editMode.value) {
         operation.value = await sewingStore.getSewingOperation(paramId) as ISewingOperation // Получаем Операцию

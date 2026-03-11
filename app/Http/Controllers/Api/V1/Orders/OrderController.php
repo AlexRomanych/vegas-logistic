@@ -34,32 +34,36 @@ class OrderController extends Controller
     // Отдаем заказы за период
     public function getOrders(Request $request)
     {
+        try {
+            $orders = Order::query()
+                ->with(['lines.model.modelType', 'client', 'orderType'])
+                ->get();
+
+            return OrderRenderResource::collection($orders);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+
 
         // $orders = PlanLoad::query()
         //     ->with(['lines.model.modelType', 'client', 'orderType'])
         //     ->get();
 
-        $orders = Order::query()
-            ->with(['lines.model.modelType', 'client', 'orderType'])
-            ->get();
-
-        return OrderRenderResource::collection($orders);
-
-        $validData = $request->validate([
-            'start' => 'required|date|beforeOrEqual:end',
-            'end'   => 'required|date|afterOrEqual:start',
-        ]);
+        // $validData = $request->validate([
+        //     'start' => 'required|date|beforeOrEqual:end',
+        //     'end'   => 'required|date|afterOrEqual:start',
+        // ]);
 
         //        return apiDebug($validData);
         //        return $validData;
 
-        $orders = Order::query()
-            ->whereBetween('load_date', [$validData['start'], $validData['end']])
-            ->get();
-        //        $orders = Order::all();
-
-
-        return new OrderCollection($orders);
+        // $orders = Order::query()
+        //     ->whereBetween('load_date', [$validData['start'], $validData['end']])
+        //     ->get();
+        // //        $orders = Order::all();
+        //
+        //
+        // return new OrderCollection($orders);
 
         //        return $orders;
 
@@ -68,6 +72,32 @@ class OrderController extends Controller
         //            Order::whereBetween('unload_date', [$validData['start'], $validData['end']])
         //        );
 
+    }
+
+
+    /**
+     * ___ Возвращаем Заявку по id
+     * @param string $id
+     * @return OrderRenderResource|string
+     */
+    public function getOrderById(string $id)
+    {
+        try {
+            $validate = Validator::make([
+                'id' => $id
+            ], [
+                'id' => 'required|numeric|exists:orders,id'
+            ])
+                ->validate();
+
+            $order = Order::query()
+                ->with(['lines.model.modelType', 'client', 'orderType'])
+                ->findOrFail($id);
+
+            return new OrderRenderResource($order);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 
@@ -438,7 +468,6 @@ class OrderController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
     public function addOrdersAverage(Request $request)

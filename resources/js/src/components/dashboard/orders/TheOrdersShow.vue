@@ -177,7 +177,8 @@
 
             <div :class="!order.collapsed ? 'bg-green-100 rounded-[4px]' : ''">
 
-                <div class="flex ">
+                <!-- __ Переход по двойному клику на карточку -->
+                <div class="flex" @dblclick="$router.push({name: 'orders.card', params: {id: order.id}})">
 
                     <!-- __ Collapsed -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.collapsed"
@@ -280,7 +281,7 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import router from '@/router/router'
+// import router from '@/router/router'
 
 const isLoading = ref(false)
 
