@@ -4,7 +4,7 @@ import { DEBUG } from '@/app/constants/common.ts'
 import { ref /*reactive, computed, watch*/ } from 'vue'
 import { defineStore } from 'pinia'
 
-import { jwtGet, jwtPost, jwtDelete, jwtPatch } from '@/app/utils/jwt_api'
+import { jwtGet, jwtPost, jwtDelete, jwtPatch, jwtPatch_ } from '@/app/utils/jwt_api'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 
@@ -20,6 +20,7 @@ const URL_ORDERS_UPLOAD      = 'orders/upload/'      // URL для загруз�
 const URL_ORDERS_VALIDATE    = 'orders/validate/'    // URL для проверки заказов с диска
 const URL_ORDERS_DELETE      = 'orders/delete/'      // URL для удаления заказов
 const URL_ORDERS_ADD_AVERAGE = 'orders/add/average'  // URL для добавления прогнозной Заявки
+const URL_ORDERS_SET_LOAD_AT = 'orders/patch/load-at'  // URL для изменения даты загрузки на складе
 
 
 export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой прирендере расчетных значений
@@ -134,6 +135,20 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
 
+    // __ Сохраняем дату Загрузки
+    const patchLoadAtDate = async (id: number | null = null, load_at: string | null = null) => {
+        if (!id || !load_at) {
+            return
+        }
+        const response = await jwtPatch_(URL_ORDERS_SET_LOAD_AT, { id, load_at })
+        const result   = await response
+
+        if (DEBUG) console.log('OrdersStore: setLoadAtDate', result)
+
+        return result
+    }
+
+
     // __ Получаем с API список Типов заказов (серийная, гаррмем, прогнозная и т.д.)
     const getOrderTypes = async () => {
         const result = await jwtGet(URL_ORDERS_TYPES)
@@ -162,6 +177,8 @@ export const useOrdersStore = defineStore('orders', () => {
         validateOrders,
         deleteOrders,
         addOrdersAverage,
+
+        patchLoadAtDate,
 
         getOrderTypes,
         patchOrderTypeColor,

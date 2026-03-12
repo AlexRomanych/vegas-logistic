@@ -1,6 +1,6 @@
 <template>
     <div
-        class="mr-1 bg-blue-950 rounded-xl border-2 border-blue-600 overflow-hidden shadow-[0_0_20px_rgba(37,99,235,0.2)] flex flex-col h-[calc(100vh-190px)]">
+        class="mr-2 bg-blue-950 rounded-xl border-2 border-blue-600 overflow-hidden shadow-[0_0_20px_rgba(37,99,235,0.2)] flex flex-col h-[calc(100vh-190px)]">
 
         <div v-if="title" class="px-5 py-3 bg-blue-600 flex items-center justify-between shrink-0">
             <h3 class="text-white text-base font-black uppercase tracking-tighter">
@@ -16,13 +16,15 @@
                 class="flex items-center bg-blue-950/30 border border-blue-900 rounded-lg group hover:border-blue-400 transition-all shrink-0"
             >
                 <div class="w-48 flex-none bg-blue-900/50 px-3 py-1 border-r border-blue-800">
-                    <span class="text-blue-400 text-[11px] font-black uppercase tracking-tight group-hover:text-blue-300">
+                    <span
+                        class="text-blue-400 text-[11px] font-black uppercase tracking-tight group-hover:text-blue-300">
                         {{ item.label }}
                     </span>
                 </div>
 
-                <div class="bg-[#111c3a] flex-1 px-4 py-1">
-                    <span class="text-white text-sm font-bold tracking-wide group-hover:text-cyan-400 transition-colors">
+                <div :class="getClass(item)" class="bg-[#111c3a] flex-1 px-4 py-1" @click="handleClick(item)">
+                    <span
+                        class="select-none text-white text-sm font-bold tracking-wide group-hover:text-cyan-400 transition-colors">
                         {{ item.value || 'НЕТ ДАННЫХ' }}
                     </span>
                 </div>
@@ -31,12 +33,29 @@
 
         <div class="h-1 w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50 shrink-0"></div>
     </div>
+
+    <!-- __ Выбор даты -->
+    <AppModalAsyncDateTS
+        id="select-date"
+        ref="appModalAsyncDateTS"
+        :date="modalDate"
+        :type="modalDateType"
+    />
+
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useOrder, useId } from './../injectionKeys.ts'
-import { formatDateAndTimeInShortFormat, formatDateIntl, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import {
+    formatDateAndTimeInShortFormat,
+    formatDateIntl,
+    formatDateTime,
+    formatTimeWithLeadingZeros,
+} from '@/app/helpers/helpers_date'
+import AppModalAsyncDateTS from '@/components/ui/modals/AppModalAsyncDateTS.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 
 const order = useOrder()
@@ -61,6 +80,17 @@ interface IInfoItem {
 // defineProps<IProps>();
 
 
+const emits = defineEmits<{
+    (e: 'patch-load-at', payload: Date): void,
+}>()
+
+
+// __ Тип для модального окна Выбора даты
+const modalDateType       = ref<IColorTypes>('danger')
+const modalDate           = ref<string | null | undefined>('')
+const appModalAsyncDateTS = ref<InstanceType<typeof AppModalAsyncDateTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+
 const title      = computed(() => `${order.value?.client.short_name} №${order.value?.order_no_str}`)
 const durationKS = computed(() => {
     const start = order.value?.manager_start ? (new Date(order.value.manager_start)).getTime() : (new Date()).getTime()
@@ -72,6 +102,9 @@ const durationKB = computed(() => {
     const end   = order.value?.design_end ? (new Date(order.value.design_end)).getTime() : (new Date()).getTime()
     return formatTimeWithLeadingZeros(((end - start) / 1000))
 })
+
+
+const LOAD_AT_LABEL = 'Загрузка на складе'
 
 const items: IInfoItem[] = [
     { label: 'Клиент', value: order.value?.client.short_name },
@@ -85,14 +118,44 @@ const items: IInfoItem[] = [
     { label: 'Старт КБ', value: formatDateAndTimeInShortFormat(order.value?.design_start) },
     { label: 'Финиш КБ', value: formatDateAndTimeInShortFormat(order.value?.design_end) },
     { label: 'Длительность КБ', value: durationKB.value },
-    { label: 'Ответственный (1c)', value: order.value?.responsible ?? '' },
-    { label: 'Комментарий (1c)', value: order.value?.comment_1c ?? '' },
-    { label: 'Готовность', value: order.value?.is_forecast ? 'прогнозная' : 'раскрытая'},
-    { label: 'Период Заявки', value: formatDateIntl(order.value?.order_period, true, false)},
-    { label: 'Загрузка на складе', value: formatDateIntl(order.value?.load_at, true)},
-    { label: 'Загрузка на складе (1с)', value: formatDateIntl(order.value?.manager_load_date, true)},
-    { label: 'Разгрузка у клиена', value: order.value?.unload_at ? formatDateIntl(order.value?.unload_at, true) : ''},
+    { label: 'Ответственный (1С)', value: order.value?.responsible ?? '' },
+    { label: 'Описание', value: order.value?.description ?? '' },
+    { label: 'Комментарий (1С)', value: order.value?.comment_1c ?? '' },
+    { label: 'Готовность', value: order.value?.is_forecast ? 'прогнозная' : 'раскрытая' },
+    { label: 'Период Заявки', value: formatDateIntl(order.value?.order_period, true, false) },
+    { label: LOAD_AT_LABEL, value: formatDateIntl(order.value?.load_at, true) },
+    { label: 'Загрузка на складе (1С)', value: formatDateIntl(order.value?.manager_load_date, true) },
+    { label: 'Разгрузка у клиента', value: order.value?.unload_at ? formatDateIntl(order.value?.unload_at, true) : '' },
+    {
+        label: 'Загрузка в систему',
+        value: order.value?.created_at ? formatDateAndTimeInShortFormat(order.value?.created_at, true) : '',
+    },
+    { label: 'Код Заявки в 1С', value: order.value?.code_1c },
 ]
+
+
+const getClass = (item: IInfoItem) => {
+    switch (item.label) {
+        case LOAD_AT_LABEL:
+            return 'cursor-pointer'
+    }
+}
+
+const handleClick = async (item: IInfoItem) => {
+
+    switch (item.label) {
+
+        // __ Дата загрузки
+        case LOAD_AT_LABEL:
+            modalDate.value = order.value?.load_at
+            const answer = await appModalAsyncDateTS.value!.show()
+            if (answer) {
+                const newDate = appModalAsyncDateTS.value!.date
+                emits('patch-load-at', newDate)
+            }
+            break
+    }
+}
 
 
 </script>
@@ -153,25 +216,25 @@ const items: IInfoItem[] = [
     }
 
     /* Анимация прокрутки */
-/*    .marquee-content {
-        display: flex;
-        flex-direction: column;
-        animation: scroll v-bind(scrollDuration) linear infinite;
-    }
-
-    !* Остановка при наведении курсора *!
-    .pause-animation {
-        animation-play-state: paused;
-    }
-
-    @keyframes scroll {
-        from {
-            transform: translateY(0);
+    /*    .marquee-content {
+            display: flex;
+            flex-direction: column;
+            animation: scroll v-bind(scrollDuration) linear infinite;
         }
-        to {
-            transform: translateY(-50%); !* Смещаем ровно на половину высоты (на весь первый список) *!
+
+        !* Остановка при наведении курсора *!
+        .pause-animation {
+            animation-play-state: paused;
         }
-    }*/
+
+        @keyframes scroll {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-50%); !* Смещаем ровно на половину высоты (на весь первый список) *!
+            }
+        }*/
 
 
     .marquee-content {

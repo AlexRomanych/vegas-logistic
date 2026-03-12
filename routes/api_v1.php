@@ -94,8 +94,11 @@ Route::prefix('/orders')
         Route::delete('/delete/{id}', [OrderController::class, 'deleteOrders']);
         Route::post('/add/average', [OrderController::class, 'addOrdersAverage']);
 
+        Route::patch('/patch/load-at', [OrderController::class, 'patchLoadAtDate']);
+
         Route::get('/types', [OrderController::class, 'getOrderTypes']);
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
+
 
     });
 //hr--------------------------------------------------------------------------------------------------------------------

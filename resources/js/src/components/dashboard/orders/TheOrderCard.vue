@@ -18,7 +18,7 @@
 
         <div>
             <Suspense v-if="activeComponent">
-                <component :is="activeComponent" />
+                <component :is="activeComponent" @patch-load-at="patchLoadAt"/>
                 <template #fallback>
                     <div>Загрузка компонента {{ activeTabName }}...</div>
                 </template>
@@ -26,6 +26,16 @@
             <div v-else>Выберите вкладку для отображения содержимого.</div>
         </div>
     </div>
+
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        ok-word="Понятно"
+    />
+
 </template>
 
 <script setup lang="ts">
@@ -33,7 +43,7 @@
 import { onMounted, ref, watch, shallowRef, provide, computed } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
-import type { IRenderOrder } from '@/types'
+import type { IColorTypes, IRenderOrder } from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore'
 import { useSewingStore } from '@/stores/SewingStore'
@@ -46,6 +56,9 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import { formatDateTime } from '@/app/helpers/helpers_date'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
 interface ITab {
@@ -154,25 +167,47 @@ const setActiveTab = (tab: ITab) => {
     }
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Ошибки                         !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// // __ Подготавливаем к рендеру
-// const prepareDotToRender = (dot: IDotCard | null): IDotCard | null => {
-//     if (!dot) return null
-//
-//     // Добавляем поле collapsed для рендера шаблонов вывоза
-//     dot.dots_logistic = dot.dots_logistic.map((item: IDotLogistic) => ({ ...item, collapsed: true }))
-//     return dot
-// }
-//
-// // __ Получаем данные по точке
-// const getDot = async () => {
-//     const tempDot = await CRUDStore.getEntityById('dots', parseInt(dotId.value)) as IDotCard
-//     dot.value     = prepareDotToRender(tempDot)
-// }
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
 
 
-// const providedData = computed(() => ({ order: order.value, id: paramId.value } as IProvidedData))
-// provide('providedData', computed(() => providedData.value))
+// __ Устанавливаем новую дату отгрузки
+const patchLoadAt = async (newDate: Date) => {
+    const result = await ordersStore.patchLoadAtDate(order.value?.id, formatDateTime(newDate))
+    if (checkCRUD(result)) {
+
+    } else {
+        await showError()
+        return
+    }
+
+    const dateStr = formatDateTime(newDate)
+    console.log('date: ', dateStr)
+}
+
 
 provide(OrderKey, computed(() => order.value))
 provide(IdKey, computed(() => paramId.value))

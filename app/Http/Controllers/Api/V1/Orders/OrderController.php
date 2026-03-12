@@ -529,7 +529,33 @@ class OrderController extends Controller
 
             $validated = $validated['data'];
 
-            OrderType::query()->findOrFail($validated['id'])->update(['color' => $validated['color']]);
+            OrderType::query()
+                ->findOrFail($validated['id'])
+                ->update(['color' => $validated['color']]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Устанавливаем дату загрузки на складе
+     * @param Request $request
+     * @return string
+     */
+    public function patchLoadAtDate(Request $request)
+    {
+        try {
+            $all = $request->all();
+            $validated = $request->validate([
+                'id'      => 'required|integer|exists:orders,id',
+                'load_at' => 'required|date|date_format:Y-m-d H:i:s',
+            ]);
+
+            $order = Order::query()
+                ->findOrFail($validated['id'])
+                ->update(['load_at' => Carbon::parse($validated['load_at'])]);
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {

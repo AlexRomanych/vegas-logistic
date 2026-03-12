@@ -17,6 +17,7 @@ export interface IRenderOrder {
     client_name_1c: string
     order_no_str: string
     no_1c: string
+    code_1c: string
     order_type: IRenderOrderType
     amounts: IRenderOrderAmounts
 
@@ -36,6 +37,7 @@ export interface IRenderOrder {
 
     unload_at: string | null
     load_at: string | null
+    created_at: string | null
 
     order_period: string
     responsible: string | null

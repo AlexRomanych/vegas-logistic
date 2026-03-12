@@ -21,9 +21,18 @@ class Order extends Model
 
     protected $casts
         = [
-            'amounts' => 'json',
+            'amounts'           => 'json',
+            'order_no_num'      => 'float',
+            'created_at'        => 'datetime',
+            'unload_at'         => 'datetime',
+            'load_at'           => 'datetime',
+            'manager_load_date' => 'datetime',
+            'manager_start'     => 'datetime',
+            'manager_end'       => 'datetime',
+            'design_start'      => 'datetime',
+            'design_end'        => 'datetime',
+
             // 'amounts' => 'array',
-            'order_no_num' => 'float',
         ];
 
     protected $appends = ['elements_type_render'];

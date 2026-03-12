@@ -1,8 +1,7 @@
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="showModal"
-                 class="dark-container">
+            <div v-if="showModal" class="dark-container">
 
                 <div :class="[width, height, borderColor, 'modal-container']">
 
@@ -60,7 +59,7 @@
 
 <script setup>
 
-import { computed, ref, watch, } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { colorsList } from '@/app/constants/colorsClasses.js'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
@@ -68,39 +67,39 @@ import { getColorClassByType } from '@/app/helpers/helpers.js'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
 const props = defineProps({
-    width:  {
-        type:     String,
+    width: {
+        type: String,
         required: false,
-        default:  'min-w-[500px]',
+        default: 'min-w-[500px]',
     },
     height: {
-        type:     String,
+        type: String,
         required: false,
-        default:  'min-h-[300px]',
+        default: 'min-h-[300px]',
     },
-    type:   {
-        type:      String,
-        required:  false,
-        default:   'primary',
-        validator: (type) => colorsList.includes(type)
+    type: {
+        type: String,
+        required: false,
+        default: 'primary',
+        validator: (type) => colorsList.includes(type),
     },
-    text:   {
-        type:      [String, Array],
-        required:  false,
-        default:   'This is a Modal Window. Type text here',
-        validator: (text) => Array.isArray(text) || typeof text === 'string'
+    text: {
+        type: [String, Array],
+        required: false,
+        default: 'This is a Modal Window. Type text here',
+        validator: (text) => Array.isArray(text) || typeof text === 'string',
     },
-    mode:   {
-        type:      String,
-        required:  false,
-        default:   'inform',
-        validator: (mode) => ['inform', 'confirm'].includes(mode)
+    mode: {
+        type: String,
+        required: false,
+        default: 'inform',
+        validator: (mode) => ['inform', 'confirm'].includes(mode),
     },
     okWord: {
-        type:     String,
+        type: String,
         required: false,
-        default:  'Закрыть'
-    }
+        default: 'Закрыть',
+    },
 
 })
 
@@ -110,7 +109,7 @@ const getDisplayText = (text) => Array.isArray(text) ? text : [text]
 let displayTextArray = ref(getDisplayText(props.text))
 
 const showModal = ref(false)           // реактивность видимости модального окна
-const showText  = ref(props.text)              // реактивность текста сообщения в модальном окне
+const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
 
 let resolvePromise
 const show = () => {
@@ -124,7 +123,7 @@ const select = (value) => {
     if (resolvePromise) {
         resolvePromise(value)
         showModal.value = false
-        resolvePromise  = null
+        resolvePromise = null
     }
 }
 
@@ -143,40 +142,40 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 <style scoped>
 
-.dark-container {
-    @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
-}
+    .dark-container {
+        @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
+    }
 
-.modal-container {
-    @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8
-}
+    .modal-container {
+        @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8
+    }
 
-.close-cross-container {
-    @apply flex justify-end w-full h-full
-}
+    .close-cross-container {
+        @apply flex justify-end w-full h-full
+    }
 
-.text-container {
-    @apply flex items-end
-}
+    .text-container {
+        @apply flex items-end
+    }
 
-.text-data {
-    @apply border-2 border-slate-800 w-full h-full text-white
-}
+    .text-data {
+        @apply border-2 border-slate-800 w-full h-full text-white
+    }
 
-.close-button-container {
-    @apply w-full h-full flex justify-end
-}
+    .close-button-container {
+        @apply w-full h-full flex justify-end
+    }
 
-/* Состояние появления и исчезновения */
-.modal-enter-active,
-.modal-leave-active {
-    transition: all 0.5s ease;
-}
+    /* Состояние появления и исчезновения */
+    .modal-enter-active,
+    .modal-leave-active {
+        transition: all 0.5s ease;
+    }
 
-/* Стартовое состояние при появлении / Финальное при исчезновении */
-.modal-enter-from,
-.modal-leave-to {
-    opacity: 0;
-    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
-}
+    /* Стартовое состояние при появлении / Финальное при исчезновении */
+    .modal-enter-from,
+    .modal-leave-to {
+        opacity: 0;
+        transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
+    }
 </style>

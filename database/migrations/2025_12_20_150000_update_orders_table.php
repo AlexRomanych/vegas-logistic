@@ -3,6 +3,7 @@
 use App\Models\Client;
 use App\Models\Order\OrderType;
 use App\Models\Plan\PlanLoad;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -139,6 +140,13 @@ return new class extends Migration {
             $table->jsonb('meta_ext')->nullable()->comment('Расширенные метаданные');
 
             $table->timestamps();
+
+            // Relations: Связь с Учетной записью (Кто загружал Заявку)
+            $table->foreignIdFor(User::class)
+                ->nullable()
+                ->comment('Пользователь, кто загружал Заявку')
+                ->constrained()
+                ->nullOnDelete();
 
             // Relations: Связь с клиентом
             $table->foreignIdFor(Client::class)
