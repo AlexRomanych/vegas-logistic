@@ -22,7 +22,7 @@
                     </span>
                 </div>
 
-                <div :class="getClass(item)" class="bg-[#111c3a] flex-1 px-4 py-1" @click="handleClick(item)">
+                <div :class="getClass(item)" class="bg-[#111c3a] flex-1 px-4 py-1" @dblclick="handleClick(item)">
                     <span
                         class="select-none text-white text-sm font-bold tracking-wide group-hover:text-cyan-400 transition-colors">
                         {{ item.value || 'НЕТ ДАННЫХ' }}
@@ -42,27 +42,31 @@
         :type="modalDateType"
     />
 
+    <!-- __ Выбор текста -->
+    <AppModalAsyncTextTS
+        ref="appModalAsyncTextTS"
+        :text="modalText"
+        :title="modalTitle"
+    />
+
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useOrder, useId } from './../injectionKeys.ts'
+import { computed, ref, /*inject, watch*/ } from 'vue'
+import type { IRenderOrder, IColorTypes } from '@/types'
+
+// import { useOrder, useId } from './../injectionKeys.ts'
+
 import {
     formatDateAndTimeInShortFormat,
     formatDateIntl,
-    formatDateTime,
     formatTimeWithLeadingZeros,
+    // formatDateTime,
 } from '@/app/helpers/helpers_date'
+
 import AppModalAsyncDateTS from '@/components/ui/modals/AppModalAsyncDateTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-
-
-const order = useOrder()
-const id    = useId()
-
-console.log('order: ', order?.value)
-console.log('id: ', id.value)
+import AppModalAsyncTextTS from '@/components/ui/modals/AppModalAsyncTextTS.vue'
+// import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 interface IInfoItem {
@@ -70,18 +74,21 @@ interface IInfoItem {
     value: string | number | null | undefined;
 }
 
-//
-// interface IProps {
-//     title?: string;
-//     subtitle?: string;
-//     items: IInfoItem[];
-// }
-//
-// defineProps<IProps>();
+
+interface IProps {
+    order: IRenderOrder
+    id: number
+}
+
+const props = defineProps<IProps>()
+
+// const order = useOrder()
+// const id    = useId()
 
 
 const emits = defineEmits<{
     (e: 'patch-load-at', payload: Date): void,
+    (e: 'patch-description', payload: string): void,
 }>()
 
 
@@ -90,68 +97,99 @@ const modalDateType       = ref<IColorTypes>('danger')
 const modalDate           = ref<string | null | undefined>('')
 const appModalAsyncDateTS = ref<InstanceType<typeof AppModalAsyncDateTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
+// __ Тип для модального окна Выбора текста
+// const modalTextType       = ref<IColorTypes>('danger')
+const modalText           = ref<string | null>('')
+const modalTitle          = ref<string | undefined >('')
+const appModalAsyncTextTS = ref<InstanceType<typeof AppModalAsyncTextTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
-const title      = computed(() => `${order.value?.client.short_name} №${order.value?.order_no_str}`)
+
+const title      = computed(() => `${props.order.client.short_name} №${props.order.order_no_str}`)
 const durationKS = computed(() => {
-    const start = order.value?.manager_start ? (new Date(order.value.manager_start)).getTime() : (new Date()).getTime()
-    const end   = order.value?.manager_end ? (new Date(order.value.manager_end)).getTime() : (new Date()).getTime()
+    if (!props.order.manager_start || !props.order.manager_end) {
+        return 0
+    }
+    const start = props.order.manager_start ? (new Date(props.order.manager_start)).getTime() : (new Date()).getTime()
+    const end   = props.order.manager_end ? (new Date(props.order.manager_end)).getTime() : (new Date()).getTime()
     return formatTimeWithLeadingZeros(((end - start) / 1000))
 })
 const durationKB = computed(() => {
-    const start = order.value?.design_start ? (new Date(order.value.design_start)).getTime() : (new Date()).getTime()
-    const end   = order.value?.design_end ? (new Date(order.value.design_end)).getTime() : (new Date()).getTime()
+    if (!props.order.design_start || !props.order.design_end) {
+        return 0
+    }
+    const start = props.order.design_start ? (new Date(props.order.design_start)).getTime() : (new Date()).getTime()
+    const end   = props.order.design_end ? (new Date(props.order.design_end)).getTime() : (new Date()).getTime()
     return formatTimeWithLeadingZeros(((end - start) / 1000))
 })
 
 
-const LOAD_AT_LABEL = 'Загрузка на складе'
+const LOAD_AT_LABEL     = 'Загрузка на складе'
+const DESCRIPTION_LABEL = 'Описание'
 
-const items: IInfoItem[] = [
-    { label: 'Клиент', value: order.value?.client.short_name },
-    { label: 'Номер', value: order.value?.order_no_str },
-    { label: 'Тип изделий', value: order.value?.elements_type_render },
-    { label: 'Тип заявки', value: order.value?.order_type.display_name },
-    { label: 'Количество изделий', value: order.value?.amounts.totals.toString() },
-    { label: 'Старт КС', value: formatDateAndTimeInShortFormat(order.value?.manager_start) },
-    { label: 'Финиш КС', value: formatDateAndTimeInShortFormat(order.value?.manager_end) },
-    { label: 'Длительность КС', value: durationKS.value },
-    { label: 'Старт КБ', value: formatDateAndTimeInShortFormat(order.value?.design_start) },
-    { label: 'Финиш КБ', value: formatDateAndTimeInShortFormat(order.value?.design_end) },
-    { label: 'Длительность КБ', value: durationKB.value },
-    { label: 'Ответственный (1С)', value: order.value?.responsible ?? '' },
-    { label: 'Описание', value: order.value?.description ?? '' },
-    { label: 'Комментарий (1С)', value: order.value?.comment_1c ?? '' },
-    { label: 'Готовность', value: order.value?.is_forecast ? 'прогнозная' : 'раскрытая' },
-    { label: 'Период Заявки', value: formatDateIntl(order.value?.order_period, true, false) },
-    { label: LOAD_AT_LABEL, value: formatDateIntl(order.value?.load_at, true) },
-    { label: 'Загрузка на складе (1С)', value: formatDateIntl(order.value?.manager_load_date, true) },
-    { label: 'Разгрузка у клиента', value: order.value?.unload_at ? formatDateIntl(order.value?.unload_at, true) : '' },
-    {
-        label: 'Загрузка в систему',
-        value: order.value?.created_at ? formatDateAndTimeInShortFormat(order.value?.created_at, true) : '',
-    },
-    { label: 'Код Заявки в 1С', value: order.value?.code_1c },
-]
+const items = computed<IInfoItem[]>(() => [
+        { label: 'Клиент', value: props.order.client.short_name },
+        { label: 'Номер', value: props.order.order_no_str },
+        { label: 'Тип изделий', value: props.order.elements_type_render },
+        { label: 'Тип заявки', value: props.order.order_type.display_name },
+        { label: 'Количество изделий', value: props.order.amounts.totals.toString() },
+        { label: 'Старт КС', value: formatDateAndTimeInShortFormat(props.order.manager_start) },
+        { label: 'Финиш КС', value: formatDateAndTimeInShortFormat(props.order.manager_end) },
+        { label: 'Длительность КС', value: durationKS.value },
+        { label: 'Старт КБ', value: formatDateAndTimeInShortFormat(props.order.design_start) },
+        { label: 'Финиш КБ', value: formatDateAndTimeInShortFormat(props.order.design_end) },
+        { label: 'Длительность КБ', value: durationKB.value },
+        { label: 'Ответственный (1С)', value: props.order.responsible ?? '' },
+        { label: DESCRIPTION_LABEL, value: props.order.description ?? '' },
+        { label: 'Комментарий (1С)', value: props.order.comment_1c ?? '' },
+        { label: 'Готовность', value: props.order.is_forecast ? 'прогнозная' : 'раскрытая' },
+        { label: 'Период Заявки', value: formatDateIntl(props.order.order_period, true, false) },
+        { label: LOAD_AT_LABEL, value: formatDateIntl(props.order.load_at, true) },
+        { label: 'Загрузка на складе (1С)', value: formatDateIntl(props.order.manager_load_date, true) },
+        { label: 'Разгрузка у клиента', value: props.order.unload_at ? formatDateIntl(props.order.unload_at, true) : '' },
+        {
+            label: 'Загрузка в систему',
+            value: props.order.created_at ? formatDateAndTimeInShortFormat(props.order.created_at, true) : '',
+        },
+        { label: 'Код Заявки в 1С', value: props.order.code_1c },
+    ],
+)
 
-
+// __ Получаем класс, если элемент редактируемый
 const getClass = (item: IInfoItem) => {
-    switch (item.label) {
-        case LOAD_AT_LABEL:
-            return 'cursor-pointer'
+    if ([LOAD_AT_LABEL, DESCRIPTION_LABEL].includes(item.label)) {
+        return 'cursor-pointer truncate'
     }
+    return ''
 }
 
+// __ Обрабатываем клик по информационному полю
 const handleClick = async (item: IInfoItem) => {
-
+    let answer
     switch (item.label) {
 
         // __ Дата загрузки
         case LOAD_AT_LABEL:
-            modalDate.value = order.value?.load_at
-            const answer = await appModalAsyncDateTS.value!.show()
+            modalDate.value = props.order.load_at
+
+            answer = await appModalAsyncDateTS.value!.show()
             if (answer) {
                 const newDate = appModalAsyncDateTS.value!.date
                 emits('patch-load-at', newDate)
+            }
+            break
+
+        // __ Описание
+        case DESCRIPTION_LABEL:
+            modalText.value  = props.order.description || ''
+            modalTitle.value = 'Изменение/добавление комментария'
+
+            answer = await appModalAsyncTextTS.value!.show()
+            if (answer) {
+                const newText = appModalAsyncTextTS.value!.text
+                if (newText === modalText.value) {
+                    return
+                }
+                emits('patch-description', newText)
             }
             break
     }

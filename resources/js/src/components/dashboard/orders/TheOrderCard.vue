@@ -13,12 +13,18 @@
             />
         </div>
 
-        <!-- __ Разделялка -->
+        <!-- __ Разделительная линия -->
         <TheDividerLineTS />
 
         <div>
             <Suspense v-if="activeComponent">
-                <component :is="activeComponent" @patch-load-at="patchLoadAt"/>
+                <component :is="activeComponent"
+                           :order="order"
+                           :id="paramId"
+                           @patch-load-at="patchLoadAt"
+                           @patch-description="patchDescription"
+
+                />
                 <template #fallback>
                     <div>Загрузка компонента {{ activeTabName }}...</div>
                 </template>
@@ -40,25 +46,26 @@
 
 <script setup lang="ts">
 
-import { onMounted, ref, watch, shallowRef, provide, computed } from 'vue'
+import { onMounted, ref, shallowRef /* provide, computed, watch */ } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 import type { IColorTypes, IRenderOrder } from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore'
-import { useSewingStore } from '@/stores/SewingStore'
+// import { useSewingStore } from '@/stores/SewingStore'
 
-import { OrderKey, IdKey } from './order_components/order_card/injectionKeys'
+import { formatDateTime } from '@/app/helpers/helpers_date'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
+// import { OrderKey, IdKey } from './order_components/order_card/injectionKeys'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
+
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
-import { formatDateTime } from '@/app/helpers/helpers_date'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
 interface ITab {
@@ -70,17 +77,12 @@ interface ITab {
     width: string
 }
 
-export type IProvidedData = {
-    order: IRenderOrder
-    id: number
-}
-
 
 const route  = useRoute()
 const router = useRouter()                 // Определяем роутер
 
 const ordersStore = useOrdersStore()
-const sewingStore = useSewingStore()
+// const sewingStore = useSewingStore()
 
 
 // __ Тут путь к папке с динамическими компонентами
@@ -198,21 +200,35 @@ async function showError(error: string | string[] | null = null) {
 const patchLoadAt = async (newDate: Date) => {
     const result = await ordersStore.patchLoadAtDate(order.value?.id, formatDateTime(newDate))
     if (checkCRUD(result)) {
-
+        if (order.value) {
+            order.value.load_at = formatDateTime(newDate)
+        }
     } else {
         await showError()
         return
     }
-
-    const dateStr = formatDateTime(newDate)
-    console.log('date: ', dateStr)
 }
 
 
-provide(OrderKey, computed(() => order.value))
-provide(IdKey, computed(() => paramId.value))
+// __ Устанавливаем/редактируем Описание
+const patchDescription = async (newText: string) => {
+    const result = await ordersStore.patchDescription(order.value?.id, newText)
+    if (checkCRUD(result)) {
+        if (order.value) {
+            order.value.description = newText.trim() !== '' ? newText.trim() : undefined
+        }
+    } else {
+        await showError()
+        return
+    }
+}
 
-// __ Запускаем сразу валидацию формы
+// provide(OrderKey, computed(() => order.value))
+// provide(IdKey, computed(() => paramId.value))
+// provide('test', computed(() => order))
+
+
+// __ Подготавливаем данные
 onMounted(async () => {
     isLoading.value      = true
     const loadingService = useLoading()
@@ -238,7 +254,6 @@ onMounted(async () => {
     }
 
     isLoading.value = false
-
 })
 
 </script>

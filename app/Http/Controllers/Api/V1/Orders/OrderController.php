@@ -547,7 +547,7 @@ class OrderController extends Controller
     public function patchLoadAtDate(Request $request)
     {
         try {
-            $all = $request->all();
+            $all       = $request->all();
             $validated = $request->validate([
                 'id'      => 'required|integer|exists:orders,id',
                 'load_at' => 'required|date|date_format:Y-m-d H:i:s',
@@ -556,6 +556,32 @@ class OrderController extends Controller
             $order = Order::query()
                 ->findOrFail($validated['id'])
                 ->update(['load_at' => Carbon::parse($validated['load_at'])]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Устанавливаем Описание Заявки
+     * @param Request $request
+     * @return string
+     */
+    public function patchDescription(Request $request)
+    {
+        try {
+            $all       = $request->all();
+            $validated = $request->validate([
+                'id'          => 'required|integer|exists:orders,id',
+                'description' => 'present|nullable|string',
+            ]);
+
+            $description = trim($validated['description']) === '' ? null : trim($validated['description']);
+
+            $order = Order::query()
+                ->findOrFail($validated['id'])
+                ->update(['description' => $description]);
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {

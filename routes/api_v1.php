@@ -95,6 +95,7 @@ Route::prefix('/orders')
         Route::post('/add/average', [OrderController::class, 'addOrdersAverage']);
 
         Route::patch('/patch/load-at', [OrderController::class, 'patchLoadAtDate']);
+        Route::patch('/patch/description', [OrderController::class, 'patchDescription']);
 
         Route::get('/types', [OrderController::class, 'getOrderTypes']);
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
