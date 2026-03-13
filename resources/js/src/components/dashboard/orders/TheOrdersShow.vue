@@ -214,7 +214,7 @@
                     <!-- __ Дата загрузки на складе Вегас -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.loadAt" />
 
-                    <!-- __ Дата разагрузки на складе клиента -->
+                    <!-- __ Дата разгрузки на складе клиента -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt" />
 
                     <!-- __ Комментарий из 1С -->

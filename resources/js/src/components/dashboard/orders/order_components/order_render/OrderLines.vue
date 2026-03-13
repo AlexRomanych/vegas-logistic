@@ -26,70 +26,31 @@
             <!--<AppLabelTSWrapper :render-object="render.collapsed" header @click="toggleCollapsed"/>-->
 
             <!-- __ Тип изделия -->
-            <AppLabelTSWrapper :render-object="render.modelType" header/>
+            <AppLabelTSWrapper :render-object="render.modelType" header />
 
             <!-- __ Размер -->
-            <AppLabelTSWrapper :render-object="render.modelSize" header/>
+            <AppLabelTSWrapper :render-object="render.modelSize" header />
 
             <!-- __ Название Модели -->
-            <AppLabelTSWrapper :render-object="render.modelName" header/>
+            <AppLabelTSWrapper :render-object="render.modelName" header />
 
             <!-- __ Количество -->
-            <AppLabelTSWrapper :render-object="render.modelAmount" header/>
+            <AppLabelTSWrapper :render-object="render.modelAmount" header />
 
             <!-- __ Состава изделия -->
-            <AppLabelTSWrapper :render-object="render.composition" header/>
+            <AppLabelTSWrapper :render-object="render.composition" header />
 
             <!-- __ Примечание 1 -->
-            <AppLabelTSWrapper :render-object="render.describe_1" header/>
+            <AppLabelTSWrapper :render-object="render.describe_1" header />
 
             <!-- __ Примечание 2 -->
-            <AppLabelTSWrapper :render-object="render.describe_2" header/>
+            <AppLabelTSWrapper :render-object="render.describe_2" header />
 
             <!-- __ Примечание 3 -->
-            <AppLabelTSWrapper :render-object="render.describe_3" header/>
+            <AppLabelTSWrapper :render-object="render.describe_3" header />
 
-            <!--&lt;!&ndash; __ Тип Отходов &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.wasterType" header/>-->
-
-            <!--&lt;!&ndash; __ Тип Загрузки контейнера &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.loadType" header/>-->
-
-            <!--&lt;!&ndash; __ Объем контейнера &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.tankVolume" header/>-->
-
-            <!--&lt;!&ndash; __ Active &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.active" header/>-->
-
-            <!--&lt;!&ndash; __ Количество контейнеров &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.tanksAmount" header/>-->
-
-            <!--&lt;!&ndash; __ График(и) &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.routes" header/>-->
-
-            <!--&lt;!&ndash; __ Частота (периодичность) вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalFrequency" header/>-->
-
-            <!--&lt;!&ndash; __ Актуальность периода вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalRemovalActive" header/>-->
-
-            <!--&lt;!&ndash; __ Начало вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalRemovalStart" header/>-->
-
-            <!--&lt;!&ndash; __ Окончание вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalRemovalEnd" header/>-->
-
-            <!--&lt;!&ndash; __ Актуальность паузы вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalPauseActive" header/>-->
-
-            <!--&lt;!&ndash; __ Начало приостановки вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalPauseStart" header/>-->
-
-            <!--&lt;!&ndash; __ Окончание приостановки вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalPauseEnd" header/>-->
-
-            <!--&lt;!&ndash; __ Месячная логика вывоза (Active) &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :render-object="render.generalMonthLogicActive" header/>-->
+            <!-- __ Кнопка удалить -->
+            <AppLabelTSWrapper :render-object="render.deleteButton" header />
 
         </div>
     </div>
@@ -121,323 +82,247 @@
             <!--<AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed" @click="render.collapsed.click!(orderLine)"/>-->
 
             <!-- __ Тип изделия -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelType"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelType" />
 
             <!-- __ Размер -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelSize"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelSize" />
 
             <!-- __ Название -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelName"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelName" />
 
             <!-- __ Количество -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelAmount"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelAmount" />
 
             <!-- __ Состава изделия -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.composition"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.composition" />
 
             <!-- __ Примечание 1 -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_1"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_1" />
 
             <!-- __ Примечание 2 -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_2"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_2" />
 
             <!-- __ Примечание 3 -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_3"/>
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_3" />
 
-
-            <!--&lt;!&ndash; __ Тип Отходов &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.wasterType"/>-->
-
-            <!--&lt;!&ndash; __ Тип Загрузки контейнера &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.loadType"/>-->
-
-            <!--&lt;!&ndash; __ Объем контейнера &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.tankVolume"/>-->
-
-            <!--&lt;!&ndash; __ Active &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.active"/>-->
-
-            <!--&lt;!&ndash; __ Количество контейнеров &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.tanksAmount"/>-->
-
-            <!--&lt;!&ndash; __ График(и) &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.routes"/>-->
-
-            <!--&lt;!&ndash; __ Частота (периодичность) вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.generalFrequency"/>-->
-
-            <!--&lt;!&ndash; __ Актуальность периода вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.generalRemovalActive"/>-->
-
-            <!--&lt;!&ndash; __ Начало Вывоза &ndash;&gt;-->
-            <!--<AppInputDateTS-->
-            <!--    v-if="render.generalRemovalStart.show"-->
-            <!--    :id="render.generalRemovalStart.id ? render.generalRemovalStart.id(dotLogistic) : ''"-->
-            <!--    v-model="dotLogistic.removal.removal_start"-->
-            <!--    :clearable="true"-->
-            <!--    :disabled="!canEdit || !dotLogistic.removal.removal_active"-->
-            <!--    :width="render.generalRemovalStart.width"-->
-            <!--    class="input-date"-->
-            <!--/>-->
-
-            <!--&lt;!&ndash; __ Окончание вывоза &ndash;&gt;-->
-            <!--<AppInputDateTS-->
-            <!--    v-if="render.generalRemovalEnd.show"-->
-            <!--    :id="render.generalRemovalEnd.id ? render.generalRemovalEnd.id(dotLogistic) : ''"-->
-            <!--    v-model="dotLogistic.removal.removal_end"-->
-            <!--    :clearable="true"-->
-            <!--    :disabled="!canEdit || !dotLogistic.removal.removal_active"-->
-            <!--    :width="render.generalRemovalEnd.width"-->
-            <!--    class="input-date"-->
-            <!--/>-->
-
-            <!--&lt;!&ndash; __ Актуальность паузы вывоза &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.generalRemovalActive"/>-->
-
-            <!--&lt;!&ndash; __ Начало приостановки вывоза &ndash;&gt;-->
-            <!--<AppInputDateTS-->
-            <!--    v-if="render.generalPauseStart.show"-->
-            <!--    :id="render.generalPauseStart.id ? render.generalPauseStart.id(dotLogistic) : ''"-->
-            <!--    v-model="dotLogistic.removal.removal_pause_start"-->
-            <!--    :clearable="true"-->
-            <!--    :disabled="!canEdit || !dotLogistic.removal.removal_pause_active"-->
-            <!--    :width="render.generalPauseStart.width"-->
-            <!--    class="input-date"-->
-            <!--/>-->
-
-            <!--&lt;!&ndash; __ Окончание приостановки вывоза &ndash;&gt;-->
-            <!--<AppInputDateTS-->
-            <!--    v-if="render.generalPauseEnd.show"-->
-            <!--    :id="render.generalPauseEnd.id ? render.generalPauseEnd.id(dotLogistic) : ''"-->
-            <!--    v-model="dotLogistic.removal.removal_pause_end"-->
-            <!--    :clearable="true"-->
-            <!--    :disabled="!canEdit || !dotLogistic.removal.removal_pause_active"-->
-            <!--    :width="render.generalPauseEnd.width"-->
-            <!--    class="input-date"-->
-            <!--/>-->
-
-            <!--&lt;!&ndash; __ Месячная логика вывоза (Active) &ndash;&gt;-->
-            <!--<AppLabelTSWrapper :arg="dotLogistic" :render-object="render.generalMonthLogicActive"/>-->
+            <!-- __ Кнопка удалить -->
+            <AppLabelTSWrapper
+                :arg="orderLine"
+                :render-object="render.deleteButton"
+                @click="emits('deleteLine', orderLine.id)"
+            />
 
         </div>
-
 
     </div>
 
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, /*ref,*/ computed } from 'vue'
 
 import type { IRenderData, IRenderOrderLine } from '@/types'
 
-// import { useClientsStore } from '@/stores/ClientsStore.ts'
+// import { formatDateIntl } from '@/app/helpers/helpers_date.js'
+// import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
 
-import { formatDateIntl } from '@/app/helpers/helpers_date.js'
-
-import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface IProps {
     orderLines: IRenderOrderLine[]
+    showCollapsed?: boolean
+    showDelete?: boolean
 }
-const props = defineProps<IProps>()
+
+const props = withDefaults(defineProps<IProps>(), {
+    showCollapsed: true,
+    showDelete:    false,
+})
+
+const emits = defineEmits<{
+    (e: 'deleteLine', id: number): void
+}>()
 
 // __ Определяем переменные
-// const getDotLogisticRender = (dotLogistic: IDotLogistic[]) => dotLogistic.map((dotLogisticEntity: IDotLogistic) => ({ ...dotLogisticEntity, collapsed: true }))
-// const dotLogisticRender = ref<IDotLogistic[]>(getDotLogisticRender(props.dotsLogistic))
-const orderLinesRender = ref<IRenderOrderLine[]>(props.orderLines)
+const orderLinesRender = computed<IRenderOrderLine[]>(() => props.orderLines)
 
 
 // __ Возможность редактирования
 // TODO: Реализовать через систему ролей
-const canEdit = ref(false)
+// const canEdit = ref(false)
 
 
 // __ Объект отображения данных
-const DEFAULT_WIDTH = 'w-[100px]'
-const DEFAULT_WIDTH_DATE = 'w-[140px]'
-const DEFAULT_HEIGHT = 'h-[30px]'
-// const DEFAULT_FREQUENCY_TEMPLATE_HEIGHT = DEFAULT_HEIGHT
-// const DEFAULT_FREQUENCY_TEMPLATE_HEIGHT = 'h-[20px]'
-// const WIDTH = 'w-[300px]'
-const HEADER_TYPE = 'indigo'
-// const HEADER_TYPE_FREQUENCY_TEMPLATE = 'indigo'
-const DATA_TYPE = 'primary'
-// const DATA_TYPE_FREQUENCY_TEMPLATE = 'stone'
-const DEFAULT_TYPE = 'dark'
-const HEADER_TEXT_SIZE = 'micro'
-const DATA_TEXT_SIZE = 'micro'
-const HEADER_ALIGN = 'center'
-const DATA_ALIGN_DEFAULT = 'center'
-const DATA_ALIGN = 'left'
-// const COORDINATES_PRECISION = 7
+// const DEFAULT_WIDTH      = 'w-[100px]'
+// const DEFAULT_WIDTH_DATE = 'w-[140px]'
+const DEFAULT_HEIGHT     = 'h-[30px]'
+const HEADER_TYPE        = 'indigo'
+const DATA_TYPE          = 'primary'
+const DEFAULT_TYPE       = 'dark'
+const HEADER_TEXT_SIZE   = 'micro'
+const DATA_TEXT_SIZE     = 'micro'
+const HEADER_ALIGN       = 'center'
+// const DATA_ALIGN_DEFAULT = 'center'
+const DATA_ALIGN         = 'left'
 
 
 const render: IRenderData = reactive({
     collapsed: {
-        header: '▲',
-        width: 'w-[30px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => 'warning',
-        dataType: () => DATA_TYPE,
-        type: () => 'warning',
+        header:         '▲',
+        width:          'w-[30px]',
+        height:         DEFAULT_HEIGHT,
+        show:           props.showCollapsed,
+        headerType:     () => 'warning',
+        dataType:       () => DATA_TYPE,
+        type:           () => 'warning',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: HEADER_ALIGN,
-        dataAlign: 'center',
-        data: (orderLine: IRenderOrderLine) => '▲',
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        data:           (/*orderLine: IRenderOrderLine*/) => '▲',
         // data: (orderLine: IRenderOrderLine) => orderLine.collapsed ? '▲' : '▼',
         // data: (dotLogistic: IDotLogistic) => console.log(dotLogistic),
-        click: (orderLine: IRenderOrderLine) => console.log(orderLine)
+        click: (orderLine: IRenderOrderLine) => console.log(orderLine),
         // click: (orderLine: IRenderOrderLine) => dotLogistic.collapsed = !dotLogistic.collapsed
         // click: (dotLogistic: IDotLogistic) => console.log(dotLogistic)
     },
 
 
-    modelType: {
-        header: 'Тип изделия',
-        width: 'w-[110px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    modelType:   {
+        header:         'Тип изделия',
+        width:          'w-[110px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: 'center',
-        data: (orderLine: IRenderOrderLine) => orderLine.model.model_type
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      'center',
+        data:           (orderLine: IRenderOrderLine) => orderLine.model.model_type,
     },
-    modelSize: {
-        header: 'Размер',
-        width: 'w-[80px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    modelSize:   {
+        header:         'Размер',
+        width:          'w-[80px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: 'center',
-        data: (orderLine: IRenderOrderLine) => orderLine.size
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      'center',
+        data:           (orderLine: IRenderOrderLine) => orderLine.size,
     },
-    modelName: {
-        header: 'Модель',
-        width: 'w-[200px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    modelName:   {
+        header:         'Модель',
+        width:          'w-[200px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN,
-        data: (orderLine: IRenderOrderLine) => orderLine.model.name_report
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      DATA_ALIGN,
+        data:           (orderLine: IRenderOrderLine) => orderLine.model.name_report,
     },
     modelAmount: {
-        header: 'Кол-во',
-        width: 'w-[50px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+        header:         'Кол-во',
+        width:          'w-[50px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: 'center',
-        data: (orderLine: IRenderOrderLine) => orderLine.amount.toString()
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      'center',
+        data:           (orderLine: IRenderOrderLine) => orderLine.amount.toString(),
     },
     composition: {
-        header: 'Комментарий',
-        width: 'w-[248px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+        header:         'Комментарий',
+        width:          'w-[248px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN,
-        data: (orderLine: IRenderOrderLine) => orderLine.composition
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      DATA_ALIGN,
+        data:           (orderLine: IRenderOrderLine) => orderLine.composition,
     },
-    describe_1: {
-        header: 'Примечание 1',
-        width: 'w-[174px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    describe_1:  {
+        header:         'Примечание 1',
+        width:          'w-[174px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN,
-        data: (orderLine: IRenderOrderLine) => orderLine.describe_1
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      DATA_ALIGN,
+        data:           (orderLine: IRenderOrderLine) => orderLine.describe_1,
     },
-    describe_2: {
-        header: 'Примечание 2',
-        width: 'w-[175px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    describe_2:  {
+        header:         'Примечание 2',
+        width:          'w-[175px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN,
-        data: (orderLine: IRenderOrderLine) => orderLine.describe_2
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      DATA_ALIGN,
+        data:           (orderLine: IRenderOrderLine) => orderLine.describe_2,
     },
-    describe_3: {
-        header: 'Примечание 3',
-        width: 'w-[175px]',
-        height: DEFAULT_HEIGHT,
-        show: true,
-        headerType: () => HEADER_TYPE,
-        dataType: () => DATA_TYPE,
-        type: () => DEFAULT_TYPE,
+    describe_3:  {
+        header:         'Примечание 3',
+        width:          'w-[175px]',
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize: DATA_TEXT_SIZE,
-        headerAlign: 'center',
-        dataAlign: DATA_ALIGN,
-        data: (orderLine: IRenderOrderLine) => orderLine.describe_3
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      DATA_ALIGN,
+        data:           (orderLine: IRenderOrderLine) => orderLine.describe_3,
     },
-
-
-    // __ Начало вывоза
-    // generalRemovalStart: {
-    //     id: (dotLogistic: IDotLogistic) => 'general-removal-start-' + dotLogistic.id.toString(),
-    //     header: 'Начало вывоза',
-    //     width: DEFAULT_WIDTH_DATE,
-    //     height: DEFAULT_HEIGHT,
-    //     show: true,
-    //     headerType: () => HEADER_TYPE,
-    //     dataType: () => DATA_TYPE,
-    //     type: () => DEFAULT_TYPE,
-    //     headerTextSize: HEADER_TEXT_SIZE,
-    //     dataTextSize: DATA_TEXT_SIZE,
-    //     headerAlign: HEADER_ALIGN,
-    //     dataAlign: 'center',
-    //     data: (dotLogistic: IDotLogistic) => formatDateIntl(dotLogistic.removal.removal_start)
-    // },
-
+    deleteButton:  {
+        header:         '🗑️',
+        width:          'w-[40px]',
+        height:         DEFAULT_HEIGHT,
+        show:           props.showDelete,
+        headerType:     () => 'orange',
+        dataType:       () => DATA_TYPE,
+        type:           () => 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    'center',
+        dataAlign:      'center',
+        data:           (/*orderLine: IRenderOrderLine*/) => '🗑️',
+    },
 })
-
-
 
 </script>
 
 <style scoped>
-/*@reference "@css/app.css";*/
+    /*@reference "@css/app.css";*/
 
-.input-date {
-    @apply mr-0.5 ml-0.5 mt-[2px]
-}
+/*    .input-date {
+        @apply mr-0.5 ml-0.5 mt-[2px]
+    }*/
 </style>

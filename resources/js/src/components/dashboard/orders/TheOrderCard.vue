@@ -5,11 +5,12 @@
                 v-for="tab in tabs"
                 :key="tab.name"
                 :text="tab.displayName"
-                :type="activeTabName === tab.name ? 'success' : 'dark'"
+                :type="activeTabName === tab.name ? 'indigo' : 'dark'"
                 :width="tab.width"
                 align="center"
                 @click="setActiveTab(tab)"
                 rounded="4"
+                class="shadow"
             />
         </div>
 
@@ -21,8 +22,7 @@
                 <component :is="activeComponent"
                            :order="order"
                            :id="paramId"
-                           @patch-load-at="patchLoadAt"
-                           @patch-description="patchDescription"
+                           v-on="dynamicEvents"
 
                 />
                 <template #fallback>
@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 
-import { onMounted, ref, shallowRef /* provide, computed, watch */ } from 'vue'
+import { onMounted, ref, shallowRef, computed /* provide, watch */ } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 import type { IColorTypes, IRenderOrder } from '@/types'
@@ -75,6 +75,7 @@ interface ITab {
     icon: string
     active: boolean // Это поле можно удалить, activeTabName будет управлять активностью
     width: string
+    color: string
 }
 
 
@@ -94,7 +95,15 @@ const isLoading = ref(false)
 const paramId   = ref<number>(-1)
 
 // __ Определяем массив вкладок
-const TAB_WIDTH    = 'w-[150px]'
+const TAB_NAME_COMMON  = 'Общие'
+const TAB_NAME_CONTEXT = 'Содержимое'
+const TAB_NAME_SEWING  = 'Пошив'
+
+
+const TAB_WIDTH             = 'w-[150px]'
+const DEFAULT_ACTIVE_COLOR  = '#1A2F6F'
+const DEFAULT_PASSIVE_COLOR = '#111C3A'
+
 const tabs: ITab[] = [
     {
         name:        'Общие',
@@ -103,14 +112,16 @@ const tabs: ITab[] = [
         icon:        '✨',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Содержимое',
+        name:        TAB_NAME_CONTEXT,
         displayName: ['Содержимое', 'Заявки'],
         component:   'Context',
         icon:        '✨',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
     {
         name:        'Закрой',
@@ -119,14 +130,16 @@ const tabs: ITab[] = [
         icon:        '🚀',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Пошив',
+        name:        TAB_NAME_SEWING,
         displayName: ['СЗ:', 'Пошив'],
         component:   'Sewing',
         icon:        '🚀',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
     {
         name:        'Сборка',
@@ -135,6 +148,7 @@ const tabs: ITab[] = [
         icon:        '💡',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
     {
         name:        'ПБ',
@@ -143,6 +157,7 @@ const tabs: ITab[] = [
         icon:        '💡',
         active:      false,
         width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
     },
 ]
 
@@ -223,9 +238,71 @@ const patchDescription = async (newText: string) => {
     }
 }
 
+// __ Удаляем линию контекста в Заявке
+const deleteOrderLine = async (orderLineId: number) => {
+    console.log('orderLineId: ', orderLineId)
+
+    // __ Находим строку
+    const orderLine = order.value?.lines.find(line => line.id === orderLineId)
+    if (!orderLine) {
+        return
+    }
+
+    modalInfoText.value = [
+        'Строка:',
+        `${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
+        'будет удалена.',
+        'Продолжить?',
+    ]
+
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+
+    const answer = await appModalAsyncMultiline.value!.show()
+    if (answer) {
+        // const result = await ordersStore.deleteOrderLine(orderLineId)
+        order.value!.lines = order.value!.lines.filter(line => line.id !== orderLineId)
+
+        // if (checkCRUD(result)) {
+        //     if (order.value) {
+        //         order.value.lines = order.value.lines.filter(line => line.id !== orderLineId)
+        //     }
+        // } else {
+        //     await showError()
+        //     return
+        // }
+    }
+
+}
+
 // provide(OrderKey, computed(() => order.value))
 // provide(IdKey, computed(() => paramId.value))
 // provide('test', computed(() => order))
+
+// __ Определяем динамически нужные события на нужных компонентах
+const dynamicEvents = computed(() => {
+    const events: any = {}
+
+    // __ Вешаем событие только если активный компонент предполагает такую логику
+    // __ Можно проверять по имени компонента или по активной вкладке
+    if (activeTabName.value === TAB_NAME_COMMON) {
+        events['patch-load-at']     = patchLoadAt
+        events['patch-description'] = patchDescription
+        return events
+    }
+
+    if (activeTabName.value === TAB_NAME_CONTEXT) {
+        events['delete-line'] = deleteOrderLine
+        return events
+    }
+
+
+    if (activeTabName.value === 'Sewing') {
+
+    }
+
+    return events
+})
 
 
 // __ Подготавливаем данные
@@ -259,5 +336,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
+    .shadow {
+        @apply shadow-[0_0_15px_rgba(79,70,229,0.4)];
+    }
 </style>

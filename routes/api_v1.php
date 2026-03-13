@@ -91,8 +91,10 @@ Route::prefix('/orders')
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
         Route::post('/upload', [OrderController::class, 'uploadOrders']);
         Route::post('/validate', [OrderController::class, 'validateOrders']);
-        Route::delete('/delete/{id}', [OrderController::class, 'deleteOrders']);
         Route::post('/add/average', [OrderController::class, 'addOrdersAverage']);
+
+        Route::delete('/delete/{id}', [OrderController::class, 'deleteOrders']);
+        Route::delete('/line/delete/{id}', [OrderController::class, 'deleteOrderLine']);
 
         Route::patch('/patch/load-at', [OrderController::class, 'patchLoadAtDate']);
         Route::patch('/patch/description', [OrderController::class, 'patchDescription']);

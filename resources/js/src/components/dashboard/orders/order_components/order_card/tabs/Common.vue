@@ -105,6 +105,7 @@ const appModalAsyncTextTS = ref<InstanceType<typeof AppModalAsyncTextTS> | null>
 
 
 const title      = computed(() => `${props.order.client.short_name} №${props.order.order_no_str}`)
+
 const durationKS = computed(() => {
     if (!props.order.manager_start || !props.order.manager_end) {
         return 0
@@ -113,6 +114,7 @@ const durationKS = computed(() => {
     const end   = props.order.manager_end ? (new Date(props.order.manager_end)).getTime() : (new Date()).getTime()
     return formatTimeWithLeadingZeros(((end - start) / 1000))
 })
+
 const durationKB = computed(() => {
     if (!props.order.design_start || !props.order.design_end) {
         return 0
@@ -121,6 +123,8 @@ const durationKB = computed(() => {
     const end   = props.order.design_end ? (new Date(props.order.design_end)).getTime() : (new Date()).getTime()
     return formatTimeWithLeadingZeros(((end - start) / 1000))
 })
+
+const totalAmount = computed(() => props.order.lines.reduce((acc, line) => acc + line.amount, 0))
 
 
 const LOAD_AT_LABEL     = 'Загрузка на складе'
@@ -131,7 +135,7 @@ const items = computed<IInfoItem[]>(() => [
         { label: 'Номер', value: props.order.order_no_str },
         { label: 'Тип изделий', value: props.order.elements_type_render },
         { label: 'Тип заявки', value: props.order.order_type.display_name },
-        { label: 'Количество изделий', value: props.order.amounts.totals.toString() },
+        { label: 'Количество изделий', value: `${totalAmount.value} шт.` },
         { label: 'Старт КС', value: formatDateAndTimeInShortFormat(props.order.manager_start) },
         { label: 'Финиш КС', value: formatDateAndTimeInShortFormat(props.order.manager_end) },
         { label: 'Длительность КС', value: durationKS.value },

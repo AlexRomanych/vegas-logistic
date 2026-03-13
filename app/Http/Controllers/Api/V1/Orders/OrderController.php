@@ -470,6 +470,39 @@ class OrderController extends Controller
     }
 
 
+
+    /**
+     * ___ Удаляем Заявку
+     * @param string $id
+     * @return string
+     * @throws Throwable
+     */
+    public function deleteOrderLine(string $id)
+    {
+        try {
+            $validated = Validator::make([
+                'id' => $id,
+            ], [
+                'id' => 'required|numeric|exists:order_lines,id',
+            ])->validate();
+
+            // $data = $validated['id'];
+
+            $order = OrderLine::query()->findOrFail($validated['id']);
+            $order->deleteOrFail();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * __ Добавляем прогнозную Заявку
+     * @param Request $request
+     * @return string
+     */
     public function addOrdersAverage(Request $request)
     {
         try {

@@ -19,6 +19,7 @@ const URL_ORDERS_TYPES_COLOR_UPDATE = 'orders/types/color/patch' // URL для �
 const URL_ORDERS_UPLOAD          = 'orders/upload/'             // URL для загрузки заказов с диска
 const URL_ORDERS_VALIDATE        = 'orders/validate/'           // URL для проверки заказов с диска
 const URL_ORDERS_DELETE          = 'orders/delete/'             // URL для удаления заказов
+const URL_ORDERS_LINE_DELETE     = 'orders/line/delete/'        // URL для удаления линии контекста в заказе
 const URL_ORDERS_ADD_AVERAGE     = 'orders/add/average'         // URL для добавления прогнозной Заявки
 const URL_ORDERS_SET_LOAD_AT     = 'orders/patch/load-at'       // URL для изменения даты загрузки на складе
 const URL_ORDERS_SET_DESCRIPTION = 'orders/patch/description'   // URL для изменения описания Заявки
@@ -136,6 +137,20 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
 
+    // __ Удаляем линию контекста в Заявке
+    const deleteOrderLine = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+
+        const res = await jwtDelete(URL_ORDERS_LINE_DELETE + id)
+        if (DEBUG) console.log('OrdersStore: deleteOrderLine: ', res)
+        return res.data
+    }
+
+
+
+
     // __ Сохраняем дату Загрузки
     const patchLoadAtDate = async (id: number | null = null, load_at: string | null = null) => {
         if (!id || !load_at) {
@@ -190,6 +205,7 @@ export const useOrdersStore = defineStore('orders', () => {
         uploadOrders,
         validateOrders,
         deleteOrders,
+        deleteOrderLine,
         addOrdersAverage,
 
         patchLoadAtDate,
