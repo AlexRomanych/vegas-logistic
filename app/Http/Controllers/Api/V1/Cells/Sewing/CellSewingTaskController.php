@@ -11,6 +11,7 @@ use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
 use App\Services\DefaultsService;
+use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
 // use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class CellSewingTaskController extends Controller
@@ -62,7 +64,7 @@ class CellSewingTaskController extends Controller
 
 
             // !!!!!!!!!!!!!!!!!!!!!
-            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ TODO: Тут, если есть невыполенные задания за предыдущие дни,
             // !!! __ То автоматом переносить на следующий день
             // !!! __ Отдельная функция
             // !!!!!!!!!!!!!!!!!!!!!
@@ -75,9 +77,83 @@ class CellSewingTaskController extends Controller
     }
 
 
+    // ___ Получаем СЗ на Пошив
+    public function getSewingTasksByOrderId(string $orderId)
+    {
+        try {
+            $validated = Validator::make([
+                'id' => $orderId
+            ], [
+                'id' => 'required|exists:orders,id'
+            ])
+                ->validate();
+
+            $sewingTasks = SewingTask::query()
+                ->where('order_id', $validated['id'])
+                ->with([
+                    // 'order.client',
+                    // 'order.orderType',
+                    'sewingLines.orderLine.model.cover',
+                    'sewingLines.orderLine.model.base',
+                    'statuses',
+                ])
+                // ->with(['sewingLines', 'sewingLines.orderLine','sewingLines.orderLine.model','sewingLines.orderLine.model.cover', 'statuses'])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return SewingTaskResource::collection($sewingTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    // ___ Добавляем СЗ на Пошив
+    public function addSewingTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            SewingService::createSewingTaskFromOrderId($validated['id']);
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно создано');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    // ___ Удаляем СЗ на Пошив
+    public function deleteSewingTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            SewingTask::query()
+                ->where('order_id', $validated['id'])
+                ->delete();
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
     /**
-     * __ Получаем СЗ на Пошив по статусам
-     * @param  Request  $request
+     * ___ Получаем СЗ на Пошив по статусам
+     * @param Request $request
      * @return AnonymousResourceCollection|string
      */
     public function getSewingTasksByStatus(Request $request)
@@ -126,7 +202,7 @@ class CellSewingTaskController extends Controller
 
     /**
      * __ Получаем СЗ на Пошив по статусам до определенной даты
-     * @param  Request  $request
+     * @param Request $request
      * @return AnonymousResourceCollection|string
      */
     public function getSewingTasksByStatusBeforeDate(Request $request)
@@ -193,10 +269,10 @@ class CellSewingTaskController extends Controller
                 usort($diffs, function ($a, $b) {
                     // Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                     $priorities = fn($type) => match ($type) {
-                        'ADDED'   => 1,
+                        'ADDED' => 1,
                         'UPDATED' => 2,
                         'DELETED' => 3,
-                        default   => 4,
+                        default => 4,
                     };
 
                     return $priorities($a['type']) <=> $priorities($b['type']);
@@ -280,10 +356,10 @@ class CellSewingTaskController extends Controller
 
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
-                                'ADDED'   => 1,
+                                'ADDED' => 1,
                                 'UPDATED' => 2,
                                 'DELETED' => 3,
-                                default   => 4,
+                                default => 4,
                             };
 
                             return $priorities($a['type']) <=> $priorities($b['type']);
@@ -367,7 +443,7 @@ class CellSewingTaskController extends Controller
 
     /**
      * ___ Массовое обновление СЗ
-     * @param  array  $rows
+     * @param array $rows
      * @return void
      * @throws Throwable
      */
@@ -411,12 +487,12 @@ class CellSewingTaskController extends Controller
             $finalParams = [];
 
             if (!empty($casesActionAt)) {
-                $setParts[]  = "action_at = CASE ".implode(' ', $casesActionAt)." ELSE action_at END";
+                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
                 $finalParams = array_merge($finalParams, $paramsActionAt);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[]  = "position = CASE ".implode(' ', $casesPosition)." ELSE position END";
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -425,7 +501,7 @@ class CellSewingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql               = "UPDATE {$table} SET ".implode(', ', $setParts)." WHERE id IN ({$wherePlaceholders})";
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
@@ -436,7 +512,7 @@ class CellSewingTaskController extends Controller
 
     /**
      * ___ Массовое обновление Записей через один запрос (Raw SQL Case)
-     * @param  array  $rows
+     * @param array $rows
      * @return void
      * @throws Throwable
      */
@@ -490,12 +566,12 @@ class CellSewingTaskController extends Controller
             $finalParams = [];
 
             if (!empty($casesAmount)) {
-                $setParts[]  = "amount = CASE ".implode(' ', $casesAmount)." ELSE amount END";
+                $setParts[]  = "amount = CASE " . implode(' ', $casesAmount) . " ELSE amount END";
                 $finalParams = array_merge($finalParams, $paramsAmount);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[]  = "position = CASE ".implode(' ', $casesPosition)." ELSE position END";
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -509,7 +585,7 @@ class CellSewingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql               = "UPDATE {$table} SET ".implode(', ', $setParts)." WHERE id IN ({$wherePlaceholders})";
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
@@ -520,7 +596,7 @@ class CellSewingTaskController extends Controller
 
     /**
      * ___ Устанавливает комментарий к Сменному Заданию
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function setSewingTaskComment(Request $request)
@@ -533,7 +609,7 @@ class CellSewingTaskController extends Controller
 
             $sewingTask = SewingTask::query()->find($validated['id']);
             if (!$sewingTask) {
-                throw new Exception('Missing sewing task with id: '.$validated['id'].'.');
+                throw new Exception('Missing sewing task with id: ' . $validated['id'] . '.');
             }
 
             $sewingTask->comment = $validated['comment'];
@@ -563,7 +639,7 @@ class CellSewingTaskController extends Controller
 
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
-                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                    throw new Exception('Missing sewing task line with id: ' . $id . '.');
                 }
 
                 $line->finished_at = now();
@@ -595,18 +671,18 @@ class CellSewingTaskController extends Controller
 
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
-                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                    throw new Exception('Missing sewing task line with id: ' . $id . '.');
                 }
 
-                $line->false_at        = now();
-                $line->false_reason    = $validated['reason'];
+                $line->false_at     = now();
+                $line->false_reason = $validated['reason'];
 
                 $history = $line->false_history;
                 if (is_null($history)) {
                     $history = [];
                 }
 
-                $history[] = [
+                $history[]           = [
                     'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
                     'by'     => auth()->id(),
                     'reason' => $validated['reason'],
@@ -639,7 +715,7 @@ class CellSewingTaskController extends Controller
 
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
-                    throw new Exception('Missing sewing task line with id: '.$id.'.');
+                    throw new Exception('Missing sewing task line with id: ' . $id . '.');
                 }
 
                 $line->finished_at  = null;
@@ -658,7 +734,7 @@ class CellSewingTaskController extends Controller
 
     /**
      * Возвращает массив уникальных id заказов
-     * @param  mixed  $data
+     * @param mixed $data
      * @return array
      */
     private function getUniqueOrdersIds(mixed $data): array

@@ -119,6 +119,7 @@ Route::prefix('sewing')
 
         // __ СЗ Пошива
         Route::get('tasks', [CellSewingTaskController::class, 'getSewingTasks']);
+        Route::get('tasks/order/{id}', [CellSewingTaskController::class, 'getSewingTasksByOrderId']);
         Route::get('tasks/status', [CellSewingTaskController::class, 'getSewingTasksByStatus']);
         Route::get('tasks/status/date/before', [CellSewingTaskController::class, 'getSewingTasksByStatusBeforeDate']);
         Route::post('tasks/update', [CellSewingTaskController::class, 'updateSewingTasks']);
@@ -126,6 +127,10 @@ Route::prefix('sewing')
         Route::post('tasks/line/done', [CellSewingTaskController::class, 'setSewingTaskLinesDone']);
         Route::post('tasks/line/false', [CellSewingTaskController::class, 'setSewingTaskLinesFalse']);
         Route::post('tasks/line/reset', [CellSewingTaskController::class, 'setSewingTaskLinesReset']);
+        Route::post('tasks/add/order', [CellSewingTaskController::class, 'addSewingTasksByOrderId']);
+        Route::delete('tasks/delete/order', [CellSewingTaskController::class, 'deleteSewingTasksByOrderId']);
+
+
 
         // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
@@ -138,7 +143,7 @@ Route::prefix('sewing')
         Route::get('operation/schemas/{id}', [CellSewingOperationSchemaController::class, 'getSewingOperationSchema']);
         Route::post('operation/schemas/create', [CellSewingOperationSchemaController::class, 'createSewingOperationSchema']);
         Route::put('operation/schemas/update', [CellSewingOperationSchemaController::class, 'updateSewingOperationSchema']);
-        Route::post('operation/schemas/delete', [CellSewingOperationSchemaController::class, 'deleteSewingOperationFromSchema']);
+        Route::delete('operation/schemas/delete', [CellSewingOperationSchemaController::class, 'deleteSewingOperationFromSchema']);
         Route::post('operation/schemas/add', [CellSewingOperationSchemaController::class, 'addSewingOperationToSchema']);
 
         // __ Модели + Типовые операции пошива

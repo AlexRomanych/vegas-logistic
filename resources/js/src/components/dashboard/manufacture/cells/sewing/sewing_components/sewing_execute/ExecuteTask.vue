@@ -9,22 +9,25 @@
         />
 
         <!-- __ id -->
-        <AppLabelTSWrapper :render-object="render.id"/>
+        <AppLabelTSWrapper :render-object="render.id" />
 
         <!-- __ position -->
-        <AppLabelTSWrapper :render-object="render.position"/>
+        <AppLabelTSWrapper :render-object="render.position" />
 
         <!-- __ Клиент -->
-        <AppLabelTSWrapper :render-object="render.client"/>
+        <AppLabelTSWrapper :render-object="render.client" />
 
         <!-- __ № Заявки -->
-        <AppLabelTSWrapper :render-object="render.order_no"/>
+        <AppLabelTSWrapper :render-object="render.order_no" />
 
         <!-- __ Статус  -->
-        <AppLabelTSWrapper :render-object="render.status"/>
+        <AppLabelTSWrapper :render-object="render.status" />
 
         <!-- __ Дата загрузки  -->
-        <AppLabelTSWrapper :render-object="render.load_at"/>
+        <AppLabelTSWrapper :render-object="render.load_at" />
+
+        <!-- __ Action_at  -->
+        <AppLabelTSWrapper :render-object="render.action_at" />
 
         <!-- __ Прогресс общий -->
         <AppProgressBar
@@ -37,7 +40,7 @@
         <!--<AppLabelTSWrapper :render-object="render.progressTotal"/>-->
 
         <!-- __ Комментарий  -->
-        <AppLabelTSWrapper :render-object="render.comment"/>
+        <AppLabelTSWrapper :render-object="render.comment" />
 
     </div>
 
@@ -80,6 +83,12 @@
         :order-line="orderLine"
     />
 
+    <!-- __ Модальное окно для изменения/добавления комментария к СЗ -->
+    <!--<CommentEdit-->
+    <!--    ref="commentEdit"-->
+    <!--    :comment="comment"-->
+    <!--    label="Комментарий к Сменному Заданию"-->
+    <!--/>-->
 
 </template>
 
@@ -89,7 +98,7 @@ import { computed, reactive, ref } from 'vue'
 import type { IRenderData, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
 
 import {
-    getExecuteTaskStatustics, getSewingTaskAmountAndTime, getTaskStatusById
+    getExecuteTaskStatustics, getSewingTaskAmountAndTime, getTaskStatusById,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -103,6 +112,7 @@ import ExecuteTaskTotals
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskTotals.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
+// import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
@@ -110,14 +120,25 @@ import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewin
 interface IProps {
     sewingTask: ISewingTask
     fieldsWidth: Record<string, string>
+    clientShow?: boolean
+    orderInfo?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    clientShow: true,
+    orderInfo: true,
+})
 
 
 // __ Тип для модального окна информации о записи в Заявке
 const orderLine     = ref<ISewingTaskOrderLine | null>(null)
-const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)
+
+
+// __ Тип для модального окна изменения Комментария
+// const comment = ref('')
+// const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
+
 
 
 // __ Объект отображения данных
@@ -165,14 +186,14 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍id...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.id.toString()
+        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.id.toString(),
     },
     position:      {
         id:             () => 'position-search',
         header:         ['', ''],
         width:          props.fieldsWidth.position,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -189,7 +210,7 @@ const render: IRenderData = reactive({
         header:         ['', ''],
         width:          props.fieldsWidth.client,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.clientShow,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -206,7 +227,7 @@ const render: IRenderData = reactive({
         header:         ['', ''],
         width:          props.fieldsWidth.order_no,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -239,11 +260,28 @@ const render: IRenderData = reactive({
         },
     },
     load_at:       {
-        id:             () => 'progress-total-search',
+        id:             () => 'load-at-search',
         header:         ['', ''],
         width:          props.fieldsWidth.load_at,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        color:          () => color.value,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍 Дата загрузки...',
+        data:           (/*sewingTask: ISewingTask*/) => formatDateInFullFormat(props.sewingTask.order.load_at, true, false),
+    },
+    action_at:       {
+        id:             () => 'action-at-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.load_at,
+        height:         DEFAULT_HEIGHT,
+        show:           !props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -253,7 +291,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Прогресс...',
-        data:           (/*sewingTask: ISewingTask*/) => formatDateInFullFormat(props.sewingTask.order.load_at, true, false)
+        data:           (/*sewingTask: ISewingTask*/) => formatDateInFullFormat(props.sewingTask.action_at, true, false),
     },
     progressTotal: {
         id:             () => 'progress-total-search',
@@ -287,7 +325,7 @@ const render: IRenderData = reactive({
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Комментарий...',
         data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.comment ?? '',
-        class:          'truncate'
+        class:          'truncate',
     },
 
 })

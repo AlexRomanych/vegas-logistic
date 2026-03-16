@@ -3,31 +3,34 @@
     <div class="flex">
 
         <!-- __ Collapsed -->
-        <AppLabelTSWrapper :render-object="render.collapsed"/>
+        <AppLabelTSWrapper :render-object="render.collapsed" />
 
         <!-- __ id -->
-        <AppLabelTSWrapper :render-object="render.id"/>
+        <AppLabelTSWrapper :render-object="render.id" />
 
         <!-- __ position -->
-        <AppLabelTSWrapper :render-object="render.position"/>
+        <AppLabelTSWrapper :render-object="render.position" />
 
         <!-- __ Клиент -->
-        <AppLabelTSWrapper :render-object="render.client"/>
+        <AppLabelTSWrapper :render-object="render.client" />
 
         <!-- __ № Заявки -->
-        <AppLabelTSWrapper :render-object="render.order_no"/>
+        <AppLabelTSWrapper :render-object="render.order_no" />
 
         <!-- __ Статус  -->
-        <AppLabelTSWrapper :render-object="render.status"/>
+        <AppLabelTSWrapper :render-object="render.status" />
 
         <!-- __ Дата загрузки  -->
-        <AppLabelTSWrapper :render-object="render.load_at"/>
+        <AppLabelTSWrapper :render-object="render.load_at" />
+
+        <!-- __ Action_at  -->
+        <AppLabelTSWrapper :render-object="render.action_at" />
 
         <!-- __ Прогресс общий -->
-        <AppLabelTSWrapper :render-object="render.progressTotal"/>
+        <AppLabelTSWrapper :render-object="render.progressTotal" />
 
         <!-- __ Комментарий  -->
-        <AppLabelTSWrapper :render-object="render.comment"/>
+        <AppLabelTSWrapper :render-object="render.comment" />
 
     </div>
 
@@ -42,9 +45,14 @@ import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/componen
 
 interface IProps {
     fieldsWidth: Record<string, string>
+    clientShow?: boolean
+    orderInfo?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    clientShow: true,
+    orderInfo:  true,
+})
 
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[30px]'
@@ -92,14 +100,14 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍id...',
-        data:           (/*sewingTask: ISewingTask*/) => 'ID'
+        data:           (/*sewingTask: ISewingTask*/) => 'ID',
     },
     position:      {
         id:             () => 'position-search',
         header:         ['', ''],
         width:          props.fieldsWidth.position,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -115,7 +123,7 @@ const render: IRenderData = reactive({
         header:         ['', ''],
         width:          props.fieldsWidth.client,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.clientShow,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -131,7 +139,7 @@ const render: IRenderData = reactive({
         header:         ['', ''],
         width:          props.fieldsWidth.order_no,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -156,14 +164,14 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Статус'
+        data:           (/*sewingTask: ISewingTask*/) => 'Статус',
     },
     load_at:       {
-        id:             () => 'progress-total-search',
+        id:             () => 'load-at-search',
         header:         ['', ''],
         width:          props.fieldsWidth.load_at,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           props.orderInfo,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -172,7 +180,23 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Дата загрузки'
+        data:           (/*sewingTask: ISewingTask*/) => 'Дата загрузки',
+    },
+    action_at:       {
+        id:             () => 'action-at-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.load_at,
+        height:         DEFAULT_HEIGHT,
+        show:           !props.orderInfo,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      DATA_ALIGN,
+        placeholder:    '🔍Дата...',
+        data:           (/*sewingTask: ISewingTask*/) => 'Дата выполнения',
     },
     progressTotal: {
         id:             () => 'progress-total-search',
