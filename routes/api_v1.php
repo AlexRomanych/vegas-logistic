@@ -83,11 +83,14 @@ Route::prefix('/materials')
 //         Route::get('/{id}', [OrderController::class, 'getOrderById']);
 //     });
 
+Route::get('/orders/types/fill', [OrderController::class, 'fillOrderTypes']);
+
 Route::prefix('/orders')
     ->middleware('jwt.auth')
     ->group(function () {
+
+        //Route::get('/types/fill', [OrderController::class, 'fillOrderTypes']);
         Route::get('/types', [OrderController::class, 'getOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
-        Route::get('/types_/fill', [OrderController::class, 'fillOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
 
         Route::get('/', [OrderController::class, 'getOrders']);
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
