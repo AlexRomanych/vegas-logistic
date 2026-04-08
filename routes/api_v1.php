@@ -86,6 +86,7 @@ Route::prefix('/materials')
 Route::prefix('/orders')
     ->middleware('jwt.auth')
     ->group(function () {
+        Route::get('/types', [OrderController::class, 'getOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
 
         Route::get('/', [OrderController::class, 'getOrders']);
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
@@ -99,7 +100,7 @@ Route::prefix('/orders')
         Route::patch('/patch/load-at', [OrderController::class, 'patchLoadAtDate']);
         Route::patch('/patch/description', [OrderController::class, 'patchDescription']);
 
-        Route::get('/types', [OrderController::class, 'getOrderTypes']);
+
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
 
 

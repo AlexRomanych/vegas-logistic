@@ -696,6 +696,9 @@ final class OrdersService
 
         }
 
+        // __ Обновляем список моделей, потому что кэш ничего не знает про созданную модель
+        ModelsService::getModels();
+
         // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
         // __  Устанавливаем Тип - Прогнозная Заявка
         $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);

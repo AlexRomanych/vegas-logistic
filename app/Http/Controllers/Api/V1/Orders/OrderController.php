@@ -156,16 +156,26 @@ class OrderController extends Controller
             // __ Если нужно добавить клиента, то добавляем
             if ($order['client_id'] === 0 &&
                 $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_CLIENT_ADD) {
-                $createdClient = Client::query()->create([
-                    'name'       => $order['client_full_name'],
-                    'short_name' => $order['client_full_name'],
-                    CODE_1C      => $order['client_code'],
-                ]);
 
-                if (!$createdClient) {
-                    throw new Exception('Creating client with 1c code = ' . $order['client_code'] . ' failed');
+                // __ Устанавливаем последовательность для клиента (это на всякий случай, при миграции в первый раз возникает конфликт)
+                setSequence('clients');
+
+                // __ Пробуем найти клиента по коду 1С (Ситуация, когда в списке загружаемых заявок есть несколько
+                // __ заявок с одинаковым клиентом, который отсутствует еще в базе, а мы уже раз внесли его
+                $verifyClient = Client::query()->where(CODE_1C, $order['client_code'])->first();
+
+                if (!$verifyClient) {
+                    $createdClient = Client::query()->create([
+                        'name'       => $order['client_full_name'],
+                        'short_name' => $order['client_full_name'],
+                        CODE_1C      => $order['client_code'],
+                    ]);
+
+                    if (!$createdClient) {
+                        throw new Exception('Creating client with 1c code = ' . $order['client_code'] . ' failed');
+                    }
+                    continue;
                 }
-                continue;
             }
 
             // __ Пробуем найти клиента

@@ -125,6 +125,16 @@ final class SewingTimeLabor
             $workModel = ModelsService::getElementByNameOrCode1C($model);
         }
 
+        // __ Если модель не найдена, то ищем ее в БД
+        if (!$workModel) {
+            $workModel = Model::query()
+                ->with(['modelType', 'cover', 'base', 'sewingSchema.operations', 'sewingOperations'])
+                ->first();
+
+            //$a = 0;
+        }
+
+
         /** @noinspection PhpUndefinedFieldInspection */
         $this->modelCode1C = $workModel->code_1c;
         return $workModel;
