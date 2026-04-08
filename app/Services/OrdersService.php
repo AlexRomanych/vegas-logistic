@@ -57,12 +57,11 @@ final class OrdersService
 
         // __ Проходим по всем Заявкам
         foreach ($orders as &$order) {
-
             // __ Получаем Тип изделий в Заявках
-            $elementsTypeData        = [];
+            $elementsTypeData = [];
             $elementsTypeDataPercent = [];
-            $elementsType            = self::getOrderElementsTypeFromFront($order, $elementsTypeData, $elementsTypeDataPercent);
-            $elementsTypeRef         = self::getOrderElementsTypeReference($elementsType);
+            $elementsType = self::getOrderElementsTypeFromFront($order, $elementsTypeData, $elementsTypeDataPercent);
+            $elementsTypeRef = self::getOrderElementsTypeReference($elementsType);
 
             // __ Проверяем на то, что все изделия в Заявке - чехлы (то есть, !!! 100% - это чехлы)
             // __ Считаем общее количество изделий в Заявке
@@ -83,21 +82,19 @@ final class OrdersService
 
             // __ Если не нашли клиента по ID или code_1c
             if (!$client) {
-
                 // __ Действие зависит от того, какого типа заявка
                 if (self::isOrderUndefinedType($elementsTypeRef)) {
                     if (self::isOrderCoversType($elementsType)) {  // Если референсный тип Не определен, но есть Чехлы - предлагаем добавить клиента
-                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
                         $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
                         $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                     } else {
-                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
                         $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_IGNORE;
                         $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Пропустить Заявку. Возможно это не матрасы или аксессуары.';
                     }
-
                 } else {
-                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе.';
+                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе.';
                     $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
                     $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                 }
@@ -107,16 +104,13 @@ final class OrdersService
             } else { // __ Если нашли клиента
 
                 $order['client_full_name'] = $client->short_name;          // Перезаписываем имя клиента из БД
-                $order['client_id']        = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
+                $order['client_id'] = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
 
                 if (self::isOrderCoversType($elementsType)) {
-
-                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Изделия в Заявке - Чехлы.';
+                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Изделия в Заявке - Чехлы.';
                     $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                     $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Загружать эту заявку не нужно. СЗ с Чехлами будут созданы автоматически';
-
                 } else {
-
                     // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
                     // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
                     // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
@@ -136,23 +130,18 @@ final class OrdersService
 
                     // __ Если нашли Заявку с таким номером в БД
                     if ($existOrder) {
-
                         // __ Записываем id Заявки
                         $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = $existOrder->id;
 
                         // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
                         if (self::isOrderAverageType($existOrder, $elementsType)) {
-
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Прогнозная Заявка с таким номером уже есть в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Прогнозная Заявка с таким номером уже есть в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_UPDATE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
-
                         } else {
-
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером уже есть в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером уже есть в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
-
                         }
                     } else {  // __ Если не нашли Заявку с таким номером в БД
 
@@ -161,23 +150,16 @@ final class OrdersService
 
                         if (self::isOrderMattressesType($elementsType)
                             || self::isOrderAccessoriesType($elementsType)) {
-
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_ADD;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить заявку в базу.';
-
                         } else {
-
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
-
                         }
-
                     }
-
                 }
-
             }
 
             // __ Проходим по всем позициям в Заявке
@@ -185,12 +167,12 @@ final class OrdersService
             foreach ($order['items'] as &$orderLine) {
                 $model = ModelsService::getModelByCode1C($orderLine['c']);
                 if (!$model) {
-                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Модель не найдена в базе.';
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Модель не найдена в базе.';
                     $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_MODEL_IGNORE;
                     $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново. Код Модели из 1С = ' . $orderLine['c'];
-                    $isAllModelsExist                                    = false;
+                    $isAllModelsExist = false;
                 } else {
-                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD]  = self::CHECK_PASS;
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = self::CHECK_PASS;
                     $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_NONE;
                     $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = '';
                 }
@@ -198,18 +180,18 @@ final class OrdersService
 
             // __ Если не все модели найдены
             if (!$isAllModelsExist && $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] !== 'Пропустить Заявку. Возможно это не матрасы или аксессуары.') {
-                $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Есть неизвестные модели.';
+                $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Есть неизвестные модели.';
                 $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                 $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново.';
             }
-
         }
 
         // __ Ищем дубликаты
         $acc = [];
         foreach ($orders as $index => $dubOrder) {
-
-            if ($dubOrder['client_id'] === 0) continue;
+            if ($dubOrder['client_id'] === 0) {
+                continue;
+            }
 
             $elementsType = self::getOrderElementsTypeFromFront($dubOrder);
             // $elementsTypeRef = self::getOrderElementsTypeReference($elementsType);
@@ -218,7 +200,7 @@ final class OrdersService
             $key = $dubOrder['client_id'] . '_' . $dubOrder['order_no'] . '_' . $elementsType;
 
             // __ Сохраняем не только объект, но и его положение в исходном массиве
-            $acc[$key]['count']     = ($acc[$key]['count'] ?? 0) + 1;
+            $acc[$key]['count'] = ($acc[$key]['count'] ?? 0) + 1;
             $acc[$key]['indices'][] = $index;
         }
 
@@ -226,7 +208,7 @@ final class OrdersService
         foreach ($acc as $item) {
             if ($item['count'] > 1) {
                 foreach ($item['indices'] as $index) {
-                    $orders[$index][self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Дубликат Заявки.';
+                    $orders[$index][self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Дубликат Заявки.';
                     $orders[$index][self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                     $orders[$index][self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Пропустить Заявку. Нужно проверить нумерацию Заявок в 1С.';
                 }
@@ -238,26 +220,24 @@ final class OrdersService
 
     /**
      * ___ Получаем Заявку по Клиенту, Номеру Заявки, Типу изделий и Дате загрузки (Период заявки)
-     * @param int $clientId ID Клиента
-     * @param string $orderNo Номер Заявки
+     * @param int $clientId        ID Клиента
+     * @param string $orderNo      Номер Заявки
      * @param string $elementsType Тип изделий (матрасы, аксессуары, расчетное)
-     * @param string $loadAt Дата загрузки (Период заявки)
+     * @param string $loadAt       Дата загрузки (Период заявки)
      * @return Order|null
      */
     public static function getOrderByClientIdOrderNoElementsTypeLoadAt(
-        int           $clientId,
-        string        $orderNo,
-        string        $elementsType,
+        int $clientId,
+        string $orderNo,
+        string $elementsType,
         string|Carbon $loadAt
-    ): ?Order
-    {
+    ): ?Order {
         // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
         // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
         // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
         $orderPeriod = self::getOrderPeriod($loadAt);
 
         for ($i = 0; $i < 3; $i++) {
-
             $queryPeriod = match ($i) {
                 0 => $orderPeriod,
                 1 => $orderPeriod->addMonth(),
@@ -272,7 +252,9 @@ final class OrdersService
                 ->whereDate('order_period', $queryPeriod)
                 ->first();
 
-            if ($existOrder) return $existOrder;
+            if ($existOrder) {
+                return $existOrder;
+            }
         }
 
         return null;
@@ -281,18 +263,16 @@ final class OrdersService
 
     /**
      * ___ Получаем тип Заявки (матрасы, аксессуары, смешанное или непонятно что)
-     * @param array $order Заявка, которая приходит из браузера (upload)
-     * @param array $data Ассоциативный массив с результатом (Ключ - тип изделий, Значение - количество)
+     * @param array $order       Заявка, которая приходит из браузера (upload)
+     * @param array $data        Ассоциативный массив с результатом (Ключ - тип изделий, Значение - количество)
      * @param array $dataPercent Ассоциативный массив с результатом в %(Ключ - тип изделий, Значение - количество в % от общего числа)
      * @return string
      */
     public static function getOrderElementsTypeFromFront(array $order, array &$data = [], array &$dataPercent = []): string
     {
-
         $result = [];
         $totals = 0;
         foreach ($order['items'] as $element) {
-
             $orderElementGroup = ModelsService::getElementTypeGroup($element['c'], $element['n']);  // code_1c, name
 
             if (!isset($result[$orderElementGroup])) {
@@ -317,7 +297,7 @@ final class OrdersService
             // echo "Ключ: {$type->name}, Значение: {$type->value}" . PHP_EOL;
         }
 
-        $data        = $result;
+        $data = $result;
         $dataPercent = array_map(function ($item) use ($totals) {
             return $totals > 0 ? ($item / $totals * 100) : 0;
         }, $result);
@@ -587,7 +567,7 @@ final class OrdersService
      */
     public static function getElementsTypeRender(string $value): string
     {
-        $search  = [
+        $search = [
             ElementTypes::UNDEFINED->value,
             ElementTypes::MATTRESSES->value,
             ElementTypes::COVERS->value,
@@ -639,14 +619,13 @@ final class OrdersService
      * @throws Throwable
      */
     public static function addAverageOrder(
-        int                 $clientId,
-        string              $orderNo,
+        int $clientId,
+        string $orderNo,
         string|ElementTypes $elementType,
-        string|Carbon       $loadAt,
-        int                 $amount,
-        string|Carbon|null  $unloadAt = null,
-    ): void
-    {
+        string|Carbon $loadAt,
+        int $amount,
+        string|Carbon|null $unloadAt = null,
+    ): void {
         // __ Находим Клиента
         $client = null;
         if ($clientId !== 0) {
@@ -693,7 +672,6 @@ final class OrdersService
         $averageModel = ModelsService::createAverageModel($client->id, $elementType->value);
         if (!$averageModel) {
             throw new Exception('Error while creating average model with Client id = ' . $clientId);
-
         }
 
         // __ Обновляем список моделей, потому что кэш ничего не знает про созданную модель
@@ -705,7 +683,6 @@ final class OrdersService
         // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
 
         DB::transaction(function () use ($averageModel, $orderType, $loadAt, $unloadAt, $amount, $elementType, $orderNo, $client) {
-
             $createdOrder = PlanLoad::query()->create([
                 'client_id'         => $client->id,
                 'order_type_id'     => $orderType->id,
@@ -770,7 +747,7 @@ final class OrdersService
             // __ Вставляем содержимое Прогнозной Заявки
             // __ Получаем размеры
             $AVERAGE_SIZE_STR = '0x0x0';
-            $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
+            $dims = SizeService::getDimensions($AVERAGE_SIZE_STR);
 
             $createLine = OrderLine::query()->create(
                 [
@@ -816,19 +793,166 @@ final class OrdersService
             // __ Создаем СЗ на Участки только для матрасов
             $typeRef = $createdOrder->elements_type_ref;
             if ($createdOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
-
                 // __ Создаем СЗ на Пошив
                 $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
                 if (!$sewingTask) {
                     throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
                 };
-
             }
         });
-
-
     }
 
+    // ___ Заполняем типы заявок
+    public static function fillOrderTypes(): string
+    {
+        try {
+            DB::transaction(function () {
+                $TABLE_NAME = 'order_types';
+                DB::table($TABLE_NAME)->truncate();
+
+                DB::table($TABLE_NAME)->insert([
+                    'id'           => 0,
+                    'name'         => 'Не определено',
+                    'display_name' => 'н/д',
+                    'type_index'   => '.00',
+                    'description'  => 'Тип заявки не определен',
+                    'color'        => '#64748B'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Плановая заявка',
+                    'display_name' => 'плановая заявка',
+                    'type_index'   => AVERAGE_TYPE_INDEX,
+                    'description'  => 'Плановая заявка',
+                    'color'        => '#C0C0C0'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Основная заявка',
+                    'display_name' => 'основная заявка',
+                    'type_index'   => '_',
+                    'description'  => 'Основная заявка',
+                    'color'        => '#22C55E'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Дополнительная заявка клиентов',
+                    'display_name' => 'доп. заявка',
+                    'type_index'   => '.1-10; .20-...',
+                    'description'  => 'Номера, присваиваемые дополнительным заявкам клиентов',
+                    'color'        => '#3B82F6'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Гарантийный ремонт',
+                    'display_name' => 'гар. ремонт',
+                    'type_index'   => '.11',
+                    'description'  => 'Номер присваивается заявке с изделиями для гарантийного ремонта',
+                    'color'        => '#EAB308'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Изделия для',
+                    'display_name' => 'изделия для',
+                    'type_index'   => '.12',
+                    'description'  => 'Номер присваивается заявке с изделиями для'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Подлежащие маркировке',
+                    'display_name' => 'для маркировки',
+                    'type_index'   => '.14',
+                    'description'  => 'Номер присваивается заявкам на аксессуарам, подлежащим маркировке Электронным/Честным знаком и не имеющим кода GTIN'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Постановочная партия',
+                    'display_name' => 'постановочная партия',
+                    'type_index'   => '.15',
+                    'description'  => 'Номер присваивается заявкам с постановочными партиями изделий'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Акцизная маркировка аксессуаров',
+                    'display_name' => 'акцизная маркировка аксессуаров',
+                    'type_index'   => '.16',
+                    'description'  => 'Номер присваивается заявке на аксессуары, которые требуют маркировку специальным акцизом'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Контроль КД и проверка БТК',
+                    'display_name' => 'контроль КД и БТК',
+                    'type_index'   => '.17',
+                    'description'  => 'Номер присваивается заявкам изделия, производство которых требует тщательного контроля и соблюдения КД, проверку БТК'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Образцы, которые производят ПО без ОРП',
+                    'display_name' => 'образцы без ОРП',
+                    'type_index'   => '.18',
+                    'description'  => 'Номер присваивается заявкам на образцы, которые производят ПО без ОРП и отгружают клиенту'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Партийная заявка (от 5 шт.)',
+                    'display_name' => 'партийная заявка',
+                    'type_index'   => '.19',
+                    'description'  => 'Номер, присваиваемый партийной заявке (заказ каждой номенклатуры от 5 шт.)'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'Матрасы коллекции 100_Vegas Taftting',
+                    'display_name' => 'коллекция Taftting',
+                    'type_index'   => '.21',
+                    'description'  => 'Номер, присваиваемый заявке на матрасы коллекции "100_Vegas Taftting" со сроком производства 10 дней (со дня загрузки заявки в 1С)'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'ЛММ на оптовый склад',
+                    'display_name' => 'ЛММ на оптовый склад',
+                    'type_index'   => '.1',
+                    'description'  => 'Номер, присваиваемый заявкам ЛММ, которые отгружаются на оптовый склад (загружаются в машину после «.2»)',
+                    'comment'      => 'Исключение для заявок ЛММ с ноября 2024'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'ЛММ на розничный склад',
+                    'display_name' => 'ЛММ на розничный склад',
+                    'type_index'   => '.2',
+                    'description'  => 'Номер, присваиваемый заявкам ЛММ, которые отгружаются на розничный склад (загружаются в машину в первую очередь)',
+                    'comment'      => 'Исключение для заявок ЛММ с ноября 2024'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'ЛММ партийная на оптовый склад',
+                    'display_name' => 'ЛММ партийная на оптовый склад',
+                    'type_index'   => '.119',
+                    'description'  => 'Номер, присваиваемый партийным заявкам ЛММ, которые отгружаются на оптовый склад (загружаются в машину после «.2»)',
+                    'comment'      => 'Исключение для заявок ЛММ с ноября 2024'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'ЛММ партийная на розничный склад и контроль КД и БТК',
+                    'display_name' => 'ЛММ партийная на розничный склад и контроль КД и БТК',
+                    'type_index'   => '.217',
+                    'description'  => 'Номер, присваиваемый партийным заявкам ЛММ, которые отгружаются на розничный склад и требуют тщательного контроля и соблюдения КД, проверку БТК',
+                    'comment'      => 'Исключение для заявок ЛММ с ноября 2024'
+                ]);
+
+                DB::table($TABLE_NAME)->insert([
+                    'name'         => 'ЛММ партийная на розничный склад',
+                    'display_name' => 'ЛММ партийная на розничный склад',
+                    'type_index'   => '.219',
+                    'description'  => 'Номер, присваиваемый партийным заявкам ЛММ, которые отгружаются на розничный склад (загружаются в машину в первую очередь)',
+                    'comment'      => 'Исключение для заявок ЛММ с ноября 2024'
+                ]);
+            });
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
 }
 
@@ -868,3 +992,5 @@ final class OrdersService
 // "d2":"",
 // "d3":""
 // },
+
+

@@ -556,6 +556,13 @@ class OrderController extends Controller
         }
     }
 
+    // ___ Заполняем Типы Заявок
+    public function fillOrderTypes()
+    {
+        OrdersService::fillOrderTypes();
+    }
+
+
     /**
      * ___ Обновляем цвет Типа Заявки
      * @param Request $request
