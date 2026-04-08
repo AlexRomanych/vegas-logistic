@@ -54,7 +54,7 @@ class PlanLoadsController extends Controller
      */
     public function uploadLoads(Request $request)
     {
-        try {
+        //try {
             $validated = $request->validate([
                 'data' => 'required|json'
             ]);
@@ -258,9 +258,9 @@ class PlanLoadsController extends Controller
             }
 
             return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail($e);
-        }
+        //} catch (Exception $e) {
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
     }
 
 
