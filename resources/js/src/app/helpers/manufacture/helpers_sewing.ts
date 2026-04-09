@@ -22,7 +22,7 @@ export function getSewingTimes(sewingLine: ISewingTaskLine): IAmountAndTime {
     const amountAndTimeObj = createAmountAndTimeObj()
 
     // __ Получаем тип машины модели по строке
-    let machineType: ISewingMachineKeys | null = getSewingLineMachineType(sewingLine)
+    const machineType: ISewingMachineKeys | null = getSewingLineMachineType(sewingLine)
     if (!machineType) {
         return amountAndTimeObj// __ Страховочка
     }
@@ -288,9 +288,9 @@ export function getCoverSizeString(item: ISewingTaskLine | ISewingTaskOrderLine)
         return ''
     }
 
-    return workData.dims.width.toString() + 'x' +
-        workData.dims.length.toString() + 'x' +
-        (workData.model.main.cover_height * 100).toString()
+    return round(workData.dims.width).toString() + 'x' +
+        round(workData.dims.length).toString() + 'x' +
+        round(workData.model.main.cover_height * 100).toString()
 }
 
 
@@ -575,7 +575,9 @@ function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) 
             lineChanges.push({
                 lineId: newLine.id,
                 type: 'UPDATED',
-                //@ts-ignore
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-expect-error
                 old: { amount: oldLine.amount, pos: oldLine.position },
                 new: { amount: newLine.amount, pos: newLine.position },
             })
@@ -603,7 +605,7 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
     matrix.forEach((week, weekIndex) => {
 
         week.forEach((day, dayIndex) => {
-            let filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
+            const filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
             // let filteredDay = day.filter(item => item.id !== SEWING_TASK_DRAFT.id)
             if (filteredDay.length === 0) {
                 const draft = {

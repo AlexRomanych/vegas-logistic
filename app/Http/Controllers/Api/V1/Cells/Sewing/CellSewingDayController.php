@@ -252,8 +252,9 @@ class CellSewingDayController extends Controller
                 // __ Или начинаем, если не начато, или продолжаем
                 if (is_null($sewingDay->start_at)) {
                     $sewingDay->start_at = now();
-                    $sewingDay->save();
                 }
+                $sewingDay->finish_at = null;
+                $sewingDay->save();
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
                 $action_date = Carbon::parse($sewingDay->action_at)->startOfDay();
@@ -270,7 +271,7 @@ class CellSewingDayController extends Controller
                     ->with(['statuses',])
                     ->get();
 
-                $pendSewingTasksArr = $pendingSewingTasks->toArray();
+                //$pendSewingTasksArr = $pendingSewingTasks->toArray();
 
                 foreach ($pendingSewingTasks as $task) {
 

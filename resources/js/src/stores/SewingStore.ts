@@ -26,41 +26,43 @@ const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_SEWING_TASKS                     = '/sewing/tasks'                     // URL для получения Сменных заданий
-const URL_SEWING_TASKS_ADD_BY_ORDER_ID     = '/sewing/tasks/add/order'           // URL для добавления Сменных заданий по id Заявки
-const URL_SEWING_TASKS_DELETE_BY_ORDER_ID  = '/sewing/tasks/delete/order'        // URL для удаления Сменных заданий по id Заявки
-const URL_SEWING_TASKS_ORDER_ID            = '/sewing/tasks/order'               // URL для получения Сменных заданий по id Заявки
-const URL_SEWING_TASKS_STATUS              = '/sewing/tasks/status'              // URL для получения Сменных заданий по статусу
-const URL_SEWING_TASKS_STATUS_BEFORE_DATE  = '/sewing/tasks/status/date/before'  // URL для получения Сменных заданий по статусу
-const URL_SEWING_TASKS_COMMENT             = '/sewing/tasks/comment'             // URL для изменения комментария к Сменному заданию
-const URL_SEWING_TASKS_UPDATE              = '/sewing/tasks/update'              // URL для обновления Сменных заданий
-const URL_SEWING_TASK_LINE_DONE            = '/sewing/tasks/line/done'           // URL для установки статуса "Выполнено" для записи СЗ
-const URL_SEWING_TASK_LINE_FALSE           = '/sewing/tasks/line/false'          // URL для установки статуса "Не Выполнено" для записи СЗ
-const URL_SEWING_TASK_LINE_RESET           = '/sewing/tasks/line/reset'          // URL для cсброса статуса для записи СЗ
-const URL_SEWING_TASK_STATUSES             = '/sewing/task/statuses'             // URL для получения Статуса Движения СЗ
-const URL_SEWING_TASK_STATUSES_SET         = '/sewing/task/statuses/set'         // URL для изменения/добавления Статуса Движения СЗ
-const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch' // URL для получения Статуса Движения СЗ
-const URL_SEWING_OPERATIONS                = '/sewing/operations'                // URL для получения Типовых операций швейки
-const URL_SEWING_OPERATION                 = '/sewing/operations'                // URL для получения Типовой операции
-const URL_SEWING_OPERATION_SCHEMAS         = '/sewing/operation/schemas'         // URL для получения Схем Типовых операций швейки
-const URL_SEWING_OPERATION_SCHEMAS_DELETE  = '/sewing/operation/schemas/delete'  // URL для удаления Типовой операции из Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_ADD     = '/sewing/operation/schemas/add'     // URL для добавления/изменения Типовой операции в Схеме Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_CREATE  = '/sewing/operation/schemas/create'  // URL для создания новой Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_UPDATE  = '/sewing/operation/schemas/update'  // URL для обновления Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_MODEL   = '/sewing/operation/schemas/models'  // URL для обновления Схемы ТО для модели
-const URL_SEWING_OPERATION_MODELS          = '/sewing/operation/models'          // URL для получения моделей для Типовых операций швейки
-const URL_SEWING_OPERATION_MODELS_DELETE   = '/sewing/operation/models/delete'   // URL для удаления Типовой операции из Модели
-const URL_SEWING_OPERATION_MODELS_ADD      = '/sewing/operation/models/add'      // URL для добавления ТО для моделей
-const URL_SEWING_DAY                       = '/sewing/day'                       // URL для получения рабочего дня
-const URL_SEWING_DAY_DATES                 = '/sewing/day/dates'                 // URL для получения рабочих дней по статусу
-const URL_SEWING_DAY_COMMENT               = '/sewing/day/comment'               // URL для сохранения комментария к дню
-const URL_SEWING_DAY_WORKERS_ACTIVE        = '/workers/active'                   // URL для получения активных рабочих
-const URL_SEWING_DAY_WORKER_ADD            = '/sewing/day/worker/add'            // URL для добавления исполнителя к дню
-const URL_SEWING_DAY_WORKER_REMOVE         = '/sewing/day/worker/remove'         // URL для удаления исполнителя к дню
-const URL_SEWING_DAY_RESPONSIBLE_ADD       = '/sewing/day/responsible/add'       // URL для добавления ответственного к дню
-const URL_SEWING_DAY_RESPONSIBLE_REMOVE    = '/sewing/day/responsible/remove'    // URL для удаления ответственного к дню
-const URL_SEWING_DAY_START                 = '/sewing/day/start'                 // URL для старта дня СЗ
-const URL_SEWING_DAY_FINISH                = '/sewing/day/finish'                // URL для финиш дня СЗ
+const URL_SEWING_TASKS                       = '/sewing/tasks'                       // URL для получения Сменных заданий
+const URL_SEWING_TASKS_ADD_BY_ORDER_ID       = '/sewing/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+const URL_SEWING_TASKS_DELETE_BY_ORDER_ID    = '/sewing/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
+const URL_SEWING_TASKS_ORDER_ID              = '/sewing/tasks/order'                 // URL для получения Сменных заданий по id Заявки
+const URL_SEWING_TASKS_STATUS                = '/sewing/tasks/status'                // URL для получения Сменных заданий по статусу
+const URL_SEWING_TASKS_STATUS_BEFORE_DATE    = '/sewing/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
+const URL_SEWING_TASKS_STATUS_ON_DATE        = '/sewing/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
+const URL_SEWING_TASKS_STATUS_ON_DATE_CHECK  = '/sewing/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
+const URL_SEWING_TASKS_COMMENT               = '/sewing/tasks/comment'               // URL для изменения комментария к Сменному заданию
+const URL_SEWING_TASKS_UPDATE                = '/sewing/tasks/update'                // URL для обновления Сменных заданий
+const URL_SEWING_TASK_LINE_DONE              = '/sewing/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_SEWING_TASK_LINE_FALSE             = '/sewing/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+const URL_SEWING_TASK_LINE_RESET             = '/sewing/tasks/line/reset'            // URL для cсброса статуса для записи СЗ
+const URL_SEWING_TASK_STATUSES               = '/sewing/task/statuses'               // URL для получения Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_SET           = '/sewing/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_COLOR_PATCH   = '/sewing/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
+const URL_SEWING_OPERATIONS                  = '/sewing/operations'                  // URL для получения Типовых операций швейки
+const URL_SEWING_OPERATION                   = '/sewing/operations'                  // URL для получения Типовой операции
+const URL_SEWING_OPERATION_SCHEMAS           = '/sewing/operation/schemas'           // URL для получения Схем Типовых операций швейки
+const URL_SEWING_OPERATION_SCHEMAS_DELETE    = '/sewing/operation/schemas/delete'    // URL для удаления Типовой операции из Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_ADD       = '/sewing/operation/schemas/add'       // URL для добавления/изменения Типовой операции в Схеме Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_CREATE    = '/sewing/operation/schemas/create'    // URL для создания новой Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_UPDATE    = '/sewing/operation/schemas/update'    // URL для обновления Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_MODEL     = '/sewing/operation/schemas/models'    // URL для обновления Схемы ТО для модели
+const URL_SEWING_OPERATION_MODELS            = '/sewing/operation/models'            // URL для получения моделей для Типовых операций швейки
+const URL_SEWING_OPERATION_MODELS_DELETE     = '/sewing/operation/models/delete'     // URL для удаления Типовой операции из Модели
+const URL_SEWING_OPERATION_MODELS_ADD        = '/sewing/operation/models/add'        // URL для добавления ТО для моделей
+const URL_SEWING_DAY                         = '/sewing/day'                         // URL для получения рабочего дня
+const URL_SEWING_DAY_DATES                   = '/sewing/day/dates'                   // URL для получения рабочих дней по статусу
+const URL_SEWING_DAY_COMMENT                 = '/sewing/day/comment'                 // URL для сохранения комментария к дню
+const URL_SEWING_DAY_WORKERS_ACTIVE          = '/workers/active'                     // URL для получения активных рабочих
+const URL_SEWING_DAY_WORKER_ADD              = '/sewing/day/worker/add'              // URL для добавления исполнителя к дню
+const URL_SEWING_DAY_WORKER_REMOVE           = '/sewing/day/worker/remove'           // URL для удаления исполнителя к дню
+const URL_SEWING_DAY_RESPONSIBLE_ADD         = '/sewing/day/responsible/add'         // URL для добавления ответственного к дню
+const URL_SEWING_DAY_RESPONSIBLE_REMOVE      = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
+const URL_SEWING_DAY_START                   = '/sewing/day/start'                   // URL для старта дня СЗ
+const URL_SEWING_DAY_FINISH                  = '/sewing/day/finish'                  // URL для финиш дня СЗ
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -402,6 +404,45 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
 
+    // __ Получение СЗ Пошива по статусу или массиву статусов в определенную дату
+    const getSewingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
+        let response
+        if (status) {
+            if (isNumber(status)) {
+                status = [status]
+            }
+
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_ON_DATE, { date, statuses: status })
+        } else {
+            response = await jwtGet(date, URL_SEWING_TASKS_STATUS_ON_DATE)
+        }
+        const result = await response
+
+        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusOnDate: ', result)
+        return result.data
+    }
+
+    // __ Проверка на наличие СЗ Пошива по статусу или массиву статусов в определенную дату
+    const checkSewingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
+        let response
+        if (status) {
+            if (isNumber(status)) {
+                status = [status]
+            }
+
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_ON_DATE_CHECK, { date, statuses: status })
+        } else {
+            response = await jwtGet(date, URL_SEWING_TASKS_STATUS_ON_DATE_CHECK)
+        }
+        const result = await response
+
+        if (DEBUG) console.log('SewingStore: checkSewingTasksByStatusOnDate: ', result)
+        return result.data
+    }
+
+
+
+
     // __ Сохранение Комментария к Сменному заданию - СЗ
     const setSewingTaskComment = async (id: number, comment: string | null = null) => {
         let response = await jwtPost(URL_SEWING_TASKS_COMMENT, { id, comment })
@@ -451,6 +492,33 @@ export const useSewingStore = defineStore('sewing', () => {
         if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
         return result.data
     }
+
+
+    // __ Проверка на наличие СЗ с определенным статусом на определенную дату
+    // const checkSewingTasksByStatusAndDate = async (date: string, status: number[] | number | null = null) => {
+    //     let response
+    //     if (status) {
+    //         if (isNumber(status)) {
+    //             status = [status]
+    //         }
+    //
+    //         response = await jwtGet(URL_SEWING_TASKS_STATUS, { statuses: status })
+    //         // response = await jwtGet(`${URL_SEWING_TASKS_STATUS}/${status}`)
+    //     } else {
+    //         response = await jwtGet(URL_SEWING_TASKS_STATUS)
+    //     }
+    //     const result = await response
+    //
+    //     globalSewingTasksPending.value = result.data                                   // __ кэшируем
+    //     globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+    //
+    //
+    //     if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
+    //     return result.data
+    // }
+
+
+
 
     // __ Один статус
     const getSewingTasksByStatusOneStatus = async (status: number | null = null) => {
@@ -777,6 +845,8 @@ export const useSewingStore = defineStore('sewing', () => {
         getSewingTasksByOrderId,
         getSewingTasksByStatus,
         getSewingTasksByStatusBeforeDate,
+        getSewingTasksByStatusOnDate,
+        checkSewingTasksByStatusOnDate,
         deleteSewingTasksByOrderId,
         addSewingTasksByOrderId,
         setSewingTaskComment,

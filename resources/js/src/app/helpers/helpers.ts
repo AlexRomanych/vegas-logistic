@@ -1,8 +1,7 @@
-import { computed } from 'vue'
 
 export * from '@/app/helpers/helpers_render.js'
 
-import { DISPLAY_CONSOLE_LOG } from '@/app/constants/common.ts'
+// import { DISPLAY_CONSOLE_LOG } from '@/app/constants/common.ts'
 
 import type { ColorName, EffectDirection } from '@/app/constants/colorsClasses.js'
 

@@ -127,6 +127,8 @@ Route::prefix('sewing')
         Route::get('tasks/order/{id}', [CellSewingTaskController::class, 'getSewingTasksByOrderId']);
         Route::get('tasks/status', [CellSewingTaskController::class, 'getSewingTasksByStatus']);
         Route::get('tasks/status/date/before', [CellSewingTaskController::class, 'getSewingTasksByStatusBeforeDate']);
+        Route::get('tasks/status/date/on', [CellSewingTaskController::class, 'getSewingTasksByStatusOnDate']);
+        Route::get('tasks/status/date/on/check', [CellSewingTaskController::class, 'checkSewingTasksByStatusOnDate']);
         Route::post('tasks/update', [CellSewingTaskController::class, 'updateSewingTasks']);
         Route::post('tasks/comment', [CellSewingTaskController::class, 'setSewingTaskComment']);
         Route::post('tasks/line/done', [CellSewingTaskController::class, 'setSewingTaskLinesDone']);

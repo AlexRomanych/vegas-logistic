@@ -1,10 +1,8 @@
 <template>
-
     <div
         :class="[shadowColor, globalSewingTaskFullDaysShow ? 'min-w-[379px]' : 'min-w-[184px]']"
         class="m-1 pb-0.5 border-[1px] rounded border-slate-600 bg-slate-200 w-fit min-w-[184px] min-h-[129px] shadow-xl"
     >
-
         <!-- __ День недели -->
         <div class="mr-1">
             <AppLabelTS
@@ -20,8 +18,10 @@
         </div>
 
         <!-- __ Шапка -->
-        <div v-if="getTotalAmountDay || getTotalTimeDay" class="flex">
-
+        <div
+            v-if="getTotalAmountDay || getTotalTimeDay"
+            class="flex"
+        >
             <!-- __ Клиент -->
             <AppLabelTS
                 :height="DEFAULT_HEIGHT"
@@ -125,7 +125,6 @@
         <!--    />-->
         <!--</div>-->
 
-
         <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
         <!-- __ Сами СЗ с возможностью перетаскивания -->
         <draggable
@@ -140,7 +139,6 @@
             @start="startDrag"
         >
             <template #item="{ element, index }">
-
                 <div
                     @click="selectSewingTask(element)"
                     @dblclick="showSewingTaskCard(element)"
@@ -153,7 +151,6 @@
                         :order-id="globalSewingTaskActiveOrderId"
                     />
                 </div>
-
             </template>
 
             <!--<template #header>-->
@@ -175,17 +172,21 @@
             <!--</template>-->
         </draggable>
 
-
         <!--</div>-->
 
-
         <!-- __ Разделительная линия -->
-        <div v-if="getTotalAmountDay || getTotalTimeDay" class="flex">
+        <div
+            v-if="getTotalAmountDay || getTotalTimeDay"
+            class="flex"
+        >
             <TheDividerLine />
         </div>
 
         <!-- __ Итого -->
-        <div v-if="getTotalAmountDay || getTotalTimeDay" class="flex">
+        <div
+            v-if="getTotalAmountDay || getTotalTimeDay"
+            class="flex"
+        >
             <AppLabelTS
                 :height="heightTotals"
                 :type="TOTALS_TYPE"
@@ -273,10 +274,7 @@
                 :width="columnsWidth.amount"
                 class="plan-item"
             />
-
         </div>
-
-
     </div>
 
     <!-- __ Карточка СЗ -->
@@ -309,15 +307,17 @@
         :comment="comment"
         label="Комментарий к производственному дню"
     />
-
-
 </template>
 
 <!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
 <script lang="ts" setup>
     import type {
-        IColorTypes, IDay, IModalAsyncMenu, IPlanMatrix,
-        ISewingTask, ISewingTaskStatusesSet,
+        IColorTypes,
+        IDay,
+        IModalAsyncMenu,
+        IPlanMatrix,
+        ISewingTask,
+        ISewingTaskStatusesSet,
         // IPlanMatrixDayItem,
         // ISewingTaskLine,
         // IAmountAndTime,
@@ -337,7 +337,8 @@
         additionDaysInStrFormat,
         formatDateInFullFormat,
         formatDateIntl,
-        formatToYMD, getDayOfWeek,
+        formatToYMD,
+        getDayOfWeek,
         isHoliday,
         isToday,
         splitDate,
@@ -349,10 +350,13 @@
         createAmountAndTimeObj,
         getDaysDifferenceFromSewingDates,
         getDiffsWithPositions,
-        getSewingTaskAmountAndTime, getSewingTasksDiff,
+        getSewingTaskAmountAndTime,
+        getSewingTasksDiff,
         getSewingTasksGroupedByOrder,
-        getSewingTasksSameOrderInDay, isTaskAverage,
-        isTaskStatusCreated, orderSewingTasksByStatus,
+        getSewingTasksSameOrderInDay,
+        isTaskAverage,
+        isTaskStatusCreated,
+        orderSewingTasksByStatus,
         repositionSewingTaskLines,
         setTaskPositionInRenderMatrix,
     } from '@/app/helpers/manufacture/helpers_sewing.ts'
@@ -361,28 +365,22 @@
 
     import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
-    import ManageItem
-        from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItem.vue'
+    import ManageItem from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItem.vue'
     import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
     import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
-    import ManageItemDataLabel
-        from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
-    import ManageTaskCard
-        from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
+    import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
+    import ManageTaskCard from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
     import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
     import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
-
     import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
-
 
     // type IDay = ISewingTask & IPlanMatrixDayItem
 
     interface IProps {
-        date: Date,
+        date: Date
         day?: IDay[]
     }
-
 
     const props = withDefaults(defineProps<IProps>(), {
         day: () => [],
@@ -415,16 +413,14 @@
     const planStore = usePlansStore()
     const { planPeriodGlobal } = storeToRefs(planStore)
 
-
     const DEFAULT_HEIGHT = 'h-[25px]'
 
     const TOTALS_TYPE: IColorTypes = 'stone'
     const DATA_HEADER_TEXT_SIZE = 'mini'
     const REFERENCE_TIME = 10.5 * 60 * 60 // в секунды
 
-
     // __ Высота под Итого
-    const heightTotals = computed(() => globalSewingTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]')
+    const heightTotals = computed(() => (globalSewingTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
 
     // __ Дата
     const renderDate = computed(() => formatDateInFullFormat(props.date, !globalSewingTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
@@ -442,7 +438,6 @@
         return 'primary'
     })
     // ----------------------------------------
-
 
     // __ Ширина колонок
     const columnsWidth = {
@@ -471,7 +466,6 @@
 
     // __ Общее количество и время в виде Объекта
     const amountAndTimeTotalDay = computed(() => {
-
         //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
         const amountAndTimeObj = createAmountAndTimeObj()
 
@@ -489,47 +483,42 @@
     })
 
     // __ Общее Количество за день
-    const getTotalAmountDay =
-        computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.amount + acc, 0))
+    const getTotalAmountDay = computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.amount + acc, 0))
 
     // __ Общие Трудозатраты за день
-    const getTotalTimeDay =
-        computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.time + acc, 0))
-
+    const getTotalTimeDay = computed(() => Object.values(amountAndTimeTotalDay.value).reduce((acc, item) => item.time + acc, 0))
 
     // __ Тип для модального окна
     const modalType = ref<IColorTypes>('primary')
     const modalText = ref<string>('')
     const modalMode = ref<'inform' | 'confirm'>('inform')
-    const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
-
+    const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
     // __ Тип для модального Меню
     const modalMenuType = ref<IColorTypes>('primary')
     const modalMenu = ref<IModalAsyncMenu>({ data: [] })
-    const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+    const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
     // __ Тип для модального окна Сообщений
     const modalInfoType = ref<IColorTypes>('danger')
     const modalInfoText = ref<string | string[]>('')
     const modalInfoMode = ref<'inform' | 'confirm'>('confirm')
-    const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+    const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
     // __ Тип для модального окна изменения Комментария
     const comment = ref('')
-    const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+    const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
     // __ Установка активного Заказа
     const selectSewingTask = (sewingTask: ISewingTask) => {
         globalSewingTaskActiveOrderId.value = sewingTask.order.id
     }
 
-
     // __ Карточка СЗ
     const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
 
     const showSewingTaskCard = async (sewingTask: ISewingTask) => {
-        taskCard.value = JSON.parse(JSON.stringify(sewingTask))   // __ Копируем объект, чтобы не мутировал оригинал
+        taskCard.value = JSON.parse(JSON.stringify(sewingTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
         // __ Показываем модальное окно обработки СЗ
         const answer = await manageTaskCard.value!.show()
@@ -538,13 +527,11 @@
         }
 
         // __ Получаем ссылки на панели
-        let leftPanel = manageTaskCard.value!.leftPanel
-        let rightPanel = manageTaskCard.value!.rightPanel
-
+        const leftPanel = manageTaskCard.value!.leftPanel
+        const rightPanel = manageTaskCard.value!.rightPanel
 
         // __ Если есть правая панель, то это создание нового СЗ
         if (rightPanel.length > 0) {
-
             // __ Создаем новое СЗ на основе копии
             const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
 
@@ -564,7 +551,7 @@
             // newSewingTask.sewing_lines = rightPanel
 
             // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
+            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel) // __ Тут реактивное перерисовывание
 
             // console.log(taskCard.value)
         } else {
@@ -574,18 +561,15 @@
             // leftPanel = repositionSewingTaskLines(leftPanel)
 
             // __ Обновляем глобальный state СЗ
-            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel)    // __ Тут реактивное перерисовывание
-
+            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel) // __ Тут реактивное перерисовывание
         }
-
-
     }
-
 
     // --- ------------------------------------------------------
     // --- ----------- Управление Druggable ---------------------
     // --- ------------------------------------------------------
     // __ Опции для draggable
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dragOptions = computed(() => {
         return {
             animation: 300,
@@ -600,6 +584,7 @@
     const isDragging = ref(true)
 
     const checkMove = (evt: any) => {
+        // return true
         // console.log('checkMove: ', evt)
         const movedElement = evt.draggedContext.element
         // console.log(movedElement)
@@ -626,14 +611,12 @@
         return true
     }
 
-
     // __ Начало перетаскивания СЗ
     const startDrag = (evt: any) => {
         // const element = evt.item._underlying_vm_
         // console.log('startDrag: ', evt.oldIndex)
         // console.log('element: ', element)
     }
-
 
     // __ Окончание перетаскивания СЗ
     const finishDrag = async (evt: any) => {
@@ -665,12 +648,9 @@
         // console.log('isOneDayAction: ', isOneDayAction)
 
         if (isOneDayAction) {
-
             // __ Перемещаем СЗ без вывода дополнительной информации
-            await sewingStore.applyChanges(diffs)              // __ Применяем изменения
-
+            await sewingStore.applyChanges(diffs) // __ Применяем изменения
         } else {
-
             // __ Находим те изменения, которые относятся к перемещаемой СЗ
             const diffsForSewingTask = diffs.find(diff => diff.isMoved)
             if (!diffsForSewingTask) {
@@ -692,7 +672,8 @@
             // __ Получаем дату, на которую нужно переместить СЗ
             const targetDate = additionDaysInStrFormat(
                 sewingTask.action_at,
-                (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0))
+                (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0)
+            )
 
             // __ Проверяем, на даты СЗ и отгрузки
             let dateDiff = getDaysDifferenceFromSewingDates(sewingTask.order.load_at ?? targetDate, targetDate)
@@ -700,7 +681,6 @@
             // console.log('targetDate: ', targetDate)
             // console.log('sewingTask.order.load_at: ', sewingTask.order.load_at)
             // console.log('dateDiff: ', dateDiff)
-
 
             if (dateDiff < 0) {
                 await showError([
@@ -727,8 +707,18 @@
                 return
             }
 
-            // console.log('targetDAte: ', targetDAte)
+            // __ Проверяем, что СЗ не находится в процессе выполнения
+            if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
+                await showError([
+                    'Ошибка!',
+                    'Нельзя переместить СЗ в день, в котором',
+                    'есть СЗ в процессе выполнения!'
+                ])
+                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                return
+            }
 
+            // console.log('targetDAte: ', targetDAte)
 
             // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
             // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
@@ -760,19 +750,15 @@
 
             // __ 'Отмена'
             if (result.value === false || result.menuItem === 3) {
-
                 // __ Откатываем изменения
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
                 return
-
             } else if (result.menuItem === 1 || totalAmount === 1) {
-
                 // __ Перемещаем все СЗ
                 // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
                 // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
                 if (existingSewingTasks.length) {
-
                     // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                     modalInfoType.value = 'success'
                     modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -785,19 +771,16 @@
                         console.warn('Union SewingTasks')
 
                         // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                        await sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask])   // __ Объединяем СЗ с первой
+                        await sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask]) // __ Объединяем СЗ с первой
                         // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
                         return
                     }
                 }
 
-                await sewingStore.applyChanges(diffs)         // __ Применяем изменения
-
+                await sewingStore.applyChanges(diffs) // __ Применяем изменения
             } else if (result.menuItem === 2) {
-
                 // __ Перемещаем часть СЗ в другой день
                 // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
-
 
                 taskCard.value = JSON.parse(JSON.stringify(sewingTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
@@ -815,7 +798,6 @@
 
                 // __ Если есть правая панель, то это создание нового СЗ
                 if (rightPanel.length > 0) {
-
                     // __ Создаем новое СЗ на основе копии
                     const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
 
@@ -825,7 +807,8 @@
                     // __ Устанавливаем новую дату, высчитываем новую дату по смещению
                     newSewingTask.action_at = additionDaysInStrFormat(
                         newSewingTask.action_at,
-                        (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0))
+                        (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0)
+                    )
 
                     // __ Устанавливаем id
                     // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
@@ -833,7 +816,6 @@
 
                     // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
                     if (existingSewingTasks.length) {
-
                         // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                         modalInfoType.value = 'success'
                         modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -851,21 +833,18 @@
 
                             // __ Изменяем содержимое в СЗ
                             leftPanel = repositionSewingTaskLines(leftPanel)
-                            sewingStore.setSewingTasksLines(sewingTask, leftPanel)  // __ Делаем это в родителе
+                            sewingStore.setSewingTasksLines(sewingTask, leftPanel) // __ Делаем это в родителе
 
                             // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                            await sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask])   // __ Объединяем СЗ с первой
+                            await sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask]) // __ Объединяем СЗ с первой
                             // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
                             return
                         }
-
                     }
 
                     // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-                    await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel)    // __ Тут реактивное перерисовывание
-
+                    await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel) // __ Тут реактивное перерисовывание
                 } else {
-
                     // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
                     // __ Игнорируем это поведение и просто показываем сообщение об ошибке
                     await showError(['Ошибка!', 'Правая часть не может быть пустой!'])
@@ -879,13 +858,9 @@
 
                     return
                 }
-
             }
-
-
         }
     }
-
 
     // __ Показываем сообщение об ошибке
     async function showError(error: string | string[] | null = null) {
@@ -903,17 +878,14 @@
         await appModalAsyncMultiline.value!.show()
     }
 
-
     // __ Вспомогалка. Устанавливаем статусы для СЗ
     const setStatuses = async (setStatuses: ISewingTaskStatusesSet[]) => {
         if (setStatuses.length) {
-
             // __ Отправляем запрос на сервер
             const result = await sewingStore.setSewingTasksStatuses(setStatuses)
 
             // __ Установка статусов на лету
             if (checkCRUD(result)) {
-
                 // __ Получаем статусы, если не получили их ранее
                 if (!globalSewingTaskStatuses.value.length) {
                     await sewingStore.getSewingTaskStatuses()
@@ -934,10 +906,8 @@
         }
     }
 
-
     // __ Вызываем меню для дня
     const actionDayMenu = async () => {
-
         console.log('props.day: ', props.day)
 
         const clearDay = clearRenderMatrixDay(props.day) // __ Возвращаем новый массив без пустых элементов
@@ -971,22 +941,21 @@
 
         // __ Отправка на выполнение
         if (result.menuItem === 1) {
-            const setStatusesData = clearDay
-                .flatMap(task => {
-                    // return { task: task.id, status: 1 }
-                    // __ Отправляем на выполнение то, что создано или создано при закрытии смены
-                    // __ и не является AVERAGE
-                    if (isTaskStatusCreated(task) && !isTaskAverage(task)) {
-                        return { task: task.id, status: SEWING_TASK_STATUSES.PENDING.ID }
-                    }
+            const setStatusesData = clearDay.flatMap(task => {
+                // return { task: task.id, status: 1 }
+                // __ Отправляем на выполнение то, что создано или создано при закрытии смены
+                // __ и не является AVERAGE
+                if (isTaskStatusCreated(task) && !isTaskAverage(task)) {
+                    return { task: task.id, status: SEWING_TASK_STATUSES.PENDING.ID }
+                }
 
-                    return []
-                })
+                return []
+            })
 
             await setStatuses(setStatusesData)
 
             // __ Отправляем СЗ со статусом Pending вверх списка
-            let dayClone = JSON.parse(JSON.stringify(clearDay))
+            const dayClone = JSON.parse(JSON.stringify(clearDay))
 
             const newOrders = orderSewingTasksByStatus(dayClone)
             const diffsTask = getSewingTasksDiff(newOrders, clearDay)
@@ -995,13 +964,11 @@
 
             // __ Меняем реактивно позиции в отображении
             if (checkCRUD(result)) {
-
                 diffsTask.forEach(item => {
                     const task = globalSewingTasks.value.find(task => task.id === item.taskId)
                     if (task && item.taskChanges?.position?.new) {
                         task.position = item.taskChanges.position.new
                     }
-
                 })
             }
 
@@ -1010,16 +977,15 @@
 
         // __ Возврат для редактирования
         if (result.menuItem === 2) {
-            const setStatusesData = clearDay
-                .flatMap(task => {
-                    // return { task: task.id, status: 1 }
-                    // __ Отправляем на выполнение то, что создано или создано при закрытии смены
-                    if (task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID) {
-                        return { task: task.id, status: SEWING_TASK_STATUSES.CREATED.ID }
-                    }
+            const setStatusesData = clearDay.flatMap(task => {
+                // return { task: task.id, status: 1 }
+                // __ Отправляем на выполнение то, что создано или создано при закрытии смены
+                if (task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID) {
+                    return { task: task.id, status: SEWING_TASK_STATUSES.CREATED.ID }
+                }
 
-                    return []
-                })
+                return []
+            })
 
             await setStatuses(setStatusesData)
             return
@@ -1027,7 +993,7 @@
 
         // __ Объединение СЗ для одной Заявки
         if (result.menuItem === 3) {
-            const grouped = getSewingTasksGroupedByOrder(clearDay)  // __ Получаем массив массивов СЗ по одинаковым Заявкам
+            const grouped = getSewingTasksGroupedByOrder(clearDay) // __ Получаем массив массивов СЗ по одинаковым Заявкам
             // console.log('target: ', grouped)
             await sewingStore.applyMergeTasksGroups(grouped)
             return
@@ -1035,7 +1001,6 @@
 
         // __ Сохранение комментария
         if (result.menuItem === 4) {
-
             // __ Получаем день
             const sewingDay = await sewingStore.getSewingDayByDateAndChange(formatToYMD(props.date))
             console.log('day: ', sewingDay)
@@ -1056,8 +1021,6 @@
 
         throw new Error('Unknown menu item!')
     }
-
-
 </script>
 
 <style scoped>
@@ -1089,4 +1052,3 @@
         @apply cursor-pointer;
     }
 </style>
-

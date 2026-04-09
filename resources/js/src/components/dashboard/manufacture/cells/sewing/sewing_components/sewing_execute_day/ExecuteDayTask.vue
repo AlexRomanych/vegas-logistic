@@ -457,6 +457,11 @@
 
     // --- Контекстное меню ---
     const openContextMenu = async (event: MouseEvent) => {
+        // __ Проверяем на то, чтобы СЗ было запущено
+        if (!props.isRunning) {
+            return
+        }
+
         // __ Типизируем поиск ближайшего элемента с ID задачи
         const target = (event.target as HTMLElement).closest<HTMLElement>('[data-task-id]')
         if (target) {

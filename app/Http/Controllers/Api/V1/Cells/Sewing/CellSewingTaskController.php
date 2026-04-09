@@ -252,6 +252,103 @@ class CellSewingTaskController extends Controller
     }
 
 
+    /**
+     * __ Получаем СЗ на Пошив по статусам в определенную дату
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getSewingTasksByStatusOnDate(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'date' — это дата
+                'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:sewing_task_statuses,id',
+            ]);
+
+            $data        = $validated['statuses'] ?? null;
+            $action_date = Carbon::parse($validated['date'])->startOfDay();
+
+            $sewingTasks = SewingTask::query()
+                ->whereDate('action_at',  $action_date)
+                ->byStatus($data)
+                // ->whereBetween('action_at', [
+                //     $start->startOfDay(),
+                //     $end->endOfDay()
+                // ])
+                ->with([
+                    'order.client',
+                    'order.orderType',
+                    'sewingLines.orderLine.model.cover',
+                    'sewingLines.orderLine.model.base',
+                    'statuses',
+                ])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return SewingTaskResource::collection($sewingTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * __ Проверяем наличие СЗ на Пошив по статусам в определенную дату
+     * @param Request $request
+     * @return bool[]|string
+     */
+    public function checkSewingTasksByStatusOnDate(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'date' — это дата
+                'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:sewing_task_statuses,id',
+            ]);
+
+            $data        = $validated['statuses'] ?? null;
+            $action_date = Carbon::parse($validated['date'])->startOfDay();
+
+            $sewingTasks = SewingTask::query()
+                ->whereDate('action_at',  $action_date)
+                ->byStatus($data)
+                ->get();
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+            return ['data' => !$sewingTasks->isEmpty()];
+            //return SewingTaskResource::collection($sewingTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
     // ___ Обновляем СЗ на Пошив
     public function updateSewingTasks(SyncSewingTasksRequest $request)
     {

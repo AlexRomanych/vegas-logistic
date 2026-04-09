@@ -126,8 +126,8 @@
                 <!-- __ Сами задачи -->
                 <div class="">
                     <ExecuteDayTask
-                        :sewing-task="tabs.find((tab) => tab.position === activeTabPosition)!.task!"
                         :is-running="isSewingDayStarted as boolean"
+                        :sewing-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -159,25 +159,12 @@
 
     import { useLoading } from 'vue-loading-overlay'
     import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-    import {
-        SEWING_TASK_DRAFT,
-        SEWING_TASK_STATUSES,
-        START_SHIFT_TIME,
-        TOTAL_SHIFT_DURATION,
-    } from '@/app/constants/sewing.ts'
-    import {
-        getCoverSizeString,
-        getExecuteTaskStatustics,
-        getSewingTaskModelCoverName,
-    } from '@/app/helpers/manufacture/helpers_sewing.ts'
+    import { SEWING_TASK_DRAFT, SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
+    import { getCoverSizeString, getExecuteTaskStatustics, getSewingTaskModelCoverName } from '@/app/helpers/manufacture/helpers_sewing.ts'
     import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
     import { round } from '@/app/helpers/helpers_lib.ts'
 
-    import {
-        formatDateInFullFormat,
-        formatTimeInFullFormat,
-        formatTimeWithLeadingZeros,
-    } from '@/app/helpers/helpers_date'
+    import { formatDateInFullFormat, formatTimeInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
     import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
     import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
@@ -203,7 +190,7 @@
 
     const { globalSewingTasks } = storeToRefs(sewingStore)
 
-    const DEBUG = true
+    // const DEBUG = true
     const isLoading = ref(false)
 
     let executeDate: string
@@ -230,6 +217,10 @@
     const isSewingDayStarted = computed(() => sewingDay.value?.start_at && !sewingDay.value?.finish_at)
 
     const startLabelTitle = computed(() => {
+        // console.log('sewingDay: ', sewingDay.value)
+        // console.log('pendingTasksPresents: ', pendingTasksPresents.value)
+        // console.log('runningTasksPresents: ', runningTasksPresents.value)
+
         // __ Есть Готовые к выполнению СЗ
         if (pendingTasksPresents.value) {
             if (!sewingDay.value?.start_at) {
@@ -245,21 +236,17 @@
 
     // __ Есть ли СЗ со статусом Готово к выполнению
     const pendingTasksPresents = computed(() =>
-        sewingDay.value?.sewing_tasks.some((task) => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID)
+        sewingDay.value?.sewing_tasks.some(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID)
     )
 
     // __ Есть ли СЗ со статусом Выполняется
     const runningTasksPresents = computed(() =>
-        sewingDay.value?.sewing_tasks.some((task) => task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
+        sewingDay.value?.sewing_tasks.some(task => task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
     )
 
     // __ Время выполнения
-    const startTime = computed(() =>
-        sewingDay.value?.start_at ? new Date(sewingDay.value.start_at).getTime() / 1000 : null
-    )
-    const finishTime = computed(() =>
-        sewingDay.value?.finish_at ? new Date(sewingDay.value.finish_at).getTime() / 1000 : null
-    )
+    const startTime = computed(() => (sewingDay.value?.start_at ? new Date(sewingDay.value.start_at).getTime() / 1000 : null))
+    const finishTime = computed(() => (sewingDay.value?.finish_at ? new Date(sewingDay.value.finish_at).getTime() / 1000 : null))
     const elapsedTime = computed(() => {
         if (!now.value) return -1
 
@@ -308,9 +295,7 @@
         if (deviation.value === 0) {
             return 'В графике'
         }
-        return deviation.value > 0
-            ? 'ОПЕРЕЖЕНИЕ'
-            : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation.value))
+        return deviation.value > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation.value))
     })
 
     // __ Организация Tabs
@@ -340,7 +325,7 @@
             typeActive: 'warning',
             task: null,
         })
-        sewingDay.value?.sewing_tasks.forEach((task) =>
+        sewingDay.value?.sewing_tasks.forEach(task =>
             tabs.value.push({
                 show: true,
                 label: [
@@ -409,10 +394,13 @@
             // __ 3. Если нет, то запускаем выполнение
 
             const startedDay = await sewingStore.startSewingDay(sewingDay.value!.id)
-            console.log('Start: returnedData: ', startedDay)
+            // console.log('Start: returnedData: ', startedDay)
 
             if (checkCRUD(startedDay)) {
                 sewingDay.value!.start_at = startedDay.start_at
+                sewingDay.value!.finish_at = null
+                // console.log('start')
+                startTimer()
             } else {
                 await showError()
                 return
@@ -477,7 +465,7 @@
 
     // __ Добавляем работника
     const addWorker = (worker: ISewingDayWorker) => {
-        const existWorker = sewingDay.value!.workers.find((w) => w.id === worker.id)
+        const existWorker = sewingDay.value!.workers.find(w => w.id === worker.id)
         if (!existWorker) {
             sewingDay.value!.workers.push(worker)
         }
@@ -485,7 +473,7 @@
 
     // __ Удаляем работника
     const removeWorker = (worker: ISewingDayWorker) => {
-        const findIndex = sewingDay.value!.workers.findIndex((w) => w.id === worker.id)
+        const findIndex = sewingDay.value!.workers.findIndex(w => w.id === worker.id)
         if (findIndex !== -1) {
             sewingDay.value!.workers.splice(findIndex, 1)
             if (sewingDay.value!.responsible && sewingDay.value!.responsible.id === worker.id) {
@@ -508,8 +496,8 @@
         const result = (await sewingStore.setSewingTaskLinesDone(sewingLinesIds)) as ISewingTaskLine[]
 
         if (checkCRUD(result)) {
-            result.forEach((line) => {
-                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find((l) => l.id === line.id)
+            result.forEach(line => {
+                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find(l => l.id === line.id)
                 if (findLine) {
                     findLine.finished_at = line.finished_at
                 }
@@ -524,8 +512,8 @@
         const result = (await sewingStore.setSewingTaskLinesFalse(sewingLinesIds, falseReason)) as ISewingTaskLine[]
 
         if (checkCRUD(result)) {
-            result.forEach((line) => {
-                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find((l) => l.id === line.id)
+            result.forEach(line => {
+                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find(l => l.id === line.id)
                 if (findLine) {
                     findLine.false_at = line.false_at
                     findLine.false_reason = line.false_reason
@@ -541,8 +529,8 @@
         const result = (await sewingStore.setSewingTaskLinesReset(sewingLinesIds)) as ISewingTaskLine[]
 
         if (checkCRUD(result)) {
-            result.forEach((line) => {
-                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find((l) => l.id === line.id)
+            result.forEach(line => {
+                const findLine = allSewingTasksLinesUnion.value.sewing_lines.find(l => l.id === line.id)
                 if (findLine) {
                     findLine.finished_at = line.finished_at
                     findLine.false_at = line.false_at
@@ -556,13 +544,13 @@
 
     // __ Разделяем строку
     const divideLine = async (taskId: number, sewingLineId: number, range: { take: number; keep: number }) => {
-        const findTask = sewingDay.value!.sewing_tasks.find((task) => task.id === taskId)
+        const findTask = sewingDay.value!.sewing_tasks.find(task => task.id === taskId)
         if (!findTask) {
             return // страховка
         }
 
-        const dividerElementIndex = findTask.sewing_lines.findIndex((line) => line.id === sewingLineId)
-        let newSewingLine = { ...findTask.sewing_lines[dividerElementIndex] } // __ Копируем объект
+        const dividerElementIndex = findTask.sewing_lines.findIndex(line => line.id === sewingLineId)
+        const newSewingLine = { ...findTask.sewing_lines[dividerElementIndex] } // __ Копируем объект
         newSewingLine.id = 0 // __ Устанавливаем новый ID
         newSewingLine.position = round(newSewingLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
@@ -587,20 +575,22 @@
 
         // __ Фильтруем задания
         sewingDay.value!.sewing_tasks = globalSewingTasks.value
-            .filter(
-                (task) =>
-                    task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID ||
-                    task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID
-            )
+            .filter(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID || task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
             .sort((a, b) => a.position - b.position)
 
         // __ Формируем объединение всех SewingTaskLines
         allSewingTasksLinesUnion.value.sewing_lines = []
-        sewingDay.value!.sewing_tasks.forEach((task) =>
-            task.sewing_lines.forEach((line) => allSewingTasksLinesUnion.value.sewing_lines.push(line))
-        )
+        sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLinesUnion.value.sewing_lines.push(line)))
 
         allSewingTasksLinesUnion.value.position = UNION_TASKS_POSITION // __ Позиция объединения всех строк
+    }
+
+    const startTimer = () => {
+        // __ Запускаем счетчик
+        timer = setInterval(() => {
+            now.value = new Date().getTime() / 1000
+            // console.log(now.value)
+        }, 1000)
     }
 
     watch(
@@ -643,10 +633,11 @@
                 prepareData()
 
                 // __ Запускаем счетчик
-                timer = setInterval(() => {
-                    now.value = new Date().getTime() / 1000
-                    // console.log(now.value)
-                }, 1000)
+                startTimer()
+                // timer = setInterval(() => {
+                //     now.value = new Date().getTime() / 1000
+                //     // console.log(now.value)
+                // }, 1000)
 
                 setTabs()
 
