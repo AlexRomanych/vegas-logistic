@@ -23,6 +23,7 @@ class Material extends Model
         'is_collapsed'   => 'boolean',
         'is_checked'     => 'boolean',
         'alt_multiplier' => 'float',
+        'properties'     => 'array',
     ];
 
     protected $appends = [
@@ -85,7 +86,9 @@ class Material extends Model
     // Relations: Связь с Категорией. Если текущий объект — Группа, получаем все её Категории.
     public function categories(): HasMany
     {
-        return $this->hasMany(Material::class, 'material_group_code_1c', CODE_1C);
+        return $this
+            ->hasMany(Material::class, 'material_group_code_1c', CODE_1C)
+            ->whereNull('material_category_code_1c');
     }
 
     // Relations: Связь с Группой. Если текущий объект — Категория, получаем все её Материалы.
@@ -93,6 +96,13 @@ class Material extends Model
     {
         return $this->hasMany(Material::class, 'material_category_code_1c', CODE_1C);
     }
+
+
+    // В модели Material
+    //public function childrenCategories(): HasMany
+    //{
+    //    return $this->categories()->with('childrenCategories');
+    //}
 
 
 }

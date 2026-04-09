@@ -4,30 +4,39 @@ namespace App\Http\Controllers\Api\V1\Materials;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Material\MaterialShowGroupResource;
 use App\Models\Materials\Material;
 use App\Models\Materials\MaterialCategory;
 use App\Models\Materials\MaterialGroup;
 use App\Services\MaterialsService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
 class MaterialController extends Controller
 {
 
+    /**
+     * ___ Получаем все материалы
+     * @return AnonymousResourceCollection|string
+     */
     public function getMaterials()
     {
-        $materials = Material::all();
+        try {
+            // __ Получаем только Группы (у которых нет родительской группы и категории)
+            $materials = Material::query()
+                ->whereNull('material_group_code_1c')
+                ->whereNull('material_category_code_1c')
+                ->with(['categories', 'categories.materials']) // Подгружаем категории и их материалы
+                ->orderBy('name')
+                ->get();
 
-        // Получаем только Группы (у которых нет родительской группы и категории)
-        $materials = Material::query()
-            ->whereNull('material_group_code_1c')
-            ->whereNull('material_category_code_1c')
-            ->with('categories.materials') // Подгружаем категории и их материалы
-            ->orderBy('name')
-            ->get();
-
-        return $materials;
+            return MaterialShowGroupResource::collection($materials);
+            //return $materials;
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
     /**
@@ -46,7 +55,6 @@ class MaterialController extends Controller
 
             $CODE_1C_COPY = CODE_1C . '_copy';
             foreach ($data as $materialGroup) {
-
                 // __ Вставляем Группу материалов
                 $createdMaterialGroup = Material::query()->updateOrCreate(
                     [
@@ -61,7 +69,6 @@ class MaterialController extends Controller
                 );
 
                 foreach ($materialGroup['categories'] as $materialCategory) {
-
                     // __ Вставляем Категорию материалов
                     $createdMaterialCategory = Material::query()->updateOrCreate(
                         [
@@ -76,7 +83,6 @@ class MaterialController extends Controller
                     );
 
                     foreach ($materialCategory['materials'] as $material) {
-
                         // __ Вставляем Материалы
                         $createdMaterial = Material::query()->updateOrCreate(
                             [
@@ -91,18 +97,13 @@ class MaterialController extends Controller
                             ],
                         );
                     }
-
                 }
-
-
             }
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-
-
     }
 
 
@@ -114,7 +115,6 @@ class MaterialController extends Controller
             $data = json_decode($data['data'], true);
 
             foreach ($data as $materialGroup) {
-
                 // __ Вставляем Группу материалов
                 $createdMaterialGroup = MaterialGroup::query()->updateOrCreate(
                     [
@@ -126,7 +126,6 @@ class MaterialController extends Controller
                 );
 
                 foreach ($materialGroup['categories'] as $materialCategory) {
-
                     // __ Вставляем Категорию материалов
                     $createdMaterialCategory = MaterialCategory::query()->updateOrCreate(
                         [
@@ -139,7 +138,6 @@ class MaterialController extends Controller
                     );
 
                     foreach ($materialCategory['materials'] as $material) {
-
                         // __ Вставляем Материалы
                         $createdMaterial = Material::query()->updateOrCreate(
                             [
@@ -153,10 +151,7 @@ class MaterialController extends Controller
                             ],
                         );
                     }
-
                 }
-
-
             }
 
             $a = 0;
@@ -165,7 +160,5 @@ class MaterialController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-
-
     }
 }
