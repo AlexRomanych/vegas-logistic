@@ -7,6 +7,7 @@ use App\Contracts\VegasDataGetContract;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Model\Labors\CollectionGroupResource;
 use App\Http\Resources\Model\ModelResource;
+use App\Http\Resources\Model\Show\ModelShowCollectionResource;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
 use App\Models\Models\ModelManufactureStatus;
@@ -41,7 +42,6 @@ class ModelController extends Controller
             ModelsService::setActiveToFalseForModelsEntities();
 
             foreach ($data as $item) {
-
                 // __ Вставляем новую коллекцию, если она не существует
                 $modelsCollection = ModelsService::createOrUpdateModelEntity(
                     ModelCollection::class,
@@ -54,9 +54,9 @@ class ModelController extends Controller
                 if (!$modelsCollection) {
                     throw new Exception(
                         'Fail to insert model collection: '
-                        .$item['model_collection_code_1c']
-                        .' => '
-                        .$item['model_collection_name']
+                        . $item['model_collection_code_1c']
+                        . ' => '
+                        . $item['model_collection_name']
                     );
                 }
 
@@ -72,9 +72,9 @@ class ModelController extends Controller
                 if (!$modelType) {
                     throw new Exception(
                         'Fail to insert model type: '
-                        .$item['model_type_code_1c']
-                        .' => '
-                        .$item['model_type_name']
+                        . $item['model_type_code_1c']
+                        . ' => '
+                        . $item['model_type_name']
                     );
                 }
 
@@ -90,8 +90,8 @@ class ModelController extends Controller
                 if (!$modelManufactureType) {
                     throw new Exception(
                         'Fail to insert model manufacture type: '
-                        .$item['model_manufacture_type_code_1c']
-                        .' => '.$item['model_manufacture_type_name']
+                        . $item['model_manufacture_type_code_1c']
+                        . ' => ' . $item['model_manufacture_type_name']
                     );
                 }
 
@@ -107,9 +107,9 @@ class ModelController extends Controller
                 if (!$modelManufactureStatus) {
                     throw new Exception(
                         'Fail to insert model manufacture status: '
-                        .$item['model_manufacture_status_id']
-                        .' => '
-                        .$item['model_manufacture_status_name']
+                        . $item['model_manufacture_status_id']
+                        . ' => '
+                        . $item['model_manufacture_status_name']
                     );
                 }
 
@@ -119,7 +119,7 @@ class ModelController extends Controller
                 if (!$modelManufactureGroup) {
                     throw new Exception(
                         'Fail to find model manufacture group: '
-                        .$item['model_manufacture_group_id']
+                        . $item['model_manufacture_group_id']
                     // . ' =>'
                     // . $item['model_manufacture_type_name']
                     );
@@ -187,7 +187,6 @@ class ModelController extends Controller
                         'barcode' => $item['barcode'] === '' ? null : $item['barcode'],
                     ],
                 );
-
             }
 
 
@@ -195,12 +194,9 @@ class ModelController extends Controller
             $allModels = ModelsService::getModels();
 
             foreach ($allModels as $model) {
-
                 $modelArray = $model->toArray();
 
                 if (!is_null($model->cover_code_1c_copy)) {
-
-
                     if (ModelsService::getModelByCode1C($model->cover_code_1c_copy)) {
                         $model->cover_code_1c = $model->cover_code_1c_copy;
                         $model->save();
@@ -220,7 +216,6 @@ class ModelController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-
     }
 
 
@@ -245,7 +240,6 @@ class ModelController extends Controller
             // });
 
             return new CollectionGroupResource($grouped);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -254,7 +248,7 @@ class ModelController extends Controller
 
     /**
      * ___ Обновление Схему Типовой операции Пошива для Модели
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function updateModelSewingOperationSchema(Request $request)
@@ -277,10 +271,9 @@ class ModelController extends Controller
     }
 
 
-
     /**
      * ___ Удаляем операцию (pivot) из Модели (промежуточной таблицы)
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function deleteSewingOperationFromModel(Request $request)
@@ -306,7 +299,7 @@ class ModelController extends Controller
 
     /**
      * ___ Добавляем или обновляем операцию (pivot) в Модель (промежуточную таблицу)
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function addSewingOperationToModel(Request $request)
@@ -343,41 +336,51 @@ class ModelController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     //
     public function model($code1C)
     {
         return new ModelResource(Model::query()->find($code1C));
     }
 
+
+    // ___ Получение всех моделей
     public function getModels()
     {
+        try {
+            $collections = ModelCollection::query()
+                ->where('active', true)
+                ->with([
+                    'models',
+                    'models.sewingSchema',
+                    'models.modelType',
+                    'models.manufactureGroup',
+                    'models.manufactureType',
+                    'models.manufactureStatus',
+                    //'models.collection',
+                    'models.cover',
+                ])
+                ->orderBy('name')
+                ->get();
 
-        // __ Матрасы, у которых есть Чехлы
-        // $models = Model::query()
-        //     ->whereNotNull('cover_code_1c')
-        //     ->with(['cover', 'constructs', 'constructs.constructItems'])
-        //     ->get();
 
-        // __ Чехлы
-        $models = Model::query()
-            ->where('model_type_code_1c', '000000012')
-            ->with(['base', 'constructs', 'constructs.constructItems'])
-            ->get();
+            // __ Матрасы, у которых есть Чехлы
+            // $models = Model::query()
+            //     ->whereNotNull('cover_code_1c')
+            //     ->with(['cover', 'constructs', 'constructs.constructItems'])
+            //     ->get();
 
-        return $models;
+            // __ Чехлы
+            //$models = Model::query()
+            //    ->where('model_type_code_1c', '000000012')
+            //    ->with(['base', 'constructs', 'constructs.constructItems'])
+            //    ->get();
 
+            //return ModelResource::collection($models);
+
+            return ModelShowCollectionResource::collection($collections);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
     public function show(string $id)
@@ -397,7 +400,6 @@ class ModelController extends Controller
             App::make(CollectionsService::class, [$getter])->updateData();
             App::make(ModelsService::class, [$getter])->updateData();
             return '';
-
         } catch (Exception $e) {
             return response()->json($e->getMessage(), 400);
         }

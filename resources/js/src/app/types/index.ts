@@ -12,6 +12,8 @@ export * from './order_types.ts'                    // Все типы для З
 export * from './sewing_types.ts'                   // Все типы для Пошива
 export * from './worker_types.ts'                   // Все типы для Персонала
 export * from './material_types.ts'                 // Все типы для Материалов
+export * from './model_types.ts'                    // Все типы для Моделей
+
 
 export type { IFontsType } from '@/app/constants/fontSizes.ts'   // Все типы для шрифтов
 export type { IColorTypes } from '@/app/constants/colorsClasses.ts'

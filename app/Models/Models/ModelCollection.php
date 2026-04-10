@@ -21,8 +21,10 @@ class ModelCollection extends LaravelModel
         'active' => 'boolean'
     ];
 
+
+    // Relations: Связь с моделями
     public function models(): HasMany
     {
-        return $this->hasMany(\App\Models\Models\Model::class, 'collection_id', CODE_1C );
+        return $this->hasMany(Model::class, 'model_collection_code_1c', CODE_1C );
     }
 }

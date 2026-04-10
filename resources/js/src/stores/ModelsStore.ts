@@ -59,11 +59,8 @@ export const useModelsStore = defineStore('models', () => {
 
 
     //__ Получаем с API список моделей
-    const getModels = async (params: any) => {
-        const result = await jwtGet(URL_MODELS, params)
-
-        modelsCacshe.value = result.data
-
+    const getModels = async () => {
+        const result = await jwtGet(URL_MODELS)
         if (DEBUG) console.log('ModelsStore: getModels: ', result)
         return result.data
     }

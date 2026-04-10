@@ -68,7 +68,7 @@ final class Model extends LaravelModel
 
     protected $casts = [
         'active'       => 'boolean',
-        'line'         => 'boolean',
+        'lamit'        => 'boolean',
         'base_height'  => 'float',
         'cover_height' => 'float',
     ];
@@ -217,6 +217,23 @@ final class Model extends LaravelModel
         return $this->belongsTo(ModelType::class, 'model_type_code_1c', CODE_1C);
     }
 
+    // Relations: Связь с Группой производства (FMX, Неопознанные, и т.д.)
+    public function manufactureGroup(): BelongsTo
+    {
+        return $this->belongsTo(ModelManufactureGroup::class, 'model_manufacture_group_id', 'id');
+    }
+
+    // Relations: Связь с Типом производства (Производство матрасов, Производство чехлов, Производство подушек, и т.д.)
+    public function manufactureType(): BelongsTo
+    {
+        return $this->belongsTo(ModelManufactureType::class, 'model_manufacture_type_code_1c', CODE_1C);
+    }
+
+    // Relations: Связь со Статусом производства (Выпускается, Вариант исполнения, Архив, и т.д.)
+    public function manufactureStatus(): BelongsTo
+    {
+        return $this->belongsTo(ModelManufactureStatus::class, 'model_manufacture_status_id', 'id');
+    }
 
     // Relations: Связь с Типом производства
     public function modelManufactureStatus(): BelongsTo
