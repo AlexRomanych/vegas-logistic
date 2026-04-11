@@ -249,9 +249,11 @@ class CellSewingDayController extends Controller
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
 
-                // __ Или начинаем, если не начато, или продолжаем
+                // __ Или начинаем, если не начато, или продолжаем, но запоминаем время возобновления
                 if (is_null($sewingDay->start_at)) {
                     $sewingDay->start_at = now();
+                } else {
+                    $sewingDay->resume_at = now();
                 }
                 $sewingDay->finish_at = null;
                 $sewingDay->save();
@@ -321,6 +323,10 @@ class CellSewingDayController extends Controller
             DB::transaction(function () use ($sewingDay) {
 
                 $sewingDay->finish_at = now();
+
+                // __ Добавляем длительность в секундах
+                $startPoint = is_null($sewingDay->resume_at) ? $sewingDay->start_at : $sewingDay->resume_at;
+                $sewingDay->duration += $startPoint?->diffInSeconds($sewingDay->finish_at) ?? 0;
                 $sewingDay->save();
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"

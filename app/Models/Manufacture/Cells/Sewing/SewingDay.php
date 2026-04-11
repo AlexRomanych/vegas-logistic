@@ -20,6 +20,7 @@ class SewingDay extends Model
         'paused_at' => 'datetime',
         'resume_at' => 'datetime',
         'finish_at' => 'datetime',
+        'duration'  => 'integer',
     ];
 
     // protected function casts(): array

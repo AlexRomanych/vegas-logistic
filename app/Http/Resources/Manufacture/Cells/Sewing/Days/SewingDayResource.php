@@ -26,7 +26,7 @@ class SewingDayResource extends JsonResource
             'paused_at'     => $this->paused_at?->format(RETURN_DATE_TIME_FORMAT),
             'resume_at'     => $this->resume_at?->format(RETURN_DATE_TIME_FORMAT),
             'finish_at'     => $this->finish_at?->format(RETURN_DATE_TIME_FORMAT),
-            'duration'      => $this->duration,
+            'duration'      => $this->duration ?? 0,
             'description'   => $this->description,
             'comment'       => $this->comment,
             'responsible'   => new SewingDayWorkerResource($this->whenLoaded('responsible')),

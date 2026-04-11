@@ -40,7 +40,6 @@ Route::get('/users', [UserController::class, 'all']);
 Route::prefix('/models')
     ->middleware('jwt.auth')
     ->group(function () {
-
         Route::get('/', [ModelController::class, 'getModels']);
         Route::post('/upload', [ModelController::class, 'modelsUpload']);
 
@@ -49,7 +48,6 @@ Route::prefix('/models')
 
         Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
-
     });
 
 
@@ -65,10 +63,8 @@ Route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->nam
 Route::prefix('/materials')
     ->middleware('jwt.auth')
     ->group(function () {
-
         Route::get('/', [MaterialController::class, 'getMaterials']);
         Route::post('/upload', [MaterialController::class, 'materialsUpload']);
-
     });
 
 //hr--------------------------------------------------------------------------------------------------------------------
@@ -88,7 +84,6 @@ Route::get('/orders/types/fill', [OrderController::class, 'fillOrderTypes']);
 Route::prefix('/orders')
     ->middleware('jwt.auth')
     ->group(function () {
-
         //Route::get('/types/fill', [OrderController::class, 'fillOrderTypes']);
         Route::get('/types', [OrderController::class, 'getOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
 
@@ -106,8 +101,6 @@ Route::prefix('/orders')
 
 
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
-
-
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -137,8 +130,6 @@ Route::prefix('sewing')
         Route::post('tasks/add/order', [CellSewingTaskController::class, 'addSewingTasksByOrderId']);
         Route::delete('tasks/delete/order', [CellSewingTaskController::class, 'deleteSewingTasksByOrderId']);
 
-
-
         // __ Типовые операции
         Route::get('operations', [CellSewingOperationController::class, 'getSewingOperations']);
         Route::get('operations/{id}', [CellSewingOperationController::class, 'getSewingOperation']);
@@ -165,7 +156,6 @@ Route::prefix('sewing')
         Route::patch('/task/statuses/color/patch', [CellSewingStatusController::class, 'patchSewingTaskStatusColor']);
         Route::post('/task/statuses/set', [CellSewingStatusController::class, 'setSewingTasksStatuses']);
 
-
         // __ Производственный день
         Route::get('/day/{date}/{change}', [CellSewingDayController::class, 'getSewingDayByDateAndChange']);
         Route::get('/day/dates', [CellSewingDayController::class, 'getSewingDaysByDates']);
@@ -176,7 +166,6 @@ Route::prefix('sewing')
         Route::patch('/day/responsible/remove', [CellSewingDayController::class, 'removeResponsibleFromSewingDay']);
         Route::patch('/day/start', [CellSewingDayController::class, 'startSewingDay']);
         Route::patch('/day/finish', [CellSewingDayController::class, 'finishSewingDay']);
-
 
 
         // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
@@ -197,7 +186,6 @@ Route::prefix('sewing')
 Route::prefix('/plan')
     ->middleware('jwt.auth')
     ->group(function () {
-
         Route::post('/loads/upload', [PlanLoadsController::class, 'uploadLoads']);      // ___ Загрузка плана
         Route::post('/loads/validate', [PlanLoadsController::class, 'validateLoads']);  // ___ Проверка плана с Бэка
 
@@ -206,7 +194,6 @@ Route::prefix('/plan')
 
 
         Route::get('/business-process-node', [PlanController::class, 'getPlanBusinessProcessNode']);
-
     });
 
 
