@@ -18,7 +18,6 @@ use App\Services\ModelsService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class ModelController extends Controller
@@ -343,7 +342,9 @@ class ModelController extends Controller
     }
 
 
-    // ___ Получение всех моделей
+    /*
+     * ___ Получение всех моделей
+     */
     public function getModels()
     {
         try {
@@ -404,5 +405,9 @@ class ModelController extends Controller
             return response()->json($e->getMessage(), 400);
         }
     }
+
+
+
+
 
 }

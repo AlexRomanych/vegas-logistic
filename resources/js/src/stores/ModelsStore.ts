@@ -1,18 +1,16 @@
 // Хранилище для моделей
 
 import { defineStore } from 'pinia'
-import { ref, /*reactive, computed, watch */} from 'vue'
+// import { ref, /*reactive, computed, watch */} from 'vue'
 
-import { jwtGet, jwtPost, jwtDelete } from '@/app/utils/jwt_api'
+import { jwtGet, jwtPost, /*jwtDelete*/ } from '@/app/utils/jwt_api'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 const DEBUG = true
 
-const WRAP = 'models'   // Обертка на бэке
-
 // Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/'                                                   // Префикс API
-const URL_MODEL = 'model/'                                                      // URL для получения модели
+// const API_PREFIX = '/api/v1/'                                                   // Префикс API
+// const URL_MODEL = 'model/'                                                      // URL для получения модели
 
 const URL_MODELS = 'models/'                                                    // URL для получения списка моделей с сервера
 const URL_MODELS_UPLOAD = 'models/upload/'                                      // URL для загрузки моделей на сервер
@@ -29,7 +27,7 @@ const URL_MODELS_CONSTRUCTS_UPLOAD = 'models/constructs/upload/'                
 export const useModelsStore = defineStore('models', () => {
 
     // __ Кэш Моделей
-    const modelsCacshe = ref([])
+    // const modelsCache = ref([])
 
     // __ Загрузка (Обновление) моделей на сервер
     const uploadModels = async (fileData: string) => {

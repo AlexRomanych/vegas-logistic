@@ -1,5 +1,10 @@
 // info Тут все типы для Моделей
 
+
+// --- --------------------------------------------------------------------
+// --- ----------------- Для рендера Моделей (Show) -----------------------
+// --- --------------------------------------------------------------------
+
 // __ Коллекция
 export interface IModelCollection {
     code_1c: string
@@ -78,3 +83,51 @@ export interface IModelManufactureStatus {
     name: string
 }
 
+
+// --- --------------------------------------------------------------------
+// --- -------- Для рендера Спецификаций Моделей (Show) -------------------
+// --- --------------------------------------------------------------------
+
+// __ Спецификация (Модель для группировки информации по спецификациям)
+export interface IModelSpecification {
+    code_1c: string
+    name: string
+    constructs: IModelConstruct[]
+
+    collapsed: boolean
+    shown: boolean
+}
+
+// __ Спецификации
+export interface IModelConstruct {
+    code_1c: string
+    name: string
+    items: IModelConstructItem[]
+
+    collapsed: boolean
+    shown: boolean
+}
+
+// __ Элемент спецификации
+export interface IModelConstructItem {
+    detail_height: number | null
+    detail: string | null
+    amount: number
+    position: number
+    material: IModelConstructMaterial               // __ Тут подменяем в контроллере и material будет всегда
+    procedure: IModelConstructProcedure | null      // __ Тут может быть и null
+}
+
+// __ Материал
+export interface IModelConstructMaterial {
+    code_1c: string
+    // code_1c_copy: string
+    name: string
+    unit: string | null
+    in_base: boolean,
+}
+
+// __ Процедура расчета
+export interface IModelConstructProcedure {
+    name: string | null
+}

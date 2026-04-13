@@ -190,10 +190,16 @@ final class Model extends LaravelModel
     }
 
 
-    // Relations: Связь со спецификацией
+    // Relations: Связь со спецификацией (Один ко многим)
     public function constructs(): HasMany
     {
         return $this->hasMany(ModelConstruct::class, 'model_code_1c', CODE_1C);
+    }
+
+    // Relations: Связь со спецификацией (Один к одному)
+    public function constructSingle(): HasOne
+    {
+        return $this->hasOne(ModelConstruct::class, 'model_code_1c', CODE_1C);
     }
 
 

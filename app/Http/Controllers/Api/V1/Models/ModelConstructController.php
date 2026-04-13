@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1\Models;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ConstructTypes;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Model\Construct\ModelConstructSpecification;
+use App\Models\Models\Model;
 use App\Models\Models\ModelConstruct;
 use App\Models\Models\ModelConstructItem;
 use App\Services\MaterialsService;
@@ -12,15 +14,38 @@ use App\Services\ModelsService;
 use App\Services\ProceduresService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class ModelConstructController extends Controller
 {
 
+    /**
+     *  ___ Получаем все спецификации моделей
+     * @return AnonymousResourceCollection|string
+     */
     public function getModelConstructs()
     {
+        try {
+            $modelConstructs = Model::query()
+                ->basics()  // __ Выбираем только основные модели + чехлы
+                ->where(CODE_1C, 'NOT LIKE', '%CM_%') // __ Исключаем расчетные модели
+                ->where(CODE_1C, 'NOT LIKE', '%CA_%')
+                ->with([
+                    'constructs',   // __ Используем отношение один ко многим, чтобы выявить ошибку, если спецификация не одна
+                    //'constructSingle', // __ Один к одному (Одна спецификация на модель)
+                    'constructs.constructItems',
+                    'constructs.constructItems.procedure',
+                    'constructs.constructItems.material',
+                ])
+                ->orderBy('name')
+                ->get();
 
+            return ModelConstructSpecification::collection($modelConstructs);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 
@@ -46,8 +71,6 @@ class ModelConstructController extends Controller
             $fillsCount = 0;
 
             foreach ($data as $modelConstruct) {
-
-
                 // ___ Тут логика, когда в базе моделей уже есть чехлы
 
                 // __ Получаем модель (может быть как основная модель, так и чехол)
@@ -56,16 +79,16 @@ class ModelConstructController extends Controller
                 $constructType = null;
 
 
-
                 if ($model) {      // Заполняем спецификации только для существующих моделей
                     if (ModelsService::isElementCover($model)) {
                         $constructType = ConstructTypes::COVER->value;
-                    } else if (ModelsService::isElementMattress($model) || ModelsService::isElementUpMattress($model)) {
-                        $constructType = ConstructTypes::BASE->value;
+                    } else {
+                        if (ModelsService::isElementMattress($model) || ModelsService::isElementUpMattress($model)) {
+                            $constructType = ConstructTypes::BASE->value;
+                        }
                     }
 
                     $fillsCount++;
-
                 } else {
                     $missingModels[] = [
                         'code_1c' => $modelConstruct['mc'],
@@ -123,7 +146,6 @@ class ModelConstructController extends Controller
                         ->delete();
 
                     foreach ($modelConstruct['items'] as $modelConstructItem) {
-
                         $modelConstructItem['c'] = mb_substr($modelConstructItem['c'], -9); // Обрезаем код 1с до 9 символов, потому что есть косяки
 
                         $material = MaterialsService::getMaterialByCode1C($modelConstructItem['c']);    // c - material code 1c
@@ -163,7 +185,6 @@ class ModelConstructController extends Controller
                             ],
                         );
                     }
-
                 }, 2);  // 2 попытки
 
             }

@@ -2,11 +2,11 @@
 
 namespace App\Models\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ModelConstruct extends Model
+class ModelConstruct extends LaravelModel
 {
     protected $primaryKey = CODE_1C;
     protected $keyType = 'string';
@@ -28,6 +28,6 @@ class ModelConstruct extends Model
     // Relations: Связь с Моделью
     public function model(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Models\Model::class);
+        return $this->belongsTo(/*\App\Models\Models\*/Model::class);
     }
 }

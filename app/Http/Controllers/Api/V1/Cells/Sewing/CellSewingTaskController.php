@@ -557,6 +557,17 @@ class CellSewingTaskController extends Controller
 
         DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
 
+            // Warning!!!
+            // !!! В чем проблема сейчас?
+            // !!! Твой «ШАГ 1» уводит записи в минус на текущей дате (action_at). Если на новой дате, куда ты хочешь перенести задачу,
+            // !!!уже есть запись с такой же позицией, ты все равно получишь Unique violation.
+            // !!! Решение: Полное «обнуление» конфликта
+            // !!! Чтобы гарантированно избежать проблем, тебе нужно на первом шаге временно сделать записи уникальными не только по позиции, но и по дате,
+            // !!! чтобы они вообще не пересекались ни с какими существующими данными.
+            //$placeholders = implode(',', array_fill(0, count($allIds), '?'));
+            //DB::update("UPDATE {$table} SET position = (id * -1) WHERE id IN ({$placeholders})", $allIds);
+
+
             // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
             if (!empty($idsForMinus)) {
                 $placeholders = implode(',', array_fill(0, count($idsForMinus), '?'));

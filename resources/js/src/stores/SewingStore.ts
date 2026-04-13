@@ -289,7 +289,8 @@ export const useSewingStore = defineStore('sewing', () => {
             console.log('Server data updated')
         } else {
 
-            globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+            globalSewingTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+            // globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
         }
 
         return result
