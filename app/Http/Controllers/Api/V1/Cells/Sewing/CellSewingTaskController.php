@@ -557,7 +557,7 @@ class CellSewingTaskController extends Controller
 
         DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
 
-            // Warning!!!
+            // Warning!!! Не работает. Уводит position в минус.
             // !!! В чем проблема сейчас?
             // !!! Твой «ШАГ 1» уводит записи в минус на текущей дате (action_at). Если на новой дате, куда ты хочешь перенести задачу,
             // !!!уже есть запись с такой же позицией, ты все равно получишь Unique violation.

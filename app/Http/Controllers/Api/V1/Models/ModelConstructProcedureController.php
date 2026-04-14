@@ -8,6 +8,7 @@ use App\Http\Resources\Model\ModelConstructProcedureResource;
 use App\Models\Models\ModelConstructProcedure;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ModelConstructProcedureController extends Controller
 {
@@ -48,6 +49,10 @@ class ModelConstructProcedureController extends Controller
     }
 
 
+    /**
+     * ___ Получение процедур расчета
+     * @return AnonymousResourceCollection|string
+     */
     public function getModelProcedures()
     {
         try {

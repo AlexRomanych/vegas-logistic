@@ -333,7 +333,7 @@ final class OrdersService_Old implements VegasDataUpdateContract
         $fileName = config('vegas.orders_EPS_json_name');
         $orders = $this->getData($fileName);
 
-        Order::query()->truncate(); // Очистка таблицы
+        //Order::query()->truncate(); // Очистка таблицы
 
         foreach ($orders as $order) {
 

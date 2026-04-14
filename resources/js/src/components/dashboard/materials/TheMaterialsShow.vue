@@ -297,7 +297,7 @@ const render: IRenderData = reactive({
     },
     group_name    : {
         id            : () => 'name-search',
-        header        : ['Название', 'Группы материалов'],
+        header        : ['Название', 'Группы/категории/материала'],
         width         : 'w-[434px]',
         height        : DEFAULT_HEIGHT,
         show          : true,

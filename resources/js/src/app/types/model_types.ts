@@ -127,7 +127,23 @@ export interface IModelConstructMaterial {
     in_base: boolean,
 }
 
-// __ Процедура расчета
+// __ Процедура расчета в элементе спецификации
 export interface IModelConstructProcedure {
     name: string | null
+}
+
+// --- --------------------------------------------------------------------
+// --- ------------ Для рендера Процедур расчета (Show) -------------------
+// --- --------------------------------------------------------------------
+
+// __ Процедура расчета
+export interface IModelProcedure {
+    code_1c: string
+    name: string
+    object_code_1c: string | null
+    object_name: string | null
+    text: string | null
+    text_vba: string | null
+
+    collapsed: boolean
 }
