@@ -17,7 +17,7 @@
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.start_at"
-                    :text="['Старт:', formatTimeInFullFormat(sewingDay?.start_at)]"
+                    :text="['🕑Старт:', formatTimeInFullFormat(sewingDay?.start_at)]"
                     align="center"
                     class="start-group"
                     rounded="4"
@@ -29,7 +29,7 @@
                 <!-- __ Окончание выполнения -->
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.finish_at"
-                    :text="['Финиш:', formatTimeInFullFormat(sewingDay?.finish_at)]"
+                    :text="['🕑Финиш:', formatTimeInFullFormat(sewingDay?.finish_at)]"
                     align="center"
                     class="start-group"
                     rounded="4"
@@ -41,7 +41,7 @@
                 <!-- __ Длительность -->
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.start_at"
-                    :text="['Длительность:', elapsedTime === -1 ? '' : formatTimeWithLeadingZeros(elapsedTime)]"
+                    :text="['🕑Длительность:', elapsedTime === -1 ? '' : formatTimeWithLeadingZeros(elapsedTime)]"
                     align="center"
                     class="start-group"
                     rounded="4"

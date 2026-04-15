@@ -32,6 +32,19 @@
                     </template>
                 </template>
 
+                <!-- __ Видимость заголовков -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :text="showSubgroupNames ? '🔓' : '🔒'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="huge"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="showSubgroupNames = !showSubgroupNames"
+                />
+
                 <!-- __ Комментарий -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -43,7 +56,6 @@
                     type="indigo"
                     width="min-w-[300px]"
                 />
-
 
                 <div
                     v-if="isRunning"
@@ -131,7 +143,9 @@
 
                 <template v-if="subgroup.hasData">
 
-                    <div class="ml-2 pt-1"><span class="font-semibold italic underline">{{ subgroup.subgroupName }}</span></div>
+                    <div v-if="showSubgroupNames" class="ml-2 pt-1">
+                        <span class="font-semibold italic underline">{{ subgroup.subgroupName }}</span>
+                    </div>
 
                     <div
                         v-for="sewingLine of subgroup.lines"
@@ -330,6 +344,9 @@ const statistics = computed(() => getExecuteTaskStatistics(props.sewingTask))
 //     title:     `Подготовить отчет по модулю ${String.fromCharCode(65 + i % 26)}${i}`,
 //     completed: false
 // })))
+
+// __ Видимость названий подгрупп
+const showSubgroupNames = ref(true)
 
 // __ Табы Группировки СЗ по АШМ/УШМ
 const activeTabIndex = ref(0)
