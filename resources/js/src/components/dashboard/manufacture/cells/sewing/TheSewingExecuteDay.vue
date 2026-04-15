@@ -160,7 +160,7 @@ import { useSewingStore } from '@/stores/SewingStore.ts'
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { SEWING_TASK_DRAFT, SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
-import { getCoverSizeString, getExecuteTaskStatustics, getSewingTaskModelCoverName } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getCoverSizeString, getExecuteTaskStatistics, getSewingTaskModelCoverName } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
@@ -200,7 +200,7 @@ const sewingDay                = ref<ISewingDay | null>(null)
 const tasksBeforeCurrentDay    = ref<ISewingTask[]>([])
 const allSewingTasksLinesUnion = ref<ISewingTask>(SEWING_TASK_DRAFT) // __ Переменная для объединения всех SewingTaskLines
 
-const statistics = computed(() => getExecuteTaskStatustics(allSewingTasksLinesUnion.value))
+const statistics = computed(() => getExecuteTaskStatistics(allSewingTasksLinesUnion.value))
 
 const now                = ref(0)
 let timer: number | null = null
@@ -211,7 +211,7 @@ const clearTimer = () => timer && clearInterval(timer)
 
 // __ Группа Старта СЗ
 const isStartAvailable   = computed(() => {
-    // return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
+    return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
     return tasksBeforeCurrentDay.value.length === 0 && sewingDay.value?.sewing_tasks.length !== 0
 })
 // const everyTaskIsPending = computed(() => sewingDay.value?.sewing_tasks.every(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID))

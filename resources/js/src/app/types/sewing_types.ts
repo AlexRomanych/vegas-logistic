@@ -193,7 +193,7 @@ export type ISewingTaskStatusKeys =
     typeof SEWING_TASK_STATUS_DONE
 
 
-export interface ISewingTaskStatusItem{
+export interface ISewingTaskStatusItem {
     ID: number,
     WORD: string
     TITLE: string
@@ -282,13 +282,13 @@ export interface ISewingTaskArrayDiff {
     // current?: ISewingTask
     taskChanges?: {
         action_at?: {
-                        old: string | null
-                        new: string
-                    } | null
+            old: string | null
+            new: string
+        } | null
         position?: {
-                       old: number | null
-                       new: number
-                   } | null
+            old: number | null
+            new: number
+        } | null
     }
     lineChanges?: ISewingTaskArrayLineDiffs[]
 }
@@ -298,13 +298,13 @@ export interface ISewingTaskArrayLineDiffs {
     lineIdRef?: number
     type: IDiffsType
     amount?: {
-                 old: number | null
-                 new: number
-             } | null
+        old: number | null
+        new: number
+    } | null
     position?: {
-                   old: number | null
-                   new: number
-               } | null
+        old: number | null
+        new: number
+    } | null
 }
 
 // --- ------------------------------------------------------------
@@ -429,4 +429,44 @@ export interface ISewingTaskExecuteStatisticsItem {
     finished: number
     unfinished: number
     total: number
+}
+
+
+// --- -------------------------------------------------------------------
+// --- --------------- Тип для группировки СЗ по ШМ ----------------------
+// --- -------------------------------------------------------------------
+type ISewingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
+type ISewingTaskLinesSubGroupNames =
+    'Автоматы'
+    | 'Глухие, автоматическое чехление'
+    | 'Глухие'
+    | 'Глухие сложные'
+    | 'УШМ + окантователь'
+    | 'УШМ'
+    | 'Без ТКЧ'
+
+// __ Для набора правил Группировки СЗ по ШМ
+export interface ISewingTaskLinesGroup {
+    GROUP_NAME: ISewingTaskLinesGroupNames
+    GROUP_TYPE: IColorTypes
+    GROUP_COLOR?: string | null,
+    SUBGROUPS: {
+        SUBGROUP_NAME: ISewingTaskLinesSubGroupNames
+        SUBGROUP_TYPE: IColorTypes
+        SUBGROUP_COLOR?: string | null,
+        SUBGROUP_TCHK: string[]
+    }[]
+}
+
+// __ Для отображения СЗ по ШМ
+export interface ISewingTaskLinesGroupData {
+    groupName: ISewingTaskLinesGroupNames
+    groupType: IColorTypes
+    hasData: boolean,
+    subgroups: {
+        subgroupName:ISewingTaskLinesSubGroupNames
+        subgroupType: IColorTypes
+        hasData: boolean,
+        lines: ISewingTaskLine[]
+    }[]
 }

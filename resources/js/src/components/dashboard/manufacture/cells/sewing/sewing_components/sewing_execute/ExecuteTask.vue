@@ -98,7 +98,7 @@ import { computed, reactive, ref } from 'vue'
 import type { IRenderData, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
 
 import {
-    getExecuteTaskStatustics, getSewingTaskAmountAndTime, getTaskStatusById,
+    getExecuteTaskStatistics, getSewingTaskAmountAndTime, getTaskStatusById,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -359,7 +359,7 @@ const calculateTotals = computed(() => getSewingTaskAmountAndTime(props.sewingTa
 const color = computed<string>(() => props.sewingTask.current_status.color)
 
 // __ Объект статистики
-const statistics = computed(() => getExecuteTaskStatustics(props.sewingTask))
+const statistics = computed(() => getExecuteTaskStatistics(props.sewingTask))
 
 // __ Показать информацию о записи
 const showLineInfo = async (sewingLine: ISewingTaskLine) => {

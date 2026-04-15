@@ -93,7 +93,7 @@ import type { ISewingDay, ISewingMachineKeys, ISewingTaskLine } from '@/types'
 import { AVERAGE, SEWING_MACHINES, UNDEFINED } from '@/app/constants/sewing.ts'
 
 import {
-    getExecuteTaskStatustics, getSewingLineMachineType, getSewingTaskAmountAndTime
+    getExecuteTaskStatistics, getSewingLineMachineType, getSewingTaskAmountAndTime
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -128,7 +128,7 @@ const getMachinePercent = (key: string) => {
     const sewingLinesByMachine = commonSewingLines.value.filter(item => getSewingLineMachineType(item) === key)
 
     // __ Получаем объект статистики
-    const statistics = getExecuteTaskStatustics(sewingLinesByMachine)
+    const statistics = getExecuteTaskStatistics(sewingLinesByMachine)
     // console.log('statistics: ', statistics)
     return statistics.time.total !==0 ? statistics.time.finished / statistics.time.total * 100 : 0
 }

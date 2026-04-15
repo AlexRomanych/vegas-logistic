@@ -4,12 +4,12 @@ import type {
     IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ISewingDay,
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs, ISewingTaskExecuteStatistics,
-    ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLineTime,
+    ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLinesGroupData, ISewingTaskLineTime,
     ISewingTaskModel, ISewingTaskOrder,
     ISewingTaskOrderLine, ISewingTaskStatus, ISewingTaskStatusKeys,
 } from '@/types'
 
-import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
+import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_GROUP_RULES, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
@@ -47,7 +47,7 @@ export function getSewingTimes(sewingLine: ISewingTaskLine): IAmountAndTime {
     // __ Получаем время
     Object.entries(sewingLine.time).forEach(([key, value]) => {
         const machineTypeKey = key.replace('time_', '') as ISewingMachineKeys
-        const machineType = getMachineType(machineTypeKey)
+        const machineType    = getMachineType(machineTypeKey)
         if (!machineType) {
             return amountAndTimeObj     // __ Страховочка
         }
@@ -102,7 +102,7 @@ export function getTimeString(sewingLine: ISewingTaskLine, twoLines: boolean = f
     }
 
     const amountAndTimeObj = getSewingTimes(sewingLine)
-    let time = 0
+    let time               = 0
 
     // __ Получаем количество
     if (machineType === SEWING_MACHINES.AVERAGE) {
@@ -171,7 +171,7 @@ export function getSewingTaskAmountAndTime(item: ISewingTask | ISewingTaskLine[]
         // __ Получаем время
         Object.entries(sewing_line.time).forEach(([key, value]) => {
             const machineTypeKey = key.replace('time_', '') as ISewingMachineKeys
-            const machineType = getMachineType(machineTypeKey)
+            const machineType    = getMachineType(machineTypeKey)
             if (!machineType) {
                 return  // __ Страховочка
             }
@@ -232,7 +232,11 @@ export function getSewingTaskModelCoverName(
 
 
 // __ Сортируем массив строк по размерам
-export function sortSewingTaskLinesBySize(item: ISewingTask | ISewingTaskLine[], direction: 'asc' | 'desc' = 'asc') {
+export function sortSewingTaskLinesBySize(
+    item: ISewingTask | ISewingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',  // __ Берем высоту матраса или чехла
+): ISewingTaskLine[] {
 
     // __ Проверяем, что пришло на вход
     let sourceArray = []
@@ -247,12 +251,134 @@ export function sortSewingTaskLinesBySize(item: ISewingTask | ISewingTaskLine[],
         isFind = false
 
         for (let i = 0; i < sourceArray.length; i++) {
+
+            let height_i = sourceArray[i].order_line.dims.height
+            if (target === 'cover' && sourceArray[i].order_line.model.main.cover_height) {
+                height_i = sourceArray[i].order_line.model.main.cover_height
+            }
+
             for (let j = i + 1; j < sourceArray.length; j++) {
+
+                let height_j = sourceArray[j].order_line.dims.height
+                if (target === 'cover' && sourceArray[j].order_line.model.main.cover_height) {
+                    height_j = sourceArray[j].order_line.model.main.cover_height
+                }
+
                 if (direction === 'asc') {
                     if ((sourceArray[i].order_line.dims.width > sourceArray[j].order_line.dims.width)
                         || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length > sourceArray[j].order_line.dims.length)
-                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height > sourceArray[j].order_line.dims.height)) {
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i > height_j)) {
+                        // || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height > sourceArray[j].order_line.dims.height)) {
 
+                        [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                        // const temp = sourceArray[i]
+                        // sourceArray[i] = sourceArray[j]
+                        // sourceArray[j] = temp
+                        isFind = true
+                    }
+                } else {
+                    if ((sourceArray[i].order_line.dims.width < sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length < sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i < height_j)) {
+                        // || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height < sourceArray[j].order_line.dims.height)) {
+
+                        [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                        // const temp = sourceArray[i]
+                        // sourceArray[i] = sourceArray[j]
+                        // sourceArray[j] = temp
+                        isFind = true
+                    }
+                }
+            }
+        }
+    }
+
+    return sourceArray
+}
+
+
+// __ Сортируем массив строк по размерам и количеству
+export function sortSewingTaskLinesBySizeAndAmount(
+    item: ISewingTask | ISewingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover' = 'base',
+): ISewingTaskLine[] {
+    const sourceArray = Array.isArray(item) ? [...item] : [...item.sewing_lines]
+
+    sourceArray.sort((a, b) => {
+        const dimsA = a.order_line.dims
+        const dimsB = b.order_line.dims
+
+        // Определяем высоту в зависимости от цели
+        const hA = (target === 'cover' && a.order_line.model.main.cover_height)
+            ? a.order_line.model.main.cover_height
+            : dimsA.height
+        const hB = (target === 'cover' && b.order_line.model.main.cover_height)
+            ? b.order_line.model.main.cover_height
+            : dimsB.height
+
+        // Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
+        const criteria = [
+            dimsA.width - dimsB.width,
+            dimsA.length - dimsB.length,
+            hA - hB,
+            a.amount - b.amount
+        ];
+
+        // Ищем первое различие
+        for (const diff of criteria) {
+            if (diff !== 0) {
+                return direction === 'asc' ? diff : -diff
+            }
+        }
+
+        return 0
+    });
+
+    return sourceArray
+}
+
+
+
+export function sortSewingTaskLinesBySizeAndAmount_Old(
+    item: ISewingTask | ISewingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',  // __ Берем высоту матраса или чехла
+): ISewingTaskLine[] {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.sewing_lines
+    }
+
+    let isFind = true
+    while (isFind) {
+        isFind = false
+
+        for (let i = 0; i < sourceArray.length; i++) {
+
+            let height_i = sourceArray[i].order_line.dims.height
+            if (target === 'cover' && sourceArray[i].order_line.model.main.cover_height) {
+                height_i = sourceArray[i].order_line.model.main.cover_height
+            }
+
+            for (let j = i + 1; j < sourceArray.length; j++) {
+
+                let height_j = sourceArray[j].order_line.dims.height
+                if (target === 'cover' && sourceArray[j].order_line.model.main.cover_height) {
+                    height_j = sourceArray[j].order_line.model.main.cover_height
+                }
+
+                if (direction === 'asc') {
+                    if ((sourceArray[i].order_line.dims.width > sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length > sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i > height_j)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i === height_j && sourceArray[i].amount > sourceArray[j].amount)) {
+
+                        // [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
                         const temp = sourceArray[i]
                         sourceArray[i] = sourceArray[j]
                         sourceArray[j] = temp
@@ -261,8 +387,10 @@ export function sortSewingTaskLinesBySize(item: ISewingTask | ISewingTaskLine[],
                 } else {
                     if ((sourceArray[i].order_line.dims.width < sourceArray[j].order_line.dims.width)
                         || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length < sourceArray[j].order_line.dims.length)
-                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height < sourceArray[j].order_line.dims.height)) {
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i < height_j)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i === height_j && sourceArray[i].amount < sourceArray[j].amount)) {
 
+                        // [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
                         const temp = sourceArray[i]
                         sourceArray[i] = sourceArray[j]
                         sourceArray[j] = temp
@@ -306,18 +434,18 @@ export function calculateDividedAmountAndTime(sewingLine: ISewingTaskLine, newAm
     const refSewingLine = { ...sewingLine }
 
     let newAmountAvg: ISewingTaskLineAmountAvg | null = null
-    const newTime: ISewingTaskLineTime = {} as ISewingTaskLineTime
+    const newTime: ISewingTaskLineTime                = {} as ISewingTaskLineTime
 
     // __ Средняя модель
     if (refSewingLine.amount_avg) {
 
         newAmountAvg = {} as ISewingTaskLineAmountAvg
         Object.entries(refSewingLine.amount_avg).forEach(([key, value]) => {
-            const amount = refSewingLine.amount ? value / refSewingLine.amount * newAmount : 0
+            const amount                             = refSewingLine.amount ? value / refSewingLine.amount * newAmount : 0
             newAmountAvg![key as ISewingMachineKeys] = amount
 
             const arrKey: ISewingMachineTimesKeys = `time_${key}` as ISewingMachineTimesKeys
-            newTime[arrKey] = value ? round(refSewingLine.time[arrKey] / value * amount) : 0 // __ Уже новое пересчитанное количество
+            newTime[arrKey]                       = value ? round(refSewingLine.time[arrKey] / value * amount) : 0 // __ Уже новое пересчитанное количество
         })
 
         // Object.entries(refSewingLine.time).forEach(([key, value]) => {
@@ -332,9 +460,9 @@ export function calculateDividedAmountAndTime(sewingLine: ISewingTaskLine, newAm
         })
     }
 
-    refSewingLine.amount = newAmount
+    refSewingLine.amount     = newAmount
     refSewingLine.amount_avg = newAmountAvg
-    refSewingLine.time = newTime
+    refSewingLine.time       = newTime
 
     return refSewingLine
 }
@@ -397,7 +525,7 @@ export function getDiffsWithPositions(currentMatrix: IPlanMatrix, copyMatrix: IP
                 copyMap.set(task.id, {
                     dayOffset,
                     position: task.position,
-                    lines: JSON.parse(JSON.stringify(task.sewing_lines)), // __ глубокая копия строк
+                    lines   : JSON.parse(JSON.stringify(task.sewing_lines)), // __ глубокая копия строк
                 })
             })
         })
@@ -418,7 +546,7 @@ export function getDiffsWithPositions(currentMatrix: IPlanMatrix, copyMatrix: IP
                     return
                 }
 
-                const isMoved = old.dayOffset !== currentDayOffset
+                const isMoved      = old.dayOffset !== currentDayOffset
                 const isPosChanged = old.position !== task.position
 
                 // __ Проверяем детальные изменения в строках (sewing_lines)
@@ -431,13 +559,13 @@ export function getDiffsWithPositions(currentMatrix: IPlanMatrix, copyMatrix: IP
 
                         // __ Информация по датам
                         dayFromOffset: old.dayOffset,
-                        dayToOffset: currentDayOffset,
+                        dayToOffset  : currentDayOffset,
 
                         // __ Информация по позиции самой задачи
-                        oldTaskPosition: old.position,
-                        newTaskPosition: task.position,
+                        oldTaskPosition  : old.position,
+                        newTaskPosition  : task.position,
                         isPositionChanged: isPosChanged,
-                        isMoved: isMoved,
+                        isMoved          : isMoved,
 
                         // __ Детализация по строкам
                         lineDiffs: lineDiffs,
@@ -462,18 +590,18 @@ function getLinesDetailedDiff(oldLines: ISewingTaskLine[], newLines: ISewingTask
             changes.push({ lineId: newLine.id, type: 'ADDED', newPosition: newLine.position })
         } else {
             const isAmountChanged = oldLine.amount !== newLine.amount
-            const isPosChanged = oldLine.position !== newLine.position
+            const isPosChanged    = oldLine.position !== newLine.position
 
             if (isAmountChanged || isPosChanged) {
                 changes.push({
-                    lineId: newLine.id,
-                    type: 'UPDATED',
-                    oldPosition: oldLine.position,
-                    newPosition: newLine.position,
-                    oldAmount: oldLine.amount,
-                    newAmount: newLine.amount,
+                    lineId           : newLine.id,
+                    type             : 'UPDATED',
+                    oldPosition      : oldLine.position,
+                    newPosition      : newLine.position,
+                    oldAmount        : oldLine.amount,
+                    newAmount        : newLine.amount,
                     isPositionChanged: isPosChanged,
-                    isAmountChanged: isAmountChanged,
+                    isAmountChanged  : isAmountChanged,
                 })
             }
         }
@@ -523,25 +651,25 @@ export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: I
                 // Если задачи не было в исходной матрице (новое СЗ)
                 if (!original) {
                     diffs.push({
-                        type: 'NEW_TASK',
-                        taskId: task.id,
+                        type       : 'NEW_TASK',
+                        taskId     : task.id,
                         dayToOffset: currentDayOffset,
                         newPosition: task.position,
                     })
                     return
                 }
 
-                const isMoved = original.dayOffset !== currentDayOffset
+                const isMoved           = original.dayOffset !== currentDayOffset
                 const isPositionChanged = original.task.position !== task.position
-                const currentLinesHash = JSON.stringify(task.sewing_lines)
-                const areLinesChanged = original.linesHash !== currentLinesHash
+                const currentLinesHash  = JSON.stringify(task.sewing_lines)
+                const areLinesChanged   = original.linesHash !== currentLinesHash
 
                 // Если есть хоть одно изменение — фиксируем объект
                 if (isMoved || isPositionChanged || areLinesChanged) {
                     diffs.push({
-                        taskId: task.id,
+                        taskId       : task.id,
                         dayFromOffset: original.dayOffset,
-                        dayToOffset: currentDayOffset,
+                        dayToOffset  : currentDayOffset,
                         isMoved,
                         isPositionChanged,
                         areLinesChanged,
@@ -574,7 +702,7 @@ function getLinesDiff(oldLines: ISewingTaskLine[], newLines: ISewingTaskLine[]) 
         ) {
             lineChanges.push({
                 lineId: newLine.id,
-                type: 'UPDATED',
+                type  : 'UPDATED',
 
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 //@ts-expect-error
@@ -610,8 +738,8 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
             if (filteredDay.length === 0) {
                 const draft = {
                     ...SEWING_TASK_DRAFT,
-                    id: draftId--,
-                    position: 100,
+                    id          : draftId--,
+                    position    : 100,
                     sewing_lines: [],  /* !!! Тут пустой массив, потому что где-то по ссылке сохраняется  */
                 }
                 filteredDay.push(draft)
@@ -635,8 +763,8 @@ export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
 
             // __ Новая сортировка по позиции (СЗ статусы, которые не равны "Создано" - остаются на своих местах)
             const nonCreatedStatusTasks: ISewingTask[] = []
-            const createdStatusTasks: ISewingTask[] = []
-            const resultDay: ISewingTask[] = []
+            const createdStatusTasks: ISewingTask[]    = []
+            const resultDay: ISewingTask[]             = []
 
             // __ Фильтруем по статусу
             for (let i = 0; i < day.length; i++) {
@@ -657,7 +785,7 @@ export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
 
             matrix[weekIndex][dayIndex] = resultDay
                 .map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
-                // .sort((a, b) => a.position - b.position)
+            // .sort((a, b) => a.position - b.position)
             // __ Старая сортировка по позиции без учета всплытия статусов - без первой части
             // matrix[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
         })
@@ -684,8 +812,8 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
 
     const diffs: IRenderMatrixDiff = {
         dayFromOffset: 0,
-        dayToOffset: 0,
-        taskId: 0,
+        dayToOffset  : 0,
+        taskId       : 0,
     }
 
     // __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
@@ -704,7 +832,7 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
         // const workWeek = currentMatrix[i]
 
         const weekBefore = currentMatrix[i]
-        const weekAfter = memMatrix[i]
+        const weekAfter  = memMatrix[i]
 
         // console.log('weekAfter: ', weekAfter)
         // console.log('weekBefore: ', weekBefore)
@@ -713,7 +841,7 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
         for (let j = 0; j < 7; j++) {
 
             // __ Получаем дни для сравнения
-            const dayAfter = weekAfter[j]
+            const dayAfter  = weekAfter[j]
             const dayBefore = weekBefore[j]
 
             // __ Получаем максимальный индекс для двух массивов
@@ -790,7 +918,7 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
 
     // __ Индексируем оригинал по ID для быстрого доступа
     const originalMap = new Map(originalTasks.map(task => [task.id, task]))
-    const currentMap = new Map(currentTasks.map(task => [task.id, task]))
+    const currentMap  = new Map(currentTasks.map(task => [task.id, task]))
 
     currentTasks.forEach((task) => {
         const original = originalMap.get(task.id)
@@ -800,21 +928,21 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
 
             const lineChanges: ISewingTaskArrayLineDiffs[] = []
             task.sewing_lines.forEach(line => lineChanges.push({
-                lineId: line.id,
+                lineId   : line.id,
                 lineIdRef: line.id_ref,
-                type: 'ADDED',
-                amount: { old: null, new: line.amount },
-                position: { old: null, new: line.position },
+                type     : 'ADDED',
+                amount   : { old: null, new: line.amount },
+                position : { old: null, new: line.position },
             }))
 
             diffs.push({
-                taskId: task.id,
+                taskId   : task.id,
                 taskIdRef: task.id_ref,
-                type: 'ADDED',
+                type     : 'ADDED',
                 // current:     task,
                 taskChanges: {
                     action_at: { old: null, new: task.action_at },
-                    position: { old: null, new: task.position },
+                    position : { old: null, new: task.position },
                 },
                 lineChanges,
             })
@@ -822,7 +950,7 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
         }
 
         // __ Сравниваем основные поля задачи
-        const hasDateChanged = task.action_at !== original.action_at
+        const hasDateChanged     = task.action_at !== original.action_at
         const hasPositionChanged = task.position !== original.position
 
         // __ Сравниваем строки пошива (детально)
@@ -832,12 +960,12 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
         if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0) {
             diffs.push({
                 taskId: task.id,
-                type: 'UPDATED',
+                type  : 'UPDATED',
 
                 // __ Поля задачи
                 taskChanges: {
                     action_at: hasDateChanged ? { old: original.action_at, new: task.action_at } : null,
-                    position: hasPositionChanged ? { old: original.position, new: task.position } : null,
+                    position : hasPositionChanged ? { old: original.position, new: task.position } : null,
                 },
                 // __ Массив изменений в строках
                 lineChanges: lineDiffs,
@@ -850,7 +978,7 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
         if (!currentMap.has(oldTask.id)) {
             diffs.push({
                 taskId: oldTask.id,
-                type: 'DELETED', // Указываем серверу, что эту задачу нужно удалить
+                type  : 'DELETED', // Указываем серверу, что эту задачу нужно удалить
             })
         }
     })
@@ -865,29 +993,29 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
  */
 function getTaskLinesDiff(currentLines: ISewingTaskLine[], originalLines: ISewingTaskLine[]) {
     const diffs: ISewingTaskArrayLineDiffs[] = []
-    const originalLinesMap = new Map(originalLines.map(l => [l.id, l]))
+    const originalLinesMap                   = new Map(originalLines.map(l => [l.id, l]))
 
     currentLines.forEach((line) => {
         const originalLine = originalLinesMap.get(line.id)
 
         if (!originalLine) {
             diffs.push({
-                lineId: line.id,
+                lineId   : line.id,
                 lineIdRef: line.id_ref,
-                type: 'ADDED',
+                type     : 'ADDED',
                 // newPosition: line.position,
-                amount: { old: null, new: line.amount },
+                amount  : { old: null, new: line.amount },
                 position: { old: null, new: line.position },
             })
         } else {
             const isAmountChanged = line.amount !== originalLine.amount
-            const isPosChanged = line.position !== originalLine.position
+            const isPosChanged    = line.position !== originalLine.position
 
             if (isAmountChanged || isPosChanged) {
                 diffs.push({
-                    lineId: line.id,
-                    type: 'UPDATED',
-                    amount: isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
+                    lineId  : line.id,
+                    type    : 'UPDATED',
+                    amount  : isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
                     position: isPosChanged ? { old: originalLine.position, new: line.position } : null,
                 })
             }
@@ -927,7 +1055,7 @@ export function isAddItemsInDiffsPresents(diffs: ISewingTaskArrayDiff[]) {
 // __ которые сгруппированы по одинаковой Заявке с возможностью учитывать статусы Заявок в определенном дне
 export function getSewingTasksGroupedByOrder(sewingTasks: ISewingTask[], applyStatus: boolean = true) {
     const clearDay = clearRenderMatrixDay(sewingTasks) // __ Возвращаем новый массив без пустых элементов
-    const grouped = clearDay.reduce((acc, item) => {
+    const grouped  = clearDay.reduce((acc, item) => {
 
         // __ Создаем уникальный составной ключ
         let key: string
@@ -957,7 +1085,7 @@ export function getSewingTasksGroupedByOrder(sewingTasks: ISewingTask[], applySt
 export function getSewingTasksSameOrderInDay(
     entity: ISewingTask | ISewingTaskOrder | number,
     tasksList: ISewingTask[],
-    date: string | null = null,
+    date: string | null  = null,
     applyStatus: boolean = false) {
 
     let item
@@ -1042,7 +1170,7 @@ export function mergeSewingLines(lines: ISewingTaskLine[]): ISewingTaskLine[] {
 
         // __ Создаем составной ключ: ID + Тип машины
         const machineType = line.order_line.model.main.machine_type
-        const groupKey = `${line.order_line.id}_${machineType}`
+        const groupKey    = `${line.order_line.id}_${machineType}`
 
         if (!acc[groupKey]) {
             acc[groupKey] = JSON.parse(JSON.stringify(line))
@@ -1084,7 +1212,7 @@ export function repositionSewingTaskInDay(tasks: ISewingTask[], action_at: strin
 
 // --- ------------------------------------------------------------------------------------
 // __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
-export function isTaskStatusCreated(entity: ISewingTask | ISewingTaskStatus | number) {
+export function isTaskStatusCreated(entity: ISewingTask | ISewingTaskStatus | number): boolean {
     let item: number
     if (isSewingTask(entity)) {
         item = entity.current_status.id
@@ -1129,7 +1257,7 @@ export const orderSewingTasksByStatus = (tasks: ISewingTask[]): ISewingTask[] =>
     // 1. Описываем веса для статусов.
     // Чем меньше значение, тем выше (раньше) элемент в массиве.
     const statusPriority: Record<number, number> = {
-        [SEWING_TASK_STATUSES.DONE.ID]: 1,
+        [SEWING_TASK_STATUSES.DONE.ID]   : 1,
         [SEWING_TASK_STATUSES.RUNNING.ID]: 2,
         [SEWING_TASK_STATUSES.PENDING.ID]: 3,
         [SEWING_TASK_STATUSES.ROLLING.ID]: 4,
@@ -1224,18 +1352,18 @@ export function getTaskStatusById(id: number) {
 
 // --- -------------------------------------------------------------------------------------
 // __ Получаем статистику по выполнению СЗ
-export function getExecuteTaskStatustics(item: ISewingTask | ISewingTaskLine[]) {
+export function getExecuteTaskStatistics(item: ISewingTask | ISewingTaskLine[]) {
 
     const statistics: ISewingTaskExecuteStatistics = {
         amount: {
-            finished: 0,
+            finished  : 0,
             unfinished: 0,
-            total: 0,
+            total     : 0,
         },
-        time: {
-            finished: 0,
+        time  : {
+            finished  : 0,
             unfinished: 0,
-            total: 0,
+            total     : 0,
         },
     }
 
@@ -1284,6 +1412,130 @@ export function getExecuteTaskStatustics(item: ISewingTask | ISewingTaskLine[]) 
 }
 
 
+// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
+export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskLinesGroupData[] {
+
+    const result: ISewingTaskLinesGroupData[] = []
+
+    // __ Группируем по группам согласно правилам в SEWING_TASK_GROUP_RULES
+    for (let i = 0; i < SEWING_TASK_GROUP_RULES.length; i++) {
+
+        let hasDataGroup = false
+        result[i]        = {
+            groupName: SEWING_TASK_GROUP_RULES[i].GROUP_NAME,
+            groupType: SEWING_TASK_GROUP_RULES[i].GROUP_TYPE,
+            subgroups: [],
+            hasData  : hasDataGroup
+        }
+
+        for (let j = 0; j < SEWING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
+            let hasDataSubgroup = false
+
+            result[i].subgroups[j] = {
+                subgroupName: SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
+                subgroupType: SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
+                lines       : [],
+                hasData     : hasDataSubgroup
+            }
+
+            for (let k = 0; k < lines.length; k++) {
+                if (lines[k].order_line.model.main.tkch) {
+                    if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
+                        result[i].subgroups[j].lines.push(lines[k])
+                        hasDataSubgroup = true
+                    }
+                } else {
+                    if (result[i].groupName === 'Н/Д') {
+                        result[i].subgroups[j].lines.push(lines[k])
+                        hasDataSubgroup = true
+                    }
+                }
+            }
+
+            result[i].subgroups[j].hasData = hasDataSubgroup
+            hasDataGroup ||= hasDataSubgroup
+        }
+
+        result[i].hasData = hasDataGroup
+    }
+
+    // __ Сортируем массивы внутри групп
+    result.forEach(group => {
+        group.subgroups.forEach(subgroup => {
+    //         let a = 0
+    //         debugger
+    //         const sortedLines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
+    //         subgroup.lines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
+            const sortedLines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
+            subgroup.lines = sortedLines                 // __ по размерам по убыванию
+    //         // subgroup.lines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
+    //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
+    //
+        })
+    })
+
+    return result
+}
+
+
+// __ Сортируем строки СЗ по количеству, с учетом размера
+export function sortSewingTaskLinesByAmountStableSize(
+    item: ISewingTask | ISewingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',  // __ Берем высоту матраса или чехла
+): ISewingTaskLine[] {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.sewing_lines
+    }
+
+    let isFind = true
+    while (isFind) {
+        isFind = false
+
+        for (let i = 0; i < sourceArray.length; i++) {
+
+            let height_i = sourceArray[i].order_line.dims.height
+            if (target === 'cover' && sourceArray[i].order_line.model.main.cover_height) {
+                height_i = sourceArray[i].order_line.model.main.cover_height
+            }
+
+            for (let j = i + 1; j < sourceArray.length; j++) {
+
+                let height_j = sourceArray[j].order_line.dims.height
+                if (target === 'cover' && sourceArray[j].order_line.model.main.cover_height) {
+                    height_j = sourceArray[j].order_line.model.main.cover_height
+                }
+
+                if (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width &&
+                    sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length &&
+                    height_i > height_j) {
+
+                    if (direction === 'asc') {
+                        if (sourceArray[i].order_line.amount > sourceArray[j].order_line.amount) {
+                            [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                            isFind = true
+                        }
+                    } else {
+                        if (sourceArray[i].order_line.amount < sourceArray[j].order_line.amount) {
+                            [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                            isFind = true
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    return sourceArray
+}
+
+
 /**
  * __ Вычисляет время завершения смены и возвращает таймстемп
  * startTime - Объект Date фактического начала смены
@@ -1328,31 +1580,31 @@ export function isAverage(element: ISewingTaskModel | ISewingTaskLine) {
 
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine
-function isSewingTaskLine(item: any): item is ISewingTaskLine {
-    return item && typeof item === 'object' && 'order_line' in item
+function isSewingTaskLine(item: unknown): item is ISewingTaskLine {
+    return !!item && typeof item === 'object' && 'order_line' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrderLine
-function isSewingTaskOrderLine(item: any): item is ISewingTaskOrderLine {
-    return item && typeof item === 'object' && 'models' in item && 'dims' in item
+function isSewingTaskOrderLine(item: unknown): item is ISewingTaskOrderLine {
+    return !!item && typeof item === 'object' && 'models' in item && 'dims' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrderLine['model']
-function isSewingTaskOrderLineModel(item: any): item is ISewingTaskOrderLine['model'] {
-    return item && typeof item === 'object' && 'main' in item && 'base' in item && 'cover' in item
+function isSewingTaskOrderLineModel(item: unknown): item is ISewingTaskOrderLine['model'] {
+    return !!item && typeof item === 'object' && 'main' in item && 'base' in item && 'cover' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTask
-function isSewingTask(item: any): item is ISewingTask {
-    return item && typeof item === 'object' && 'order' in item && 'sewing_lines' in item
+function isSewingTask(item: unknown): item is ISewingTask {
+    return !!item && typeof item === 'object' && 'order' in item && 'sewing_lines' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskOrder
-function isSewingTaskOrder(item: any): item is ISewingTaskOrder {
-    return item && typeof item === 'object' && 'client' in item && 'order_type' in item
+function isSewingTaskOrder(item: unknown): item is ISewingTaskOrder {
+    return !!item && typeof item === 'object' && 'client' in item && 'order_type' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskStatus
-function isSewingTaskStatus(item: any): item is ISewingTaskStatus {
-    return item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
+function isSewingTaskStatus(item: unknown): item is ISewingTaskStatus {
+    return !!item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
 }

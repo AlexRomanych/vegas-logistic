@@ -37,6 +37,7 @@ export interface IModel {
     sewing_machine: string | null
     kant: string | null
     tkch: string | null
+    cover_type: string | null
     barcode: string | null
     description: string | null
 

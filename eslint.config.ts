@@ -34,6 +34,11 @@ export default defineConfigWithVueTs(
                 'ignoreStrings': true,
                 'ignoreTemplateLiterals': true
             }],
+            // '@typescript-eslint/no-explicit-any': ['warn', {
+            //     ignoreRestArgs: true,
+            //     // или вообще отключить:
+            //     // "off"
+            // }],
         },
     },
 

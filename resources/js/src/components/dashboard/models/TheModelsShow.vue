@@ -146,6 +146,15 @@
                         />
                     </div>
 
+                    <!-- __ Тип Чехла -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.cover_type"/>
+                        <AppInputTextTSWrapper
+                            v-model="coverTypeFilter"
+                            :render-object="render.cover_type"
+                        />
+                    </div>
+
                     <!-- __ Кант -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.kant"/>
@@ -374,6 +383,12 @@
                                         <AppLabelTSWrapper
                                             :arg="i === 1 ? model : model.cover"
                                             :render-object="render.sewing_machine"
+                                        />
+
+                                        <!-- __ Тип Чехла -->
+                                        <AppLabelTSWrapper
+                                            :arg="i === 1 ? model : model.cover"
+                                            :render-object="render.cover_type"
                                         />
 
                                         <!-- __ Кант -->
@@ -797,6 +812,22 @@ const render: IRenderData = reactive({
         placeholder   : '🔍ДСЗ',
         data          : (model: IModel) => model.sewing_machine ?? '',
     },
+    cover_type             : {
+        id            : () => 'cover-type-search',
+        header        : ['Тип', 'чехла'],
+        width         : 'w-[80px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (entity: IModel) => getType(entity),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Тип ч...',
+        data          : (model: IModel) => model.cover_type ?? '',
+    },
     kant                   : {
         id            : () => 'kant-search',
         header        : ['Кант', ''],
@@ -934,6 +965,7 @@ const baseBlockFilter             = ref('')
 const sideFoamFilter              = ref('')
 const sideHeightFilter            = ref('')
 const sewingMachineFilter         = ref('')
+const coverTypeFilter             = ref('')
 const kantFilter                  = ref('')
 const tkchFilter                  = ref('')
 const barcodeFilter               = ref('')

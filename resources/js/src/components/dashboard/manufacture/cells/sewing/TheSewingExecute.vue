@@ -227,7 +227,7 @@
 
     import { SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
 
-    import { getExecuteTaskStatustics, getSewingDates, unionDatesWithSewingTasks } from '@/app/helpers/manufacture/helpers_sewing.ts'
+    import { getExecuteTaskStatistics, getSewingDates, unionDatesWithSewingTasks } from '@/app/helpers/manufacture/helpers_sewing.ts'
     import {
         formatDateInFullFormat,
         formatTimeInFullFormat,
@@ -568,7 +568,7 @@
     const getDayStatistics = (sewingDay: ISewingDay) => {
         const allSewingTasksLines: ISewingTaskLine[] = []
         sewingDay.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLines.push(line)))
-        return getExecuteTaskStatustics(allSewingTasksLines)
+        return getExecuteTaskStatistics(allSewingTasksLines)
     }
 
     // __ Получаем прогресс выполнения СЗ по дню
