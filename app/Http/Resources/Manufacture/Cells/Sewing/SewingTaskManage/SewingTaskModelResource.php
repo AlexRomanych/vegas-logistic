@@ -89,7 +89,6 @@ class SewingTaskModelResource extends JsonResource
     {
         /** @noinspection PhpUndefinedFieldInspection */
         return [
-
             'code_1c'             => $this->code_1c,
             'name'                => $this->name,
             'name_report'         => $this->name_report,
@@ -101,6 +100,7 @@ class SewingTaskModelResource extends JsonResource
             'base_composition'    => $this->base_composition,
             'kant'                => $this->kant,
             'tkch'                => $this->tkch,
+            'kdch'                => $this->kdch,
             'is_solid'            => $this->is_solid,
             'is_universal'        => $this->setPhantomMachineTypeUniversal(),
             'is_auto'             => $this->setPhantomMachineTypeAuto(),

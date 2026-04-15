@@ -113,6 +113,17 @@
             text="Кант"
         />
 
+        <!-- __ КДЧ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.kdch"
+            rounded="4"
+            text="КДЧ"
+        />
+
         <!-- __ Состав -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"

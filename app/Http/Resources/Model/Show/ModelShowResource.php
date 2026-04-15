@@ -37,6 +37,7 @@ class ModelShowResource extends JsonResource
             'sewing_machine'      => $this->sewing_machine,
             'kant'                => $this->kant,
             'tkch'                => $this->tkch,
+            'kdch'                => $this->kdch,
             'cover_type'          => $this->cover_type,
             'barcode'             => $this->barcode,
             'description'         => $this->description,

@@ -301,15 +301,16 @@ export function sortSewingTaskLinesBySize(
 export function sortSewingTaskLinesBySizeAndAmount(
     item: ISewingTask | ISewingTaskLine[],
     direction: 'asc' | 'desc' = 'asc',
-    target: 'base' | 'cover' = 'base',
+    target: 'base' | 'cover'  = 'base',
 ): ISewingTaskLine[] {
+
     const sourceArray = Array.isArray(item) ? [...item] : [...item.sewing_lines]
 
     sourceArray.sort((a, b) => {
         const dimsA = a.order_line.dims
         const dimsB = b.order_line.dims
 
-        // Определяем высоту в зависимости от цели
+        // __ Определяем высоту в зависимости от цели
         const hA = (target === 'cover' && a.order_line.model.main.cover_height)
             ? a.order_line.model.main.cover_height
             : dimsA.height
@@ -317,13 +318,13 @@ export function sortSewingTaskLinesBySizeAndAmount(
             ? b.order_line.model.main.cover_height
             : dimsB.height
 
-        // Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
+        // __ Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
         const criteria = [
             dimsA.width - dimsB.width,
             dimsA.length - dimsB.length,
             hA - hB,
             a.amount - b.amount
-        ];
+        ]
 
         // Ищем первое различие
         for (const diff of criteria) {
@@ -333,11 +334,10 @@ export function sortSewingTaskLinesBySizeAndAmount(
         }
 
         return 0
-    });
+    })
 
     return sourceArray
 }
-
 
 
 export function sortSewingTaskLinesBySizeAndAmount_Old(
@@ -379,10 +379,10 @@ export function sortSewingTaskLinesBySizeAndAmount_Old(
                         || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i === height_j && sourceArray[i].amount > sourceArray[j].amount)) {
 
                         // [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
-                        const temp = sourceArray[i]
+                        const temp     = sourceArray[i]
                         sourceArray[i] = sourceArray[j]
                         sourceArray[j] = temp
-                        isFind = true
+                        isFind         = true
                     }
                 } else {
                     if ((sourceArray[i].order_line.dims.width < sourceArray[j].order_line.dims.width)
@@ -391,10 +391,10 @@ export function sortSewingTaskLinesBySizeAndAmount_Old(
                         || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i === height_j && sourceArray[i].amount < sourceArray[j].amount)) {
 
                         // [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
-                        const temp = sourceArray[i]
+                        const temp     = sourceArray[i]
                         sourceArray[i] = sourceArray[j]
                         sourceArray[j] = temp
-                        isFind = true
+                        isFind         = true
                     }
                 }
             }
@@ -1462,15 +1462,15 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskL
     // __ Сортируем массивы внутри групп
     result.forEach(group => {
         group.subgroups.forEach(subgroup => {
-    //         let a = 0
-    //         debugger
-    //         const sortedLines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
-    //         subgroup.lines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
+            //         let a = 0
+            //         debugger
+            //         const sortedLines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
+            //         subgroup.lines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
             const sortedLines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
-            subgroup.lines = sortedLines                 // __ по размерам по убыванию
-    //         // subgroup.lines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
-    //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
-    //
+            subgroup.lines    = sortedLines                 // __ по размерам по убыванию
+            //         // subgroup.lines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
+            //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
+            //
         })
     })
 
@@ -1518,12 +1518,12 @@ export function sortSewingTaskLinesByAmountStableSize(
                     if (direction === 'asc') {
                         if (sourceArray[i].order_line.amount > sourceArray[j].order_line.amount) {
                             [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
-                            isFind = true
+                            isFind                           = true
                         }
                     } else {
                         if (sourceArray[i].order_line.amount < sourceArray[j].order_line.amount) {
                             [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
-                            isFind = true
+                            isFind                           = true
                         }
                     }
                 }

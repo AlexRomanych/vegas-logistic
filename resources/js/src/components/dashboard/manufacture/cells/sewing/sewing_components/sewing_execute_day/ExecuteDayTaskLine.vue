@@ -111,6 +111,17 @@
             rounded="4"
         />
 
+        <!-- __ КДЧ -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text="sewingLine.order_line.model.main.kdch ?? ''"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(sewingLine)"
+            :width="fieldWidths.kdch"
+            align="center"
+            rounded="4"
+        />
+
         <!-- __ Состав -->
         <AppLabelTS
             :height="LINE_HEIGHT"

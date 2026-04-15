@@ -137,9 +137,9 @@
                         v-for="sewingLine of subgroup.lines"
                         :key="sewingLine.id"
                         :class="[
-                    selectedIds.has(sewingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
-                    sewingLine.completed ? '' : '',
-                ]"
+                            selectedIds.has(sewingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
+                            sewingLine.completed ? '' : '',
+                        ]"
                         :data-task-id="sewingLine.id"
                         class="h-[30px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
                         @mousedown="startSelectionById(sewingLine.id, $event)"
@@ -399,6 +399,7 @@ const fieldWidths: Record<string, string> = {
     textile    : 'min-w-[70px] max-w-[70px]',
     tkch       : 'min-w-[70px] max-w-[70px]',
     kant       : 'min-w-[70px] max-w-[70px]',
+    kdch       : 'min-w-[50px] max-w-[50px]',
     composition: 'min-w-[70px] max-w-[70px]',
     describe_1 : 'min-w-[70px] max-w-[70px]',
     describe_2 : 'min-w-[70px] max-w-[70px]',

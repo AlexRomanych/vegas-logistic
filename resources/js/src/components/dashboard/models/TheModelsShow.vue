@@ -136,7 +136,6 @@
                         <AppLabelMultilineTSWrapper :render-object="render.lamit"/>
                     </div>
 
-
                     <!-- __ Группы ДСЗ (Швейная машина) -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.sewing_machine"/>
@@ -170,6 +169,15 @@
                         <AppInputTextTSWrapper
                             v-model="tkchFilter"
                             :render-object="render.tkch"
+                        />
+                    </div>
+
+                    <!-- __ КДЧ -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.kdch"/>
+                        <AppInputTextTSWrapper
+                            v-model="kdchFilter"
+                            :render-object="render.kdch"
                         />
                     </div>
 
@@ -401,6 +409,12 @@
                                         <AppLabelTSWrapper
                                             :arg="i === 1 ? model : model.cover"
                                             :render-object="render.tkch"
+                                        />
+
+                                        <!-- __ КДЧ -->
+                                        <AppLabelTSWrapper
+                                            :arg="i === 1 ? model : model.cover"
+                                            :render-object="render.kdch"
                                         />
 
                                         <!-- __ Штрихкод -->
@@ -860,6 +874,22 @@ const render: IRenderData = reactive({
         placeholder   : '🔍ТКЧ',
         data          : (model: IModel) => model.tkch ?? '',
     },
+    kdch                   : {
+        id            : () => 'kdch-search',
+        header        : ['КДЧ', ''],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (entity: IModel) => getType(entity),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍КДЧ',
+        data          : (model: IModel) => model.kdch ?? '',
+    },
     barcode                : {
         id            : () => 'barcode-search',
         header        : ['Штрих', 'код'],
@@ -968,6 +998,7 @@ const sewingMachineFilter         = ref('')
 const coverTypeFilter             = ref('')
 const kantFilter                  = ref('')
 const tkchFilter                  = ref('')
+const kdchFilter                  = ref('')
 const barcodeFilter               = ref('')
 const manufactureTypeFilter       = ref('')
 const manufactureGroupFilter      = ref('')
@@ -1003,6 +1034,7 @@ const getEntities = async () => {
                 sewing_machine         : model.sewing_machine ?? '',
                 kant                   : model.kant ?? '',
                 tkch                   : model.tkch ?? '',
+                kdch                   : model.kdch ?? '',
                 barcode                : model.barcode ?? '',
                 description            : model.description ?? '',
                 manufacture_type       : model.manufacture_type ?? { name: '', code_1c: '' },
@@ -1042,6 +1074,7 @@ watchEffect(() => {
     const sewingMachineSearch         = sewingMachineFilter.value.toLowerCase()
     const kantSearch                  = kantFilter.value.toLowerCase()
     const tkchSearch                  = tkchFilter.value.toLowerCase()
+    const kdchSearch                  = kdchFilter.value.toLowerCase()
     const barcodeSearch               = barcodeFilter.value.toLowerCase()
     const manufactureTypeSearch       = manufactureTypeFilter.value.toLowerCase()
     const manufactureGroupSearch      = manufactureGroupFilter.value.toLowerCase()
@@ -1067,6 +1100,7 @@ watchEffect(() => {
             .filter(model => model.sewing_machine!.toLowerCase().includes(sewingMachineSearch))
             .filter(model => model.kant!.toLowerCase().includes(kantSearch))
             .filter(model => model.tkch!.toLowerCase().includes(tkchSearch))
+            .filter(model => model.kdch!.toLowerCase().includes(kdchSearch))
             .filter(model => model.barcode!.toLowerCase().includes(barcodeSearch))
             .filter(model => model.manufacture_type!.name.toLowerCase().includes(manufactureTypeSearch))
             .filter(model => model.manufacture_group!.name.toLowerCase().includes(manufactureGroupSearch))
