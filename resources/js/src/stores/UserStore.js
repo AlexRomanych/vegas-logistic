@@ -1,15 +1,14 @@
-import {defineStore} from 'pinia'
-import {ref, reactive, computed, watch} from 'vue'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 // import {useRouter} from 'vue-router'
-
 
 import axios from 'axios'
 
-import UserClass from "/resources/js/src/app/classes/UserClass.js";
+import UserClass from '@/app/classes/UserClass.js';
 
 const api = axios.create({
     withCredentials: false,
-    baseURL: '/api/v1/auth'
+    baseURL        : '/api/v1/auth'
 })
 
 // const router = useRouter()
@@ -18,19 +17,19 @@ const api = axios.create({
 export const useUserStore = defineStore('user', () => {
 
     let currentUser = new UserClass()               // Переменная, хранящая информацию о текущем пользователе
-    let isAuth = ref(false)
+    let isAuth      = ref(false)
 
     const errorApi = function (err) {
         currentUser.status = err.response.status      // возвращаем статус для отображения ошибки
-        currentUser.id = 0
-        isAuth.value = false
+        currentUser.id     = 0
+        isAuth.value       = false
         console.log('errorApi', err.response)
     }
 
 
-    const registerUser = async function (userDatа) {
+    const registerUser = async function (userData) {
         try {
-            const res = await api.post('register', userDatа)
+            const res          = await api.post('register', userData)
             currentUser.status = res.status
             return currentUser
         } catch (e) {
@@ -42,19 +41,19 @@ export const useUserStore = defineStore('user', () => {
 
 
     // Функционал для авторизации
-    const fetchUser = async function (userDatа) {
+    const fetchUser = async function (userData) {
 
         try {
 
-            const res = await api.post('login', userDatа)
+            const res = await api.post('login', userData)
             // console.log(res)
             if (res.data.success && res.data.data.access_token) {
                 localStorage.setItem('token', res.data.data.access_token)
 
                 currentUser = new UserClass({
-                    ...userDatа,
-                    id: res.data.data.id,
-                    name: res.data.data.name,
+                    ...userData,
+                    id    : res.data.data.id,
+                    name  : res.data.data.name,
                     status: res.status
                 })
 
@@ -105,11 +104,11 @@ export const useUserStore = defineStore('user', () => {
                 // debugger
 
 
-                if (profile.data.id != 0) {
+                if (profile.data.id !== 0) {
                     currentUser = new UserClass({
-                        id: profile.data.id,
-                        email: profile.data.email,
-                        name: profile.data.name,
+                        id    : profile.data.id,
+                        email : profile.data.email,
+                        name  : profile.data.name,
                         status: profileRequest.status
                     })
                 }
@@ -185,12 +184,20 @@ export const useUserStore = defineStore('user', () => {
         // router.push({name: 'login'})
     }
 
+    // __ Проверяет, является ли пользователь администратором
+    const hasAdminRole = () => {
+        // return false
+        return currentUser.email.includes('@admin')
+    }
+
+
     return {
         registerUser,
         fetchUser,
         logout,
         getUser,
         isAuthenticated,
+        hasAdminRole,
 
         isAuth,
 

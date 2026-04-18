@@ -101,12 +101,13 @@
 
                 </div>
 
-                <!-- __ Процедуры -->
+                <!-- __ Процедуры. VBA показываем только для админа -->
                 <div v-if="!procedure.collapsed">
                     <div class="flex gap-x-1">
                         <pre><code contenteditable="false">{{ procedure.text }}</code></pre>
-                        <pre><code contenteditable="false">{{ procedure.text_vba }}</code></pre>
+                        <pre v-if="userStore.hasAdminRole()"><code contenteditable="false">{{ procedure.text_vba }}</code></pre>
                     </div>
+                    <div class="mt-2"></div>
                 </div>
 
 
@@ -121,6 +122,7 @@ import type { IModelProcedure, IRenderData } from '@/types'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useModelsStore } from '@/stores/ModelsStore.ts'
+import { useUserStore } from '@/stores/UserStore.js'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -130,6 +132,7 @@ import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabel
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
 
 const modelsStore = useModelsStore()
+const userStore   = useUserStore()
 
 
 const isLoading = ref(false)

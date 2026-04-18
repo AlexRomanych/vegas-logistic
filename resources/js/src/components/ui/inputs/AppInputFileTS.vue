@@ -1,12 +1,11 @@
 <template>
     <div
-        class="min-h-[800px] w-full"
+        :class="[width, height]"
         @dragover.prevent
         @drop.prevent
     >
 
-
-        <div class="w-[800px] mx-auto p-4">
+        <div :class="[width, height]" class="mx-auto p-4">
 
             <div
                 v-if="!selectedFile || !checkFile  /*!selectedFile && !isUploading*/"
@@ -16,10 +15,10 @@
                 @dragleave.prevent="isDragging = false"
                 @drop.prevent="onFileDrop"
 
-
             >
                 <label
                     :class="[
+                        height,
                         'flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer',
                         isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'
                     ]"
@@ -47,7 +46,7 @@
                             }}
                         </p>
                         <p class="text-xs text-slate-500">
-                            {{ !isDragging ? `${extensions.toUpperCase()} (до 10 MB)` : '' }}
+                            {{ !isDragging ? `${extensions.toUpperCase()} (до 100 MB)` : '' }}
                         </p>
                     </div>
 
@@ -136,12 +135,16 @@ interface IProps {
     fileExtension?: string[],   // Расширение файла, которое нужно выбрать
     checkFile?: boolean         // Не позволяет переходить ко второму этапу - "Начать импорт" если файл не прошел валидацию
     uploadTitle?: string,       // Заголовок для второго этапа загрузки
+    width?: string,             // Ширина блока
+    height?: string,            // Высота блока
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    checkFile:     true,
+    checkFile    : true,
     fileExtension: () => ['.json'],
-    uploadTitle:   'Начать импорт',
+    uploadTitle  : 'Начать импорт',
+    height       : 'min-h-[300px]',
+    width        : 'w-[800px]',
 })
 
 // __ Эмитируем 2 события для совместимости с предыдущим API
@@ -220,7 +223,7 @@ watch(() => props.checkFile, (newVal) => {
     if (!newVal) {
         cancelSelection()
     }
-}, {immediate: true, deep: true})
+}, { immediate: true, deep: true })
 
 
 // __ Запрещаем открытие файла во ВСЕМ окне браузера (Чтобы не открывался в новой вкладке при промахе мимо drop зоны)

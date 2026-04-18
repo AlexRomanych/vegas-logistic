@@ -34,15 +34,16 @@ const menuData = () => {
             group: {name: 'Модели', shown: true, isActive: true, icon: 'PuzzlePieceIcon'},
             items:
                 [
-                    {name: 'Список моделей', path: 'models', shown: true, isActive: true,},
-                    {name: 'Список материалов', path: 'materials', shown: true, isActive: true,},
-                    {name: 'Список процедур расчета', path: 'procedures', shown: true, isActive: true,},
-                    {name: 'Список спецификаций', path: 'constructs', shown: true, isActive: true,},
-                    {name: 'Обновление списка моделей', path: 'models.upload', shown: true, isActive: true,},
-                    {name: 'Обновление списка материалов', path: 'materials.upload', shown: true, isActive: true,},
-                    {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},
-                    {name: 'Обновление спецификаций', path: 'constructs.upload', shown: true, isActive: true,},
-                    {name: 'Загрузка из базы', path: 'models.load', shown: false, isActive: false,},
+                    {name: 'Справочник моделей', path: 'models', shown: true, isActive: true,},
+                    {name: 'Справочник материалов', path: 'materials', shown: true, isActive: true,},
+                    {name: 'Справочник процедур расчета', path: 'procedures', shown: true, isActive: true,},
+                    {name: 'Справочник спецификаций', path: 'constructs', shown: true, isActive: true,},
+                    {name: 'Обновление справочников', path: 'models.references.update', shown: true, isActive: true,},
+                    // {name: 'Обновление списка моделей', path: 'models.upload', shown: true, isActive: true,},
+                    // {name: 'Обновление списка материалов', path: 'materials.upload', shown: true, isActive: true,},
+                    // {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},
+                    // {name: 'Обновление спецификаций', path: 'constructs.upload', shown: true, isActive: true,},
+                    // {name: 'Загрузка из базы', path: 'models.load', shown: false, isActive: false,},
                 ]
         },
         {

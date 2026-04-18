@@ -48,6 +48,8 @@ Route::prefix('/models')
 
         Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
+
+        Route::post('/update', [ModelConstructController::class, 'modelsUpdate']);
     });
 
 

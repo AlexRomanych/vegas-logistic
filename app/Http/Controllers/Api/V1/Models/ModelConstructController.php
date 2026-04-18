@@ -12,10 +12,12 @@ use App\Models\Models\ModelConstructItem;
 use App\Services\MaterialsService;
 use App\Services\ModelsService;
 use App\Services\ProceduresService;
+use App\Services\RunService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class ModelConstructController extends Controller
@@ -203,6 +205,52 @@ class ModelConstructController extends Controller
             // return json_encode($missingModels);
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+    public function modelsUpdate(Request $request)
+    {
+        $result = RunService::runModelsUpdateParser_Rust();
+
+        return $result;
+
+
+        $request->validate([
+            'materials'      => 'required|file|extensions:xlsx,xls,csv',
+            'models'         => 'required|file|extensions:xlsx,xls,csv',
+            'procedures'     => 'required|file|extensions:xlsx,xls,csv',
+            'specifications' => 'required|file|extensions:xlsx,xls,csv',
+        ]);
+
+        $directory = '1c_imports';
+
+        // Проверяем/создаем директорию
+        if (!Storage::exists($directory)) {
+            Storage::makeDirectory($directory);
+        }
+
+        $fileMap = [
+            'materials'      => 'materials.xlsx',
+            'models'         => 'models.xlsx',
+            'procedures'     => 'procedures.xlsx',
+            'specifications' => 'specifications.xlsx',
+        ];
+
+        try {
+            foreach ($fileMap as $key => $name) {
+                // Используем 'local' диск (storage/app)
+                $request->file($key)->storeAs($directory, $name, 'local');
+            }
+
+            $result = RunService::runModelsUpdateParser_Rust();
+
+            return $result;
+
+            return EndPointStaticRequestAnswer::ok('Данные успешно синхронизированы');
+        } catch (\Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }

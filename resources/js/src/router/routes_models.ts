@@ -58,6 +58,14 @@ const models = [
             title: 'Обновление спецификаций изделий',
         } as IRouteMeta,
     },
+    {
+        path: '/models/references/update',  // __ Обновление баз: Модели, Процедуры, Спецификации, Материалы
+        name: 'models.references.update',
+        component: () => import('@/components/dashboard/models/TheReferencesUpdate.vue'),
+        meta: {
+            title: 'Обновление справочников моделей',
+        } as IRouteMeta,
+    },
 
 
 

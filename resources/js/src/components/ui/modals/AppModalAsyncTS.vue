@@ -42,7 +42,7 @@
                         class="m-1 p-1">
                         <AppInputButton
                             id="confirm"
-                            :title="mode === 'confirm' ? 'Отмена' : 'Закрыть'"
+                            :title="mode === 'confirm' ? 'Отмена' : okWord"
                             :type="type"
                             @buttonClick="select(false)"
                         />
@@ -56,8 +56,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { IColorTypes } from '@/types'
 import { computed, ref, watch, } from 'vue'
-import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
@@ -68,6 +68,7 @@ interface IProps {
     height?: string,
     text?: string,
     mode?: 'inform' | 'confirm'
+    okWord?: string,
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -75,7 +76,8 @@ const props = withDefaults(defineProps<IProps>(), {
     width: 'min-w-[500px]',
     height: 'min-h-[300px]',
     text: 'This is a Modal Window',
-    mode: 'inform'
+    mode: 'inform',
+    okWord: 'Закрыть',
 })
 
 // const emits = defineEmits<{
