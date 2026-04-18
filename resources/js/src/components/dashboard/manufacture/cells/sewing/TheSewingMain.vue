@@ -29,7 +29,7 @@ const menuItems: IMenuItem[] = [
     { name: 'Управление планом ШЦ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
     // { name: 'Управление СЗ', path: 'manufacture.cell.sewing.plan.manage', shown: true, isActive: true },
     { name: 'Выполнение СЗ', path: 'manufacture.cell.sewing.tasks.execute', shown: true, isActive: true },
-    { name: 'Архив СЗ', path: 'manufacture.cell.sewing.tasks.execute', shown: true, isActive: false },
+    { name: 'Архив СЗ', path: 'manufacture.cell.sewing.tasks.archive', shown: true, isActive: true },
     { name: 'Статусы движения СЗ', path: 'manufacture.cell.sewing.task.statuses', shown: true, isActive: true },
     { name: 'Типовые операции', path: 'manufacture.cell.sewing.operations', shown: true, isActive: true },
     { name: 'Схемы типовых операций', path: 'manufacture.cell.sewing.operation.schemas', shown: true, isActive: true },

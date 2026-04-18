@@ -25,43 +25,44 @@ const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_SEWING_TASKS = '/sewing/tasks'                       // URL для получения Сменных заданий
-const URL_SEWING_TASKS_ADD_BY_ORDER_ID = '/sewing/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
-const URL_SEWING_TASKS_DELETE_BY_ORDER_ID = '/sewing/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
-const URL_SEWING_TASKS_ORDER_ID = '/sewing/tasks/order'                 // URL для получения Сменных заданий по id Заявки
-const URL_SEWING_TASKS_STATUS = '/sewing/tasks/status'                // URL для получения Сменных заданий по статусу
-const URL_SEWING_TASKS_STATUS_BEFORE_DATE = '/sewing/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
-const URL_SEWING_TASKS_STATUS_ON_DATE = '/sewing/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
+const URL_SEWING_TASKS                      = '/sewing/tasks'                       // URL для получения Сменных заданий
+const URL_SEWING_TASKS_ADD_BY_ORDER_ID      = '/sewing/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+const URL_SEWING_TASKS_DELETE_BY_ORDER_ID   = '/sewing/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
+const URL_SEWING_TASKS_ORDER_ID             = '/sewing/tasks/order'                 // URL для получения Сменных заданий по id Заявки
+const URL_SEWING_TASKS_STATUS               = '/sewing/tasks/status'                // URL для получения Сменных заданий по статусу
+const URL_SEWING_TASKS_STATUS_PERIOD        = '/sewing/tasks/status/period'         // URL для получения Сменных заданий по статусу в периоде
+const URL_SEWING_TASKS_STATUS_BEFORE_DATE   = '/sewing/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
+const URL_SEWING_TASKS_STATUS_ON_DATE       = '/sewing/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
 const URL_SEWING_TASKS_STATUS_ON_DATE_CHECK = '/sewing/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
-const URL_SEWING_TASKS_COMMENT = '/sewing/tasks/comment'               // URL для изменения комментария к Сменному заданию
-const URL_SEWING_TASKS_UPDATE = '/sewing/tasks/update'                // URL для обновления Сменных заданий
-const URL_SEWING_TASK_LINE_DONE = '/sewing/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
-const URL_SEWING_TASK_LINE_FALSE = '/sewing/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
-const URL_SEWING_TASK_LINE_RESET = '/sewing/tasks/line/reset'            // URL для cсброса статуса для записи СЗ
-const URL_SEWING_TASK_STATUSES = '/sewing/task/statuses'               // URL для получения Статуса Движения СЗ
-const URL_SEWING_TASK_STATUSES_SET = '/sewing/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
-const URL_SEWING_TASK_STATUSES_COLOR_PATCH = '/sewing/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
-const URL_SEWING_OPERATIONS = '/sewing/operations'                  // URL для получения Типовых операций швейки
-const URL_SEWING_OPERATION = '/sewing/operations'                  // URL для получения Типовой операции
-const URL_SEWING_OPERATION_SCHEMAS = '/sewing/operation/schemas'           // URL для получения Схем Типовых операций швейки
-const URL_SEWING_OPERATION_SCHEMAS_DELETE = '/sewing/operation/schemas/delete'    // URL для удаления Типовой операции из Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_ADD = '/sewing/operation/schemas/add'       // URL для добавления/изменения Типовой операции в Схеме Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_CREATE = '/sewing/operation/schemas/create'    // URL для создания новой Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_UPDATE = '/sewing/operation/schemas/update'    // URL для обновления Схемы Типовых операций
-const URL_SEWING_OPERATION_SCHEMAS_MODEL = '/sewing/operation/schemas/models'    // URL для обновления Схемы ТО для модели
-const URL_SEWING_OPERATION_MODELS = '/sewing/operation/models'            // URL для получения моделей для Типовых операций швейки
-const URL_SEWING_OPERATION_MODELS_DELETE = '/sewing/operation/models/delete'     // URL для удаления Типовой операции из Модели
-const URL_SEWING_OPERATION_MODELS_ADD = '/sewing/operation/models/add'        // URL для добавления ТО для моделей
-const URL_SEWING_DAY = '/sewing/day'                         // URL для получения рабочего дня
-const URL_SEWING_DAY_DATES = '/sewing/day/dates'                   // URL для получения рабочих дней по статусу
-const URL_SEWING_DAY_COMMENT = '/sewing/day/comment'                 // URL для сохранения комментария к дню
-const URL_SEWING_DAY_WORKERS_ACTIVE = '/workers/active'                     // URL для получения активных рабочих
-const URL_SEWING_DAY_WORKER_ADD = '/sewing/day/worker/add'              // URL для добавления исполнителя к дню
-const URL_SEWING_DAY_WORKER_REMOVE = '/sewing/day/worker/remove'           // URL для удаления исполнителя к дню
-const URL_SEWING_DAY_RESPONSIBLE_ADD = '/sewing/day/responsible/add'         // URL для добавления ответственного к дню
-const URL_SEWING_DAY_RESPONSIBLE_REMOVE = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
-const URL_SEWING_DAY_START = '/sewing/day/start'                   // URL для старта дня СЗ
-const URL_SEWING_DAY_FINISH = '/sewing/day/finish'                  // URL для финиш дня СЗ
+const URL_SEWING_TASKS_COMMENT              = '/sewing/tasks/comment'               // URL для изменения комментария к Сменному заданию
+const URL_SEWING_TASKS_UPDATE               = '/sewing/tasks/update'                // URL для обновления Сменных заданий
+const URL_SEWING_TASK_LINE_DONE             = '/sewing/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_SEWING_TASK_LINE_FALSE            = '/sewing/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+const URL_SEWING_TASK_LINE_RESET            = '/sewing/tasks/line/reset'            // URL для cсброса статуса для записи СЗ
+const URL_SEWING_TASK_STATUSES              = '/sewing/task/statuses'               // URL для получения Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_SET          = '/sewing/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
+const URL_SEWING_TASK_STATUSES_COLOR_PATCH  = '/sewing/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
+const URL_SEWING_OPERATIONS                 = '/sewing/operations'                  // URL для получения Типовых операций швейки
+const URL_SEWING_OPERATION                  = '/sewing/operations'                  // URL для получения Типовой операции
+const URL_SEWING_OPERATION_SCHEMAS          = '/sewing/operation/schemas'           // URL для получения Схем Типовых операций швейки
+const URL_SEWING_OPERATION_SCHEMAS_DELETE   = '/sewing/operation/schemas/delete'    // URL для удаления Типовой операции из Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_ADD      = '/sewing/operation/schemas/add'       // URL для добавления/изменения Типовой операции в Схеме Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_CREATE   = '/sewing/operation/schemas/create'    // URL для создания новой Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_UPDATE   = '/sewing/operation/schemas/update'    // URL для обновления Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_MODEL    = '/sewing/operation/schemas/models'    // URL для обновления Схемы ТО для модели
+const URL_SEWING_OPERATION_MODELS           = '/sewing/operation/models'            // URL для получения моделей для Типовых операций швейки
+const URL_SEWING_OPERATION_MODELS_DELETE    = '/sewing/operation/models/delete'     // URL для удаления Типовой операции из Модели
+const URL_SEWING_OPERATION_MODELS_ADD       = '/sewing/operation/models/add'        // URL для добавления ТО для моделей
+const URL_SEWING_DAY                        = '/sewing/day'                         // URL для получения рабочего дня
+const URL_SEWING_DAY_DATES                  = '/sewing/day/dates'                   // URL для получения рабочих дней по статусу
+const URL_SEWING_DAY_COMMENT                = '/sewing/day/comment'                 // URL для сохранения комментария к дню
+const URL_SEWING_DAY_WORKERS_ACTIVE         = '/workers/active'                     // URL для получения активных рабочих
+const URL_SEWING_DAY_WORKER_ADD             = '/sewing/day/worker/add'              // URL для добавления исполнителя к дню
+const URL_SEWING_DAY_WORKER_REMOVE          = '/sewing/day/worker/remove'           // URL для удаления исполнителя к дню
+const URL_SEWING_DAY_RESPONSIBLE_ADD        = '/sewing/day/responsible/add'         // URL для добавления ответственного к дню
+const URL_SEWING_DAY_RESPONSIBLE_REMOVE     = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
+const URL_SEWING_DAY_START                  = '/sewing/day/start'                   // URL для старта дня СЗ
+const URL_SEWING_DAY_FINISH                 = '/sewing/day/finish'                  // URL для финиш дня СЗ
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -133,11 +134,11 @@ export const useSewingStore = defineStore('sewing', () => {
     const addSewingTaskToGlobal = async (
         oldSewingTask: ISewingTask,
         leftPanel: ISewingTaskLine[],
-        addSewingTask: ISewingTask | null = null,
+        addSewingTask: ISewingTask | null    = null,
         rightPanel: ISewingTaskLine[] | null = null,
     ) => {
 
-        leftPanel = repositionSewingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (SewingLines[])
+        leftPanel                  = repositionSewingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (SewingLines[])
         oldSewingTask.sewing_lines = leftPanel              // __ oldSewingTask приходит по ссылке
 
         // __ Если есть правая панель, то добавляем ее в массив СЗ
@@ -145,7 +146,7 @@ export const useSewingStore = defineStore('sewing', () => {
 
             // console.log('passed')
 
-            rightPanel = repositionSewingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (SewingLines[])
+            rightPanel                 = repositionSewingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (SewingLines[])
             addSewingTask.sewing_lines = rightPanel             // __ addSewingTask приходит новым объектом
 
             // __ Добавляем новый объект в массив
@@ -344,7 +345,7 @@ export const useSewingStore = defineStore('sewing', () => {
         const result = await response
 
         globalSewingTasks.value = result.data                                   // __ кэшируем
-        globalSewingTasksCopy = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalSewingTasksCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
         if (DEBUG) console.log('SewingStore: getSewingTasks: ', result)
         return result.data
@@ -357,7 +358,7 @@ export const useSewingStore = defineStore('sewing', () => {
             return
         }
         const response = await jwtGet(`${URL_SEWING_TASKS_ORDER_ID}/${id}`)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingTasksByOrderId: ', result)
         return result.data
     }
@@ -369,7 +370,7 @@ export const useSewingStore = defineStore('sewing', () => {
             return
         }
         const response = await jwtDelete(URL_SEWING_TASKS_DELETE_BY_ORDER_ID, { id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: deleteSewingTasksByOrderId: ', result)
         return result
     }
@@ -380,7 +381,7 @@ export const useSewingStore = defineStore('sewing', () => {
             return
         }
         const response = await jwtPost(URL_SEWING_TASKS_ADD_BY_ORDER_ID, { id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: addSewingTasksByOrderId: ', result)
         return result
     }
@@ -444,7 +445,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Сохранение Комментария к Сменному заданию - СЗ
     const setSewingTaskComment = async (id: number, comment: string | null = null) => {
         const response = await jwtPost(URL_SEWING_TASKS_COMMENT, { id, comment })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: setSewingTaskComment: ', result)
         return result.data
     }
@@ -484,10 +485,38 @@ export const useSewingStore = defineStore('sewing', () => {
         const result = await response
 
         globalSewingTasksPending.value = result.data                                   // __ кэшируем
-        globalSewingTasksPendingCopy = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
 
         if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
+        return result.data
+    }
+
+    // __ Получение СЗ Пошива за период
+    const getSewingTasksByStatusAndPeriod = async (period: IPeriod | null = null, statuses: number[] | number | null = null) => {
+        let response
+
+        if (statuses && isNumber(statuses)) {
+            statuses = [statuses]
+        }
+
+        // __ Тут именно такая проверка, потому что если status === 0, то он не передается в запросе
+        if (period && statuses !== null) {
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_PERIOD, { period, statuses })
+        } else if (period) {
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_PERIOD, { period })
+        } else if (statuses !== null) {
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_PERIOD, { statuses })
+        } else {
+            response = await jwtGet(URL_SEWING_TASKS_STATUS_PERIOD)
+        }
+
+        const result = await response
+
+        globalSewingTasksPending.value = result.data                                   // __ кэшируем
+        globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+
+        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusAndPeriod: ', result)
         return result.data
     }
 
@@ -571,7 +600,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Типовых операций
     const getSewingOperations = async () => {
         const response = await jwtGet(URL_SEWING_OPERATIONS)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingOperations: ', result)
         return result.data
     }
@@ -579,7 +608,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Типовой операции
     const getSewingOperation = async (id: string | number) => {
         const response = await jwtGet(URL_SEWING_OPERATION + '/' + id)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingOperation: ', result)
         return result.data
     }
@@ -602,7 +631,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Схем Типовых операций
     const getSewingOperationSchemas = async () => {
         const response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingOperationSchemas: ', result)
         return result.data
     }
@@ -610,7 +639,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Схемы Типовой операции
     const getSewingOperationSchema = async (id: string | number) => {
         const response = await jwtGet(URL_SEWING_OPERATION_SCHEMAS + '/' + id)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingOperationSchema: ', result)
         return result.data
     }
@@ -618,7 +647,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Создание Схемы Типовой операции
     const createSewingOperationSchema = async (schema: ISewingOperationSchema) => {
         const response = await jwtPost(URL_SEWING_OPERATION_SCHEMAS_CREATE, schema)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: createSewingOperationSchema: ', result)
         return result
     }
@@ -626,7 +655,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Обновление Схемы Типовой операции
     const updateSewingOperationSchema = async (schema: ISewingOperationSchema) => {
         const response = await jwtPut(URL_SEWING_OPERATION_SCHEMAS_UPDATE, schema)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: updateSewingOperationSchema: ', result)
         return result
     }
@@ -634,7 +663,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Удаление Типовой операции из схемы
     const deleteSewingOperationFromSchema = async (deleteObject: ISewingOperationUpdateObject) => {
         const response = await jwtDelete(URL_SEWING_OPERATION_SCHEMAS_DELETE, deleteObject)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: deleteSewingOperationFromSchema: ', result)
         return result.data
     }
@@ -642,7 +671,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Обновление Типовой операции в схеме
     const addSewingOperationToSchema = async (addObject: ISewingOperationUpdateObject) => {
         const response = await jwtPost(URL_SEWING_OPERATION_SCHEMAS_ADD, addObject)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: addSewingOperationToSchema: ', result)
         return result.data
     }
@@ -653,7 +682,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Моделей для Типовых операций
     const getModelsForLabor = async () => {
         const response = await jwtGet(URL_SEWING_OPERATION_MODELS)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getModelsForLabor: ', result)
         return result.data
     }
@@ -661,7 +690,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Обновление Схемы Типовых операций для модели
     const updateModelSewingOperationSchema = async (code_1c: string, schema_id: number) => {
         const response = await jwtPatch(URL_SEWING_OPERATION_SCHEMAS_MODEL, { code_1c, schema_id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: updateModelSewingOperationSchema: ', result)
         return result.data
     }
@@ -669,7 +698,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Удаление Типовой опрерации из схемы
     const deleteSewingOperationFromModel = async (deleteObject: ISewingOperationUpdateObject) => {
         const response = await jwtPost(URL_SEWING_OPERATION_MODELS_DELETE, deleteObject)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: deleteSewingOperationFromModel: ', result)
         return result.data
     }
@@ -677,7 +706,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Обновление Типовой операции в схеме
     const addSewingOperationToModel = async (addObject: ISewingOperationUpdateObject) => {
         const response = await jwtPost(URL_SEWING_OPERATION_MODELS_ADD, addObject)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: addSewingOperationToModel: ', result)
         return result.data
     }
@@ -689,7 +718,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение Статусов Движения СЗ
     const getSewingTaskStatuses = async () => {
         const response = await jwtGet(URL_SEWING_TASK_STATUSES)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingTaskStatuses: ', result)
         globalSewingTaskStatuses.value = result.data    // __ кэшируем
         return result.data
@@ -707,7 +736,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ data: [{ task: number, status: number }]
     const setSewingTasksStatuses = async (data: ISewingTaskStatusesSet[]) => {
         const response = await jwtPost(URL_SEWING_TASK_STATUSES_SET, data)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: setStatuses: ', result)
         return result.data
     }
@@ -720,7 +749,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Получение производственного дня по дате и смене
     const getSewingDayByDateAndChange = async (date: string, change: number = 1) => {
         const response = await jwtGet(`${URL_SEWING_DAY}/${date}/${change}`)
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingDayByDateAndChange: ', result)
         return result.data
     }
@@ -728,7 +757,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Сохранение Комментария к производственному дню
     const setSewingDayComment = async (id: number, comment: string | null = null) => {
         const response = await jwtPost(URL_SEWING_DAY_COMMENT, { id, comment })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: setSewingDayComment: ', result)
         return result.data
     }
@@ -741,7 +770,7 @@ export const useSewingStore = defineStore('sewing', () => {
         }
 
         const response = await jwtGet(URL_SEWING_DAY_DATES, { dates })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: getSewingDaysByDates: ', result)
         return result.data
     }
@@ -753,7 +782,7 @@ export const useSewingStore = defineStore('sewing', () => {
         }
 
         const response = await jwtGet(URL_SEWING_DAY_WORKERS_ACTIVE)
-        const result = await response
+        const result   = await response
 
         // __ кэшируем
         globalWorkers.value = result.data
@@ -768,7 +797,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Добавление Рабочего в Производственный день
     const addWorkerToSewingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPost(URL_SEWING_DAY_WORKER_ADD, { day_id, worker_id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: addWorkerToSewingDay: ', result)
         return result.data
     }
@@ -776,7 +805,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Удаление Рабочего из Производственного дня
     const removeWorkerFromSewingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPost(URL_SEWING_DAY_WORKER_REMOVE, { day_id, worker_id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: removeWorkerToSewingDay: ', result)
         return result.data
     }
@@ -784,7 +813,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Добавление Ответственного в Производственный день
     const addResponsibleToSewingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_RESPONSIBLE_ADD, { day_id, worker_id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: addResponsibleToSewingDay: ', result)
         return result.data
     }
@@ -792,7 +821,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Удаление Ответственного из Производственного дня
     const removeResponsibleFromSewingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_RESPONSIBLE_REMOVE, { day_id, worker_id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: removeResponsibleFromSewingDay: ', result)
         return result.data
     }
@@ -800,7 +829,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Старт СЗ
     const startSewingDay = async (id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_START, { id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: startSewingDay: ', result)
         return result.data
     }
@@ -808,7 +837,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // __ Старт СЗ
     const finishSewingDay = async (id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_FINISH, { id })
-        const result = await response
+        const result   = await response
         if (DEBUG) console.log('SewingStore: finishSewingDay: ', result)
         return result.data
     }
@@ -840,6 +869,7 @@ export const useSewingStore = defineStore('sewing', () => {
         getSewingTasks,
         getSewingTasksByOrderId,
         getSewingTasksByStatus,
+        getSewingTasksByStatusAndPeriod,
         getSewingTasksByStatusBeforeDate,
         getSewingTasksByStatusOnDate,
         checkSewingTasksByStatusOnDate,

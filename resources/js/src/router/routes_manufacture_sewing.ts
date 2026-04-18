@@ -113,6 +113,15 @@ const sewing = [
                    } as IRouteMeta,
     },
 
+    {
+        // ___ Архив сменных заданий (Общая)
+        path:      _MAIN_PREFIX + 'tasks/archive',
+        name:      'manufacture.cell.sewing.tasks.archive',
+        component: () => import('@/components/dashboard/manufacture/cells/sewing/TheSewingArchive.vue'),
+        meta:      {
+            title: 'Архив сменных заданий Пошива',
+        } as IRouteMeta,
+    },
 
     {
         // ___ Тест
@@ -123,8 +132,6 @@ const sewing = [
                        title: 'Тестовая страница',
                    } as IRouteMeta,
     },
-
-
 
 ]
 
