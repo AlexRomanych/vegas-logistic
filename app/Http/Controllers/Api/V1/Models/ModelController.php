@@ -336,9 +336,9 @@ class ModelController extends Controller
 
 
     //
-    public function model($code1C)
+    public function model($code1c)
     {
-        return new ModelResource(Model::query()->find($code1C));
+        return new ModelResource(Model::query()->find($code1c));
     }
 
 

@@ -47,13 +47,14 @@ Route::prefix('/models')
         Route::post('/procedures/upload', [ModelConstructProcedureController::class, 'modelConstructProceduresUpload']);
 
         Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
+        Route::get('/construct/{code1c}', [ModelConstructController::class, 'getConstruct']);
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
 
         Route::post('/update', [ModelConstructController::class, 'modelsUpdate']);
     });
 
 
-Route::get('/model/{code1C}', [ModelController::class, 'model'])->middleware('jwt.auth');
+Route::get('/model/{code1c}', [ModelController::class, 'model'])->middleware('jwt.auth');
 Route::get('/models/load', [ModelController::class, 'modelsLoad'])->middleware('jwt.auth');
 
 Route::get('/models/update', [Update::class, 'updateModelsAndCollections'])->name('models.update');

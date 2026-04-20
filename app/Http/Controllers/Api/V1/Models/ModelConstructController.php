@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Models;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ConstructTypes;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Model\Construct\ModelConstructResource;
 use App\Http\Resources\Model\Construct\ModelConstructSpecification;
 use App\Models\Models\Model;
 use App\Models\Models\ModelConstruct;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class ModelConstructController extends Controller
@@ -52,14 +54,45 @@ class ModelConstructController extends Controller
     }
 
 
+    public function getConstruct(string $code1c)
+    {
+        try {
+            $validated = Validator::make([
+                'code1c' => $code1c
+            ], [
+                'code1c' => 'required|string'
+            ])->validated();
+
+            $construct = ModelConstruct::query()
+                ->where('model_code_1c', $validated['code1c'])
+                ->with([
+                    'constructItems',
+                    'constructItems.procedure',
+                    'constructItems.material',
+                ])
+                ->first();
+
+            if (!$construct) {
+                return json_encode(['data' => null]);
+            }
+
+            return new ModelConstructResource($construct);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
     /**
      * ___ Обновляем спецификации моделей
      * @param Request $request
      * @return string
      * @throws Throwable
      */
-    public function modelConstructsUpload(Request $request)
-    {
+    public
+    function modelConstructsUpload(
+        Request $request
+    ) {
         try {
             $data = $request->validate(['data' => 'required|json']);
 
@@ -216,8 +249,10 @@ class ModelConstructController extends Controller
      * @param Request $request
      * @return JsonResponseAlias|string
      */
-    public function modelsUpdate(Request $request)
-    {
+    public
+    function modelsUpdate(
+        Request $request
+    ) {
         $messages = [
             'materials.required'   => 'Отсутствует файл с Материалами',
             'materials.file'       => 'Отсутствует файл с Материалами',
@@ -285,6 +320,4 @@ class ModelConstructController extends Controller
             return EndPointStaticRequestAnswer::failResponse($e);
         }
     }
-
-
 }

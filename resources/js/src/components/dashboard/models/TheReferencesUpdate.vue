@@ -166,7 +166,7 @@ const fileSpecifications = ref<File>()
 const modalType       = ref<IColorTypes>('danger')
 const modalText       = ref<string>('')
 const modalMode       = ref<'inform' | 'confirm'>('inform')
-const appModalAsyncTS = ref<InstanceType<typeof AppModalAsyncTS> | null>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalAsyncTS = ref<InstanceType<typeof AppModalAsyncTS> | null>(null)
 
 
 const isUploading    = ref(false)
@@ -221,7 +221,7 @@ const startImport = async () => {
 
             // __ Перезагружаем страницу
             await router.push({
-                path: router.currentRoute.value.path,
+                path : router.currentRoute.value.path,
                 query: { ...router.currentRoute.value.query, t: Date.now() }
             })
             // router.go(0)

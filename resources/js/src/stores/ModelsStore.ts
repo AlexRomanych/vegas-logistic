@@ -12,17 +12,19 @@ const DEBUG = true
 // const API_PREFIX = '/api/v1/'                                                   // Префикс API
 // const URL_MODEL = 'model/'                                                      // URL для получения модели
 
-const URL_MODELS = 'models/'                                                    // URL для получения списка моделей с сервера
-const URL_MODELS_UPLOAD = 'models/upload/'                                      // URL для загрузки моделей на сервер
-const URL_MODELS_LOAD = 'models/load/'                                          // URL для загрузки моделей из хранилища
+const URL_MODELS        = 'models/'                              // URL для получения списка моделей с сервера
+const URL_MODELS_UPLOAD = 'models/upload/'                       // URL для загрузки моделей на сервер
+const URL_MODELS_LOAD   = 'models/load/'                         // URL для загрузки моделей из хранилища
 
-const URL_MODELS_PROCEDURES = 'models/procedures/'                              // URL для получения процедур расчета с сервера
-const URL_MODELS_PROCEDURES_UPLOAD = 'models/procedures/upload/'                // URL для загрузки (обновлении) процедур расчета на сервер
+const URL_MODELS_PROCEDURES        = 'models/procedures/'        // URL для получения процедур расчета с сервера
+const URL_MODELS_PROCEDURES_UPLOAD = 'models/procedures/upload/' // URL для загрузки (обновлении) процедур расчета на сервер
 
-const URL_MODELS_CONSTRUCTS = 'models/constructs/'                              // URL для получения спецификаций моделей с сервера
-const URL_MODELS_CONSTRUCTS_UPLOAD = 'models/constructs/upload/'                // URL для загрузки (обновлении) процедур расчета с диска
+const URL_MODELS_CONSTRUCTS        = 'models/constructs/'        // URL для получения спецификаций моделей с сервера
+const URL_MODELS_CONSTRUCT         = 'models/construct'          // URL для получения спецификации конкретной модели с сервера
+const URL_MODELS_CONSTRUCTS_UPLOAD = 'models/constructs/upload/' // URL для загрузки (обновлении) процедур расчета с диска
 
-// const URL_MODEL_DELETE = 'models/delete/'                                    // URL для загрузкиX модели
+
+// const URL_MODEL_DELETE = 'models/delete/'
 
 export const useModelsStore = defineStore('models', () => {
 
@@ -39,7 +41,7 @@ export const useModelsStore = defineStore('models', () => {
             // 'Content-Type': 'application/x-www-form-urlencoded',
         }
 
-        const result = await jwtPost(URL_MODELS_UPLOAD, {data: fileData}, headers)
+        const result = await jwtPost(URL_MODELS_UPLOAD, { data: fileData }, headers)
         // const response = await jwtPost(URL_MODELS_UPLOAD, {data: fileData}, headers)
         // const response = await jwtPost(URL_PLAN_ULOADS_UPLOAD, fileData, headers)
         // const result = await response
@@ -67,7 +69,7 @@ export const useModelsStore = defineStore('models', () => {
     //__ Получаем с API список процедур расчета
     const getProcedures = async () => {
         const response = await jwtGet(URL_MODELS_PROCEDURES)
-        const result = await response
+        const result   = await response
 
         if (DEBUG) console.log('ModelsStore: getProcedures: ', result)
         return result.data
@@ -81,8 +83,8 @@ export const useModelsStore = defineStore('models', () => {
             'Content-Type': 'application/json',
         }
 
-        const response = await jwtPost(URL_MODELS_PROCEDURES_UPLOAD, {data: fileData}, headers)
-        const result = await response
+        const response = await jwtPost(URL_MODELS_PROCEDURES_UPLOAD, { data: fileData }, headers)
+        const result   = await response
 
         if (DEBUG) console.log('ModelsStore: uploadProcedures: ', result)
 
@@ -93,11 +95,24 @@ export const useModelsStore = defineStore('models', () => {
     //__ Получаем с API список Спецификаций моделей
     const getConstructs = async () => {
         const response = await jwtGet(URL_MODELS_CONSTRUCTS)
-        const result = await response
+        const result   = await response
 
         if (DEBUG) console.log('ModelsStore: getConstructs: ', result)
         return result.data
     }
+
+
+    //__ Получаем с API Спецификацию определенной модели
+    const getConstruct = async (code_1c: string | null = null) => {
+        if (!code_1c) return []
+
+        const response = await jwtGet(`${URL_MODELS_CONSTRUCT}/${code_1c}`)
+        const result   = await response
+
+        if (DEBUG) console.log('ModelsStore: getConstruct: ', result)
+        return result.data
+    }
+
 
     // __ Загрузка (Обновление) Спецификаций моделей
     const uploadConstructs = async (fileData: string) => {
@@ -106,8 +121,8 @@ export const useModelsStore = defineStore('models', () => {
             'Content-Type': 'application/json',
         }
 
-        const response = await jwtPost(URL_MODELS_CONSTRUCTS_UPLOAD, {data: fileData}, headers)
-        const result = await response
+        const response = await jwtPost(URL_MODELS_CONSTRUCTS_UPLOAD, { data: fileData }, headers)
+        const result   = await response
 
         if (DEBUG) console.log('ModelsStore: uploadConstructs: ', result)
 
@@ -123,6 +138,7 @@ export const useModelsStore = defineStore('models', () => {
         uploadProcedures,
 
         getConstructs,
+        getConstruct,
         uploadConstructs,
     }
 })

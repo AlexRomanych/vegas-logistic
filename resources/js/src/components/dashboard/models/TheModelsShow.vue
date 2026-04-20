@@ -6,6 +6,7 @@
         <div class="sticky top-0 p-1 mb-1 bg-slate-200 border-2 rounded-lg border-slate-300 max-w-fit">
             <div class="ml-0.5">
                 <div class="flex">
+
                     <!-- __ Collapsed -->
                     <div>
                         <AppLabelMultilineTSWrapper
@@ -306,6 +307,7 @@
                                             :arg="i === 1 ? model : model.cover"
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.code_1c"
+                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                         />
 
                                         <!-- __ Название -->
@@ -313,6 +315,7 @@
                                             :arg="i === 1 ? model : model.cover"
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.model_name"
+                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                         />
 
                                         <!-- __ Тип изделия -->
@@ -460,11 +463,27 @@
     </div>
 
 
+    <!-- __ Карточка Спецификации -->
+    <CardSpecification
+        ref="cardSpecification"
+        :construct="modelConstruct"
+    />
+
+    <!-- __ Для модальных сообщений -->
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
+        :mode="modalMode"
+        :text="modalText"
+        :type="modalType"
+        ok-word="Понятно"
+    />
+
 </template>
 
 <script lang="ts" setup>
 import type {
-    IMaterialGroup, IModel, IModelCollection, IRenderData
+    IColorTypes,
+    IMaterialGroup, IModel, IModelCollection, IModelConstruct, IRenderData
 } from '@/types'
 
 import { onMounted, reactive, ref, watchEffect } from 'vue'
@@ -477,6 +496,8 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import AppInputTextTSWrapper from '@/components/dashboard/models/components/AppInputTextTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
 
 
 const isLoading = ref(false)
@@ -1005,6 +1026,17 @@ const manufactureGroupFilter      = ref('')
 const manufactureStatusFilter     = ref('')
 const sewingOperationSchemaFilter = ref('')
 
+
+// __ Тип для модального окна
+const modalType                = ref<IColorTypes>('danger')
+const modalText                = ref<string | string[]>('')
+const modalMode                = ref<'inform' | 'confirm'>('inform')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)
+
+// __ Карточка Спецификаций
+const cardSpecification = ref<InstanceType<typeof CardSpecification> | null>(null)
+const modelConstruct = ref<IModelConstruct | null>(null)
+
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
     collapseAll.value = !collapseAll.value
@@ -1012,6 +1044,29 @@ const toggleCollapsed = () => {
         entity.collapsed = collapseAll.value
 
     })
+}
+
+
+// __ Показываем спецификацию
+const showSpecification = async (model: IModel | null) => {
+    if (!model) {
+        return
+    }
+
+    const construct = await modelsStore.getConstruct(model.code_1c)
+    if (!construct) {
+        modalText.value = [
+            `Спецификация для модели: ${model.name}`,
+            'не найдена!'
+        ]
+        await appModalAsyncMultilineTS.value?.show()
+        return
+    }
+
+    // console.log('construct: ', construct)
+
+    modelConstruct.value = construct
+    await cardSpecification.value?.show()
 }
 
 
