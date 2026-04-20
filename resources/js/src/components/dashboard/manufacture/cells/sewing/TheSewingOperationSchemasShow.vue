@@ -23,6 +23,18 @@
                         />
                     </div>
 
+                    <!-- __ Проверка схемы -->
+                    <AppLabelTS
+                        :height="HEADER_COLUMNS_HEIGHT"
+                        :width="CELL_WIDTH"
+                        align="center"
+                        direction="column"
+                        rounded="4"
+                        text="Проверка времени схемы"
+                        text-size="mini"
+                        type="indigo"
+                    />
+
                     <!-- __ Список Типовых операций -->
                     <div v-for="operation of sewingOperations" :key="operation.id" class="sticky-header">
                         <AppLabelTS
@@ -49,10 +61,26 @@
                             :text="schema.name"
                             :width="HEADER_ROWS_WIDTH"
                             align="center"
+                            class="cursor-pointer"
                             rounded="4"
                             text-size="mini"
                             type="orange"
                             @dblclick="editSchema(schema)"
+                        />
+                    </div>
+
+                    <!-- __ Проверка времени схемы -->
+                    <div class="sticky-col">
+                        <AppLabelTS
+                            :height="CELL_HEIGHT"
+                            :width="CELL_WIDTH"
+                            align="center"
+                            class="cursor-pointer"
+                            rounded="4"
+                            text="📝"
+                            text-size="normal"
+                            type="indigo"
+                            @dblclick="checkSchema(schema)"
                         />
                     </div>
 
@@ -66,7 +94,6 @@
                             align="center"
                             rounded="4"
                             text-size="mini"
-
                             @dblclick="editOperation(schema, operation)"
                         />
                     </div>
@@ -100,6 +127,15 @@
         :schema="modalSchema!"
     />
 
+    <!-- __ Модальное окно проверки суммарного времени трудозатрат схемы типовых операций -->
+    <SewingOperationCheck
+        ref="sewingOperationCheck"
+        :schema="checkSchemaData"
+        :headers="checkResultsHeaders"
+        :table-data="checkResultsData"
+    />
+
+
 </template>
 
 <script lang="ts" setup>
@@ -125,6 +161,8 @@ import SewingOperationSchemaDataEdit
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+import SewingOperationCheck from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationCheck.vue'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 
 const sewingStore = useSewingStore()
@@ -160,6 +198,12 @@ const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> |
 
 // __ Тип для модального окна изменения данных Схемы
 const sewingOperationSchemaDataEdit = ref<InstanceType<typeof SewingOperationSchemaDataEdit> | null>(null)
+
+// __ Модальное окно проверки суммарного времени трудозатрат схемы типовых операций
+const sewingOperationCheck = ref<InstanceType<typeof SewingOperationCheck> | null>(null)
+const checkResultsHeaders  = ref<string[]>([])
+const checkResultsData     = ref<string[][]>([])
+const checkSchemaData      = ref<ISewingOperationSchema | null>(null)
 
 
 // __ Получаем значение текста для отображения в ячейке
@@ -209,6 +253,9 @@ const showError = async (error: string | null = null) => {
 
 // __ Редактируем операцию или удаляем или переключаем
 const editOperation = async (schema: ISewingOperationSchema | null, operation: ISewingOperation) => {
+    if (!schema) {
+        return
+    }
     modalOperation.value = operation
     modalSchema.value    = schema
     const result         = await sewingOperationItemEdit.value?.show()
@@ -221,8 +268,8 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
             if (findIndex !== -1) {
                 const deleteObject: ISewingOperationUpdateObject = {
                     operation_id: operation.id,
-                    target_id:    schema.id,
-                    pivot:        null
+                    target_id   : schema.id,
+                    pivot       : null
                 }
 
                 const result = await sewingStore.deleteSewingOperationFromSchema(deleteObject)
@@ -251,12 +298,12 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
 
             const updateObject: ISewingOperationUpdateObject = {
                 operation_id: operation.id,
-                target_id:    schema.id,
-                pivot:        {
+                target_id   : schema.id,
+                pivot       : {
                     ratio,
-                    amount:    null,
+                    amount   : null,
                     condition: null,
-                    position:  null,
+                    position : null,
                 }
             }
 
@@ -273,12 +320,12 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
                 schema.operations[findIndex].pivot.ratio = ratio // __ Если есть в схеме, то обновляем значение
             } else {
                 schema.operations.push({
-                    id:    operation.id,
+                    id   : operation.id,
                     pivot: {
-                        ratio:     ratio,
-                        amount:    null,
+                        ratio    : ratio,
+                        amount   : null,
                         condition: null,
-                        position:  null
+                        position : null
                     }
                 } as ISewingOperationItem)
             }
@@ -290,11 +337,11 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
 // __ Добавляем схему
 const addSchema = async () => {
     const newSchema: ISewingOperationSchema = {
-        id:          0,
-        name:        'Новая схема',
-        active:      true,
+        id         : 0,
+        name       : 'Новая схема',
+        active     : true,
         description: '',
-        operations:  [] as ISewingOperationItem[],
+        operations : [] as ISewingOperationItem[],
     }
 
     const result = await sewingStore.createSewingOperationSchema(newSchema)
@@ -329,6 +376,39 @@ const editSchema = async (schema: ISewingOperationSchema) => {
 }
 
 
+// __ Проверяем схему (суммарное время операций)
+const checkSchema = async (schema: ISewingOperationSchema | null = null) => {
+    if (!schema) {
+        return
+    }
+
+
+    const checkData: { key: string, value: number }[] = await sewingStore.checkSewingOperationSchemaForSummaryTime(schema.id)
+
+    // console.log('checkData: ', checkData)
+
+    checkSchemaData.value     = schema
+    checkResultsHeaders.value = ['Размер', 'сек./1 ед.', 'мин./1 ед.', 'мин./5 ед.', 'мин./10 ед.',]
+    checkResultsData.value    = checkData.map(item => {
+        const result: string[] = []
+        for (const [key, value] of Object.entries(item)) {
+            result.push(key)
+            result.push(value.toString())
+            result.push(formatTimeWithLeadingZeros(value as number))
+            result.push(formatTimeWithLeadingZeros((value as number) * 5))
+            result.push(formatTimeWithLeadingZeros((value as number) * 10))
+        }
+
+        return result
+    })
+
+
+    console.log(checkResultsData.value)
+
+    await sewingOperationCheck.value!.show()
+}
+
+
 // __ Получаем данные
 const getData = async () => {
     [sewingOperations.value, sewingOperationSchemas.value] = await Promise.all([
@@ -339,7 +419,7 @@ const getData = async () => {
     sewingOperations.value = sewingOperations.value
         .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
         .sort((a, b) => a.id - b.id)
-        // .sort((a, b) => a.name.localeCompare(b.name))
+    // .sort((a, b) => a.name.localeCompare(b.name))
 
     sewingOperationSchemas.value = sewingOperationSchemas.value
         .filter(schema => schema.id !== 0)

@@ -3,6 +3,7 @@
 namespace App\Classes;
 
 use App\Models\Manufacture\Cells\Sewing\SewingOperation;
+use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Models\Model;
@@ -46,10 +47,10 @@ final class SewingTimeLabor
 
     /**
      * ___ Получаем трудозатраты либо по Строке СЗ, либо по Модели, Размеру и количеству
-     * @param  SewingTaskLine|null  $sewingTaskLine  **Сменное задание (Строка СЗ (SewingLine))**
-     * @param  string|Model|null  $model  __Модель__
-     * @param  string|Size|null  $size  __Размер__
-     * @param  int  $amount  __Количество__
+     * @param SewingTaskLine|null $sewingTaskLine **Сменное задание (Строка СЗ (SewingLine))**
+     * @param string|Model|null $model            __Модель__
+     * @param string|Size|null $size              __Размер__
+     * @param int $amount                         __Количество__
      */
     public function __construct(
         SewingTaskLine|null $sewingTaskLine = null,
@@ -103,12 +104,12 @@ final class SewingTimeLabor
         } else {
             /** @noinspection PhpUndefinedFieldInspection */
             $this->sewingType = match (true) {
-                $model->is_universal  => SewingTask::FIELD_UNIVERSAL,
-                $model->is_auto       => SewingTask::FIELD_AUTO,
+                $model->is_universal => SewingTask::FIELD_UNIVERSAL,
+                $model->is_auto => SewingTask::FIELD_AUTO,
                 $model->is_solid_hard => SewingTask::FIELD_SOLID_HARD,
                 $model->is_solid_lite => SewingTask::FIELD_SOLID_LITE,
                 // $model->is_undefined  => SewingTask::FIELD_UNDEFINED,
-                default               => SewingTask::FIELD_UNDEFINED,
+                default => SewingTask::FIELD_UNDEFINED,
             };
         }
     }
@@ -130,7 +131,6 @@ final class SewingTimeLabor
             $workModel = Model::query()
                 ->with(['modelType', 'cover', 'base', 'sewingSchema.operations', 'sewingOperations'])
                 ->first();
-
             //$a = 0;
         }
 
@@ -169,7 +169,7 @@ final class SewingTimeLabor
 
         if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
             $this->amountUniversal = $this->amount * 0.4;
-            $this->amountAuto      = $this->amount * 0.35;
+            $this->amountAuto = $this->amount * 0.35;
             $this->amountSolidHard = $this->amount * 0.15;
             $this->amountSolidLite = $this->amount * 0.1;
             $this->amountUndefined = $this->amount * 0.0;
@@ -201,21 +201,18 @@ final class SewingTimeLabor
         $model = $this->getModel($this->modelCode1C);
 
         $this->timeUniversalPerPic = 0;
-        $this->timeAutoPerPic      = 0;
+        $this->timeAutoPerPic = 0;
         $this->timeSolidHardPerPic = 0;
         $this->timeSolidLitePerPic = 0;
         $this->timeUndefinedPerPic = 0;
 
         if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
-
             $this->timeUniversalPerPic = 100;
-            $this->timeAutoPerPic      = 150;
+            $this->timeAutoPerPic = 150;
             $this->timeSolidHardPerPic = 200;
             $this->timeSolidLitePerPic = 250;
             $this->timeUndefinedPerPic = 0;
-
         } else {
-
             // __ Получаем операции (Если нет схемы (schema_id === 0), то операции из модели, иначе из схемы)
             $operations = $model->sewingSchema->id !== 0 ? $model->sewingSchema->operations : $model->sewingOperations;
 
@@ -223,25 +220,28 @@ final class SewingTimeLabor
             // $op = [];
             // $operations->each(function ($operation) use ($op) {$op[] = $operation->all();});
 
-            $timePerPic = 0;
-            foreach ($operations as $operation) {
+            $timePerPic = $this->getTimeLaborPerPic($operations, $size);
 
-                if (!$operation->active) continue;  // __ Если операция не активна, то пропускаем ее
-
-                // $o = $operation->toArray();
-
-                // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
-                $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;
-                $time  = 0;
-
-                if ($operation->type === SewingOperation::DYNAMIC_TYPE) {
-                    $time = $operation->time * $size->getPerimeter();
-                } elseif ($operation->type === SewingOperation::STATIC_TYPE) {
-                    $time = $operation->time;
-                }
-
-                $timePerPic += $time * $ratio;
-            }
+            //$timePerPic = 0;
+            //foreach ($operations as $operation) {
+            //    if (!$operation->active) {
+            //        continue;
+            //    }  // __ Если операция не активна, то пропускаем ее
+            //
+            //    // $o = $operation->toArray();
+            //
+            //    // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
+            //    $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;
+            //    $time = 0;
+            //
+            //    if ($operation->type === SewingOperation::DYNAMIC_TYPE) {
+            //        $time = $operation->time * $size->getPerimeter();
+            //    } elseif ($operation->type === SewingOperation::STATIC_TYPE) {
+            //        $time = $operation->time;
+            //    }
+            //
+            //    $timePerPic += $time * $ratio;
+            //}
 
             if ($this->sewingType === SewingTask::FIELD_UNIVERSAL) {
                 $this->timeUniversalPerPic = $timePerPic;
@@ -264,7 +264,7 @@ final class SewingTimeLabor
     {
         if ($this->sewingType === SewingTask::FIELD_AVERAGE) {
             $this->timeUniversal = $this->timeUniversalPerPic * $this->amountUniversal;
-            $this->timeAuto      = $this->timeAutoPerPic * $this->amountAuto;
+            $this->timeAuto = $this->timeAutoPerPic * $this->amountAuto;
             $this->timeSolidHard = $this->timeSolidHardPerPic * $this->amountSolidHard;
             $this->timeSolidLite = $this->timeSolidLitePerPic * $this->amountSolidLite;
             $this->timeUndefined = $this->timeUndefinedPerPic * $this->amountUndefined;
@@ -383,12 +383,12 @@ final class SewingTimeLabor
     public function getTime(): int
     {
         return match ($this->sewingType) {
-            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversal(),
-            SewingTask::FIELD_AUTO       => $this->getTimeAuto(),
+            SewingTask::FIELD_UNIVERSAL => $this->getTimeUniversal(),
+            SewingTask::FIELD_AUTO => $this->getTimeAuto(),
             SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHard(),
             SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLite(),
-            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefined(),
-            default                      => 0,
+            SewingTask::FIELD_UNDEFINED => $this->getTimeUndefined(),
+            default => 0,
         };
     }
 
@@ -397,13 +397,13 @@ final class SewingTimeLabor
     public function getTimeArray(): array
     {
         return match ($this->sewingType) {
-            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversalArray(),
-            SewingTask::FIELD_AUTO       => $this->getTimeAutoArray(),
+            SewingTask::FIELD_UNIVERSAL => $this->getTimeUniversalArray(),
+            SewingTask::FIELD_AUTO => $this->getTimeAutoArray(),
             SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHardArray(),
             SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLiteArray(),
-            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefinedArray(),
-            SewingTask::FIELD_AVERAGE    => $this->getTimeAverageArray(),
-            default                      => [],
+            SewingTask::FIELD_UNDEFINED => $this->getTimeUndefinedArray(),
+            SewingTask::FIELD_AVERAGE => $this->getTimeAverageArray(),
+            default => [],
         };
     }
 
@@ -414,13 +414,13 @@ final class SewingTimeLabor
         $totalAmount = true;
         /** @noinspection PhpConditionAlreadyCheckedInspection */
         return match ($phantom) {
-            SewingTask::FIELD_UNIVERSAL  => $this->getTimeUniversalArray($totalAmount),
-            SewingTask::FIELD_AUTO       => $this->getTimeAutoArray($totalAmount),
+            SewingTask::FIELD_UNIVERSAL => $this->getTimeUniversalArray($totalAmount),
+            SewingTask::FIELD_AUTO => $this->getTimeAutoArray($totalAmount),
             SewingTask::FIELD_SOLID_HARD => $this->getTimeSolidHardArray($totalAmount),
             SewingTask::FIELD_SOLID_LITE => $this->getTimeSolidLiteArray($totalAmount),
-            SewingTask::FIELD_UNDEFINED  => $this->getTimeUndefinedArray($totalAmount),
-            SewingTask::FIELD_AVERAGE    => $this->getTimeAverageArray(),
-            default                      => [],
+            SewingTask::FIELD_UNDEFINED => $this->getTimeUndefinedArray($totalAmount),
+            SewingTask::FIELD_AVERAGE => $this->getTimeAverageArray(),
+            default => [],
         };
     }
 
@@ -468,11 +468,11 @@ final class SewingTimeLabor
             'amountUndefined'
         ];
 
-        $data       = [];
+        $data = [];
         $currentSum = 0;
 
         foreach ($propertyNames as $name) {
-            $value      = $this->$name;
+            $value = $this->$name;
             $floorValue = (int)floor($value);
 
             $data[$name] = [
@@ -500,6 +500,59 @@ final class SewingTimeLabor
             }
         }
     }
+
+
+    /**
+     * ___ Получаем трудозатраты на единицу изделия по размеру и схеме
+     * @param string|null $size
+     * @param SewingOperationSchema|null $schema
+     * @return int
+     */
+    public function getTimeLaborBySizeAndSewingSchema(string|null $size = null, SewingOperationSchema $schema = null): int
+    {
+        // __ Страховка
+        if (is_null($size) || is_null($schema)) return 0;
+
+        $parsedSize = $this->getSize($size);
+
+        if (is_null($parsedSize)) return 0;
+
+        return $this->getTimeLaborPerPic($schema->operations, $parsedSize);
+
+    }
+
+
+    /**
+     * ___ Сама логика расчета времени на единицу
+     * @param $operations
+     * @param $size
+     * @return int
+     */
+    private function getTimeLaborPerPic($operations, Size $size): int {
+        $timePerPic = 0;
+        foreach ($operations as $operation) {
+            if (!$operation->active) {
+                continue;   // __ Если операция не активна, то пропускаем ее
+            }
+
+            // $o = $operation->toArray();
+
+            // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
+            $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;
+            $time = 0;
+
+            if ($operation->type === SewingOperation::DYNAMIC_TYPE) {
+                $time = $operation->time * $size->getPerimeter();
+            } elseif ($operation->type === SewingOperation::STATIC_TYPE) {
+                $time = $operation->time;
+            }
+
+            $timePerPic += $time * $ratio;
+        }
+        return $timePerPic;
+    }
+
+
 
 }
 

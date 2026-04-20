@@ -38,7 +38,7 @@ const URL_SEWING_TASKS_COMMENT              = '/sewing/tasks/comment'           
 const URL_SEWING_TASKS_UPDATE               = '/sewing/tasks/update'                // URL для обновления Сменных заданий
 const URL_SEWING_TASK_LINE_DONE             = '/sewing/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 const URL_SEWING_TASK_LINE_FALSE            = '/sewing/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
-const URL_SEWING_TASK_LINE_RESET            = '/sewing/tasks/line/reset'            // URL для cсброса статуса для записи СЗ
+const URL_SEWING_TASK_LINE_RESET            = '/sewing/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 const URL_SEWING_TASK_STATUSES              = '/sewing/task/statuses'               // URL для получения Статуса Движения СЗ
 const URL_SEWING_TASK_STATUSES_SET          = '/sewing/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 const URL_SEWING_TASK_STATUSES_COLOR_PATCH  = '/sewing/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
@@ -49,6 +49,7 @@ const URL_SEWING_OPERATION_SCHEMAS_DELETE   = '/sewing/operation/schemas/delete'
 const URL_SEWING_OPERATION_SCHEMAS_ADD      = '/sewing/operation/schemas/add'       // URL для добавления/изменения Типовой операции в Схеме Типовых операций
 const URL_SEWING_OPERATION_SCHEMAS_CREATE   = '/sewing/operation/schemas/create'    // URL для создания новой Схемы Типовых операций
 const URL_SEWING_OPERATION_SCHEMAS_UPDATE   = '/sewing/operation/schemas/update'    // URL для обновления Схемы Типовых операций
+const URL_SEWING_OPERATION_SCHEMAS_CHECK    = '/sewing/operation/schemas/check'     // URL для проверки суммарного времени Схемы Типовых операций
 const URL_SEWING_OPERATION_SCHEMAS_MODEL    = '/sewing/operation/schemas/models'    // URL для обновления Схемы ТО для модели
 const URL_SEWING_OPERATION_MODELS           = '/sewing/operation/models'            // URL для получения моделей для Типовых операций швейки
 const URL_SEWING_OPERATION_MODELS_DELETE    = '/sewing/operation/models/delete'     // URL для удаления Типовой операции из Модели
@@ -676,6 +677,17 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
+    // __ Проверка Схемы Типовых операций на суммарное время
+    const checkSewingOperationSchemaForSummaryTime = async (schemaId: number | null = null) => {
+        if (!schemaId) {
+            return null
+        }
+        const response = await jwtGet(`${URL_SEWING_OPERATION_SCHEMAS_CHECK}/${schemaId}`)
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: checkSewingOperationSchemaForSummaryTime: ', result)
+        return result.data
+    }
+
     // --- ----------------------------------------------------------
     // --- --------- Типовые операции + Модели ----------------------
     // --- ----------------------------------------------------------
@@ -893,6 +905,7 @@ export const useSewingStore = defineStore('sewing', () => {
         updateSewingOperationSchema,
         deleteSewingOperationFromSchema,
         addSewingOperationToSchema,
+        checkSewingOperationSchemaForSummaryTime,
 
         getModelsForLabor,
         updateModelSewingOperationSchema,

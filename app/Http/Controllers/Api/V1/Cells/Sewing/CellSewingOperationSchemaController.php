@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Cells\Sewing;
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Classes\SewingTimeLabor;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Sewing\Operations\SewingOperationSchemaResource;
 use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
@@ -24,7 +25,6 @@ class CellSewingOperationSchemaController extends Controller
                 ->with('operations')
                 ->get();
             return SewingOperationSchemaResource::collection($sewingOperations);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -33,7 +33,7 @@ class CellSewingOperationSchemaController extends Controller
 
     /**
      * ___ Получаем Типовую операцию по швейке
-     * @param  string  $id
+     * @param string $id
      * @return SewingOperationSchemaResource|string
      */
     public function getSewingOperationSchema(string $id)
@@ -44,7 +44,6 @@ class CellSewingOperationSchemaController extends Controller
 
             $sewingOperationSchema = SewingOperationSchema::query()->findOrFail($id);
             return new SewingOperationSchemaResource($sewingOperationSchema);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -53,7 +52,7 @@ class CellSewingOperationSchemaController extends Controller
 
     /**
      * ___ Создаем Схему Типовых операций по швейке
-     * @param  Request  $request
+     * @param Request $request
      * @return SewingOperationSchemaResource|string
      */
     public function createSewingOperationSchema(Request $request)
@@ -69,7 +68,6 @@ class CellSewingOperationSchemaController extends Controller
             $newSewingOperationSchema = SewingOperationSchema::query()->create($data);
 
             return new SewingOperationSchemaResource($newSewingOperationSchema);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -78,7 +76,7 @@ class CellSewingOperationSchemaController extends Controller
 
     /**
      * ___ Обновляем Схему Типовых операций по швейке
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function updateSewingOperationSchema(Request $request)
@@ -92,11 +90,11 @@ class CellSewingOperationSchemaController extends Controller
             ]);
 
             $sewingOperationSchema = SewingOperationSchema::query()->findOrFail($data['data']['id']);
-            $sameNameSchema        = SewingOperationSchema::query()->where('name', $data['data']['name'])->first();
+            $sameNameSchema = SewingOperationSchema::query()->where('name', $data['data']['name'])->first();
 
             if ($sameNameSchema) {
                 if ($sameNameSchema->id !== $sewingOperationSchema->id) {
-                    throw new Exception('Ошибка! Схема "'.$data['data']['name'].'" уже существует.');
+                    throw new Exception('Ошибка! Схема "' . $data['data']['name'] . '" уже существует.');
                 }
             }
 
@@ -107,7 +105,6 @@ class CellSewingOperationSchemaController extends Controller
 
             $sewingOperationSchema->save();
             return EndPointStaticRequestAnswer::ok();
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -116,7 +113,7 @@ class CellSewingOperationSchemaController extends Controller
 
     /**
      * ___ Удаляем операцию (pivot) из Схемы
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function deleteSewingOperationFromSchema(Request $request)
@@ -141,8 +138,57 @@ class CellSewingOperationSchemaController extends Controller
 
 
     /**
+     * ___ Проверяем Схему на время
+     * @param string $id
+     * @return array[]|string
+     */
+    public function checkSewingOperationSchemaForSummaryTime(string $id)
+    {
+        try {
+            $validator = Validator::make([
+                'id' => $id
+            ], [
+                'id' => 'required|numeric|exists:sewing_operation_schemas,id'
+            ]);
+
+            $data = $validator->validate();
+            $schema = SewingOperationSchema::query()->find($data['id']);
+
+            if (!$schema) {
+                throw new Exception('Схема с id = ' . $id . ' не найдена');
+            }
+
+            $SIZES = [
+                '60x200x20',
+                '70x200x20',
+                '80x200x20',
+                '90x200x20',
+                '100x200x20',
+                '120x200x20',
+                '140x200x20',
+                '160x200x20',
+                '180x200x20',
+                '200x200x20',
+            ];
+
+            $timeObject = new SewingTimeLabor();
+
+            $result = [];
+            foreach ($SIZES as $size) {
+                $result[] = [mb_substr($size, 0, -3) => $timeObject->getTimeLaborBySizeAndSewingSchema($size, $schema)];
+            }
+
+            return ['data' => $result];
+            //return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Добавляем или обновляем операцию (pivot) в Схеме
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function addSewingOperationToSchema(Request $request)
