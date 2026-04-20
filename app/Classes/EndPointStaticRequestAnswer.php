@@ -17,9 +17,9 @@ class EndPointStaticRequestAnswer
     public static function ok(string $data = OK_STATUS_WORD): string
     {
         return json_encode([
-            'data' => OK_STATUS_WORD,
+            'data'    => OK_STATUS_WORD,
             'payload' => $data,
-            'error' => null
+            'error'   => null
         ]);
     }
 
@@ -30,33 +30,63 @@ class EndPointStaticRequestAnswer
      */
     public static function fail(mixed $responseData = null): string
     {
-//         if ($data) {
-// //            return $data;
-//             return json_encode($data);
-//         }
-//         $class = get_class($responseData);
+        //         if ($data) {
+        // //            return $data;
+        //             return json_encode($data);
+        //         }
+        //         $class = get_class($responseData);
         // return FAIL_STATUS_WORD;
         if ($responseData instanceof JsonResponse) {
             return json_encode([
-                'data'  => FAIL_STATUS_WORD,
-                'error' => $responseData->original->getMessage(),
+                'data'    => FAIL_STATUS_WORD,
+                'error'   => $responseData->original->getMessage(),
                 'payload' => null,
             ]);
-        } else if ($responseData instanceof \Exception) {
-            return json_encode([
-                'data'  => FAIL_STATUS_WORD,
-                'error' => $responseData->getMessage(),
-                'payload' => null,
-            ]);
+        } else {
+            if ($responseData instanceof \Exception) {
+                return json_encode([
+                    'data'    => FAIL_STATUS_WORD,
+                    'error'   => $responseData->getMessage(),
+                    'payload' => null,
+                ]);
+            }
         }
 
         return json_encode([
-            'data'  => FAIL_STATUS_WORD,
-            'error' => 'Нет данных.',
+            'data'    => FAIL_STATUS_WORD,
+            'error'   => 'Нет данных.',
             'payload' => null,
         ]);
-
     }
+
+
+    public static function failResponse(mixed $responseData = null):  \Illuminate\Http\JsonResponse
+    {
+        $jsonData = [
+            'data'    => FAIL_STATUS_WORD,
+            'error'   => 'Нет данных.',
+            'payload' => null,
+        ];
+
+        if ($responseData instanceof JsonResponse) {
+            $jsonData = [
+                'data'    => FAIL_STATUS_WORD,
+                'error'   => $responseData->original->getMessage(),
+                'payload' => null,
+            ];
+        } else {
+            if ($responseData instanceof \Exception) {
+                $jsonData = [
+                    'data'    => FAIL_STATUS_WORD,
+                    'error'   => $responseData->getMessage(),
+                    'payload' => null,
+                ];
+            }
+        }
+
+        return response()->json($jsonData, 500);
+    }
+
 
     /**
      * Возвращает список дубликатов, если они есть

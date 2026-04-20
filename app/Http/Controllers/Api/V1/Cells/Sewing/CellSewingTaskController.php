@@ -37,11 +37,11 @@ class CellSewingTaskController extends Controller
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
-                $end   = Carbon::parse($validated['period']['end']);
+                $end = Carbon::parse($validated['period']['end']);
             } else {
                 $period = DefaultsService::getDefaultPeriodPlanLoads();
-                $start  = Carbon::parse($period->getStart());
-                $end    = Carbon::parse($period->getEnd());
+                $start = Carbon::parse($period->getStart());
+                $end = Carbon::parse($period->getEnd());
             }
 
             $sewingTasks = SewingTask::query()
@@ -166,7 +166,7 @@ class CellSewingTaskController extends Controller
                 'statuses.*' => 'integer|exists:sewing_task_statuses,id',
             ]);
 
-            $data        = $validated['statuses'] ?? null;
+            $data = $validated['statuses'] ?? null;
             $sewingTasks = SewingTask::query()
                 ->byStatus($data)
                 // ->whereBetween('action_at', [
@@ -208,22 +208,17 @@ class CellSewingTaskController extends Controller
     public function getSewingTasksByStatusAndPeriod(Request $request)
     {
         try {
-            $all = $request->all();
-
-
+            //$all = $request->all();
             $validated = $request->validate([
                 // __ Проверяем, что 'statuses' — это массив
-                'statuses'   => 'nullable|array',
+                'statuses'     => 'nullable|array',
                 // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
-                'statuses.*' => 'integer|exists:sewing_task_statuses,id',
+                'statuses.*'   => 'integer|exists:sewing_task_statuses,id',
+                //'status'       => 'nullable|numeric|in:1,2,3,4,5',
                 'period'       => 'nullable|array',
                 'period.start' => 'required_if:period,*,!null|date',        // условная валидация
                 'period.end'   => 'required_if:period,*,!null|date',
             ]);
-
-            //$validated = $request->validate([
-            //    'status'       => 'nullable|numeric|in:' . $AVAILABLE_STATUSES_RANGE,
-            //]);
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
@@ -234,16 +229,15 @@ class CellSewingTaskController extends Controller
                 $end = Carbon::parse($period->getEnd());
             }
 
-
-            $data        = $validated['statuses'] ?? null;
+            $data = $validated['statuses'] ?? null;
             $sewingTasks = SewingTask::query()
                 ->byStatus($data)
                 ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
                 ->whereDate('action_at', '<=', $end)      // ->whereBetween() не включает периоды
-                // ->whereBetween('action_at', [
-                //     $start->startOfDay(),
-                //     $end->endOfDay()
-                // ])
+                                                          // ->whereBetween('action_at', [
+                                                          //     $start->startOfDay(),
+                                                          //     $end->endOfDay()
+                                                          // ])
                 ->with([
                     'order.client',
                     'order.orderType',
@@ -286,7 +280,7 @@ class CellSewingTaskController extends Controller
                 'statuses.*' => 'integer|exists:sewing_task_statuses,id',
             ]);
 
-            $data        = $validated['statuses'] ?? null;
+            $data = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $sewingTasks = SewingTask::query()
@@ -338,11 +332,11 @@ class CellSewingTaskController extends Controller
                 'statuses.*' => 'integer|exists:sewing_task_statuses,id',
             ]);
 
-            $data        = $validated['statuses'] ?? null;
+            $data = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $sewingTasks = SewingTask::query()
-                ->whereDate('action_at',  $action_date)
+                ->whereDate('action_at', $action_date)
                 ->byStatus($data)
                 // ->whereBetween('action_at', [
                 //     $start->startOfDay(),
@@ -390,11 +384,11 @@ class CellSewingTaskController extends Controller
                 'statuses.*' => 'integer|exists:sewing_task_statuses,id',
             ]);
 
-            $data        = $validated['statuses'] ?? null;
+            $data = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $sewingTasks = SewingTask::query()
-                ->whereDate('action_at',  $action_date)
+                ->whereDate('action_at', $action_date)
                 ->byStatus($data)
                 ->get();
 
@@ -412,12 +406,6 @@ class CellSewingTaskController extends Controller
     }
 
 
-
-
-
-
-
-
     // ___ Обновляем СЗ на Пошив
     public function updateSewingTasks(SyncSewingTasksRequest $request)
     {
@@ -426,8 +414,6 @@ class CellSewingTaskController extends Controller
             $idMap = []; // __ Для возврата соответствия temp_id => real_id
 
             return DB::transaction(function () use ($request, &$idMap) {
-
-
                 $tasksToUpdate = [];
 
                 // __ Сортируем именно в таком порядке, удаляем в самом конце
@@ -446,7 +432,6 @@ class CellSewingTaskController extends Controller
 
 
                 foreach ($diffs as $diff) {
-
                     $currentTaskId = null;  // __ Маяк созданного СЗ (Если флаг в lines - ADDED и в tasks - ADDED)
                     $updatedTaskId = null;  // __ Маяк обновляемого СЗ (Если флаг в lines - ADDED, но эти lines приходят из DELETED task и в tasks - UPDATED)
 
@@ -482,7 +467,7 @@ class CellSewingTaskController extends Controller
                             ];
 
                             $idMap[$diff['taskId']] = $newTask->id;
-                            $currentTaskId          = $newTask->id;
+                            $currentTaskId = $newTask->id;
 
                             break;
 
@@ -491,13 +476,11 @@ class CellSewingTaskController extends Controller
                             // $task = SewingTask::query()->findOrFail($diff['taskId']);
 
                             if (!empty($diff['taskChanges'])) {
-
                                 $tasksToUpdate[] = [
                                     'id'        => $diff['taskId'],
                                     'action_at' => $diff['taskChanges']['action_at']['new'] ?? null,
                                     'position'  => $diff['taskChanges']['position']['new'] ?? null,
                                 ];
-
                             }
 
                             $currentTaskId = $diff['taskId'];
@@ -507,19 +490,16 @@ class CellSewingTaskController extends Controller
                         case 'DELETED':
                             SewingTask::destroy($diff['taskId']);
                             break;
-
                     }
 
 
                     // --- 2. ОБРАБОТКА СТРОК (LINES) ---
                     if (!empty($diff['lineChanges'])) {
-
                         $linesToUpdate = [];
 
                         // __ Сортируем именно в таком порядке, удаляем в самом конце
                         $lineDiffs = $diff['lineChanges'];
                         usort($diffs, function ($a, $b) {
-
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
                                 'ADDED' => 1,
@@ -533,9 +513,7 @@ class CellSewingTaskController extends Controller
 
 
                         foreach ($lineDiffs as $lineDiff) {
-
                             switch ($lineDiff['type']) {
-
                                 case 'ADDED':
 
                                     $newLine = SewingTaskLine::query()
@@ -585,7 +563,6 @@ class CellSewingTaskController extends Controller
                     if (!empty($linesToUpdate)) {
                         $this->bulkUpdateLines($linesToUpdate);
                     }
-
                 }
 
                 // __ Выполняем массовое обновление СЗ, если они есть
@@ -601,7 +578,6 @@ class CellSewingTaskController extends Controller
                 //     'idMap'  => $idMap
                 // ]);
             });
-
         } catch (Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -625,7 +601,6 @@ class CellSewingTaskController extends Controller
         $allIds = array_column($rows, 'id');
 
         DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
-
             // Warning!!! Не работает. Уводит position в минус.
             // !!! В чем проблема сейчас?
             // !!! Твой «ШАГ 1» уводит записи в минус на текущей дате (action_at). Если на новой дате, куда ты хочешь перенести задачу,
@@ -644,9 +619,9 @@ class CellSewingTaskController extends Controller
             }
 
             // __ ШАГ 2: Собираем финальный запрос
-            $casesActionAt  = [];
+            $casesActionAt = [];
             $paramsActionAt = [];
-            $casesPosition  = [];
+            $casesPosition = [];
             $paramsPosition = [];
 
             foreach ($rows as $row) {
@@ -660,16 +635,16 @@ class CellSewingTaskController extends Controller
                 }
             }
 
-            $setParts    = [];
+            $setParts = [];
             $finalParams = [];
 
             if (!empty($casesActionAt)) {
-                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
+                $setParts[] = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
                 $finalParams = array_merge($finalParams, $paramsActionAt);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $setParts[] = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -678,12 +653,11 @@ class CellSewingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+            $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
         });
-
     }
 
 
@@ -700,13 +674,12 @@ class CellSewingTaskController extends Controller
 
         // __ 1. Находим только те ID, у которых действительно меняется позиция (чтобы не уводить в минус лишнее)
         $rowsWithPosition = array_filter($rows, fn($row) => !is_null($row['position'] ?? null));
-        $idsForMinus      = array_column($rowsWithPosition, 'id');
+        $idsForMinus = array_column($rowsWithPosition, 'id');
 
         // __ 2. Находим все ID, которые участвуют в обновлении (хоть позиция, хоть amount)
         $allIds = array_column($rows, 'id');
 
         DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
-
             // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
             if (!empty($idsForMinus)) {
                 $minusPlaceholders = implode(',', array_fill(0, count($idsForMinus), '?'));
@@ -717,9 +690,9 @@ class CellSewingTaskController extends Controller
             }
 
             // __ ШАГ 2: Собираем финальный запрос
-            $casesAmount    = [];
-            $paramsAmount   = [];
-            $casesPosition  = [];
+            $casesAmount = [];
+            $paramsAmount = [];
+            $casesPosition = [];
             $paramsPosition = [];
             // $casesTaskId    = [];
             // $paramsTaskId   = [];
@@ -739,16 +712,16 @@ class CellSewingTaskController extends Controller
                 // }
             }
 
-            $setParts    = [];
+            $setParts = [];
             $finalParams = [];
 
             if (!empty($casesAmount)) {
-                $setParts[]  = "amount = CASE " . implode(' ', $casesAmount) . " ELSE amount END";
+                $setParts[] = "amount = CASE " . implode(' ', $casesAmount) . " ELSE amount END";
                 $finalParams = array_merge($finalParams, $paramsAmount);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $setParts[] = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -762,12 +735,11 @@ class CellSewingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+            $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
         });
-
     }
 
 
@@ -813,7 +785,6 @@ class CellSewingTaskController extends Controller
             ]);
 
             foreach ($validated['ids'] as $id) {
-
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
                     throw new Exception('Missing sewing task line with id: ' . $id . '.');
@@ -845,13 +816,12 @@ class CellSewingTaskController extends Controller
             ]);
 
             foreach ($validated['ids'] as $id) {
-
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
                     throw new Exception('Missing sewing task line with id: ' . $id . '.');
                 }
 
-                $line->false_at     = now();
+                $line->false_at = now();
                 $line->false_reason = $validated['reason'];
 
                 $history = $line->false_history;
@@ -859,7 +829,7 @@ class CellSewingTaskController extends Controller
                     $history = [];
                 }
 
-                $history[]           = [
+                $history[] = [
                     'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
                     'by'     => auth()->id(),
                     'reason' => $validated['reason'],
@@ -889,14 +859,13 @@ class CellSewingTaskController extends Controller
             ]);
 
             foreach ($validated['ids'] as $id) {
-
                 $line = SewingTaskLine::query()->find($id);
                 if (!$line) {
                     throw new Exception('Missing sewing task line with id: ' . $id . '.');
                 }
 
-                $line->finished_at  = null;
-                $line->false_at     = null;
+                $line->finished_at = null;
+                $line->false_at = null;
                 $line->false_reason = null;
                 $line->save();
             }

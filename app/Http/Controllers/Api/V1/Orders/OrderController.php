@@ -5,16 +5,14 @@ namespace App\Http\Controllers\Api\V1\Orders;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Order\OrderCollection;
 use App\Http\Resources\Order\OrderTypes\OrderTypeResource;
 use App\Http\Resources\Order\Render\OrderRenderResource;
 use App\Models\Client;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
-
-// use App\Models\Plan\PlanLoad;
 use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
+use App\Services\DefaultsService;
 use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
@@ -24,19 +22,37 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class OrderController extends Controller
 {
 
-    // Отдаем заказы за период
+    // __ Отдаем заказы за период
     public function getOrders(Request $request)
     {
         try {
+            $validated = $request->validate([
+                'period'       => 'nullable|array',
+                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date',
+            ]);
+
+            if (isset($validated['period'])) {
+                $start = Carbon::parse($validated['period']['start']);
+                $end = Carbon::parse($validated['period']['end']);
+            } else {
+                $period = DefaultsService::getDefaultPeriodOrdersShow();
+                $start = Carbon::parse($period->getStart());
+                $end = Carbon::parse($period->getEnd());
+            }
+
+
             $orders = Order::query()
+                ->whereDate('load_at', '>=', $start)     // Используем такую конструкцию, потому что
+                ->whereDate('load_at', '<=', $end)      // ->whereBetween() не включает периоды
                 ->with(['lines.model.modelType', 'client', 'orderType'])
+                ->orderBy('load_at')
                 ->get();
 
             return OrderRenderResource::collection($orders);

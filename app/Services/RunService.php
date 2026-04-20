@@ -10,9 +10,10 @@ final class RunService
 {
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * ___ Запускаем парсер файлов Excel в Postgres
+     * @return string
      */
-    public static function runModelsUpdateParser_Rust()
+    public static function runModelsUpdateParser_Rust(): string
     {
         $os = PHP_OS_FAMILY;
 
@@ -56,23 +57,48 @@ final class RunService
         // Увеличиваем таймаут
         $process->setTimeout(60);
 
-        try {
-            $process->mustRun();
+        //$process->mustRun();
+        //return $process->getOutput();
 
-            $output = $process->getOutput();
-            //$output = $process->getIncrementalOutput();
-            return response()->json([
-                'status' => 'success',
-                'data'   => $output,
-            ]);
-        } catch (ProcessFailedException $exception) {
-            // Выводим подробности, чтобы видеть Error Output от Rust
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Ошибка Rust: ' . $exception->getProcess()->getErrorOutput(),
-                'debug'   => $exception->getMessage()
-            ], 500);
+        //try {
+        //    $process->mustRun();
+        //
+        //    //$output = $process->getOutput();
+        //    //$output = $process->getIncrementalOutput();
+        //    //return response()->json([
+        //    //    'status' => 'success',
+        //    //    'data'   => $output,
+        //    //]);
+        //    return $process->getOutput();
+        //} catch (ProcessFailedException $exception) {
+        //    throw $exception;
+        //    // Выводим подробности, чтобы видеть Error Output от Rust
+        //    //return response()->json([
+        //    //    'status'  => 'error',
+        //    //    'message' => 'Ошибка Rust: ' . $exception->getProcess()->getErrorOutput(),
+        //    //    'debug'   => $exception->getMessage()
+        //    //], 500);
+        //}
+
+        // Запускаем процесс
+        $process->run();
+
+        // Если процесс завершился неудачно
+        if (!$process->isSuccessful()) {
+            $errorOutput = $process->getErrorOutput(); // Получаем то, что Rust выдал в stderr
+
+            // Rust (через anyhow) обычно пишет "Error: Название ошибки"
+            // Чистим строку от технических префиксов anyhow
+            $cleanError = str_replace(["Error: ", "\n", "\r"], ["", " ", ""], $errorOutput);
+
+            // Убираем лишние пробелы и берем только первую часть до "Caused by"
+            $cleanError = explode('Caused by:', $cleanError)[0];
+
+            throw new \Exception(trim($cleanError));
         }
+
+        return $process->getOutput();
+
     }
 
 

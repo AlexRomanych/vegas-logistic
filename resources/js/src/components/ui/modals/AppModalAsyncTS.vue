@@ -1,57 +1,57 @@
 <template>
     <Teleport to="body">
+        <Transition name="modal">
+            <div v-if="showModal"
+                 class="dark-container">
 
-        <div v-if="showModal"
-             class="dark-container">
+                <div :class="[width, height, borderColor, 'modal-container']">
 
-            <div :class="[width, height, borderColor, 'modal-container']">
-
-                <div class="close-cross-container">
-                    <div class="m-1 p-1">
-                        <AppInputButton
-                            id="close"
-                            :type="type"
-                            height="w-5"
-                            title="x"
-                            width="w-[30px]"
-                            @buttonClick="select(false)"
-                        />
-                    </div>
-                </div>
-
-                <div class="text-container">
-                    <div class="text-data">
-                        <span>{{ showText }}</span>
-                    </div>
-                </div>
-
-
-                <div class="w-full h-full flex justify-end">
-
-                    <div v-if="mode === 'confirm'"
-                         class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :type="type"
-                            title="Да"
-                            @buttonClick="select(true)"
-                        />
+                    <div class="close-cross-container">
+                        <div class="m-1 p-1">
+                            <AppInputButton
+                                id="close"
+                                :type="type"
+                                height="w-5"
+                                title="x"
+                                width="w-[30px]"
+                                @buttonClick="select(false)"
+                            />
+                        </div>
                     </div>
 
-                    <div
-                        class="m-1 p-1">
-                        <AppInputButton
-                            id="confirm"
-                            :title="mode === 'confirm' ? 'Отмена' : okWord"
-                            :type="type"
-                            @buttonClick="select(false)"
-                        />
+                    <div class="text-container">
+                        <div class="text-data">
+                            <span>{{ showText }}</span>
+                        </div>
                     </div>
 
+
+                    <div class="w-full h-full flex justify-end">
+
+                        <div v-if="mode === 'confirm'"
+                             class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :type="type"
+                                title="Да"
+                                @buttonClick="select(true)"
+                            />
+                        </div>
+
+                        <div
+                            class="m-1 p-1">
+                            <AppInputButton
+                                id="confirm"
+                                :title="mode === 'confirm' ? 'Отмена' : okWord"
+                                :type="type"
+                                @buttonClick="select(false)"
+                            />
+                        </div>
+
+                    </div>
                 </div>
             </div>
-        </div>
-
+        </Transition>
     </Teleport>
 </template>
 
@@ -72,11 +72,11 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type: 'primary',
-    width: 'min-w-[500px]',
+    type  : 'primary',
+    width : 'min-w-[500px]',
     height: 'min-h-[300px]',
-    text: 'This is a Modal Window',
-    mode: 'inform',
+    text  : 'This is a Modal Window',
+    mode  : 'inform',
     okWord: 'Закрыть',
 })
 
@@ -85,12 +85,12 @@ const props = withDefaults(defineProps<IProps>(), {
 // }>()
 
 const showModal = ref(false)           // реактивность видимости модального окна
-const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
+const showText  = ref(props.text)              // реактивность текста сообщения в модальном окне
 
 let resolvePromise: ((value: boolean) => void) | null
 const show = (msg = showText.value) => {
     showModal.value = true
-    showText.value = msg
+    showText.value  = msg
     return new Promise((resolve) => {
         resolvePromise = resolve
     })
@@ -100,7 +100,7 @@ const select = (value: boolean) => {
     if (resolvePromise) {
         resolvePromise(value)
         showModal.value = false
-        resolvePromise = null
+        resolvePromise  = null
     }
 }
 
@@ -138,9 +138,24 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 .text-data {
     @apply border-2 border-slate-800 w-full h-full text-white
 }
+
 /*
 .close-button-container {
     @apply w-full h-full flex justify-end
 }
 */
+
+
+/* Состояние появления и исчезновения */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.5s ease;
+}
+
+/* Стартовое состояние при появлении / Финальное при исчезновении */
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
+}
 </style>

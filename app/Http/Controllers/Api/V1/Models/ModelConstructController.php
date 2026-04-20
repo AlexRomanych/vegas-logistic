@@ -14,6 +14,7 @@ use App\Services\ModelsService;
 use App\Services\ProceduresService;
 use App\Services\RunService;
 use Exception;
+use Illuminate\Http\JsonResponse as JsonResponseAlias;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -210,20 +211,48 @@ class ModelConstructController extends Controller
     }
 
 
-
+    /**
+     * ___ Обновляем справочники: Модели + Процедуры + Материалы + Спецификации
+     * @param Request $request
+     * @return JsonResponseAlias|string
+     */
     public function modelsUpdate(Request $request)
     {
-        $result = RunService::runModelsUpdateParser_Rust();
+        $messages = [
+            'materials.required'   => 'Отсутствует файл с Материалами',
+            'materials.file'       => 'Отсутствует файл с Материалами',
+            'materials.extensions' => 'Для файлов разрешен только формат xlsx',
 
-        return $result;
+            'models.required'   => 'Отсутствует файл с Моделями',
+            'models.file'       => 'Отсутствует файл с Моделями',
+            'models.extensions' => 'Для файлов разрешен только формат xlsx',
 
+            'procedures.required'   => 'Отсутствует файл с Процедурами расчета',
+            'procedures.file'       => 'Отсутствует файл с Процедурами расчета',
+            'procedures.extensions' => 'Для файлов разрешен только формат xlsx',
+
+            'specifications.required'   => 'Отсутствует файл со Спецификациями',
+            'specifications.file'       => 'Отсутствует файл со Спецификациями',
+            'specifications.extensions' => 'Для файлов разрешен только формат xlsx',
+
+            // Можно использовать подстановку :values для правил расширений
+            //'extensions'           => 'Файл :attribute должен иметь расширение: :values.',
+        ];
 
         $request->validate([
-            'materials'      => 'required|file|extensions:xlsx,xls,csv',
-            'models'         => 'required|file|extensions:xlsx,xls,csv',
-            'procedures'     => 'required|file|extensions:xlsx,xls,csv',
-            'specifications' => 'required|file|extensions:xlsx,xls,csv',
-        ]);
+            'materials'      => 'required|file|extensions:xlsx',
+            'models'         => 'required|file|extensions:xlsx',
+            'procedures'     => 'required|file|extensions:xlsx',
+            'specifications' => 'required|file|extensions:xlsx',
+        ], $messages);
+
+
+        //$request->validate([
+        //    'materials'      => 'required|file|extensions:xlsx,xls,csv',
+        //    'models'         => 'required|file|extensions:xlsx,xls,csv',
+        //    'procedures'     => 'required|file|extensions:xlsx,xls,csv',
+        //    'specifications' => 'required|file|extensions:xlsx,xls,csv',
+        //]);
 
         $directory = '1c_imports';
 
@@ -247,11 +276,13 @@ class ModelConstructController extends Controller
 
             $result = RunService::runModelsUpdateParser_Rust();
 
-            return $result;
+            if ((int)$result !== 0) {
+                return EndPointStaticRequestAnswer::failResponse('Ошибка при обновлении справочников');
+            }
 
-            return EndPointStaticRequestAnswer::ok('Данные успешно синхронизированы');
+            return EndPointStaticRequestAnswer::ok('Справочники успешно обновлены');
         } catch (\Exception $e) {
-            return EndPointStaticRequestAnswer::fail($e);
+            return EndPointStaticRequestAnswer::failResponse($e);
         }
     }
 

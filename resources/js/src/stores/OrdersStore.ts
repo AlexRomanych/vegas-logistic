@@ -5,6 +5,7 @@ import { ref /*reactive, computed, watch*/ } from 'vue'
 import { defineStore } from 'pinia'
 
 import { jwtGet, jwtPost, jwtDelete, jwtPatch, jwtPatch_ } from '@/app/utils/jwt_api'
+import type { IPeriod, ISewingTask } from '@/types'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 
@@ -25,24 +26,27 @@ const URL_ORDERS_SET_LOAD_AT     = 'orders/patch/load-at'       // URL для и
 const URL_ORDERS_SET_DESCRIPTION = 'orders/patch/description'   // URL для изменения описания Заявки
 
 
-export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой прирендере расчетных значений
+export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой при рендере расчетных значений
 
 export const useOrdersStore = defineStore('orders', () => {
 
 
     // Список заказов, которые получили к отображению
-    let ordersShow: any       = []
+    let ordersShow: ISewingTask[]       = []
     // const ordersShowTest = ref('123')
     const ordersShowIsChanged = ref(false)
 
     // __ Получаем с API список Заказов
-    const getOrders = async (/*period: any*/) => {
+    const getOrders = async (period: IPeriod | null = null) => {
+        let result
+        if (period) {
+            result = await jwtGet(URL_ORDERS, { period })
+        } else {
+            result = await jwtGet(URL_ORDERS)
+        }
 
-        // console.log(period)
-        const result     = await jwtGet(URL_ORDERS/* params*/)
-        ordersShow.value = result.data             // кэшируем
-
-        return result.data // все возвращается через Resource с ключем data
+        ordersShow = result.data
+        return result.data
     }
 
 
@@ -112,10 +116,10 @@ export const useOrdersStore = defineStore('orders', () => {
         }
 
         const response = await jwtPost(URL_ORDERS_ADD_AVERAGE, {
-            client:  clientId,
-            order:   orderNo,
+            client : clientId,
+            order  : orderNo,
             amount,
-            type:    elementType,
+            type   : elementType,
             load_at: loadDate,
         })
         const result   = await response
@@ -149,8 +153,6 @@ export const useOrdersStore = defineStore('orders', () => {
     }
 
 
-
-
     // __ Сохраняем дату Загрузки
     const patchLoadAtDate = async (id: number | null = null, load_at: string | null = null) => {
         if (!id || !load_at) {
@@ -169,7 +171,7 @@ export const useOrdersStore = defineStore('orders', () => {
         if (!id || description === null) {
             return
         }
-        const response = await jwtPatch_(URL_ORDERS_SET_DESCRIPTION, { id, description: description + ' '})
+        const response = await jwtPatch_(URL_ORDERS_SET_DESCRIPTION, { id, description: description + ' ' })
         const result   = await response
 
         if (DEBUG) console.log('OrdersStore: patchDescription', result)

@@ -6,42 +6,42 @@
 
                     <!-- __ Collapsed -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.collapsed" @click="toggleCollapsed" />
+                        <AppLabelMultilineTSWrapper :render-object="render.collapsed" @click="toggleCollapsed"/>
                     </div>
 
                     <!-- __ id -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.id" />
-                        <AppInputTextTSWrapper v-model="idFilter" :render-object="render.id" />
+                        <AppLabelMultilineTSWrapper :render-object="render.id"/>
+                        <AppInputTextTSWrapper v-model="idFilter" :render-object="render.id"/>
                     </div>
 
                     <!-- __ Клиент -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.client" />
-                        <AppInputTextTSWrapper v-model="clientFilter" :render-object="render.client" />
+                        <AppLabelMultilineTSWrapper :render-object="render.client"/>
+                        <AppInputTextTSWrapper v-model="clientFilter" :render-object="render.client"/>
                     </div>
 
                     <!-- __ Номер Заявки -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.orderNoStr" />
-                        <AppInputTextTSWrapper v-model="orderNoStrFilter" :render-object="render.orderNoStr" />
+                        <AppLabelMultilineTSWrapper :render-object="render.orderNoStr"/>
+                        <AppInputTextTSWrapper v-model="orderNoStrFilter" :render-object="render.orderNoStr"/>
                     </div>
 
                     <!-- __ Тип элементов (изделий) -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.elementsType" />
-                        <AppInputTextTSWrapper v-model="elementsTypeFilter" :render-object="render.elementsType" />
+                        <AppLabelMultilineTSWrapper :render-object="render.elementsType"/>
+                        <AppInputTextTSWrapper v-model="elementsTypeFilter" :render-object="render.elementsType"/>
                     </div>
 
                     <!-- __ Общее количество элементов (изделий) -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.orderAmount" />
+                        <AppLabelMultilineTSWrapper :render-object="render.orderAmount"/>
                         <!--<AppInputTextTSWrapper v-model="orderAmountFilter" :render-object="render.orderAmount"/>-->
                     </div>
 
                     <!-- __ Период, к которому относится Заявка -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.orderPeriod" />
+                        <AppLabelMultilineTSWrapper :render-object="render.orderPeriod"/>
                         <AppInputTextTSWrapper
                             v-model="orderPeriodFilter"
                             :render-object="render.orderPeriod"
@@ -51,12 +51,12 @@
 
                     <!-- __ Active -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.orderActive" />
+                        <AppLabelMultilineTSWrapper :render-object="render.orderActive"/>
 
                         <!-- __ Фильтр: Active -->
                         <AppSelectSimpleTS
-                            id="active"
                             v-if="render.orderActive.show"
+                            id="active"
                             :select-data="orderActiveSelect"
                             :text-size="render.orderActive.headerTextSize"
                             :type="
@@ -76,12 +76,12 @@
 
                     <!-- __ Прогнозный -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.isForecast" />
+                        <AppLabelMultilineTSWrapper :render-object="render.isForecast"/>
 
                         <!-- __ Фильтр: Прогнозный -->
                         <AppSelectSimpleTS
-                            id="is-forecast"
                             v-if="render.isForecast.show"
+                            id="is-forecast"
                             :select-data="orderForecastSelect"
                             :text-size="render.isForecast.headerTextSize"
                             :type="
@@ -101,12 +101,12 @@
 
                     <!-- __ Отображаемый в Планах -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.isShown" />
+                        <AppLabelMultilineTSWrapper :render-object="render.isShown"/>
 
                         <!-- __ Фильтр: Отображаемый в Планах -->
                         <AppSelectSimpleTS
-                            id="is-shown"
                             v-if="render.isShown.show"
+                            id="is-shown"
                             :select-data="orderShownSelect"
                             :text-size="render.isShown.headerTextSize"
                             :type="
@@ -126,7 +126,7 @@
 
                     <!-- __ Дата загрузки на складе Вегас -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.loadAt" />
+                        <AppLabelMultilineTSWrapper :render-object="render.loadAt"/>
                         <AppInputTextTSWrapper
                             v-model="loadAtFilter"
                             :render-object="render.loadAt"
@@ -134,9 +134,9 @@
                         />
                     </div>
 
-                    <!-- __ Дата разагрузки на складе клиента -->
+                    <!-- __ Дата разгрузки на складе клиента -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.unloadAt" />
+                        <AppLabelMultilineTSWrapper :render-object="render.unloadAt"/>
                         <AppInputTextTSWrapper
                             v-model="unloadAtFilter"
                             :render-object="render.unloadAt"
@@ -146,21 +146,27 @@
 
                     <!-- __ Комментарий из 1С -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.comment_1c" />
-                        <AppInputTextTSWrapper v-model="comment1CFilter" :render-object="render.comment_1c" />
+                        <AppLabelMultilineTSWrapper :render-object="render.comment_1c"/>
+                        <AppInputTextTSWrapper v-model="comment1CFilter" :render-object="render.comment_1c"/>
                     </div>
 
                     <!-- __ Описание -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.description" />
-                        <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description" />
+                        <AppLabelMultilineTSWrapper :render-object="render.description"/>
+                        <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description"/>
                     </div>
 
                     <!-- __ Добавить заявку -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.order_service"
-                                                    @click="$router.push({name: 'orders.average.add'})" />
+                                                    @click="$router.push({name: 'orders.average.add'})"/>
                     </div>
+
+                    <!-- __ Выбор дат -->
+                    <CellDatesSelectMiniTS
+                        :period="renderPeriod"
+                        @apply="loadOrders"
+                    />
 
 
                 </div>
@@ -171,7 +177,7 @@
         <div v-for="order of ordersRender" :key="order.id" class="ml-2 max-w-fit">
 
             <div v-if="!order.collapsed">
-                <TheDividerLine />
+                <TheDividerLine/>
                 <div class="min-h-3 bg-red-50 rounded-[4px]"></div>
             </div>
 
@@ -182,57 +188,57 @@
 
                     <!-- __ Collapsed -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.collapsed"
-                                       @click="render.collapsed.click!(order)" />
+                                       @click="render.collapsed.click!(order)"/>
 
                     <!-- __ ID -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.id" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.id"/>
 
                     <!-- __ Клиент -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.client" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.client"/>
 
                     <!-- __ Номер Заявки -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderNoStr" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderNoStr"/>
 
                     <!-- __ Тип элементов (изделий) -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.elementsType" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.elementsType"/>
 
                     <!-- __ Общее количество элементов (изделий) -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderAmount" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderAmount"/>
 
                     <!-- __ Период, к которому относится Заявка -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderPeriod" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderPeriod"/>
 
                     <!-- __ Active -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderActive" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.orderActive"/>
 
                     <!-- __ Прогнозный -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.isForecast" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.isForecast"/>
 
                     <!-- __ Отображаемый в Планах -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.isShown" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.isShown"/>
 
                     <!-- __ Дата загрузки на складе Вегас -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.loadAt" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.loadAt"/>
 
                     <!-- __ Дата разгрузки на складе клиента -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt"/>
 
                     <!-- __ Комментарий из 1С -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.comment_1c" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.comment_1c"/>
 
                     <!-- __ Описание -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.description" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
 
                     <!-- __ Удалить -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="deleteOrder(order)" />
+                    <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="deleteOrder(order)"/>
 
                 </div>
 
                 <!-- __ Сами данные по Содержимому Заявки -->
                 <div v-if="!order.collapsed">
-                    <OrderLines :order-lines="order.lines" />
+                    <OrderLines :order-lines="order.lines"/>
                     <div class="min-h-3"></div>
-                    <TheDividerLine />
+                    <TheDividerLine/>
                 </div>
             </div>
         </div>
@@ -257,7 +263,7 @@ import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import type {
     IColorTypes,
-    IDataInputObj,
+    IDataInputObj, IPeriod,
     IRenderData,
     IRenderOrder,
     IRenderOrderLine,
@@ -277,10 +283,12 @@ import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import CellDatesSelectMiniTS from '@/components/dashboard/orders/components/CellDatesSelectMiniTS.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+
 // import router from '@/router/router'
 
 const isLoading = ref(false)
@@ -319,6 +327,7 @@ const collapseAll = ref(true)
 // __ Определяем переменные
 const orders       = ref<IRenderOrder[]>([])
 const ordersRender = ref<IRenderOrder[]>([])
+const renderPeriod = ref<IPeriod | null>(null)
 
 // __ Возможность редактирования
 // TODO: Реализовать через систему ролей
@@ -339,250 +348,250 @@ const DATA_ALIGN         = 'left'
 const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    collapsed:     {
-        header:         ['▲', '▼'],
-        width:          'w-[30px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => 'warning',
-        dataType:       () => DATA_TYPE,
-        type:           () => 'warning',
+    collapsed    : {
+        header        : ['▲', '▼'],
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'warning',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        data:           (order: IRenderOrder) => order.collapsed ? '▲' : '▼',
-        click:          (order: IRenderOrder) => order.collapsed = !order.collapsed,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (order: IRenderOrder) => order.collapsed ? '▲' : '▼',
+        click         : (order: IRenderOrder) => order.collapsed = !order.collapsed,
     },
-    id:            {
-        id:             () => 'id-search',
-        header:         ['ID', ''],
-        width:          'w-[50px]',
-        height:         DEFAULT_HEIGHT,
-        show:           false,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    id           : {
+        id            : () => 'id-search',
+        header        : ['ID', ''],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : false,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍id...',
-        data:           (order: IRenderOrder) => order.id.toString(),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍id...',
+        data          : (order: IRenderOrder) => order.id.toString(),
     },
-    client:        {
-        id:             () => 'client-search',
-        header:         ['Клиент', ''],
-        width:          'w-[164px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    client       : {
+        id            : () => 'client-search',
+        header        : ['Клиент', ''],
+        width         : 'w-[164px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Клиент...',
-        data:           (order: IRenderOrder) => order.client.short_name,
-        color:          (order: IRenderOrder) => order.order_type.color,
-        title:          (order: IRenderOrder) => order.order_type.display_name,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Клиент...',
+        data          : (order: IRenderOrder) => order.client.short_name,
+        color         : (order: IRenderOrder) => order.order_type.color,
+        title         : (order: IRenderOrder) => order.order_type.display_name,
     },
-    orderNoStr:    {
-        id:             () => 'order-no-search',
-        header:         ['№', 'Заявки'],
-        width:          'w-[60px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    orderNoStr   : {
+        id            : () => 'order-no-search',
+        header        : ['№', 'Заявки'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍№...',
-        data:           (order: IRenderOrder) => order.order_no_str,
-        color:          (order: IRenderOrder) => order.order_type.color,
-        title:          (order: IRenderOrder) => order.order_type.display_name,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍№...',
+        data          : (order: IRenderOrder) => order.order_no_str,
+        color         : (order: IRenderOrder) => order.order_type.color,
+        title         : (order: IRenderOrder) => order.order_type.display_name,
     },
-    elementsType:  {
-        id:             () => 'elements-type-search',
-        header:         ['Тип', 'изделий'],
-        width:          'w-[200px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IRenderOrder) => {
+    elementsType : {
+        id            : () => 'elements-type-search',
+        header        : ['Тип', 'изделий'],
+        width         : 'w-[200px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => {
             if (!order) return DEFAULT_TYPE
             return order.elements_type_render.toLowerCase().includes('матрасы')
                 ? 'success' : order.elements_type_render.toLowerCase().includes('аксессуары')
                     ? 'info' : 'danger'
         },
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Тип изделий...',
-        data:           (order: IRenderOrder) => order.elements_type_render,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Тип изделий...',
+        data          : (order: IRenderOrder) => order.elements_type_render,
     },
-    orderAmount:   {
-        id:             () => 'order-amount-search',
-        header:         ['Общее', 'кол-во'],
-        width:          'w-[50px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    orderAmount  : {
+        id            : () => 'order-amount-search',
+        header        : ['Общее', 'кол-во'],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Кол-во...',
-        data:           (order: IRenderOrder) => order.lines.reduce((acc: number, line: IRenderOrderLine) => acc + line.amount, 0).toString(),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Кол-во...',
+        data          : (order: IRenderOrder) => order.lines.reduce((acc: number, line: IRenderOrderLine) => acc + line.amount, 0).toString(),
     },
-    orderPeriod:   {
-        id:             () => 'order-period-search',
-        header:         ['Период', 'заявки'],
-        width:          DEFAULT_WIDTH_DATE,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    orderPeriod  : {
+        id            : () => 'order-period-search',
+        header        : ['Период', 'заявки'],
+        width         : DEFAULT_WIDTH_DATE,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍01.мм.гггг...',
-        data:           (order: IRenderOrder) => formatDateIntl(order.order_period, false, false),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍01.мм.гггг...',
+        data          : (order: IRenderOrder) => formatDateIntl(order.order_period, false, false),
     },
-    orderActive:   {
-        id:             () => 'order-active',
-        header:         ['Актуаль-', 'ная'],
-        width:          DEFAULT_WIDTH_BOOL,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IRenderOrder) => order.active ? 'success' : 'danger',
+    orderActive  : {
+        id            : () => 'order-active',
+        header        : ['Актуаль-', 'ная'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.active ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN_DEFAULT,
-        data:           (order: IRenderOrder) => order.active ? '✓' : '✗',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN_DEFAULT,
+        data          : (order: IRenderOrder) => order.active ? '✓' : '✗',
     },
-    isForecast:    {
-        id:             () => 'is-forecast',
-        header:         ['Прогноз-', 'ная'],
-        width:          DEFAULT_WIDTH_BOOL,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IRenderOrder) => order.is_forecast ? 'success' : 'danger',
+    isForecast   : {
+        id            : () => 'is-forecast',
+        header        : ['Раскры-', 'тая'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => !order.is_forecast ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN_DEFAULT,
-        data:           (order: IRenderOrder) => order.is_forecast ? '✓' : '✗',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN_DEFAULT,
+        data          : (order: IRenderOrder) => !order.is_forecast ? '✓' : '✗',
     },
-    isShown:       {
-        id:             () => 'is-shown',
-        header:         ['Отобра-', 'жаемая '],
-        width:          DEFAULT_WIDTH_BOOL,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IRenderOrder) => order.shown ? 'success' : 'danger',
+    isShown      : {
+        id            : () => 'is-shown',
+        header        : ['Отобра-', 'жаемая '],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.shown ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN_DEFAULT,
-        data:           (order: IRenderOrder) => order.shown ? '✓' : '✗',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN_DEFAULT,
+        data          : (order: IRenderOrder) => order.shown ? '✓' : '✗',
     },
-    loadAt:        {
-        id:             () => 'load-at-search',
-        header:         ['Дата', 'загрузки'],
-        width:          DEFAULT_WIDTH_DATE,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    loadAt       : {
+        id            : () => 'load-at-search',
+        header        : ['Дата', 'загрузки'],
+        width         : DEFAULT_WIDTH_DATE,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍дд.мм.гггг...',
-        data:           (order: IRenderOrder) => formatDateIntl(order.load_at),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍дд.мм.гггг...',
+        data          : (order: IRenderOrder) => formatDateIntl(order.load_at),
     },
-    unloadAt:      {
-        id:             () => 'unload-at-search',
-        header:         ['Дата', 'разгрузки'],
-        width:          DEFAULT_WIDTH_DATE,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    unloadAt     : {
+        id            : () => 'unload-at-search',
+        header        : ['Дата', 'разгрузки'],
+        width         : DEFAULT_WIDTH_DATE,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍дд.мм.гггг...',
-        data:           (order: IRenderOrder) => formatDateIntl(order.unload_at),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍дд.мм.гггг...',
+        data          : (order: IRenderOrder) => formatDateIntl(order.unload_at),
     },
-    comment_1c:    {
-        id:             () => 'comment-1c-search',
-        header:         ['Комментарий из 1С', ''],
-        width:          'w-[250px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    comment_1c   : {
+        id            : () => 'comment-1c-search',
+        header        : ['Комментарий из 1С', ''],
+        width         : 'w-[250px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Комментарий из 1С...',
-        data:           (order: IRenderOrder) => order.comment_1c ?? '',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Комментарий из 1С...',
+        data          : (order: IRenderOrder) => order.comment_1c ?? '',
     },
-    description:   {  // __ Описание Заявки
-        id:             () => 'description-search',
-        header:         ['Описание (доп. информация)', 'заявки'],
-        width:          'w-[250px]',
-        height:         DEFAULT_HEIGHT,
-        show:           false,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    description  : {  // __ Описание Заявки
+        id            : () => 'description-search',
+        header        : ['Описание (доп. информация)', 'заявки'],
+        width         : 'w-[250px]',
+        height        : DEFAULT_HEIGHT,
+        show          : false,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Описание...',
-        data:           (order: IRenderOrder) => order.description ?? '',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Описание...',
+        data          : (order: IRenderOrder) => order.description ?? '',
     },
     order_service: {
-        id:             () => 'order-add-search',
-        header:         ['Добавить', 'заявку'],
-        width:          'w-[80px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => 'orange',
-        dataType:       () => DATA_TYPE,
-        type:           () => 'danger',
+        id            : () => 'order-add-search',
+        header        : ['Добавить', 'заявку'],
+        width         : 'w-[80px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'orange',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Добавить прогнозную заявку...',
-        data:           (/*order: IRenderOrder*/) => '🗑️',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Добавить прогнозную заявку...',
+        data          : (/*order: IRenderOrder*/) => '🗑️',
     },
 })
 
@@ -689,14 +698,14 @@ const toggleCollapsed = () => {
 }
 
 // __ Получаем данные
-const getOrders = async () => {
-    const tempOrders = await ordersStore.getOrders()
+const getOrders = async (period: IPeriod | null = null) => {
+    const tempOrders = await ordersStore.getOrders(period)
     orders.value     = tempOrders
     orders.value     = tempOrders.map((order: IRenderOrder) => ({
         ...order,
-        collapsed:   collapseAll.value,
+        collapsed  : collapseAll.value,
         description: order.description ?? '',
-        comment_1c:  order.comment_1c ?? '',
+        comment_1c : order.comment_1c ?? '',
     }))
 }
 
@@ -765,14 +774,17 @@ watchEffect(() => {
 })
 
 
-onMounted(async () => {
+// __ Загрузка Заявок
+const loadOrders = async (period: IPeriod | null = null) => {
+    renderPeriod.value = period
+
     isLoading.value      = true
     const loadingService = useLoading()
     await loaderHandler(
         loadingService,
         async () => {
 
-            await getOrders()
+            await getOrders(period)
             console.log('orders: ', orders.value)
 
             getOrdersRender()
@@ -783,6 +795,28 @@ onMounted(async () => {
     )
 
     isLoading.value = false
+}
+
+
+onMounted(async () => {
+    await loadOrders()
+    // isLoading.value      = true
+    // const loadingService = useLoading()
+    // await loaderHandler(
+    //     loadingService,
+    //     async () => {
+    //
+    //         await getOrders()
+    //         console.log('orders: ', orders.value)
+    //
+    //         getOrdersRender()
+    //         console.log('ordersRender: ', ordersRender.value)
+    //     },
+    //     undefined,
+    //     // false,
+    // )
+    //
+    // isLoading.value = false
 })
 
 </script>

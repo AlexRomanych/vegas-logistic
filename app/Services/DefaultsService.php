@@ -57,6 +57,16 @@ final class DefaultsService
         //return new Period(Carbon::now()->startOfMonth(), Carbon::now()->addMonths(2)->endOfMonth());
     }
 
+    /**
+     * ___ Возвращает период Заказов для отображения по умолчанию
+     * @return Period
+     */
+    public static function getDefaultPeriodOrdersShow(): Period
+    {
+        // __ Начало текущего месяца + 2 месяца вперед
+        return new Period(Carbon::now()->subDays(7), Carbon::now()->addMonths(2)->endOfMonth());
+        //return new Period(Carbon::now()->startOfMonth(), Carbon::now()->addMonths(2)->endOfMonth());
+    }
 
 
 }

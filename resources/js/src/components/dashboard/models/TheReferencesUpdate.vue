@@ -117,20 +117,6 @@
             />
         </div>
 
-        <div class="flex justify-center cursor-pointer uppercase">
-            <AppLabelMultiLineTS
-                :align="LABEL_ALIGN"
-                :text="isUploading ? uploadProgress.toString() + '%' : 'Начать импорт'"
-                :text-size="LABEL_TEXT_SIZE"
-                :type="LABEL_TYPE"
-                :width="LABEL_WIDTH"
-                height="h-[75px]"
-                rounded="4"
-                @click="startImport"
-            />
-        </div>
-
-
     </div>
 
     <!-- __ Для модальных сообщений -->
@@ -146,12 +132,16 @@
 
 <script lang="ts" setup>
 import type { IColorTypes } from '@/types'
+
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import AppInputFileTS from '@/components/ui/inputs/AppInputFileTS.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncTS from '@/components/ui/modals/AppModalAsyncTS.vue'
 import axios from 'axios'
+
+const router = useRouter()
 
 // __ URL для загрузки файлов
 const URL = '/api/v1/models/update'
@@ -183,18 +173,17 @@ const isUploading    = ref(false)
 const uploadProgress = ref(0) // Если захочешь добавить прогресс-бар
 
 
-
 const startImport = async () => {
-    // if (!fileMaterials.value || !fileModels.value || !fileProcedures.value || !fileSpecifications.value) {
-    //     modalText.value = 'Необходимо выбрать все файлы перед началом импорта!'
-    //     appModalAsyncTS.value?.show()
-    //     return
-    // }
+    if (!fileMaterials.value || !fileModels.value || !fileProcedures.value || !fileSpecifications.value) {
+        modalText.value = 'Необходимо выбрать все файлы перед началом импорта!'
+        appModalAsyncTS.value?.show()
+        return
+    }
 
     isUploading.value    = true
     uploadProgress.value = 0
 
-    // __ Получаем токен (из хранилища, где он у тебя лежит)
+    // __ Получаем токен
     const token = localStorage.getItem('token')
 
     const formData = new FormData()
@@ -207,10 +196,11 @@ const startImport = async () => {
         const response = await axios.post(URL, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
-                // Добавляем JWT токен в заголовки
+
+                // __ Добавляем JWT токен в заголовки
                 'Authorization': `Bearer ${token}`
             },
-            // Отслеживание прогресса загрузки
+            // __ Отслеживание прогресса загрузки
             onUploadProgress: (progressEvent) => {
                 if (progressEvent.total) {
                     uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -218,25 +208,46 @@ const startImport = async () => {
             }
         })
 
-        if (response.status === 200) {
-            modalType.value = 'success'
-            modalText.value = 'Все файлы успешно загружены и готовы к обработке.'
-            appModalAsyncTS.value?.show()
+        // console.log('response: ', response)
 
-            console.log('response: ', response)
-            // Очищаем файлы после успешной загрузки
+        if (response.status === 200) {
+
+            modalType.value = 'success'
+            modalText.value = response.data.payload || 'Справочники успешно обновлены'
+            await appModalAsyncTS.value?.show()
+
+            // __ Очищаем файлы после успешной загрузки
             cancelAllSelections()
+
+            // __ Перезагружаем страницу
+            await router.push({
+                path: router.currentRoute.value.path,
+                query: { ...router.currentRoute.value.query, t: Date.now() }
+            })
+            // router.go(0)
         }
-    } catch (error: any) {
+    } catch (error) {
+
+        // console.log('Error object:', JSON.parse(JSON.stringify(error.response)));
+
         modalType.value = 'danger'
-        modalText.value = error.response?.data?.message || 'Ошибка при загрузке файлов на сервер'
-        appModalAsyncTS.value?.show()
+
+        if (axios.isAxiosError(error)) {
+            // Теперь TS знает, что это AxiosError
+            // Ты можешь даже указать тип того, что возвращает твой Laravel (например, { message: string })
+            modalText.value = error.response?.data?.error || 'Упс! Что-то пошло не так.'
+        } else {
+            // Это на случай, если ошибка не связана с сетевым запросом
+            modalText.value = 'Упс! Что-то пошло не так.'
+        }
+
+        await appModalAsyncTS.value?.show()
     } finally {
         isUploading.value = false
     }
 }
 
-// Вспомогательная функция для очистки
+// __ Вспомогательная функция для очистки
 const cancelAllSelections = () => {
     fileMaterials.value      = undefined
     fileModels.value         = undefined
