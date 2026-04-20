@@ -3,68 +3,53 @@
         <Transition name="modal">
             <div v-if="showModal" class="dark-container" @click.self="select(false)">
 
-                <div :class="[width, height, borderColor, 'modal-container']">
+                <div :class="[width, height, borderColor, 'modal-container flex flex-col overflow-hidden']">
 
-                    <div class="close-cross-container">
-                        <div class="m-1 p-1">
-                            <AppInputButton
-                                id="close"
-                                :type="type"
-                                height="w-5"
-                                title="x"
-                                width="w-[30px]"
-                                @buttonClick="select(false)"
-                            />
+                    <div class="flex-none border-b border-slate-800/50 pb-4">
+                        <div class="flex justify-end p-1">
+                            <AppInputButton id="close" :type="type" height="h-8" title="x" width="w-[30px]" @buttonClick="select(false)"/>
+                        </div>
+                        <div class="pl-8">
+                            <h3 class="text-left text-slate-500 uppercase tracking-widest text-[10px] font-bold mb-1 italic">Процедура расчета</h3>
+                            <h2 class="text-left text-white text-lg font-bold">{{ title }}</h2>
                         </div>
                     </div>
 
-                    <div class="w-full pl-8 border-b border-slate-800/50 pb-4">
-                        <h3 class="text-left text-slate-500 uppercase tracking-widest text-[10px] font-bold mb-1">
-                            Причина невыполнения
-                        </h3>
-                        <h2 class="text-left text-white text-lg font-bold">
-                            Добавление причины невыполнения
-                        </h2>
-                    </div>
-
-                    <div class="p-6 flex flex-col space-y-6 overflow-y-auto custom-scrollbar">
-
-                        <div class="flex flex-col space-y-2">
-                            <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight">
-                                {{ label}}
+                    <div class="flex-grow flex flex-row p-6 gap-4 min-h-0 overflow-hidden">
+                        <div class="flex-1 flex flex-col min-w-0">
+                            <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight mb-2">
+                                {{ label }}
                             </label>
-                            <div class="relative group">
-                                <textarea
-                                    v-model="formData.falseReason"
-                                    rows="8"
-                                    placeholder="Добавьте причину..."
-                                    class="w-full bg-[#161e2d] text-red-400 text-sm font-mono leading-relaxed
-                                           border border-slate-800/50 rounded-xl px-4 py-3
-                                           focus:ring-1 focus:ring-red-500 outline-none transition-all
-                                           custom-scrollbar resize-none whitespace-pre-wrap"
-                                ></textarea>
-                                <div class="absolute right-3 bottom-3 opacity-20 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                                </div>
-                            </div>
+                            <textarea
+                                v-model="text1C"
+                                class="w-full flex-grow bg-[#161e2d] text-blue-200 text-[13px] font-mono leading-relaxed
+                                   border border-slate-800/50 rounded-xl px-4 py-4
+                                   focus:ring-1 focus:ring-blue-500 outline-none transition-all
+                                   custom-scrollbar resize-none whitespace-pre-wrap"
+                                placeholder="Процедура расчета материалов из 1С"
+                                readonly
+                            ></textarea>
                         </div>
+
+                        <div v-if="isAdmin" class="flex-1 flex flex-col min-w-0">
+                            <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight mb-2">
+                                Текст процедуры VBA
+                            </label>
+                            <textarea
+                                v-model="textVBA"
+                                class="w-full flex-grow bg-[#111827] text-red-200 text-[13px] font-mono leading-relaxed
+                                   border border-slate-800/50 rounded-xl px-4 py-4
+                                   focus:ring-1 focus:ring-red-500 outline-none transition-all
+                                   custom-scrollbar resize-none whitespace-pre-wrap"
+                                placeholder="Процедура расчета материалов для VBA"
+                            ></textarea>
+                        </div>
+
 
                     </div>
 
-                    <div class="w-full flex justify-end gap-2 p-4 bg-slate-800/50 rounded-b-xl">
-                        <AppInputButton
-                            id="cancel"
-                            title="Отмена"
-                            type="stone"
-                            @buttonClick="select(false)"
-                        />
-                        <AppInputButton
-                            v-if="formData.falseReason"
-                            id="confirm"
-                            :type="type"
-                            title="Сохранить"
-                            @buttonClick="select(true)"
-                        />
+                    <div class="flex-none flex justify-end gap-2 p-4 bg-slate-800/50 rounded-b-xl border-t border-slate-800/50">
+                        <AppInputButton id="close-bottom" title="Понятно" type="primary" @buttonClick="select(true)"/>
                     </div>
 
                 </div>
@@ -75,8 +60,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, reactive, ref } from 'vue'
-import type { IColorTypes } from '@/types'
+import { computed, nextTick, ref } from 'vue'
+import type { IColorTypes, IModelProcedure } from '@/types'
 
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -86,32 +71,38 @@ interface IProps {
     type?: IColorTypes,
     width?: string,
     height?: string,
-    falseReason: string | null,
+    procedure: IModelProcedure | null,
+    isAdmin?: boolean,
     label?: string,
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type:   'danger',
-    width:  'min-w-[700px] max-w-[700px]',
-    height: 'min-h-[400px]',
-    label:  'Комментарий',
+    type   : 'primary',
+    width  : 'min-w-[90vw] max-w-[90vw]',
+    height : 'min-h-[90vh] max-h-[90vh]',
+    label  : 'Текст процедуры из 1С',
+    isAdmin: false,
 })
+
+// __ Заголовок
+const title = computed(() => props.procedure ? `${props.procedure.code_1c} ${props.procedure.name} (${props.procedure.object_name})` : '')
+
+// __ Текст процедуры
+const text1C  = computed(() => props.procedure ? props.procedure.text : '')
+const textVBA = computed(() => props.procedure ? props.procedure.text_vba : '')
+// const text1C = ref(props.procedure? props.procedure.text : '')
 
 const showModal = ref(false)
 
-const formData = reactive({
-    falseReason: '',
-    // title: '',
-    // content: ''
-})
+// const formData = reactive({
+//     falseReason: '',
+// })
 
 let resolvePromise: ((value: boolean) => void) | null
 
 const show = async () => {
 
     await nextTick()
-
-    formData.falseReason = props.falseReason ?? ''
 
     showModal.value = true
 
@@ -124,7 +115,7 @@ const select = (value: boolean) => {
     if (resolvePromise) {
         resolvePromise(value)
         showModal.value = false
-        resolvePromise = null
+        resolvePromise  = null
     }
 }
 
@@ -132,7 +123,9 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 defineExpose({
     show,
-    get falseReason() { return formData.falseReason },
+    // get falseReason() {
+    //     return formData.falseReason
+    // },
 })
 </script>
 
@@ -141,6 +134,7 @@ defineExpose({
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-700 rounded-full;
 }

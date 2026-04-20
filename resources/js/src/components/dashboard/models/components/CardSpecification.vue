@@ -100,7 +100,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 // __ Заголовки таблицы с составом спецификации
 const headers = computed(() => {
-    return ['Код', 'Название', 'H', 'Деталь', 'Процедура', 'Кол-во']
+    return ['Код', 'Название', 'Ед. изм.', 'H', 'Деталь', 'Процедура', 'Кол-во']
 })
 
 // __ Название спецификации
@@ -118,6 +118,7 @@ const tableData = computed(() => {
         result.push([
             item.material.code_1c,
             item.material.name,
+            item.material.unit ?? '',
             item.detail_height ? item.detail_height.toFixed(3) : '',
             item.detail ?? '',
             item.procedure?.name ?? '',

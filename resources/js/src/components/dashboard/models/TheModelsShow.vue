@@ -308,6 +308,7 @@
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.code_1c"
                                             @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
+                                            class="cursor-pointer"
                                         />
 
                                         <!-- __ Название -->
@@ -316,6 +317,7 @@
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.model_name"
                                             @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
+                                            class="cursor-pointer"
                                         />
 
                                         <!-- __ Тип изделия -->
@@ -1053,7 +1055,7 @@ const showSpecification = async (model: IModel | null) => {
         return
     }
 
-    const construct = await modelsStore.getConstruct(model.code_1c)
+    const construct = await modelsStore.getConstructByModelCode1c(model.code_1c)
     if (!construct) {
         modalText.value = [
             `Спецификация для модели: ${model.name}`,

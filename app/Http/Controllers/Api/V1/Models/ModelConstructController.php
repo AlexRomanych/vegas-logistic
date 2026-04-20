@@ -54,7 +54,12 @@ class ModelConstructController extends Controller
     }
 
 
-    public function getConstruct(string $code1c)
+    /**
+     * ___ Получаем спецификацию модели по коду 1с Модели
+     * @param string $code1c
+     * @return ModelConstructResource|false|string
+     */
+    public function getConstructByModelCode1c(string $code1c)
     {
         try {
             $validated = Validator::make([

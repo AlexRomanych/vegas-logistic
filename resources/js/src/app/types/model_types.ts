@@ -132,6 +132,7 @@ export interface IModelConstructMaterial {
 // __ Процедура расчета в элементе спецификации
 export interface IModelConstructProcedure {
     name: string | null
+    code_1c: string | null
 }
 
 // --- --------------------------------------------------------------------

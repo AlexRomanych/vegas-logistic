@@ -121,7 +121,7 @@
                             :arg="model"
                             :render-object="render.code_1c"
                             class="cursor-pointer"
-                            @click="render.collapsed.click!(model)"
+                            @click="render.collapsed_model.click!(model)"
                         />
 
                         <!-- __ Название -->
@@ -129,7 +129,7 @@
                             :arg="model"
                             :render-object="render.name"
                             class="cursor-pointer"
-                            @click="render.collapsed.click!(model)"
+                            @click="render.collapsed_model.click!(model)"
                         />
 
                     </div>
@@ -211,6 +211,8 @@
                                         <AppLabelTSWrapper
                                             :arg="item"
                                             :render-object="render.procedure"
+                                            @dblclick="showProcedure(item)"
+                                            :class="item.procedure && item.procedure.name ? 'cursor-pointer' : ''"
                                         />
 
                                         <!-- __ Количество -->
@@ -230,7 +232,6 @@
                                 </template>
                             </div>
 
-
                         </template>
                     </div>
                 </template>
@@ -238,12 +239,19 @@
         </div>
     </div>
 
+    <!-- __ Карточка Процедуры расчета -->
+    <CardProcedure
+        ref="cardProcedure"
+        :procedure="procedure"
+        :is-admin="userStore.hasAdminRole()"
+    />
+
 </template>
 
 <script lang="ts" setup>
 import type {
     IModelConstruct,
-    IModelConstructItem,
+    IModelConstructItem, IModelProcedure,
     IModelSpecification,
     IRenderData
 } from '@/types'
@@ -251,6 +259,7 @@ import type {
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useModelsStore } from '@/stores/ModelsStore'
+import { useUserStore } from '@/stores/UserStore.js'
 
 import { isModelConstructItem } from '@/app/helpers/helpers_model.ts'
 
@@ -260,13 +269,19 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import AppInputTextTSWrapper from '@/components/dashboard/models/components/AppInputTextTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
+import CardProcedure from '@/components/dashboard/models/components/CardProcedure.vue'
 
 const isLoading = ref(false)
 
 const modelsStore = useModelsStore()
+const userStore   = useUserStore()
 
 let entities: IModelSpecification[] = []
 const entitiesRender                = ref<IModelSpecification[]>([])
+
+// __ Карточка Процедуры расчета
+const cardProcedure = ref<InstanceType<typeof CardProcedure> | null>(null)
+const procedure = ref<IModelProcedure | null>(null)
 
 // __ Глобальный Collapse
 const collapseAll = ref(true)
@@ -518,6 +533,18 @@ const procedureFilter    = ref('')
 const amountFilter       = ref('')
 // const positionFilter     = ref('')
 
+
+// __ Показываем процедуру
+const showProcedure = async (item: IModelConstructItem | null = null) => {
+    if (!item || !item.procedure) {
+        return
+    }
+    // console.log(procedure)
+    procedure.value = await modelsStore.getProcedure(item.procedure.code_1c)
+    await cardProcedure.value?.show()
+}
+
+
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
     collapseAll.value = !collapseAll.value
@@ -525,7 +552,7 @@ const toggleCollapsed = () => {
         entity.collapsed = collapseAll.value
         entity.constructs.forEach(construct => construct.collapsed = collapseAll.value)
     })
-    console.log('reached')
+    // console.log('reached')
 }
 
 
@@ -548,13 +575,11 @@ const getEntities = async () => {
                         procedure: item.procedure
                             ? { ...item.procedure, name: item.procedure.name ?? '' }
                             : { name: '' },
-                    }))
+                    } as IModelConstructItem))
                     .sort((item_1, item_2) => item_1.position - item_2.position),
             }))
             .sort((construct_1, construct_2) => construct_1.name.localeCompare(construct_2.name))
     })
-
-
 }
 
 // __ Формирование данных для рендера

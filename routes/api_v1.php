@@ -44,10 +44,11 @@ Route::prefix('/models')
         Route::post('/upload', [ModelController::class, 'modelsUpload']);
 
         Route::get('/procedures', [ModelConstructProcedureController::class, 'getModelProcedures']);
+        Route::get('/procedure/{code1c}', [ModelConstructProcedureController::class, 'getModelProcedure']);
         Route::post('/procedures/upload', [ModelConstructProcedureController::class, 'modelConstructProceduresUpload']);
 
         Route::get('/constructs', [ModelConstructController::class, 'getModelConstructs']);
-        Route::get('/construct/{code1c}', [ModelConstructController::class, 'getConstruct']);
+        Route::get('/construct/{code1c}', [ModelConstructController::class, 'getConstructByModelCode1c']);
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
 
         Route::post('/update', [ModelConstructController::class, 'modelsUpdate']);

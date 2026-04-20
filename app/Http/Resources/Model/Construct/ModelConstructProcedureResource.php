@@ -16,8 +16,8 @@ class ModelConstructProcedureResource extends JsonResource
     {
         return [
             'name'           => $this->name,
+            'code_1c'        => $this->code_1c,
             //'object_name'    => $this->object_name,
-            //'code_1c'        => $this->code_1c,
             //'text'           => $this->text,
             //'object_code_1c' => $this->object_code_1c,
             //'active'         => $this->active,
