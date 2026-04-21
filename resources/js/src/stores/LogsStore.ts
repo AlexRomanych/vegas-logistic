@@ -1,7 +1,7 @@
 // info Хранилище для Logs
 
 import { defineStore } from 'pinia'
-import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/utils/jwt_api'
+import { jwtGet,/* jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch */ } from '@/app/utils/jwt_api'
 
 import type { IPeriod } from '@/types'
 
@@ -9,8 +9,10 @@ const DEBUG = true
 
 const PREFIX = 'logs'
 
-const URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD = `${PREFIX}/fabrics/rolls/execute/period`                 // Логи выполнения физических рулонов
-const URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER = `${PREFIX}/fabrics/rolls/execute/roll-number`       // Логи выполнения физических рулонов
+const URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD      = `${PREFIX}/fabrics/rolls/execute/period`      // Логи выполнения физических рулонов
+const URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER = `${PREFIX}/fabrics/rolls/execute/roll-number` // Логи выполнения физических рулонов
+const URL_LOGS_APP_EVENTS                           = `${PREFIX}/app/events`                        // Логи Событий приложения
+
 
 export const useLogsStore = defineStore('logs', () => {
 
@@ -22,11 +24,11 @@ export const useLogsStore = defineStore('logs', () => {
         // debugger
         // __ Тут именно такая проверка, потому что если status === 0, то он не передается в запросе
         if (period && status !== null) {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, {period, status})
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, { period, status })
         } else if (period) {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, {period})
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, { period })
         } else if (status !== null) {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, {status})
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, { status })
         } else {
             response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD)
         }
@@ -43,9 +45,9 @@ export const useLogsStore = defineStore('logs', () => {
         let response
 
         if (rollNumber) {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER, {roll: rollNumber})
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER, { roll: rollNumber })
         } else {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER, {roll: rollNumber})
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_ROLL_NUMBER, { roll: rollNumber })
         }
 
         const result = await response
@@ -53,10 +55,27 @@ export const useLogsStore = defineStore('logs', () => {
         return result.data
     }
 
+    // ___ Получение Логов События системы (Обновление справочников моделей, расчет сырья и так далее)
+    const getLogsAppEvents = async (period: IPeriod | null = null) => {
+        let response
+
+        if (period) {
+            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, { period })
+        } else {
+            response = await jwtGet(URL_LOGS_APP_EVENTS)
+        }
+
+        const result = await response
+        if (DEBUG) console.log('LogsStore: getLogsAppEvents: ', result)
+        return result.data
+    }
+
 
     return {
         getLogsFabricsExecuteRollsByPeriod,
-        getLogsFabricsExecuteRollsByRollNumber
+        getLogsFabricsExecuteRollsByRollNumber,
+
+        getLogsAppEvents
     }
 
 })

@@ -112,12 +112,12 @@ const menuData = () => {
                 ]
         },
         {
-            group: {name: 'Настройки', shown: true, isActive: false, icon: 'Cog8ToothIcon'},
+            group: {name: 'Настройки', shown: true, isActive: true, icon: 'Cog8ToothIcon'},
             items:
                 [
-                    {name: 'Setting_1', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Setting_2', path: 'plan', shown: true, isActive: true,},
-                    {name: 'Setting_3', path: 'plan', shown: true, isActive: true,},
+                    {name: 'События системы', path: 'app.events.logs', shown: true, isActive: true,},
+                    // {name: 'Setting_2', path: 'plan', shown: true, isActive: true,},
+                    // {name: 'Setting_3', path: 'plan', shown: true, isActive: true,},
                 ]
         },
         {

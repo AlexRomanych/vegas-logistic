@@ -130,8 +130,8 @@
     <!-- __ Модальное окно проверки суммарного времени трудозатрат схемы типовых операций -->
     <SewingOperationCheck
         ref="sewingOperationCheck"
-        :schema="checkSchemaData"
         :headers="checkResultsHeaders"
+        :schema="checkSchemaData"
         :table-data="checkResultsData"
     />
 
@@ -149,6 +149,7 @@ import type {
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
@@ -156,13 +157,13 @@ import SewingOperationItemEdit
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationItemEdit.vue'
 import SewingOperationSchemaDataEdit
     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationSchemaDataEdit.vue'
-
+import SewingOperationCheck from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationCheck.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import SewingOperationCheck from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationCheck.vue'
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+
+
 
 
 const sewingStore = useSewingStore()

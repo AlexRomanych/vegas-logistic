@@ -14,6 +14,16 @@ const logs = [
         } as IRouteMeta,
     },
 
+    {
+        path: `${PREFIX}/app/events`,                       // __ Логи приложения (Обновления моделей, расчет материалов и т.д.)
+        name: 'app.events.logs',
+        component: () => import('@/components/dashboard/logs/TheAppEventsLog.vue'),
+        meta: {
+            title: 'Системные события приложения',
+            // mode: FABRIC_PAGE_MODE.EDIT,
+        } as IRouteMeta,
+    },
+
 ]
 
 export default logs
