@@ -88,3 +88,7 @@ export const ROUTER_PAGE_MODE = Object.freeze({
 })
 
 // --- ------------------------------------------------------------------------------
+
+// ___ Ключ для сохранения в localStorage выбранной задачи для печати
+export const TASK_TO_PRINT_KEY = 'taskToPrint'
+export const TASK_TO_PRINT_META_KEY = 'taskToPrintMeta'

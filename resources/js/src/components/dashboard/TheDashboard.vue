@@ -12,9 +12,9 @@
     <div v-if="isAuthenticated" class="container">
         <!--    <div class="container">-->
 
-        <TheNav />
-        <TheHeader />
-        <TheFooter />
+        <TheNav v-if="!$route.meta.hideNavbar"/>
+        <TheHeader v-if="!$route.meta.hideNavbar"/>
+        <TheFooter v-if="!$route.meta.hideNavbar"/>
         <!--        <router-view></router-view>-->
         <!--        <TheMain-->
         <!--            :isAuthenticated="isAuthenticated"-->
@@ -24,7 +24,7 @@
     </div>
 
     <div v-else>
-        <TheMain :auth="true" />
+        <TheMain :auth="true"/>
     </div>
 
     <!--    <div v-else>-->
@@ -32,8 +32,8 @@
     <!--    </div>-->
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { computed } from 'vue'
 // import TheHeader from '@/components/structure/TheHeader.vue'
 import TheHeader from '@/components/dashboard/TheHeader.vue'
 import TheFooter from '@/components/dashboard/TheFooter.vue'
@@ -43,7 +43,7 @@ import TheMain from '@/components/dashboard/TheMain.vue'
 import { useUserStore } from '@/stores/UserStore'
 // import {useRouter} from 'vue-router'
 
-const user = useUserStore()
+const user            = useUserStore()
 // const isAuth = await user.isAuthenticated()
 const isAuthenticated = computed(() => user.isAuth)
 // console.log('isAuth', isAuth)

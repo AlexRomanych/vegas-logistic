@@ -54,7 +54,7 @@
                     rounded="4"
                     text-size="mini"
                     type="indigo"
-                    width="min-w-[300px]"
+                    width="min-w-[250px]"
                 />
 
                 <div
@@ -70,59 +70,76 @@
                         width="w-[200px]"
                     />
 
-                    <!-- __ Выполнено -->
+                    <!-- __ Печать -->
                     <AppLabelTS
-                        :disabled="selectedIds.size === 0"
                         :height="MENU_HEIGHT"
+                        align="center"
+                        class="menu-button"
+                        rounded="4"
+                        text="📄"
+                        text-size="huge"
+                        type="dark"
+                        width="w-[50px]"
+                        @click="printTask"
+                    />
+
+                    <!-- __ Выполнено -->
+                    <AppLabelMultiLineTS
+                        :disabled="selectedIds.size === 0"
+                        :height="MENU_HEIGHT_MULTILINE"
+                        :text="['✓', 'Вып-но']"
                         :type="selectedIds.size === 0 ? 'dark' : 'success'"
                         :width="MENU_WIDTH"
                         align="center"
                         class="menu-button"
                         rounded="4"
-                        text="✓ Выполнено"
                         text-size="small"
+                        title="Установить отметку Выполнено"
                         @click="completeSelected"
                     />
 
                     <!-- __ Не Выполнено -->
-                    <AppLabelTS
+                    <AppLabelMultiLineTS
                         :disabled="selectedIds.size === 0"
-                        :height="MENU_HEIGHT"
+                        :height="MENU_HEIGHT_MULTILINE"
+                        :text="['✘', 'Не вып-но']"
                         :type="selectedIds.size === 0 ? 'dark' : 'danger'"
                         :width="MENU_WIDTH"
                         align="center"
                         class="menu-button"
                         rounded="4"
-                        text="✘ Не выполнено"
                         text-size="small"
+                        title="Установить отметку Не выполнено"
                         @click="unCompleteSelected"
                     />
 
                     <!-- __ Сброс отметки -->
-                    <AppLabelTS
+                    <AppLabelMultiLineTS
                         :disabled="selectedIds.size === 0"
-                        :height="MENU_HEIGHT"
+                        :height="MENU_HEIGHT_MULTILINE"
+                        :text="['↺', 'Сбросить']"
                         :type="selectedIds.size === 0 ? 'dark' : 'stone'"
                         :width="MENU_WIDTH"
                         align="center"
                         class="menu-button"
                         rounded="4"
-                        text="↺ Сбросить"
                         text-size="small"
+                        title="Сброс отметки Выполнено/Не выполнено"
                         @click="resetStatus"
                     />
 
                     <!-- __ Разбить количество -->
-                    <AppLabelTS
+                    <AppLabelMultiLineTS
                         :disabled="selectedIds.size === 0"
-                        :height="MENU_HEIGHT"
+                        :height="MENU_HEIGHT_MULTILINE"
+                        :text="['⛏', 'Разбить']"
                         :type="selectedIds.size === 0 ? 'dark' : 'indigo'"
                         :width="MENU_WIDTH"
                         align="center"
                         class="menu-button"
                         rounded="4"
-                        text="⛏ Разбить"
                         text-size="small"
+                        title="Разбить количество элементов"
                         @click="divideElementAmount"
                     />
                 </div>
@@ -144,7 +161,7 @@
                 <template v-if="subgroup.hasData">
 
                     <div v-if="showSubgroupNames" class="ml-2 pt-1">
-                        <span class="font-semibold italic underline">{{ subgroup.subgroupName }}</span>
+                        <span class="font-semibold italic underline">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</span>
                     </div>
 
                     <div
@@ -286,13 +303,16 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 
 import type { IColorTypes, IDividerItem, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
+
+import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import {
     getCoverSizeString,
     getExecuteTaskStatistics,
-    getSewingTaskModelCoverName, groupTaskLinesForExecute,
+    getSewingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -303,6 +323,9 @@ import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewin
 import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayTaskLineHeader.vue'
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
+
 
 interface IProps {
     sewingTask: ISewingTask
@@ -318,8 +341,16 @@ const emits = defineEmits<{
     (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number; keep: number }): void
 }>()
 
-const MENU_WIDTH  = 'w-[130px]'
-const MENU_HEIGHT = 'h-[50px]'
+const router      = useRouter()
+const sewingStore = useSewingStore()
+
+// console.log('props.sewingTask: ', props.sewingTask)
+
+const UNION_TASKS_ID = 0
+
+const MENU_WIDTH            = 'w-[85px]'
+const MENU_HEIGHT           = 'h-[50px]'
+const MENU_HEIGHT_MULTILINE = 'h-[25px]'
 
 // __ Тип для модального окна информации о записи в Заявке
 const orderLine     = ref<ISewingTaskOrderLine | null>(null)
@@ -351,11 +382,27 @@ const showSubgroupNames = ref(true)
 // __ Табы Группировки СЗ по АШМ/УШМ
 const activeTabIndex = ref(0)
 
+// __ Название заявок
+const taskTitle = computed(() => {
+    if (isUnionTask.value) {
+        return 'Объединение СЗ'
+    }
+    return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
+})
+
 // __ Формируем объект выполнения
 // const sewingLines       = ref<ISewingTaskLine[]>([])
-const sewingLinesGroups = computed(() => groupTaskLinesForExecute(props.sewingTask.sewing_lines))
-const sewingLinesGroup  = computed(() => sewingLinesGroups.value[activeTabIndex.value].subgroups)
-const sewingLines       = computed(() => {
+const sewingLinesGroups = computed(() => {
+    // if (isUnionTask.value) {
+    if (props.sewingTask.id === UNION_TASKS_ID) {
+        return groupTaskLinesForExecuteForUnion(props.sewingTask.sewing_lines)
+    }
+    const title = `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
+    return groupTaskLinesForExecute(props.sewingTask.sewing_lines, title)
+})
+
+const sewingLinesGroup = computed(() => sewingLinesGroups.value[activeTabIndex.value].subgroups)
+const sewingLines      = computed(() => {
     const result: ISewingTaskLine[] = []
     sewingLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
         subgroup.lines.forEach(line => {
@@ -366,36 +413,35 @@ const sewingLines       = computed(() => {
 })
 
 
-// const getSewingLines = () => {
-    // const linesGrouped = groupTaskLinesForExecute(props.sewingTask.sewing_lines)
-    // console.log('linesGrouped: ', linesGrouped)
+console.log('sewingLinesGroups: ', sewingLinesGroups.value)
 
-    //
-    //     sewingLines.value = props.sewingTask.sewing_lines
-    //         .map((line) => ({ ...line, completed: false }))
-    //         .sort((a, b) => {
-    //             // __ 1. Сначала сравниваем по времени
-    //             const compA    = a.finished_at || a.false_at || '2050-01-01 00:00:00'
-    //             const compB    = b.finished_at || b.false_at || '2050-01-01 00:00:00'
-    //             const timeDiff = new Date(compA).getTime() - new Date(compB).getTime()
-    //
-    //             // 2. __ Если время разное (не 0), возвращаем результат сравнения времени
-    //             if (timeDiff !== 0) {
-    //                 return timeDiff
-    //             }
-    //
-    //             // __ 3. Если время совпало, сортируем по позиции
-    //             return a.position - b.position
-    //         })
+// const getSewingLines = () => {
+// const linesGrouped = groupTaskLinesForExecute(props.sewingTask.sewing_lines)
+// console.log('linesGrouped: ', linesGrouped)
+
+//
+//     sewingLines.value = props.sewingTask.sewing_lines
+//         .map((line) => ({ ...line, completed: false }))
+//         .sort((a, b) => {
+//             // __ 1. Сначала сравниваем по времени
+//             const compA    = a.finished_at || a.false_at || '2050-01-01 00:00:00'
+//             const compB    = b.finished_at || b.false_at || '2050-01-01 00:00:00'
+//             const timeDiff = new Date(compA).getTime() - new Date(compB).getTime()
+//
+//             // 2. __ Если время разное (не 0), возвращаем результат сравнения времени
+//             if (timeDiff !== 0) {
+//                 return timeDiff
+//             }
+//
+//             // __ 3. Если время совпало, сортируем по позиции
+//             return a.position - b.position
+//         })
 // }
 
-// __ Название заявок
-const taskTitle = computed(() => {
-    if (props.sewingTask.id === 0) {
-        return 'Объединение СЗ'
-    }
-    return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
-})
+
+// __ Проверка на то, что Заявка - объединенная
+const isUnionTask = computed(() => props.sewingTask.id === UNION_TASKS_ID)
+
 
 // __ Показать информацию о записи
 const showLineInfo = async (sewingLine: ISewingTaskLine) => {
@@ -766,6 +812,36 @@ const stopGlobalSelection = () => {
     stopAutoScroll()
 }
 
+
+// __ Печать
+const printTask = () => {
+    // router.push({name: 'manufacture.cell.sewing.task.print'})
+
+    // __ Запоминаем данные для печати
+    // const { globalSewingTaskPrintData } = storeToRefs(sewingStore)
+    // globalSewingTaskPrintData.value = sewingLinesGroup.value
+    console.log(props.sewingTask)
+
+    localStorage.setItem(TASK_TO_PRINT_KEY, JSON.stringify(sewingLinesGroup.value))
+    localStorage.setItem(TASK_TO_PRINT_META_KEY, JSON.stringify({
+        action_at: props.sewingTask.action_at,
+        task_title  : taskTitle.value,
+        sewing_group: sewingLinesGroups.value[activeTabIndex.value].groupName,
+    }))
+
+    // 1. Получаем объект с путем и параметрами
+    const routeData = router.resolve({
+        name: 'manufacture.cell.sewing.task.print',
+        // query: { orderId: id }
+    })
+
+    console.log('sewingStore.globalSewingTaskPrintData: ', sewingStore.globalSewingTaskPrintData)
+
+    // 2. Открываем новое окно через стандартный JS
+    window.open(routeData.href, '_blank')
+}
+
+
 // __ Смотрим на то, чтобы при переключении между СЗ не попали на вкладку (УПМ/УШМ) с нулевыми СЗ,
 // __ которые не отображаются
 watch(
@@ -801,6 +877,9 @@ onMounted(async () => {
     window.addEventListener('click', () => (showMenu.value = false))
 
     activeTabIndex.value = 0
+
+    localStorage.removeItem(TASK_TO_PRINT_KEY) // __ Очищаем данные для печати
+    localStorage.removeItem(TASK_TO_PRINT_META_KEY) // __ Очищаем данные для печати
 })
 
 onBeforeUnmount(() => {
@@ -901,4 +980,5 @@ width: calc(100vw - var(--sidebar-width) - 15px);
 .menu-button {
     @apply cursor-pointer shadow-[0_0_15px_rgba(79,70,229,0.4)];
 }
+
 </style>

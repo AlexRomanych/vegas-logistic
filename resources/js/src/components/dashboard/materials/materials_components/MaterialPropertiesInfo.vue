@@ -21,9 +21,9 @@
 
                     <div class="w-full pl-8 border-b border-slate-800/50">
                         <h3 class="text-left text-slate-500 uppercase tracking-widest text-[10px] font-bold mb-1">
-                            Детализация
+                            Характеристики материала:
                         </h3>
-                        <h2 class="text-left text-white text-lg font-bold">Детализация записи</h2>
+                        <h2 class="text-left text-white text-lg font-bold">{{ title }}</h2>
                     </div>
 
                     <div class="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">
@@ -96,10 +96,12 @@
 
     const props = withDefaults(defineProps<IProps>(), {
         type: 'primary',
-        width: 'min-w-[500px] max-w-[500px]',
+        width: 'min-w-[600px] max-w-[600px]',
         height: 'min-h-[200px]',
         okWord: 'Понятно',
     })
+
+    const title = computed(() => props.material?.name || '')
 
     // const emits = defineEmits<{
     //     (e: 'select'): void

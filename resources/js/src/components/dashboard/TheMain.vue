@@ -11,7 +11,8 @@
                 :class="
                     $route.name === 'login' ||
                     $route.name === 'register' ||
-                    $route.name === 'error.404'
+                    $route.name === 'error.404' ||
+                    $route.meta.hideNavbar
                         ? ''
                         : 'content'
                 "
@@ -28,17 +29,17 @@
     <!--    </main>-->
 </template>
 
-<script setup>
-import { computed, onMounted, reactive, ref, unref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+<script lang="ts" setup>
+// import { computed, /*onMounted, reactive, ref, unref, watch*/ } from 'vue'
+// import { useRoute, useRouter } from 'vue-router'
 // import {getColorClassByType, getTextColorClassByType} from '@/app/helpers/helpers.js'
 //
 //
-const router = useRouter()
-const route = useRoute()
+// const router = useRouter()
+// const route = useRoute()
 //
-const name = computed(() => route.name)
-const name_ = computed(() => router.currentRoute.value.name)
+// const name = computed(() => route.name)
+// const name_ = computed(() => router.currentRoute.value.name)
 
 const props = defineProps({
     auth: {
@@ -162,8 +163,9 @@ const props = defineProps({
     position: absolute;
     min-width: calc(
         100vw - var(--sidebar-width)
-    ); /* или ширина в пикселях *
-    /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
+    );
+    /* или ширина в пикселях *
+       /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
     height: calc(100% - var(--header-height) - var(--footer-height));
 
     /* margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); */

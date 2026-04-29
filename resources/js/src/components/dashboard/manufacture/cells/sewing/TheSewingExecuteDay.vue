@@ -123,7 +123,7 @@
                 </div>
             </template>
             <template v-else>
-                <!-- __ Сами задачи -->
+                <!-- __ Сами СЗ -->
                 <div class="">
                     <ExecuteDayTask
                         :is-running="isSewingDayStarted as boolean"
@@ -160,7 +160,7 @@ import { useSewingStore } from '@/stores/SewingStore.ts'
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { SEWING_TASK_DRAFT, SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
-import { getCoverSizeString, getExecuteTaskStatistics, getSewingTaskModelCoverName } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getCoverSizeString, getExecuteTaskStatistics, getSewingTaskModelCoverName, getSewingTaskTitle } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
@@ -371,7 +371,7 @@ const setTabs = () => {
             task,
         })
     )
-    console.log(allSewingTasksLinesUnion.value)
+    // console.log(allSewingTasksLinesUnion.value)
     if (allSewingTasksLinesUnion.value.sewing_lines.length !== 0) {
         tabs.value.push({
             show      : true,
@@ -612,11 +612,12 @@ const prepareData = () => {
         .filter(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID || task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
         .sort((a, b) => a.position - b.position)
 
-    // __ Формируем объединение всех SewingTaskLines
+    // __ Формируем объединение всех SewingTaskLines и добавляем признак группировки для "Объединения СЗ"
     allSewingTasksLinesUnion.value.sewing_lines = []
-    sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLinesUnion.value.sewing_lines.push(line)))
+    sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLinesUnion.value.sewing_lines.push({ ...line, groupAttr: getSewingTaskTitle(task) })))
 
     allSewingTasksLinesUnion.value.position = UNION_TASKS_POSITION // __ Позиция объединения всех строк
+    allSewingTasksLinesUnion.value.action_at = sewingDay.value.action_at
 }
 
 const startTimer = () => {

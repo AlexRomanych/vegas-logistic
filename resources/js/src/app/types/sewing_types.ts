@@ -62,6 +62,7 @@ export interface ISewingTaskLine {
     order_line: ISewingTaskOrderLine
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
+    groupAttr?: string                              // __ Атрибут для группировки строк
 }
 
 // __ Статус Движения (выполнения) Заявки
@@ -436,8 +437,8 @@ export interface ISewingTaskExecuteStatisticsItem {
 // --- -------------------------------------------------------------------
 // --- --------------- Тип для группировки СЗ по ШМ ----------------------
 // --- -------------------------------------------------------------------
-type ISewingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
-type ISewingTaskLinesSubGroupNames =
+export type ISewingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
+export type ISewingTaskLinesSubGroupNames =
     'Автоматы'
     | 'Глухие, автоматическое чехление'
     | 'Глухие'
@@ -464,10 +465,21 @@ export interface ISewingTaskLinesGroupData {
     groupName: ISewingTaskLinesGroupNames
     groupType: IColorTypes
     hasData: boolean,
-    subgroups: {
-        subgroupName:ISewingTaskLinesSubGroupNames
-        subgroupType: IColorTypes
-        hasData: boolean,
-        lines: ISewingTaskLine[]
-    }[]
+    subgroups: ISewingTaskLinesSubgroup[],
+    // subgroups: {
+    //     subgroupName:ISewingTaskLinesSubGroupNames
+    //     subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
+    //     subgroupType: IColorTypes
+    //     hasData: boolean,
+    //     lines: ISewingTaskLine[]
+    // }[]
+}
+
+
+export interface ISewingTaskLinesSubgroup {
+    subgroupName:ISewingTaskLinesSubGroupNames
+    subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
+    subgroupType: IColorTypes
+    hasData: boolean,
+    lines: ISewingTaskLine[]
 }

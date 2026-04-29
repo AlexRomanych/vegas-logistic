@@ -7,7 +7,7 @@ import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, j
 import type {
     IPeriod, IRenderMatrixDiff, ISewingDayWorker, ISewingOperation, ISewingOperationSchema,
     ISewingOperationUpdateObject, ISewingTask,
-    ISewingTaskLine, ISewingTaskStatusEntity, ISewingTaskStatusesSet,
+    ISewingTaskLine, ISewingTaskLinesSubgroup, ISewingTaskStatusEntity, ISewingTaskStatusesSet,
 } from '@/types'
 
 // import { usePlansStore } from '@/stores/PlansStore.ts'
@@ -115,6 +115,9 @@ export const useSewingStore = defineStore('sewing', () => {
     const globalWorkers = ref<ISewingDayWorker[]>([])
 
     // --- ------------------------------------------------------------------------------------------
+
+    // __ Объект печати СЗ
+    const globalSewingTaskPrintData = ref<ISewingTaskLinesSubgroup[]>([])
 
 
     // const planStore   = usePlansStore()
@@ -877,6 +880,8 @@ export const useSewingStore = defineStore('sewing', () => {
         globalSewingTasksPending,
 
         globalWorkers,
+
+        globalSewingTaskPrintData,
 
         getSewingTasks,
         getSewingTasksByOrderId,

@@ -4,7 +4,7 @@ import type {
     IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ISewingDay,
     ISewingMachineKeys, ISewingMachineTimesKeys,
     ISewingTask, ISewingTaskArrayDiff, ISewingTaskArrayLineDiffs, ISewingTaskExecuteStatistics,
-    ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLinesGroupData, ISewingTaskLineTime,
+    ISewingTaskLine, ISewingTaskLineAmountAvg, ISewingTaskLinesGroupData, ISewingTaskLinesGroupNames, ISewingTaskLineTime,
     ISewingTaskModel, ISewingTaskOrder,
     ISewingTaskOrderLine, ISewingTaskStatus, ISewingTaskStatusKeys,
 } from '@/types'
@@ -330,6 +330,79 @@ export function sortSewingTaskLinesBySizeAndAmount(
         for (const diff of criteria) {
             if (diff !== 0) {
                 return direction === 'asc' ? diff : -diff
+            }
+        }
+
+        return 0
+    })
+
+    return sourceArray
+}
+
+
+// __ Сортируем массив строк для Пошива
+export function sortSewingTaskLinesForExecute(
+    item: ISewingTask | ISewingTaskLine[],
+    machineGroup: ISewingTaskLinesGroupNames,
+    // direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover' = 'base',
+): ISewingTaskLine[] {
+
+    const sourceArray = Array.isArray(item) ? [...item] : [...item.sewing_lines]
+
+    sourceArray.sort((a, b) => {
+        const tkchA = a.order_line.model.main.tkch || ''
+        const tkchB = b.order_line.model.main.tkch || ''
+
+        const modelA = a.order_line.model.main.name
+        const modelB = b.order_line.model.main.name
+
+        const textileA = a.order_line.textile || ''
+        const textileB = b.order_line.textile || ''
+
+        const dimsA = a.order_line.dims
+        const dimsB = b.order_line.dims
+
+        // __ Определяем высоту в зависимости от цели
+        const hA = (target === 'cover' && a.order_line.model.main.cover_height)
+            ? a.order_line.model.main.cover_height
+            : dimsA.height
+        const hB = (target === 'cover' && b.order_line.model.main.cover_height)
+            ? b.order_line.model.main.cover_height
+            : dimsB.height
+
+        // __ Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
+        let criteria: number[]
+
+        if (machineGroup === 'УШМ') {
+            criteria = [
+                tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+                modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+                -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+                -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+                -(hA - hB),                         // __ Сортируем по высоте по убыванию
+                -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+            ]
+        } else if (machineGroup === 'АШМ') {
+            criteria = [
+                modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+                textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+                tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+                -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+                -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+                -(hA - hB),                         // __ Сортируем по высоте по убыванию
+                -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+            ]
+        } else {
+            criteria = []
+        }
+
+
+        // Ищем первое различие
+        for (const diff of criteria) {
+            if (diff !== 0) {
+                return diff
+                // return direction === 'asc' ? diff : -diff
             }
         }
 
@@ -1413,7 +1486,7 @@ export function getExecuteTaskStatistics(item: ISewingTask | ISewingTaskLine[]) 
 
 
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
-export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskLinesGroupData[] {
+export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: string | null = null): ISewingTaskLinesGroupData[] {
 
     const result: ISewingTaskLinesGroupData[] = []
 
@@ -1432,10 +1505,11 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskL
             let hasDataSubgroup = false
 
             result[i].subgroups[j] = {
-                subgroupName: SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
-                subgroupType: SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
-                lines       : [],
-                hasData     : hasDataSubgroup
+                subgroupName      : SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
+                subgroupType      : SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
+                lines             : [],
+                hasData           : hasDataSubgroup,
+                subgroupOrderTitle: orderTitle,
             }
 
             for (let k = 0; k < lines.length; k++) {
@@ -1462,12 +1536,13 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskL
     // __ Сортируем массивы внутри групп
     result.forEach(group => {
         group.subgroups.forEach(subgroup => {
-            //         let a = 0
-            //         debugger
+            subgroup.lines = sortSewingTaskLinesForExecute(subgroup.lines, group.groupName, 'cover')
+
+            // const sortedLines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
+            // subgroup.lines    = sortedLines                 // __ по размерам по убыванию
+
             //         const sortedLines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
             //         subgroup.lines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
-            const sortedLines = sortSewingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
-            subgroup.lines    = sortedLines                 // __ по размерам по убыванию
             //         // subgroup.lines = sortSewingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
             //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
             //
@@ -1475,6 +1550,78 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[]): ISewingTaskL
     })
 
     return result
+}
+
+// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ для Объединенного СЗ
+export function groupTaskLinesForExecuteForUnion(taskLines: ISewingTaskLine[]): ISewingTaskLinesGroupData[] {
+
+    let workResult: ISewingTaskLinesGroupData[] = []
+
+    const linesGroupedBy_Map = Map.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+    // const linesGroupedBy_Object = Object.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+
+    // console.log('linesGroupedBy_Object: ', linesGroupedBy_Object)
+    // console.log('linesGroupedBy_Map: ', linesGroupedBy_Map)
+
+    workResult = Array.from(linesGroupedBy_Map.values()).flatMap(lines => groupTaskLinesForExecute(lines))
+    // for (const [_, lines] of linesGroupedBy_Map) {
+    //     workResult = [...workResult, ...groupTaskLinesForExecute(lines)]
+    // }
+
+    const resultGrouped_Object: Partial<Record<ISewingTaskLinesGroupNames, ISewingTaskLinesGroupData[]>> = Object.groupBy(workResult, item => item.groupName)//.values()
+    // const resultGrouped_Map = Map.groupBy(workResult, item => item.groupName)//.values()
+    // console.log('result_grouped: ', resultGrouped_Object)
+
+    const result: ISewingTaskLinesGroupData[] = []
+    for (const [groupName, groupsArr] of Object.entries(resultGrouped_Object)) {
+
+        const workGroup: ISewingTaskLinesGroupData = {
+            groupName: groupName as ISewingTaskLinesGroupNames,
+            groupType: 'dark',
+            subgroups: [],
+            hasData  : false
+        }
+
+        for (const groupItem of groupsArr) {
+            workGroup.groupType = groupItem.groupType
+            if (groupItem.hasData) {
+                workGroup.hasData = true
+                groupItem.subgroups.forEach(subgroup => {
+                    let orderTitle = ''
+                    for (let i = 0; i < subgroup.lines.length; i++) {
+                        if (subgroup.lines[i].groupAttr) {
+                            orderTitle = subgroup.lines[i].groupAttr || ''
+                            break
+                        }
+                    }
+
+                    workGroup.subgroups = [
+                        ...workGroup.subgroups,
+                        {
+                            ...subgroup,
+                            subgroupOrderTitle: orderTitle,
+                            lines: sortSewingTaskLinesForExecute(subgroup.lines, groupName as ISewingTaskLinesGroupNames, 'cover')
+                        }
+                    ]
+                })
+
+            }
+        }
+
+        result.push(workGroup)
+    }
+
+    // console.log('result: ', result)
+    return result
+}
+
+
+// __ Получаем заголовок СЗ
+export function getSewingTaskTitle(task: ISewingTask, includePosition: boolean = true) {
+    if (includePosition) {
+        return `${task.position}. ${task.order.client.short_name} №${task.order.order_no_num}`
+    }
+    return `${task.order.client.short_name} №${task.order.order_no_num}`
 }
 
 

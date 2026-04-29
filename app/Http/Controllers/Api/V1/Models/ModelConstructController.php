@@ -254,10 +254,8 @@ class ModelConstructController extends Controller
      * @param Request $request
      * @return JsonResponseAlias|string
      */
-    public
-    function modelsUpdate(
-        Request $request
-    ) {
+    public function modelsUpdate(Request $request)
+    {
         $messages = [
             'materials.required'   => 'Отсутствует файл с Материалами',
             'materials.file'       => 'Отсутствует файл с Материалами',
