@@ -1,7 +1,7 @@
 <template>
     <div class="print-container">
         <!-- Кнопка, которая не пойдет на печать -->
-        <button class="no-print print-btn" @click="handlePrint">Распечатать отчет</button>
+        <button class="no-print print-btn" @click="handlePrint">Распечатать сменное задание</button>
 
         <header class="report-header mb-2">
             <h1>Сменное задание участка <span class="font-semibold">Пошива</span> от <span
