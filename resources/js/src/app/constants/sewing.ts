@@ -188,7 +188,6 @@ export const SEWING_DAY_DRAFT: ISewingDay = {
 }
 
 
-
 // __ Настройка групп задач на Пошиве
 export const SEWING_TASK_GROUP_RULES: ISewingTaskLinesGroup[] = [
     {
@@ -209,23 +208,23 @@ export const SEWING_TASK_GROUP_RULES: ISewingTaskLinesGroup[] = [
         GROUP_TYPE : 'warning',
         GROUP_COLOR: '#FF9800',
         SUBGROUPS  : [
-            {
-                SUBGROUP_NAME : 'Глухие, автоматическое чехление',
-                SUBGROUP_TYPE : 'orange',
-                SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОБ 2',],
-            },
+            // {
+            //     SUBGROUP_NAME : 'Глухие, автоматическое чехление',
+            //     SUBGROUP_TYPE : 'orange',
+            //     SUBGROUP_COLOR: '#FF9800',
+            //     SUBGROUP_TCHK : ['ОБ 2',],
+            // },
             {
                 SUBGROUP_NAME : 'Глухие',
                 SUBGROUP_TYPE : 'orange',
                 SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОБ 1', 'ОБ 5', 'ОБ 6', 'ОБ 7',],
+                SUBGROUP_TCHK : ['ОБ 1', 'ОБ 2', 'ОБ 6', 'ОБ 7',],
             },
             {
                 SUBGROUP_NAME : 'Глухие сложные',
                 SUBGROUP_TYPE : 'orange',
                 SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОБ 3', 'ОБ 4',],
+                SUBGROUP_TCHK : ['ОБ 3', 'ОБ 4', 'ОБ 5',],
             },
             {
                 SUBGROUP_NAME : 'УШМ + окантователь',
