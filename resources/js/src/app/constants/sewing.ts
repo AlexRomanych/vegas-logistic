@@ -8,7 +8,7 @@ export const START_SHIFT_TIME = '07:30'
 
 
 import type {
-    ISewingDay, ISewingDayWorker,
+    ISewingDay,
     ISewingMachineKeys,
     ISewingOperation,
     ISewingTask, ISewingTaskLinesGroup,
