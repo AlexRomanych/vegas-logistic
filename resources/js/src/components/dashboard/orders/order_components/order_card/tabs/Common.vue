@@ -51,7 +51,7 @@
 
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed, ref, /*inject, watch*/ } from 'vue'
 import type { IRenderOrder, IColorTypes } from '@/types'
 
@@ -66,6 +66,7 @@ import {
 
 import AppModalAsyncDateTS from '@/components/ui/modals/AppModalAsyncDateTS.vue'
 import AppModalAsyncTextTS from '@/components/ui/modals/AppModalAsyncTextTS.vue'
+
 // import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
@@ -100,11 +101,11 @@ const appModalAsyncDateTS = ref<InstanceType<typeof AppModalAsyncDateTS> | null>
 // __ Тип для модального окна Выбора текста
 // const modalTextType       = ref<IColorTypes>('danger')
 const modalText           = ref<string | null>('')
-const modalTitle          = ref<string | undefined >('')
+const modalTitle          = ref<string | undefined>('')
 const appModalAsyncTextTS = ref<InstanceType<typeof AppModalAsyncTextTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 
-const title      = computed(() => `${props.order.client.short_name} №${props.order.order_no_str}`)
+const title = computed(() => `${props.order.client.short_name} №${props.order.order_no_str}`)
 
 const durationKS = computed(() => {
     if (!props.order.manager_start || !props.order.manager_end) {
@@ -203,119 +204,120 @@ const handleClick = async (item: IInfoItem) => {
 </script>
 
 <style scoped>
-    /* Плавное появление для контента */
-    .flex-auto {
-        animation: fadeIn 0.4s ease-out forwards;
-    }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+/* Шрифт Mono придает "компьютерный" вид */
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(5px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+/* Плавное появление для контента */
+.flex-auto {
+    animation: fadeIn 0.4s ease-out forwards;
+}
 
-
-    /* Эффект появления "стекла" */
-    .flex-auto {
-        animation: slideIn 0.5s ease-out forwards;
+@keyframes fadeIn {
+    from {
         opacity: 0;
+        transform: translateY(5px);
     }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    /* Каскадная задержка для элементов (опционально) */
-    .flex-auto:nth-child(1) {
-        animation-delay: 0.1s;
+
+/* Эффект появления "стекла" */
+.flex-auto {
+    animation: slideIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
     }
-
-    .flex-auto:nth-child(2) {
-        animation-delay: 0.2s;
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
+}
 
-    .flex-auto:nth-child(3) {
-        animation-delay: 0.3s;
-    }
+/* Каскадная задержка для элементов (опционально) */
+.flex-auto:nth-child(1) {
+    animation-delay: 0.1s;
+}
 
-    /* Шрифт Mono придает "компьютерный" вид */
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+.flex-auto:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
-    .font-mono {
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Анимация прокрутки */
-    /*    .marquee-content {
-            display: flex;
-            flex-direction: column;
-            animation: scroll v-bind(scrollDuration) linear infinite;
-        }
-
-        !* Остановка при наведении курсора *!
-        .pause-animation {
-            animation-play-state: paused;
-        }
-
-        @keyframes scroll {
-            from {
-                transform: translateY(0);
-            }
-            to {
-                transform: translateY(-50%); !* Смещаем ровно на половину высоты (на весь первый список) *!
-            }
-        }*/
+.flex-auto:nth-child(3) {
+    animation-delay: 0.3s;
+}
 
 
-    .marquee-content {
-        /* Анимация привязывается к общей высоте этого блока */
-        animation: scroll-vertical 30s linear infinite;
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Анимация прокрутки */
+/*    .marquee-content {
         display: flex;
         flex-direction: column;
+        animation: scroll v-bind(scrollDuration) linear infinite;
     }
 
-    .pause-animation:hover {
+    !* Остановка при наведении курсора *!
+    .pause-animation {
         animation-play-state: paused;
     }
 
-    @keyframes scroll-vertical {
-        0% {
+    @keyframes scroll {
+        from {
             transform: translateY(0);
         }
-        100% {
-            /* Сдвигаем ровно на высоту одного полного блока (т.е. на 50% от общей высоты двух списков) */
-            transform: translateY(-50%);
+        to {
+            transform: translateY(-50%); !* Смещаем ровно на половину высоты (на весь первый список) *!
         }
-    }
+    }*/
 
-    /* Стилизация скроллбара для соответствия дизайну */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
 
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(23, 37, 84, 0.5); /* Темно-синий фон трека */
-        border-radius: 10px;
-    }
+.marquee-content {
+    /* Анимация привязывается к общей высоте этого блока */
+    animation: scroll-vertical 30s linear infinite;
+    display: flex;
+    flex-direction: column;
+}
 
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #2563eb; /* Цвет blue-600 под границы */
-        border-radius: 10px;
-    }
+.pause-animation:hover {
+    animation-play-state: paused;
+}
 
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #60a5fa; /* Цвет blue-400 при наведении */
+@keyframes scroll-vertical {
+    0% {
+        transform: translateY(0);
     }
+    100% {
+        /* Сдвигаем ровно на высоту одного полного блока (т.е. на 50% от общей высоты двух списков) */
+        transform: translateY(-50%);
+    }
+}
+
+/* Стилизация скроллбара для соответствия дизайну */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(23, 37, 84, 0.5); /* Темно-синий фон трека */
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #2563eb; /* Цвет blue-600 под границы */
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #60a5fa; /* Цвет blue-400 при наведении */
+}
 </style>

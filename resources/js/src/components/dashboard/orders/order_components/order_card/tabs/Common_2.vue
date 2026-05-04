@@ -48,7 +48,7 @@
     </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { inject } from 'vue'
 import { useOrder, useId } from './../injectionKeys.ts'
 
@@ -88,57 +88,58 @@ const items: IInfoItem[] = [
 </script>
 
 <style scoped>
-    /* Плавное появление для контента */
-    .flex-auto {
-        animation: fadeIn 0.4s ease-out forwards;
-    }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+/* Шрифт Mono придает "компьютерный" вид */
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(5px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+/* Плавное появление для контента */
+.flex-auto {
+    animation: fadeIn 0.4s ease-out forwards;
+}
 
-
-    /* Эффект появления "стекла" */
-    .flex-auto {
-        animation: slideIn 0.5s ease-out forwards;
+@keyframes fadeIn {
+    from {
         opacity: 0;
+        transform: translateY(5px);
     }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    /* Каскадная задержка для элементов (опционально) */
-    .flex-auto:nth-child(1) {
-        animation-delay: 0.1s;
+
+/* Эффект появления "стекла" */
+.flex-auto {
+    animation: slideIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
     }
-
-    .flex-auto:nth-child(2) {
-        animation-delay: 0.2s;
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
+}
 
-    .flex-auto:nth-child(3) {
-        animation-delay: 0.3s;
-    }
+/* Каскадная задержка для элементов (опционально) */
+.flex-auto:nth-child(1) {
+    animation-delay: 0.1s;
+}
 
-    /* Шрифт Mono придает "компьютерный" вид */
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+.flex-auto:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
-    .font-mono {
-        font-family: 'JetBrains Mono', monospace;
-    }
+.flex-auto:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
 </style>

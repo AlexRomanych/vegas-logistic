@@ -47,7 +47,7 @@
     </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from 'vue'
 import { useOrder, useId } from './../injectionKeys.ts'
 import { formatDateAndTimeInShortFormat, formatDateIntl, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
@@ -101,72 +101,73 @@ const items: IInfoItem[] = [
     { label: 'Длительность КБ', value: durationKB.value },
     { label: 'Ответственный (1c)', value: order.value?.responsible ?? '' },
     { label: 'Комментарий (1c)', value: order.value?.comment_1c ?? '' },
-    { label: 'Готовность', value: order.value?.is_forecast ? 'прогнозная' : 'раскрытая'},
-    { label: 'Период Заявки', value: formatDateIntl(order.value?.order_period, true, false)},
-    { label: 'Загрузка на складе', value: formatDateIntl(order.value?.load_at, true)},
-    { label: 'Загрузка на складе (1с)', value: formatDateIntl(order.value?.manager_load_date, true)},
-    { label: 'Разгрузка у клиена', value: order.value?.unload_at ? formatDateIntl(order.value?.unload_at, true) : ''},
+    { label: 'Готовность', value: order.value?.is_forecast ? 'прогнозная' : 'раскрытая' },
+    { label: 'Период Заявки', value: formatDateIntl(order.value?.order_period, true, false) },
+    { label: 'Загрузка на складе', value: formatDateIntl(order.value?.load_at, true) },
+    { label: 'Загрузка на складе (1с)', value: formatDateIntl(order.value?.manager_load_date, true) },
+    { label: 'Разгрузка у клиена', value: order.value?.unload_at ? formatDateIntl(order.value?.unload_at, true) : '' },
 ]
 
 
 </script>
 
 <style scoped>
-    /* Плавное появление для контента */
-    .flex-auto {
-        animation: fadeIn 0.4s ease-out forwards;
-    }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+/* Шрифт Mono придает "компьютерный" вид */
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(5px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+/* Плавное появление для контента */
+.flex-auto {
+    animation: fadeIn 0.4s ease-out forwards;
+}
 
-
-    /* Эффект появления "стекла" */
-    .flex-auto {
-        animation: slideIn 0.5s ease-out forwards;
+@keyframes fadeIn {
+    from {
         opacity: 0;
+        transform: translateY(5px);
     }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    /* Каскадная задержка для элементов (опционально) */
-    .flex-auto:nth-child(1) {
-        animation-delay: 0.1s;
+
+/* Эффект появления "стекла" */
+.flex-auto {
+    animation: slideIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
     }
-
-    .flex-auto:nth-child(2) {
-        animation-delay: 0.2s;
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
+}
 
-    .flex-auto:nth-child(3) {
-        animation-delay: 0.3s;
-    }
+/* Каскадная задержка для элементов (опционально) */
+.flex-auto:nth-child(1) {
+    animation-delay: 0.1s;
+}
 
-    /* Шрифт Mono придает "компьютерный" вид */
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+.flex-auto:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
-    .font-mono {
-        font-family: 'JetBrains Mono', monospace;
-    }
+.flex-auto:nth-child(3) {
+    animation-delay: 0.3s;
+}
 
-    /* Анимация прокрутки */
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Анимация прокрутки */
 /*    .marquee-content {
         display: flex;
         flex-direction: column;
@@ -188,24 +189,24 @@ const items: IInfoItem[] = [
     }*/
 
 
-    .marquee-content {
-        /* Анимация привязывается к общей высоте этого блока */
-        animation: scroll-vertical 30s linear infinite;
-        display: flex;
-        flex-direction: column;
-    }
+.marquee-content {
+    /* Анимация привязывается к общей высоте этого блока */
+    animation: scroll-vertical 30s linear infinite;
+    display: flex;
+    flex-direction: column;
+}
 
-    .pause-animation:hover {
-        animation-play-state: paused;
-    }
+.pause-animation:hover {
+    animation-play-state: paused;
+}
 
-    @keyframes scroll-vertical {
-        0% {
-            transform: translateY(0);
-        }
-        100% {
-            /* Сдвигаем ровно на высоту одного полного блока (т.е. на 50% от общей высоты двух списков) */
-            transform: translateY(-50%);
-        }
+@keyframes scroll-vertical {
+    0% {
+        transform: translateY(0);
     }
+    100% {
+        /* Сдвигаем ровно на высоту одного полного блока (т.е. на 50% от общей высоты двух списков) */
+        transform: translateY(-50%);
+    }
+}
 </style>

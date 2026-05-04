@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 
-import { onMounted, ref, shallowRef, computed /* provide, watch */ } from 'vue'
+import { onMounted, ref, shallowRef, computed, defineAsyncComponent /* provide, watch */ } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 import type { IColorTypes, IRenderOrder } from '@/types'
@@ -56,7 +56,7 @@ import { useOrdersStore } from '@/stores/OrdersStore'
 
 import { formatDateTime } from '@/app/helpers/helpers_date'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
-import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
+// import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
 // import { OrderKey, IdKey } from './order_components/order_card/injectionKeys'
 
 // __ Loader
@@ -87,7 +87,8 @@ const ordersStore = useOrdersStore()
 
 
 // __ Тут путь к папке с динамическими компонентами
-const PATH_TO_COMPONENTS = '/resources/js/src/components/dashboard/orders/order_components/order_card/tabs'
+// const PATH_TO_COMPONENTS = '/resources/js/src/components/dashboard/orders/order_components/order_card/tabs'
+const COMPONENTS = import.meta.glob('/resources/js/src/components/dashboard/orders/order_components/order_card/tabs/*.vue')
 // const PATH_TO_COMPONENTS = 'components/dashboard/orders/order_components/order_card/tabs'
 
 // __ Подготавливаем переменные
@@ -103,7 +104,7 @@ const TAB_NAME_SEWING  = 'Пошив'
 
 const TAB_WIDTH             = 'w-[150px]'
 const DEFAULT_ACTIVE_COLOR  = '#1A2F6F'
-const DEFAULT_PASSIVE_COLOR = '#111C3A'
+// const DEFAULT_PASSIVE_COLOR = '#111C3A'
 
 const tabs: ITab[] = [
     {
@@ -179,7 +180,26 @@ const setActiveTab = (tab: ITab) => {
         activeComponent.value = componentCache[tab.name]
         console.log(`Использован кэшированный компонент: ${tab.name}`)
     } else {
-        activeComponent.value    = loadAsyncComponent(tab.component, PATH_TO_COMPONENTS)
+        // Формируем ключ, который соответствует пути к файлу
+        const filePath = `/resources/js/src/components/dashboard/orders/order_components/order_card/tabs/${tab.component}.vue`;
+        activeComponent.value = defineAsyncComponent({
+            // Просто передаем функцию из мапы
+            loader: COMPONENTS[filePath] as () => Promise<any>
+        })
+
+        // activeComponent.value    = defineAsyncComponent({
+        //
+        //     loader: () => import(COMPONENTS[filePath] as any),
+        //     // loader: () => import(`${path}/${componentName}.vue`),
+        //     // loader: () => import(`${path}/${componentName}.vue`),
+        //     // loader: () => import(PATH_TO_MAIN + workPath + workName),
+        //     // Можно добавить loadingComponent, errorComponent, timeout и т.д.
+        //     // loadingComponent: /* компонент-заглушка */,
+        //     // errorComponent: /* компонент ошибки */,
+        //     // delay: 200, // Задержка перед показом loadingComponent
+        //     // timeout: 3000, // Таймаут загрузки
+        // })
+        // activeComponent.value    = loadAsyncComponent(tab.component, PATH_TO_COMPONENTS)
         componentCache[tab.name] = activeComponent.value
         console.log(`Активирована вкладка: ${tab.name}, загрузка компонента: ${tab.component}`)
     }

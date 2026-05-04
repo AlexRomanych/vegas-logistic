@@ -20,6 +20,7 @@ export const loadAsyncComponent = (componentName: string, path: string = '') => 
         // defineAsyncComponent - это обертка для динамического импорта
         return defineAsyncComponent({
             loader: () => import(`${path}/${componentName}.vue`),
+            // loader: () => import(`${path}/${componentName}.vue`),
             // loader: () => import(PATH_TO_MAIN + workPath + workName),
             // Можно добавить loadingComponent, errorComponent, timeout и т.д.
             // loadingComponent: /* компонент-заглушка */,
