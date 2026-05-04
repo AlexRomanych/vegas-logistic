@@ -92,121 +92,123 @@
                 :key="group.code_1c"
                 class="max-w-fit"
             >
-                <div class="flex">
-                    <!-- __ Collapsed -->
-                    <AppLabelTSWrapper
-                        :arg="group"
-                        :render-object="render.collapsed"
-                        @click="render.collapsed.click!(group)"
-                    />
+                <template v-if="group.is_shown">
+                    <div class="flex">
+                        <!-- __ Collapsed -->
+                        <AppLabelTSWrapper
+                            :arg="group"
+                            :render-object="render.collapsed"
+                            @click="render.collapsed.click!(group)"
+                        />
 
-                    <!-- __ Код из 1С -->
-                    <AppLabelTSWrapper
-                        :arg="group"
-                        :render-object="render.code_1c"
-                        @click="render.collapsed.click!(group)"
-                    />
+                        <!-- __ Код из 1С -->
+                        <AppLabelTSWrapper
+                            :arg="group"
+                            :render-object="render.code_1c"
+                            @click="render.collapsed.click!(group)"
+                        />
 
-                    <!-- __ Название -->
-                    <AppLabelTSWrapper
-                        :arg="group"
-                        :render-object="render.group_name"
-                        @click="render.collapsed.click!(group)"
-                    />
-                </div>
+                        <!-- __ Название -->
+                        <AppLabelTSWrapper
+                            :arg="group"
+                            :render-object="render.group_name"
+                            @click="render.collapsed.click!(group)"
+                        />
+                    </div>
 
-                <!-- __ Данные (Категории) -->
-                <div
-                    v-for="category of group.categories"
-                    :key="category.code_1c"
-                    class="ml-[34px] max-w-fit"
-                >
-                    <template v-if="!group.collapsed">
-                        <div class="flex">
-                            <!-- __ Collapsed -->
-                            <AppLabelTSWrapper
-                                :arg="category"
-                                :render-object="render.collapsed"
-                                @click="render.collapsed.click!(category)"
-                            />
+                    <!-- __ Данные (Категории) -->
+                    <div
+                        v-for="category of group.categories"
+                        :key="category.code_1c"
+                        class="ml-[34px] max-w-fit"
+                    >
+                        <template v-if="!group.collapsed && category.is_shown">
+                            <div class="flex">
+                                <!-- __ Collapsed -->
+                                <AppLabelTSWrapper
+                                    :arg="category"
+                                    :render-object="render.collapsed"
+                                    @click="render.collapsed.click!(category)"
+                                />
 
-                            <!-- __ Код из 1С -->
-                            <AppLabelTSWrapper
-                                :arg="category"
-                                :render-object="render.code_1c"
-                                @click="render.collapsed.click!(category)"
-                            />
+                                <!-- __ Код из 1С -->
+                                <AppLabelTSWrapper
+                                    :arg="category"
+                                    :render-object="render.code_1c"
+                                    @click="render.collapsed.click!(category)"
+                                />
 
-                            <!-- __ Название -->
-                            <AppLabelTSWrapper
-                                :arg="category"
-                                :render-object="render.category_name"
-                                @click="render.collapsed.click!(category)"
-                            />
-                        </div>
+                                <!-- __ Название -->
+                                <AppLabelTSWrapper
+                                    :arg="category"
+                                    :render-object="render.category_name"
+                                    @click="render.collapsed.click!(category)"
+                                />
+                            </div>
 
-                        <!-- __ Данные (Материалы) -->
-                        <div
-                            v-for="material of category.materials"
-                            :key="material.code_1c"
-                            class="ml-[50px] max-w-fit"
-                        >
-                            <template v-if="!category.collapsed">
-                                <div class="flex">
-                                    <!-- __ Код из 1С -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.code_1c"
-                                    />
+                            <!-- __ Данные (Материалы) -->
+                            <div
+                                v-for="material of category.materials"
+                                :key="material.code_1c"
+                                class="ml-[50px] max-w-fit"
+                            >
+                                <template v-if="!category.collapsed">
+                                    <div class="flex">
+                                        <!-- __ Код из 1С -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.code_1c"
+                                        />
 
-                                    <!-- __ Название -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.material_name"
-                                    />
+                                        <!-- __ Название -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.material_name"
+                                        />
 
-                                    <!-- __ Единица измерения -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.unit"
-                                    />
+                                        <!-- __ Единица измерения -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.unit"
+                                        />
 
-                                    <!-- __ Альтернативная Единица измерения -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.alt_unit"
-                                    />
+                                        <!-- __ Альтернативная Единица измерения -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.alt_unit"
+                                        />
 
-                                    <!-- __ Вид объекта -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.object_name"
-                                    />
+                                        <!-- __ Вид объекта -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.object_name"
+                                        />
 
-                                    <!-- __ Наличие характеристик -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :class="material.properties ? 'cursor-pointer' : ''"
-                                        :render-object="render.has_properties"
-                                        @dblclick="showProperties(material)"
-                                    />
+                                        <!-- __ Наличие характеристик -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :class="material.properties ? 'cursor-pointer' : ''"
+                                            :render-object="render.has_properties"
+                                            @dblclick="showProperties(material)"
+                                        />
 
-                                    <!-- __ Описание -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.description"
-                                    />
+                                        <!-- __ Описание -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.description"
+                                        />
 
-                                    <!-- __ Допущенные поставщики -->
-                                    <AppLabelTSWrapper
-                                        :arg="material"
-                                        :render-object="render.supplier"
-                                    />
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+                                        <!-- __ Допущенные поставщики -->
+                                        <AppLabelTSWrapper
+                                            :arg="material"
+                                            :render-object="render.supplier"
+                                        />
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -472,6 +474,8 @@ const showProperties = async (material: IMaterial) => {
 }
 
 watchEffect(() => {
+    console.log(123)
+
     const objectNameSearch  = objectNameFilter.value.toLowerCase()
     const nameSearch        = nameFilter.value.toLowerCase()
     const code_1cSearch     = code_1cFilter.value.toLowerCase()
@@ -482,22 +486,43 @@ watchEffect(() => {
 
     entitiesRender.value = entities.map(group => {
         // Создаем новый объект группы, чтобы не менять оригинал
+        let groupShown = false
+
         return {
             ...group,
             categories: group.categories.map(category => {
+
                 // Создаем новый объект категории с отфильтрованными материалами
+                const materials = category.materials
+                    .filter(material => material.name.toLowerCase().includes(nameSearch))
+                    .filter(material => material.code_1c.toLowerCase().includes(code_1cSearch))
+                    .filter(material => material.unit!.toLowerCase().includes(unitSearch))
+                    .filter(material => material.alt_unit!.toLowerCase().includes(altUnitSearch))
+                    // .filter(material => material.supplier!.toLowerCase().includes(supplierSearch))
+                    .filter(material => material.object_name!.toLowerCase().includes(objectNameSearch))
+                    .filter(material => material.description!.toLowerCase().includes(descriptionSearch))
+
+                groupShown ||= (materials.length > 0 || category.code_1c.toLowerCase().includes(code_1cSearch))
+                // groupShown ||= materials.length > 0
+
+
                 return {
                     ...category,
-                    materials: category.materials
-                        .filter(material => material.name.toLowerCase().includes(nameSearch))
-                        .filter(material => material.code_1c.toLowerCase().includes(code_1cSearch))
-                        .filter(material => material.unit!.toLowerCase().includes(unitSearch))
-                        .filter(material => material.alt_unit!.toLowerCase().includes(altUnitSearch))
-                        // .filter(material => material.supplier!.toLowerCase().includes(supplierSearch))
-                        .filter(material => material.object_name!.toLowerCase().includes(objectNameSearch))
-                        .filter(material => material.description!.toLowerCase().includes(descriptionSearch)),
+                    materials,
+                    // materials: category.materials
+                    //     .filter(material => material.name.toLowerCase().includes(nameSearch))
+                    //     .filter(material => material.code_1c.toLowerCase().includes(code_1cSearch))
+                    //     .filter(material => material.unit!.toLowerCase().includes(unitSearch))
+                    //     .filter(material => material.alt_unit!.toLowerCase().includes(altUnitSearch))
+                    //     // .filter(material => material.supplier!.toLowerCase().includes(supplierSearch))
+                    //     .filter(material => material.object_name!.toLowerCase().includes(objectNameSearch))
+                    //     .filter(material => material.description!.toLowerCase().includes(descriptionSearch)),
+                    is_shown: materials.length > 0 || category.code_1c.toLowerCase().includes(code_1cSearch),
+                    collapsed: false,
                 }
             }),
+            is_shown: groupShown || group.code_1c.toLowerCase().includes(code_1cSearch),
+            collapsed: false,
         }
     })
 })
@@ -515,9 +540,11 @@ const getEntities = async () => {
                     alt_unit   : material.alt_unit ?? '',
                     description: material.description ?? '',
                     object_name: material.object_name ?? '',
+                    is_shown   : true,
                 }))
                 .sort((mat_1, mat_2) => mat_1.name.localeCompare(mat_2.name))
         })
+        group.is_shown = true
     })
 }
 

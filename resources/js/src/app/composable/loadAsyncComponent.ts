@@ -2,7 +2,7 @@ import { defineAsyncComponent } from 'vue'
 import { catchErrorHandler } from '@/app/composable/catchErrorHandler.ts'
 
 // warning: Это путь от этого хелпера к корневой директории
-const PATH_TO_MAIN = './../../'
+// const PATH_TO_MAIN = './../../'
 
 /**
  * ___ Функция для динамического импорта компонента по его имени.
@@ -10,8 +10,8 @@ const PATH_TO_MAIN = './../../'
  */
 export const loadAsyncComponent = (componentName: string, path: string = '') => {
 
-    const workPath = path && path.endsWith('/') ? path : path + '/'
-    const workName = componentName.endsWith('.vue') ? componentName : componentName + '.vue'
+    // const workPath = path && path.endsWith('/') ? path : path + '/'
+    // const workName = componentName.endsWith('.vue') ? componentName : componentName + '.vue'
 
     // __ Важно: Путь к компонентам должен быть известен или динамически построен
     // __ Здесь предполагается, что все компоненты находятся в папке 'components'
@@ -19,7 +19,8 @@ export const loadAsyncComponent = (componentName: string, path: string = '') => 
     try {
         // defineAsyncComponent - это обертка для динамического импорта
         return defineAsyncComponent({
-            loader: () => import(PATH_TO_MAIN + workPath + workName),
+            loader: () => import(`${path}/${componentName}.vue`),
+            // loader: () => import(PATH_TO_MAIN + workPath + workName),
             // Можно добавить loadingComponent, errorComponent, timeout и т.д.
             // loadingComponent: /* компонент-заглушка */,
             // errorComponent: /* компонент ошибки */,

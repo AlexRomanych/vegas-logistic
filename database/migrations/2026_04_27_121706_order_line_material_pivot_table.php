@@ -34,7 +34,10 @@ return new class extends Migration {
             $table->double('amount_per_pic')->nullable()->comment('Количество на единицу');
             $table->string('unit')->nullable()->comment('Единица измерения');
 
+            $table->boolean('has_procedure')->nullable()->comment('Расчет по процедуре или нет');
             $table->jsonb('vars')->nullable()->comment('Переменные, которые получили в процедуре расчета');
+            $table->jsonb('outputs')->nullable()->comment('Выходные свойства материала');
+
 
             $table->timestamps();
         });

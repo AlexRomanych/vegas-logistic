@@ -87,7 +87,8 @@ const ordersStore = useOrdersStore()
 
 
 // __ Тут путь к папке с динамическими компонентами
-const PATH_TO_COMPONENTS = 'components/dashboard/orders/order_components/order_card/tabs'
+const PATH_TO_COMPONENTS = '/resources/js/src/components/dashboard/orders/order_components/order_card/tabs'
+// const PATH_TO_COMPONENTS = 'components/dashboard/orders/order_components/order_card/tabs'
 
 // __ Подготавливаем переменные
 const order     = ref<IRenderOrder | null>(null)
