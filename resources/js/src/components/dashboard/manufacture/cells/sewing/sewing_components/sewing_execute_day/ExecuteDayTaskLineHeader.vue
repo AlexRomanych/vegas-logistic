@@ -209,7 +209,7 @@ interface IProps {
 defineProps<IProps>()
 
 const LINE_HEIGHT    = 'h-[25px]'
-const LINE_TEXT_SIZE = 'micro'
+const LINE_TEXT_SIZE = 'mini'
 const DEFAULT_TYPE   = 'primary'
 const DEFAULT_ALIGN  = 'center'
 

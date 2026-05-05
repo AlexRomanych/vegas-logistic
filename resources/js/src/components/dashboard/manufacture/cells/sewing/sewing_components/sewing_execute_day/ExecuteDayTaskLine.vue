@@ -232,7 +232,7 @@ const props = defineProps<IProps>()
 
 const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
-const LINE_TEXT_SIZE = 'micro'
+const LINE_TEXT_SIZE = 'mini'
 
 
 // __ Получаем символ завершенности
