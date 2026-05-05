@@ -270,7 +270,7 @@ export const useSewingStore = defineStore('sewing', () => {
 
 
     // __ Сохранение изменений (Синхронизация с сервером)
-    const saveChanges = async (globalArray = globalSewingTasks.value, globalArrayCopy = globalSewingTasksCopy) => {
+    const saveChanges = async (globalArray = globalSewingTasks.value, globalArrayCopy = globalSewingTasksCopy, period: IPeriod | null = null) => {
         const diffsInGlobalSewingTasks = getSewingTasksDiff(globalArray, globalArrayCopy)
 
         // __ Если нет изменений, то выход
@@ -290,7 +290,7 @@ export const useSewingStore = defineStore('sewing', () => {
         if (isAddItemsInDiffsPresents(diffsInGlobalSewingTasks)) {
 
             // __ Получаем СЗ с сервера и реактивное обновление
-            await getSewingTasks()
+            await getSewingTasks(period)
             console.log('Server data updated')
         } else {
 
@@ -460,7 +460,7 @@ export const useSewingStore = defineStore('sewing', () => {
     // --- ----------------------------------------------------------
 
     // __ Разделение линий СЗ при выполнении СЗ
-    const divideLineInSewingTaskPending = async (sewingTask: ISewingTask) => {
+    const divideLineInSewingTaskPending = async (sewingTask: ISewingTask, period: IPeriod | null = null) => {
 
         const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === sewingTask.id)
         if (!findTask) {
@@ -469,7 +469,8 @@ export const useSewingStore = defineStore('sewing', () => {
         console.log('findTask: ', findTask)
 
         repositionSewingTaskLines(findTask)
-        return saveChanges()
+        // const result = await saveChanges()
+        return await saveChanges(globalSewingTasks.value, globalSewingTasksCopy, period)
         // return saveChanges(globalSewingTasksPending.value, globalSewingTasksPendingCopy)
     }
 

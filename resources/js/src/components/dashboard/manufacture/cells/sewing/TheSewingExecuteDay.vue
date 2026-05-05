@@ -151,7 +151,7 @@
 <script lang="ts" setup>
 import type { IColorTypes, ISewingDay, ISewingDayWorker, ISewingTask, ISewingTaskLine } from '@/types'
 
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 
@@ -541,7 +541,7 @@ const setFinishStatus = async (sewingLinesIds: number[]) => {
     }
 }
 
-// __ Устанавливаем статус Выполнено SewingLines
+// __ Устанавливаем статус Не Выполнено SewingLines
 const setFalseStatus = async (sewingLinesIds: number[], falseReason: string) => {
     const result = (await sewingStore.setSewingTaskLinesFalse(sewingLinesIds, falseReason)) as ISewingTaskLine[]
 
@@ -595,7 +595,18 @@ const divideLine = async (taskId: number, sewingLineId: number, range: { take: n
     findTask.sewing_lines.splice(dividerElementIndex + 1, 0, newSewingLine)
     findTask.sewing_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
 
-    const result = await sewingStore.divideLineInSewingTaskPending(findTask)
+    const result = await sewingStore.divideLineInSewingTaskPending(findTask, { start: executeDate, end: executeDate })
+
+    // await sewingStore.getSewingTasks({ start: executeDate, end: executeDate })
+    // await nextTick() // __ Ждем, пока все отрендерится
+    // prepareData()
+    // setTabs()
+    // await nextTick() // __ Ждем, пока все отрендерится
+
+    // console.log('result: ', result)
+    // console.log('tabs: ', tabs.value)
+    // console.log('activeTabPosition: ', activeTabPosition)
+
     if (!checkCRUD(result)) {
         await showError()
     } else {
@@ -612,11 +623,19 @@ const prepareData = () => {
         .filter(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID || task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
         .sort((a, b) => a.position - b.position)
 
+    // console.log('prepareData: ', sewingDay.value)
+
     // __ Формируем объединение всех SewingTaskLines и добавляем признак группировки для "Объединения СЗ"
     allSewingTasksLinesUnion.value.sewing_lines = []
-    sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLinesUnion.value.sewing_lines.push({ ...line, groupAttr: getSewingTaskTitle(task) })))
 
-    allSewingTasksLinesUnion.value.position = UNION_TASKS_POSITION // __ Позиция объединения всех строк
+    // !!! Тут важно, в allSewingTasksLinesUnion.value кладем ссылку на объект, а не его копию, чтобы сокранять реактивность при Выполнено/Не выполнено/Сброс и тд
+    sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => {
+        line.groupAttr = getSewingTaskTitle(task)
+        allSewingTasksLinesUnion.value.sewing_lines.push(line)
+    }))
+    // sewingDay.value!.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLinesUnion.value.sewing_lines.push({ ...line, groupAttr: getSewingTaskTitle(task) })))
+
+    allSewingTasksLinesUnion.value.position  = UNION_TASKS_POSITION // __ Позиция объединения всех строк
     allSewingTasksLinesUnion.value.action_at = sewingDay.value.action_at
 }
 
@@ -631,6 +650,7 @@ const startTimer = () => {
 watch(
     () => globalSewingTasks.value,
     () => {
+        // console.log('globalSewingTasks updated')
         prepareData()
         setTabs()
     },

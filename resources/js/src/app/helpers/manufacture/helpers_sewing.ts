@@ -371,31 +371,45 @@ export function sortSewingTaskLinesForExecute(
             ? b.order_line.model.main.cover_height
             : dimsB.height
 
-        // __ Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
-        let criteria: number[]
 
-        if (machineGroup === 'УШМ') {
-            criteria = [
-                tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
-                modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
-                -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
-                -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
-                -(hA - hB),                         // __ Сортируем по высоте по убыванию
-                -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
-            ]
-        } else if (machineGroup === 'АШМ') {
-            criteria = [
-                modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
-                textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
-                tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
-                -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
-                -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
-                -(hA - hB),                         // __ Сортируем по высоте по убыванию
-                -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
-            ]
-        } else {
-            criteria = []
-        }
+
+        // !!! Пока с 05.05.2026 неважно какая ШМ, все сортируем одинаково
+        // __ Создаем массив приоритетов сравнения:
+        const criteria = [
+            tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+            textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+            -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+            -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+            -(hA - hB),                         // __ Сортируем по высоте по убыванию
+            modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+            -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        ]
+
+
+        // let criteria: number[]
+
+        // if (machineGroup === 'УШМ') {
+        //     criteria = [
+        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
+        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        //     ]
+        // } else if (machineGroup === 'АШМ') {
+        //     criteria = [
+        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+        //         textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
+        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        //     ]
+        // } else {
+        //     criteria = []
+        // }
 
 
         // Ищем первое различие

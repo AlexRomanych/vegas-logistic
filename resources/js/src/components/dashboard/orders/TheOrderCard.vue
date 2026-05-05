@@ -10,7 +10,7 @@
                 align="center"
                 @click="setActiveTab(tab)"
                 rounded="4"
-                class="shadow"
+                class="shadow cursor-pointer"
             />
         </div>
 

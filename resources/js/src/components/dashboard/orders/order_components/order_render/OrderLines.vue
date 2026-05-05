@@ -109,6 +109,7 @@
             <AppLabelTSWrapper
                 :arg="orderLine"
                 :render-object="render.deleteButton"
+                class="cursor-pointer"
                 @click="emits('deleteLine', orderLine.id)"
             />
 
