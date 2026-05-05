@@ -334,7 +334,7 @@ const deviationText = computed(() => {
 // __ Организация Tabs
 const infoTabPosition      = -2
 const personalTabPosition  = -1
-const UNION_TASKS_POSITION = 1000
+const UNION_TASKS_POSITION = 0
 
 const activeTabPosition = ref(infoTabPosition)
 

@@ -1,6 +1,6 @@
 <template>
     <div
-        class="container bg-slate-100 p-1 text-slate-600 relative overflow-hidden flex flex-col font-sans"
+        class="wrapper bg-slate-100 p-1 text-slate-600 relative overflow-hidden flex flex-col font-sans"
         @contextmenu.prevent="openContextMenu"
     >
         <div class="flex justify-between items-center mb-2">
@@ -455,20 +455,20 @@ const fieldWidths: Record<string, string> = {
     space      : 'min-w-[10px] max-w-[10px]',
     position   : 'min-w-[30px] max-w-[30px]',
     size       : 'min-w-[80px] max-w-[80px]',
-    coverName  : 'min-w-[250px] max-w-[250px]',
-    amount     : 'min-w-[30px] max-w-[30px]',
+    coverName  : 'min-w-[300px] max-w-[300px]',
+    amount     : 'min-w-[40px] max-w-[40px]',
     time       : 'min-w-[70px] max-w-[70px]',
     machine    : 'min-w-[30px] max-w-[30px]',
     textile    : 'min-w-[100px] max-w-[100px]',
     tkch       : 'min-w-[70px] max-w-[70px]',
-    kant       : 'min-w-[70px] max-w-[70px]',
+    kant       : 'min-w-[90px] max-w-[90px]',
     kdch       : 'min-w-[50px] max-w-[50px]',
     composition: 'min-w-[70px] max-w-[70px]',
     describe_1 : 'min-w-[70px] max-w-[70px]',
     describe_2 : 'min-w-[70px] max-w-[70px]',
     describe_3 : 'min-w-[70px] max-w-[70px]',
     timeLabel  : 'min-w-[100px] max-w-[100px]',
-    reason     : 'min-w-[250px] max-w-[250px]',
+    reason     : 'min-w-[300px] max-w-[300px]',
 }
 
 // --- Состояние выделения ---
@@ -942,20 +942,18 @@ onUnmounted(() => {
     animation: select-blink-light 0.3s ease-out forwards;
 }
 
-.container {
-    /*
-overflow: auto; !* Включаем скролл для всего контейнера *!
-position: relative;
-*/
-
-    /* Высота: из всей высоты экрана вычитаем сумму хедера и футера */
+.wrapper {
+    /* Оставляем расчет высоты, он важен для overflow-y-auto внутри */
     height: calc(100vh - var(--header-height) - var(--footer-height) - 140px);
-    /* Ширина: из всей ширины вычитаем ширину сайдбара */
-    /*
-width: calc(100vw - var(--sidebar-width) - 15px);
 
-@apply border-2 border-gray-300 rounded-md p-1;
-*/
+    /* Убираем фиксированный width и ставим это: */
+    width: 100%;
+    /*width: calc(100vw - var(--sidebar-width) - 15px);*/
+    min-width: 0; /* Важно для flex-контейнеров, чтобы не распирало контентом */
+
+/*    display: flex;
+    flex-direction: column;*/
+
 }
 
 @keyframes select-blink {
