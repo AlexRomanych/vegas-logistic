@@ -459,7 +459,7 @@ const fieldWidths: Record<string, string> = {
     amount     : 'min-w-[30px] max-w-[30px]',
     time       : 'min-w-[70px] max-w-[70px]',
     machine    : 'min-w-[30px] max-w-[30px]',
-    textile    : 'min-w-[70px] max-w-[70px]',
+    textile    : 'min-w-[100px] max-w-[100px]',
     tkch       : 'min-w-[70px] max-w-[70px]',
     kant       : 'min-w-[70px] max-w-[70px]',
     kdch       : 'min-w-[50px] max-w-[50px]',
@@ -467,7 +467,7 @@ const fieldWidths: Record<string, string> = {
     describe_1 : 'min-w-[70px] max-w-[70px]',
     describe_2 : 'min-w-[70px] max-w-[70px]',
     describe_3 : 'min-w-[70px] max-w-[70px]',
-    timeLabel  : 'min-w-[80px] max-w-[80px]',
+    timeLabel  : 'min-w-[100px] max-w-[100px]',
     reason     : 'min-w-[250px] max-w-[250px]',
 }
 
