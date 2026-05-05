@@ -14,19 +14,17 @@
 
 </template>
 
-<script setup>
+<script lang="ts" setup>
 
 const props = defineProps({
     groupMenuItem: {
-        type: Object,
+        type    : Object,
         required: true,
     },
 })
 
-// console.log(props.groupMenuItem)
 
 const link = props.groupMenuItem.path ? props.groupMenuItem.path : 'error.404'
-// console.log(link)
 
 </script>
 
@@ -45,21 +43,23 @@ const link = props.groupMenuItem.path ? props.groupMenuItem.path : 'error.404'
 
 .menu-item-card-hover {
     @apply
-/*    hover:w-[305px]
-    hover:h-[105px]*/
+        /*    hover:w-[305px]
+            hover:h-[105px]*/
     hover:cursor-pointer
     hover:bg-green-200
     hover:text-slate-800
-    hover:shadow-2xl
     hover:shadow-red-500
+    hover:shadow-2xl
 }
 
 .menu-item-card-text-active {
-    @apply text-slate-500
+    @apply
+    text-slate-500
 }
 
 .menu-item-card-text {
-    @apply text-slate-400
+    @apply
+    text-slate-400
     pointer-events-none
 }
 

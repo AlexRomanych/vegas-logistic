@@ -2,19 +2,18 @@
     <span class="nav-item-name">{{ groupName }}</span>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 
-const props = defineProps({
-    groupName: {
-        type: String,
-        required: true
-    }
-})
+interface IProps {
+    groupName: string
+}
+
+defineProps<IProps>()
 
 </script>
 
 <style scoped>
-  .nav-item-name {
-      @apply text-lg font-semibold;
-  }
+.nav-item-name {
+    @apply text-lg font-semibold;
+}
 </style>

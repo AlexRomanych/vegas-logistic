@@ -1,32 +1,40 @@
 <template>
-    <nav class="sidebar">
+    <nav class="sidebar"
+         @mouseenter="expandSidebar = true"
+         @mouseleave="expandSidebar = false"
+    >
         <aside class="sidebar-menu">
-            <NavItems :menu="menu" />
+            <NavItems :menu="menu"/>
         </aside>
     </nav>
 </template>
 
-<script>
-import { useMenuStore } from '@/stores/MenuStore.js'
+<script lang="ts" setup>
+import { watch, ref} from 'vue'
+import { useMenuStore } from '@/stores/MenuStore.ts'
+import { storeToRefs } from 'pinia'
+
 import NavItems from '@/components/dashboard/nav/NavItems.vue'
 
-export default {
-    components: { NavItems },
-    setup() {
-        const menuStore = useMenuStore()
-        const menu = menuStore.menu
 
-        // console.log(menu)
+const menuStore = useMenuStore()
+const menu      = menuStore.menu
 
-        return {
-            menu,
-        }
-    },
-}
+const { expandSidebar, sidebarWidthExpanded, sidebarWidthCollapsed } = storeToRefs(menuStore)
+
+const sidebarWidth_ = ref('50px')
+
+watch(() => expandSidebar.value, () => {
+    sidebarWidth_.value = expandSidebar.value ? sidebarWidthExpanded.value : sidebarWidthCollapsed.value
+    document.documentElement.style.setProperty('--sidebar-width', sidebarWidth_)
+}, {deep: true})
+
 </script>
 
 <style scoped>
 .sidebar {
+   /* @apply transition-all duration-500;*/
+    --sidebar-width: v-bind(sidebarWidth_);
     border-right: 2px solid var(--main-border-color);
     flex: 0 0 var(--sidebar-width); /* фиксированная ширина */
     background-color: var(--main-bg-color);
@@ -37,6 +45,7 @@ export default {
     height: calc(100vh - var(--footer-height) - var(--header-height));
     margin: var(--header-height) 0 var(--footer-height) 0;
     z-index: 100;
+    /*transition: width 0.3s ease; !* Добавь плавности для красоты *!*/
 }
 
 .sidebar-menu {

@@ -1,57 +1,48 @@
 <template>
-    <component :is="componentInstance" class="nav-item-icon"/>
+    <component
+        :is="componentInstance"
+        class="nav-item-icon"
+    />
 </template>
 
+<script lang="ts" setup>
+import { computed } from 'vue'
 
-<script>
 // Todo Переделать на динамический импорт
-import {UserGroupIcon} from '@heroicons/vue/24/solid'
-import {BookOpenIcon} from '@heroicons/vue/24/solid'
-import {HomeModernIcon} from '@heroicons/vue/24/solid'
-import {ShoppingCartIcon} from '@heroicons/vue/24/solid'
-import {BuildingStorefrontIcon} from '@heroicons/vue/24/solid'
-import {UsersIcon} from '@heroicons/vue/24/solid'
-import {ClipboardDocumentIcon} from '@heroicons/vue/24/solid'
-import {Cog8ToothIcon} from '@heroicons/vue/24/solid'
-import {WrenchScrewdriverIcon} from '@heroicons/vue/24/solid'
-import {UserPlusIcon} from '@heroicons/vue/24/solid'
-import {PuzzlePieceIcon} from '@heroicons/vue/24/solid'
+import { UserGroupIcon } from '@heroicons/vue/24/solid'
+import { BookOpenIcon } from '@heroicons/vue/24/solid'
+import { HomeModernIcon } from '@heroicons/vue/24/solid'
+import { ShoppingCartIcon } from '@heroicons/vue/24/solid'
+import { BuildingStorefrontIcon } from '@heroicons/vue/24/solid'
+import { UsersIcon } from '@heroicons/vue/24/solid'
+import { ClipboardDocumentIcon } from '@heroicons/vue/24/solid'
+import { Cog8ToothIcon } from '@heroicons/vue/24/solid'
+import { WrenchScrewdriverIcon } from '@heroicons/vue/24/solid'
+import { UserPlusIcon } from '@heroicons/vue/24/solid'
+import { PuzzlePieceIcon } from '@heroicons/vue/24/solid'
 
-export default {
-    components: {
-        BookOpenIcon,
-        UserGroupIcon,
-        HomeModernIcon,
-        ShoppingCartIcon,
-        BuildingStorefrontIcon,
-        UsersIcon,
-        ClipboardDocumentIcon,
-        Cog8ToothIcon,
-        WrenchScrewdriverIcon,
-        UserPlusIcon,
-        PuzzlePieceIcon
-    },
-    props: {
-        icon: {
-            type: String,
-            required: true,
-            // validator: (value) => ['BookOpenIcon', 'UserGroupIcon'].includes(value)
-
-        },
-    },
-    data() {
-        return {
-            page: this.icon,
-        }
-    },
-    computed: {
-        componentInstance() {
-            return this.icon
-            // return () => import(`@heroicons/vue/24/solid/${this.icon}`).then(data => data)
-        }
-    }
-
+interface IProps {
+    icon: string
 }
+
+const props = defineProps<IProps>()
+
+const icons = {
+    BookOpenIcon,
+    UserGroupIcon,
+    HomeModernIcon,
+    ShoppingCartIcon,
+    BuildingStorefrontIcon,
+    UsersIcon,
+    ClipboardDocumentIcon,
+    Cog8ToothIcon,
+    WrenchScrewdriverIcon,
+    UserPlusIcon,
+    PuzzlePieceIcon
+}
+
+const componentInstance = computed(() => icons[props.icon])
+
 </script>
 
 <style scoped>

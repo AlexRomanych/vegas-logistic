@@ -4,7 +4,7 @@
             :class="
                 $route.name === 'login' || $route.name === 'register' || $route.name === 'error.404'
                     ? 'container-auth upper-layer'
-                    : 'container'
+                    : 'wrapper'
             "
         >
             <div
@@ -30,6 +30,22 @@
 </template>
 
 <script lang="ts" setup>
+import { watch, ref} from 'vue'
+import { useMenuStore } from '@/stores/MenuStore.ts'
+import { storeToRefs } from 'pinia'
+
+const menuStore = useMenuStore()
+
+const { expandSidebar, sidebarWidthExpanded, sidebarWidthCollapsed } = storeToRefs(menuStore)
+
+const sidebarWidth_ = ref('50px')
+
+watch(() => expandSidebar.value, () => {
+    sidebarWidth_.value = expandSidebar.value ? sidebarWidthExpanded.value : sidebarWidthCollapsed.value
+    document.documentElement.style.setProperty('--sidebar-width', sidebarWidth_.value)
+}, {deep: true})
+
+
 // import { computed, /*onMounted, reactive, ref, unref, watch*/ } from 'vue'
 // import { useRoute, useRouter } from 'vue-router'
 // import {getColorClassByType, getTextColorClassByType} from '@/app/helpers/helpers.js'
@@ -41,13 +57,17 @@
 // const name = computed(() => route.name)
 // const name_ = computed(() => router.currentRoute.value.name)
 
-const props = defineProps({
+defineProps({
     auth: {
         type: Boolean,
         required: false,
         default: false,
     },
 })
+
+
+
+
 
 // attract Работает!!!
 // warning Работает!!!
@@ -134,32 +154,17 @@ const props = defineProps({
 </script>
 
 <style scoped>
-.container {
+.wrapper {
     flex: 1;
     position: relative;
-    /* overflow-x: hidden; */
-    /*
-    // min-width: 100vw; // или ширина в пикселях
-    // width: auto;
-    //
-    // overflow-y: auto;
-    // overflow-x: auto;
-    // overflow-y: auto; //position: relative;
-    // margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); //margin: 0 0 var(--footer-height) var(--sidebar-width); //margin-top: var(--header-height);
-    // position: relative;
- */
 }
 
 .container-auth {
     flex: 1;
-    /*
-    overflow-y: auto;
-    overflow-x: auto;
-    margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width);
-    */
 }
 
 .content {
+   /* --sidebar-width: v-bind(sidebarWidth_.value);*/
     position: absolute;
     min-width: calc(
         100vw - var(--sidebar-width)
@@ -168,18 +173,11 @@ const props = defineProps({
        /* //width: calc(100% - var(--sidebar-width)); // Если раскомментируем - получим фиксированную ширину страницы */
     height: calc(100% - var(--header-height) - var(--footer-height));
 
-    /* margin: var(--header-height) 0 var(--footer-height) var(--sidebar-width); */
-
     top: var(--header-height);
     left: var(--sidebar-width);
     overflow-y: auto;
     overflow-x: auto;
 
-    /* overflow-x: auto; */
-
-    /*
-    //min-width: 100vw; // или ширина в пикселях
-    //width: auto;
-    */
+    transition: width 0.3s ease; /* Добавь плавности для красоты */
 }
 </style>

@@ -137,7 +137,7 @@ body {
 /*--sidebar-width = 150px;*/
 
 :root {
-    --sidebar-width: 200px;                         /* Ширина сайд бара */
+    --sidebar-width: 50px;                         /* Ширина сайд бара 200px*/
     --header-height: 50px;                          /* Высота header */
     --footer-height: 50px;                          /* Высота footer */
     --main-bg-color: rgb(243 244 246);              /* Цвет фона */
