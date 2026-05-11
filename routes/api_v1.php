@@ -167,6 +167,7 @@ Route::prefix('sewing')
         Route::get('/day/dates', [CellSewingDayController::class, 'getSewingDaysByDates']);
         Route::post('/day/comment', [CellSewingDayController::class, 'setSewingDayComment']);
         Route::post('/day/worker/add', [CellSewingDayController::class, 'addWorkerToSewingDay']);
+        Route::post('/day/workers/add', [CellSewingDayController::class, 'addWorkersToSewingDay']);
         Route::post('/day/worker/remove', [CellSewingDayController::class, 'removeWorkerFromSewingDay']);
         Route::patch('/day/responsible/add', [CellSewingDayController::class, 'addResponsibleToSewingDay']);
         Route::patch('/day/responsible/remove', [CellSewingDayController::class, 'removeResponsibleFromSewingDay']);

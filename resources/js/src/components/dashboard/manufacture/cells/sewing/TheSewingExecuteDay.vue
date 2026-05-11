@@ -117,6 +117,7 @@
                         :can-edit="isStartAvailable"
                         :sewing-day="sewingDay!"
                         @add-worker="addWorker"
+                        @add-workers="addWorkers"
                         @remove-worker="removeWorker"
                         @add-responsible="addResponsible"
                     />
@@ -151,19 +152,20 @@
 <script lang="ts" setup>
 import type { IColorTypes, ISewingDay, ISewingDayWorker, ISewingTask, ISewingTaskLine } from '@/types'
 
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+
+import { SEWING_TASK_DRAFT, SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { SEWING_TASK_DRAFT, SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
+
 import { getCoverSizeString, getExecuteTaskStatistics, getSewingTaskModelCoverName, getSewingTaskTitle } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
-
 import { formatDateInFullFormat, formatTimeInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -504,6 +506,19 @@ const addWorker = (worker: ISewingDayWorker) => {
         sewingDay.value!.workers.push(worker)
     }
 }
+
+
+// __ Добавляем список работников
+const addWorkers = (workers: ISewingDayWorker[]) => {
+    workers.forEach(worker => {
+        const existWorker = sewingDay.value!.workers.find(w => w.id === worker.id)
+        if (!existWorker) {
+            console.log('push: ', worker)
+            sewingDay.value!.workers.push(worker)
+        }
+    })
+}
+
 
 // __ Удаляем работника
 const removeWorker = (worker: ISewingDayWorker) => {

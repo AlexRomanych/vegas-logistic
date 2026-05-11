@@ -3,16 +3,16 @@
         class="wrapper bg-slate-100 p-1 text-slate-600 relative overflow-hidden flex flex-col font-sans"
         @contextmenu.prevent="openContextMenu"
     >
-        <div class="flex justify-between items-center mb-2">
-            <div class="flex justify-between items-center gap-3 w-full">
+        <div class="flex justify-between items-center mb-2 gap-4">
+            <div class="flex justify-between items-center gap-3">
                 <!-- __ Название Заявки -->
-                <div>
-                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">{{ taskTitle }}</h1>
+                <div class="flex-none w-[350px]">
+                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight truncate">{{ taskTitle }}</h1>
                     <p class="text-sm text-slate-400 font-medium">Выбрано элементов: {{ selectedIds.size }}</p>
                 </div>
             </div>
 
-            <div class="flex gap-0.5">
+            <div class="flex-1 flex justify-start items-center gap-0.5">
 
                 <template v-for="(sewingLinesGroup, idx) of sewingLinesGroups" :key="idx">
 
@@ -45,17 +45,32 @@
                     @click="showSubgroupNames = !showSubgroupNames"
                 />
 
-                <!-- __ Комментарий -->
+                <!-- __ Печать -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
-                    :text="sewingTask.comment ?? ''"
                     align="center"
                     class="menu-button"
                     rounded="4"
-                    text-size="mini"
-                    type="indigo"
-                    width="min-w-[250px]"
+                    text="📄"
+                    text-size="huge"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="printTask"
                 />
+
+                <!-- __ Комментарий -->
+                <template v-if="sewingTask.comment">
+                    <AppLabelTS
+                        :height="MENU_HEIGHT"
+                        :text="sewingTask.comment ?? ''"
+                        align="center"
+                        class="menu-button"
+                        rounded="4"
+                        text-size="mini"
+                        type="indigo"
+                        width="min-w-[250px]"
+                    />
+                </template>
 
                 <div
                     v-if="isRunning"
@@ -68,19 +83,6 @@
                         height="h-[50px]"
                         text-size="mini"
                         width="w-[200px]"
-                    />
-
-                    <!-- __ Печать -->
-                    <AppLabelTS
-                        :height="MENU_HEIGHT"
-                        align="center"
-                        class="menu-button"
-                        rounded="4"
-                        text="📄"
-                        text-size="huge"
-                        type="dark"
-                        width="w-[50px]"
-                        @click="printTask"
                     />
 
                     <!-- __ Выполнено -->
@@ -824,7 +826,7 @@ const printTask = () => {
 
     localStorage.setItem(TASK_TO_PRINT_KEY, JSON.stringify(sewingLinesGroup.value))
     localStorage.setItem(TASK_TO_PRINT_META_KEY, JSON.stringify({
-        action_at: props.sewingTask.action_at,
+        action_at   : props.sewingTask.action_at,
         task_title  : taskTitle.value,
         sewing_group: sewingLinesGroups.value[activeTabIndex.value].groupName,
     }))
@@ -951,8 +953,8 @@ onUnmounted(() => {
     /*width: calc(100vw - var(--sidebar-width) - 15px);*/
     min-width: 0; /* Важно для flex-контейнеров, чтобы не распирало контентом */
 
-/*    display: flex;
-    flex-direction: column;*/
+    /*    display: flex;
+        flex-direction: column;*/
 
 }
 

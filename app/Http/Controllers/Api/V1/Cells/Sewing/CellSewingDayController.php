@@ -112,7 +112,6 @@ class CellSewingDayController extends Controller
             ]);
 
             foreach ($validated['dates'] as $date) {
-
                 // __ Создаем производственный день или получаем его, если он уже существует
                 SewingDay::findOrCreateByDateAndChange($date);
             }
@@ -142,10 +141,61 @@ class CellSewingDayController extends Controller
                 'worker_id' => 'required|integer|exists:workers,id',
             ]);
 
-            $sewingDay = SewingDay::query()->find($validated['day_id']);
+            $sewingDay = SewingDay::query()->findOrFail($validated['day_id']);
             $sewingDay->workers()->syncWithoutDetaching([
                 $validated['worker_id'] => ['working_time' => 8 * 60]  // __ ID рабочего и данные для pivot-таблицы
             ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Добавляет Группу рабочих к производственному дню
+     * @param Request $request
+     * @return string
+     */
+    public function addWorkersToSewingDay(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'day_id'       => 'required|integer|exists:sewing_days,id',
+                'worker_ids'   => 'required|array|min:1', // Проверяем, что это массив и он не пуст
+                'worker_ids.*' => 'integer|exists:workers,id', // Проверяем каждый элемент массива
+            ]);
+
+            $sewingDay = SewingDay::query()->findOrFail($validated['day_id']);
+
+            // __ Подготавливаем данные для синхронизации
+            // __ Превращаем [1, 2, 3] в [1 => ['wt' => 480], 2 => ['wt' => 480], ...]
+            $syncData = array_fill_keys($validated['worker_ids'], [
+                'working_time' => 8 * 60
+            ]);
+
+            // __ Добавляем только новые связи, не трогая старые
+            $sewingDay->workers()->syncWithoutDetaching($syncData);
+
+            /**
+             * sync($data, false) делает следующее:
+             * 1. Добавляет новых рабочих из списка.
+             * 2. ОБНОВЛЯЕТ данные (working_time) у тех, кто уже есть в списке.
+             * 3. НЕ УДАЛЯЕТ тех рабочих, которые уже привязаны к дню, но не присланы в этот раз.
+             */
+            // $sewingDay->workers()->sync($syncData, false); // <-- дополнительно добавляем false
+
+            /**
+             * sync($data) делает полную синхронизацию:
+             * 1. Добавляет новых рабочих из worker_ids.
+             * 2. Обновляет working_time у тех, кто уже был в базе и прислан в этот раз.
+             * 3. УДАЛЯЕТ (detach) всех рабочих, которые были привязаны к дню, но отсутствуют в worker_ids.
+             */
+            // Для этого используется классический метод sync() без дополнительных флагов.
+            // Это поведение в Laravel считается стандартным: всё, что не перечислено в массиве,
+            // будет удалено из связей (таблицы pivot), а всё, что перечислено — добавлено или обновлено.
+            $sewingDay->workers()->sync($syncData); // <-- не добавляем false
+
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
@@ -248,7 +298,6 @@ class CellSewingDayController extends Controller
 
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
-
                 // __ Или начинаем, если не начато, или продолжаем, но запоминаем время возобновления
                 if (is_null($sewingDay->start_at)) {
                     $sewingDay->start_at = now();
@@ -276,7 +325,6 @@ class CellSewingDayController extends Controller
                 //$pendSewingTasksArr = $pendingSewingTasks->toArray();
 
                 foreach ($pendingSewingTasks as $task) {
-
                     // __ Создаем запись в Статусе: Выполняется
                     $task->statuses()->syncWithoutDetaching([
                         SewingTaskStatus::SEWING_STATUS_RUNNING_ID => [
@@ -285,7 +333,6 @@ class CellSewingDayController extends Controller
                         ]
                     ]);
                 }
-
             });
 
             return new SewingDayResource($sewingDay);
@@ -302,7 +349,6 @@ class CellSewingDayController extends Controller
      */
     public function finishSewingDay(Request $request)
     {
-
         // __ Завершаем день со СЗ
         // __ 1. Находим производственный день
         // __ 2. Находим СЗ для этого Дня со статусом Выполняется
@@ -321,7 +367,6 @@ class CellSewingDayController extends Controller
 
             // __ Сохраняем
             DB::transaction(function () use ($sewingDay) {
-
                 $sewingDay->finish_at = now();
 
                 // __ Добавляем длительность в секундах
@@ -350,7 +395,6 @@ class CellSewingDayController extends Controller
                 $falseTasks = [];
 
                 foreach ($pendingSewingTasks as $task) {
-
                     // __ Собираем невыполненный контент
                     $falseSewingLines = [];
                     $falseSewingLinesAmounts = 0;
@@ -358,7 +402,6 @@ class CellSewingDayController extends Controller
 
 
                     foreach ($task->sewingLines as $line) {
-
                         // __ Проверка на то, чтобы строка была или выполнена или указана причина невыполнения
                         if (is_null($line->finished_at) && is_null($line->false_at)) {
                             throw new Exception('Missing done or false status for line with id: ' . $line->id);
@@ -375,7 +418,6 @@ class CellSewingDayController extends Controller
 
                     // __ Если есть невыполненные - переносим на следующий день и ставим первыми
                     if (count($falseSewingLines) !== 0) {
-
                         $falseTasks[] = [
                             'task'        => $task,
                             'false_lines' => $falseSewingLines,
@@ -383,7 +425,6 @@ class CellSewingDayController extends Controller
                             // __ Флаг, что нужно перенести все СЗ на другую дату
                             'all_false'   => $falseSewingLinesAmounts === $totalSewingLinesAmounts,
                         ];
-
                     }
 
                     // __ Создаем запись в Статусе: Выполнено
@@ -393,13 +434,11 @@ class CellSewingDayController extends Controller
                             'created_by' => auth()->id(),
                         ]
                     ]);
-
                 }
 
 
                 // __ Обрабатываем все невыполненное
                 if (count($falseTasks) !== 0) {
-
                     // __ Получаем следующую смену
                     $nextChange = SewingService::getNextChange($sewingDay->action_at, $sewingDay->change);
 
@@ -419,12 +458,11 @@ class CellSewingDayController extends Controller
                     // __ Объединяем в один массив существующие СЗ и перенесенные
                     // __ из предыдущего дня, располагая а начале массива
                     // __ и перенумеровываем заново
-                    $position      = 1;
+                    $position = 1;
                     $tasksToUpdate = [];
 
                     // __ Добавляем перенесенные СЗ
                     foreach ($falseTasks as $falseTask) {
-
                         // __ Ситуация, когда перенесли все линии СЗ (Просто переносим на другую дату)
                         if ($falseTask['all_false']) {
                             $tasksToUpdate[] = [
@@ -481,7 +519,6 @@ class CellSewingDayController extends Controller
                     // __ Применяем изменения
                     SewingService::bulkUpdateTasks($tasksToUpdate);
                 }
-
             });
 
             return new SewingDayResource($sewingDay);

@@ -59,6 +59,7 @@ const URL_SEWING_DAY_DATES                  = '/sewing/day/dates'               
 const URL_SEWING_DAY_COMMENT                = '/sewing/day/comment'                 // URL для сохранения комментария к дню
 const URL_SEWING_DAY_WORKERS_ACTIVE         = '/workers/active'                     // URL для получения активных рабочих
 const URL_SEWING_DAY_WORKER_ADD             = '/sewing/day/worker/add'              // URL для добавления исполнителя к дню
+const URL_SEWING_DAY_WORKER_GROUP_ADD       = '/sewing/day/workers/add'             // URL для добавления группы исполнителей к дню
 const URL_SEWING_DAY_WORKER_REMOVE          = '/sewing/day/worker/remove'           // URL для удаления исполнителя к дню
 const URL_SEWING_DAY_RESPONSIBLE_ADD        = '/sewing/day/responsible/add'         // URL для добавления ответственного к дню
 const URL_SEWING_DAY_RESPONSIBLE_REMOVE     = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
@@ -811,10 +812,20 @@ export const useSewingStore = defineStore('sewing', () => {
     }
 
     // __ Добавление Рабочего в Производственный день
-    const addWorkerToSewingDay = async (day_id: number, worker_id: number) => {
+    const addWorkerToSewingDay = async (day_id: number | null = null, worker_id: number | null = null) => {
+        if (!day_id || !worker_id) { return }
         const response = await jwtPost(URL_SEWING_DAY_WORKER_ADD, { day_id, worker_id })
         const result   = await response
         if (DEBUG) console.log('SewingStore: addWorkerToSewingDay: ', result)
+        return result.data
+    }
+
+    // __ Добавление Группы Рабочих в Производственный день
+    const addWorkersToSewingDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
+        if (!day_id || !worker_ids) { return}
+        const response = await jwtPost(URL_SEWING_DAY_WORKER_GROUP_ADD, { day_id, worker_ids })
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: addWorkersGroupToSewingDay: ', result)
         return result.data
     }
 
@@ -924,7 +935,7 @@ export const useSewingStore = defineStore('sewing', () => {
         setSewingDayComment,
         getSewingDaysByDates,
         getActiveWorkers,
-        addWorkerToSewingDay,
+        addWorkerToSewingDay, addWorkersToSewingDay,
         removeWorkerFromSewingDay,
         addResponsibleToSewingDay,
         removeResponsibleFromSewingDay,

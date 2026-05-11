@@ -32,6 +32,21 @@
                 />
             </template>
 
+            <!-- __ + Группу Сущностей -->
+            <template v-if="canEdit">
+                <AppLabelTS
+                    :height="DEFAULT_HEIGHT"
+                    align="center"
+                    class="cursor-pointer"
+                    rounded="4"
+                    text="➕➕"
+                    text-size="mini"
+                    type="success"
+                    width="w-[60px]"
+                    @click="addWorkersGroup"
+                />
+            </template>
+
         </div>
     </div>
 
@@ -89,6 +104,16 @@
         title="Выберите сотрудника"
         width="w-[600px]"/>
 
+    <!--:func="(surname: string, name: string, patronymic: string) => getFormatFIO({surname, name, patronymic})"-->
+    <AppModalAsyncSelectTSFuncMultiSelect
+        ref="appModalAsyncSelectTSFuncMultiSelect"
+        v-model="selectedWorkerIds"
+        :func="(worker: IEntity) => `${worker.surname} ${worker.name} ${worker.patronymic}`"
+        :items="globalWorkers"
+        title="Выберите сотрудника"
+        width="w-[600px]"/>
+
+
     <!-- __ Модальное окно для сообщений -->
     <AppModalAsyncMultiline
         ref="appModalAsyncMultiline"
@@ -116,6 +141,7 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncSelectTSFunc from '@/components/ui/modals/AppModalAsyncSelectTSFunc.vue'
+import AppModalAsyncSelectTSFuncMultiSelect from '@/components/ui/modals/AppModalAsyncSelectTSFuncMultiSelect.vue'
 
 
 // __ Унифицируем Интерфейс
@@ -132,6 +158,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<{
     (e: 'addWorker', payload: IEntity): void,
+    (e: 'addWorkers', payload: IEntity[]): void,
     (e: 'removeWorker', payload: IEntity): void,
     (e: 'addResponsible', payload: IEntity): void,
 }>()
@@ -162,7 +189,7 @@ const render: IRenderData = reactive({
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
-        headerType    : () => HEADER_TYPE,
+        headerType    : () => 'warning',
         dataType      : () => DATA_TYPE,
         type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
@@ -264,9 +291,13 @@ const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
-// __ Тип для модального окна выбора Работника
+// __ Тип для модального окна выбора Работника для одного человека
 const selectedWorkerId      = ref<number | null>(null)
 const appModalAsyncSelectTS = ref<any>(null)
+
+// const selectedWorkerIds      = ref<(number | string)[] | null>([])
+const appModalAsyncSelectTSFuncMultiSelect = ref<any>(null)
+const selectedWorkerIds                    = computed(() => props.sewingDay.workers.map((worker: IEntity) => worker.id))
 
 // __ Показываем сообщение об ошибке
 const showError = async (error: string | null = null) => {
@@ -276,7 +307,40 @@ const showError = async (error: string | null = null) => {
     await appModalAsyncMultiline.value!.show()
 }
 
-// __ Выбираем рабочего
+
+// __ Выбираем рабочего - группу человек
+const addWorkersGroup = async (/*workers: IEntity[]*/) => {
+    if (!props.canEdit) {
+        return
+    }
+
+    // __ Добавляем работника день в день
+    // Warning: TODO: Раскомментировать
+    // if (!isToday(new Date(props.sewingDay.action_at))) {
+    //     return
+    // }
+
+    const answer = await appModalAsyncSelectTSFuncMultiSelect.value!.show(selectedWorkerIds.value)
+    if (answer) {
+
+        const selectedWorkers = appModalAsyncSelectTSFuncMultiSelect.value!.selected
+        console.log('workers_group: ', selectedWorkers)
+
+        const selectedWorkersIdsSaved: number[] = selectedWorkers.map((worker: IEntity) => worker.id)
+        const result                            = await sewingStore.addWorkersToSewingDay(props.sewingDay.id, selectedWorkersIdsSaved)
+
+        if (checkCRUD(result)) {
+            collapsed.value = false                        // __ Разворачиваем список
+            emits('addWorkers', selectedWorkers)        // __ Добавляем данные в родительский компонент
+        } else {
+            await showError()
+            return
+        }
+    }
+}
+
+
+// __ Выбираем рабочего - одного человека
 const addWorker = async (worker: IEntity) => {
     if (!props.canEdit) {
         return

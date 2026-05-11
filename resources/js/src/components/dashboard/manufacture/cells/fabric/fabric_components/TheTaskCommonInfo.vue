@@ -26,7 +26,6 @@
                         :text="getTitleByFabricTaskStatusCode(task.common.status)"
                         :type="getStyleTypeByFabricTaskStatusCode(task.common.status)"
                         text-size="mini"
-                        type="warning"
                         width="w-[200px]"
                     />
                 </div>
@@ -278,7 +277,7 @@
 
             <div class="ml-3">
 
-                <div v-for="worker in task.workers">
+                <div v-for="(worker, idx) in task.workers" :key="idx">
                     <AppLabel
                         :text="getFormatFIO(worker)"
                         text-size="mini"
@@ -399,7 +398,7 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { computed, /*onMounted,*/ onUnmounted, reactive, ref, watch } from 'vue'
 
