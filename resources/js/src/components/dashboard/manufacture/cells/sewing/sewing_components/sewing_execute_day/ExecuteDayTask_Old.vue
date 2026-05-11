@@ -261,6 +261,7 @@
     import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayTaskLineHeader.vue'
     import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
     import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+    import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
 
     interface IProps {
         sewingTask: ISewingTask
@@ -332,7 +333,7 @@
     // __ Название заявок
     const taskTitle = computed(() => {
         if (props.sewingTask.id === 0) {
-            return 'Объединение СЗ'
+            return SEWING_UNION_TASK_NAME
         }
         return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
     })

@@ -309,7 +309,7 @@ import { useRouter } from 'vue-router'
 
 import type { IColorTypes, IDividerItem, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+// import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import {
     getCoverSizeString,
@@ -327,6 +327,7 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
+import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
 
 
 interface IProps {
@@ -344,7 +345,7 @@ const emits = defineEmits<{
 }>()
 
 const router      = useRouter()
-const sewingStore = useSewingStore()
+// const sewingStore = useSewingStore()
 
 // console.log('props.sewingTask: ', props.sewingTask)
 
@@ -387,7 +388,7 @@ const activeTabIndex = ref(0)
 // __ Название заявок
 const taskTitle = computed(() => {
     if (isUnionTask.value) {
-        return 'Объединение СЗ'
+        return SEWING_UNION_TASK_NAME
     }
     return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
 })
@@ -822,7 +823,7 @@ const printTask = () => {
     // __ Запоминаем данные для печати
     // const { globalSewingTaskPrintData } = storeToRefs(sewingStore)
     // globalSewingTaskPrintData.value = sewingLinesGroup.value
-    console.log(props.sewingTask)
+    // console.log(props.sewingTask)
 
     localStorage.setItem(TASK_TO_PRINT_KEY, JSON.stringify(sewingLinesGroup.value))
     localStorage.setItem(TASK_TO_PRINT_META_KEY, JSON.stringify({
@@ -837,7 +838,7 @@ const printTask = () => {
         // query: { orderId: id }
     })
 
-    console.log('sewingStore.globalSewingTaskPrintData: ', sewingStore.globalSewingTaskPrintData)
+    // console.log('sewingStore.globalSewingTaskPrintData: ', sewingStore.globalSewingTaskPrintData)
 
     // 2. Открываем новое окно через стандартный JS
     window.open(routeData.href, '_blank')

@@ -473,6 +473,7 @@ export interface ISewingTaskLinesGroupData {
     //     hasData: boolean,
     //     lines: ISewingTaskLine[]
     // }[]
+    collapsed?: boolean
 }
 
 

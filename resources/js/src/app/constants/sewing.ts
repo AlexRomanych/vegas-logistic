@@ -1,5 +1,8 @@
 // Info Константы для работы с Пошивом (Sewing)
 
+// __ Название вуладки с общим СЗ
+export const SEWING_UNION_TASK_NAME = 'Объединение СЗ'
+
 // __ Продолжительность смены в часах
 export const TOTAL_SHIFT_DURATION = 12
 
