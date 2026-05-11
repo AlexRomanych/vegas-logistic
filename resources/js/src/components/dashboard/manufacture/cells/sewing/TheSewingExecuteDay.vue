@@ -593,7 +593,24 @@ const resetStatus = async (sewingLinesIds: number[]) => {
 
 // __ Разделяем строку
 const divideLine = async (taskId: number, sewingLineId: number, range: { take: number; keep: number }) => {
-    const findTask = sewingDay.value!.sewing_tasks.find(task => task.id === taskId)
+
+    // __ Старый вариант, когда нельзя было разбить в Объединении СЗ
+    // const findTask = sewingDay.value!.sewing_tasks.find(task => task.id === taskId)
+
+    // __ Новый вариант, когда можно разбить в Объединении СЗ, в принципе taskId не нужен
+    let findTask: ISewingTask | undefined = undefined
+    for (const task of sewingDay.value!.sewing_tasks) {
+        for (const line of task.sewing_lines) {
+            if (line.id === sewingLineId) {
+                findTask = task
+                break
+            }
+        }
+        if (findTask) {
+            break
+        }
+    }
+
     if (!findTask) {
         return // страховка
     }

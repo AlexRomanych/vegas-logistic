@@ -775,14 +775,16 @@ const divideElementAmount = async () => {
     }
 
     // __ Проверяем, что это не объединение СЗ
-    if (props.sewingTask.id === 0) {
-        return
-    }
+    // if (props.sewingTask.id === 0) {
+    //     return
+    // }
 
     // __ Берем первый элемент из выделенных
     const findElement = JSON.parse(
         JSON.stringify(sewingLines.value.find((line) => line.id === Array.from(selectedIds.value)[0]))
     )
+
+    // console.log('selected: ', findElement)
 
     // __ Проверяем, что элемент не завершен
     if (findElement && (findElement.finished_at || findElement.false_at || findElement.amount === 1)) {
