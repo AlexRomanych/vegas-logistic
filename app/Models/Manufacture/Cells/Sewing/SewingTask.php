@@ -94,5 +94,14 @@ class SewingTask extends Model
         // return $this->hasOne(TaskStatus::class)->latestOfMany('created_at');
     }
 
+    // Relations: Связь с последним статусом
+    public function latestTaskStatusByDate()
+    {
+        // Указываем, что последнюю запись ищем по максимальному ID в пивоте
+        return $this->hasOne(SewingTaskStatusPivot::class)->latestOfMany('created_at');
+
+        // ИЛИ, если хочешь по дате создания:
+        // return $this->hasOne(TaskStatus::class)->latestOfMany('created_at');
+    }
 
 }

@@ -79,7 +79,7 @@
                             <AppInputButton
                                 v-if="localSelectedIds.size > 0"
                                 id="clear"
-                                title="Сбросить всё"
+                                title="Сбросить"
                                 type="danger"
                                 @buttonClick="localSelectedIds.clear()"
                             />

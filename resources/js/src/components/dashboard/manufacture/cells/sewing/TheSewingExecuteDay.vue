@@ -213,7 +213,7 @@ const clearTimer = () => timer && clearInterval(timer)
 
 // __ Группа Старта СЗ
 const isStartAvailable   = computed(() => {
-    return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
+    // return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
     return tasksBeforeCurrentDay.value.length === 0 && sewingDay.value?.sewing_tasks.length !== 0
 })
 // const everyTaskIsPending = computed(() => sewingDay.value?.sewing_tasks.every(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID))

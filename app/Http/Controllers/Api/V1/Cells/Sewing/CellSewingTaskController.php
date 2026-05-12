@@ -835,6 +835,7 @@ class CellSewingTaskController extends Controller
                     'reason' => $validated['reason'],
                 ];
                 $line->false_history = $history;
+                $line->finished_at = null;
                 $line->save();
             }
 

@@ -314,7 +314,7 @@ import type { IColorTypes, IDividerItem, ISewingTask, ISewingTaskLine, ISewingTa
 import {
     getCoverSizeString,
     getExecuteTaskStatistics,
-    getSewingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion,
+    getSewingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion, isTaskLineReset,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -344,7 +344,7 @@ const emits = defineEmits<{
     (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number; keep: number }): void
 }>()
 
-const router      = useRouter()
+const router = useRouter()
 // const sewingStore = useSewingStore()
 
 // console.log('props.sewingTask: ', props.sewingTask)
@@ -699,10 +699,10 @@ const handleMenuAction = (action: string) => {
 const completeSelected = () => {
     const ids: number[] = []
 
-    // __ Выбираем только не завершенные задачи
+    // __ Выбираем только задачи с нулевым статусом
     sewingLines.value.forEach((t) => {
         if (selectedIds.value.has(t.id)) {
-            if (!t.finished_at) {
+            if (isTaskLineReset(t)) {
                 ids.push(t.id)
             }
         }
@@ -723,7 +723,7 @@ const unCompleteSelected = async () => {
     // __ Выбираем только задачи с нулевым статусом
     sewingLines.value.forEach((t) => {
         if (selectedIds.value.has(t.id)) {
-            if (!t.finished_at && !t.false_at) {
+            if (isTaskLineReset(t)) {
                 ids.push(t.id)
             }
         }
@@ -750,10 +750,10 @@ const unCompleteSelected = async () => {
 const resetStatus = async () => {
     const ids: number[] = []
 
-    // __ Выбираем только задачи с нулевым статусом
+    // __ Выбираем только задачи не с нулевым статусом
     sewingLines.value.forEach((t) => {
         if (selectedIds.value.has(t.id)) {
-            if (t.finished_at || t.false_at) {
+            if (!isTaskLineReset(t)) {
                 ids.push(t.id)
             }
         }

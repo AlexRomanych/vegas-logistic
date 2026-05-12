@@ -1727,6 +1727,20 @@ export function sortSewingTaskLinesByAmountStableSize(
 //     return endOfShift.getTime() + totalChangeDurationMs;
 // }
 
+// __ Проверяем, является ли строка СЗ Выполненной
+export function isTaskLineDone(line: ISewingTaskLine) {
+    return !!line.finished_at
+}
+
+// __ Проверяем, является ли строка СЗ Не Выполненной
+export function isTaskLineFalse(line: ISewingTaskLine) {
+    return !!line.false_at
+}
+
+// __ Проверяем, является ли строка СЗ со сброшенным статусом
+export function isTaskLineReset(line: ISewingTaskLine) {
+    return !(isTaskLineDone(line) || isTaskLineFalse(line))
+}
 
 // __ Дополнительно проверяем, является ли модель Чехлом
 export function isCover(element: ISewingTaskModel) {

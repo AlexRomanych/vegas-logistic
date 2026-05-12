@@ -488,6 +488,14 @@ class CellSewingDayController extends Controller
                             ]
                         ]);
 
+                        // __ Тут же Создаем запись в Статусе: Готово к выполнению с добавлением секунды
+                        $newTask->statuses()->syncWithoutDetaching([
+                            SewingTaskStatus::SEWING_STATUS_PENDING_ID => [
+                                'set_at'     => $sewingDay->finish_at->addSecond(),
+                                'created_by' => auth()->id(),
+                            ]
+                        ]);
+
 
                         // __ Тут получили id уже нового СЗ
                         // __ Привязываем невыполненные линии к новому СЗ

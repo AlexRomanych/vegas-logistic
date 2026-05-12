@@ -124,33 +124,36 @@
                             <template v-if="!group.collapsed">
 
                                 <div v-for="(subgroup, idx) of group.subgroups" :key="idx" class="ml-[34px]">
-                                    <div class="flex ml-[15px]">
 
-                                        <!-- __ Название Подгруппы (УШМ + окантователь, Глухие ...) -->
-                                        <AppLabelTSWrapper
-                                            :arg="subgroup"
-                                            :render-object="render.subgroup_title"
-                                        />
+                                    <template v-if="subgroup.hasData">
+                                        <div class="flex ml-[15px]">
 
-                                        <!-- __ Всего по подгруппе -->
-                                        <AppLabelTSWrapper
-                                            :arg="subgroup"
-                                            :render-object="render.subgroup_total"
-                                        />
+                                            <!-- __ Название Подгруппы (УШМ + окантователь, Глухие ...) -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_title"
+                                            />
 
-                                        <!-- __ Выполнено по подгруппе -->
-                                        <AppLabelTSWrapper
-                                            :arg="subgroup"
-                                            :render-object="render.subgroup_done"
-                                        />
+                                            <!-- __ Всего по подгруппе -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_total"
+                                            />
 
-                                        <!-- __ Не Выполнено по подгруппе -->
-                                        <AppLabelTSWrapper
-                                            :arg="subgroup"
-                                            :render-object="render.subgroup_false"
-                                        />
+                                            <!-- __ Выполнено по подгруппе -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_done"
+                                            />
 
-                                    </div>
+                                            <!-- __ Не Выполнено по подгруппе -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_false"
+                                            />
+
+                                        </div>
+                                    </template>
                                 </div>
 
                             </template>
@@ -415,7 +418,7 @@ const linesSum = (lines: ISewingTaskLine[] = [], checkType: boolean | null = nul
 const subgroupSum = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSum(subgroup.lines, checkType), 0)
 
 // __ Сумма по объекту (СЗ)
-const groupSum    = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSum(group.subgroups, checkType), 0)
+const groupSum = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSum(group.subgroups, checkType), 0)
 
 // __ Сумма по всем объектам (СЗ + объединенное)
 // const dataSum     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSum(dataObject.groups, checkType), 0)
