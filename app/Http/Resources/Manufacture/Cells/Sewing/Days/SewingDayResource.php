@@ -29,6 +29,7 @@ class SewingDayResource extends JsonResource
             'duration'      => $this->duration ?? 0,
             'description'   => $this->description,
             'comment'       => $this->comment,
+            'ready'         => $this->ready,
             'responsible'   => new SewingDayWorkerResource($this->whenLoaded('responsible')),
 
             // __ Отправляем только активных рабочих

@@ -174,6 +174,8 @@ Route::prefix('sewing')
         Route::patch('/day/responsible/remove', [CellSewingDayController::class, 'removeResponsibleFromSewingDay']);
         Route::patch('/day/start', [CellSewingDayController::class, 'startSewingDay']);
         Route::patch('/day/finish', [CellSewingDayController::class, 'finishSewingDay']);
+        Route::patch('/day/ready/set', [CellSewingDayController::class, 'readySetSewingDay']);
+        Route::patch('/day/ready/unset', [CellSewingDayController::class, 'readyUnsetSewingDay']);
 
 
         // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');

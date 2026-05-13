@@ -65,6 +65,8 @@ const URL_SEWING_DAY_RESPONSIBLE_ADD        = '/sewing/day/responsible/add'     
 const URL_SEWING_DAY_RESPONSIBLE_REMOVE     = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
 const URL_SEWING_DAY_START                  = '/sewing/day/start'                   // URL для старта дня СЗ
 const URL_SEWING_DAY_FINISH                 = '/sewing/day/finish'                  // URL для финиш дня СЗ
+const URL_SEWING_DAY_READY_SET              = '/sewing/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
+const URL_SEWING_DAY_READY_UNSET            = '/sewing/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
 
 export const useSewingStore = defineStore('sewing', () => {
 
@@ -813,7 +815,9 @@ export const useSewingStore = defineStore('sewing', () => {
 
     // __ Добавление Рабочего в Производственный день
     const addWorkerToSewingDay = async (day_id: number | null = null, worker_id: number | null = null) => {
-        if (!day_id || !worker_id) { return }
+        if (!day_id || !worker_id) {
+            return
+        }
         const response = await jwtPost(URL_SEWING_DAY_WORKER_ADD, { day_id, worker_id })
         const result   = await response
         if (DEBUG) console.log('SewingStore: addWorkerToSewingDay: ', result)
@@ -822,7 +826,9 @@ export const useSewingStore = defineStore('sewing', () => {
 
     // __ Добавление Группы Рабочих в Производственный день
     const addWorkersToSewingDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
-        if (!day_id || !worker_ids) { return}
+        if (!day_id || !worker_ids) {
+            return
+        }
         const response = await jwtPost(URL_SEWING_DAY_WORKER_GROUP_ADD, { day_id, worker_ids })
         const result   = await response
         if (DEBUG) console.log('SewingStore: addWorkersGroupToSewingDay: ', result)
@@ -861,11 +867,27 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-    // __ Старт СЗ
+    // __ Стоп СЗ
     const finishSewingDay = async (id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_FINISH, { id })
         const result   = await response
         if (DEBUG) console.log('SewingStore: finishSewingDay: ', result)
+        return result.data
+    }
+
+    // __ Установки маяка готовности к добавлению новых СЗ
+    const readySetSewingDay = async (id: number) => {
+        const response = await jwtPatch_(URL_SEWING_DAY_READY_SET, { id })
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: readySetSewingDay: ', result)
+        return result.data
+    }
+
+    // __ Снятие маяка готовности к добавлению новых СЗ
+    const readyUnsetSewingDay = async (id: number) => {
+        const response = await jwtPatch_(URL_SEWING_DAY_READY_UNSET, { id })
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: readyUnsetSewingDay: ', result)
         return result.data
     }
 
@@ -939,8 +961,7 @@ export const useSewingStore = defineStore('sewing', () => {
         removeWorkerFromSewingDay,
         addResponsibleToSewingDay,
         removeResponsibleFromSewingDay,
-        startSewingDay,
-        finishSewingDay,
+        startSewingDay, finishSewingDay, readySetSewingDay, readyUnsetSewingDay,
         divideLineInSewingTaskPending,
 
         addSewingTaskToGlobal,

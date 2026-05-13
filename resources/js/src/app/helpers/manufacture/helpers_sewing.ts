@@ -182,6 +182,14 @@ export function getSewingTaskAmountAndTime(item: ISewingTask | ISewingTaskLine[]
 }
 
 
+// __ Возвращаем числовое значение времени по Записи в СЗ (taskLine) для конкретных матрасов (не расчетных),
+// __ где запись из одного поля: time = {auto: 306} или time = {universal: 400}
+export function getSewingTaskLineTime(line: ISewingTaskLine) {
+    const machine: ISewingMachineKeys | null = getSewingLineMachineType(line)
+    return machine && machine in line.time ? line.time[machine] : 0
+}
+
+
 // __ Возвращаем Чехол модели. Вспомогалочка, когда приходит в Заявку Чехол
 export function getSewingTaskModelCover(
     item: ISewingTaskLine | ISewingTaskOrderLine | ISewingTaskOrderLine['model']) {
@@ -370,7 +378,6 @@ export function sortSewingTaskLinesForExecute(
         const hB = (target === 'cover' && b.order_line.model.main.cover_height)
             ? b.order_line.model.main.cover_height
             : dimsB.height
-
 
 
         // !!! Пока с 05.05.2026 неважно какая ШМ, все сортируем одинаково
@@ -1499,6 +1506,17 @@ export function getExecuteTaskStatistics(item: ISewingTask | ISewingTaskLine[]) 
 }
 
 
+// __ Возвращаем ТКЧ для строки СЗ
+export function getCoverTKCH(line: ISewingTaskLine) {
+    if (line.order_line.model.main.tkch) {
+        return line.order_line.model.main.tkch
+    } else if (line.order_line.model.cover?.tkch) {
+        return line.order_line.model.main.tkch
+    }
+    return null
+}
+
+
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
 export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: string | null = null): ISewingTaskLinesGroupData[] {
 
@@ -1508,43 +1526,140 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
     for (let i = 0; i < SEWING_TASK_GROUP_RULES.length; i++) {
 
         let hasDataGroup = false
-        result[i]        = {
+
+        let timeGroupTotal      = 0
+        let timeGroupDone       = 0
+        let timeGroupIncomplete = 0
+
+        let amountGroupTotal      = 0
+        let amountGroupDone       = 0
+        let amountGroupIncomplete = 0
+
+        result[i] = {
             groupName: SEWING_TASK_GROUP_RULES[i].GROUP_NAME,
             groupType: SEWING_TASK_GROUP_RULES[i].GROUP_TYPE,
             subgroups: [],
-            hasData  : hasDataGroup
+            hasData  : hasDataGroup,
+            time     : {
+                total     : timeGroupTotal,
+                done      : timeGroupDone,
+                incomplete: timeGroupIncomplete,
+            },
+            amount   : {
+                total     : amountGroupTotal,
+                done      : amountGroupDone,
+                incomplete: amountGroupIncomplete,
+            },
         }
 
         for (let j = 0; j < SEWING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
+
             let hasDataSubgroup = false
+
+            let timeSubgroupTotal      = 0
+            let timeSubgroupDone       = 0
+            let timeSubgroupIncomplete = 0
+
+            let amountSubgroupTotal      = 0
+            let amountSubgroupDone       = 0
+            let amountSubgroupIncomplete = 0
 
             result[i].subgroups[j] = {
                 subgroupName      : SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
                 subgroupType      : SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
                 lines             : [],
                 hasData           : hasDataSubgroup,
+                time              : {
+                    total     : timeSubgroupTotal,
+                    done      : timeSubgroupDone,
+                    incomplete: timeSubgroupIncomplete,
+                },
+                amount            : {
+                    total     : amountSubgroupTotal,
+                    done      : amountSubgroupDone,
+                    incomplete: amountSubgroupIncomplete,
+                },
                 subgroupOrderTitle: orderTitle,
             }
 
             for (let k = 0; k < lines.length; k++) {
-                if (lines[k].order_line.model.main.tkch) {
-                    if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
+                if (getCoverTKCH(lines[k])) {
+                    if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(getCoverTKCH(lines[k]) || '')) {
+                        // if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
                         result[i].subgroups[j].lines.push(lines[k])
                         hasDataSubgroup = true
+
+                        if (isTaskLineDone(lines[k])) {
+                            timeSubgroupDone += getSewingTaskLineTime(lines[k])
+                            amountSubgroupDone += lines[k].amount
+                        } else {
+                            timeSubgroupIncomplete += getSewingTaskLineTime(lines[k])
+                            amountSubgroupIncomplete += lines[k].amount
+                        }
+
+                        timeSubgroupTotal += getSewingTaskLineTime(lines[k])
+                        amountSubgroupTotal += lines[k].amount
                     }
                 } else {
                     if (result[i].groupName === 'Н/Д') {
                         result[i].subgroups[j].lines.push(lines[k])
                         hasDataSubgroup = true
+
+                        if (isTaskLineDone(lines[k])) {
+                            timeSubgroupDone += getSewingTaskLineTime(lines[k])
+                            amountSubgroupDone += lines[k].amount
+                        } else {
+                            timeSubgroupIncomplete += getSewingTaskLineTime(lines[k])
+                            amountSubgroupIncomplete += lines[k].amount
+                        }
+
+                        timeSubgroupTotal += getSewingTaskLineTime(lines[k])
+                        amountSubgroupTotal += lines[k].amount
                     }
                 }
+
+                // if (isTaskLineDone(lines[k])) {
+                //     timeSubgroupDone += getSewingTaskLineTime(lines[k])
+                //     amountSubgroupDone += lines[k].amount
+                // } else {
+                //     timeSubgroupIncomplete += getSewingTaskLineTime(lines[k])
+                //     amountSubgroupIncomplete += lines[k].amount
+                // }
+                //
+                // timeSubgroupTotal += getSewingTaskLineTime(lines[k])
+                // amountSubgroupTotal += lines[k].amount
             }
 
             result[i].subgroups[j].hasData = hasDataSubgroup
+
+            result[i].subgroups[j].time.total      = timeSubgroupTotal
+            result[i].subgroups[j].time.done       = timeSubgroupDone
+            result[i].subgroups[j].time.incomplete = timeSubgroupIncomplete
+
+            result[i].subgroups[j].amount.total      = amountSubgroupTotal
+            result[i].subgroups[j].amount.done       = amountSubgroupDone
+            result[i].subgroups[j].amount.incomplete = amountSubgroupIncomplete
+
             hasDataGroup ||= hasDataSubgroup
+
+            timeGroupTotal += timeSubgroupTotal
+            timeGroupDone += timeSubgroupDone
+            timeGroupIncomplete += timeSubgroupIncomplete
+
+            amountGroupTotal += amountSubgroupTotal
+            amountGroupDone += amountSubgroupDone
+            amountGroupIncomplete += amountSubgroupIncomplete
         }
 
         result[i].hasData = hasDataGroup
+
+        result[i].time.total      = timeGroupTotal
+        result[i].time.done       = timeGroupDone
+        result[i].time.incomplete = timeGroupIncomplete
+
+        result[i].amount.total      = amountGroupTotal
+        result[i].amount.done       = amountGroupDone
+        result[i].amount.incomplete = amountGroupIncomplete
     }
 
     // __ Сортируем массивы внутри групп
@@ -1593,13 +1708,33 @@ export function groupTaskLinesForExecuteForUnion(taskLines: ISewingTaskLine[]): 
             groupName: groupName as ISewingTaskLinesGroupNames,
             groupType: 'dark',
             subgroups: [],
-            hasData  : false
+            hasData  : false,
+            time     : {
+                total     : 0,
+                done      : 0,
+                incomplete: 0,
+            },
+            amount   : {
+                total     : 0,
+                done      : 0,
+                incomplete: 0,
+            },
         }
 
         for (const groupItem of groupsArr) {
             workGroup.groupType = groupItem.groupType
             if (groupItem.hasData) {
+
                 workGroup.hasData = true
+
+                workGroup.time.total += groupItem.time.total
+                workGroup.time.done += groupItem.time.done
+                workGroup.time.incomplete += groupItem.time.incomplete
+
+                workGroup.amount.total += groupItem.amount.total
+                workGroup.amount.done += groupItem.amount.done
+                workGroup.amount.incomplete += groupItem.amount.incomplete
+
                 groupItem.subgroups.forEach(subgroup => {
                     let orderTitle = ''
                     for (let i = 0; i < subgroup.lines.length; i++) {
@@ -1614,7 +1749,7 @@ export function groupTaskLinesForExecuteForUnion(taskLines: ISewingTaskLine[]): 
                         {
                             ...subgroup,
                             subgroupOrderTitle: orderTitle,
-                            lines: sortSewingTaskLinesForExecute(subgroup.lines, groupName as ISewingTaskLinesGroupNames, 'cover')
+                            lines             : sortSewingTaskLinesForExecute(subgroup.lines, groupName as ISewingTaskLinesGroupNames, 'cover')
                         }
                     ]
                 })
@@ -1625,7 +1760,7 @@ export function groupTaskLinesForExecuteForUnion(taskLines: ISewingTaskLine[]): 
         result.push(workGroup)
     }
 
-    // console.log('result: ', result)
+    console.log('result: ', result)
     return result
 }
 
@@ -1747,7 +1882,7 @@ export function isCover(element: ISewingTaskModel) {
     return element.name.toLowerCase().includes('чехол')
 }
 
-// __ Дополнительно проверяем, является ли модель Чехлом
+// __ Дополнительно проверяем, является ли модель расчетной
 export function isAverage(element: ISewingTaskModel | ISewingTaskLine) {
     if (isSewingTaskLine(element)) return element.element_type.is_average
     return element.machine_type_ref === SEWING_MACHINES.AVERAGE

@@ -20,8 +20,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('sewing_task_lines', function (Blueprint $table) {
-            $table->string('false_history', 255)->change();
-            $table->string('false_reason', 255)->change();
+            $table->string('false_history', 255)->nullable()->change();
+            $table->string('false_reason', 255)->nullable()->change();
         });
     }
 };

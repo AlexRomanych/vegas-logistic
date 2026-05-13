@@ -36,7 +36,12 @@
             <tbody v-for="(subgroup, idx) of printData" :key="idx" class="group-section">
             <template v-if="subgroup.lines.length !== 0">
                 <tr class="group-header">
-                    <td colspan="13">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>
+                    <td colspan="13">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} -
+                        Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }}) /
+                        Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }}) /
+                        Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})
+                    </td>
+                    <!--<td colspan="13">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>-->
                 </tr>
                 <tr v-for="(line, index) of subgroup.lines" :key="line.id">
                     <td class="data-td">{{ index + 1 }}</td>
@@ -69,7 +74,7 @@ import type { ISewingTaskLine, ISewingTaskLinesSubgroup } from '@/types'
 import { onMounted, ref } from 'vue'
 
 import { getCoverSizeString, getSewingLineMachineType, getSewingTaskModelCoverName, /*getTimeString*/ } from '@/app/helpers/manufacture/helpers_sewing.ts'
-import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
@@ -96,7 +101,7 @@ const sewingMachine = (sewingLine: ISewingTaskLine) => {
 }
 
 const handlePrint = () => {
-    window.print();
+    window.print()
 }
 
 onMounted(() => {
@@ -209,7 +214,8 @@ onMounted(() => {
     @page {
         margin: 1cm;
         size: portrait; /* Альбомная ориентация, так как таблица широкая */
-        /*size: landscape;*/ /* Альбомная ориентация, так как таблица широкая */
+        /*size: landscape;*/
+        /* Альбомная ориентация, так как таблица широкая */
     }
 }
 </style>

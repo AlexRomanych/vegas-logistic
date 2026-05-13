@@ -173,10 +173,11 @@ import type { IRenderData, ISewingDay, ISewingTaskLine, ISewingTaskLinesGroupDat
 
 import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
 
-import { groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getSewingTaskLineTime, groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_sewing.ts'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 // import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
 
@@ -247,7 +248,7 @@ const render: IRenderData = reactive({
         data          : (entity: IEntity) => entity?.taskTitle || '',
     },
     task_total      : {
-        header        : ['ВСЕГО,', 'ШТ.'],
+        header        : ['ВСЕГО,', 'ШТ. / ТР-ТЫ'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -258,10 +259,10 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSum(entity.groups).toString(),
+        data          : (entity: IEntity) => groupSumPics(entity.groups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups)),
     },
     task_total_done : {
-        header        : ['ВЫПОЛНЕНО,', 'ШТ.'],
+        header        : ['ВЫПОЛНЕНО,', 'ШТ. / ТР-ТЫ'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -272,10 +273,10 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSum(entity.groups, true).toString(),
+        data          : (entity: IEntity) => groupSumPics(entity.groups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups, true)),
     },
     task_total_false: {
-        header        : ['НЕ ВЫПОЛНЕНО,', 'ШТ.'],
+        header        : ['НЕ ВЫПОЛНЕНО,', 'ШТ. / ТР-ТЫ'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -286,7 +287,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSum(entity.groups, false).toString(),
+        data          : (entity: IEntity) => groupSumPics(entity.groups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups, false)),
     },
     group_title     : {
         header        : ['СМЕННОЕ ЗАДАНИЕ', ''],
@@ -314,7 +315,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSum(entity.subgroups).toString(),
+        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups)),
     },
     group_done      : {
         header        : ['ВЫПОЛНЕНО', ''],
@@ -328,7 +329,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSum(entity.subgroups, true).toString(),
+        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, true)),
     },
     group_false     : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
@@ -342,7 +343,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSum(entity.subgroups, false).toString(),
+        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, false)),
     },
     subgroup_title  : {
         header    : ['СМЕННОЕ ЗАДАНИЕ', ''],
@@ -372,7 +373,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSum(entity.lines).toString(),
+        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines)),
     },
     subgroup_done   : {
         header        : ['ВЫПОЛНЕНО', ''],
@@ -386,7 +387,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSum(entity.lines, true).toString(),
+        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, true)),
     },
     subgroup_false  : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
@@ -400,28 +401,42 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSum(entity.lines, false).toString(),
+        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, false)),
     },
 })
 
 // __ Сумма по подгруппе (Глухие, УШМ + окантователь, УШМ и т.д.)
-const linesSum = (lines: ISewingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
+const linesSumPics = (lines: ISewingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
     if (checkType === null) return accLines + line.amount
     if (checkType) {
         return line.finished_at ? accLines + line.amount : accLines
     } else {
         return !line.finished_at ? accLines + line.amount : accLines
+
     }
 }, 0)
 
+const linesSumTime = (lines: ISewingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
+    if (checkType === null) return accLines + getSewingTaskLineTime(line)
+    if (checkType) {
+        return line.finished_at ? accLines + getSewingTaskLineTime(line) : accLines
+    } else {
+        return !line.finished_at ? accLines + getSewingTaskLineTime(line) : accLines
+    }
+}, 0)
+
+
 // __ Сумма по группе (АШМ, УШМ и Н/Д)
-const subgroupSum = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSum(subgroup.lines, checkType), 0)
+const subgroupSumPics = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumPics(subgroup.lines, checkType), 0)
+const subgroupSumTime = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumTime(subgroup.lines, checkType), 0)
 
 // __ Сумма по объекту (СЗ)
-const groupSum = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSum(group.subgroups, checkType), 0)
+const groupSumPics = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumPics(group.subgroups, checkType), 0)
+const groupSumTime = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumTime(group.subgroups, checkType), 0)
 
 // __ Сумма по всем объектам (СЗ + объединенное)
-// const dataSum     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSum(dataObject.groups, checkType), 0)
+// const dataSumPics     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSumPics(dataObject.groups, checkType), 0)
+// const dataSumTime     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSumTime(dataObject.groups, checkType), 0)
 
 
 // __ Формируем объект с данными для отображения
@@ -502,7 +517,7 @@ onMounted(() => {
     isLoading.value   = true
     dataObjects.value = prepareDataObjects()
     // console.log('data: ', dataObjects.value)
-    isLoading.value   = false
+    isLoading.value = false
 })
 
 watch(() => props.sewingDay, () => {

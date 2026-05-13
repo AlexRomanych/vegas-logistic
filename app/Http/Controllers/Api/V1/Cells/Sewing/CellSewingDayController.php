@@ -536,4 +536,61 @@ class CellSewingDayController extends Controller
     }
 
 
+    /**
+     * ___ Установки маяка готовности к добавлению новых СЗ
+     * @param Request $request
+     * @return SewingDayResource|string
+     */
+    public function readySetSewingDay(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:sewing_days,id',
+            ]);
+
+            $sewingDay = SewingDay::query()->find($validated['id']);
+            $sewingDay->ready = true;
+
+            $history = $sewingDay->history;
+            if (is_null($history)) {
+                $history = [];
+            }
+
+            $history[] = [
+                'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
+                'by'     => auth()->id(),
+                'action' => 'Set ready for adding new Sewing Tasks',
+            ];
+            $sewingDay->history = $history;
+
+            $sewingDay->save();
+
+            return new SewingDayResource($sewingDay);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Установки маяка готовности к добавлению новых СЗ
+     * @param Request $request
+     * @return SewingDayResource|string
+     */
+    public function readyUnsetSewingDay(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:sewing_days,id',
+            ]);
+
+            $sewingDay = SewingDay::query()->find($validated['id']);
+            $sewingDay->ready = false;
+            $sewingDay->save();
+
+            return new SewingDayResource($sewingDay);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 }

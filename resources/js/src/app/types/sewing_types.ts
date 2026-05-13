@@ -171,7 +171,8 @@ export type ISewingMachineKeys =
     typeof AVERAGE
 
 // __ Ключи для Типов ШМ
-export type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
+export type ISewingMachineTimesKeys = ISewingMachineKeys
+// export type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
 
 
 // __ Тип для Средних значений для Average модели
@@ -403,6 +404,7 @@ export type ISewingDay = {
     responsible: ISewingDayWorker | null
     workers: ISewingDayWorker[]
 
+    ready: boolean  // __ Готовность к добавлению новых СЗ
     collapsed?: boolean
 }
 
@@ -464,8 +466,18 @@ export interface ISewingTaskLinesGroup {
 export interface ISewingTaskLinesGroupData {
     groupName: ISewingTaskLinesGroupNames
     groupType: IColorTypes
-    hasData: boolean,
-    subgroups: ISewingTaskLinesSubgroup[],
+    hasData: boolean
+    time: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    amount: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    subgroups: ISewingTaskLinesSubgroup[]
     // subgroups: {
     //     subgroupName:ISewingTaskLinesSubGroupNames
     //     subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
@@ -479,8 +491,18 @@ export interface ISewingTaskLinesGroupData {
 
 export interface ISewingTaskLinesSubgroup {
     subgroupName:ISewingTaskLinesSubGroupNames
-    subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
+    subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
-    hasData: boolean,
+    hasData: boolean
+    time: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    amount: {
+        total: number
+        done: number
+        incomplete: number
+    }
     lines: ISewingTaskLine[]
 }

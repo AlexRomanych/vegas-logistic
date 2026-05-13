@@ -1,6 +1,8 @@
 <template>
     <template v-if="!isLoading">
         <div class="flex m-2">
+
+
             <template v-if="isStartAvailable">
                 <!-- __ Начать/Закончить выполнение -->
                 <AppLabelMultiLineTS
@@ -13,6 +15,20 @@
                     width="w-[150px]"
                     @click="handleStartAction"
                 />
+
+
+                <!-- __ Остановить для добавления новых СЗ -->
+                <AppLabelMultiLineTS
+                    :text="addNewTasksLabelTitle"
+                    :type="addNewTasksLabelType"
+                    align="center"
+                    class="start-group cursor-pointer"
+                    rounded="4"
+                    text-size="mini"
+                    width="w-[150px]"
+                    @click="handleReadyAction"
+                />
+
 
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
@@ -114,7 +130,7 @@
                 <!-- __ Персонал -->
                 <div class="ml-8">
                     <ExecutePersonal
-                        :can-edit="isStartAvailable"
+                        :can-edit="isStartAvailable "
                         :sewing-day="sewingDay!"
                         @add-worker="addWorker"
                         @add-workers="addWorkers"
@@ -127,7 +143,7 @@
                 <!-- __ Сами СЗ -->
                 <div class="">
                     <ExecuteDayTask
-                        :is-running="isSewingDayStarted as boolean"
+                        :is-running="isSewingDayStarted  && !isSewingDayReadyForNewTasks"
                         :sewing-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
@@ -212,13 +228,18 @@ let timer: number | null = null
 const clearTimer = () => timer && clearInterval(timer)
 
 // __ Группа Старта СЗ
-const isStartAvailable   = computed(() => {
+const isStartAvailable = computed(() => {
     // return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
     return tasksBeforeCurrentDay.value.length === 0 && sewingDay.value?.sewing_tasks.length !== 0
 })
 // const everyTaskIsPending = computed(() => sewingDay.value?.sewing_tasks.every(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID))
-const isSewingDayStarted = computed(() => sewingDay.value?.start_at && !sewingDay.value?.finish_at)
 
+
+// __ #############################################
+// __ Маяк запуска СЗ
+const isSewingDayStarted = computed(() => !!(sewingDay.value?.start_at && !sewingDay.value?.finish_at))
+
+// __ Кнопка Начать/Закончить выполнение
 const startLabelTitle = computed(() => {
     // console.log('sewingDay: ', sewingDay.value)
     // console.log('pendingTasksPresents: ', pendingTasksPresents.value)
@@ -227,15 +248,29 @@ const startLabelTitle = computed(() => {
     // __ Есть Готовые к выполнению СЗ
     if (pendingTasksPresents.value) {
         if (!sewingDay.value?.start_at) {
-            return ['Начать', 'выполнение']
+            return ['🚀 Начать', 'выполнение']
         } else if (sewingDay.value?.start_at && sewingDay.value?.finish_at) {
             return ['Продолжить', 'выполнение']
         }
     }
-    return ['Закончить', 'выполнение']
+    return ['🏁 Закончить', 'выполнение']
 })
 
 const startLabelType = computed(() => (!isSewingDayStarted.value ? 'warning' : 'orange'))
+// __ #############################################
+
+// __ #############################################
+// __ Маяк остановки СЗ для добавления новых СЗ
+const isSewingDayReadyForNewTasks = computed(() => sewingDay.value?.ready)
+
+// __ Кнопка Остановить для добавления новых СЗ
+const addNewTasksLabelTitle = computed(() => {
+    return !isSewingDayReadyForNewTasks.value ? ['Остановить для', 'добавления новых СЗ'] : ['Продолжить', 'выполнение']
+})
+
+const addNewTasksLabelType = computed(() => (!isSewingDayReadyForNewTasks.value ? 'stone' : 'danger'))
+// __ #############################################
+
 
 // __ Есть ли СЗ со статусом Готово к выполнению
 const pendingTasksPresents = computed(() =>
@@ -415,6 +450,45 @@ async function showError(error: string | string[] | null = null) {
     await appModalAsyncMultiline.value!.show()
 }
 
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---      Пауза для добавления новых СЗ            !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const handleReadyAction = async () => {
+    if (!isSewingDayReadyForNewTasks.value) {
+        modalInfoText.value = ['Смена будет приостановлена', 'для добавления новых СЗ!']
+        modalInfoType.value = 'primary'
+        modalInfoMode.value = 'confirm'
+        const answer        = await appModalAsyncMultiline.value!.show()
+
+        if (!answer) return
+
+        const readyDay = await sewingStore.readySetSewingDay(sewingDay.value!.id)
+        if (checkCRUD(readyDay)) {
+            sewingDay.value!.ready = readyDay.ready
+
+        } else {
+            await showError()
+            return
+        }
+    } else {
+        modalInfoText.value = ['Смена будет продолжена.', 'Для корректной работы приложения', 'страница будет перезагружена!']
+        modalInfoType.value = 'danger'
+        modalInfoMode.value = 'inform'
+        await appModalAsyncMultiline.value!.show()
+
+        const readyDay = await sewingStore.readyUnsetSewingDay(sewingDay.value!.id)
+        if (checkCRUD(readyDay)) {
+            sewingDay.value!.ready = readyDay.ready
+            window.location.reload()
+        } else {
+            await showError()
+            return
+        }
+    }
+}
+
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---                Старт / Стоп                   !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -444,10 +518,20 @@ const handleStartAction = async () => {
     } else {
         // __ Стоп.
 
+        // __    Проверяем, не находится ли СЗ в процессе паузы для добавления новых СЗ
         // __ 1. Проверяем, заполнен ли персонал
         // __ 2. Проверяем, есть ли ответственный
         // __ 3. Проверяем по каждому СЗ, выполнены ли все задания
         // __ 4. Закрываем выполнение
+
+        if (isSewingDayReadyForNewTasks.value) {
+            await showError([
+                'Выполнение СЗ находится в процессе паузы',
+                'для добавления новых СЗ!',
+                'Для закрытия смены необходимо возобновить выполнение.'
+            ])
+            return
+        }
 
         if (sewingDay.value!.workers.length === 0) {
             await showError('Необходимо заполнить персонал!')

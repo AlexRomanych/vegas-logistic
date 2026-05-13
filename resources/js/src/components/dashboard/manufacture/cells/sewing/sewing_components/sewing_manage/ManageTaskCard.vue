@@ -533,7 +533,7 @@ const divideElementAmount = async () => {
             .filter(item => /*item.id === workElement.id ||*/ item.id_ref === workElement.id_ref)   // __ у новых строк ID = 0
             .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
 
-        let fraction = ((maxPosition - Math.trunc(maxPosition)) * 10 | 0) / 10
+        const fraction = ((maxPosition - Math.trunc(maxPosition)) * 10 | 0) / 10
 
         // __ Если позиция больше 0.9, то не даем разделить
         if (fraction > 0.8) {

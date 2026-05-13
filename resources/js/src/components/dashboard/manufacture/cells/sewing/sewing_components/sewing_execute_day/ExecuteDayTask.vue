@@ -162,8 +162,13 @@
 
                 <template v-if="subgroup.hasData">
 
-                    <div v-if="showSubgroupNames" class="ml-2 pt-1">
-                        <span class="font-semibold italic underline">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</span>
+                    <div v-if="showSubgroupNames" class="ml-2 pt-1 font-semibold italic underline">
+                        {{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} - <span
+                        class="text-blue-600">Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }})</span> / <span
+                        class="text-green-600">Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }})</span> / <span
+                        class="text-red-600">Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})</span>
+                        <!--<span class="font-semibold italic underline">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</span>-->
+                        <!--<span class="font-semibold italic underline">{{ getSubgroupTitle(subgroup) }}</span>-->
                     </div>
 
                     <div
@@ -307,9 +312,19 @@
 import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
-import type { IColorTypes, IDividerItem, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
+import type {
+    IColorTypes,
+    IDividerItem,
+    ISewingTask,
+    ISewingTaskLine,
+    /*ISewingTaskLinesSubgroup,*/
+    ISewingTaskOrderLine
+} from '@/types'
 
 // import { useSewingStore } from '@/stores/SewingStore.ts'
+
+import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
+import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
 
 import {
     getCoverSizeString,
@@ -326,8 +341,6 @@ import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/s
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
 
 
 interface IProps {
@@ -392,6 +405,11 @@ const taskTitle = computed(() => {
     }
     return `${props.sewingTask.position}. ${props.sewingTask.order.client.short_name} №${props.sewingTask.order.order_no_num}`
 })
+
+// __ Получаем название подгруппы
+// const getSubgroupTitle = (subgroup:  ISewingTaskLinesSubgroup) => {
+//     return `${subgroup.subgroupOrderTitle}: ${subgroup.subgroupName} - Всего: ${subgroup.amount.total} / Выполнено: ${subgroup.amount.done}`
+// }
 
 // __ Формируем объект выполнения
 // const sewingLines       = ref<ISewingTaskLine[]>([])

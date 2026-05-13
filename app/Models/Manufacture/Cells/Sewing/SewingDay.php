@@ -21,6 +21,8 @@ class SewingDay extends Model
         'resume_at' => 'datetime',
         'finish_at' => 'datetime',
         'duration'  => 'integer',
+        'history'   => 'array',
+
     ];
 
     // protected function casts(): array
