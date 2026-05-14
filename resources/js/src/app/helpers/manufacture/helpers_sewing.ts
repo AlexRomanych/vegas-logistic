@@ -1566,6 +1566,8 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
 
         for (let j = 0; j < SEWING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
 
+            // const TEMP_TKCH = new Set<string>(SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.map(tkch => tkch.trim().toUpperCase().replaceAll(' ', '')))
+
             const TEMP_TKCH = new Set<string>()
             SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.forEach(tkch => {
                 TEMP_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
@@ -1636,8 +1638,6 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
                         amountSubgroupTotal += lines[k].amount
                     }
                 }
-
-
             }
 
             result[i].subgroups[j].hasData = hasDataSubgroup

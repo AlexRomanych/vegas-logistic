@@ -29,6 +29,7 @@
                 <th>Прим. 1</th>
                 <th>Прим. 2</th>
                 <th>Прим. 3</th>
+                <th>Заявка</th>
                 <!--<th>Отметка</th>-->
             </tr>
             </thead>
@@ -36,12 +37,12 @@
             <tbody v-for="(subgroup, idx) of printData" :key="idx" class="group-section">
             <template v-if="subgroup.lines.length !== 0">
                 <tr class="group-header">
-                    <td colspan="13">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} -
+                    <td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} -
                         Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }}) /
                         Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }}) /
                         Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})
                     </td>
-                    <!--<td colspan="13">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>-->
+                    <!--<td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>-->
                 </tr>
                 <tr v-for="(line, index) of subgroup.lines" :key="line.id">
                     <td class="data-td">{{ index + 1 }}</td>
@@ -58,6 +59,7 @@
                     <td>{{ line.order_line.describe_1 ?? '' }}</td>
                     <td>{{ line.order_line.describe_2 ?? '' }}</td>
                     <td>{{ line.order_line.describe_3 ?? '' }}</td>
+                    <td>{{ subgroup.subgroupOrderTitle ?? '' }}</td>
 
                     <!--<td class="empty-cell"></td>-->
                 </tr>
