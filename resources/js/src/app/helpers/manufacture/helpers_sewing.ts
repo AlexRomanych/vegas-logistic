@@ -1520,6 +1520,17 @@ export function getCoverTKCH(line: ISewingTaskLine) {
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
 export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: string | null = null): ISewingTaskLinesGroupData[] {
 
+    // __ Собираем все ТКЧ в один сет для проверки, что в исходных данных ничего криво не написано и не добавлено
+    const ALL_TKCH = new Set<string>()
+    SEWING_TASK_GROUP_RULES.forEach(rule => {
+        rule.SUBGROUPS.forEach(subgroup => {
+            subgroup.SUBGROUP_TCHK.forEach(tkch => {
+                ALL_TKCH.add(tkch)
+            })
+        })
+
+    })
+
     const result: ISewingTaskLinesGroupData[] = []
 
     // __ Группируем по группам согласно правилам в SEWING_TASK_GROUP_RULES
@@ -1583,7 +1594,8 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
             }
 
             for (let k = 0; k < lines.length; k++) {
-                if (getCoverTKCH(lines[k])) {
+                const tkch = getCoverTKCH(lines[k])
+                if (tkch && ALL_TKCH.has(tkch)) {
                     if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(getCoverTKCH(lines[k]) || '')) {
                         // if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
                         result[i].subgroups[j].lines.push(lines[k])
@@ -1618,16 +1630,7 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
                     }
                 }
 
-                // if (isTaskLineDone(lines[k])) {
-                //     timeSubgroupDone += getSewingTaskLineTime(lines[k])
-                //     amountSubgroupDone += lines[k].amount
-                // } else {
-                //     timeSubgroupIncomplete += getSewingTaskLineTime(lines[k])
-                //     amountSubgroupIncomplete += lines[k].amount
-                // }
-                //
-                // timeSubgroupTotal += getSewingTaskLineTime(lines[k])
-                // amountSubgroupTotal += lines[k].amount
+
             }
 
             result[i].subgroups[j].hasData = hasDataSubgroup

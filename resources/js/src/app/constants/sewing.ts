@@ -188,6 +188,7 @@ export const SEWING_DAY_DRAFT: ISewingDay = {
         id        : 0,
     },
     workers      : [],
+    ready        : false,
 }
 
 
