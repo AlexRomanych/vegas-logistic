@@ -1525,11 +1525,12 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
     SEWING_TASK_GROUP_RULES.forEach(rule => {
         rule.SUBGROUPS.forEach(subgroup => {
             subgroup.SUBGROUP_TCHK.forEach(tkch => {
-                ALL_TKCH.add(tkch)
+                ALL_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
             })
         })
-
     })
+
+    // console.log(ALL_TKCH)
 
     const result: ISewingTaskLinesGroupData[] = []
 
@@ -1565,6 +1566,11 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
 
         for (let j = 0; j < SEWING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
 
+            const TEMP_TKCH = new Set<string>()
+            SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.forEach(tkch => {
+                TEMP_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+            })
+
             let hasDataSubgroup = false
 
             let timeSubgroupTotal      = 0
@@ -1594,9 +1600,10 @@ export function groupTaskLinesForExecute(lines: ISewingTaskLine[], orderTitle: s
             }
 
             for (let k = 0; k < lines.length; k++) {
-                const tkch = getCoverTKCH(lines[k])
+                const tkch = getCoverTKCH(lines[k])?.trim().toUpperCase().replaceAll(' ', '')
                 if (tkch && ALL_TKCH.has(tkch)) {
-                    if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(getCoverTKCH(lines[k]) || '')) {
+                    if (TEMP_TKCH.has(tkch)) {
+                        // if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.toUpperCase().replaceAll(' ', '').includes(tkch || '')) {
                         // if (SEWING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
                         result[i].subgroups[j].lines.push(lines[k])
                         hasDataSubgroup = true
