@@ -446,7 +446,7 @@
                                             :render-object="render.manufacture_status"
                                         />
 
-                                        <!-- __ Тип производства -->
+                                        <!-- __ Схема пошива -->
                                         <AppLabelTSWrapper
                                             :arg="i === 1 ? model : model.cover"
                                             :render-object="render.sewing_operation_schema"
@@ -994,7 +994,7 @@ const render: IRenderData = reactive({
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
-        dataAlign     : DATA_ALIGN,
+        dataAlign     : 'center',
         placeholder   : '🔍Схема...',
         data          : (model: IModel) => model.sewing_operation_schema ? model.sewing_operation_schema.name : '',
         class         : 'truncate',

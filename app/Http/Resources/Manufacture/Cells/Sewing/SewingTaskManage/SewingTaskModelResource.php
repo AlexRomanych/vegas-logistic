@@ -20,7 +20,7 @@ class SewingTaskModelResource extends JsonResource
         if ($this->isPhantomMachineTypeSet()) {
             return $this->additional['phantom_data']['phantom'];
         } else {
-            return $this->machine_type;
+            return $this->machine_type_name;
         }
     }
 

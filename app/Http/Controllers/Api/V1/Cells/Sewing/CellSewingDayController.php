@@ -372,7 +372,7 @@ class CellSewingDayController extends Controller
                 // __ Добавляем длительность в секундах
                 $startPoint = is_null($sewingDay->resume_at) ? $sewingDay->start_at : $sewingDay->resume_at;
                 $sewingDay->duration += $startPoint?->diffInSeconds($sewingDay->finish_at) ?? 0;
-                $sewingDay->save();
+                //$sewingDay->save();
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
@@ -388,8 +388,8 @@ class CellSewingDayController extends Controller
                     ->with(['statuses', 'sewingLines'])
                     ->get();
 
-                $pendTaskArr = $pendingSewingTasks->toArray();
-
+                // debug
+                //$pendTaskArr = $pendingSewingTasks->toArray();
 
                 // __ Собираем невыполненные СЗ
                 $falseTasks = [];
@@ -427,13 +427,16 @@ class CellSewingDayController extends Controller
                         ];
                     }
 
-                    // __ Создаем запись в Статусе: Выполнено
-                    $task->statuses()->syncWithoutDetaching([
-                        SewingTaskStatus::SEWING_STATUS_DONE_ID => [
-                            'set_at'     => $sewingDay->finish_at,
-                            'created_by' => auth()->id(),
-                        ]
-                    ]);
+                    // __ Создаем запись в Статусе: Выполнено, если в СЗ есть хотя бы одна выполненная линия
+                    if ($falseSewingLinesAmounts < $totalSewingLinesAmounts) {
+                        $task->statuses()->attach([
+                            SewingTaskStatus::SEWING_STATUS_DONE_ID => [
+                                'set_at'     => $sewingDay->finish_at,
+                                'created_by' => auth()->id(),
+                            ]
+                        ]);
+                    }
+
                 }
 
 
@@ -470,8 +473,18 @@ class CellSewingDayController extends Controller
                                 'action_at' => $nextChange->getManufactureDay(),
                                 'position'  => $position++,
                             ];
+
+                            // __ Тут же Создаем запись в Статусе: Готово к выполнению с добавлением секунды
+                            $falseTask['task']->statuses()->attach([
+                                SewingTaskStatus::SEWING_STATUS_PENDING_ID => [
+                                    'set_at'     => $sewingDay->finish_at->addSecond(),
+                                    'created_by' => auth()->id(),
+                                ]
+                            ]);
+
                             continue;
                         }
+
 
                         // __ Создаем новые СЗ и сохраняем в БД
                         $newTask = $falseTask['task']->replicate();
@@ -481,7 +494,7 @@ class CellSewingDayController extends Controller
                         $newTask->save();
 
                         // __ Создаем запись в Статусе: Создано при закрытии СЗ
-                        $newTask->statuses()->syncWithoutDetaching([
+                        $newTask->statuses()->attach([
                             SewingTaskStatus::SEWING_STATUS_ROLLING_ID => [
                                 'set_at'     => $sewingDay->finish_at,
                                 'created_by' => auth()->id(),
@@ -489,7 +502,7 @@ class CellSewingDayController extends Controller
                         ]);
 
                         // __ Тут же Создаем запись в Статусе: Готово к выполнению с добавлением секунды
-                        $newTask->statuses()->syncWithoutDetaching([
+                        $newTask->statuses()->attach([
                             SewingTaskStatus::SEWING_STATUS_PENDING_ID => [
                                 'set_at'     => $sewingDay->finish_at->addSecond(),
                                 'created_by' => auth()->id(),

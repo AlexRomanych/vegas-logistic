@@ -201,7 +201,7 @@ final class SewingService
             $model = ModelsService::getModelByCode1C($orderLine->model_code_1c);
 
             if (!ModelsService::isElementAverage($model)) {
-                match ($model->machine_type) {
+                match ($model->machine_type_name) {
                     SewingTask::FIELD_UNIVERSAL => $universals[] = $orderLine,
                     SewingTask::FIELD_AUTO => $autos[] = $orderLine,
                     SewingTask::FIELD_SOLID_HARD => $solidHards[] = $orderLine,

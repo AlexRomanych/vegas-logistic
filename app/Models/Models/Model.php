@@ -26,7 +26,8 @@ final class Model extends LaravelModel
     //attract Определяем признаки принадлежности модели к оборудованию
     public const MACHINE_AUTO = 'Автоматы';
     public const MACHINE_UNIVERSAL = 'УШМ';
-    public const MACHINE_UNIVERSAL_CHILD_OR_BOOK = 'Детские и книжка';
+    public const MACHINE_UNIVERSAL_CHILD_OR_BOOK = 'детские и книжка';
+    //public const MACHINE_UNIVERSAL_CHILD_OR_BOOK = 'Детские и книжка';
     public const MACHINE_SOLID = 'Глух';
     public const MACHINE_SOLID_LIGHT = 'Глух';
     public const MACHINE_SOLID_HARD = 'сложные';
@@ -85,20 +86,20 @@ final class Model extends LaravelModel
         'is_solid_hard',
         'is_undefined',
         'is_average',
-        'machine_type',
+        'machine_type_name',
     ];                                                                                                                 // Задаем типы швейных машин, исходя из свойства sewing_machine
 
     // info Получаем тип швейной машины для матраса
-    public function getMachineTypeAttribute(): string
+    public function getMachineTypeNameAttribute(): string
     {
         return match (true) {
-            $this->getIsAutoAttribute()      => ModelsService::TYPE_AUTO,
+            $this->getIsAutoAttribute() => ModelsService::TYPE_AUTO,
             $this->getIsUniversalAttribute() => ModelsService::TYPE_UNIVERSAL,
             $this->getIsSolidHardAttribute() => ModelsService::TYPE_SOLID_HARD,
             $this->getIsSolidLiteAttribute() => ModelsService::TYPE_SOLID_LITE,
-            $this->getIsAverageAttribute()   => ModelsService::TYPE_AVERAGE,
+            $this->getIsAverageAttribute() => ModelsService::TYPE_AVERAGE,
             // $this->getIsUndefinedAttribute() => ModelsService::TYPE_UNDEFINED,
-            default                          => ModelsService::TYPE_UNDEFINED
+            default => ModelsService::TYPE_UNDEFINED
         };
     }
 
@@ -113,7 +114,7 @@ final class Model extends LaravelModel
     {
         return
             mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL) !== false ||
-            mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL_CHILD_OR_BOOK) !== false;   // без учета регистра
+            mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL_CHILD_OR_BOOK) !== false;   // без учета регистра        return
     }
 
     //info Проверяем на Глухой
@@ -173,12 +174,12 @@ final class Model extends LaravelModel
             ->whereHas('modelManufactureStatus', function ($q) {
                 $q->whereIn('id', ['0', '3', '4', /*'5', '6', '7'*/]);
             });
-            // __ ...и сразу подгружаем связь, чтобы не забыть в контроллере
-            // ->with([
-            //     'type' => function ($q) {
-            //         $q->select('id', 'name', 'code_1c'); // Оптимизация: берем только нужные колонки
-            //     }
-            // ]);
+        // __ ...и сразу подгружаем связь, чтобы не забыть в контроллере
+        // ->with([
+        //     'type' => function ($q) {
+        //         $q->select('id', 'name', 'code_1c'); // Оптимизация: берем только нужные колонки
+        //     }
+        // ]);
     }
 
 
@@ -252,7 +253,8 @@ final class Model extends LaravelModel
 
 
     // Relations: Связь Модели со Схемой Типовых операций Пошива
-    public function sewingSchema(): BelongsTo {
+    public function sewingSchema(): BelongsTo
+    {
         return $this->belongsTo(SewingOperationSchema::class, 'sewing_operation_schema_id', 'id');
     }
 
@@ -262,9 +264,9 @@ final class Model extends LaravelModel
     {
         return $this
             ->belongsToMany(
-                SewingOperation::class,           // Класс, с которым связываемся
+                SewingOperation::class,             // Класс, с которым связываемся
                 SewingOperationModelPivot::TABLE,   // Промежуточная Таблица, связывающая классы
-                'model_code_1c',           // Ключ в промежуточной таблице, связывающий с текущим классом
+                'model_code_1c',                    // Ключ в промежуточной таблице, связывающий с текущим классом
                 'sewing_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(SewingOperationModelPivot::class)

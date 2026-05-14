@@ -78,6 +78,11 @@ export function getMachineType(machineType: ISewingMachineKeys) {
 // __ Тут может быть ситуация, когда модель - чехол, тогда получаем тип машины по базовой модели
 export function getSewingLineMachineType(sewingLine: ISewingTaskLine) {
 
+    if (sewingLine.id === 2158) {
+        console.log('debug: ', sewingLine)
+        // debugger
+    }
+
     // __ Получаем тип машины модели
     let machineType: ISewingMachineKeys | null = SEWING_MACHINES.UNDEFINED
     if (sewingLine.order_line.model.base && !sewingLine.order_line.model.cover) {           // __ Это условие того, что элемент - чехол
@@ -95,6 +100,11 @@ export function getSewingLineMachineType(sewingLine: ISewingTaskLine) {
 // __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
 export function getTimeString(sewingLine: ISewingTaskLine, twoLines: boolean = false) {
+
+    // if (sewingLine.id === 2158) {
+    //     console.log('debug: ', sewingLine)
+    //     debugger
+    // }
 
     const machineType = getSewingLineMachineType(sewingLine)
     if (!machineType) {
