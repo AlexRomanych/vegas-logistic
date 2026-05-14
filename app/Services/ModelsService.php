@@ -893,7 +893,7 @@ final class ModelsService implements VegasDataUpdateContract
         if ($model) {
             // Если модель прогнозная, то проверяем по префиксу в коде 1С, который создаем сами
             return mb_stripos($model->code_1c, CLIENT_AVERAGE_MATTRESS_PREFIX) !== false
-                || mb_stripos($model->name_1c, CLIENT_AVERAGE_ACCESSORY_PREFIX) !== false;
+                || mb_stripos($model->code_1c, CLIENT_AVERAGE_ACCESSORY_PREFIX) !== false;
 
         }
 
