@@ -26,6 +26,7 @@ final class Model extends LaravelModel
     //attract Определяем признаки принадлежности модели к оборудованию
     public const MACHINE_AUTO = 'Автоматы';
     public const MACHINE_UNIVERSAL = 'УШМ';
+    public const MACHINE_UNIVERSAL_CHILD_OR_BOOK = 'Детские и книжка';
     public const MACHINE_SOLID = 'Глух';
     public const MACHINE_SOLID_LIGHT = 'Глух';
     public const MACHINE_SOLID_HARD = 'сложные';
@@ -110,7 +111,9 @@ final class Model extends LaravelModel
     //info Проверяем на УШМ
     public function getIsUniversalAttribute(): bool
     {
-        return mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL) !== false;        // без учета регистра
+        return
+            mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL) !== false ||
+            mb_stripos($this->sewing_machine, self::MACHINE_UNIVERSAL_CHILD_OR_BOOK) !== false;   // без учета регистра
     }
 
     //info Проверяем на Глухой
