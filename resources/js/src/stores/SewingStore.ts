@@ -65,6 +65,7 @@ const URL_SEWING_DAY_RESPONSIBLE_ADD        = '/sewing/day/responsible/add'     
 const URL_SEWING_DAY_RESPONSIBLE_REMOVE     = '/sewing/day/responsible/remove'      // URL для удаления ответственного к дню
 const URL_SEWING_DAY_START                  = '/sewing/day/start'                   // URL для старта дня СЗ
 const URL_SEWING_DAY_FINISH                 = '/sewing/day/finish'                  // URL для финиш дня СЗ
+const URL_SEWING_DAY_READY_GET              = '/sewing/day/ready/get'               // URL для получения маячка готовности дня с СЗ к добавлению новых СЗ
 const URL_SEWING_DAY_READY_SET              = '/sewing/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
 const URL_SEWING_DAY_READY_UNSET            = '/sewing/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
 
@@ -194,10 +195,15 @@ export const useSewingStore = defineStore('sewing', () => {
             return
         }
 
+        // __ Если нет статусов, то получаем их с сервера
+        if (globalSewingTaskStatuses.value.length === 0) {
+            await getSewingTaskStatuses()
+        }
+
         diffs.forEach(diff => {
 
-            // __ Если изменилась позиция или дата производства, то меняем ее в глобальном массиве
-            if (diff.isPositionChanged || diff.isMoved) {
+            // __ Если изменилась позиция или дата производства или статус, то меняем ее в глобальном массиве
+            if (diff.isPositionChanged || diff.isMoved || diff.statusId) {
                 const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === diff.taskId)
                 if (findTask) {
 
@@ -207,13 +213,22 @@ export const useSewingStore = defineStore('sewing', () => {
 
                     if (diff.isMoved) {
                         findTask.action_at = additionDaysInStrFormat(globalRenderPeriod.value.start, diff.dayToOffset ?? 0)
+                    }
+
+                    if (diff.statusId) {
+                        const findStatus = globalSewingTaskStatuses.value.find((status: ISewingTaskStatusEntity) => status.id === diff.statusId)
+                        if (findStatus) {
+                            findTask.current_status.id = findStatus.id
+                            findTask.current_status.name = findStatus.name
+                            findTask.current_status.color = findStatus.color
+                        }
 
                     }
                 }
             }
         })
 
-        await saveChanges()   // __ Сохраняем изменения
+        return await saveChanges()   // __ Сохраняем изменения
     }
 
     // __ Объединение СЗ для одинаковых Заявок в одном календарном дне
@@ -262,13 +277,13 @@ export const useSewingStore = defineStore('sewing', () => {
     const applyMergeTasks = async (sewingTasks: ISewingTask[]) => {
 
         mergeTasks(sewingTasks)
-        await saveChanges()
+        return await saveChanges()
     }
 
     // __ Применение объединения СЗ для массива массивов СЗ  [[...], [...]]
     const applyMergeTasksGroups = async (sewingTasksGroups: ISewingTask[][]) => {
         sewingTasksGroups.forEach(sewingTasks => mergeTasks(sewingTasks))
-        await saveChanges()
+        return await saveChanges()
     }
 
 
@@ -875,6 +890,14 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
+    // __ Получение маячка готовности дня с СЗ к добавлению новых СЗ
+    const readyGetSewingDay = async (date: string, change: number = 1) => {
+        const response = await jwtGet(`${URL_SEWING_DAY_READY_GET}/${date}/${change}`)
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: readyGetSewingDay: ', result)
+        return result.data
+    }
+
     // __ Установки маяка готовности к добавлению новых СЗ
     const readySetSewingDay = async (id: number) => {
         const response = await jwtPatch_(URL_SEWING_DAY_READY_SET, { id })
@@ -961,7 +984,7 @@ export const useSewingStore = defineStore('sewing', () => {
         removeWorkerFromSewingDay,
         addResponsibleToSewingDay,
         removeResponsibleFromSewingDay,
-        startSewingDay, finishSewingDay, readySetSewingDay, readyUnsetSewingDay,
+        startSewingDay, finishSewingDay, readyGetSewingDay, readySetSewingDay, readyUnsetSewingDay,
         divideLineInSewingTaskPending,
 
         addSewingTaskToGlobal,

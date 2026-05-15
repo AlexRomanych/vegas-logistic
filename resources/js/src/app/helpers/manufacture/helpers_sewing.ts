@@ -78,11 +78,6 @@ export function getMachineType(machineType: ISewingMachineKeys) {
 // __ Тут может быть ситуация, когда модель - чехол, тогда получаем тип машины по базовой модели
 export function getSewingLineMachineType(sewingLine: ISewingTaskLine) {
 
-    if (sewingLine.id === 2158) {
-        console.log('debug: ', sewingLine)
-        // debugger
-    }
-
     // __ Получаем тип машины модели
     let machineType: ISewingMachineKeys | null = SEWING_MACHINES.UNDEFINED
     if (sewingLine.order_line.model.base && !sewingLine.order_line.model.cover) {           // __ Это условие того, что элемент - чехол
@@ -100,11 +95,6 @@ export function getSewingLineMachineType(sewingLine: ISewingTaskLine) {
 // __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
 export function getTimeString(sewingLine: ISewingTaskLine, twoLines: boolean = false) {
-
-    // if (sewingLine.id === 2158) {
-    //     console.log('debug: ', sewingLine)
-    //     debugger
-    // }
 
     const machineType = getSewingLineMachineType(sewingLine)
     if (!machineType) {
@@ -1047,8 +1037,12 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
                 taskChanges: {
                     action_at: { old: null, new: task.action_at },
                     position : { old: null, new: task.position },
+                    status : { old: null, new: task.current_status.id ?? null },
                 },
                 lineChanges,
+
+                // __ Добавочный статус, если он есть
+                // statusId: task.statusId ?? -1,
             })
             return
         }
@@ -1056,12 +1050,13 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
         // __ Сравниваем основные поля задачи
         const hasDateChanged     = task.action_at !== original.action_at
         const hasPositionChanged = task.position !== original.position
+        const hasStatusChanged = task.current_status.id !== original.current_status.id
 
         // __ Сравниваем строки пошива (детально)
         const lineDiffs = getTaskLinesDiff(task.sewing_lines, original.sewing_lines)
 
         // __ Если есть изменения хотя бы в одном месте
-        if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0) {
+        if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0 || hasStatusChanged) {
             diffs.push({
                 taskId: task.id,
                 type  : 'UPDATED',
@@ -1070,9 +1065,11 @@ export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: I
                 taskChanges: {
                     action_at: hasDateChanged ? { old: original.action_at, new: task.action_at } : null,
                     position : hasPositionChanged ? { old: original.position, new: task.position } : null,
+                    status: hasStatusChanged ? {old: original.current_status.id, new: task.current_status.id} : null,
                 },
                 // __ Массив изменений в строках
                 lineChanges: lineDiffs,
+
             })
         }
     })
@@ -1328,6 +1325,22 @@ export function isTaskStatusCreated(entity: ISewingTask | ISewingTaskStatus | nu
         throw new Error('Invalid entity type')
     }
     return item === SEWING_TASK_STATUSES.CREATED.ID || item === SEWING_TASK_STATUSES.ROLLING.ID
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+export function isTaskStatusRunning(entity: ISewingTask | ISewingTaskStatus | number): boolean {
+    let item: number
+    if (isSewingTask(entity)) {
+        item = entity.current_status.id
+    } else if (isSewingTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === SEWING_TASK_STATUSES.RUNNING.ID
 }
 
 // --- ------------------------------------------------------------------------------------

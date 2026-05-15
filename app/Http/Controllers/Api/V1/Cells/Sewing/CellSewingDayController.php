@@ -326,7 +326,7 @@ class CellSewingDayController extends Controller
 
                 foreach ($pendingSewingTasks as $task) {
                     // __ Создаем запись в Статусе: Выполняется
-                    $task->statuses()->syncWithoutDetaching([
+                    $task->statuses()->attach([
                         SewingTaskStatus::SEWING_STATUS_RUNNING_ID => [
                             'set_at'     => $sewingDay->start_at,
                             'created_by' => auth()->id(),
@@ -436,7 +436,6 @@ class CellSewingDayController extends Controller
                             ]
                         ]);
                     }
-
                 }
 
 
@@ -598,9 +597,60 @@ class CellSewingDayController extends Controller
 
             $sewingDay = SewingDay::query()->find($validated['id']);
             $sewingDay->ready = false;
+
+            $history = $sewingDay->history;
+            if (is_null($history)) {
+                $history = [];
+            }
+
+            $history[] = [
+                'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
+                'by'     => auth()->id(),
+                'action' => 'Set unready for adding new Sewing Tasks',
+            ];
+            $sewingDay->history = $history;
+
             $sewingDay->save();
 
             return new SewingDayResource($sewingDay);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Возвращает маяк готовности к добавлению новых СЗ
+     * @param string $date
+     * @param string $change
+     * @return array|false[]|string
+     */
+    public function readyGetSewingDay(string $date, string $change)
+    {
+        try {
+            $validated = Validator::make([
+                'date'   => $date,
+                'change' => $change,
+            ], [
+                'date'   => 'required|date_format:Y-m-d',
+                'change' => 'required|in:1,2',
+            ]);
+
+            if ($validated->fails()) {
+                throw new Exception($validated->errors()->first());
+            }
+
+            // __ Создаем производственный день или получаем его, если он уже существует
+            $data = $validated->validated();
+            $parsedDate = Carbon::parse($data['date']);
+            $day = SewingDay::query()
+                ->whereDate('action_at', '>=', $parsedDate->startOfDay())
+                ->whereDate('action_at', '<=', $parsedDate->endOfDay())
+                ->first();
+
+            return $day ? ['data' => !!$day->ready] : ['data' => false];
+
+            //return new SewingDayResource($day);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

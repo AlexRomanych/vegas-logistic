@@ -261,6 +261,9 @@ export interface IRenderMatrixDiff {
 
     // __ Не используется в данный момент
     areLinesChanged?: boolean
+
+    // __ Дополнительно задаем статус, чтобы задать его на бэке
+    statusId?: number
 }
 
 export interface IRenderMatrixLineDiffs {
@@ -289,6 +292,10 @@ export interface ISewingTaskArrayDiff {
             new: string
         } | null
         position?: {
+            old: number | null
+            new: number
+        } | null
+        status?: {
             old: number | null
             new: number
         } | null

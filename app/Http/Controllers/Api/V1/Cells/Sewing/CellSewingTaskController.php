@@ -570,6 +570,23 @@ class CellSewingTaskController extends Controller
                     $this->bulkUpdateTasks($tasksToUpdate);
                 }
 
+                // __ Смотрим, если еще прилетел статус, который нужно установить для СЗ,
+                // __ то устанавливаем его
+
+                $a = 0;
+                foreach ($diffs as $diff) {
+                    if (!is_null($diff['taskChanges']['status'])) {
+                        $setTask = SewingTask::query()->findOrFail($diff['taskId']);
+                        $setTask->statuses()->attach([
+                            $diff['taskChanges']['status']['new'] => [
+                                'set_at'     => Carbon::now(),
+                                'created_by' => auth()->id(),
+                            ]
+                        ]);
+                    }
+                }
+
+
                 return EndPointStaticRequestAnswer::ok();
 
                 // TODO: Разобраться с ответом

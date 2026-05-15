@@ -311,20 +311,20 @@
 
 <!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
 <script lang="ts" setup>
-    import type {
-        IColorTypes,
-        IDay,
-        IModalAsyncMenu,
-        IPlanMatrix,
-        ISewingTask,
-        ISewingTaskStatusesSet,
-        // IPlanMatrixDayItem,
-        // ISewingTaskLine,
-        // IAmountAndTime,
-        // ISewingMachineKeys,
-        // IPlanMatrixDay,
-        // ISewingTaskLine
-    } from '@/types'
+import type {
+    IColorTypes,
+    IDay,
+    IModalAsyncMenu,
+    IPlanMatrix, ISewingDay,
+    ISewingTask,
+    ISewingTaskStatusesSet,
+    // IPlanMatrixDayItem,
+    // ISewingTaskLine,
+    // IAmountAndTime,
+    // ISewingMachineKeys,
+    // IPlanMatrixDay,
+    // ISewingTaskLine
+} from '@/types'
 
     import { computed, inject, type Ref, ref } from 'vue'
     import { storeToRefs } from 'pinia'
@@ -343,23 +343,23 @@
         isToday,
         splitDate,
     } from '@/app/helpers/helpers_date'
-    import {
-        clearRenderMatrix,
-        clearRenderMatrixDay,
-        correctRenderMatrix,
-        createAmountAndTimeObj,
-        getDaysDifferenceFromSewingDates,
-        getDiffsWithPositions,
-        getSewingTaskAmountAndTime,
-        getSewingTasksDiff,
-        getSewingTasksGroupedByOrder,
-        getSewingTasksSameOrderInDay,
-        isTaskAverage,
-        isTaskStatusCreated,
-        orderSewingTasksByStatus,
-        repositionSewingTaskLines,
-        setTaskPositionInRenderMatrix,
-    } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import {
+    clearRenderMatrix,
+    clearRenderMatrixDay,
+    correctRenderMatrix,
+    createAmountAndTimeObj,
+    getDaysDifferenceFromSewingDates,
+    getDiffsWithPositions,
+    getSewingTaskAmountAndTime,
+    getSewingTasksDiff,
+    getSewingTasksGroupedByOrder,
+    getSewingTasksSameOrderInDay,
+    isTaskAverage,
+    isTaskStatusCreated, isTaskStatusRunning,
+    orderSewingTasksByStatus,
+    repositionSewingTaskLines,
+    setTaskPositionInRenderMatrix,
+} from '@/app/helpers/manufacture/helpers_sewing.ts'
     import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
     import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
@@ -589,8 +589,8 @@
         const movedElement = evt.draggedContext.element
         // console.log(movedElement)
         // return true
-        // __ Проверяем, что перемещаемый элемент со статусом 'Создано'
-        if (!isTaskStatusCreated(movedElement)) {
+        // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
+        if (!isTaskStatusCreated(movedElement) && !isTaskStatusRunning(movedElement)) {
             return false
         }
 
@@ -647,10 +647,53 @@
 
         // console.log('isOneDayAction: ', isOneDayAction)
 
+        // __ Получаем сам перемещаемый элемент
+        const movedElement = evt.item._underlying_vm_
+
         if (isOneDayAction) {
+
+            console.log('movedElement: ', movedElement)
+
+            // __ Если перемещаемый элемент со статусом 'Выполняется', проверяем маячок,
+            // __ который указывает на готовность к добавлению СЗ
+            if (isTaskStatusRunning(movedElement)) {
+
+                // __ Получаем флаг готовности к добавлению новых СЗ
+                const isReady: ISewingDay = await sewingStore.readyGetSewingDay(splitDate(movedElement.action_at))
+
+                if (!isReady) {
+                    await showError([
+                        'Ошибка!',
+                        'Для перемещения СЗ со статусом "Выполняется"',
+                        'необходимо приостановить выполнение СЗ',
+                        'для добавления новых СЗ!',
+                    ])
+
+                    // __ Откатываем изменения
+                    renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                    return
+                }
+            }
+
             // __ Перемещаем СЗ без вывода дополнительной информации
             await sewingStore.applyChanges(diffs) // __ Применяем изменения
+
         } else {
+
+            // __ Проверяем, что перемещаемый элемент не со статусом 'Выполняется'
+            // __ потому что здесь уже перемещение между днями, а с этим статусом только в рамках дня
+            if (isTaskStatusRunning(movedElement)) {
+                await showError([
+                    'Ошибка!',
+                    'Нельзя переместить СЗ со статусом "Выполняется"',
+                    'на другой день!',
+                ])
+
+                // __ Откатываем изменения
+                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                return
+            }
+
             // __ Находим те изменения, которые относятся к перемещаемой СЗ
             const diffsForSewingTask = diffs.find(diff => diff.isMoved)
             if (!diffsForSewingTask) {
@@ -709,14 +752,73 @@
 
             // __ Проверяем, что СЗ не находится в процессе выполнения
             if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
-                await showError([
-                    'Ошибка!',
-                    'Нельзя переместить СЗ в день, в котором',
-                    'есть СЗ в процессе выполнения!'
-                ])
+
+                // __ Получаем флаг готовности к добавлению новых СЗ
+                const isReady: ISewingDay = await sewingStore.readyGetSewingDay(splitDate(targetDate))
+
+                if (!isReady) {
+                    // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
+                    await showError([
+                        'Ошибка!',
+                        'Нельзя переместить СЗ в день, в котором',
+                        'есть СЗ в процессе выполнения!',
+                        'Для такого перемещения необходимо',
+                        'приостановить выполнение СЗ',
+                        'для добавления новых СЗ!'
+                    ])
+                    renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                    return
+                }
+
+                // __ Показываем предупреждение
+                modalInfoType.value = 'primary'
+                modalInfoMode.value = 'confirm'
+                modalInfoText.value = [
+                    'СЗ будет перемещено в день,',
+                    'в котором есть СЗ в процессе выполнения!',
+                    'Перемещаемому СЗ будет установлен статус "Выполняется".',
+                    'Отменить это действие нельзя!',
+                    'Продолжить?'
+                ]
+
+                const answer = await appModalAsyncMultiline.value!.show()
+                if (answer) {
+
+                    // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
+                    diffsForSewingTask.statusId = SEWING_TASK_STATUSES.RUNNING.ID
+                    // console.log('diffsForSewingTask: ', diffsForSewingTask)
+                    // console.log('diffs: ', diffs)
+
+                    const result = await sewingStore.applyChanges(diffs) // __ Применяем изменения
+                    // console.log('result: ', result)
+
+                    if (!checkCRUD(result)) {
+                        await showError()
+                        renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+                        return
+                    }
+
+                    return
+                }
+
+                // console.log('isReady: ', isReady)
+                // console.log('diffs: ', diffs)
+
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
                 return
+
             }
+
+            // // __ Проверяем, что СЗ не находится в процессе выполнения (Старый вариант)
+            // if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
+            //     await showError([
+            //         'Ошибка!',
+            //         'Нельзя переместить СЗ в день, в котором',
+            //         'есть СЗ в процессе выполнения!'
+            //     ])
+            //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+            //     return
+            // }
 
             // console.log('targetDAte: ', targetDAte)
 
