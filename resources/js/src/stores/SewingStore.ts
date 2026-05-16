@@ -36,6 +36,7 @@ const URL_SEWING_TASKS_STATUS_ON_DATE       = '/sewing/tasks/status/date/on'    
 const URL_SEWING_TASKS_STATUS_ON_DATE_CHECK = '/sewing/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
 const URL_SEWING_TASKS_COMMENT              = '/sewing/tasks/comment'               // URL для изменения комментария к Сменному заданию
 const URL_SEWING_TASKS_UPDATE               = '/sewing/tasks/update'                // URL для обновления Сменных заданий
+const URL_SEWING_TASKS_ACTION_AT_SET        = '/sewing/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 const URL_SEWING_TASK_LINE_DONE             = '/sewing/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 const URL_SEWING_TASK_LINE_FALSE            = '/sewing/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 const URL_SEWING_TASK_LINE_RESET            = '/sewing/tasks/line/reset'            // URL для сброса статуса для записи СЗ
@@ -463,7 +464,6 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
-
     // __ Сохранение Комментария к Сменному заданию - СЗ
     const setSewingTaskComment = async (id: number, comment: string | null = null) => {
         const response = await jwtPost(URL_SEWING_TASKS_COMMENT, { id, comment })
@@ -472,6 +472,13 @@ export const useSewingStore = defineStore('sewing', () => {
         return result.data
     }
 
+    // __ Установка даты выполнения СЗ
+    const setSewingTaskActionAt = async (id: number, date: string) => {
+        const response = await jwtPost(URL_SEWING_TASKS_ACTION_AT_SET, { id, date })
+        const result   = await response
+        if (DEBUG) console.log('SewingStore: setSewingTaskActionAt: ', result)
+        return result.data
+    }
 
     // --- ----------------------------------------------------------
     // --- ------ Сменные задания к выполнению (Pending) ------------
@@ -950,6 +957,7 @@ export const useSewingStore = defineStore('sewing', () => {
         deleteSewingTasksByOrderId,
         addSewingTasksByOrderId,
         setSewingTaskComment,
+        setSewingTaskActionAt,
         getSewingTaskStatuses,
         patchSewingTaskStatusColor,
         setSewingTaskLinesDone,

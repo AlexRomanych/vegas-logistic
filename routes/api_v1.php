@@ -130,6 +130,7 @@ Route::prefix('sewing')
         Route::get('tasks/status/date/on/check', [CellSewingTaskController::class, 'checkSewingTasksByStatusOnDate']);
         Route::post('tasks/update', [CellSewingTaskController::class, 'updateSewingTasks']);
         Route::post('tasks/comment', [CellSewingTaskController::class, 'setSewingTaskComment']);
+        Route::post('tasks/action/set', [CellSewingTaskController::class, 'setSewingTaskActionAt']);
         Route::post('tasks/line/done', [CellSewingTaskController::class, 'setSewingTaskLinesDone']);
         Route::post('tasks/line/false', [CellSewingTaskController::class, 'setSewingTaskLinesFalse']);
         Route::post('tasks/line/reset', [CellSewingTaskController::class, 'setSewingTaskLinesReset']);

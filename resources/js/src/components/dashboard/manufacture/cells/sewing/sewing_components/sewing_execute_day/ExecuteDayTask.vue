@@ -166,7 +166,9 @@
                         {{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} - <span
                         class="text-blue-600">Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }})</span> / <span
                         class="text-green-600">Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }})</span> / <span
-                        class="text-red-600">Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})</span>
+                        class="text-red-600">Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{
+                            formatTimeWithLeadingZeros(subgroup.time.incomplete)
+                        }})</span>
                         <!--<span class="font-semibold italic underline">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</span>-->
                         <!--<span class="font-semibold italic underline">{{ getSubgroupTitle(subgroup) }}</span>-->
                     </div>
@@ -306,6 +308,15 @@
         :text="modalText"
         :type="modalType"
     />
+
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -321,7 +332,7 @@ import type {
     ISewingTaskOrderLine
 } from '@/types'
 
-// import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useSewingStore } from '@/stores/SewingStore.ts'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
@@ -331,7 +342,7 @@ import {
     getExecuteTaskStatistics,
     getSewingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion, isTaskLineReset,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ExecuteDayFalseReason from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayFalseReason.vue'
@@ -341,6 +352,7 @@ import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/s
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 interface IProps {
@@ -357,8 +369,8 @@ const emits = defineEmits<{
     (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number; keep: number }): void
 }>()
 
-const router = useRouter()
-// const sewingStore = useSewingStore()
+const router      = useRouter()
+const sewingStore = useSewingStore()
 
 // console.log('props.sewingTask: ', props.sewingTask)
 
@@ -382,6 +394,13 @@ const modalText            = ref<string>('')
 const modalMode            = ref<'inform' | 'confirm'>('inform')
 const dividerElement       = ref<IDividerItem>({ name: '', amount: 0 })
 const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
 
 const statistics = computed(() => getExecuteTaskStatistics(props.sewingTask))
 
@@ -713,8 +732,38 @@ const handleMenuAction = (action: string) => {
     showMenu.value = false
 }
 
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
+
+
+const TASK_READY_ADD_STATUS_MESSAGE = ['СЗ приостановлено для', 'добавления новых заданий']
+
 // __ Выполнено
-const completeSelected = () => {
+const completeSelected = async () => {
+
+    // __ Получаем флаг готовности к добавлению новых СЗ и если все в процессе выполнения - выходим
+    const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(props.sewingTask.action_at))
+    console.log('isReady: ', isReady)
+
+    if (isReady) {
+        await showError(TASK_READY_ADD_STATUS_MESSAGE)
+        return
+    }
+
     const ids: number[] = []
 
     // __ Выбираем только задачи с нулевым статусом
@@ -736,6 +785,14 @@ const completeSelected = () => {
 
 // __ Не Выполнено
 const unCompleteSelected = async () => {
+
+    // __ Получаем флаг готовности к добавлению новых СЗ и если все в процессе выполнения - выходим
+    const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(props.sewingTask.action_at))
+    if (isReady) {
+        await showError(TASK_READY_ADD_STATUS_MESSAGE)
+        return
+    }
+
     const ids: number[] = []
 
     // __ Выбираем только задачи с нулевым статусом
@@ -766,6 +823,14 @@ const unCompleteSelected = async () => {
 
 // __ Сброс статуса
 const resetStatus = async () => {
+
+    // __ Получаем флаг готовности к добавлению новых СЗ и если все в процессе выполнения - выходим
+    const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(props.sewingTask.action_at))
+    if (isReady) {
+        await showError(TASK_READY_ADD_STATUS_MESSAGE)
+        return
+    }
+
     const ids: number[] = []
 
     // __ Выбираем только задачи не с нулевым статусом
@@ -787,6 +852,14 @@ const resetStatus = async () => {
 
 // __ Разбить количество
 const divideElementAmount = async () => {
+
+    // __ Получаем флаг готовности к добавлению новых СЗ и если все в процессе выполнения - выходим
+    const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(props.sewingTask.action_at))
+    if (isReady) {
+        await showError(TASK_READY_ADD_STATUS_MESSAGE)
+        return
+    }
+
     // __ Проверяем, что есть выделенные элементы
     if (selectedIds.value.size === 0) {
         return

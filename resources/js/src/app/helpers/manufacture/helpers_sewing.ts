@@ -1007,8 +1007,8 @@ export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: I
 export function getSewingTasksDiff(currentTasks: ISewingTask[], originalTasks: ISewingTask[]) {
     const diffs: ISewingTaskArrayDiff[] = []
 
-    console.log(currentTasks)
-    console.log(originalTasks)
+    // console.log(currentTasks)
+    // console.log(originalTasks)
 
     // __ Индексируем оригинал по ID для быстрого доступа
     const originalMap = new Map(originalTasks.map(task => [task.id, task]))

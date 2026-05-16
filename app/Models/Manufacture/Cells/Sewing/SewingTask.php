@@ -3,6 +3,7 @@
 namespace App\Models\Manufacture\Cells\Sewing;
 
 use App\Models\Order\Order;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -51,6 +52,27 @@ class SewingTask extends Model
         //     $q->whereIn('sewing_task_status_id', $statusIds);
         // });
     }
+
+    // ___ Поиск по дате
+    public function scopeWhereDayAt($query, string|Carbon $inDate)
+    {
+        // __ Важный нюанс:
+        // __ В твоем исходном коде использовался метод whereDate().
+        // __ Однако whereDate в SQL принудительно преобразует поле базы данных к формату YYYY-MM-DD
+        // __ (в PostgreSQL это делает функция DATE()), что убивает использование индексов по полю action_at.
+        // __ Поскольку ты передаешь полноценные startOfDay() и endOfDay() (со временем 00:00:00 и 23:59:59),
+        // __ правильнее и гораздо быстрее использовать обычный where().
+        // __ Это заставит базу использовать индекс и ускорит выборку.
+
+        // __ Если пришла строка, парсим её в Carbon, если уже Carbon — работаем с клоном,
+        // __ чтобы случайно не мутировать исходный объект даты в коде
+        $targetDate = is_string($inDate) ? Carbon::parse($inDate) : $inDate->copy();
+
+        return $query
+            ->where('action_at', '>=', $targetDate->startOfDay())
+            ->where('action_at', '<=', $targetDate->endOfDay());
+    }
+
 
 
     // Relations: Связь с Основной Заявкой

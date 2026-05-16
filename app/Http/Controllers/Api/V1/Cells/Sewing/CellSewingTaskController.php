@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Sewing\Sync\SyncSewingTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskExecute\SewingTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage\SewingTaskResource;
+use App\Models\Manufacture\Cells\Sewing\SewingDay;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskLine;
 use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
@@ -783,6 +784,74 @@ class CellSewingTaskController extends Controller
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Устанавливает новую дату (action_at) Сменному Заданию
+     * @param Request $request
+     * @return string
+     */
+    public function setSewingTaskActionAt(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'   => 'required|integer|exists:sewing_tasks,id',
+                'date' => 'present|nullable|string|date_format:Y-m-d',
+            ]);
+
+            //$targetDate = is_null($validated['date']) ? Carbon::now() : Carbon::parse($validated['date']);
+
+            //$targetDate = is_null($validated['date'])
+            //    ? Carbon::now()->startOfDay()->format(RETURN_DATE_TIME_FORMAT)
+            //    : Carbon::parse($validated['date'])->format(RETURN_DATE_TIME_FORMAT);
+
+            DB::transaction(function () use ($validated) {
+                // __ Получаем само СЗ и его старую дату + применяем изменения
+                $sewingTask = SewingTask::query()->find($validated['id']);
+                $oldDate = $sewingTask->action_at;
+                $sewingTask->action_at = Carbon::parse($validated['date'])->startOfDay()->format(RETURN_DATE_TIME_FORMAT);
+                $sewingTask->save();
+
+                // __ Получаем все СЗ за день, из которого убираем СЗ
+                $sewingTasksBefore = SewingTask::query()
+                    ->whereDayAt($oldDate)
+                    ->orderBy('position')
+                    ->get();
+
+                // __ Получаем все СЗ за день, в которое добавляем СЗ c уже измененной датой
+                $sewingTasksAfter = SewingTask::query()
+                    ->whereDayAt($validated['date'])
+                    ->orderBy('position')
+                    ->get();
+
+                // __ Теперь формируем данные для обновления с учетом position
+
+                // __ Тот день, из которого убираем СЗ
+                for ($i = 0; $i < 2; $i++) {
+                    $sewingTasks = $i == 0 ? $sewingTasksBefore : $sewingTasksAfter;
+
+                    $tasksToUpdate = [];
+                    $position = 1;
+                    foreach ($sewingTasks as $task) {
+                        if ($task->position !== $position) {
+                            $tasksToUpdate[] = [
+                                'id'        => $task->id,
+                                'action_at' => null,        // оставляем дату прежней
+                                'position'  => $position,
+                            ];
+                        };
+                        $position++;
+                    }
+
+                    // __ Применяем изменения
+                    SewingService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }

@@ -754,7 +754,7 @@ import {
             if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
 
                 // __ Получаем флаг готовности к добавлению новых СЗ
-                const isReady: ISewingDay = await sewingStore.readyGetSewingDay(splitDate(targetDate))
+                const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(targetDate))
 
                 if (!isReady) {
                     // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
@@ -870,7 +870,7 @@ import {
 
                     if (result) {
                         // __ С объединением
-                        console.warn('Union SewingTasks')
+                        // console.warn('Union SewingTasks')
 
                         // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
                         await sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask]) // __ Объединяем СЗ с первой

@@ -12,7 +12,7 @@
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                     @click="handleStartAction"
                 />
 
@@ -25,7 +25,7 @@
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                     @click="handleReadyAction"
                 />
 
@@ -39,7 +39,7 @@
                     rounded="4"
                     text-size="mini"
                     type="primary"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Окончание выполнения -->
@@ -51,7 +51,7 @@
                     rounded="4"
                     text-size="mini"
                     type="primary"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Длительность -->
@@ -63,7 +63,7 @@
                     rounded="4"
                     text-size="mini"
                     type="warning"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Прогресс общий -->
@@ -113,7 +113,7 @@
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    width="w-[150px]"
+                    :width="MENU_LABEL_WIDTH"
                     @click="activeTabPosition = tab.position"
                 />
             </div>
@@ -208,7 +208,10 @@ const route       = useRoute()
 
 const { globalSewingTasks } = storeToRefs(sewingStore)
 
+// __ Константы
 // const DEBUG = true
+const MENU_LABEL_WIDTH = 'w-[160px]'
+
 const isLoading = ref(false)
 
 let executeDate: string

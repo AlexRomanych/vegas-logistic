@@ -94,7 +94,7 @@
     </div>
 
 
-    <!-- __ Выпадающий список-->
+    <!-- __ Выпадающий список -->
     <!--:func="(surname: string, name: string, patronymic: string) => getFormatFIO({surname, name, patronymic})"-->
     <AppModalAsyncSelectTSFunc
         ref="appModalAsyncSelectTS"
@@ -104,7 +104,7 @@
         title="Выберите сотрудника"
         width="w-[600px]"/>
 
-    <!--:func="(surname: string, name: string, patronymic: string) => getFormatFIO({surname, name, patronymic})"-->
+    <!-- __ Выпадающий список для мультивыбора-->
     <AppModalAsyncSelectTSFuncMultiSelect
         ref="appModalAsyncSelectTSFuncMultiSelect"
         v-model="selectedWorkerIds"
