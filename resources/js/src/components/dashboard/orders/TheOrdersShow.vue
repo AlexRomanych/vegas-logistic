@@ -769,7 +769,12 @@ const filterByOrderShown    = (value: ISelectDataItem) => {
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
     collapseAll.value = !collapseAll.value
-    ordersRender.value.forEach(order => order.collapsed = collapseAll.value)
+    if (activeTabIndex.value === LIST_TAB_ID) {
+        tabs.value[activeTabIndex.value].renderData.forEach((order: IRenderOrder) => order.collapsed = collapseAll.value)
+    } else if (activeTabIndex.value === CLIENTS_TAB_ID || activeTabIndex.value === DATES_TAB_ID) {
+        tabs.value[activeTabIndex.value].renderData.forEach(item => item[0].collapsed = collapseAll.value)
+    }
+
 }
 
 // __ Получаем данные
@@ -899,7 +904,7 @@ const getGroupByDatesData = () => {
             .sort((a, b) => a.client.short_name.localeCompare(b.client.short_name))
             .sort((a, b) => a.order_no_str.localeCompare(b.order_no_str))
     ])
-    console.log(groupedDataArrayMapped)
+    // console.log(groupedDataArrayMapped)
     return groupedDataArrayMapped
 }
 
@@ -976,7 +981,7 @@ const loadOrders = async (period: IPeriod | null = null) => {
         async () => {
 
             await getOrders(period)
-            console.log('orders: ', orders.value)
+            // console.log('orders: ', orders.value)
 
             getOrdersRender()
             console.log('ordersRender: ', ordersRender.value)
