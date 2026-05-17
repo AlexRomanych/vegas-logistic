@@ -134,18 +134,18 @@
                 <!-- __ Персонал -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!personalShow ? 'Персонал ▲' : 'Персонал ▼'"
+                        :text="sewingDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="personalShow = !personalShow"
+                        @click="sewingDay.personal_collapsed = !sewingDay.personal_collapsed"
                     />
                 </div>
 
                 <!-- __ Персонал -->
-                <template v-if="personalShow">
+                <template v-if="!sewingDay.personal_collapsed">
                     <div class="mt-2 mb-2">
                         <ExecutePersonal
                             :can-edit="false"
@@ -157,18 +157,18 @@
                 <!-- __ СЗ -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!tasksShow ? 'Список СЗ ▲' : 'Список СЗ ▼'"
+                        :text="sewingDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="tasksShow = !tasksShow"
+                        @click="sewingDay.tasks_collapsed = !sewingDay.tasks_collapsed"
                     />
                 </div>
 
                 <!-- __ СЗ -->
-                <template v-if="tasksShow">
+                <template v-if="!sewingDay.tasks_collapsed">
                     <div class="my-2">
                         <!-- __ Шапка СЗ -->
                         <ExecuteTaskHeader :fields-width="sewingTaskFieldsWidth"/>
@@ -190,18 +190,18 @@
                 <!-- __ Общие данные -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!commonShow ? 'Общие данные ▲' : 'Общие данные ▼'"
+                        :text="sewingDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="commonShow = !commonShow"
+                        @click="sewingDay.common_collapsed = !sewingDay.common_collapsed"
                     />
                 </div>
 
                 <!-- __ Общие данные -->
-                <template v-if="commonShow">
+                <template v-if="!sewingDay.common_collapsed">
                     <div class="my-2">
                         <ExecuteTaskCommon :sewing-day="sewingDay"/>
                     </div>
@@ -274,9 +274,9 @@ const renderSewingDays = computed<ISewingDay[]>(() => {
 })
 
 // __ Переменные для рендера
-const personalShow = ref(false)
-const tasksShow    = ref(false)
-const commonShow   = ref(false)
+// const personalShow = ref(false)
+// const tasksShow    = ref(false)
+// const commonShow   = ref(false)
 
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[50px]'
@@ -511,6 +511,9 @@ const addCollapsed = () => {
         return {
             ...day,
             collapsed   : true,
+            personal_collapsed: true,
+            tasks_collapsed: true,
+            common_collapsed: true,
             sewing_tasks: day.sewing_tasks.map(task => ({
                 ...task,
                 collapsed: true,

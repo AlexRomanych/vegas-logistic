@@ -232,6 +232,12 @@ const clearTimer = () => timer && clearInterval(timer)
 
 // __ Группа Старта СЗ
 const isStartAvailable = computed(() => {
+    // __ Проверяем, что дата выполнения меньше текущей
+    const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
+    const compare = sewingDay.value ? sewingDay.value.action_at.split(' ')[0] : today
+    if (compare > today) return false
+
+
     // return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
     return tasksBeforeCurrentDay.value.length === 0 && sewingDay.value?.sewing_tasks.length !== 0
 })
@@ -244,9 +250,9 @@ const isSewingDayStarted = computed(() => !!(sewingDay.value?.start_at && !sewin
 
 // __ Кнопка Начать/Закончить выполнение
 const startLabelTitle = computed(() => {
-    // console.log('sewingDay: ', sewingDay.value)
-    // console.log('pendingTasksPresents: ', pendingTasksPresents.value)
-    // console.log('runningTasksPresents: ', runningTasksPresents.value)
+    console.log('sewingDay: ', sewingDay.value)
+    console.log('pendingTasksPresents: ', pendingTasksPresents.value)
+    console.log('runningTasksPresents: ', runningTasksPresents.value)
 
     // __ Есть Готовые к выполнению СЗ
     if (pendingTasksPresents.value) {

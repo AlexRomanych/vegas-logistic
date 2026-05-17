@@ -937,19 +937,30 @@ const printTask = () => {
     window.open(routeData.href, '_blank')
 }
 
-
 // __ Смотрим на то, чтобы при переключении между СЗ не попали на вкладку (УПМ/УШМ) с нулевыми СЗ,
 // __ которые не отображаются
+const setActiveTabIndex = () => {
+    if (!sewingLinesGroups.value[activeTabIndex.value].hasData) {
+        for (let i = 0; i < sewingLinesGroups.value.length; i++) {
+            if (sewingLinesGroups.value[i].hasData) {
+                activeTabIndex.value = i
+            }
+        }
+    }
+}
+
+
 watch(
     () => sewingLinesGroups.value,
     () => {
-        if (!sewingLinesGroups.value[activeTabIndex.value].hasData) {
-            for (let i = 0; i < sewingLinesGroups.value.length; i++) {
-                if (sewingLinesGroups.value[i].hasData) {
-                    activeTabIndex.value = i
-                }
-            }
-        }
+        setActiveTabIndex()
+        // if (!sewingLinesGroups.value[activeTabIndex.value].hasData) {
+        //     for (let i = 0; i < sewingLinesGroups.value.length; i++) {
+        //         if (sewingLinesGroups.value[i].hasData) {
+        //             activeTabIndex.value = i
+        //         }
+        //     }
+        // }
         selectedIds.value.clear() // __ Очистка выделения
     },
     { deep: true, immediate: true }
@@ -972,9 +983,10 @@ onMounted(async () => {
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('click', () => (showMenu.value = false))
 
-    activeTabIndex.value = 0
+    setActiveTabIndex()
+    // activeTabIndex.value = 0
 
-    localStorage.removeItem(TASK_TO_PRINT_KEY) // __ Очищаем данные для печати
+    localStorage.removeItem(TASK_TO_PRINT_KEY)      // __ Очищаем данные для печати
     localStorage.removeItem(TASK_TO_PRINT_META_KEY) // __ Очищаем данные для печати
 })
 

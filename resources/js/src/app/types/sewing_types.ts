@@ -412,7 +412,11 @@ export type ISewingDay = {
     workers: ISewingDayWorker[]
 
     ready: boolean  // __ Готовность к добавлению новых СЗ
+
     collapsed?: boolean
+    personal_collapsed?: boolean
+    tasks_collapsed?: boolean
+    common_collapsed?: boolean
 }
 
 export type ISewingDayWorker = {

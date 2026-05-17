@@ -43,8 +43,7 @@
                     <AppLabelMultilineTSWrapper :render-object="render.comment"/>
 
                     <!-- __ Дополнительное СЗ -->
-                    <!--<template v-if="tasksAvailable.length !== 0 && getAddingCondition()">-->
-                    <template v-if="true">
+                    <template v-if="tasksAvailable.length !== 0 && getAddingCondition()">
                         <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addSewingTaskToCurrentDay"/>
                     </template>
 
@@ -139,18 +138,18 @@
                 <!-- __ Персонал -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!personalShow ? 'Персонал ▲' : 'Персонал ▼'"
+                        :text="sewingDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="personalShow = !personalShow"
+                        @click="sewingDay.personal_collapsed = !sewingDay.personal_collapsed"
                     />
                 </div>
 
                 <!-- __ Персонал -->
-                <template v-if="personalShow">
+                <template v-if="!sewingDay.personal_collapsed">
                     <div class="mt-2 mb-2">
                         <ExecutePersonal
                             :sewing-day="sewingDay"
@@ -164,18 +163,18 @@
                 <!-- __ СЗ -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!tasksShow ? 'Список СЗ ▲' : 'Список СЗ ▼'"
+                        :text="sewingDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="tasksShow = !tasksShow"
+                        @click="sewingDay.tasks_collapsed = !sewingDay.tasks_collapsed"
                     />
                 </div>
 
                 <!-- __ СЗ -->
-                <template v-if="tasksShow">
+                <template v-if="!sewingDay.tasks_collapsed">
                     <div class="my-2">
                         <!-- __ Шапка СЗ -->
                         <ExecuteTaskHeader :fields-width="sewingTaskFieldsWidth"/>
@@ -197,18 +196,18 @@
                 <!-- __ Общие данные -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="!commonShow ? 'Общие данные ▲' : 'Общие данные ▼'"
+                        :text="sewingDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="commonShow = !commonShow"
+                        @click="sewingDay.common_collapsed = !sewingDay.common_collapsed"
                     />
                 </div>
 
                 <!-- __ Общие данные -->
-                <template v-if="commonShow">
+                <template v-if="!sewingDay.common_collapsed">
                     <div class="my-2">
                         <ExecuteTaskCommon :sewing-day="sewingDay"/>
                     </div>
@@ -284,12 +283,6 @@ import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import AppModalAsyncSelectTSFunc from '@/components/ui/modals/AppModalAsyncSelectTSFunc.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
-// import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
-// import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
-// import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-// import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-// import AppRGBPickerModalTS from '@/components/ui/pickers/AppRGBPickerModalTS.vue'
-// import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 
 interface IEntity {
     id: number
@@ -369,9 +362,9 @@ async function showError(error: string | string[] | null = null) {
 
 
 // __ Переменные для рендера
-const personalShow = ref(false)
-const tasksShow    = ref(false)
-const commonShow   = ref(false)
+// const personalShow = ref(false)
+// const tasksShow    = ref(false)
+// const commonShow   = ref(false)
 
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[50px]'
@@ -623,6 +616,9 @@ const addCollapsed = () => {
         return {
             ...day,
             collapsed   : true,
+            personal_collapsed: true,
+            tasks_collapsed: true,
+            common_collapsed: true,
             sewing_tasks: day.sewing_tasks.map(task => ({
                 ...task,
                 collapsed: true,

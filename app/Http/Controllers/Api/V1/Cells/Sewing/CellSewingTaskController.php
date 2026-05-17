@@ -573,20 +573,28 @@ class CellSewingTaskController extends Controller
 
                 // __ Смотрим, если еще прилетел статус, который нужно установить для СЗ,
                 // __ то устанавливаем его
-
-                $a = 0;
                 foreach ($diffs as $diff) {
                     if (!is_null($diff['taskChanges']['status'])) {
-                        $setTask = SewingTask::query()->findOrFail($diff['taskId']);
-                        $setTask->statuses()->attach([
-                            $diff['taskChanges']['status']['new'] => [
-                                'set_at'     => Carbon::now(),
-                                'created_by' => auth()->id(),
-                            ]
-                        ]);
+
+                        // __ Пропускаем тот случай, кагда с фронта прилетает создание нового СЗ (ADDED)
+                        // __ Это обрабатываем выше
+                        if ($diff['taskId'] !== 0) {
+
+                            // __ Меняем статус только в случае, если нужно установить статус "Выполняется"
+                            // __ Случай, когда перетасктваем СЗ в день, гже есть статус "Выполняется"
+                            // __ Остальное не трогаем, потому что начинаются проблемы, такой костыль получился
+                            if ($diff['taskChanges']['status']['new'] === SewingTaskStatus::SEWING_STATUS_RUNNING_ID) {
+                                $setTask = SewingTask::query()->findOrFail($diff['taskId']);
+                                $setTask->statuses()->attach([
+                                    $diff['taskChanges']['status']['new'] => [
+                                        'set_at'     => Carbon::now(),
+                                        'created_by' => auth()->id(),
+                                    ]
+                                ]);
+                            }
+                        }
                     }
                 }
-
 
                 return EndPointStaticRequestAnswer::ok();
 
@@ -788,6 +796,7 @@ class CellSewingTaskController extends Controller
         }
     }
 
+
     /**
      * ___ Устанавливает новую дату (action_at) Сменному Заданию
      * @param Request $request
@@ -811,31 +820,51 @@ class CellSewingTaskController extends Controller
                 // __ Получаем само СЗ и его старую дату + применяем изменения
                 $sewingTask = SewingTask::query()->find($validated['id']);
                 $oldDate = $sewingTask->action_at;
+                // __ Устанавливаем позицию в отрицательную зону, так как наверняка в день, куда перемещаем уже есть такая позиция
+                $sewingTask->position = -1 * $sewingTask->id;
                 $sewingTask->action_at = Carbon::parse($validated['date'])->startOfDay()->format(RETURN_DATE_TIME_FORMAT);
                 $sewingTask->save();
 
                 // __ Получаем все СЗ за день, из которого убираем СЗ
-                $sewingTasksBefore = SewingTask::query()
+                $sewingTasksFrom = SewingTask::query()
                     ->whereDayAt($oldDate)
                     ->orderBy('position')
                     ->get();
 
+                // __ Создаем производственный день или получаем его, если он уже существует
+                // __ Идея - создать новый день, если он не существует
+                $day = SewingDay::findOrCreateByDateAndChange($validated['date']);
+
                 // __ Получаем все СЗ за день, в которое добавляем СЗ c уже измененной датой
-                $sewingTasksAfter = SewingTask::query()
+                $sewingTasksTo = SewingTask::query()
                     ->whereDayAt($validated['date'])
                     ->orderBy('position')
                     ->get();
+
+                // __ Перемещаем СЗ в новый день в конец списка, так благодарая отрицательному position и orderBy он будет в самом начале
+                // __ Проверяем, что коллекция не пустая
+                if ($sewingTasksTo->isNotEmpty()) {
+                    // shift() удаляет первый элемент из коллекции и возвращает его
+                    $firstItem = $sewingTasksTo->shift();
+                    // push() добавляет этот элемент в самый конец коллекции
+                    $sewingTasksTo->push($firstItem);
+                }
+
+                // debug
+                //$sewingTasksFromArray = $sewingTasksFrom->toArray();
+                //$sewingTasksToArray = $sewingTasksTo->toArray();
+
 
                 // __ Теперь формируем данные для обновления с учетом position
 
                 // __ Тот день, из которого убираем СЗ
                 for ($i = 0; $i < 2; $i++) {
-                    $sewingTasks = $i == 0 ? $sewingTasksBefore : $sewingTasksAfter;
+                    $sewingTasks = $i == 0 ? $sewingTasksFrom : $sewingTasksTo;
 
                     $tasksToUpdate = [];
                     $position = 1;
                     foreach ($sewingTasks as $task) {
-                        if ($task->position !== $position) {
+                      if ($task->position !== $position) {
                             $tasksToUpdate[] = [
                                 'id'        => $task->id,
                                 'action_at' => null,        // оставляем дату прежней

@@ -372,7 +372,7 @@ class CellSewingDayController extends Controller
                 // __ Добавляем длительность в секундах
                 $startPoint = is_null($sewingDay->resume_at) ? $sewingDay->start_at : $sewingDay->resume_at;
                 $sewingDay->duration += $startPoint?->diffInSeconds($sewingDay->finish_at) ?? 0;
-                //$sewingDay->save();
+                $sewingDay->save();
 
                 // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
                 $action_date = Carbon::parse($sewingDay->start_at)->startOfDay();
@@ -437,7 +437,6 @@ class CellSewingDayController extends Controller
                         ]);
                     }
                 }
-
 
                 // __ Обрабатываем все невыполненное
                 if (count($falseTasks) !== 0) {
