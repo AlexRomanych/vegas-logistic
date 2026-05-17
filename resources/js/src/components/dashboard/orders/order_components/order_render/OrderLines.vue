@@ -57,7 +57,7 @@
 
     <!-- __ Данные -->
     <div v-for="orderLine of orderLinesRender" :key="orderLine.id">
-        <div class="flex ">
+        <div class="flex" @dblclick="showLineInfo(orderLine)">
 
             <!-- __ Collapsed -->
             <AppLabelTS
@@ -110,17 +110,26 @@
                 :arg="orderLine"
                 :render-object="render.deleteButton"
                 class="cursor-pointer"
-                @click="emits('deleteLine', orderLine.id)"
+                @click="emits('deleteOrderLine', orderLine)"
             />
 
         </div>
 
     </div>
 
+    <!-- __ Модальное окно для информации о записи -->
+    <OrderItemInfo
+        ref="orderItemInfo"
+        :order-line="orderLine"
+    />
+
 </template>
 
+
+
+
 <script lang="ts" setup>
-import { reactive, /*ref,*/ computed } from 'vue'
+import { reactive, /*ref,*/ computed, ref } from 'vue'
 
 import type { IRenderData, IRenderOrderLine } from '@/types'
 
@@ -129,6 +138,7 @@ import type { IRenderData, IRenderOrderLine } from '@/types'
 
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import OrderItemInfo from '@/components/dashboard/orders/order_components/order_common/OrderItemInfo.vue'
 
 interface IProps {
     orderLines: IRenderOrderLine[]
@@ -142,7 +152,7 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const emits = defineEmits<{
-    (e: 'deleteLine', id: number): void
+    (e: 'deleteOrderLine', payload: IRenderOrderLine): void
 }>()
 
 // __ Определяем переменные
@@ -317,6 +327,16 @@ const render: IRenderData = reactive({
         data:           (/*orderLine: IRenderOrderLine*/) => '🗑️',
     },
 })
+
+// __ Тип для модального окна информации о записи в Заявке
+const orderLine     = ref<IRenderOrderLine | null>(null)
+const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Показать информацию о записи
+const showLineInfo = async (line: IRenderOrderLine) => {
+    orderLine.value = line
+    await orderItemInfo.value!.show() // показываем модалку и ждем ответ
+}
 
 </script>
 

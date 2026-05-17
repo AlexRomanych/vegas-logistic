@@ -176,74 +176,14 @@
         <!-- __ Данные -->
         <div v-for="order of ordersRender" :key="order.id" class="ml-2 max-w-fit">
 
-            <div v-if="!order.collapsed">
-                <TheDividerLine/>
-                <div class="min-h-3 bg-red-50 rounded-[4px]"></div>
-            </div>
+            <OrderBody
+                :order="order"
+                :render="render"
+                @delete-order="deleteOrder"
+                @print-order="printOrder"
+                @delete-order-line="deleteOrderLine"
+            />
 
-            <div :class="!order.collapsed ? 'bg-green-100 rounded-[4px]' : ''">
-
-                <!-- __ Переход по двойному клику на карточку -->
-                <div class="flex" @dblclick="$router.push({name: 'orders.card', params: {id: order.id}})">
-
-                    <!-- __ Collapsed -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.collapsed"
-                                       @click="render.collapsed.click!(order)"/>
-
-                    <!-- __ ID -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.id"/>
-
-                    <!-- __ Клиент -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.client"/>
-
-                    <!-- __ Номер Заявки -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderNoStr"/>
-
-                    <!-- __ Тип элементов (изделий) -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.elementsType"/>
-
-                    <!-- __ Общее количество элементов (изделий) -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderAmount"/>
-
-                    <!-- __ Период, к которому относится Заявка -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderPeriod"/>
-
-                    <!-- __ Active -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.orderActive"/>
-
-                    <!-- __ Прогнозный -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.isForecast"/>
-
-                    <!-- __ Отображаемый в Планах -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.isShown"/>
-
-                    <!-- __ Дата загрузки на складе Вегас -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.loadAt"/>
-
-                    <!-- __ Дата разгрузки на складе клиента -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.unloadAt"/>
-
-                    <!-- __ Комментарий из 1С -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.comment_1c"/>
-
-                    <!-- __ Описание -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
-
-                    <!-- __ Распечатать -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.order_print" @click="printOrder(order)"/>
-
-                    <!-- __ Удалить -->
-                    <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="deleteOrder(order)"/>
-
-                </div>
-
-                <!-- __ Сами данные по Содержимому Заявки -->
-                <div v-if="!order.collapsed">
-                    <OrderLines :order-lines="order.lines"/>
-                    <div class="min-h-3"></div>
-                    <TheDividerLine/>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -280,25 +220,34 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { formatDateIntl, getDateFromDateTimeString, validateInputDateHelper } from '@/app/helpers/helpers_date.js'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
-import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import AppInputTextTSWrapper from '@/components/dashboard/orders/components/AppInputTextTSWrapper.vue'
 import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
-import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
-import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import CellDatesSelectMiniTS from '@/components/dashboard/orders/components/CellDatesSelectMiniTS.vue'
+// import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
+// import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
+// import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 import { useRouter } from 'vue-router'
+import OrderBody from '@/components/dashboard/orders/order_components/order_render/OrderBody.vue'
 
 const router = useRouter()                 // Определяем роутер
 
 const isLoading = ref(false)
 
 const ordersStore = useOrdersStore()
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---    Табы для группировки отображения           !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// const tabs = ref<{}>()
+
+
+
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---                Ошибки                         !!!
@@ -599,7 +548,7 @@ const render: IRenderData = reactive({
         class         : 'cursor-pointer',
         data          : (/*order: IRenderOrder*/) => '🗑️',
     },
-    order_print: {
+    order_print  : {
         id            : () => 'order-print-search',
         header        : ['Печать', ''],
         width         : 'w-[80px]',
@@ -765,12 +714,39 @@ const deleteOrder = async (order: IRenderOrder) => {
     }
 }
 
+// __ Удаление записи (orderLine: IRenderOrderLine) в заявке
+const deleteOrderLine = async (orderLine: IRenderOrderLine) => {
+
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Запись ${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
+        'будет удалена!',
+        'Продолжить?',
+    ]
+
+    const answer = await appModalAsyncMultiline.value!.show()
+
+    if (answer) {
+        // const result = await ordersStore.deleteOrderLine(orderLine.id)
+
+        // if (checkCRUD(result)) {
+        //     // __ Удаляем из массивов
+        //     orders.value       = orders.value.filter(item => item.id !== order.id)
+        //     ordersRender.value = ordersRender.value.filter(item => item.id !== order.id)
+        // } else {
+        //     await showError()
+        //     return
+        // }
+    }
+}
+
 
 // __ Печать заявки
 const printOrder = async (order: IRenderOrder) => {
     // __ Получаем объект с путем и параметрами
     const routeData = router.resolve({
-        name: 'orders.print',
+        name  : 'orders.print',
         params: { id: order.id }
         // query: { orderId: id }
     })
@@ -778,8 +754,6 @@ const printOrder = async (order: IRenderOrder) => {
     // __ Открываем новое окно через стандартный JS
     window.open(routeData.href, '_blank')
 }
-
-
 
 
 // __ Реализация фильтров

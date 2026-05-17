@@ -49,7 +49,7 @@
 import { onMounted, ref, shallowRef, computed, defineAsyncComponent /* provide, watch */ } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
-import type { IColorTypes, IRenderOrder } from '@/types'
+import type { IColorTypes, IRenderOrder, IRenderOrderLine } from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore'
 // import { useSewingStore } from '@/stores/SewingStore'
@@ -260,11 +260,11 @@ const patchDescription = async (newText: string) => {
 }
 
 // __ Удаляем линию контекста в Заявке
-const deleteOrderLine = async (orderLineId: number) => {
-    console.log('orderLineId: ', orderLineId)
+const deleteOrderLine = async (inOrderLine: IRenderOrderLine) => {
+    console.log('orderLine: ', inOrderLine)
 
     // __ Находим строку
-    const orderLine = order.value?.lines.find(line => line.id === orderLineId)
+    const orderLine = order.value?.lines.find(line => line.id === inOrderLine.id)
     if (!orderLine) {
         return
     }
@@ -282,7 +282,7 @@ const deleteOrderLine = async (orderLineId: number) => {
     const answer = await appModalAsyncMultiline.value!.show()
     if (answer) {
         // const result = await ordersStore.deleteOrderLine(orderLineId)
-        order.value!.lines = order.value!.lines.filter(line => line.id !== orderLineId)
+        order.value!.lines = order.value!.lines.filter(line => line.id !== inOrderLine.id)
 
         // if (checkCRUD(result)) {
         //     if (order.value) {
@@ -313,7 +313,7 @@ const dynamicEvents = computed(() => {
     }
 
     if (activeTabName.value === TAB_NAME_CONTEXT) {
-        events['delete-line'] = deleteOrderLine
+        events['delete-order-line'] = deleteOrderLine
         return events
     }
 

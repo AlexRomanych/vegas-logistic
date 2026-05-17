@@ -6,7 +6,7 @@
                 :order-lines="order.lines"
                 :show-collapsed="false"
                 showDelete
-                @delete-line="deleteLine"
+                @delete-order-line="deleteOrderLine"
             />
 
         </div>
@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IRenderOrder } from '@/types'
+import type { IRenderOrder, IRenderOrderLine } from '@/types'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
 
 interface IProps {
@@ -25,11 +25,11 @@ interface IProps {
 const props = defineProps<IProps>()
 
 const emits = defineEmits<{
-    (e: 'delete-line', id: number): void
+    (e: 'delete-order-line', orderLine: IRenderOrderLine): void
 }>()
 
 // const deleteLine = (orderLineId: number) => console.log(orderLineId)
-const deleteLine = (orderLineId: number) => emits('delete-line', orderLineId)
+const deleteOrderLine = (orderLine: IRenderOrderLine) => emits('delete-order-line', orderLine)
 
 
 </script>
