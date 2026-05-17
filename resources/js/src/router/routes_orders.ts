@@ -44,6 +44,17 @@ const orders = [
                    } as IRouteMeta,
     },
 
+    {
+        // __ Печать Заявки
+        path:      '/orders/print/:id',
+        name:      'orders.print',
+        component: () => import('@/components/dashboard/orders/order_print/OrderPrintForm.vue'),
+        meta:      {
+            title: 'Страница печати Заявки',
+            hideNavbar: true,
+        } as IRouteMeta,
+    },
+
 ]
 
 export default orders

@@ -229,6 +229,9 @@
                     <!-- __ Описание -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
 
+                    <!-- __ Распечатать -->
+                    <AppLabelTSWrapper :arg="order" :render-object="render.order_print" @click="printOrder(order)"/>
+
                     <!-- __ Удалить -->
                     <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="deleteOrder(order)"/>
 
@@ -289,7 +292,9 @@ import CellDatesSelectMiniTS from '@/components/dashboard/orders/components/Cell
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
-// import router from '@/router/router'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()                 // Определяем роутер
 
 const isLoading = ref(false)
 
@@ -587,11 +592,29 @@ const render: IRenderData = reactive({
         dataType      : () => DATA_TYPE,
         type          : () => 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
+        dataTextSize  : 'large',
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Добавить прогнозную заявку...',
+        class         : 'cursor-pointer',
         data          : (/*order: IRenderOrder*/) => '🗑️',
+    },
+    order_print: {
+        id            : () => 'order-print-search',
+        header        : ['Печать', ''],
+        width         : 'w-[80px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'dark',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'info',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : 'large',
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Распечатать заявку...',
+        class         : 'cursor-pointer',
+        data          : (/*order: IRenderOrder*/) => '📄',
     },
 })
 
@@ -741,6 +764,22 @@ const deleteOrder = async (order: IRenderOrder) => {
         }
     }
 }
+
+
+// __ Печать заявки
+const printOrder = async (order: IRenderOrder) => {
+    // __ Получаем объект с путем и параметрами
+    const routeData = router.resolve({
+        name: 'orders.print',
+        params: { id: order.id }
+        // query: { orderId: id }
+    })
+
+    // __ Открываем новое окно через стандартный JS
+    window.open(routeData.href, '_blank')
+}
+
+
 
 
 // __ Реализация фильтров
