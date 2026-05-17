@@ -156,17 +156,38 @@
                         <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description"/>
                     </div>
 
-                    <!-- __ Добавить заявку -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.order_service"
-                                                    @click="$router.push({name: 'orders.average.add'})"/>
-                    </div>
+                        <div class="flex">
+                            <!-- __ Добавить заявку -->
+                            <div>
+                                <AppLabelMultilineTSWrapper :render-object="render.order_service"
+                                                            @click="$router.push({name: 'orders.average.add'})"/>
+                            </div>
 
-                    <!-- __ Выбор дат -->
-                    <CellDatesSelectMiniTS
-                        :period="renderPeriod"
-                        @apply="loadOrders"
-                    />
+                            <!-- __ Выбор дат -->
+                            <CellDatesSelectMiniTS
+                                :period="renderPeriod"
+                                @apply="loadOrders"
+                            />
+                        </div>
+
+                        <!-- __ Табы отображения -->
+                        <div class="flex items-end mt-1">
+                            <div v-for="tab of tabs" :key="tab.id">
+                                <AppLabelTS
+                                    :text="tab.title"
+                                    :type="activeTabIndex == tab.id ? 'primary' : tab.tabType"
+                                    align="center"
+                                    rounded="4"
+                                    text-size="mini"
+                                    width="w-[93px]"
+                                    @click="activeTabIndex = tab.id"
+                                />
+                            </div>
+
+
+                        </div>
+                    </div>
 
 
                 </div>
@@ -174,17 +195,105 @@
         </div>
 
         <!-- __ Данные -->
-        <div v-for="order of ordersRender" :key="order.id" class="ml-2 max-w-fit">
+        <template v-if="tabs && tabs.length !== 0">
+            <!-- __ Список -->
+            <template v-if="activeTabIndex === LIST_TAB_ID">
+                <div v-for="order of tabs[activeTabIndex].renderData" :key="order.id" class="ml-2 max-w-fit">
+                    <OrderBody
+                        :order="order"
+                        :render="render"
+                        @delete-order="deleteOrder"
+                        @print-order="printOrder"
+                        @delete-order-line="deleteOrderLine"
+                    />
+                </div>
+            </template>
+            <!-- __ Группировка по клиентам -->
+            <template v-else-if="activeTabIndex === CLIENTS_TAB_ID">
+                <div v-for="[itemData, orders] of tabs[activeTabIndex].renderData" :key="itemData.client" class="ml-2 max-w-fit">
+                    <div :class="[!itemData.collapsed ? 'mb-3' : '']">
+                        <div class="flex">
+                            <!-- __ Collapsed -->
+                            <AppLabelTS
+                                :text="itemData.collapsed ? '▲' : '▼'"
+                                align="center"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="mini"
+                                type="info"
+                                width="w-[30px]"
+                                @click="itemData.collapsed = !itemData.collapsed"
+                            />
+                            <!-- __ Клиент -->
+                            <AppLabelTS
+                                :text="itemData.client + ` (${orders.length} шт.)`"
+                                align="left"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="mini"
+                                type="indigo"
+                                width="w-[590px]"
+                                @click="itemData.collapsed = !itemData.collapsed"
+                            />
+                        </div>
+                        <template v-if="!itemData.collapsed">
+                            <div v-for="order of orders" :key="order.id" class="max-w-fit">
+                                <OrderBody
+                                    :order="order"
+                                    :render="render"
+                                    @delete-order="deleteOrder"
+                                    @print-order="printOrder"
+                                    @delete-order-line="deleteOrderLine"
+                                />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <!-- __ Группировка по датам -->
+            <template v-else-if="activeTabIndex === DATES_TAB_ID">
+                <div v-for="[itemData, orders] of tabs[activeTabIndex].renderData" :key="itemData.load_at" class="ml-2 max-w-fit">
+                    <div :class="[!itemData.collapsed ? 'mb-3' : '']">
+                        <div class="flex">
+                            <!-- __ Collapsed -->
+                            <AppLabelTS
+                                :text="itemData.collapsed ? '▲' : '▼'"
+                                align="center"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="mini"
+                                type="info"
+                                width="w-[30px]"
+                                @click="itemData.collapsed = !itemData.collapsed"
+                            />
+                            <!-- __ Даты -->
+                            <AppLabelTS
+                                :text="formatDateIntl(itemData.load_at) + ` (${orders.length} шт.)`"
+                                align="left"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="mini"
+                                type="indigo"
+                                width="w-[590px]"
+                                @click="itemData.collapsed = !itemData.collapsed"
+                            />
+                        </div>
+                        <template v-if="!itemData.collapsed">
+                            <div v-for="order of orders" :key="order.id" class="max-w-fit">
+                                <OrderBody
+                                    :order="order"
+                                    :render="render"
+                                    @delete-order="deleteOrder"
+                                    @print-order="printOrder"
+                                    @delete-order-line="deleteOrderLine"
+                                />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
 
-            <OrderBody
-                :order="order"
-                :render="render"
-                @delete-order="deleteOrder"
-                @print-order="printOrder"
-                @delete-order-line="deleteOrderLine"
-            />
-
-        </div>
+        </template>
 
     </div>
 
@@ -234,19 +343,13 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 import { useRouter } from 'vue-router'
 import OrderBody from '@/components/dashboard/orders/order_components/order_render/OrderBody.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 const router = useRouter()                 // Определяем роутер
 
 const isLoading = ref(false)
 
 const ordersStore = useOrdersStore()
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! ---    Табы для группировки отображения           !!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// const tabs = ref<{}>()
-
-
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -715,6 +818,7 @@ const deleteOrder = async (order: IRenderOrder) => {
 }
 
 // __ Удаление записи (orderLine: IRenderOrderLine) в заявке
+// __ Реализовано в каоточке заявки
 const deleteOrderLine = async (orderLine: IRenderOrderLine) => {
 
     modalInfoType.value = 'danger'
@@ -753,6 +857,80 @@ const printOrder = async (order: IRenderOrder) => {
 
     // __ Открываем новое окно через стандартный JS
     window.open(routeData.href, '_blank')
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---    Табы для группировки отображения           !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const LIST_TAB_ID    = 0
+const CLIENTS_TAB_ID = 1
+const DATES_TAB_ID   = 2
+
+
+interface ITab {
+    id: number
+    title: string
+    tabType: IColorTypes
+    active: boolean
+    renderData: any
+}
+
+const tabs           = ref<ITab[]>([])
+const activeTabIndex = ref(LIST_TAB_ID)
+
+
+// __ Группировка по клиентам
+const getGroupByClientsData = () => {
+    const groupedData            = Object.groupBy(orders.value, order => order.client.short_name)
+    const groupedDataArray       = Object.entries(groupedData).sort((a, b) => a[0].localeCompare(b[0]))
+    const groupedDataArrayMapped = groupedDataArray.map((item: any) => [{ client: item[0], collapsed: true }, item[1].sort((a, b) => a.order_no_str.localeCompare(b.order_no_str))])
+    // console.log(groupedDataArrayMapped)
+    return groupedDataArrayMapped
+}
+
+// __ Группировка по датам
+const getGroupByDatesData = () => {
+    const groupedData            = Object.groupBy(orders.value, order => order.load_at ?? '')
+    const groupedDataArray       = Object.entries(groupedData).sort((a, b) => a[0].localeCompare(b[0]))
+    const groupedDataArrayMapped = groupedDataArray.map((item: any) => [
+        { load_at: item[0], collapsed: true },
+        item[1]
+            .sort((a, b) => a.client.short_name.localeCompare(b.client.short_name))
+            .sort((a, b) => a.order_no_str.localeCompare(b.order_no_str))
+    ])
+    console.log(groupedDataArrayMapped)
+    return groupedDataArrayMapped
+}
+
+const setTabs = () => {
+    const listTab: ITab     = {
+        id        : LIST_TAB_ID,
+        tabType   : 'stone',
+        title     : 'Список',
+        active    : true,
+        renderData: orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
+    }
+    tabs.value[LIST_TAB_ID] = listTab
+
+    const clientsTab: ITab     = {
+        id        : CLIENTS_TAB_ID,
+        title     : 'Клиенты',
+        tabType   : 'orange',
+        active    : true,
+        renderData: getGroupByClientsData()
+    }
+    tabs.value[CLIENTS_TAB_ID] = clientsTab
+
+    const datesTab: ITab     = {
+        id        : DATES_TAB_ID,
+        title     : 'Даты',
+        tabType   : 'success',
+        active    : true,
+        renderData: getGroupByDatesData()
+    }
+    tabs.value[DATES_TAB_ID] = datesTab
+
 }
 
 
@@ -802,6 +980,8 @@ const loadOrders = async (period: IPeriod | null = null) => {
 
             getOrdersRender()
             console.log('ordersRender: ', ordersRender.value)
+
+            setTabs()
         },
         undefined,
         // false,
@@ -813,23 +993,6 @@ const loadOrders = async (period: IPeriod | null = null) => {
 
 onMounted(async () => {
     await loadOrders()
-    // isLoading.value      = true
-    // const loadingService = useLoading()
-    // await loaderHandler(
-    //     loadingService,
-    //     async () => {
-    //
-    //         await getOrders()
-    //         console.log('orders: ', orders.value)
-    //
-    //         getOrdersRender()
-    //         console.log('ordersRender: ', ordersRender.value)
-    //     },
-    //     undefined,
-    //     // false,
-    // )
-    //
-    // isLoading.value = false
 })
 
 </script>

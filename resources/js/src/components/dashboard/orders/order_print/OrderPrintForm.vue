@@ -2,7 +2,7 @@
     <template v-if="!isLoading">
         <div class="print-container">
             <!-- Кнопка, которая не пойдет на печать -->
-            <button class="no-print print-btn" @click="handlePrint">Распечатать сменное задание</button>
+            <button class="no-print print-btn" @click="handlePrint">Распечатать Заявку</button>
 
             <header class="report-header mb-2">
                 <h1>Заявка <span class="font-semibold">{{ `${order?.client.short_name} №${order?.order_no_str} ` }}</span>, загрузка на складе: <span
