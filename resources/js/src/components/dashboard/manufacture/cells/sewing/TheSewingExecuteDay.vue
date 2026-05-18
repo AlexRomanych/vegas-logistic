@@ -8,11 +8,11 @@
                 <AppLabelMultiLineTS
                     :text="startLabelTitle"
                     :type="startLabelType"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    :width="MENU_LABEL_WIDTH"
                     @click="handleStartAction"
                 />
 
@@ -21,11 +21,11 @@
                 <AppLabelMultiLineTS
                     :text="addNewTasksLabelTitle"
                     :type="addNewTasksLabelType"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    :width="MENU_LABEL_WIDTH"
                     @click="handleReadyAction"
                 />
 
@@ -34,36 +34,36 @@
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.start_at"
                     :text="['🕑Старт:', formatTimeInFullFormat(sewingDay?.start_at)]"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group"
                     rounded="4"
                     text-size="mini"
                     type="primary"
-                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Окончание выполнения -->
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.finish_at"
                     :text="['🕑Финиш:', formatTimeInFullFormat(sewingDay?.finish_at)]"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group"
                     rounded="4"
                     text-size="mini"
                     type="primary"
-                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Длительность -->
                 <AppLabelMultiLineTS
                     v-if="sewingDay?.start_at"
                     :text="['🕑Длительность:', elapsedTime === -1 ? '' : formatTimeWithLeadingZeros(elapsedTime)]"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group"
                     rounded="4"
                     text-size="mini"
                     type="warning"
-                    :width="MENU_LABEL_WIDTH"
                 />
 
                 <!-- __ Прогресс общий -->
@@ -109,11 +109,11 @@
                     v-if="tab.show"
                     :text="tab.label"
                     :type="activeTabPosition === tab.position ? tab.typeActive : tab.type"
+                    :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    :width="MENU_LABEL_WIDTH"
                     @click="activeTabPosition = tab.position"
                 />
             </div>
@@ -232,13 +232,20 @@ const clearTimer = () => timer && clearInterval(timer)
 
 // __ Группа Старта СЗ
 const isStartAvailable = computed(() => {
-    // __ Проверяем, что дата выполнения меньше текущей
-    const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-    const compare = sewingDay.value ? sewingDay.value.action_at.split(' ')[0] : today
-    if (compare > today) return false
-
-
     // return true // __ Заглушка!!! !!!!!!!! TODO WARNING УБРАТЬ!
+    // __ Проверяем, что дата выполнения меньше текущей
+    // const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
+    const today   = new Date().toLocaleDateString('en-CA')// ().split('T')[0] // Получится '2026-05-16'
+    const compare = sewingDay.value ? sewingDay.value.action_at.split(' ')[0] : today
+
+    // console.log('today: ', today)
+    // console.log('compare: ', compare)
+
+    if (compare > today) {
+        return false
+    }
+
+
     return tasksBeforeCurrentDay.value.length === 0 && sewingDay.value?.sewing_tasks.length !== 0
 })
 // const everyTaskIsPending = computed(() => sewingDay.value?.sewing_tasks.every(task => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID))
@@ -250,9 +257,9 @@ const isSewingDayStarted = computed(() => !!(sewingDay.value?.start_at && !sewin
 
 // __ Кнопка Начать/Закончить выполнение
 const startLabelTitle = computed(() => {
-    console.log('sewingDay: ', sewingDay.value)
-    console.log('pendingTasksPresents: ', pendingTasksPresents.value)
-    console.log('runningTasksPresents: ', runningTasksPresents.value)
+    // console.log('sewingDay: ', sewingDay.value)
+    // console.log('pendingTasksPresents: ', pendingTasksPresents.value)
+    // console.log('runningTasksPresents: ', runningTasksPresents.value)
 
     // __ Есть Готовые к выполнению СЗ
     if (pendingTasksPresents.value) {
@@ -464,6 +471,10 @@ async function showError(error: string | string[] | null = null) {
 // !!! ---      Пауза для добавления новых СЗ            !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const handleReadyAction = async () => {
+    if (!isSewingDayStarted.value) {
+        return
+    }
+
     if (!isSewingDayReadyForNewTasks.value) {
         modalInfoText.value = ['Смена будет приостановлена', 'для добавления новых СЗ!']
         modalInfoType.value = 'primary'

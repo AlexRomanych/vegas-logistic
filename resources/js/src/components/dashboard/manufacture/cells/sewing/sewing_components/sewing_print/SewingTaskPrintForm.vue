@@ -20,8 +20,8 @@
                 <th>Модель чехла</th>
                 <th>шт.</th>
                 <!--<th>Время</th>-->
-                <th>ШМ</th>
                 <th>Ткань</th>
+                <th>ШМ</th>
                 <th>ТКЧ</th>
                 <th>Кант</th>
                 <th>КДЧ</th>
@@ -50,8 +50,8 @@
                     <td>{{ getSewingTaskModelCoverName(line) }}</td>
                     <td class="data-td">{{ line.amount }}</td>
                     <!--<td class="time-cell">{{ time(line) }}</td>-->
-                    <td class="data-td">{{ sewingMachine(line) }}</td>
                     <td class="data-td">{{ line.order_line.textile ?? '' }}</td>
+                    <td class="data-td">{{ sewingMachine(line) }}</td>
                     <td class="data-td">{{ line.order_line.model.main.tkch ?? '' }}</td>
                     <td class="data-td">{{ line.order_line.model.main.kant ?? '' }}</td>
                     <td class="data-td">{{ line.order_line.model.main.kdch ?? '' }}</td>
@@ -215,8 +215,8 @@ onMounted(() => {
 
     @page {
         margin: 1cm;
-        size: portrait; /* Альбомная ориентация, так как таблица широкая */
-        /*size: landscape;*/
+        /*size: portrait; !* Альбомная ориентация, так как таблица широкая *!*/
+        size: landscape;
         /* Альбомная ориентация, так как таблица широкая */
     }
 }
