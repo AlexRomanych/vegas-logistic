@@ -1,22 +1,21 @@
-// Info Тут все типы для Пошива
+// Info Тут все типы для Раскроя
 
 // line -------------------------------------------------------------------
 // line ------------------------- План Загрузок----------------------------
 // line -------------------------------------------------------------------
-
 import type { ICalcMode, IColorTypes, IDiffsType, IDims, IPlanMatrixDayItem, ITextileMachineKeys } from '@/types/index.ts'
 import {
-    SEWING_TASK_STATUS_CREATED,
-    SEWING_TASK_STATUS_ROLLING,
-    SEWING_TASK_STATUS_PENDING,
-    SEWING_TASK_STATUS_RUNNING,
-    SEWING_TASK_STATUS_DONE,
+    CUTTING_TASK_STATUS_CREATED,
+    CUTTING_TASK_STATUS_ROLLING,
+    CUTTING_TASK_STATUS_PENDING,
+    CUTTING_TASK_STATUS_RUNNING,
+    CUTTING_TASK_STATUS_DONE,
 
-} from '@/app/constants/sewing.ts'
+} from '@/app/constants/cutting.ts'
 
-// export type IDay = ISewingTask & IPlanMatrixDayItem
+// export type IDay = ICuttingTask & IPlanMatrixDayItem
 
-export interface ISewingTask extends IPlanMatrixDayItem {
+export interface ICuttingTask extends IPlanMatrixDayItem {
     id: number
     id_ref: number                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
     action_at: string
@@ -24,26 +23,26 @@ export interface ISewingTask extends IPlanMatrixDayItem {
     change: number
     position: number
     comment: string | null,
-    order: ISewingTaskOrder
-    sewing_lines: ISewingTaskLine[]
-    statuses: ISewingTaskStatus[]
-    current_status: ISewingTaskStatus
+    order: ICuttingTaskOrder
+    cutting_lines: ICuttingTaskLine[]
+    statuses: ICuttingTaskStatus[]
+    current_status: ICuttingTaskStatus
 
     collapsed?: boolean
 }
 
 // __ Связь с Содержимым СЗ
-export interface ISewingTaskLine {
+export interface ICuttingTaskLine {
     id: number
     id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
     amount: number                                  // __ Общее количество в заявке
-    amount_avg: null | ISewingTaskLineAmountAvg     // __ Количество для средней модели по статистике
-    time: ISewingTaskLineTime                       // __ Трудозатраты
+    amount_avg: null | ICuttingTaskLineAmountAvg     // __ Количество для средней модели по статистике
+    time: ICuttingTaskLineTime                       // __ Трудозатраты
     element_type: {
         is_average: boolean                         // __ Флаг для расчетной модели
         is_base: boolean                            // __ Флаг для базы
         is_cover: boolean                           // __ Флаг для чехла
-        type: ISewingTaskElementTypes               // __ Тип элемента в строковом представлении ('base' | 'cover' | 'average' | 'unknown')
+        type: ICuttingTaskElementTypes               // __ Тип элемента в строковом представлении ('base' | 'cover' | 'average' | 'unknown')
     }
     created_at: string | null
     false_reason: string | null
@@ -51,22 +50,22 @@ export interface ISewingTaskLine {
     false_at: string | null
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
-    order_line: ISewingTaskOrderLine
+    order_line: ICuttingTaskOrderLine
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
 }
 
 // __ Статус Движения (выполнения) Заявки
-export interface ISewingTaskStatus {
+export interface ICuttingTaskStatus {
     id: number
     color: string
     name: string
-    pivot: ISewingTaskStatusPivot
+    pivot: ICuttingTaskStatusPivot
 }
 
 // __ Дополнительная инфа
-export interface ISewingTaskStatusPivot {
+export interface ICuttingTaskStatusPivot {
     created_at: string | null
     duration: number | null
     finished_at: string | null
@@ -75,19 +74,19 @@ export interface ISewingTaskStatusPivot {
 }
 
 // __ Связь с Заявкой
-export interface ISewingTaskOrder {
+export interface ICuttingTaskOrder {
     id: number
     order_no_num: number
     order_no_origin: string
     order_no_str: string
     load_at: string | null
     comment_1c: string | null
-    client: ISewingTaskOrderClient
-    order_type: ISewingTaskOrderType
+    client: ICuttingTaskOrderClient
+    order_type: ICuttingTaskOrderType
 }
 
 // __ Связь со Строкой Основной Заявки (Связь с Содержимым Заявки)
-export interface ISewingTaskOrderLine {
+export interface ICuttingTaskOrderLine {
     id: number
     size: string
     amount: number
@@ -100,20 +99,20 @@ export interface ISewingTaskOrderLine {
     model: {
 
         // __ Основная модель, та, что в Основной Заявке
-        main: ISewingTaskModel
+        main: ICuttingTaskModel
 
         // __ Базовая модель, если main === матрас, то base === null,
         // __ если main === чехол, то base === модель матраса, к которой относится чехол
-        base: null | ISewingTaskModel
+        base: null | ICuttingTaskModel
 
         // __ Базовая модель, если main === матрас, то cover === чехол матраса базовой модели,
         // __ если main === чехол, то cover === модель чехла или null
-        cover: null | ISewingTaskModel
+        cover: null | ICuttingTaskModel
     }
 }
 
 // __ Связь Основной Заявки с Клиентом
-export interface ISewingTaskOrderClient {
+export interface ICuttingTaskOrderClient {
     id: number
     name: string
     add_name: string
@@ -121,7 +120,7 @@ export interface ISewingTaskOrderClient {
 }
 
 // __ Связь Основной Заявки с Типом Заявки
-export interface ISewingTaskOrderType {
+export interface ICuttingTaskOrderType {
     id: number
     display_name: string
     color: string
@@ -129,7 +128,7 @@ export interface ISewingTaskOrderType {
 
 
 // __ Описание модели
-export interface ISewingTaskModel {
+export interface ICuttingTaskModel {
     code_1c: string
     name: string
     name_report: string
@@ -149,40 +148,40 @@ export interface ISewingTaskModel {
     is_undefined: boolean
     is_universal: boolean
     is_average: boolean
-    machine_type: ISewingMachineKeys
-    machine_type_ref: ISewingMachineKeys        // __ референсный тип машины (оригинальный)
+    machine_type: ICuttingMachineKeys
+    machine_type_ref: ICuttingMachineKeys        // __ референсный тип машины (оригинальный)
 }
 
 // __ Типы ШМ
-export type ISewingMachineKeys = ITextileMachineKeys
+export type ICuttingMachineKeys = ITextileMachineKeys
 
 // __ Ключи для Типов ШМ
-export type ISewingMachineTimesKeys = ISewingMachineKeys
-// export type ISewingMachineTimesKeys = `time_${ISewingMachineKeys}`
+export type ICuttingMachineTimesKeys = ICuttingMachineKeys
+// export type ICuttingMachineTimesKeys = `time_${ICuttingMachineKeys}`
 
 
 // __ Тип для Средних значений для Average модели
-export type ISewingTaskLineAmountAvg = Record<ISewingMachineKeys, number>
+export type ICuttingTaskLineAmountAvg = Record<ICuttingMachineKeys, number>
 
 // __ Трудозатраты
-export type ISewingTaskLineTime = Record<ISewingMachineTimesKeys, number>
+export type ICuttingTaskLineTime = Record<ICuttingMachineTimesKeys, number>
 
 // __ Типы моделей
-export type ISewingTaskElementTypes = 'base' | 'cover' | 'average' | 'unknown'
+export type ICuttingTaskElementTypes = 'base' | 'cover' | 'average' | 'unknown'
 
 // --- --------------------------------------------------------------
 // --- Типы для работы со статусами СЗ
 // --- --------------------------------------------------------------
 
-export type ISewingTaskStatusKeys =
-    typeof SEWING_TASK_STATUS_CREATED |
-    typeof SEWING_TASK_STATUS_ROLLING |
-    typeof SEWING_TASK_STATUS_PENDING |
-    typeof SEWING_TASK_STATUS_RUNNING |
-    typeof SEWING_TASK_STATUS_DONE
+export type ICuttingTaskStatusKeys =
+    typeof CUTTING_TASK_STATUS_CREATED |
+    typeof CUTTING_TASK_STATUS_ROLLING |
+    typeof CUTTING_TASK_STATUS_PENDING |
+    typeof CUTTING_TASK_STATUS_RUNNING |
+    typeof CUTTING_TASK_STATUS_DONE
 
 
-export interface ISewingTaskStatusItem {
+export interface ICuttingTaskStatusItem {
     ID: number,
     WORD: string
     TITLE: string
@@ -192,7 +191,7 @@ export interface ISewingTaskStatusItem {
 // --- --------------------------------------------------------------
 // --- Типы для работы с сущностями Пошива
 // --- --------------------------------------------------------------
-export interface ISewingTaskStatusEntity {
+export interface ICuttingTaskStatusEntity {
     id: number
     name: string
     color: string
@@ -207,26 +206,25 @@ export interface ISewingTaskStatusEntity {
     updated_at?: string | null
 }
 
-
-
-
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
-export type ISewingLinesPanel = 'left' | 'right'
+export type ICuttingLinesPanel = 'left' | 'right'
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
 // __ Тип для сортировки в Карточке Заказа в Пошиве
-export type ISewingTaskCardSort = 'none' | 'asc' | 'desc'
+export type ICuttingTaskCardSort = 'none' | 'asc' | 'desc'
+// --- ------------------------------------------------------------
+
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
 // __ Тип для разницы между массивами СЗ Пошиве
-export interface ISewingTaskArrayDiff {
+export interface ICuttingTaskArrayDiff {
     taskId: number
     taskIdRef?: number
     type?: IDiffsType
-    // current?: ISewingTask
+    // current?: ICuttingTask
     taskChanges?: {
         action_at?: {
             old: string | null
@@ -241,10 +239,10 @@ export interface ISewingTaskArrayDiff {
             new: number
         } | null
     }
-    lineChanges?: ISewingTaskArrayLineDiffs[]
+    lineChanges?: ICuttingTaskArrayLineDiffs[]
 }
 
-export interface ISewingTaskArrayLineDiffs {
+export interface ICuttingTaskArrayLineDiffs {
     lineId: number
     lineIdRef?: number
     type: IDiffsType
@@ -260,11 +258,14 @@ export interface ISewingTaskArrayLineDiffs {
 
 // --- ------------------------------------------------------------
 
-
+// --- ------------------------------------------------------------
+// __ Типы для разницы для каждой записи в матрице Пошива
+// export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
+// --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
 // __ Тип для Типовой операции Пошива
-export interface ISewingOperation {
+export interface ICuttingOperation {
     active: boolean
     description: string | null
     id: number
@@ -280,21 +281,21 @@ export interface ISewingOperation {
 
 // --- ------------------------------------------------------------
 // __ Тип для Схемы Типовых операций Пошива
-export interface ISewingOperationSchema {
+export interface ICuttingOperationSchema {
     id: number
     active: boolean
     name: string
     description: string | null
-    operations: ISewingOperationItem[]
+    operations: ICuttingOperationItem[]
 }
 
 // __ Тип для Типовой операции в Схеме
-export interface ISewingOperationItem {
+export interface ICuttingOperationItem {
     id: number
-    pivot: ISewingOperationItemPivot
+    pivot: ICuttingOperationItemPivot
 }
 
-export interface ISewingOperationItemPivot {
+export interface ICuttingOperationItemPivot {
     amount: number | null
     condition: string | null
     position: number | null
@@ -302,38 +303,38 @@ export interface ISewingOperationItemPivot {
 }
 
 // __ Объект для обновления Схемы Типовых операций на сервере
-export interface ISewingOperationUpdateObject {
+export interface ICuttingOperationUpdateObject {
     operation_id: number
     target_id: number | string      // __ id Схемы (number) или CODE_1C Модели (string)
-    pivot: null | ISewingOperationItemPivot
+    pivot: null | ICuttingOperationItemPivot
 }
 
 // --- ---------------------- Модели ------------------------------
 // __ Тип для Объекта для отображения Списка моделей в Выборе Схемы ТО или просто ТО
-export interface ISewingOperationModelsCollection {
+export interface ICuttingOperationModelsCollection {
     collection: string
-    items: ISewingOperationModel[]
+    items: ICuttingOperationModel[]
     collapsed?: boolean
 }
 
 // __ Тип для модели в объекте для отображения Списка моделей
-export interface ISewingOperationModel {
+export interface ICuttingOperationModel {
     code_1c: string
     name: string
     name_report: string
-    sewing_schema_id: number
-    operations: ISewingOperationItem[]
+    cutting_schema_id: number
+    operations: ICuttingOperationItem[]
 }
 
 // --- ------------------------------------------------------------
 
 // __ Тип для обновления статуса заявки
-export type ISewingTaskStatusesSet = { task: number, status: number }
+export type ICuttingTaskStatusesSet = { task: number, status: number }
 
 
 // --- ----------- Производственный день ---------------------------
 // __ Тип для Производственного Дня
-export type ISewingDay = {
+export type ICuttingDay = {
     id: number
     action_at: string
     action_at_str: string
@@ -345,9 +346,9 @@ export type ISewingDay = {
     resume_at: string | null
     finish_at: string | null
     duration: number
-    sewing_tasks: ISewingTask[]
-    responsible: ISewingDayWorker | null
-    workers: ISewingDayWorker[]
+    cutting_tasks: ICuttingTask[]
+    responsible: ICuttingDayWorker | null
+    workers: ICuttingDayWorker[]
 
     ready: boolean  // __ Готовность к добавлению новых СЗ
 
@@ -357,15 +358,15 @@ export type ISewingDay = {
     common_collapsed?: boolean
 }
 
-export type ISewingDayWorker = {
+export type ICuttingDayWorker = {
     id: number
     surname: string
     name: string
     patronymic: string
-    pivot?: ISewingDayWorkerPivot
+    pivot?: ICuttingDayWorkerPivot
 }
 
-export type ISewingDayWorkerPivot = {
+export type ICuttingDayWorkerPivot = {
     id: number
     working_time: number | null
 }
@@ -373,12 +374,12 @@ export type ISewingDayWorkerPivot = {
 
 // --- ----------- Статистика выполнения СЗ (прогресс) ---------------------------
 // __ Вспомогательный Тип для вычисления статистики по СЗ
-export interface ISewingTaskExecuteStatistics {
-    amount: ISewingTaskExecuteStatisticsItem,
-    time: ISewingTaskExecuteStatisticsItem,
+export interface ICuttingTaskExecuteStatistics {
+    amount: ICuttingTaskExecuteStatisticsItem,
+    time: ICuttingTaskExecuteStatisticsItem,
 }
 
-export interface ISewingTaskExecuteStatisticsItem {
+export interface ICuttingTaskExecuteStatisticsItem {
     finished: number
     unfinished: number
     total: number
@@ -388,8 +389,8 @@ export interface ISewingTaskExecuteStatisticsItem {
 // --- -------------------------------------------------------------------
 // --- --------------- Тип для группировки СЗ по ШМ ----------------------
 // --- -------------------------------------------------------------------
-export type ISewingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
-export type ISewingTaskLinesSubGroupNames =
+export type ICuttingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
+export type ICuttingTaskLinesSubGroupNames =
     'Автоматы'
     | 'Глухие, автоматическое чехление'
     | 'Глухие'
@@ -399,12 +400,12 @@ export type ISewingTaskLinesSubGroupNames =
     | 'Без ТКЧ'
 
 // __ Для набора правил Группировки СЗ по ШМ
-export interface ISewingTaskLinesGroup {
-    GROUP_NAME: ISewingTaskLinesGroupNames
+export interface ICuttingTaskLinesGroup {
+    GROUP_NAME: ICuttingTaskLinesGroupNames
     GROUP_TYPE: IColorTypes
     GROUP_COLOR?: string | null,
     SUBGROUPS: {
-        SUBGROUP_NAME: ISewingTaskLinesSubGroupNames
+        SUBGROUP_NAME: ICuttingTaskLinesSubGroupNames
         SUBGROUP_TYPE: IColorTypes
         SUBGROUP_COLOR?: string | null,
         SUBGROUP_TCHK: string[]
@@ -412,8 +413,8 @@ export interface ISewingTaskLinesGroup {
 }
 
 // __ Для отображения СЗ по ШМ
-export interface ISewingTaskLinesGroupData {
-    groupName: ISewingTaskLinesGroupNames
+export interface ICuttingTaskLinesGroupData {
+    groupName: ICuttingTaskLinesGroupNames
     groupType: IColorTypes
     hasData: boolean
     time: {
@@ -426,20 +427,20 @@ export interface ISewingTaskLinesGroupData {
         done: number
         incomplete: number
     }
-    subgroups: ISewingTaskLinesSubgroup[]
+    subgroups: ICuttingTaskLinesSubgroup[]
     // subgroups: {
-    //     subgroupName:ISewingTaskLinesSubGroupNames
+    //     subgroupName:ICuttingTaskLinesSubGroupNames
     //     subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
     //     subgroupType: IColorTypes
     //     hasData: boolean,
-    //     lines: ISewingTaskLine[]
+    //     lines: ICuttingTaskLine[]
     // }[]
     collapsed?: boolean
 }
 
 
-export interface ISewingTaskLinesSubgroup {
-    subgroupName:ISewingTaskLinesSubGroupNames
+export interface ICuttingTaskLinesSubgroup {
+    subgroupName:ICuttingTaskLinesSubGroupNames
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean
@@ -453,5 +454,5 @@ export interface ISewingTaskLinesSubgroup {
         done: number
         incomplete: number
     }
-    lines: ISewingTaskLine[]
+    lines: ICuttingTaskLine[]
 }

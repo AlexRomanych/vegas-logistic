@@ -6,6 +6,11 @@ use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationSchemaController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingStatusController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingTaskController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingDayController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingOperationController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingOperationSchemaController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingStatusController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructController;
@@ -113,7 +118,7 @@ Route::prefix('/orders')
 Route::get('/manufacture/cells/groups', [CellsGroupController::class, 'getCellsGroups'])->middleware('jwt.auth');
 Route::get('/manufacture/cells', [CellItemController::class, 'getCells'])->middleware('jwt.auth');
 
-
+//hr--------------------------------------------------------------------------------------------------------------------
 // __ Блок Пошива - Sewing
 Route::prefix('sewing')
     ->middleware('jwt.auth')
@@ -179,18 +184,76 @@ Route::prefix('sewing')
         Route::patch('/day/ready/set', [CellSewingDayController::class, 'readySetSewingDay']);
         Route::patch('/day/ready/unset', [CellSewingDayController::class, 'readyUnsetSewingDay']);
 
+    });
+//hr--------------------------------------------------------------------------------------------------------------------
 
-        // Route::get('getTasks', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+//hr--------------------------------------------------------------------------------------------------------------------
+// __ Блок Раскроя - Cutting
+Route::prefix('cutting')
+    ->middleware('jwt.auth')
+    ->middleware('cutting_tasks_check')
+    ->group(function () {
+
+        // __ СЗ Раскроя
+        Route::get('tasks', [CellCuttingTaskController::class, 'getCuttingTasks']);
+        Route::get('tasks/order/{id}', [CellCuttingTaskController::class, 'getCuttingTasksByOrderId']);
+        Route::get('tasks/status', [CellCuttingTaskController::class, 'getCuttingTasksByStatus']);
+        Route::get('tasks/status/period', [CellCuttingTaskController::class, 'getCuttingTasksByStatusAndPeriod']);
+        Route::get('tasks/status/date/before', [CellCuttingTaskController::class, 'getCuttingTasksByStatusBeforeDate']);
+        Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
+        Route::get('tasks/status/date/on/check', [CellCuttingTaskController::class, 'checkCuttingTasksByStatusOnDate']);
+        Route::post('tasks/update', [CellCuttingTaskController::class, 'updateCuttingTasks']);
+        Route::post('tasks/comment', [CellCuttingTaskController::class, 'setCuttingTaskComment']);
+        Route::post('tasks/action/set', [CellCuttingTaskController::class, 'setCuttingTaskActionAt']);
+        Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);
+        Route::post('tasks/line/false', [CellCuttingTaskController::class, 'setCuttingTaskLinesFalse']);
+        Route::post('tasks/line/reset', [CellCuttingTaskController::class, 'setCuttingTaskLinesReset']);
+        Route::post('tasks/add/order', [CellCuttingTaskController::class, 'addCuttingTasksByOrderId']);
+        Route::delete('tasks/delete/order', [CellCuttingTaskController::class, 'deleteCuttingTasksByOrderId']);
+
+        // __ Типовые операции
+        Route::get('operations', [CellCuttingOperationController::class, 'getCuttingOperations']);
+        Route::get('operations/{id}', [CellCuttingOperationController::class, 'getCuttingOperation']);
+        Route::post('operations', [CellCuttingOperationController::class, 'createCuttingOperation']);
+        Route::put('operations', [CellCuttingOperationController::class, 'updateCuttingOperation']);
+
+        // __ Схемы Типовых операций
+        Route::get('operation/schemas', [CellCuttingOperationSchemaController::class, 'getCuttingOperationSchemas']);
+        Route::get('operation/schemas/{id}', [CellCuttingOperationSchemaController::class, 'getCuttingOperationSchema']);
+        Route::get('operation/schemas/check/{id}', [CellCuttingOperationSchemaController::class, 'checkCuttingOperationSchemaForSummaryTime']);
+        Route::post('operation/schemas/create', [CellCuttingOperationSchemaController::class, 'createCuttingOperationSchema']);
+        Route::put('operation/schemas/update', [CellCuttingOperationSchemaController::class, 'updateCuttingOperationSchema']);
+        Route::delete('operation/schemas/delete', [CellCuttingOperationSchemaController::class, 'deleteCuttingOperationFromSchema']);
+        Route::post('operation/schemas/add', [CellCuttingOperationSchemaController::class, 'addCuttingOperationToSchema']);
+
+        // __ Модели + Типовые операции Раскроя
+        Route::get('operation/models', [ModelController::class, 'getModelsForLabors']);
+        Route::patch('operation/schemas/models', [ModelController::class, 'updateModelCuttingOperationSchema']);
+        Route::post('operation/models/delete', [ModelController::class, 'deleteCuttingOperationFromModel']);
+        Route::post('operation/models/add', [ModelController::class, 'addCuttingOperationToModel']);
 
 
-        // Route::get('/manufacture/cells/sewing/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
-        // Route::get('/manufacture/cells/sewing/solid/{type}', [CellSewingController::class, 'getSewingCellData'])->middleware('jwt.auth');
+        // __ Статусы СЗ Паскроя
+        Route::get('/task/statuses', [CellCuttingStatusController::class, 'getCuttingTaskStatuses']);
+        Route::patch('/task/statuses/color/patch', [CellCuttingStatusController::class, 'patchCuttingTaskStatusColor']);
+        Route::post('/task/statuses/set', [CellCuttingStatusController::class, 'setCuttingTasksStatuses']);
+
+        // __ Производственный день
+        Route::get('/day/{date}/{change}', [CellCuttingDayController::class, 'getCuttingDayByDateAndChange']);
+        Route::get('/day/dates', [CellCuttingDayController::class, 'getCuttingDaysByDates']);
+        Route::post('/day/comment', [CellCuttingDayController::class, 'setCuttingDayComment']);
+        Route::post('/day/worker/add', [CellCuttingDayController::class, 'addWorkerToCuttingDay']);
+        Route::post('/day/workers/add', [CellCuttingDayController::class, 'addWorkersToCuttingDay']);
+        Route::post('/day/worker/remove', [CellCuttingDayController::class, 'removeWorkerFromCuttingDay']);
+        Route::patch('/day/responsible/add', [CellCuttingDayController::class, 'addResponsibleToCuttingDay']);
+        Route::patch('/day/responsible/remove', [CellCuttingDayController::class, 'removeResponsibleFromCuttingDay']);
+        Route::patch('/day/start', [CellCuttingDayController::class, 'startCuttingDay']);
+        Route::patch('/day/finish', [CellCuttingDayController::class, 'finishCuttingDay']);
+        Route::get('/day/ready/get/{date}/{change}', [CellCuttingDayController::class, 'readyGetCuttingDay']);
+        Route::patch('/day/ready/set', [CellCuttingDayController::class, 'readySetCuttingDay']);
+        Route::patch('/day/ready/unset', [CellCuttingDayController::class, 'readyUnsetCuttingDay']);
 
     });
-
-//Route::get('/manufacture/cells/groups', function(Request $request) {
-//    return json_encode(['cells_groups' => '11111111111111']);
-//})->middleware('jwt.auth');;
 //hr--------------------------------------------------------------------------------------------------------------------
 
 

@@ -1,0 +1,1887 @@
+// info Тут все, что связано с Раскроем
+
+import type {
+    IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ICuttingDay,
+    ICuttingMachineKeys, ICuttingMachineTimesKeys,
+    ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
+    ICuttingTaskLine, ICuttingTaskLineAmountAvg, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskLineTime,
+    ICuttingTaskModel, ICuttingTaskOrder,
+    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys,
+} from '@/types'
+
+import { CUTTING_MACHINES, CUTTING_TASK_DRAFT, CUTTING_TASK_GROUP_RULES, CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
+
+import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
+import { round } from '@/app/helpers/helpers_lib.ts'
+
+
+// __ Функция для получения трудозатрат для Записи (CuttingLine) в СЗ
+export function getCuttingTimes(cuttingLine: ICuttingTaskLine): IAmountAndTime {
+
+    //  __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+    const amountAndTimeObj = createAmountAndTimeObj()
+
+    // __ Получаем тип машины модели по строке
+    const machineType: ICuttingMachineKeys | null = getCuttingLineMachineType(cuttingLine)
+    if (!machineType) {
+        return amountAndTimeObj// __ Страховочка
+    }
+
+    // __ Получаем количество
+    if (machineType === CUTTING_MACHINES.AVERAGE) {
+        if (cuttingLine.amount_avg) {
+            Object.entries(cuttingLine.amount_avg).forEach(([key, value]) => {
+                const machineType = getMachineType(key as ICuttingMachineKeys)
+                if (!machineType) {
+                    return amountAndTimeObj // __ Страховочка
+                }
+                amountAndTimeObj[machineType].amount += value
+            })
+        } else {
+            console.log('Error! Amount_avg is not defined for: ' + cuttingLine.order_line.model.main.name)
+        }
+    } else {
+        amountAndTimeObj[machineType].amount = cuttingLine.amount
+    }
+
+    // __ Получаем время
+    Object.entries(cuttingLine.time).forEach(([key, value]) => {
+        const machineTypeKey = key.replace('time_', '') as ICuttingMachineKeys
+        const machineType    = getMachineType(machineTypeKey)
+        if (!machineType) {
+            return amountAndTimeObj     // __ Страховочка
+        }
+        amountAndTimeObj[machineType].time = value
+    })
+
+    return amountAndTimeObj
+}
+
+
+// __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+export function createAmountAndTimeObj() {
+    return Object.values(CUTTING_MACHINES).reduce((acc, value) => {
+        acc[value] = { time: 0, amount: 0 }
+        return acc
+    }, {} as IAmountAndTime)
+}
+
+
+// __ Функция для получения типа машины по ключу (константы ШМ)
+export function getMachineType(machineType: ICuttingMachineKeys) {
+    const findMachineTypeKey = Object.keys(CUTTING_MACHINES).find(key => CUTTING_MACHINES[key] === machineType)
+    return findMachineTypeKey ? CUTTING_MACHINES[findMachineTypeKey] : null
+}
+
+
+// __ Функция для получения типа ШМ по Записи в СЗ
+// __ Тут может быть ситуация, когда модель - чехол, тогда получаем тип машины по базовой модели
+export function getCuttingLineMachineType(cuttingLine: ICuttingTaskLine) {
+
+    // __ Получаем тип машины модели
+    let machineType: ICuttingMachineKeys | null = CUTTING_MACHINES.UNDEFINED
+    if (cuttingLine.order_line.model.base && !cuttingLine.order_line.model.cover) {           // __ Это условие того, что элемент - чехол
+        machineType = getMachineType(cuttingLine.order_line.model.base.machine_type)         // __ Получаем тип машины модели по базовой модели
+    } else if (!cuttingLine.order_line.model.base && cuttingLine.order_line.model.cover) {    // __ Это условие того, что элемент - матрас
+        machineType = getMachineType(cuttingLine.order_line.model.main.machine_type)         // __ Получаем тип машины модели по основной модели
+    } else if (!cuttingLine.order_line.model.base && !cuttingLine.order_line.model.cover) {   // __ Это условие того, что элемент - расчетный)
+        machineType = getMachineType(cuttingLine.order_line.model.main.machine_type)         // __ Получаем тип машины модели по основной модели
+    }
+
+    return machineType
+}
+
+
+// __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
+// __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
+export function getTimeString(cuttingLine: ICuttingTaskLine, twoLines: boolean = false) {
+
+    const machineType = getCuttingLineMachineType(cuttingLine)
+    if (!machineType) {
+        return 'н/д'
+    }
+
+    const amountAndTimeObj = getCuttingTimes(cuttingLine)
+    let time               = 0
+
+    // __ Получаем количество
+    if (machineType === CUTTING_MACHINES.AVERAGE) {
+        time = Object.keys(amountAndTimeObj).reduce((acc, key) => acc + amountAndTimeObj[key].time, time)
+    } else {
+        time = amountAndTimeObj[machineType as ICuttingMachineKeys].time
+    }
+
+    // __ Если больше часа, то выводим часы и минуты (обрезаем секунды)
+    if (twoLines) {
+        // __ Получаем время. Если больше часа, то выводим часы и минуты (обрезаем секунды)
+        if (time >= 60 * 60) {
+            const timeStrArr = formatTimeWithLeadingZeros(time).split(' ')
+            if (timeStrArr[0] !== undefined && timeStrArr[1] !== undefined) {
+                return timeStrArr[0] + ' ' + timeStrArr[1]
+            } else {
+                return formatTimeWithLeadingZeros(time)
+            }
+        }
+    }
+
+    return formatTimeWithLeadingZeros(time)
+}
+
+
+// __ Получаем трудозатраты по Заявке или массиву строк (Содержимого) в формате объекта
+export function getCuttingTaskAmountAndTime(item: ICuttingTask | ICuttingTaskLine[]) {
+
+    //  __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+    const amountAndTimeObj = createAmountAndTimeObj()
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.cutting_lines
+    }
+
+    // __ Проходим по всем cutting_lines и суммируем данные
+    itemArr?.forEach(cutting_line => {
+
+        // __ Получаем тип машины модели
+        const machineType = getCuttingLineMachineType(cutting_line)
+        if (!machineType) {
+            return  // __ Страховочка
+        }
+
+        // __ Получаем количество
+        if (machineType === CUTTING_MACHINES.AVERAGE) {
+            if (cutting_line.amount_avg) {
+                Object.entries(cutting_line.amount_avg).forEach(([key, value]) => {
+                    const machineType = getMachineType(key as ICuttingMachineKeys)
+                    if (!machineType) {
+                        return  // __ Страховочка
+                    }
+                    amountAndTimeObj[machineType].amount += value
+                })
+            } else {
+                console.log('Error! Amount_avg is not defined for: ' + cutting_line.order_line.model.main.name)
+            }
+        } else {
+            amountAndTimeObj[machineType].amount += cutting_line.amount
+        }
+
+        // __ Получаем время
+        Object.entries(cutting_line.time).forEach(([key, value]) => {
+            const machineTypeKey = key.replace('time_', '') as ICuttingMachineKeys
+            const machineType    = getMachineType(machineTypeKey)
+            if (!machineType) {
+                return  // __ Страховочка
+            }
+            amountAndTimeObj[machineType].time += value
+        })
+    })
+    return amountAndTimeObj
+}
+
+
+// __ Возвращаем числовое значение времени по Записи в СЗ (taskLine) для конкретных матрасов (не расчетных),
+// __ где запись из одного поля: time = {auto: 306} или time = {universal: 400}
+export function getCuttingTaskLineTime(line: ICuttingTaskLine) {
+    const machine: ICuttingMachineKeys | null = getCuttingLineMachineType(line)
+    return machine && machine in line.time ? line.time[machine] : 0
+}
+
+
+// __ Возвращаем Чехол модели. Вспомогалочка, когда приходит в Заявку Чехол
+export function getCuttingTaskModelCover(
+    item: ICuttingTaskLine | ICuttingTaskOrderLine | ICuttingTaskOrderLine['model']) {
+
+    let target = null
+    if (isCuttingTaskLine(item)) {
+        // __ Динамическое свойство средней модели
+        if (isAverage(item)) {
+            return item.order_line.model.main
+        }
+        target = item.order_line.model
+    } else if (isCuttingTaskOrderLine(item)) {
+        target = item.model
+    } else if (isCuttingTaskOrderLineModel(item)) {
+        target = item
+    }
+
+    if (!target) {
+        return null
+    }
+
+    // __ Сужаем тип, чтобы TS не ругался
+    const model = ('main' in target && 'base' in target && 'cover' in target) ? target : null
+
+    if (model && model.base && !model.cover) {           // __ Это условие того, что элемент - чехол (есть база)
+        return model.main
+    } else if (model && !model.base && model.cover) {    // __ Это условие того, что элемент - матрас (есть чехол)
+        return model.cover
+    } else if (model && !model.base && !model.cover) {   // __ Это условие того, что либо элемент - расчетный, либо чехол без базы ('Чехол ЖК'), либо база без чехла
+        if (isCover(model.main)) return model.main       // __ Дополнительно проверяем, является ли модель Чехлом
+        if (isAverage(model.main)) return model.main     // __ Дополнительно проверяем, является ли модель Расчетной, тоже возвращаем
+    }
+
+    return null
+}
+
+
+// __ Возвращаем имя Чехла модели.
+export function getCuttingTaskModelCoverName(
+    item: ICuttingTaskLine | ICuttingTaskOrderLine | ICuttingTaskOrderLine['model']) {
+    const modelCover = getCuttingTaskModelCover(item)
+
+    if (modelCover) {
+        return isAverage(modelCover) ? 'Чехол для Планового матраса' : modelCover.name_report
+    }
+    return ''
+}
+
+
+// __ Сортируем массив строк по размерам
+export function sortCuttingTaskLinesBySize(
+    item: ICuttingTask | ICuttingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',  // __ Берем высоту матраса или чехла
+): ICuttingTaskLine[] {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.cutting_lines
+    }
+
+    let isFind = true
+    while (isFind) {
+        isFind = false
+
+        for (let i = 0; i < sourceArray.length; i++) {
+
+            let height_i = sourceArray[i].order_line.dims.height
+            if (target === 'cover' && sourceArray[i].order_line.model.main.cover_height) {
+                height_i = sourceArray[i].order_line.model.main.cover_height
+            }
+
+            for (let j = i + 1; j < sourceArray.length; j++) {
+
+                let height_j = sourceArray[j].order_line.dims.height
+                if (target === 'cover' && sourceArray[j].order_line.model.main.cover_height) {
+                    height_j = sourceArray[j].order_line.model.main.cover_height
+                }
+
+                if (direction === 'asc') {
+                    if ((sourceArray[i].order_line.dims.width > sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length > sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i > height_j)) {
+                        // || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height > sourceArray[j].order_line.dims.height)) {
+
+                        [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                        // const temp = sourceArray[i]
+                        // sourceArray[i] = sourceArray[j]
+                        // sourceArray[j] = temp
+                        isFind = true
+                    }
+                } else {
+                    if ((sourceArray[i].order_line.dims.width < sourceArray[j].order_line.dims.width)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length < sourceArray[j].order_line.dims.length)
+                        || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && height_i < height_j)) {
+                        // || (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width && sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length && sourceArray[i].order_line.dims.height < sourceArray[j].order_line.dims.height)) {
+
+                        [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                        // const temp = sourceArray[i]
+                        // sourceArray[i] = sourceArray[j]
+                        // sourceArray[j] = temp
+                        isFind = true
+                    }
+                }
+            }
+        }
+    }
+
+    return sourceArray
+}
+
+
+// __ Сортируем массив строк по размерам и количеству
+export function sortCuttingTaskLinesBySizeAndAmount(
+    item: ICuttingTask | ICuttingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',
+): ICuttingTaskLine[] {
+
+    const sourceArray = Array.isArray(item) ? [...item] : [...item.cutting_lines]
+
+    sourceArray.sort((a, b) => {
+        const dimsA = a.order_line.dims
+        const dimsB = b.order_line.dims
+
+        // __ Определяем высоту в зависимости от цели
+        const hA = (target === 'cover' && a.order_line.model.main.cover_height)
+            ? a.order_line.model.main.cover_height
+            : dimsA.height
+        const hB = (target === 'cover' && b.order_line.model.main.cover_height)
+            ? b.order_line.model.main.cover_height
+            : dimsB.height
+
+        // __ Создаем массив приоритетов сравнения: Ширина -> Длина -> Высота -> Количество
+        const criteria = [
+            dimsA.width - dimsB.width,
+            dimsA.length - dimsB.length,
+            hA - hB,
+            a.amount - b.amount
+        ]
+
+        // Ищем первое различие
+        for (const diff of criteria) {
+            if (diff !== 0) {
+                return direction === 'asc' ? diff : -diff
+            }
+        }
+
+        return 0
+    })
+
+    return sourceArray
+}
+
+
+// __ Сортируем массив строк для Пошива
+export function sortCuttingTaskLinesForExecute(
+    item: ICuttingTask | ICuttingTaskLine[],
+    machineGroup: ICuttingTaskLinesGroupNames,
+    // direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover' = 'base',
+): ICuttingTaskLine[] {
+
+    const sourceArray = Array.isArray(item) ? [...item] : [...item.cutting_lines]
+
+    sourceArray.sort((a, b) => {
+        const tkchA = a.order_line.model.main.tkch || ''
+        const tkchB = b.order_line.model.main.tkch || ''
+
+        const modelA = a.order_line.model.main.name
+        const modelB = b.order_line.model.main.name
+
+        const textileA = a.order_line.textile || ''
+        const textileB = b.order_line.textile || ''
+
+        const dimsA = a.order_line.dims
+        const dimsB = b.order_line.dims
+
+        // __ Определяем высоту в зависимости от цели
+        const hA = (target === 'cover' && a.order_line.model.main.cover_height)
+            ? a.order_line.model.main.cover_height
+            : dimsA.height
+        const hB = (target === 'cover' && b.order_line.model.main.cover_height)
+            ? b.order_line.model.main.cover_height
+            : dimsB.height
+
+
+        // !!! Пока с 05.05.2026 неважно какая ШМ, все сортируем одинаково
+        // __ Создаем массив приоритетов сравнения:
+        const criteria = [
+            tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+            textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+            -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+            -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+            -(hA - hB),                         // __ Сортируем по высоте по убыванию
+            modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+            -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        ]
+
+
+        // let criteria: number[]
+
+        // if (machineGroup === 'УШМ') {
+        //     criteria = [
+        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
+        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        //     ]
+        // } else if (machineGroup === 'АШМ') {
+        //     criteria = [
+        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
+        //         textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
+        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
+        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
+        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+        //     ]
+        // } else {
+        //     criteria = []
+        // }
+
+
+        // Ищем первое различие
+        for (const diff of criteria) {
+            if (diff !== 0) {
+                return diff
+                // return direction === 'asc' ? diff : -diff
+            }
+        }
+
+        return 0
+    })
+
+    return sourceArray
+}
+
+// __ Получаем размеры Чехла модели в текстовом представлении
+export function getCoverSizeString(item: ICuttingTaskLine | ICuttingTaskOrderLine) {
+    let workData = null
+    if (isCuttingTaskLine(item)) {
+        workData = item.order_line
+    } else if (isCuttingTaskOrderLine(item)) {
+        workData = item
+    } else {
+        return ''
+    }
+
+    return round(workData.dims.width).toString() + 'x' +
+        round(workData.dims.length).toString() + 'x' +
+        round(workData.model.main.cover_height * 100).toString()
+}
+
+
+/**
+ * __ Функция, которая возвращает высчитанный объект количества при разделении строки на количество
+ * __ Возвращает новый экземпляр с пересчитанными данными
+ * @param cuttingLine    __Входная строка__
+ * @param newAmount     __Новое количество__
+ */
+export function calculateDividedAmountAndTime(cuttingLine: ICuttingTaskLine, newAmount: number) {
+
+    // __ Создаем копию строки (референсная)
+    const refCuttingLine = { ...cuttingLine }
+
+    let newAmountAvg: ICuttingTaskLineAmountAvg | null = null
+    const newTime: ICuttingTaskLineTime                = {} as ICuttingTaskLineTime
+
+    // __ Средняя модель
+    if (refCuttingLine.amount_avg) {
+
+        newAmountAvg = {} as ICuttingTaskLineAmountAvg
+        Object.entries(refCuttingLine.amount_avg).forEach(([key, value]) => {
+            const amount                             = refCuttingLine.amount ? value / refCuttingLine.amount * newAmount : 0
+            newAmountAvg![key as ICuttingMachineKeys] = amount
+
+            const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
+            newTime[arrKey]                       = value ? round(refCuttingLine.time[arrKey] / value * amount) : 0 // __ Уже новое пересчитанное количество
+        })
+
+        // Object.entries(refCuttingLine.time).forEach(([key, value]) => {
+        //     const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
+        //     let amount                            = 0
+        //     if (newAmountAvg && newAmountAvg[key as ICuttingMachineKeys]) amount = newAmountAvg[key as ICuttingMachineKeys]
+        //     // newTime[arrKey] = value ? refCuttingLine.time[arrKey] / value * amount : 0 // __ Уже новое пересчитанное количество
+        // })
+    } else {
+        Object.entries(cuttingLine.time).forEach(([key, value]) => {
+            newTime[key as ICuttingMachineTimesKeys] = cuttingLine.amount ? round(value / cuttingLine.amount) * newAmount : 0
+        })
+    }
+
+    refCuttingLine.amount     = newAmount
+    refCuttingLine.amount_avg = newAmountAvg
+    refCuttingLine.time       = newTime
+
+    return refCuttingLine
+}
+
+
+// __ Пересчитываем позицию по порядку записей в массиве строк (CuttingTaskLine[]) по ссылке
+// __ Пересчитываем позицию именно в том порядке, в котором они находятся в исходно массиве
+// __ (как определил специалист ОПП при перетаскивании строк или упорядочивании или сортировке)
+export function repositionCuttingTaskLines(entity: ICuttingTask | ICuttingTaskLine[]) {
+    let items
+    if (isCuttingTask(entity)) {
+        items = entity.cutting_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        return []
+    }
+
+    items.forEach((_, index, arr) => {
+        arr[index].position = index + 1
+    })
+    return items
+}
+
+
+// __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+export function clearRenderMatrix(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            matrix[weekIndex][dayIndex] = day.filter(item => item.id > -1) // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+        })
+    })
+    return matrix
+}
+
+// __ Очищаем день матрицы рендера от пустых сменных заданий, которые добавляем для рендеринга
+export function clearRenderMatrixDay(day: IDay[]) {
+    return [...day.filter(item => item.id > -1)] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+}
+
+
+// __ Разница между предыдущим и текущим состоянием
+// __ Разница по задумке должна быть только в одной Заявке:
+// __ Либо перемещение в рамках одного дня, либо из одного дня в другой
+// __ Задача найти эти дни и эту Заявку
+
+// --- ------------------------------------------------------------------------------------
+//__  Функция поиска различий с детальными данными по позициям
+export function getDiffsWithPositions(currentMatrix: IPlanMatrix, copyMatrix: IPlanMatrix) {
+    const diffs: IRenderMatrixDiff[] = []
+
+    // __ 1. Индексируем копию (старые данные)
+    const copyMap = new Map()
+    copyMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const dayOffset = weekIdx * 7 + dayIdx
+            dayTasks.forEach(task => {
+
+                // __ Сохраняем "слепок" состояния для сравнения
+                copyMap.set(task.id, {
+                    dayOffset,
+                    position: task.position,
+                    lines   : JSON.parse(JSON.stringify(task.cutting_lines)), // __ глубокая копия строк
+                })
+            })
+        })
+    })
+
+    // __ 2. Сравниваем с текущим состоянием
+    currentMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const currentDayOffset = weekIdx * 7 + dayIdx
+
+            dayTasks.forEach((task) => {
+                const old = copyMap.get(task.id)
+
+                if (!old) {
+
+                    // __ Обработка совершенно новой задачи (если такое возможно)
+                    diffs.push({ type: 'NEW_TASK', taskId: task.id, newPosition: task.position })
+                    return
+                }
+
+                const isMoved      = old.dayOffset !== currentDayOffset
+                const isPosChanged = old.position !== task.position
+
+                // __ Проверяем детальные изменения в строках (cutting_lines)
+                const lineDiffs = getLinesDetailedDiff(old.lines, task.cutting_lines)
+
+                // __ Если хоть что-то изменилось — фиксируем
+                if (isMoved || isPosChanged || lineDiffs.length > 0) {
+                    diffs.push({
+                        taskId: task.id,
+
+                        // __ Информация по датам
+                        dayFromOffset: old.dayOffset,
+                        dayToOffset  : currentDayOffset,
+
+                        // __ Информация по позиции самой задачи
+                        oldTaskPosition  : old.position,
+                        newTaskPosition  : task.position,
+                        isPositionChanged: isPosChanged,
+                        isMoved          : isMoved,
+
+                        // __ Детализация по строкам
+                        lineDiffs: lineDiffs,
+                    })
+                }
+            })
+        })
+    })
+
+    return diffs
+}
+
+
+// __ Вспомогательная функция для детального сравнения позиций и данных строк
+function getLinesDetailedDiff(oldLines: ICuttingTaskLine[], newLines: ICuttingTaskLine[]) {
+    const changes: IRenderMatrixLineDiffs[] = []
+
+    newLines.forEach((newLine) => {
+        const oldLine = oldLines.find(l => l.id === newLine.id)
+
+        if (!oldLine) {
+            changes.push({ lineId: newLine.id, type: 'ADDED', newPosition: newLine.position })
+        } else {
+            const isAmountChanged = oldLine.amount !== newLine.amount
+            const isPosChanged    = oldLine.position !== newLine.position
+
+            if (isAmountChanged || isPosChanged) {
+                changes.push({
+                    lineId           : newLine.id,
+                    type             : 'UPDATED',
+                    oldPosition      : oldLine.position,
+                    newPosition      : newLine.position,
+                    oldAmount        : oldLine.amount,
+                    newAmount        : newLine.amount,
+                    isPositionChanged: isPosChanged,
+                    isAmountChanged  : isAmountChanged,
+                })
+            }
+        }
+    })
+
+    // Проверка на удаление (если нужно для БД)
+    oldLines.forEach(oldLine => {
+        if (!newLines.find(l => l.id === oldLine.id)) {
+            changes.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return changes
+}
+
+// --- ------------------------------------------------------------------------------------
+
+
+// __ Получаем разницу между текущим и копией матрицы рендера без деталей
+export function getDiffsInRenderMatrix(currentMatrix: IPlanMatrix, copyMatrix: IPlanMatrix) {
+    const diffs: IRenderMatrixDiff[] = []
+
+    // __ 1. Создаем плоскую карту из копии для быстрого поиска исходного состояния по ID
+    // __ Это поможет нам понять, откуда пришла задача, если она переместилась
+    const copyMap = new Map()
+    copyMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const dayOffset = weekIdx * 7 + dayIdx
+            dayTasks.forEach(task => {
+                copyMap.set(task.id, {
+                    task,
+                    dayOffset,
+                    linesHash: JSON.stringify(task.cutting_lines), // Хэш строк для быстрого сравнения
+                })
+            })
+        })
+    })
+
+    // __ 2. Обходим текущую матрицу
+    currentMatrix.forEach((week, weekIdx) => {
+        week.forEach((dayTasks, dayIdx) => {
+            const currentDayOffset = weekIdx * 7 + dayIdx
+
+            dayTasks.forEach((task) => {
+                const original = copyMap.get(task.id)
+
+                // Если задачи не было в исходной матрице (новое СЗ)
+                if (!original) {
+                    diffs.push({
+                        type       : 'NEW_TASK',
+                        taskId     : task.id,
+                        dayToOffset: currentDayOffset,
+                        newPosition: task.position,
+                    })
+                    return
+                }
+
+                const isMoved           = original.dayOffset !== currentDayOffset
+                const isPositionChanged = original.task.position !== task.position
+                const currentLinesHash  = JSON.stringify(task.cutting_lines)
+                const areLinesChanged   = original.linesHash !== currentLinesHash
+
+                // Если есть хоть одно изменение — фиксируем объект
+                if (isMoved || isPositionChanged || areLinesChanged) {
+                    diffs.push({
+                        taskId       : task.id,
+                        dayFromOffset: original.dayOffset,
+                        dayToOffset  : currentDayOffset,
+                        isMoved,
+                        isPositionChanged,
+                        areLinesChanged,
+
+                        // __ Детальные изменения строк, если они были
+                        lineDiffs: areLinesChanged ? getLinesDiff(original.task.cutting_lines, task.cutting_lines) : [],
+                    })
+                }
+            })
+        })
+    })
+
+    return diffs
+}
+
+
+// __ Вспомогательная функция для сравнения массива строк пошива
+function getLinesDiff(oldLines: ICuttingTaskLine[], newLines: ICuttingTaskLine[]) {
+    const lineChanges: IRenderMatrixLineDiffs[] = []
+
+    // __ Проверяем каждую строку в задаче
+    newLines.forEach((newLine) => {
+        const oldLine = oldLines.find(l => l.id === newLine.id)
+
+        if (!oldLine) {
+            lineChanges.push({ lineId: newLine.id, type: 'ADDED' })
+        } else if (
+            oldLine.amount !== newLine.amount ||
+            oldLine.position !== newLine.position
+        ) {
+            lineChanges.push({
+                lineId: newLine.id,
+                type  : 'UPDATED',
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-expect-error
+                old: { amount: oldLine.amount, pos: oldLine.position },
+                new: { amount: newLine.amount, pos: newLine.position },
+            })
+        }
+    })
+
+    // __ Проверка на удаление строк
+    oldLines.forEach(oldLine => {
+        if (!newLines.find(l => l.id === oldLine.id)) {
+            lineChanges.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return lineChanges
+}
+
+// --- ------------------------------------------------------------------------------------
+
+
+// __ Проблема с draggable
+// __ Если день пустой, то перетаскивание не срабатывает
+// __ Поэтому добавляем пустое задание в пустой день
+export function correctRenderMatrix(matrix: IPlanMatrix) {
+    let draftId = -100
+    matrix.forEach((week, weekIndex) => {
+
+        week.forEach((day, dayIndex) => {
+            const filteredDay = day.filter(item => item.id > -1)      // __ id === 0 (для добавленного СЗ)
+            // let filteredDay = day.filter(item => item.id !== CUTTING_TASK_DRAFT.id)
+            if (filteredDay.length === 0) {
+                const draft = {
+                    ...CUTTING_TASK_DRAFT,
+                    id          : draftId--,
+                    position    : 100,
+                    cutting_lines: [],  /* !!! Тут пустой массив, потому что где-то по ссылке сохраняется  */
+                }
+                filteredDay.push(draft)
+            } else {
+                // __ Сортируем по позиции (по порядку)
+                // filteredDay = filteredDay.sort((a, b) => a.position - b.position)
+            }
+            matrix[weekIndex][dayIndex] = filteredDay
+            // matrix[weekIndex][dayIndex] = {...filteredDay, fullDay: true}
+        })
+    })
+
+    return matrix
+}
+
+
+// __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
+export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+
+            // __ Новая сортировка по позиции (СЗ статусы, которые не равны "Создано" - остаются на своих местах)
+            const nonCreatedStatusTasks: ICuttingTask[] = []
+            const createdStatusTasks: ICuttingTask[]    = []
+            const resultDay: ICuttingTask[]             = []
+
+            // __ Фильтруем по статусу
+            for (let i = 0; i < day.length; i++) {
+                if (isTaskStatusCreated(day[i] as ICuttingTask)) {
+                    createdStatusTasks.push(day[i] as ICuttingTask)
+                } else {
+                    nonCreatedStatusTasks.push(day[i] as ICuttingTask)
+                }
+            }
+
+            nonCreatedStatusTasks.forEach(task => resultDay.push(task))
+            createdStatusTasks.forEach(task => resultDay.push(task))
+
+            // console.log('nonCreatedStatusTasks: ', nonCreatedStatusTasks)
+            // console.log('createdStatusTasks: ', createdStatusTasks)
+            // console.log('resultDay: ', resultDay)
+            // matrix[weekIndex][dayIndex] = resultDay
+
+            matrix[weekIndex][dayIndex] = resultDay
+                .map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+            // .sort((a, b) => a.position - b.position)
+            // __ Старая сортировка по позиции без учета всплытия статусов - без первой части
+            // matrix[weekIndex][dayIndex] = day.map((item, index) => ({ ...item, position: index + 1 })) // __ id пустых заданий меньше нуля
+        })
+    })
+    return matrix
+}
+
+
+// __ Сортируем задания в матрице рендера по позиции + сортируем строки по позиции
+export function sortRenderMatrixByTaskPosition(matrix: IPlanMatrix) {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+            matrix[weekIndex][dayIndex] = day.sort((a, b) => a.position - b.position)
+            matrix[weekIndex][dayIndex].forEach(cuttingTask => {
+                cuttingTask.cutting_lines = cuttingTask.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.position - b.position)
+            })
+        })
+    })
+    return matrix
+}
+
+// ___ Не доделанаа, используем другую
+export function getDiffsInRenderMatrixs(currentMatrix: IPlanMatrix, memMatrix: IPlanMatrix) {
+
+    const diffs: IRenderMatrixDiff = {
+        dayFromOffset: 0,
+        dayToOffset  : 0,
+        taskId       : 0,
+    }
+
+    // __ Очищаем матрицу рендера от пустых сменных заданий, которые добавляем для рендеринга
+    currentMatrix = clearRenderMatrix(currentMatrix)
+
+    console.log('catch diffs')
+    // return
+
+    // // __ Получаем дату отсчета
+    // let workDay = new Date(renderPeriod.start)
+    // console.log(renderPeriod)
+
+    // __ Проходим по всем неделям
+    for (let i = 0; i < currentMatrix.length; i++) {
+
+        // const workWeek = currentMatrix[i]
+
+        const weekBefore = currentMatrix[i]
+        const weekAfter  = memMatrix[i]
+
+        // console.log('weekAfter: ', weekAfter)
+        // console.log('weekBefore: ', weekBefore)
+
+        // __ Проходим по всем дням
+        for (let j = 0; j < 7; j++) {
+
+            // __ Получаем дни для сравнения
+            const dayAfter  = weekAfter[j]
+            const dayBefore = weekBefore[j]
+
+            // __ Получаем максимальный индекс для двух массивов
+            const maxDayIndex = Math.max(dayAfter.length, dayBefore.length)
+
+            // __ Проходим по всем СЗ
+            for (let k = 0; k < maxDayIndex; k++) {
+
+                // __ Проверяем, что есть оба элемента
+                if (dayAfter[k] && dayBefore[k]) {
+
+                    // ___ Оба элемента есть
+
+
+                    // __ Проверяем, что элементы одинаковые по id и позиции
+                    if (dayAfter[k].id === dayBefore[k].id &&
+                        dayAfter[k].position === dayBefore[k].position) {
+
+                        // ___ Элементы одинаковые по id и позиции
+
+
+                        // __ Проверяем, что количество строк одинаковое проверяем на содержимое
+                        if (dayAfter[k].cutting_lines.length === dayBefore[k].cutting_lines.length) {
+
+                            // ___ Количество строк совпадает. Проверяем, что строки одинаковые
+
+
+                        } else {
+
+                            // ___ Количество строк не совпадает. Проверяем, что строки одинаковые
+
+
+                        }
+
+
+                    } else {
+
+                        // ___ Элементы разные по id и позиции
+
+                    }
+
+
+                } else {
+
+                    // ___ Один из элементов в каком-то дне отсутствует
+
+
+                }
+
+
+            }
+
+        }
+
+    }
+
+
+    return diffs
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+/**
+ *  __Находим глубокую разницу между массивами СЗ (текущим и копией)__ !!! Используется эта!
+ * @param {ICuttingTask[]} currentTasks  - __Массив после манипуляций (vuedraggable и т.д.)__
+ * @param {ICuttingTask[]} originalTasks - __Глубокая копия (tasksCopy)__
+ */
+export function getCuttingTasksDiff(currentTasks: ICuttingTask[], originalTasks: ICuttingTask[]) {
+    const diffs: ICuttingTaskArrayDiff[] = []
+
+    // console.log(currentTasks)
+    // console.log(originalTasks)
+
+    // __ Индексируем оригинал по ID для быстрого доступа
+    const originalMap = new Map(originalTasks.map(task => [task.id, task]))
+    const currentMap  = new Map(currentTasks.map(task => [task.id, task]))
+
+    currentTasks.forEach((task) => {
+        const original = originalMap.get(task.id)
+
+        if (!original) {
+            // __ Если задачи не было в исходном массиве
+
+            const lineChanges: ICuttingTaskArrayLineDiffs[] = []
+            task.cutting_lines.forEach(line => lineChanges.push({
+                lineId   : line.id,
+                lineIdRef: line.id_ref,
+                type     : 'ADDED',
+                amount   : { old: null, new: line.amount },
+                position : { old: null, new: line.position },
+            }))
+
+            diffs.push({
+                taskId   : task.id,
+                taskIdRef: task.id_ref,
+                type     : 'ADDED',
+                // current:     task,
+                taskChanges: {
+                    action_at: { old: null, new: task.action_at },
+                    position : { old: null, new: task.position },
+                    status : { old: null, new: task.current_status.id ?? null },
+                },
+                lineChanges,
+
+                // __ Добавочный статус, если он есть
+                // statusId: task.statusId ?? -1,
+            })
+            return
+        }
+
+        // __ Сравниваем основные поля задачи
+        const hasDateChanged     = task.action_at !== original.action_at
+        const hasPositionChanged = task.position !== original.position
+        const hasStatusChanged = task.current_status.id !== original.current_status.id
+
+        // __ Сравниваем строки пошива (детально)
+        const lineDiffs = getTaskLinesDiff(task.cutting_lines, original.cutting_lines)
+
+        // __ Если есть изменения хотя бы в одном месте
+        if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0 || hasStatusChanged) {
+            diffs.push({
+                taskId: task.id,
+                type  : 'UPDATED',
+
+                // __ Поля задачи
+                taskChanges: {
+                    action_at: hasDateChanged ? { old: original.action_at, new: task.action_at } : null,
+                    position : hasPositionChanged ? { old: original.position, new: task.position } : null,
+                    status: hasStatusChanged ? {old: original.current_status.id, new: task.current_status.id} : null,
+                },
+                // __ Массив изменений в строках
+                lineChanges: lineDiffs,
+
+            })
+        }
+    })
+
+    // __ 3. ПРОВЕРКА НА УДАЛЕНИЕ ЗАДАЧ (Новый блок)
+    originalTasks.forEach((oldTask) => {
+        if (!currentMap.has(oldTask.id)) {
+            diffs.push({
+                taskId: oldTask.id,
+                type  : 'DELETED', // Указываем серверу, что эту задачу нужно удалить
+            })
+        }
+    })
+
+    return diffs
+}
+
+/**
+ * __ Сравнение внутренних строк ICuttingTaskLine
+ * @param currentLines
+ * @param originalLines
+ */
+function getTaskLinesDiff(currentLines: ICuttingTaskLine[], originalLines: ICuttingTaskLine[]) {
+    const diffs: ICuttingTaskArrayLineDiffs[] = []
+    const originalLinesMap                   = new Map(originalLines.map(l => [l.id, l]))
+
+    currentLines.forEach((line) => {
+        const originalLine = originalLinesMap.get(line.id)
+
+        if (!originalLine) {
+            diffs.push({
+                lineId   : line.id,
+                lineIdRef: line.id_ref,
+                type     : 'ADDED',
+                // newPosition: line.position,
+                amount  : { old: null, new: line.amount },
+                position: { old: null, new: line.position },
+            })
+        } else {
+            const isAmountChanged = line.amount !== originalLine.amount
+            const isPosChanged    = line.position !== originalLine.position
+
+            if (isAmountChanged || isPosChanged) {
+                diffs.push({
+                    lineId  : line.id,
+                    type    : 'UPDATED',
+                    amount  : isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
+                    position: isPosChanged ? { old: originalLine.position, new: line.position } : null,
+                })
+            }
+        }
+    })
+
+    // __ Проверка на удаление строк
+    originalLines.forEach(oldLine => {
+        if (!currentLines.find(l => l.id === oldLine.id)) {
+            diffs.push({ lineId: oldLine.id, type: 'DELETED' })
+        }
+    })
+
+    return diffs
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, есть ли в массиве изменений хотя бы одна сущность для создания в БД
+export function isAddItemsInDiffsPresents(diffs: ICuttingTaskArrayDiff[]) {
+    return diffs.some(taskDiff => {
+
+        // __ 1. Проверяем саму задачу
+        if (taskDiff.type === 'ADDED') return true
+
+        // __ 2. Безопасно проверяем строки (используем опциональную цепочку ?. )
+        // __ Проверяем, есть ли среди изменений строк хотя бы одно с типом 'ADDED'
+        return taskDiff.lineChanges?.some(lineDiff => lineDiff.type === 'ADDED') ?? false
+    })
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Превращаем массив объектов ICuttingTask [{}, {}, ...] в массив массивов объектов [[...], [...]]
+// __ которые сгруппированы по одинаковой Заявке с возможностью учитывать статусы Заявок в определенном дне
+export function getCuttingTasksGroupedByOrder(cuttingTasks: ICuttingTask[], applyStatus: boolean = true) {
+    const clearDay = clearRenderMatrixDay(cuttingTasks) // __ Возвращаем новый массив без пустых элементов
+    const grouped  = clearDay.reduce((acc, item) => {
+
+        // __ Создаем уникальный составной ключ
+        let key: string
+        if (applyStatus) {
+            key = `${item.order.id}-${item.current_status.id}`
+        } else {
+            key = `${item.order.id}`
+        }
+
+        // __ Если такого task_id еще нет в аккумуляторе, создаем пустой массив
+        if (!acc[key]) {
+            acc[key] = []
+        }
+        // __ Добавляем текущий объект в массив соответствующего task_id
+        acc[key].push(item)
+        return acc
+    }, {} as ICuttingTask)
+
+    // __ Превращаем объект { 1: [...], 2: [...] } в массив массивов [[...], [...]]
+    return Object.values(grouped)
+}
+
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, есть ли в конкретном дне СЗ для какой-то конкретной Заявки
+// __ Если передан entity типа ICuttingTask и applyStatus = true, то проверяем еще на одинаковость статусов
+export function getCuttingTasksSameOrderInDay(
+    entity: ICuttingTask | ICuttingTaskOrder | number,
+    tasksList: ICuttingTask[],
+    date: string | null  = null,
+    applyStatus: boolean = false) {
+
+    let item
+    if (isCuttingTask(entity)) {
+        item = entity.order.id
+        if (!date) date = entity.action_at
+
+    } else if (isCuttingTaskOrder(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        return []
+        // throw new Error('Invalid entity type')
+    }
+
+    if (!date) {
+        return []
+    }
+
+    if (isCuttingTask(entity) && applyStatus) {
+        return tasksList.filter(task =>
+            task.action_at === date &&
+            task.order.id === item &&
+            task.current_status.id === entity.current_status.id)
+    }
+
+    return tasksList.filter(task => task.action_at === date && task.order.id === item)
+}
+
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем СЗ с одинаковыми Заявками (Заявки, к которым принадлежит СЗ)
+export function mergeCuttingTasks(tasks: ICuttingTask[]): ICuttingTask[] {
+    const grouped = tasks.reduce((acc, task) => {
+        const orderId = task.order.id
+
+        if (!acc[orderId]) {
+
+            // __ Если заказа еще нет в словаре, клонируем объект задачи
+            // __ Используем структурированное клонирование, чтобы не мутировать исходный массив
+            acc[orderId] = JSON.parse(JSON.stringify(task))
+
+        } else {
+
+            // __ Если заказ уже есть, объединяем его cutting_lines
+            const targetTask = acc[orderId]
+
+            task.cutting_lines.forEach((newLine) => {
+                const existingLine = targetTask.cutting_lines.find(
+                    (l) =>
+                        // __ Ищем строку с тем же order_line.id и типом машины
+                        l.order_line.id === newLine.order_line.id &&
+                        // __ Смотрим, чтобы совпадали ШМ для average моделей
+                        l.order_line.model.main.machine_type === newLine.order_line.model.main.machine_type,
+                )
+
+                if (existingLine) {
+                    // __ Если такая строка заказа уже есть — суммируем количество
+                    existingLine.amount += newLine.amount
+                } else {
+                    // __ Если такой строки еще нет — добавляем её целиком
+                    targetTask.cutting_lines.push(JSON.parse(JSON.stringify(newLine)))
+                }
+            })
+        }
+
+        return acc
+    }, {} as Record<number, ICuttingTask>)
+
+    // __Возвращаем массив, сохраняя порядок первого появления каждого order.id
+    return Object.values(grouped)
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем строки СЗ с принадлежностью к одной и той же строке Заявки
+export function mergeCuttingLines(lines: ICuttingTaskLine[]): ICuttingTaskLine[] {
+
+    const grouped = lines.reduce((acc, line) => {
+
+        // __ Создаем составной ключ: ID + Тип машины
+        const machineType = line.order_line.model.main.machine_type
+        const groupKey    = `${line.order_line.id}_${machineType}`
+
+        if (!acc[groupKey]) {
+            acc[groupKey] = JSON.parse(JSON.stringify(line))
+        } else {
+
+            // __ Складываем количество
+            acc[groupKey].amount += line.amount
+
+            // __ Складываем трудозатраты (time)
+            // if (acc[groupKey].time && line.time) {
+            //     for (const key in line.time) {
+            //         acc[groupKey].time[key] = (acc[groupKey].time[key] || 0) + line.time[key];
+            //     }
+            // }
+        }
+
+        return acc
+    }, {} as Record<string, ICuttingTaskLine>)
+
+    return Object.values(grouped)
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// --- ------------------------------------------------------------------------------------
+// __ Пересчитываем позиции СЗ в массиве СЗ на определенный день
+export function repositionCuttingTaskInDay(tasks: ICuttingTask[], action_at: string) {
+    tasks
+        // __ Отбираем только объекты на нужную дату
+        .filter(item => item.action_at === action_at)
+        // __ Сортируем их по возрастанию текущей позиции (включая x.1)
+        .sort((a, b) => a.position - b.position)
+        // __ Мутируем каждый объект, присваивая новый порядковый номер
+        .forEach((item, index) => {
+            item.position = index + 1
+        })
+    return tasks
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+export function isTaskStatusCreated(entity: ICuttingTask | ICuttingTaskStatus | number): boolean {
+    let item: number
+    if (isCuttingTask(entity)) {
+        item = entity.current_status.id
+    } else if (isCuttingTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === CUTTING_TASK_STATUSES.CREATED.ID || item === CUTTING_TASK_STATUSES.ROLLING.ID
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+export function isTaskStatusRunning(entity: ICuttingTask | ICuttingTaskStatus | number): boolean {
+    let item: number
+    if (isCuttingTask(entity)) {
+        item = entity.current_status.id
+    } else if (isCuttingTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === CUTTING_TASK_STATUSES.RUNNING.ID
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли СЗ расчетным (AVERAGE) или нет
+export function isTaskAverage(entity: ICuttingTask | ICuttingTaskLine[]) {
+
+    let items
+    if (isCuttingTask(entity)) {
+        items = entity.cutting_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        throw new Error('isTaskAverage: unknown incoming data type')
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].element_type.is_average) return true
+    }
+
+    return false
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Устанавливаем необходимы порядок (пронумеровываем заявки в массиве)
+// __ в соответствии со статусами
+// __ 1. Сначала статус СЗ - Done по возрастанию даты
+// __ 2. Потом статус СЗ   - Running по возрастанию даты
+// __ 3. Потом статус СЗ   - Pending по возрастанию даты
+// __ 4. Потом статус СЗ   - Created по возрастанию даты
+export const orderCuttingTasksByStatus = (tasks: ICuttingTask[]): ICuttingTask[] => {
+    // 1. Описываем веса для статусов.
+    // Чем меньше значение, тем выше (раньше) элемент в массиве.
+    const statusPriority: Record<number, number> = {
+        [CUTTING_TASK_STATUSES.DONE.ID]   : 1,
+        [CUTTING_TASK_STATUSES.RUNNING.ID]: 2,
+        [CUTTING_TASK_STATUSES.PENDING.ID]: 3,
+        [CUTTING_TASK_STATUSES.ROLLING.ID]: 4,
+        [CUTTING_TASK_STATUSES.CREATED.ID]: 5,
+    }
+
+    // Создаем копию массива, чтобы не мутировать оригинал (важно для Vue)
+    const result = [...tasks]
+        .sort((a, b) => {
+            const weightA = statusPriority[a.current_status.id] ?? 999
+            const weightB = statusPriority[b.current_status.id] ?? 999
+
+            // Сначала сравниваем по весу статуса
+            if (weightA !== weightB) {
+                return weightA - weightB
+            }
+
+            // Если статусы одинаковые, сравниваем по дате (action_at)
+            // Преобразуем строки даты в числа (timestamp) для вычитания
+            const dateA = new Date(a.action_at).getTime()
+            const dateB = new Date(b.action_at).getTime()
+
+            return dateA - dateB
+        })
+
+    result.forEach((_, index, array) => {
+        // console.log(_ , index)
+        array[index].position = index + 1
+    })
+
+    // console.log(result)
+
+    return result
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем разницу в днях между двумя датами в формате "YYYY-MM-DD HH:mm:ss"
+export function getDaysDifferenceFromCuttingDates(date1: string, date2: string) {
+    const d1 = date1.split(' ')[0]
+    const d2 = date2.split(' ')[0]
+    return getDaysDifference(d1, d2, true)
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем массив дней дат, на которые есть СЗ
+export function getCuttingDates(tasks: ICuttingTask[]) {
+    if (tasks.length > 0) {
+        const days = tasks.map(item => item.action_at.split(' ')[0])
+        return [...new Set(days)]
+    } else {
+        return []
+    }
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем на вход массив СЗ и массив дат и делаем из них массив дат
+// __ с добавлением туда массива СЗ на соответствующую дату
+// __ добавляем по ссылке + заодно и сортируем
+export function unionDatesWithCuttingTasks(days: ICuttingDay[], tasks: ICuttingTask[]) {
+    days.sort((a, b) => new Date(a.action_at).getTime() - new Date(b.action_at).getTime())
+    tasks.sort((a, b) => new Date(a.action_at).getTime() - new Date(b.action_at).getTime())
+
+    tasks.forEach(task => {
+        task.cutting_lines.sort((a, b) => a.position - b.position)
+    })
+
+    for (const day of days) {
+        day.cutting_tasks = []
+        for (const task of tasks) {
+            if (splitDate(task.action_at) === splitDate(day.action_at)) {
+                day.cutting_tasks.push(task)
+            }
+        }
+
+        day.cutting_tasks.sort((a, b) => a.position - b.position)
+
+    }
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статус СЗ по его ID
+export function getTaskStatusById(id: number) {
+    const statusKey = Object.keys(CUTTING_TASK_STATUSES).find(key => CUTTING_TASK_STATUSES[key as ICuttingTaskStatusKeys].ID === id)
+    if (statusKey) {
+        return CUTTING_TASK_STATUSES[statusKey as ICuttingTaskStatusKeys]
+    }
+    return null
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статистику по выполнению СЗ
+export function getExecuteTaskStatistics(item: ICuttingTask | ICuttingTaskLine[]) {
+
+    const statistics: ICuttingTaskExecuteStatistics = {
+        amount: {
+            finished  : 0,
+            unfinished: 0,
+            total     : 0,
+        },
+        time  : {
+            finished  : 0,
+            unfinished: 0,
+            total     : 0,
+        },
+    }
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.cutting_lines
+    }
+
+    // __ Получаем суммарное количество и трудозатраты
+    const totalAmountAndTimeObj = getCuttingTaskAmountAndTime(itemArr)
+
+    // __ Общее Количество
+    statistics.amount.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Общее Трудозатраты
+    statistics.time.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Выполненные
+    const finished = itemArr.filter(line => line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для выполненных
+    const finishedAmountAndTimeObj = getCuttingTaskAmountAndTime(finished)
+
+    // __ Выполненные Количество
+    statistics.amount.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Выполненные Трудозатраты
+    statistics.time.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Не Выполненные
+    const unfinished = itemArr.filter(line => !line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для Не выполненных
+    const unfinishedAmountAndTimeObj = getCuttingTaskAmountAndTime(unfinished)
+
+    // __ Не Выполненные Количество
+    statistics.amount.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Не Выполненные Трудозатраты
+    statistics.time.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    return statistics
+}
+
+
+// __ Возвращаем ТКЧ для строки СЗ
+export function getCoverTKCH(line: ICuttingTaskLine) {
+    if (line.order_line.model.main.tkch) {
+        return line.order_line.model.main.tkch
+    } else if (line.order_line.model.cover?.tkch) {
+        return line.order_line.model.main.tkch
+    }
+    return null
+}
+
+
+// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
+export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: string | null = null): ICuttingTaskLinesGroupData[] {
+
+    // __ Собираем все ТКЧ в один сет для проверки, что в исходных данных ничего криво не написано и не добавлено
+    const ALL_TKCH = new Set<string>()
+    CUTTING_TASK_GROUP_RULES.forEach(rule => {
+        rule.SUBGROUPS.forEach(subgroup => {
+            subgroup.SUBGROUP_TCHK.forEach(tkch => {
+                ALL_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+            })
+        })
+    })
+
+    // console.log(ALL_TKCH)
+
+    const result: ICuttingTaskLinesGroupData[] = []
+
+    // __ Группируем по группам согласно правилам в CUTTING_TASK_GROUP_RULES
+    for (let i = 0; i < CUTTING_TASK_GROUP_RULES.length; i++) {
+
+        let hasDataGroup = false
+
+        let timeGroupTotal      = 0
+        let timeGroupDone       = 0
+        let timeGroupIncomplete = 0
+
+        let amountGroupTotal      = 0
+        let amountGroupDone       = 0
+        let amountGroupIncomplete = 0
+
+        result[i] = {
+            groupName: CUTTING_TASK_GROUP_RULES[i].GROUP_NAME,
+            groupType: CUTTING_TASK_GROUP_RULES[i].GROUP_TYPE,
+            subgroups: [],
+            hasData  : hasDataGroup,
+            time     : {
+                total     : timeGroupTotal,
+                done      : timeGroupDone,
+                incomplete: timeGroupIncomplete,
+            },
+            amount   : {
+                total     : amountGroupTotal,
+                done      : amountGroupDone,
+                incomplete: amountGroupIncomplete,
+            },
+        }
+
+        for (let j = 0; j < CUTTING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
+
+            // const TEMP_TKCH = new Set<string>(CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.map(tkch => tkch.trim().toUpperCase().replaceAll(' ', '')))
+
+            const TEMP_TKCH = new Set<string>()
+            CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.forEach(tkch => {
+                TEMP_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+            })
+
+            let hasDataSubgroup = false
+
+            let timeSubgroupTotal      = 0
+            let timeSubgroupDone       = 0
+            let timeSubgroupIncomplete = 0
+
+            let amountSubgroupTotal      = 0
+            let amountSubgroupDone       = 0
+            let amountSubgroupIncomplete = 0
+
+            result[i].subgroups[j] = {
+                subgroupName      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
+                subgroupType      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
+                lines             : [],
+                hasData           : hasDataSubgroup,
+                time              : {
+                    total     : timeSubgroupTotal,
+                    done      : timeSubgroupDone,
+                    incomplete: timeSubgroupIncomplete,
+                },
+                amount            : {
+                    total     : amountSubgroupTotal,
+                    done      : amountSubgroupDone,
+                    incomplete: amountSubgroupIncomplete,
+                },
+                subgroupOrderTitle: orderTitle,
+            }
+
+            for (let k = 0; k < lines.length; k++) {
+                const tkch = getCoverTKCH(lines[k])?.trim().toUpperCase().replaceAll(' ', '')
+                if (tkch && ALL_TKCH.has(tkch)) {
+                    if (TEMP_TKCH.has(tkch)) {
+                        // if (CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.toUpperCase().replaceAll(' ', '').includes(tkch || '')) {
+                        // if (CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
+                        result[i].subgroups[j].lines.push(lines[k])
+                        hasDataSubgroup = true
+
+                        if (isTaskLineDone(lines[k])) {
+                            timeSubgroupDone += getCuttingTaskLineTime(lines[k])
+                            amountSubgroupDone += lines[k].amount
+                        } else {
+                            timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
+                            amountSubgroupIncomplete += lines[k].amount
+                        }
+
+                        timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
+                        amountSubgroupTotal += lines[k].amount
+                    }
+                } else {
+                    if (result[i].groupName === 'Н/Д') {
+                        result[i].subgroups[j].lines.push(lines[k])
+                        hasDataSubgroup = true
+
+                        if (isTaskLineDone(lines[k])) {
+                            timeSubgroupDone += getCuttingTaskLineTime(lines[k])
+                            amountSubgroupDone += lines[k].amount
+                        } else {
+                            timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
+                            amountSubgroupIncomplete += lines[k].amount
+                        }
+
+                        timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
+                        amountSubgroupTotal += lines[k].amount
+                    }
+                }
+            }
+
+            result[i].subgroups[j].hasData = hasDataSubgroup
+
+            result[i].subgroups[j].time.total      = timeSubgroupTotal
+            result[i].subgroups[j].time.done       = timeSubgroupDone
+            result[i].subgroups[j].time.incomplete = timeSubgroupIncomplete
+
+            result[i].subgroups[j].amount.total      = amountSubgroupTotal
+            result[i].subgroups[j].amount.done       = amountSubgroupDone
+            result[i].subgroups[j].amount.incomplete = amountSubgroupIncomplete
+
+            hasDataGroup ||= hasDataSubgroup
+
+            timeGroupTotal += timeSubgroupTotal
+            timeGroupDone += timeSubgroupDone
+            timeGroupIncomplete += timeSubgroupIncomplete
+
+            amountGroupTotal += amountSubgroupTotal
+            amountGroupDone += amountSubgroupDone
+            amountGroupIncomplete += amountSubgroupIncomplete
+        }
+
+        result[i].hasData = hasDataGroup
+
+        result[i].time.total      = timeGroupTotal
+        result[i].time.done       = timeGroupDone
+        result[i].time.incomplete = timeGroupIncomplete
+
+        result[i].amount.total      = amountGroupTotal
+        result[i].amount.done       = amountGroupDone
+        result[i].amount.incomplete = amountGroupIncomplete
+    }
+
+    // __ Сортируем массивы внутри групп
+    result.forEach(group => {
+        group.subgroups.forEach(subgroup => {
+            subgroup.lines = sortCuttingTaskLinesForExecute(subgroup.lines, group.groupName, 'cover')
+
+            // const sortedLines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
+            // subgroup.lines    = sortedLines                 // __ по размерам по убыванию
+
+            //         const sortedLines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
+            //         subgroup.lines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
+            //         // subgroup.lines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
+            //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
+            //
+        })
+    })
+
+    return result
+}
+
+// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ для Объединенного СЗ
+export function groupTaskLinesForExecuteForUnion(taskLines: ICuttingTaskLine[]): ICuttingTaskLinesGroupData[] {
+
+    let workResult: ICuttingTaskLinesGroupData[] = []
+
+    const linesGroupedBy_Map = Map.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+    // const linesGroupedBy_Object = Object.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+
+    // console.log('linesGroupedBy_Object: ', linesGroupedBy_Object)
+    // console.log('linesGroupedBy_Map: ', linesGroupedBy_Map)
+
+    workResult = Array.from(linesGroupedBy_Map.values()).flatMap(lines => groupTaskLinesForExecute(lines))
+    // for (const [_, lines] of linesGroupedBy_Map) {
+    //     workResult = [...workResult, ...groupTaskLinesForExecute(lines)]
+    // }
+
+    const resultGrouped_Object: Partial<Record<ICuttingTaskLinesGroupNames, ICuttingTaskLinesGroupData[]>> = Object.groupBy(workResult, item => item.groupName)//.values()
+    // const resultGrouped_Map = Map.groupBy(workResult, item => item.groupName)//.values()
+    // console.log('result_grouped: ', resultGrouped_Object)
+
+    const result: ICuttingTaskLinesGroupData[] = []
+    for (const [groupName, groupsArr] of Object.entries(resultGrouped_Object)) {
+
+        const workGroup: ICuttingTaskLinesGroupData = {
+            groupName: groupName as ICuttingTaskLinesGroupNames,
+            groupType: 'dark',
+            subgroups: [],
+            hasData  : false,
+            time     : {
+                total     : 0,
+                done      : 0,
+                incomplete: 0,
+            },
+            amount   : {
+                total     : 0,
+                done      : 0,
+                incomplete: 0,
+            },
+        }
+
+        for (const groupItem of groupsArr) {
+            workGroup.groupType = groupItem.groupType
+            if (groupItem.hasData) {
+
+                workGroup.hasData = true
+
+                workGroup.time.total += groupItem.time.total
+                workGroup.time.done += groupItem.time.done
+                workGroup.time.incomplete += groupItem.time.incomplete
+
+                workGroup.amount.total += groupItem.amount.total
+                workGroup.amount.done += groupItem.amount.done
+                workGroup.amount.incomplete += groupItem.amount.incomplete
+
+                groupItem.subgroups.forEach(subgroup => {
+                    let orderTitle = ''
+                    for (let i = 0; i < subgroup.lines.length; i++) {
+                        if (subgroup.lines[i].groupAttr) {
+                            orderTitle = subgroup.lines[i].groupAttr || ''
+                            break
+                        }
+                    }
+
+                    workGroup.subgroups = [
+                        ...workGroup.subgroups,
+                        {
+                            ...subgroup,
+                            subgroupOrderTitle: orderTitle,
+                            lines             : sortCuttingTaskLinesForExecute(subgroup.lines, groupName as ICuttingTaskLinesGroupNames, 'cover')
+                        }
+                    ]
+                })
+
+            }
+        }
+
+        result.push(workGroup)
+    }
+
+    console.log('result: ', result)
+    return result
+}
+
+
+// __ Получаем заголовок СЗ
+export function getCuttingTaskTitle(task: ICuttingTask, includePosition: boolean = true) {
+    if (includePosition) {
+        return `${task.position}. ${task.order.client.short_name} №${task.order.order_no_num}`
+    }
+    return `${task.order.client.short_name} №${task.order.order_no_num}`
+}
+
+
+// __ Сортируем строки СЗ по количеству, с учетом размера
+export function sortCuttingTaskLinesByAmountStableSize(
+    item: ICuttingTask | ICuttingTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+    target: 'base' | 'cover'  = 'base',  // __ Берем высоту матраса или чехла
+): ICuttingTaskLine[] {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.cutting_lines
+    }
+
+    let isFind = true
+    while (isFind) {
+        isFind = false
+
+        for (let i = 0; i < sourceArray.length; i++) {
+
+            let height_i = sourceArray[i].order_line.dims.height
+            if (target === 'cover' && sourceArray[i].order_line.model.main.cover_height) {
+                height_i = sourceArray[i].order_line.model.main.cover_height
+            }
+
+            for (let j = i + 1; j < sourceArray.length; j++) {
+
+                let height_j = sourceArray[j].order_line.dims.height
+                if (target === 'cover' && sourceArray[j].order_line.model.main.cover_height) {
+                    height_j = sourceArray[j].order_line.model.main.cover_height
+                }
+
+                if (sourceArray[i].order_line.dims.width === sourceArray[j].order_line.dims.width &&
+                    sourceArray[i].order_line.dims.length === sourceArray[j].order_line.dims.length &&
+                    height_i > height_j) {
+
+                    if (direction === 'asc') {
+                        if (sourceArray[i].order_line.amount > sourceArray[j].order_line.amount) {
+                            [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                            isFind                           = true
+                        }
+                    } else {
+                        if (sourceArray[i].order_line.amount < sourceArray[j].order_line.amount) {
+                            [sourceArray[i], sourceArray[j]] = [sourceArray[j], sourceArray[i]]
+                            isFind                           = true
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    return sourceArray
+}
+
+
+/**
+ * __ Вычисляет время завершения смены и возвращает таймстемп
+ * startTime - Объект Date фактического начала смены
+ * totalChangeDurationHours - Длительность смены в миллисекундах
+ * return - Таймстемп конца смены (.getTime())
+ */
+// export function getShiftEndTime(startTime: Date, totalChangeDurationHours: number = 12) {
+//
+//     // 1. __ Берем дату из startTime
+//     const endOfShift = new Date(startTime);
+//
+//     // 2. Устанавливаем "базу" — 08:00 того же дня
+//     endOfShift.setHours(8, 0, 0, 0);
+//
+//     // Нюанс: если смена началась до 08:00 (например в 06:00),
+//     // то 08:00 этого же дня — это и есть наша база.
+//     // Но если смена началась поздно вечером (например в 22:00),
+//     // база 08:00 должна быть уже СЛЕДУЮЩЕГО дня.
+//
+//     if (startTime.getHours() >= 8 && startTime.getTime() > endOfShift.getTime()) {
+//         // Если начали после 08:00, значит плановое "08:00" для завершения будет завтра
+//         // Однако, если логика «завершается всегда в 08:00 + DURATION»
+//         // подразумевает 08:00 текущих суток, этот блок можно пропустить.
+//         // Обычно в таких системах смена привязана к началу рабочего дня.
+//     }
+//
+//     // 3. Добавляем продолжительность к базе 08:00
+//     return endOfShift.getTime() + totalChangeDurationMs;
+// }
+
+// __ Проверяем, является ли строка СЗ Выполненной
+export function isTaskLineDone(line: ICuttingTaskLine) {
+    return !!line.finished_at
+}
+
+// __ Проверяем, является ли строка СЗ Не Выполненной
+export function isTaskLineFalse(line: ICuttingTaskLine) {
+    return !!line.false_at
+}
+
+// __ Проверяем, является ли строка СЗ со сброшенным статусом
+export function isTaskLineReset(line: ICuttingTaskLine) {
+    return !(isTaskLineDone(line) || isTaskLineFalse(line))
+}
+
+// __ Дополнительно проверяем, является ли модель Чехлом
+export function isCover(element: ICuttingTaskModel) {
+    return element.name.toLowerCase().includes('чехол')
+}
+
+// __ Дополнительно проверяем, является ли модель расчетной
+export function isAverage(element: ICuttingTaskModel | ICuttingTaskLine) {
+    if (isCuttingTaskLine(element)) return element.element_type.is_average
+    return element.machine_type_ref === CUTTING_MACHINES.AVERAGE
+}
+
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskLine
+function isCuttingTaskLine(item: unknown): item is ICuttingTaskLine {
+    return !!item && typeof item === 'object' && 'order_line' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskOrderLine
+function isCuttingTaskOrderLine(item: unknown): item is ICuttingTaskOrderLine {
+    return !!item && typeof item === 'object' && 'models' in item && 'dims' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskOrderLine['model']
+function isCuttingTaskOrderLineModel(item: unknown): item is ICuttingTaskOrderLine['model'] {
+    return !!item && typeof item === 'object' && 'main' in item && 'base' in item && 'cover' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTask
+function isCuttingTask(item: unknown): item is ICuttingTask {
+    return !!item && typeof item === 'object' && 'order' in item && 'cutting_lines' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskOrder
+function isCuttingTaskOrder(item: unknown): item is ICuttingTaskOrder {
+    return !!item && typeof item === 'object' && 'client' in item && 'order_type' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskStatus
+function isCuttingTaskStatus(item: unknown): item is ICuttingTaskStatus {
+    return !!item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
+}

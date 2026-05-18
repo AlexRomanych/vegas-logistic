@@ -245,6 +245,10 @@ class ModelController extends Controller
     }
 
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!!    --- Сзема Типовой операции Пошива для Модели         !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     /**
      * ___ Обновление Схему Типовой операции Пошива для Модели
      * @param Request $request
@@ -333,6 +337,110 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!!    --- Сзема Типовой операции Раскроя для Модели        !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /**
+     * ___ Обновление Схему Типовой операции Пошива для Модели
+     * @param Request $request
+     * @return string
+     */
+    public function updateModelCuttingOperationSchema(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'data'           => 'required|array',
+                'data.code_1c'   => 'required|string|exists:models,code_1c',
+                'data.schema_id' => 'required|integer|exists:cutting_operation_schemas,id',
+            ]);
+
+            Model::query()
+                ->where('code_1c', $data['data']['code_1c'])
+                ->update(['cutting_operation_schema_id' => $data['data']['schema_id']]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Удаляем операцию (pivot) из Модели (промежуточной таблицы)
+     * @param Request $request
+     * @return string
+     */
+    public function deleteCuttingOperationFromModel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'operation_id' => 'required|integer|exists:cutting_operations,id',
+                'target_id'    => 'required|string|exists:models,code_1c',
+                // Проверяем сам pivot: он может отсутствовать или быть null
+                'pivot'        => 'nullable|array',
+
+            ]);
+
+            $model = Model::query()->find($data['target_id']);
+            $model->cuttingOperations()->detach($data['operation_id']);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Добавляем или обновляем операцию (pivot) в Модель (промежуточную таблицу)
+     * @param Request $request
+     * @return string
+     */
+    public function addCuttingOperationToModel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'operation_id'    => 'required|integer|exists:cutting_operations,id',
+                'target_id'       => 'required|string|exists:models,code_1c',
+
+                // Проверяем сам pivot: он может отсутствовать или быть null
+                'pivot'           => 'nullable|array',
+
+                // Если pivot — это массив, проверяем его внутренности
+                'pivot.ratio'     => 'exclude_if:pivot,null|nullable|numeric',
+                'pivot.amount'    => 'exclude_if:pivot,null|nullable|integer',
+                'pivot.condition' => 'exclude_if:pivot,null|nullable|string',
+                'pivot.position'  => 'exclude_if:pivot,null|nullable|integer',
+            ]);
+
+            $model = Model::query()->find($data['target_id']);
+            $model->sewingOperations()->syncWithoutDetaching([
+                $data['operation_id'] => [
+                    'ratio'     => $data['pivot']['ratio'],
+                    'amount'    => $data['pivot']['amount'],
+                    'condition' => $data['pivot']['condition'],
+                    'position'  => $data['pivot']['position'],
+                ]
+            ]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     //

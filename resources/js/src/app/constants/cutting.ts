@@ -1,9 +1,8 @@
-// Info Константы для работы с Пошивом (Sewing)
-
+// Info Константы для работы с Пошивом (Cutting)
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
 
 // __ Название вкладки с общим СЗ
-export const SEWING_UNION_TASK_NAME = 'Объединение СЗ'
+export const CUTTING_UNION_TASK_NAME = 'Объединение СЗ'
 
 // __ Продолжительность смены в часах
 export const TOTAL_SHIFT_DURATION = 12
@@ -13,24 +12,24 @@ export const START_SHIFT_TIME = '07:30'
 
 
 import type {
-    ISewingDay,
-    ISewingMachineKeys,
-    ISewingOperation,
-    ISewingTask, ISewingTaskLinesGroup,
-    ISewingTaskStatusItem,
-    ISewingTaskStatusKeys
+    ICuttingDay,
+    ICuttingMachineKeys,
+    ICuttingOperation,
+    ICuttingTask,
+    ICuttingTaskLinesGroup,
+    ICuttingTaskStatusItem,
+    ICuttingTaskStatusKeys
 } from '@/types'
 
 
-
-export const SEWING_TASK_STATUS_CREATED = 'CREATED'     // __ Создано
-export const SEWING_TASK_STATUS_ROLLING = 'ROLLING'     // __ Переходящий
-export const SEWING_TASK_STATUS_PENDING = 'PENDING'     // __ Готово к выполнению
-export const SEWING_TASK_STATUS_RUNNING = 'RUNNING'     // __ Выполняется
-export const SEWING_TASK_STATUS_DONE    = 'DONE'        // __ Выполнено
+export const CUTTING_TASK_STATUS_CREATED = 'CREATED'     // __ Создано
+export const CUTTING_TASK_STATUS_ROLLING = 'ROLLING'     // __ Переходящий
+export const CUTTING_TASK_STATUS_PENDING = 'PENDING'     // __ Готово к выполнению
+export const CUTTING_TASK_STATUS_RUNNING = 'RUNNING'     // __ Выполняется
+export const CUTTING_TASK_STATUS_DONE    = 'DONE'        // __ Выполнено
 
 // __ Статусы движения СЗ на Пошиве
-export const SEWING_TASK_STATUSES: Record<ISewingTaskStatusKeys, ISewingTaskStatusItem> = {
+export const CUTTING_TASK_STATUSES: Record<ICuttingTaskStatusKeys, ICuttingTaskStatusItem> = {
     CREATED: {
         ID   : 1,
         TITLE: 'Создано',
@@ -63,14 +62,14 @@ export const SEWING_TASK_STATUSES: Record<ISewingTaskStatusKeys, ISewingTaskStat
     },
 }
 
-// const SEWING_STATUS_CREATED_ID = 1;     // __ Создано
-// const SEWING_STATUS_ROLLING_ID = 2;     // __ Переходящий
-// const SEWING_STATUS_PENDING_ID = 3;     // __ Готово к выполнению
-// const SEWING_STATUS_RUNNING_ID = 4;     // __ Выполняется
-// const SEWING_STATUS_DONE_ID = 5;        // __ Выполнено
+// const CUTTING_STATUS_CREATED_ID = 1;     // __ Создано
+// const CUTTING_STATUS_ROLLING_ID = 2;     // __ Переходящий
+// const CUTTING_STATUS_PENDING_ID = 3;     // __ Готово к выполнению
+// const CUTTING_STATUS_RUNNING_ID = 4;     // __ Выполняется
+// const CUTTING_STATUS_DONE_ID = 5;        // __ Выполнено
 
 // __ Статусы движения СЗ на Пошиве
-// export const SEWING_TASK_STATUSES = {
+// export const CUTTING_TASK_STATUSES = {
 //     CREATED: {
 //         ID: 1,
 //         TITLE: 'Создано'
@@ -94,7 +93,7 @@ export const SEWING_TASK_STATUSES: Record<ISewingTaskStatusKeys, ISewingTaskStat
 // }
 
 
-export const SEWING_TASK_DRAFT: ISewingTask = {
+export const CUTTING_TASK_DRAFT: ICuttingTask = {
     id            : 0,
     id_ref        : 0,
     action_at     : '',
@@ -121,7 +120,7 @@ export const SEWING_TASK_DRAFT: ISewingTask = {
             color       : '',
         }
     },
-    sewing_lines  : [],
+    cutting_lines  : [],
     statuses      : [],
     current_status: {
         id   : 0,
@@ -138,10 +137,8 @@ export const SEWING_TASK_DRAFT: ISewingTask = {
     }
 }
 
-
-
 // __ Объект ШМ
-export const SEWING_MACHINES: Record<string, ISewingMachineKeys> = {
+export const CUTTING_MACHINES: Record<string, ICuttingMachineKeys> = {
     UNIVERSAL,
     AUTO,
     SOLID_HARD,
@@ -152,7 +149,7 @@ export const SEWING_MACHINES: Record<string, ISewingMachineKeys> = {
 
 
 // __ Объект Типовой операции
-export const SEWING_OPERATION_DRAFT: ISewingOperation = {
+export const CUTTING_OPERATION_DRAFT: ICuttingOperation = {
     active     : true,
     description: null,
     id         : 0,
@@ -165,7 +162,7 @@ export const SEWING_OPERATION_DRAFT: ISewingOperation = {
 
 
 // __ Объект производственного дня Пошива
-export const SEWING_DAY_DRAFT: ISewingDay = {
+export const CUTTING_DAY_DRAFT: ICuttingDay = {
     id           : 0,
     action_at    : '',
     action_at_str: '',
@@ -177,7 +174,7 @@ export const SEWING_DAY_DRAFT: ISewingDay = {
     resume_at    : null,
     finish_at    : null,
     duration     : 0,
-    sewing_tasks : [],
+    cutting_tasks : [],
     responsible  : {
         name      : '',
         surname   : '',
@@ -190,7 +187,7 @@ export const SEWING_DAY_DRAFT: ISewingDay = {
 
 
 // __ Настройка групп задач на Пошиве
-export const SEWING_TASK_GROUP_RULES: ISewingTaskLinesGroup[] = [
+export const CUTTING_TASK_GROUP_RULES: ICuttingTaskLinesGroup[] = [
     {
         GROUP_NAME : 'АШМ',
         GROUP_TYPE : 'orange',

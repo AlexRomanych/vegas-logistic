@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckCuttingTasksForDatesMiddleware;
 use App\Http\Middleware\CheckSewingTasksForDatesMiddleware;
 use App\Http\TrustProxies;
 use Illuminate\Foundation\Application;
@@ -20,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(TrustProxies::class);
         $middleware->alias([
-            'sewing_tasks_check' => CheckSewingTasksForDatesMiddleware::class
+            'sewing_tasks_check'  => CheckSewingTasksForDatesMiddleware::class,
+            'cutting_tasks_check' => CheckCuttingTasksForDatesMiddleware::class,
         ]);
         //$middleware->append(JwtMiddleware::class);
         //$middleware->append(JwtMiddleware::class);

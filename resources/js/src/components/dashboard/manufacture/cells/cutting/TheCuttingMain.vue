@@ -12,7 +12,7 @@
 
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 
 interface IMenuItem {
     name: string,
@@ -23,18 +23,24 @@ interface IMenuItem {
 
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
-let menuItems: IMenuItem[] = [
-    {name: 'Учет ПС на раскрое', path: 'manufacture.cell.cutting.fabrics.movement', shown: true, isActive: true,},
-    {name: 'Управление планом Раскроя', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true,},
-// {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute', shown: true, isActive: true,},
+
+const menuItems: IMenuItem[] = [
+    // { name: 'Тест', path: 'manufacture.cell.cutting.test', shown: true, isActive: true },
+    { name: 'Управление планом РЦ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
+    // { name: 'Управление СЗ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
+    { name: 'Выполнение СЗ', path: 'manufacture.cell.cutting.tasks.execute', shown: true, isActive: true },
+    { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },
+    { name: 'Статусы движения СЗ', path: 'manufacture.cell.cutting.task.statuses', shown: true, isActive: true },
+    { name: 'Типовые операции', path: 'manufacture.cell.cutting.operations', shown: true, isActive: true },
+    { name: 'Схемы типовых операций', path: 'manufacture.cell.cutting.operation.schemas', shown: true, isActive: true },
+    { name: 'Трудозатраты моделей', path: 'manufacture.cell.cutting.operation.models', shown: true, isActive: true },
+    // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
 ]
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
+
 
 </script>
 
 <style scoped>
 
 </style>
-
-
-

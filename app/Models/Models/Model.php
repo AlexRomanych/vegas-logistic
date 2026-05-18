@@ -6,6 +6,9 @@ namespace App\Models\Models;
 use App\Models\Manufacture\Cells\Sewing\SewingOperation;
 use App\Models\Manufacture\Cells\Sewing\SewingOperationModelPivot;
 use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
+use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
+use App\Models\Manufacture\Cells\Cutting\CuttingOperationModelPivot;
+use App\Models\Manufacture\Cells\Cutting\CuttingOperationSchema;
 use App\Services\ModelsService;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -259,18 +262,41 @@ final class Model extends LaravelModel
     }
 
 
-    // Relations: Связь с Операциями
+    // Relations: Связь с Операциями Пошива
     public function sewingOperations(): BelongsToMany
     {
         return $this
             ->belongsToMany(
-                SewingOperation::class,             // Класс, с которым связываемся
-                SewingOperationModelPivot::TABLE,   // Промежуточная Таблица, связывающая классы
-                'model_code_1c',                    // Ключ в промежуточной таблице, связывающий с текущим классом
+                SewingOperation::class,              // Класс, с которым связываемся
+                SewingOperationModelPivot::TABLE,    // Промежуточная Таблица, связывающая классы
+                'model_code_1c',                      // Ключ в промежуточной таблице, связывающий с текущим классом
                 'sewing_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(SewingOperationModelPivot::class)
             ->withPivot(['ratio', 'amount', 'position', 'condition']);
     }
+
+
+    // Relations: Связь Модели со Схемой Типовых операций Раскроя
+    public function cuttingSchema(): BelongsTo
+    {
+        return $this->belongsTo(CuttingOperationSchema::class, 'cutting_operation_schema_id', 'id');
+    }
+
+
+    // Relations: Связь с Операциями Раскроя
+    public function cuttingOperations(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(
+                CuttingOperation::class,              // Класс, с которым связываемся
+                CuttingOperationModelPivot::TABLE,    // Промежуточная Таблица, связывающая классы
+                'model_code_1c',                      // Ключ в промежуточной таблице, связывающий с текущим классом
+                'cutting_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
+            )
+            ->using(CuttingOperationModelPivot::class)
+            ->withPivot(['ratio', 'amount', 'position', 'condition']);
+    }
+
 
 }

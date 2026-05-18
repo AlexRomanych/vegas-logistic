@@ -9,10 +9,14 @@ export * from './plan_types.ts'                     // Все типы для п
 export * from './log_types.ts'                      // Все типы для логов
 export * from './business_processes_types.ts'       // Все типы для бизнес-процессов
 export * from './order_types.ts'                    // Все типы для Заявок
-export * from './sewing_types.ts'                   // Все типы для Пошива
 export * from './worker_types.ts'                   // Все типы для Персонала
 export * from './material_types.ts'                 // Все типы для Материалов
 export * from './model_types.ts'                    // Все типы для Моделей
+
+
+export * from './textile_types.ts'                  // Общие типы для Пошива и Раскроя
+export * from './sewing_types.ts'                   // Все типы для Пошива
+export * from './cutting_types.ts'                  // Все типы для Раскроя
 
 
 export type { IFontsType } from '@/app/constants/fontSizes.ts'   // Все типы для шрифтов
