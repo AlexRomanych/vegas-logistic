@@ -102,7 +102,6 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 
-
 interface IProps {
     sewingDay: ISewingDay
 }
