@@ -527,7 +527,7 @@ export function clearRenderMatrix(matrix: IPlanMatrix) {
 }
 
 // __ Очищаем день матрицы рендера от пустых сменных заданий, которые добавляем для рендеринга
-export function clearRenderMatrixDay(day: IDay[]) {
+export function clearRenderMatrixDay<T extends IDay>(day: T[]): T[] {
     return [...day.filter(item => item.id > -1)] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
 }
 

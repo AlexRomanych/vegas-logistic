@@ -36,7 +36,7 @@
                     />
 
                     <!-- __ Список Типовых операций -->
-                    <div v-for="operation of sewingOperations" :key="operation.id" class="sticky-header">
+                    <div v-for="operation of cuttingOperations" :key="operation.id" class="sticky-header">
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
                             :text="`${operation.name} (${operation.machine})`"
@@ -52,7 +52,7 @@
                 </div>
 
                 <!-- __ Строки таблицы -->
-                <div v-for="schema of sewingOperationSchemas" :key="schema.name" class="table-row">
+                <div v-for="schema of cuttingOperationSchemas" :key="schema.name" class="table-row">
 
                     <!-- __ Шапка строки -->
                     <div class="sticky-col">
@@ -85,7 +85,7 @@
                     </div>
 
                     <!-- __ Ячейки строки -->
-                    <div v-for="operation of sewingOperations" :key="operation.id" class="flex">
+                    <div v-for="operation of cuttingOperations" :key="operation.id" class="flex">
                         <AppLabelTS
                             :height="CELL_HEIGHT"
                             :text="getOperationValue(schema, operation)"
@@ -107,8 +107,8 @@
     </div>
 
     <!-- __ Модальное окно для информации о записи -->
-    <SewingOperationItemEdit
-        ref="sewingOperationItemEdit"
+    <CuttingOperationItemEdit
+        ref="cuttingOperationItemEdit"
         :operation="modalOperation!"
         :schema="modalSchema!"
     />
@@ -122,14 +122,14 @@
     />
 
     <!-- __ Модальное окно для редактирования данных Схемы-->
-    <SewingOperationSchemaDataEdit
-        ref="sewingOperationSchemaDataEdit"
+    <CuttingOperationSchemaDataEdit
+        ref="cuttingOperationSchemaDataEdit"
         :schema="modalSchema!"
     />
 
     <!-- __ Модальное окно проверки суммарного времени трудозатрат схемы типовых операций -->
-    <SewingOperationCheck
-        ref="sewingOperationCheck"
+    <CuttingOperationCheck
+        ref="cuttingOperationCheck"
         :headers="checkResultsHeaders"
         :schema="checkSchemaData"
         :table-data="checkResultsData"
@@ -143,21 +143,21 @@ import { onMounted, ref } from 'vue'
 
 import type {
     IColorTypes,
-    ISewingOperation, ISewingOperationSchema, ISewingOperationItem, ISewingOperationUpdateObject,
+    ICuttingOperation, ICuttingOperationSchema, ICuttingOperationItem, ICuttingOperationUpdateObject,
 } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import SewingOperationItemEdit
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationItemEdit.vue'
-import SewingOperationSchemaDataEdit
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationSchemaDataEdit.vue'
-import SewingOperationCheck from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationCheck.vue'
+import CuttingOperationItemEdit
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationItemEdit.vue'
+import CuttingOperationSchemaDataEdit
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationSchemaDataEdit.vue'
+import CuttingOperationCheck from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationCheck.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
@@ -166,7 +166,7 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 const isLoading = ref(false)
 
@@ -183,13 +183,13 @@ const CELL_WIDTH            = 'w-[50px]'
 const CELL_HEIGHT           = 'h-[25px]'
 
 // __ Определяем переменные
-const sewingOperationSchemas = ref<ISewingOperationSchema[]>([])
-const sewingOperations       = ref<ISewingOperation[]>([])
+const cuttingOperationSchemas = ref<ICuttingOperationSchema[]>([])
+const cuttingOperations       = ref<ICuttingOperation[]>([])
 
 // __ Тип для модального окна ячейки
-const modalOperation          = ref<ISewingOperation | null>(null)
-const modalSchema             = ref<ISewingOperationSchema | null>(null)
-const sewingOperationItemEdit = ref<InstanceType<typeof SewingOperationItemEdit> | null>(null)
+const modalOperation          = ref<ICuttingOperation | null>(null)
+const modalSchema             = ref<ICuttingOperationSchema | null>(null)
+const cuttingOperationItemEdit = ref<InstanceType<typeof CuttingOperationItemEdit> | null>(null)
 
 // __ Тип для модального окна Сообщений
 const modalInfoType          = ref<IColorTypes>('danger')
@@ -198,17 +198,17 @@ const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
 // __ Тип для модального окна изменения данных Схемы
-const sewingOperationSchemaDataEdit = ref<InstanceType<typeof SewingOperationSchemaDataEdit> | null>(null)
+const cuttingOperationSchemaDataEdit = ref<InstanceType<typeof CuttingOperationSchemaDataEdit> | null>(null)
 
 // __ Модальное окно проверки суммарного времени трудозатрат схемы типовых операций
-const sewingOperationCheck = ref<InstanceType<typeof SewingOperationCheck> | null>(null)
+const cuttingOperationCheck = ref<InstanceType<typeof CuttingOperationCheck> | null>(null)
 const checkResultsHeaders  = ref<string[]>([])
 const checkResultsData     = ref<string[][]>([])
-const checkSchemaData      = ref<ISewingOperationSchema | null>(null)
+const checkSchemaData      = ref<ICuttingOperationSchema | null>(null)
 
 
 // __ Получаем значение текста для отображения в ячейке
-const getOperationValue = (schema: ISewingOperationSchema, operation: ISewingOperation) => {
+const getOperationValue = (schema: ICuttingOperationSchema, operation: ICuttingOperation) => {
     for (let i = 0; i < schema.operations.length; i++) {
         if (schema.operations[i].id === operation.id) {
             return '✓'
@@ -219,7 +219,7 @@ const getOperationValue = (schema: ISewingOperationSchema, operation: ISewingOpe
 
 
 // __ Получаем раскраску операции
-const getOperationType = (operation: ISewingOperation) => {
+const getOperationType = (operation: ICuttingOperation) => {
     if (!operation.active) {
         return 'danger'
     } else if (operation.type === 'static') {
@@ -231,7 +231,7 @@ const getOperationType = (operation: ISewingOperation) => {
 
 
 // __ Получаем тип ячейки
-const getType = (schema: ISewingOperationSchema, operation: ISewingOperation) => {
+const getType = (schema: ICuttingOperationSchema, operation: ICuttingOperation) => {
     for (let i = 0; i < schema.operations.length; i++) {
         if (schema.operations[i].id === operation.id) {
             if (!operation.active) {
@@ -253,27 +253,27 @@ const showError = async (error: string | null = null) => {
 
 
 // __ Редактируем операцию или удаляем или переключаем
-const editOperation = async (schema: ISewingOperationSchema | null, operation: ISewingOperation) => {
+const editOperation = async (schema: ICuttingOperationSchema | null, operation: ICuttingOperation) => {
     if (!schema) {
         return
     }
     modalOperation.value = operation
     modalSchema.value    = schema
-    const result         = await sewingOperationItemEdit.value?.show()
+    const result         = await cuttingOperationItemEdit.value?.show()
     if (result) {
-        const present = sewingOperationItemEdit.value!.present
+        const present = cuttingOperationItemEdit.value!.present
 
         // __ Если операция не добавлена (или удалена)
         if (!present) {
             const findIndex = schema.operations.findIndex(item => item.id === operation.id)
             if (findIndex !== -1) {
-                const deleteObject: ISewingOperationUpdateObject = {
+                const deleteObject: ICuttingOperationUpdateObject = {
                     operation_id: operation.id,
                     target_id   : schema.id,
                     pivot       : null
                 }
 
-                const result = await sewingStore.deleteSewingOperationFromSchema(deleteObject)
+                const result = await cuttingStore.deleteCuttingOperationFromSchema(deleteObject)
 
                 // __ Если ошибка
                 if (!checkCRUD(result)) {
@@ -288,7 +288,7 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
         } else {
             // __ Если операция добавлена или уже есть в схеме
 
-            const ratio     = !!sewingOperationItemEdit.value!.ratio ? sewingOperationItemEdit.value!.ratio : null
+            const ratio     = !!cuttingOperationItemEdit.value!.ratio ? cuttingOperationItemEdit.value!.ratio : null
             const findIndex = schema.operations.findIndex(item => item.id === operation.id)
 
             if (findIndex !== -1) {
@@ -297,7 +297,7 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
                 }
             }
 
-            const updateObject: ISewingOperationUpdateObject = {
+            const updateObject: ICuttingOperationUpdateObject = {
                 operation_id: operation.id,
                 target_id   : schema.id,
                 pivot       : {
@@ -308,7 +308,7 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
                 }
             }
 
-            const result = await sewingStore.addSewingOperationToSchema(updateObject)
+            const result = await cuttingStore.addCuttingOperationToSchema(updateObject)
 
             // __ Если ошибка
             if (!checkCRUD(result)) {
@@ -328,7 +328,7 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
                         condition: null,
                         position : null
                     }
-                } as ISewingOperationItem)
+                } as ICuttingOperationItem)
             }
         }
     }
@@ -337,18 +337,18 @@ const editOperation = async (schema: ISewingOperationSchema | null, operation: I
 
 // __ Добавляем схему
 const addSchema = async () => {
-    const newSchema: ISewingOperationSchema = {
+    const newSchema: ICuttingOperationSchema = {
         id         : 0,
         name       : 'Новая схема',
         active     : true,
         description: '',
-        operations : [] as ISewingOperationItem[],
+        operations : [] as ICuttingOperationItem[],
     }
 
-    const result = await sewingStore.createSewingOperationSchema(newSchema)
+    const result = await cuttingStore.createCuttingOperationSchema(newSchema)
 
     if (checkCRUD(result)) {
-        sewingOperationSchemas.value.push(result.data)
+        cuttingOperationSchemas.value.push(result.data)
     } else {
         await showError(result.error)
         return
@@ -357,14 +357,14 @@ const addSchema = async () => {
 
 
 // __ Редактируем схему (название + описание)
-const editSchema = async (schema: ISewingOperationSchema) => {
+const editSchema = async (schema: ICuttingOperationSchema) => {
     modalSchema.value = schema
-    const answer      = await sewingOperationSchemaDataEdit.value!.show()
+    const answer      = await cuttingOperationSchemaDataEdit.value!.show()
     if (answer) {
-        const schemaName        = sewingOperationSchemaDataEdit.value!.name
-        const schemaDescription = sewingOperationSchemaDataEdit.value!.description
+        const schemaName        = cuttingOperationSchemaDataEdit.value!.name
+        const schemaDescription = cuttingOperationSchemaDataEdit.value!.description
 
-        const result = await sewingStore.updateSewingOperationSchema({ ...schema, name: schemaName, description: schemaDescription })
+        const result = await cuttingStore.updateCuttingOperationSchema({ ...schema, name: schemaName, description: schemaDescription })
         if (checkCRUD(result)) {
             schema.name        = schemaName
             schema.description = schemaDescription
@@ -378,13 +378,13 @@ const editSchema = async (schema: ISewingOperationSchema) => {
 
 
 // __ Проверяем схему (суммарное время операций)
-const checkSchema = async (schema: ISewingOperationSchema | null = null) => {
+const checkSchema = async (schema: ICuttingOperationSchema | null = null) => {
     if (!schema) {
         return
     }
 
 
-    const checkData: { key: string, value: number }[] = await sewingStore.checkSewingOperationSchemaForSummaryTime(schema.id)
+    const checkData: { key: string, value: number }[] = await cuttingStore.checkCuttingOperationSchemaForSummaryTime(schema.id)
 
     // console.log('checkData: ', checkData)
 
@@ -406,41 +406,41 @@ const checkSchema = async (schema: ISewingOperationSchema | null = null) => {
 
     console.log(checkResultsData.value)
 
-    await sewingOperationCheck.value!.show()
+    await cuttingOperationCheck.value!.show()
 }
 
 
 // __ Получаем данные
 const getData = async () => {
-    [sewingOperations.value, sewingOperationSchemas.value] = await Promise.all([
-        sewingStore.getSewingOperations(),
-        sewingStore.getSewingOperationSchemas(),
+    [cuttingOperations.value, cuttingOperationSchemas.value] = await Promise.all([
+        cuttingStore.getCuttingOperations(),
+        cuttingStore.getCuttingOperationSchemas(),
     ])
 
-    sewingOperations.value = sewingOperations.value
-        .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
+    cuttingOperations.value = cuttingOperations.value
+        .map(cuttingOperation => ({ ...cuttingOperation, description: cuttingOperation.description ?? '', can_edit: true }))
         .sort((a, b) => a.id - b.id)
     // .sort((a, b) => a.name.localeCompare(b.name))
 
-    sewingOperationSchemas.value = sewingOperationSchemas.value
+    cuttingOperationSchemas.value = cuttingOperationSchemas.value
         .filter(schema => schema.id !== 0)
 }
 
 
 // __ Формируем отображение Типовых операций
 // const getDataRender = () => {
-//     sewingOperationsRender.value = sewingOperations.value
+//     cuttingOperationsRender.value = cuttingOperations.value
 // }
 
 // __ Удаляем типовую операцию
-// const deleteOperation = async (sewingOperation: ISewingOperation) => {
+// const deleteOperation = async (cuttingOperation: ICuttingOperation) => {
 //     return
 // }
 
 // __ Сохраняем данные по цвету
-// const saveSewingOperationColor = async (event: string, sewingOperation: ISewingOperation) => {
+// const saveCuttingOperationColor = async (event: string, cuttingOperation: ICuttingOperation) => {
 //     return
-//     // await sewingStore.patchSewingOperationColor(sewingOperation.id, event)
+//     // await cuttingStore.patchCuttingOperationColor(cuttingOperation.id, event)
 // }
 
 
@@ -453,8 +453,8 @@ onMounted(async () => {
 
             await getData()
             // getDataRender()
-            if (DEBUG) console.log('sewingOperationSchemas: ', sewingOperationSchemas.value)
-            if (DEBUG) console.log('sewingOperations: ', sewingOperations.value)
+            if (DEBUG) console.log('cuttingOperationSchemas: ', cuttingOperationSchemas.value)
+            if (DEBUG) console.log('cuttingOperations: ', cuttingOperations.value)
 
         },
         undefined,

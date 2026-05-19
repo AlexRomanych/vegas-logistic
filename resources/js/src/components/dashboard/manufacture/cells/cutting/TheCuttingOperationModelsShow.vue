@@ -105,7 +105,7 @@
 
                     <!-- __ Список Типовых операций -->
                     <div
-                        v-for="operation of sewingOperations"
+                        v-for="operation of cuttingOperations"
                         :key="operation.id"
                         class="sticky-header"
                     >
@@ -210,7 +210,7 @@
                                     <AppLabelTS
                                         :height="CELL_HEIGHT"
                                         :text="getSchemaName(model)"
-                                        :type="model.sewing_schema_id ? 'success' : 'danger'"
+                                        :type="model.cutting_schema_id ? 'success' : 'danger'"
                                         :width="SCHEMA_WIDTH"
                                         align="left"
                                         class="cursor-pointer"
@@ -223,7 +223,7 @@
 
                             <!-- __ Ячейки строки -->
                             <div
-                                v-for="operation of sewingOperations"
+                                v-for="operation of cuttingOperations"
                                 :key="operation.id"
                                 class="flex"
                             >
@@ -246,8 +246,8 @@
     </div>
 
     <!-- __ Модальное окно для информации о записи -->
-    <SewingOperationItemEdit
-        ref="sewingOperationItemEdit"
+    <CuttingOperationItemEdit
+        ref="cuttingOperationItemEdit"
         :operation="modalOperation!"
         :schema="modalSchema!"
     />
@@ -261,8 +261,8 @@
     />
 
     <!-- __ Модальное окно для редактирования данных Схемы-->
-    <SewingOperationSchemaDataEdit
-        ref="sewingOperationSchemaDataEdit"
+    <CuttingOperationSchemaDataEdit
+        ref="cuttingOperationSchemaDataEdit"
         :schema="modalSchema!"
     />
 
@@ -270,7 +270,7 @@
     <AppModalAsyncSelectTS
         ref="appModalAsyncSelectTS"
         v-model="selectedSchemaId"
-        :items="sewingOperationSchemas"
+        :items="cuttingOperationSchemas"
         title="Выберите схему"
         width="w-[600px]"
     />
@@ -281,22 +281,22 @@
 
     import type {
         IColorTypes,
-        ISewingOperation,
-        ISewingOperationModelsCollection,
-        ISewingOperationSchema,
-        ISewingOperationItem,
-        ISewingOperationUpdateObject,
-        ISewingOperationModel,
+        ICuttingOperation,
+        ICuttingOperationModelsCollection,
+        ICuttingOperationSchema,
+        ICuttingOperationItem,
+        ICuttingOperationUpdateObject,
+        ICuttingOperationModel,
     } from '@/types'
 
-    import { useSewingStore } from '@/stores/SewingStore.ts'
+    import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
     import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
     import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
     import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-    import SewingOperationItemEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationItemEdit.vue'
-    import SewingOperationSchemaDataEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_operations/SewingOperationSchemaDataEdit.vue'
+    import CuttingOperationItemEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationItemEdit.vue'
+    import CuttingOperationSchemaDataEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationSchemaDataEdit.vue'
     import AppModalAsyncSelectTS from '@/components/ui/modals/AppModalAsyncSelectTS.vue'
     import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 
@@ -304,15 +304,15 @@
     import { useLoading } from 'vue-loading-overlay'
     import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
-    const sewingStore = useSewingStore()
+    const cuttingStore = useCuttingStore()
 
     const isLoading = ref(false)
 
     const DEBUG = true
 
     // __ Права изменения
-    const CAN_EDIT = true
-    const CAN_DELETE = true
+    // const CAN_EDIT = true
+    // const CAN_DELETE = true
 
     // __ Константы
     const HEADER_COLUMNS_HEIGHT = 'h-[200px]'
@@ -329,10 +329,10 @@
     const CELL_HEIGHT = 'h-[30px]'
 
     // __ Определяем переменные
-    const sewingOperationSchemas = ref<ISewingOperationSchema[]>([])
-    const sewingOperations = ref<ISewingOperation[]>([])
-    const models = ref<ISewingOperationModelsCollection[]>([])
-    const modelsRender = ref<ISewingOperationModelsCollection[]>([])
+    const cuttingOperationSchemas = ref<ICuttingOperationSchema[]>([])
+    const cuttingOperations = ref<ICuttingOperation[]>([])
+    const models = ref<ICuttingOperationModelsCollection[]>([])
+    const modelsRender = ref<ICuttingOperationModelsCollection[]>([])
 
     // __ Фильтр
     const codeFilter = ref('')
@@ -340,9 +340,9 @@
     const schemaFilter = ref('')
 
     // __ Тип для модального окна ячейки
-    const modalOperation = ref<ISewingOperation | null>(null)
-    const modalSchema = ref<ISewingOperationSchema | null>(null)
-    const sewingOperationItemEdit = ref<InstanceType<typeof SewingOperationItemEdit> | null>(null)
+    const modalOperation = ref<ICuttingOperation | null>(null)
+    const modalSchema = ref<ICuttingOperationSchema | null>(null)
+    const cuttingOperationItemEdit = ref<InstanceType<typeof CuttingOperationItemEdit> | null>(null)
 
     // __ Тип для модального окна Сообщений
     const modalInfoType = ref<IColorTypes>('danger')
@@ -351,7 +351,7 @@
     const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
     // __ Тип для модального окна изменения данных Схемы
-    const sewingOperationSchemaDataEdit = ref<InstanceType<typeof SewingOperationSchemaDataEdit> | null>(null)
+    const cuttingOperationSchemaDataEdit = ref<InstanceType<typeof CuttingOperationSchemaDataEdit> | null>(null)
 
     // __ Тип для модального окна выбора Схемы
     const selectedSchemaId = ref<number | null>(null)
@@ -359,10 +359,10 @@
     // const appModalAsyncSelectTS = ref<InstanceType<typeof AppModalAsyncSelectTS> | null>(null)
 
     // __ Вспомогательная. Возвращает массив операций в зависимости от схемы или ее отсутствия
-    const getTargetOperations = (model: ISewingOperationModel) => {
-        let targetOperations: ISewingOperationItem[] = model.operations
-        if (model.sewing_schema_id) {
-            const schema = sewingOperationSchemas.value.find((schema) => schema.id === model.sewing_schema_id)
+    const getTargetOperations = (model: ICuttingOperationModel) => {
+        let targetOperations: ICuttingOperationItem[] = model.operations
+        if (model.cutting_schema_id) {
+            const schema = cuttingOperationSchemas.value.find((schema) => schema.id === model.cutting_schema_id)
             if (schema) {
                 targetOperations = schema.operations
             }
@@ -371,7 +371,7 @@
     }
 
     // __ Получаем значение текста для отображения в ячейке
-    const getOperationValue = (model: ISewingOperationModel, operation: ISewingOperation) => {
+    const getOperationValue = (model: ICuttingOperationModel, operation: ICuttingOperation) => {
         const targetOperations = getTargetOperations(model)
         for (let i = 0; i < targetOperations.length; i++) {
             if (targetOperations[i].id === operation.id) {
@@ -382,7 +382,7 @@
     }
 
     // __ Получаем раскраску операции
-    const getOperationType = (operation: ISewingOperation) => {
+    const getOperationType = (operation: ICuttingOperation) => {
         if (!operation.active) {
             return 'danger'
         } else if (operation.type === 'static') {
@@ -393,7 +393,7 @@
     }
 
     // __ Получаем тип ячейки
-    const getType = (model: ISewingOperationModel, operation: ISewingOperation) => {
+    const getType = (model: ICuttingOperationModel, operation: ICuttingOperation) => {
         const targetOperations = getTargetOperations(model)
         for (let i = 0; i < targetOperations.length; i++) {
             if (targetOperations[i].id === operation.id) {
@@ -406,8 +406,8 @@
         return 'dark'
     }
 
-    const getSchemaName = (model: ISewingOperationModel) => {
-        const schema = sewingOperationSchemas.value.find((schema) => schema.id === model.sewing_schema_id)
+    const getSchemaName = (model: ICuttingOperationModel) => {
+        const schema = cuttingOperationSchemas.value.find((schema) => schema.id === model.cutting_schema_id)
         return schema ? schema.name : ''
     }
 
@@ -420,13 +420,13 @@
     }
 
     // __ Редактируем операцию или удаляем или переключаем
-    const editOperation = async (model: ISewingOperationModel, operation: ISewingOperation) => {
-        if (model.sewing_schema_id !== 0) {
+    const editOperation = async (model: ICuttingOperationModel, operation: ICuttingOperation) => {
+        if (model.cutting_schema_id !== 0) {
             return
         }
 
         // __ Тут по идее всегда будет 0 (Без схемы)
-        const schema = sewingOperationSchemas.value.find((schema) => schema.id === model.sewing_schema_id)
+        const schema = cuttingOperationSchemas.value.find((schema) => schema.id === model.cutting_schema_id)
         if (!schema) {
             return
         }
@@ -436,21 +436,21 @@
         modalOperation.value = operation
         modalSchema.value = sourceSchema
 
-        const result = await sewingOperationItemEdit.value?.show()
+        const result = await cuttingOperationItemEdit.value?.show()
         if (result) {
-            const present = sewingOperationItemEdit.value!.present
+            const present = cuttingOperationItemEdit.value!.present
 
             // __ Если операция не добавлена (или удалена)
             if (!present) {
                 const findIndex = model.operations.findIndex((item) => item.id === operation.id)
                 if (findIndex !== -1) {
-                    const deleteObject: ISewingOperationUpdateObject = {
+                    const deleteObject: ICuttingOperationUpdateObject = {
                         operation_id: operation.id,
                         target_id: model.code_1c,
                         pivot: null,
                     }
 
-                    const result = await sewingStore.deleteSewingOperationFromModel(deleteObject)
+                    const result = await cuttingStore.deleteCuttingOperationFromModel(deleteObject)
 
                     // __ Если ошибка
                     if (!checkCRUD(result)) {
@@ -464,7 +464,7 @@
             } else {
                 // __ Если операция добавлена или уже есть в схеме
 
-                const ratio = !!sewingOperationItemEdit.value!.ratio ? sewingOperationItemEdit.value!.ratio : null
+                const ratio = !!cuttingOperationItemEdit.value!.ratio ? cuttingOperationItemEdit.value!.ratio : null
                 const findIndex = model.operations.findIndex((item) => item.id === operation.id)
 
                 if (findIndex !== -1) {
@@ -473,7 +473,7 @@
                     }
                 }
 
-                const updateObject: ISewingOperationUpdateObject = {
+                const updateObject: ICuttingOperationUpdateObject = {
                     operation_id: operation.id,
                     target_id: model.code_1c,
                     pivot: {
@@ -484,7 +484,7 @@
                     },
                 }
 
-                const result = await sewingStore.addSewingOperationToModel(updateObject)
+                const result = await cuttingStore.addCuttingOperationToModel(updateObject)
 
                 // __ Если ошибка
                 if (!checkCRUD(result)) {
@@ -504,26 +504,26 @@
                             condition: null,
                             position: null,
                         },
-                    } as ISewingOperationItem)
+                    } as ICuttingOperationItem)
                 }
             }
         }
     }
 
     // __ Выбираем схему для модели
-    const selectSchema = async (model: ISewingOperationModel) => {
-        selectedSchemaId.value = model.sewing_schema_id
+    const selectSchema = async (model: ICuttingOperationModel) => {
+        selectedSchemaId.value = model.cutting_schema_id
         const answer = await appModalAsyncSelectTS.value!.show(selectedSchemaId.value)
         if (answer) {
             const selectedSchema = appModalAsyncSelectTS.value!.selected
-            if (selectedSchema.id === model.sewing_schema_id) {
+            if (selectedSchema.id === model.cutting_schema_id) {
                 return
             }
 
-            const result = await sewingStore.updateModelSewingOperationSchema(model.code_1c, selectedSchema.id)
+            const result = await cuttingStore.updateModelCuttingOperationSchema(model.code_1c, selectedSchema.id)
 
             if (checkCRUD(result)) {
-                model.sewing_schema_id = selectedSchema.id
+                model.cutting_schema_id = selectedSchema.id
             } else {
                 await showError()
                 return
@@ -543,22 +543,22 @@
 
     // __ Получаем данные
     const getData = async () => {
-        [sewingOperations.value, sewingOperationSchemas.value, models.value] = await Promise.all([
-            sewingStore.getSewingOperations(),
-            sewingStore.getSewingOperationSchemas(),
-            sewingStore.getModelsForLabor(),
+        [cuttingOperations.value, cuttingOperationSchemas.value, models.value] = await Promise.all([
+            cuttingStore.getCuttingOperations(),
+            cuttingStore.getCuttingOperationSchemas(),
+            cuttingStore.getModelsForLabor(),
         ])
 
-        sewingOperations.value = sewingOperations.value
-            .map((sewingOperation) => ({
-                ...sewingOperation,
-                description: sewingOperation.description ?? '',
+        cuttingOperations.value = cuttingOperations.value
+            .map((cuttingOperation) => ({
+                ...cuttingOperation,
+                description: cuttingOperation.description ?? '',
                 can_edit: true,
             }))
             .sort((a, b) => a.id - b.id)
         // .sort((a, b) => a.name.localeCompare(b.name))
 
-        // sewingOperationSchemas.value = sewingOperationSchemas.value
+        // cuttingOperationSchemas.value = cuttingOperationSchemas.value
         //     .filter(schema => schema.id !== 0)
 
         models.value = models.value.map((collection) => ({ ...collection, collapsed: true }))
@@ -574,7 +574,7 @@
         const memRender = [...modelsRender.value] // Запоминаем состояние из-за collapsed
         modelsRender.value = []
 
-        const schemasIds = sewingOperationSchemas.value
+        const schemasIds = cuttingOperationSchemas.value
             .map((schema) => (schema.name.toLowerCase().includes(schemaFilter.value.toLowerCase()) ? schema.id : -1))
             .filter((id) => id !== -1)
 
@@ -584,7 +584,7 @@
                 if (
                     models.value[i].items[j].name_report.toLowerCase().includes(nameFilter.value.toLowerCase()) &&
                     models.value[i].items[j].code_1c.toLowerCase().includes(codeFilter.value.toLowerCase()) &&
-                    schemasIds.includes(models.value[i].items[j].sewing_schema_id)
+                    schemasIds.includes(models.value[i].items[j].cutting_schema_id)
                 ) {
                     newItems.push(models.value[i].items[j])
                 }
@@ -613,8 +613,8 @@
             async () => {
                 await getData()
                 getDataRender()
-                if (DEBUG) console.log('sewingOperationSchemas: ', sewingOperationSchemas.value)
-                if (DEBUG) console.log('sewingOperations: ', sewingOperations.value)
+                if (DEBUG) console.log('cuttingOperationSchemas: ', cuttingOperationSchemas.value)
+                if (DEBUG) console.log('cuttingOperations: ', cuttingOperations.value)
                 if (DEBUG) console.log('models: ', models.value)
             },
             undefined

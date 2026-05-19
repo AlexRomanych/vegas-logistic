@@ -1,7 +1,7 @@
 <template>
     <div v-if="!isLoading">
         <!-- __ Меню -->
-        <TheSewingManageMenu/>
+        <TheCuttingManageMenu/>
 
         <!-- __ Вход данных -->
         <div>
@@ -25,7 +25,7 @@ import { onMounted, provide, ref, watch /*toRaw*/ } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -34,23 +34,23 @@ import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 
 import { getRenderMatrixForPlan, getRenderPeriodForPlan } from '@/app/helpers/plan/helpers_plan.ts'
 import { additionDays, formatToYMD, getSundayAfter } from '@/app/helpers/helpers_date'
-import { correctRenderMatrix, sortRenderMatrixByTaskPosition } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { correctRenderMatrix, sortRenderMatrixByTaskPosition } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
-import ManageWeek from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageWeek.vue'
-import TheSewingManageMenu from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageMenu.vue'
+import ManageWeek from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageWeek.vue'
+import TheCuttingManageMenu from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageMenu.vue'
 
 const DEBUG     = true
 const isLoading = ref(false)
 
 const planStore   = usePlansStore()
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 const { planPeriodGlobal } = storeToRefs(planStore)
 
 const {
-          globalSewingTasks, // __ Все задания (Global State)
+          globalCuttingTasks, // __ Все задания (Global State)
           globalRenderPeriod, // __ Период для рендера
-      } = storeToRefs(sewingStore)
+      } = storeToRefs(cuttingStore)
 
 // __ Определяем переменные
 let planPeriod: IPeriod = PERIOD_DRAFT // __ Период плана загрузок
@@ -71,14 +71,14 @@ const getPlanPeriod = async () => {
 }
 
 // __ Получаем период для рендера
-const getRenderPeriod = () => (globalRenderPeriod.value = getRenderPeriodForPlan(globalSewingTasks.value))
+const getRenderPeriod = () => (globalRenderPeriod.value = getRenderPeriodForPlan(globalCuttingTasks.value))
 
 // __ Корректируем период для рендера. находим самую позднюю дату отгрузки и пересчитываем конец периода до воскресенья
 const correctRenderPeriod = () => {
-    if (!globalSewingTasks.value.length) {
+    if (!globalCuttingTasks.value.length) {
         return
     }
-    const maxDateObj = globalSewingTasks.value.reduce(
+    const maxDateObj = globalCuttingTasks.value.reduce(
         (maxDateObj, task) => {
             if (task.order.load_at && new Date(task.order.load_at).getTime() > maxDateObj.value) {
                 maxDateObj.value = new Date(task.order.load_at).getTime()
@@ -93,7 +93,7 @@ const correctRenderPeriod = () => {
 }
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalSewingTasks.value, globalRenderPeriod.value))
+const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalCuttingTasks.value, globalRenderPeriod.value))
 
 // __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
 // __ И отправлять на сервер только измененные данные
@@ -110,9 +110,9 @@ const getStartWeekDate = (weekOrder: number /* порядковы номер н�
 
 // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
 watch(
-    () => globalSewingTasks.value,
+    () => globalCuttingTasks.value,
     () => {
-        if (!globalSewingTasks.value.length) {
+        if (!globalCuttingTasks.value.length) {
             return
         }
 
@@ -127,7 +127,7 @@ watch(
         renderMatrix.value = correctRenderMatrix(renderMatrix.value)
 
         if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
-        if (DEBUG) console.log('globalSewingTasks:', globalSewingTasks.value)
+        if (DEBUG) console.log('globalCuttingTasks:', globalCuttingTasks.value)
     },
     { immediate: true, deep: true }
 )
@@ -140,7 +140,7 @@ onMounted(async () => {
         loadingService,
         async () => {
             // !!! Порядок важен
-            await sewingStore.getSewingTasks() // __ Получаем SewingTasks и записываем в глобальную переменную в SewingStore
+            await cuttingStore.getCuttingTasks() // __ Получаем CuttingTasks и записываем в глобальную переменную в CuttingStore
             await getPlanPeriod() // __ Получаем период плана загрузок
 
             // __ Дальше все через watcher

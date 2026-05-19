@@ -16,8 +16,8 @@
                         <!-- __ Меню Карточки Заявки  -->
                         <ManageTaskCardMenu
                             :active-panel="activePanel"
-                            :sewing-lines="activePanel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
-                            :sewing-task="props.task"
+                            :cutting-lines="activePanel === LEFT_PANEL_ID ? sourceCuttingLines : targetCuttingLines"
+                            :cutting-task="props.task"
                             :show-comments="showComments"
                             :show-details="showDetails"
                             @divide-element-amount="divideElementAmount"
@@ -80,11 +80,11 @@
 
                             <div class="flex-grow overflow-y-auto custom-scrollbar">
 
-                                <!-- __ Сами Записи (SewingLines) с возможностью перетаскивания -->
+                                <!-- __ Сами Записи (CuttingLines) с возможностью перетаскивания -->
                                 <draggable
                                     :="dragOptions"
                                     :disabled="!isDragging"
-                                    :list="panel === LEFT_PANEL_ID ? sourceSewingLines : targetSewingLines"
+                                    :list="panel === LEFT_PANEL_ID ? sourceCuttingLines : targetCuttingLines"
                                     :move="checkMove"
                                     class="min-h-[25px]"
                                     item-key="position"
@@ -95,13 +95,13 @@
                                     <template #item="{ element, /*index*/ }">
 
                                         <div :key="element.id"
-                                             @click="setActiveSewingLine(element, panel)"
+                                             @click="setActiveCuttingLine(element, panel)"
                                              @dblclick="showLineInfo(element)"
                                         >
 
                                             <ManageTaskCardItem
                                                 :render-data="renderData"
-                                                :sewing-line="element"
+                                                :cutting-line="element"
                                                 :show-comments="showComments"
                                                 :show-details="showDetails"
                                             />
@@ -210,28 +210,28 @@ import draggable from 'vuedraggable'
 import { storeToRefs } from 'pinia'
 
 import type {
-    ISewingTask,
+    ICuttingTask,
     IColorTypes,
-    ISewingTaskLine,
+    ICuttingTaskLine,
     IDividerItem,
     IAmountAndTime,
-    ISewingLinesPanel,
-    ISewingTaskCardSort,
-    ISewingTaskOrderLine,
+    ICuttingLinesPanel,
+    ICuttingTaskCardSort,
+    ICuttingTaskOrderLine,
 } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
     calculateDividedAmountAndTime,
     getCoverSizeString,
-    getSewingTaskAmountAndTime,
-    getSewingTaskModelCover, getSewingTaskModelCoverName,
-    getSewingTimes,
-    isAverage, mergeSewingLines,
-    sortSewingTaskLinesBySize,
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+    getCuttingTaskAmountAndTime,
+    getCuttingTaskModelCover, getCuttingTaskModelCoverName,
+    getCuttingTimes,
+    isAverage, mergeCuttingLines,
+    sortCuttingTaskLinesBySize,
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import { round } from '@/app/helpers/helpers_lib.ts'
@@ -239,19 +239,19 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import ManageTaskCardItem
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItem.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardItem.vue'
 import ManageTaskCardItemsHeader
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardItemsHeader.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardItemsHeader.vue'
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import ManageTaskCardMenu
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardMenu.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardMenu.vue'
 import ManageTaskCardTotals
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCardTotals.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardTotals.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
-import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/OrderItemInfo.vue'
 // import ManageTaskCardItemInfo
-//     from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/_ManageTaskCardItemInfo.vue'
+//     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/_ManageTaskCardItemInfo.vue'
 
 
 
@@ -263,14 +263,14 @@ interface IProps {
     text?: string,
     mode?: 'inform' | 'confirm'
 
-    task: ISewingTask
+    task: ICuttingTask
 }
 
-interface IRenderSewingLineDataItem {
+interface IRenderCuttingLineDataItem {
     width: string
 }
 
-export type IRenderSewingLineData = Record<string, IRenderSewingLineDataItem>
+export type IRenderCuttingLineData = Record<string, IRenderCuttingLineDataItem>
 
 const props = withDefaults(defineProps<IProps>(), {
     type:   'primary',
@@ -284,17 +284,17 @@ const props = withDefaults(defineProps<IProps>(), {
 // }>()
 
 // __ Данные из Хранилища
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
-const { globalManageTaskCardActiveSewingLine } = storeToRefs(sewingStore)
+const { globalManageTaskCardActiveCuttingLine } = storeToRefs(cuttingStore)
 
 
 // __ Данные (объект) правой панели
-const targetSewingLines = ref<ISewingTaskLine[]>([])
-const sourceSewingLines = ref<ISewingTaskLine[]>([])
+const targetCuttingLines = ref<ICuttingTaskLine[]>([])
+const sourceCuttingLines = ref<ICuttingTaskLine[]>([])
 
 // __ Копия входящих данных (объект левой панели) для отслеживания изменений
-let taskMem: ISewingTask = JSON.parse(JSON.stringify(props.task))
+let taskMem: ICuttingTask = JSON.parse(JSON.stringify(props.task))
 
 // __ Маяк изменений (для сохранения состояния при перетаскивании)
 const needForSave = ref(false)
@@ -303,9 +303,9 @@ const needForSave = ref(false)
 const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 
 // __ Переключатель панелей
-const LEFT_PANEL_ID: ISewingLinesPanel  = 'left'
-const RIGHT_PANEL_ID: ISewingLinesPanel = 'right'
-const activePanel                       = ref<ISewingLinesPanel>(LEFT_PANEL_ID)
+const LEFT_PANEL_ID: ICuttingLinesPanel  = 'left'
+const RIGHT_PANEL_ID: ICuttingLinesPanel = 'right'
+const activePanel                       = ref<ICuttingLinesPanel>(LEFT_PANEL_ID)
 
 const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
 const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
@@ -327,7 +327,7 @@ const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна информации о записи в Заявке
-const orderLine     = ref<ISewingTaskOrderLine | null>(null)
+const orderLine     = ref<ICuttingTaskOrderLine | null>(null)
 const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна изменения Комментария
@@ -337,18 +337,18 @@ const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 // __ Функционал меню + Сортировка
 const showComments  = ref(false)
 const showDetails   = ref(false)
-const sortPosition  = ref<ISewingTaskCardSort>('none')
-const sortName      = ref<ISewingTaskCardSort>('none')
-const sortUniversal = ref<ISewingTaskCardSort>('none')
-const sortAuto      = ref<ISewingTaskCardSort>('none')
-const sortSolidHard = ref<ISewingTaskCardSort>('none')
-const sortSolidLite = ref<ISewingTaskCardSort>('none')
-const sortTextile   = ref<ISewingTaskCardSort>('none')
-const sortKant      = ref<ISewingTaskCardSort>('none')
-const sortTkch      = ref<ISewingTaskCardSort>('none')
-const sortAmount    = ref<ISewingTaskCardSort>('none')
-const sortTime      = ref<ISewingTaskCardSort>('none')
-const sortSize      = ref<ISewingTaskCardSort>('none')
+const sortPosition  = ref<ICuttingTaskCardSort>('none')
+const sortName      = ref<ICuttingTaskCardSort>('none')
+const sortUniversal = ref<ICuttingTaskCardSort>('none')
+const sortAuto      = ref<ICuttingTaskCardSort>('none')
+const sortSolidHard = ref<ICuttingTaskCardSort>('none')
+const sortSolidLite = ref<ICuttingTaskCardSort>('none')
+const sortTextile   = ref<ICuttingTaskCardSort>('none')
+const sortKant      = ref<ICuttingTaskCardSort>('none')
+const sortTkch      = ref<ICuttingTaskCardSort>('none')
+const sortAmount    = ref<ICuttingTaskCardSort>('none')
+const sortTime      = ref<ICuttingTaskCardSort>('none')
+const sortSize      = ref<ICuttingTaskCardSort>('none')
 
 
 // __ Стилистика
@@ -378,7 +378,7 @@ const renderData = {
 const showModal = ref(false)
 
 let resolvePromise: ((value: boolean) => void) | null
-const show = async (/*sewingTask: ISewingTask | null = null*/) => {
+const show = async (/*cuttingTask: ICuttingTask | null = null*/) => {
     showModal.value = true
 
     // __ Для выхода по ESC
@@ -387,7 +387,7 @@ const show = async (/*sewingTask: ISewingTask | null = null*/) => {
     // console.log(mainDiv)
 
     // __ Можно получить активную строку здесь
-    // globalManageTaskCardActiveSewingLine.value = sewingTask?.sewing_lines[0]
+    // globalManageTaskCardActiveCuttingLine.value = cuttingTask?.cutting_lines[0]
 
     return new Promise((resolve) => {
         resolvePromise = resolve
@@ -412,12 +412,12 @@ const select = async (value: boolean) => {
                 }
             }
 
-            targetSewingLines.value = []
-            sourceSewingLines.value = []
+            targetCuttingLines.value = []
+            sourceCuttingLines.value = []
         } else {
 
             // __ Левая часть не должна быть пуста
-            if (sourceSewingLines.value.length === 0) {
+            if (sourceCuttingLines.value.length === 0) {
                 modalInfoText.value = ['Левая часть должна содержать хотя бы одну строку!']
                 modalInfoType.value = 'danger'
                 modalInfoMode.value = 'inform'
@@ -444,10 +444,10 @@ const select = async (value: boolean) => {
 defineExpose({
     show,
     get leftPanel() {
-        return sourceSewingLines.value
+        return sourceCuttingLines.value
     },
     get rightPanel() {
-        return targetSewingLines.value
+        return targetCuttingLines.value
     }
 })
 // --- -------------------------------------------------------------------------------------
@@ -459,19 +459,19 @@ defineExpose({
 
 // __ Пересчитываем Итого
 const calculateTotals = () => {
-    leftPanelAmountAndTimeTotal.value  = getSewingTaskAmountAndTime(sourceSewingLines.value)
-    rightPanelAmountAndTimeTotal.value = getSewingTaskAmountAndTime(targetSewingLines.value)
+    leftPanelAmountAndTimeTotal.value  = getCuttingTaskAmountAndTime(sourceCuttingLines.value)
+    rightPanelAmountAndTimeTotal.value = getCuttingTaskAmountAndTime(targetCuttingLines.value)
 }
 
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
-const setActiveSewingLine = (sewingLine: ISewingTaskLine, panel: ISewingLinesPanel) => {
-    globalManageTaskCardActiveSewingLine.value = sewingLine
+const setActiveCuttingLine = (cuttingLine: ICuttingTaskLine, panel: ICuttingLinesPanel) => {
+    globalManageTaskCardActiveCuttingLine.value = cuttingLine
     activePanel.value                          = panel
 }
 
 // __ Показать информацию о записи
-const showLineInfo = async (sewingLine: ISewingTaskLine) => {
-    orderLine.value = sewingLine.order_line
+const showLineInfo = async (cuttingLine: ICuttingTaskLine) => {
+    orderLine.value = cuttingLine.order_line
     await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 }
 
@@ -479,26 +479,26 @@ const showLineInfo = async (sewingLine: ISewingTaskLine) => {
 const divideElementAmount = async () => {
 
     // __ Проверяем, есть ли активная строка
-    if (!globalManageTaskCardActiveSewingLine.value) {
+    if (!globalManageTaskCardActiveCuttingLine.value) {
         return
     }
 
     // __ Проверяем, больше ли количество, чем 1
-    if (globalManageTaskCardActiveSewingLine.value.amount <= 1) {
+    if (globalManageTaskCardActiveCuttingLine.value.amount <= 1) {
         return
     }
 
     // __ Копируем объект, чтобы не мутировать оригинал
-    const activeSewingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveSewingLine.value))
+    const activeCuttingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveCuttingLine.value))
 
-    const modelCoverExt = getSewingTaskModelCoverName(activeSewingLineCopy.order_line.model)
+    const modelCoverExt = getCuttingTaskModelCoverName(activeCuttingLineCopy.order_line.model)
 
     dividerElement.value.name =
-        getCoverSizeString(activeSewingLineCopy) + ' ' +
+        getCoverSizeString(activeCuttingLineCopy) + ' ' +
         modelCoverExt + ' ' +
-        activeSewingLineCopy.order_line.amount.toString() + ' шт.'
+        activeCuttingLineCopy.order_line.amount.toString() + ' шт.'
 
-    dividerElement.value.amount = activeSewingLineCopy.amount
+    dividerElement.value.amount = activeCuttingLineCopy.amount
 
     // console.log('dividerElement.value: ', dividerElement.value)
 
@@ -515,8 +515,8 @@ const divideElementAmount = async () => {
 
         // __ Логика разделения
         // __ Получаем целевой массив по ссылке
-        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceSewingLines.value : targetSewingLines.value
-        const dividerElementIndex = workArray.findIndex(item => item.id === activeSewingLineCopy.id && item.position === activeSewingLineCopy.position)
+        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceCuttingLines.value : targetCuttingLines.value
+        const dividerElementIndex = workArray.findIndex(item => item.id === activeCuttingLineCopy.id && item.position === activeCuttingLineCopy.position)
         if (dividerElementIndex === -1) {
             return // страховка
         }
@@ -526,10 +526,10 @@ const divideElementAmount = async () => {
         const workElement = workArray[dividerElementIndex]
 
         // __ Ищем сразу по 2 массивам, потому что строка уже может быть перемещена в другую панель
-        const filteredSourceSewingLines = sourceSewingLines.value.filter(item => item.id_ref === workElement.id_ref)
-        const filteredTargetSewingLines = targetSewingLines.value.filter(item => item.id_ref === workElement.id_ref)
+        const filteredSourceCuttingLines = sourceCuttingLines.value.filter(item => item.id_ref === workElement.id_ref)
+        const filteredTargetCuttingLines = targetCuttingLines.value.filter(item => item.id_ref === workElement.id_ref)
 
-        const maxPosition = [...filteredSourceSewingLines, ...filteredTargetSewingLines]
+        const maxPosition = [...filteredSourceCuttingLines, ...filteredTargetCuttingLines]
             .filter(item => /*item.id === workElement.id ||*/ item.id_ref === workElement.id_ref)   // __ у новых строк ID = 0
             .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
 
@@ -549,18 +549,18 @@ const divideElementAmount = async () => {
             return
         }
 
-        let newSewingLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
-        newSewingLine.id       = 0                                                  // __ Устанавливаем новый ID
-        newSewingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
+        let newCuttingLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
+        newCuttingLine.id       = 0                                                  // __ Устанавливаем новый ID
+        newCuttingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
         // __ Пересчитываем время и количество
-        newSewingLine                  = calculateDividedAmountAndTime(newSewingLine, range.take)
+        newCuttingLine                  = calculateDividedAmountAndTime(newCuttingLine, range.take)
         workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
 
         // __ Вставляем новую строку
-        workArray.splice(dividerElementIndex + 1, 0, newSewingLine)
+        workArray.splice(dividerElementIndex + 1, 0, newCuttingLine)
 
-        // console.log(activeSewingLineCopy)
+        // console.log(activeCuttingLineCopy)
         // console.log(workArray[dividerElementIndex])
         // console.log(workArray[dividerElementIndex + 1])
     }
@@ -568,44 +568,44 @@ const divideElementAmount = async () => {
 
 // __ Перезагрузить данные
 const reloadData = () => {
-    sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
-    targetSewingLines.value = []
+    sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
+    targetCuttingLines.value = []
 
     calculateTotals()
 }
 
 // __ Объединить строки
-const mergeLines = (activePanel: ISewingLinesPanel) => {
+const mergeLines = (activePanel: ICuttingLinesPanel) => {
     const workArray = activePanel === LEFT_PANEL_ID
-        ? [...sourceSewingLines.value]
-        : [...targetSewingLines.value]
+        ? [...sourceCuttingLines.value]
+        : [...targetCuttingLines.value]
 
-    const mergedSewingLines = mergeSewingLines(workArray)
+    const mergedCuttingLines = mergeCuttingLines(workArray)
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceSewingLines.value = [...mergedSewingLines]
+        sourceCuttingLines.value = [...mergedCuttingLines]
     } else {
-        targetSewingLines.value = [...mergedSewingLines]
+        targetCuttingLines.value = [...mergedCuttingLines]
     }
 }
 
 
 // __ Переместить в другую панель
-const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {
+const moveToPanel = (activePanel: ICuttingLinesPanel, cuttingType: string) => {
     let sourceArray, targetArray
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceArray = [...sourceSewingLines.value]
-        targetArray = [...targetSewingLines.value]
+        sourceArray = [...sourceCuttingLines.value]
+        targetArray = [...targetCuttingLines.value]
     } else {
-        targetArray = [...sourceSewingLines.value]
-        sourceArray = [...targetSewingLines.value]
+        targetArray = [...sourceCuttingLines.value]
+        sourceArray = [...targetCuttingLines.value]
     }
 
     for (let i = 0; i < sourceArray.length; i++) {
         let compareValue = false
 
-        switch (sewingType) {
+        switch (cuttingType) {
             case 'all':
                 compareValue = true
                 break
@@ -633,11 +633,11 @@ const moveToPanel = (activePanel: ISewingLinesPanel, sewingType: string) => {
     sourceArray = sourceArray.filter(item => item.amount > 0)
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceSewingLines.value = [...sourceArray]
-        targetSewingLines.value = [...targetArray]
+        sourceCuttingLines.value = [...sourceArray]
+        targetCuttingLines.value = [...targetArray]
     } else {
-        sourceSewingLines.value = [...targetArray]
-        targetSewingLines.value = [...sourceArray]
+        sourceCuttingLines.value = [...targetArray]
+        targetCuttingLines.value = [...sourceArray]
     }
 
     calculateTotals()
@@ -654,7 +654,7 @@ const addComment = async () => {
 
         const newComment = commentEdit.value!.comment.trim()
 
-        const result = await sewingStore.setSewingTaskComment(props.task.id, newComment)
+        const result = await cuttingStore.setCuttingTaskComment(props.task.id, newComment)
 
         if (!checkCRUD(result)) {
 
@@ -670,7 +670,7 @@ const addComment = async () => {
         }
 
         // __ Обновляем комментарий в глобальном массиве
-        sewingStore.applySewingTaskComment(props.task.id, newComment)
+        cuttingStore.applyCuttingTaskComment(props.task.id, newComment)
 
         // __ Обновляем комментарий в текущей строке, потому что теряем где-то реактивность
         // __ из-за передачи параметров в SFC по глубокой копии
@@ -684,7 +684,7 @@ const addComment = async () => {
 // --- -------------------------------------------------------------------------------------
 
 // __ Меняем направление сортировки
-const changeSortDirection = (sortDirection: ISewingTaskCardSort) => {
+const changeSortDirection = (sortDirection: ICuttingTaskCardSort) => {
     sortPosition.value  = 'none'
     sortName.value      = 'none'
     sortUniversal.value = 'none'
@@ -706,7 +706,7 @@ type SortType = 'number' | 'string' | 'boolean'
 
 interface SortConfig {
     type: SortType
-    getValue: (item: ISewingTaskLine) => string | number | boolean
+    getValue: (item: ICuttingTaskLine) => string | number | boolean
 }
 
 // __ Карта конфигураций. Ключи — это произвольные идентификаторы (ID колонок)
@@ -722,7 +722,7 @@ const sortConfigs: Record<string, SortConfig> = {
     name_report: {
         type:     'string',
         getValue: (item) => {
-            const modelCover = getSewingTaskModelCover(item)    // __ Получаем название модели
+            const modelCover = getCuttingTaskModelCover(item)    // __ Получаем название модели
             if (!modelCover) return ''
 
             return modelCover
@@ -762,7 +762,7 @@ const sortConfigs: Record<string, SortConfig> = {
     },
     time:        {
         type:     'number',
-        getValue: (item) => Object.values(getSewingTimes(item)).reduce((acc, value) => acc + value.time, 0)
+        getValue: (item) => Object.values(getCuttingTimes(item)).reduce((acc, value) => acc + value.time, 0)
     }
 }
 
@@ -783,7 +783,7 @@ const compareValues = (a: any, b: any, type: SortType, modifier: number) => {
 }
 
 // __ Сортировка
-const sortByField = (panel: ISewingLinesPanel, configKey: string) => {
+const sortByField = (panel: ICuttingLinesPanel, configKey: string) => {
     const config = sortConfigs[configKey]
     if (!config) return
 
@@ -837,8 +837,8 @@ const sortByField = (panel: ISewingLinesPanel, configKey: string) => {
     }
 
     const workArray = panel === LEFT_PANEL_ID
-        ? [...sourceSewingLines.value]
-        : [...targetSewingLines.value]
+        ? [...sourceCuttingLines.value]
+        : [...targetCuttingLines.value]
 
     const modifier = direction === 'asc' ? 1 : -1
 
@@ -847,26 +847,26 @@ const sortByField = (panel: ISewingLinesPanel, configKey: string) => {
     })
 
     if (panel === LEFT_PANEL_ID) {
-        sourceSewingLines.value = workArray
+        sourceCuttingLines.value = workArray
     } else {
-        targetSewingLines.value = workArray
+        targetCuttingLines.value = workArray
     }
 }
 
 // __ Сортировка по размеру
-const sortBySize = (panel: ISewingLinesPanel) => {
+const sortBySize = (panel: ICuttingLinesPanel) => {
     sortSize.value = changeSortDirection(sortSize.value)
 
     let sourceArray = panel === LEFT_PANEL_ID
-        ? [...sourceSewingLines.value]
-        : [...targetSewingLines.value]
+        ? [...sourceCuttingLines.value]
+        : [...targetCuttingLines.value]
 
-    sourceArray = sortSewingTaskLinesBySize(sourceArray, sortSize.value)
+    sourceArray = sortCuttingTaskLinesBySize(sourceArray, sortSize.value)
 
     if (panel === LEFT_PANEL_ID) {
-        sourceSewingLines.value = sourceArray
+        sourceCuttingLines.value = sourceArray
     } else {
-        targetSewingLines.value = sourceArray
+        targetCuttingLines.value = sourceArray
     }
 }
 // --- -------------------------------------------------------------------------------------
@@ -910,7 +910,7 @@ const finishDrag = (evt: any) => {
 watch(() => props.task, () => {
 
     // __ Задаем активную запись
-    globalManageTaskCardActiveSewingLine.value = props.task?.sewing_lines[0]
+    globalManageTaskCardActiveCuttingLine.value = props.task?.cutting_lines[0]
 
     // __ Копируем входящие данные для отслеживания изменений
     taskMem = JSON.parse(JSON.stringify(props.task))
@@ -921,11 +921,11 @@ watch(() => props.task, () => {
     footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
 
     // __ Копируем данные для левой и правой панели
-    sourceSewingLines.value = JSON.parse(JSON.stringify(props.task.sewing_lines))
-    targetSewingLines.value = []
+    sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
+    targetCuttingLines.value = []
 
-    // console.log(sourceSewingLines.value)
-    // console.log(targetSewingLines.value)
+    // console.log(sourceCuttingLines.value)
+    // console.log(targetCuttingLines.value)
 
     // __ Обновляем суммы
     calculateTotals()
@@ -956,19 +956,19 @@ watchEffect(() => {
     needForSave.value = true
 
     // __ Ситуация, когда мы перетаскиваем строки в правую часть
-    if (targetSewingLines.value.length > 0) {
+    if (targetCuttingLines.value.length > 0) {
         return
     }
 
     // __ Ситуация, когда мы меняем порядок строк в левой части
     // __ Сравниваем длину массивов (исходного и копии)
-    if (sourceSewingLines.value.length !== taskMem.sewing_lines.length) {
+    if (sourceCuttingLines.value.length !== taskMem.cutting_lines.length) {
         return
     }
 
     // __ Сравниваем содержимое массивов
-    for (let i = 0; i < sourceSewingLines.value.length; i++) {
-        const isEqual = JSON.stringify(sourceSewingLines.value[i]) === JSON.stringify(taskMem.sewing_lines[i])
+    for (let i = 0; i < sourceCuttingLines.value.length; i++) {
+        const isEqual = JSON.stringify(sourceCuttingLines.value[i]) === JSON.stringify(taskMem.cutting_lines[i])
         if (!isEqual) {
             return
         }

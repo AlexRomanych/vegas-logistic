@@ -84,7 +84,7 @@
 
                 <!-- __ ответственный -->
                 <AppLabelTSWrapper
-                    v-if="sewingDay.responsible && entity.id === sewingDay.responsible.id"
+                    v-if="cuttingDay.responsible && entity.id === cuttingDay.responsible.id"
                     :arg="entity"
                     :render-object="render.responsible"
                 />
@@ -128,9 +128,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
-import type { IColorTypes, IRenderData, ISewingDay, ISewingDayWorker } from '@/types'
+import type { IColorTypes, IRenderData, ICuttingDay, ICuttingDayWorker } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 // import { isToday } from '@/app/helpers/helpers_date'
@@ -145,10 +145,10 @@ import AppModalAsyncSelectTSFuncMultiSelect from '@/components/ui/modals/AppModa
 
 
 // __ Унифицируем Интерфейс
-type IEntity = ISewingDayWorker
+type IEntity = ICuttingDayWorker
 
 interface IProps {
-    sewingDay: ISewingDay
+    cuttingDay: ICuttingDay
     canEdit?: boolean
 }
 
@@ -163,12 +163,12 @@ const emits = defineEmits<{
     (e: 'addResponsible', payload: IEntity): void,
 }>()
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
-const { globalWorkers } = storeToRefs(sewingStore)        // __ Все работники (Global State)
+const { globalWorkers } = storeToRefs(cuttingStore)        // __ Все работники (Global State)
 
 // __ Данные для отображения
-const entitiesRender = computed(() => props.sewingDay.workers)
+const entitiesRender = computed(() => props.cuttingDay.workers)
 
 const collapsed = ref(false)
 
@@ -191,13 +191,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => 'warning',
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : 'danger',
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍collapsed...',
-        data          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? '✓' : '',
+        data          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? '✓' : '',
         class         : 'cursor-pointer',
     },
     id         : {
@@ -208,7 +208,7 @@ const render: IRenderData = reactive({
         show          : false,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : DEFAULT_TYPE,
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -224,7 +224,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : DEFAULT_TYPE,
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -240,7 +240,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : DEFAULT_TYPE,
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -256,7 +256,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : DEFAULT_TYPE,
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -273,13 +273,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'success' : DEFAULT_TYPE,
+        type          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'success' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Ответственный...',
-        data          : (entity: IEntity) => props.sewingDay.responsible && entity.id === props.sewingDay.responsible.id ? 'ответственный' : '',
+        data          : (entity: IEntity) => props.cuttingDay.responsible && entity.id === props.cuttingDay.responsible.id ? 'ответственный' : '',
 
     },
 })
@@ -297,7 +297,7 @@ const appModalAsyncSelectTS = ref<any>(null)
 
 // const selectedWorkerIds      = ref<(number | string)[] | null>([])
 const appModalAsyncSelectTSFuncMultiSelect = ref<any>(null)
-const selectedWorkerIds                    = computed(() => props.sewingDay.workers.map((worker: IEntity) => worker.id))
+const selectedWorkerIds                    = computed(() => props.cuttingDay.workers.map((worker: IEntity) => worker.id))
 
 // __ Показываем сообщение об ошибке
 const showError = async (error: string | null = null) => {
@@ -316,7 +316,7 @@ const addWorkersGroup = async (/*workers: IEntity[]*/) => {
 
     // __ Добавляем работника день в день
     // Warning: TODO: Раскомментировать
-    // if (!isToday(new Date(props.sewingDay.action_at))) {
+    // if (!isToday(new Date(props.cuttingDay.action_at))) {
     //     return
     // }
 
@@ -327,7 +327,7 @@ const addWorkersGroup = async (/*workers: IEntity[]*/) => {
         console.log('workers_group: ', selectedWorkers)
 
         const selectedWorkersIdsSaved: number[] = selectedWorkers.map((worker: IEntity) => worker.id)
-        const result                            = await sewingStore.addWorkersToSewingDay(props.sewingDay.id, selectedWorkersIdsSaved)
+        const result                            = await cuttingStore.addWorkersToCuttingDay(props.cuttingDay.id, selectedWorkersIdsSaved)
 
         if (checkCRUD(result)) {
             collapsed.value = false                        // __ Разворачиваем список
@@ -346,7 +346,7 @@ const addWorker = async (worker: IEntity) => {
         return
     }
     // Warning: TODO: Раскомментировать
-    // if (!isToday(new Date(props.sewingDay.action_at))) {
+    // if (!isToday(new Date(props.cuttingDay.action_at))) {
     //     return
     // }
 
@@ -354,7 +354,7 @@ const addWorker = async (worker: IEntity) => {
     const answer           = await appModalAsyncSelectTS.value!.show(selectedWorkerId.value)
     if (answer) {
         const selectedWorker = appModalAsyncSelectTS.value!.selected
-        const result         = await sewingStore.addWorkerToSewingDay(props.sewingDay.id, selectedWorker.id)
+        const result         = await cuttingStore.addWorkerToCuttingDay(props.cuttingDay.id, selectedWorker.id)
 
         if (checkCRUD(result)) {
             const addWorker: IEntity = {
@@ -379,7 +379,7 @@ const removeWorker = async (worker: IEntity) => {
         return
     }
 
-    const result = await sewingStore.removeWorkerFromSewingDay(props.sewingDay.id, worker.id)
+    const result = await cuttingStore.removeWorkerFromCuttingDay(props.cuttingDay.id, worker.id)
 
     if (checkCRUD(result)) {
         emits('removeWorker', worker)   // __ Добавляем данные в родительский компонент
@@ -395,7 +395,7 @@ const setResponsible = async (worker: IEntity) => {
         return
     }
 
-    const result = await sewingStore.addResponsibleToSewingDay(props.sewingDay.id, worker.id)
+    const result = await cuttingStore.addResponsibleToCuttingDay(props.cuttingDay.id, worker.id)
 
     if (checkCRUD(result)) {
         emits('addResponsible', worker)   // __ Добавляем данные в родительский компонент
@@ -407,7 +407,7 @@ const setResponsible = async (worker: IEntity) => {
 
 
 onMounted(async () => {
-    await sewingStore.getActiveWorkers()
+    await cuttingStore.getActiveWorkers()
 })
 
 </script>

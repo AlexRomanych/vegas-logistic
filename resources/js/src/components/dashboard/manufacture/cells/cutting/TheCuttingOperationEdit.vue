@@ -85,7 +85,7 @@
 
                 <!-- __ К списку -->
                 <div class="m-3 mt-5 flex justify-between">
-                    <router-link :to="{ name: 'manufacture.cell.sewing.operations' }">
+                    <router-link :to="{ name: 'manufacture.cell.cutting.operations' }">
                         <AppInputButton
                             id="returnButton"
                             func="button"
@@ -128,7 +128,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICalcMode, ICheckboxData, ICheckboxDataItem, ISewingOperation } from '@/types'
+import type { ICalcMode, ICheckboxData, ICheckboxDataItem, ICuttingOperation } from '@/types'
 
 import { onMounted, ref, watch } from 'vue'
 
@@ -137,9 +137,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers, minValue, integer } from '@vuelidate/validators'
 
-import { useSewingStore } from '@/stores/SewingStore'
+import { useCuttingStore } from '@/stores/CuttingStore'
 
-import { SEWING_OPERATION_DRAFT } from '@/app/constants/sewing.ts'
+import { CUTTING_OPERATION_DRAFT } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -151,7 +151,7 @@ import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleT
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 const route  = useRoute()
 const router = useRouter()                 // Определяем роутер
@@ -171,16 +171,16 @@ const calloutHandler = () => setInterval(() => (confirmClick.value = false), 500
 
 
 // __ Подготавливаем переменные
-const operation = ref<ISewingOperation>(SEWING_OPERATION_DRAFT)
+const operation = ref<ICuttingOperation>(CUTTING_OPERATION_DRAFT)
 let activeCheckboxData: ICheckboxData         // выбор активности
 let calcModeCheckboxData: ICheckboxData       // выбор типа расчета
 
 // __ Подгружаем данные по операции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
     if (editMode.value) {
-        operation.value = await sewingStore.getSewingOperation(paramId) as ISewingOperation // Получаем Операцию
+        operation.value = await cuttingStore.getCuttingOperation(paramId) as ICuttingOperation // Получаем Операцию
     } else {
-        operation.value = JSON.parse(JSON.stringify(SEWING_OPERATION_DRAFT))
+        operation.value = JSON.parse(JSON.stringify(CUTTING_OPERATION_DRAFT))
     }
 }
 
@@ -313,9 +313,9 @@ const formSubmit = async () => {
     let result
 
     if (!editMode.value) {
-        result = await sewingStore.createSewingOperation(operation.value)
+        result = await cuttingStore.createCuttingOperation(operation.value)
     } else {
-        result = await sewingStore.updateSewingOperation(operation.value)
+        result = await cuttingStore.updateCuttingOperation(operation.value)
     }
 
     if (checkCRUD(result.data)) {
@@ -345,7 +345,7 @@ onMounted(async () => {
     // warn: Порядок важен!
     isLoading.value = true
 
-    operation.value = JSON.parse(JSON.stringify(SEWING_OPERATION_DRAFT))
+    operation.value = JSON.parse(JSON.stringify(CUTTING_OPERATION_DRAFT))
 
     await router.isReady().then(() => {
         paramId        = route.params.id as unknown as number

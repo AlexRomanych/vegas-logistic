@@ -44,7 +44,7 @@
 
                     <!-- __ Дополнительное СЗ -->
                     <template v-if="tasksAvailable.length !== 0 && getAddingCondition()">
-                        <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addSewingTaskToCurrentDay"/>
+                        <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addCuttingTaskToCurrentDay"/>
                     </template>
 
                 </div>
@@ -53,109 +53,109 @@
 
         <!-- __ Данные -->
         <div
-            v-for="sewingDay of renderSewingDays"
-            :key="sewingDay.id"
+            v-for="cuttingDay of renderCuttingDays"
+            :key="cuttingDay.id"
             class="ml-2 max-w-fit"
         >
             <TheDividerLineTS
-                v-if="!sewingDay.collapsed"
+                v-if="!cuttingDay.collapsed"
                 m-bottom="mb-4"
             />
 
             <div class="flex">
                 <!-- __ collapsed -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.collapsed"
-                    @click="sewingDay.collapsed = !sewingDay.collapsed"
+                    @click="cuttingDay.collapsed = !cuttingDay.collapsed"
                 />
 
                 <!-- __ id -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.id"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToCuttingDay(cuttingDay)"
                 />
 
                 <!-- __ Дата пр-ва -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.date"
-                    @click="goToSewingDay(sewingDay)"
+                    @click="goToCuttingDay(cuttingDay)"
                 />
 
                 <!-- __ Старт -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.start_at"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToCuttingDay(cuttingDay)"
                 />
 
                 <!-- __ Финиш -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.finish_at"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToCuttingDay(cuttingDay)"
                 />
 
                 <!-- __ Продолжительность -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.duration"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToCuttingDay(cuttingDay)"
                 />
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
                     :height="DEFAULT_HEIGHT"
-                    :progress="getProgressDayTotal(sewingDay)"
-                    :text="getProgressDayTotalText(sewingDay)"
+                    :progress="getProgressDayTotal(cuttingDay)"
+                    :text="getProgressDayTotalText(cuttingDay)"
                     :width="render.progressTotal.width"
                     text-size="mini"
                 />
 
                 <!-- __ Опережение/Отставание -->
                 <DeviationBar
-                    :deviation="getDeviationDayTotal(sewingDay)"
+                    :deviation="getDeviationDayTotal(cuttingDay)"
                     :height="DEFAULT_HEIGHT"
-                    :text="getDeviationDayTotalText(sewingDay)"
+                    :text="getDeviationDayTotalText(cuttingDay)"
                     :width="render.progressTotal.width"
                     text-size="mini"
                 />
 
                 <!-- __ Комментарий -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="cuttingDay"
                     :render-object="render.comment"
                 />
             </div>
 
             <!-- __ Содержимое СЗ -->
             <div
-                v-if="!sewingDay.collapsed"
+                v-if="!cuttingDay.collapsed"
                 class="ml-[34px]"
             >
                 <!-- __ Персонал -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
+                        :text="cuttingDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.personal_collapsed = !sewingDay.personal_collapsed"
+                        @click="cuttingDay.personal_collapsed = !cuttingDay.personal_collapsed"
                     />
                 </div>
 
                 <!-- __ Персонал -->
-                <template v-if="!sewingDay.personal_collapsed">
+                <template v-if="!cuttingDay.personal_collapsed">
                     <div class="mt-2 mb-2">
                         <ExecutePersonal
-                            :sewing-day="sewingDay"
-                            @add-worker="addWorker(sewingDay, $event)"
-                            @remove-worker="removeWorker(sewingDay, $event)"
-                            @add-responsible="addResponsible(sewingDay, $event)"
+                            :cutting-day="cuttingDay"
+                            @add-worker="addWorker(cuttingDay, $event)"
+                            @remove-worker="removeWorker(cuttingDay, $event)"
+                            @add-responsible="addResponsible(cuttingDay, $event)"
                         />
                     </div>
                 </template>
@@ -163,31 +163,31 @@
                 <!-- __ СЗ -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
+                        :text="cuttingDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.tasks_collapsed = !sewingDay.tasks_collapsed"
+                        @click="cuttingDay.tasks_collapsed = !cuttingDay.tasks_collapsed"
                     />
                 </div>
 
                 <!-- __ СЗ -->
-                <template v-if="!sewingDay.tasks_collapsed">
+                <template v-if="!cuttingDay.tasks_collapsed">
                     <div class="my-2">
                         <!-- __ Шапка СЗ -->
-                        <ExecuteTaskHeader :fields-width="sewingTaskFieldsWidth"/>
+                        <ExecuteTaskHeader :fields-width="cuttingTaskFieldsWidth"/>
 
                         <!-- __ Сами СЗ -->
                         <div
-                            v-for="sewingTask of sewingDay.sewing_tasks"
-                            :key="sewingTask.id"
+                            v-for="cuttingTask of cuttingDay.cutting_tasks"
+                            :key="cuttingTask.id"
                             class="bg-green-100"
                         >
                             <ExecuteTask
-                                :fields-width="sewingTaskFieldsWidth"
-                                :sewing-task="sewingTask"
+                                :fields-width="cuttingTaskFieldsWidth"
+                                :cutting-task="cuttingTask"
                             />
                         </div>
                     </div>
@@ -196,26 +196,26 @@
                 <!-- __ Общие данные -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
+                        :text="cuttingDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.common_collapsed = !sewingDay.common_collapsed"
+                        @click="cuttingDay.common_collapsed = !cuttingDay.common_collapsed"
                     />
                 </div>
 
                 <!-- __ Общие данные -->
-                <template v-if="!sewingDay.common_collapsed">
+                <template v-if="!cuttingDay.common_collapsed">
                     <div class="my-2">
-                        <ExecuteTaskCommon :sewing-day="sewingDay"/>
+                        <ExecuteTaskCommon :cutting-day="cuttingDay"/>
                     </div>
                 </template>
             </div>
 
             <TheDividerLineTS
-                v-if="!sewingDay.collapsed"
+                v-if="!cuttingDay.collapsed"
                 m-top="mt-4"
             />
         </div>
@@ -248,13 +248,13 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-import type { IColorTypes, IRenderData, ISewingDay, ISewingDayWorker, ISewingTask, ISewingTaskLine } from '@/types'
+import type { IColorTypes, IRenderData, ICuttingDay, ICuttingDayWorker, ICuttingTask, ICuttingTaskLine } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
-import { SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
+import { CUTTING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/cutting.ts'
 
-import { getExecuteTaskStatistics, getSewingDates, unionDatesWithSewingTasks } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getExecuteTaskStatistics, getCuttingDates, unionDatesWithCuttingTasks } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import {
     formatDateInFullFormat,
     formatTimeInFullFormat,
@@ -272,13 +272,13 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
-import ExecuteTask from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTask.vue'
-import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskHeader.vue'
+import ExecuteTask from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTask.vue'
+import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskHeader.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
-import ExecutePersonal from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecutePersonal.vue'
+import ExecutePersonal from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecutePersonal.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskCommon.vue'
+import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskCommon.vue'
 import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import AppModalAsyncSelectTSFunc from '@/components/ui/modals/AppModalAsyncSelectTSFunc.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
@@ -295,15 +295,15 @@ interface IEntity {
 const DEBUG     = true
 const isLoading = ref(false)
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 const router      = useRouter()
 
 const {
-          globalSewingTasksPending, // __ Все задания (Global State)
-      } = storeToRefs(sewingStore)
+          globalCuttingTasksPending, // __ Все задания (Global State)
+      } = storeToRefs(cuttingStore)
 
 // __ Определяем переменные
-const sewingDays = ref<ISewingDay[]>([])
+const cuttingDays = ref<ICuttingDay[]>([])
 
 // __ Тип для модального окна Сообщений
 const modalInfoType          = ref<IColorTypes>('danger')
@@ -316,8 +316,8 @@ const selectedTaskId        = ref<number | null>(null)
 const appModalAsyncSelectTS = ref<any>(null)
 
 // __ Получаем объект рендера
-const renderSewingDays = computed<ISewingDay[]>(() => {
-    return sewingDays.value
+const renderCuttingDays = computed<ICuttingDay[]>(() => {
+    return cuttingDays.value
 })
 
 // __ Получаем список доступных СЗ (Выбираем статус "Готово к выполнению" и дата больше текущей даты)
@@ -326,13 +326,13 @@ const tasksAvailable = computed<IEntity[]>(() => {
     // __ Получаем сегодняшнюю дату в формате Y-m-d
     const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
 
-    return globalSewingTasksPending.value
-        .filter((task: ISewingTask) => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID)
-        .filter((task: ISewingTask) => {
+    return globalCuttingTasksPending.value
+        .filter((task: ICuttingTask) => task.current_status.id === CUTTING_TASK_STATUSES.PENDING.ID)
+        .filter((task: ICuttingTask) => {
             const compare = task.action_at.split(' ')[0]
             return compare > today
         })
-        .map((task: ISewingTask) => {
+        .map((task: ICuttingTask) => {
             return {
                 id         : task.id,
                 surname    : task.order.client.short_name,
@@ -428,7 +428,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍collapsed...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.collapsed ? '▲' : '▼'),
+        data          : (cuttingDay: ICuttingDay) => (cuttingDay.collapsed ? '▲' : '▼'),
         class         : 'cursor-pointer',
     },
     id           : {
@@ -439,13 +439,13 @@ const render: IRenderData = reactive({
         show          : false,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍id...',
-        data          : (sewingDay: ISewingDay) => sewingDay.id.toString(),
+        data          : (cuttingDay: ICuttingDay) => cuttingDay.id.toString(),
         class         : 'cursor-pointer',
     },
     date         : {
@@ -456,13 +456,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`,
+        data          : (cuttingDay: ICuttingDay) => formatDateInFullFormat(cuttingDay.action_at) + ` (${getDayOfWeek(cuttingDay.action_at)})`,
         class         : 'cursor-pointer',
     },
     start_at     : {
@@ -473,13 +473,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Старт...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.start_at ? formatTimeInFullFormat(sewingDay.start_at) : ''),
+        data          : (cuttingDay: ICuttingDay) => (cuttingDay.start_at ? formatTimeInFullFormat(cuttingDay.start_at) : ''),
         class         : 'cursor-pointer',
     },
     finish_at    : {
@@ -490,13 +490,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Финиш...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.finish_at ? formatTimeInFullFormat(sewingDay.finish_at) : ''),
+        data          : (cuttingDay: ICuttingDay) => (cuttingDay.finish_at ? formatTimeInFullFormat(cuttingDay.finish_at) : ''),
         class         : 'cursor-pointer',
     },
     duration     : {
@@ -507,13 +507,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => getDuration(sewingDay),
+        data          : (cuttingDay: ICuttingDay) => getDuration(cuttingDay),
         class         : 'cursor-pointer',
     },
     progressTotal: {
@@ -530,7 +530,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (cuttingDay: ICuttingDay) => cuttingDay.comment ?? '',
     },
     progressDelta: {
         id            : () => 'progress-delta-search',
@@ -546,7 +546,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (cuttingDay: ICuttingDay) => cuttingDay.comment ?? '',
     },
     comment      : {
         id            : () => 'comment-search',
@@ -556,13 +556,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Комментарий...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (cuttingDay: ICuttingDay) => cuttingDay.comment ?? '',
     },
     added_task   : {
         id            : () => 'added-task-search',
@@ -572,19 +572,19 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => 'warning',
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (cuttingDay: ICuttingDay) => dateType(cuttingDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍ДСЗ...',
-        data          : (/*sewingDay: ISewingDay*/) => '',
+        data          : (/*cuttingDay: ICuttingDay*/) => '',
         class         : 'cursor-pointer',
     },
 })
 
 // __ Ширина полей для вывода СЗ
-const sewingTaskFieldsWidth = {
+const cuttingTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
     id           : 'w-[30px]',
     position     : 'w-[30px]',
@@ -597,8 +597,8 @@ const sewingTaskFieldsWidth = {
 }
 
 // __ Определяем тип календарного дня
-const dateType = (sewingDay: ISewingDay) => {
-    const workDate     = new Date(sewingDay.action_at)
+const dateType = (cuttingDay: ICuttingDay) => {
+    const workDate     = new Date(cuttingDay.action_at)
     const isHolidayDay = isHoliday(workDate)
     const isTodayDay   = isToday(workDate)
 
@@ -607,19 +607,19 @@ const dateType = (sewingDay: ISewingDay) => {
     return 'primary'
 }
 
-const expandAll   = () => sewingDays.value.forEach(sewingDay => (sewingDay.collapsed = false))
-const collapseAll = () => sewingDays.value.forEach(sewingDay => (sewingDay.collapsed = true))
+const expandAll   = () => cuttingDays.value.forEach(cuttingDay => (cuttingDay.collapsed = false))
+const collapseAll = () => cuttingDays.value.forEach(cuttingDay => (cuttingDay.collapsed = true))
 
 // __ Добавляем свернутость
 const addCollapsed = () => {
-    sewingDays.value = sewingDays.value.map(day => {
+    cuttingDays.value = cuttingDays.value.map(day => {
         return {
             ...day,
             collapsed   : true,
             personal_collapsed: true,
             tasks_collapsed: true,
             common_collapsed: true,
-            sewing_tasks: day.sewing_tasks.map(task => ({
+            cutting_tasks: day.cutting_tasks.map(task => ({
                 ...task,
                 collapsed: true,
             })),
@@ -628,72 +628,72 @@ const addCollapsed = () => {
 }
 
 // __ Добавляем работника
-const addWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    const existWorker = sewingDay.workers.find(w => w.id === worker.id)
+const addWorker = (cuttingDay: ICuttingDay, worker: ICuttingDayWorker) => {
+    const existWorker = cuttingDay.workers.find(w => w.id === worker.id)
     if (!existWorker) {
-        sewingDay.workers.push(worker)
+        cuttingDay.workers.push(worker)
     }
 }
 
 // __ Удаляем работника
-const removeWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    const findIndex = sewingDay.workers.findIndex(w => w.id === worker.id)
+const removeWorker = (cuttingDay: ICuttingDay, worker: ICuttingDayWorker) => {
+    const findIndex = cuttingDay.workers.findIndex(w => w.id === worker.id)
     if (findIndex !== -1) {
-        sewingDay.workers.splice(findIndex, 1)
+        cuttingDay.workers.splice(findIndex, 1)
     }
 }
 
 // __ Добавляем Ответственного
-const addResponsible = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    sewingDay.responsible = worker
+const addResponsible = (cuttingDay: ICuttingDay, worker: ICuttingDayWorker) => {
+    cuttingDay.responsible = worker
 }
 
 // __ Переходим на страницу непосредственного выполнения СЗ
-const goToSewingDay = (sewingDay: ISewingDay) => {
+const goToCuttingDay = (cuttingDay: ICuttingDay) => {
     router.push({
-        name  : 'manufacture.cell.sewing.tasks.execute.day',
-        params: { date: sewingDay.action_at.split(' ')[0] }, // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+        name  : 'manufacture.cell.cutting.tasks.execute.day',
+        params: { date: cuttingDay.action_at.split(' ')[0] }, // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
     })
 }
 
 // __ Получаем продолжительность СЗ
-const getDuration = (sewingDay: ISewingDay) => {
-    if (!sewingDay.start_at) {
+const getDuration = (cuttingDay: ICuttingDay) => {
+    if (!cuttingDay.start_at) {
         return ''
     }
 
-    const startSec  = new Date(sewingDay.start_at.replace(' ', 'T')).getTime() / 1000
-    const finishSec = sewingDay.finish_at ? new Date(sewingDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
+    const startSec  = new Date(cuttingDay.start_at.replace(' ', 'T')).getTime() / 1000
+    const finishSec = cuttingDay.finish_at ? new Date(cuttingDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
 
     return formatTimeWithLeadingZeros(round(finishSec - startSec))
 }
 
 // __ Получаем объект статистики для дня
-const getDayStatistics = (sewingDay: ISewingDay) => {
-    const allSewingTasksLines: ISewingTaskLine[] = []
-    sewingDay.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLines.push(line)))
-    return getExecuteTaskStatistics(allSewingTasksLines)
+const getDayStatistics = (cuttingDay: ICuttingDay) => {
+    const allCuttingTasksLines: ICuttingTaskLine[] = []
+    cuttingDay.cutting_tasks.forEach(task => task.cutting_lines.forEach(line => allCuttingTasksLines.push(line)))
+    return getExecuteTaskStatistics(allCuttingTasksLines)
 }
 
 // __ Получаем прогресс выполнения СЗ по дню
-const getProgressDayTotal = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
+const getProgressDayTotal = (cuttingDay: ICuttingDay) => {
+    const statistics = getDayStatistics(cuttingDay)
     return (statistics.time.finished / statistics.time.total) * 100
 }
 
 // __ Получаем текст прогресса выполнения СЗ по дню
-const getProgressDayTotalText = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
+const getProgressDayTotalText = (cuttingDay: ICuttingDay) => {
+    const statistics = getDayStatistics(cuttingDay)
     return `${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`
 }
 
 // __ Получаем отклонение прогресса выполнения СЗ по дню в секундах
-const getDeviationDay = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
+const getDeviationDay = (cuttingDay: ICuttingDay) => {
+    const statistics = getDayStatistics(cuttingDay)
 
-    if (sewingDay.start_at && !sewingDay.finish_at) {
+    if (cuttingDay.start_at && !cuttingDay.finish_at) {
         // __ Находим время окончания смены
-        const endShiftTime     = new Date(sewingDay.start_at.replace(' ', 'T'))
+        const endShiftTime     = new Date(cuttingDay.start_at.replace(' ', 'T'))
         const [hours, minutes] = START_SHIFT_TIME.split(':')
         endShiftTime.setHours(Number(hours), Number(minutes) + TOTAL_SHIFT_DURATION * 60, 0, 0)
 
@@ -709,14 +709,14 @@ const getDeviationDay = (sewingDay: ISewingDay) => {
 }
 
 // __ Получаем отклонение прогресса выполнения СЗ по дню в %
-const getDeviationDayTotal = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
-    return statistics.time.unfinished !== 0 ? (getDeviationDay(sewingDay) / statistics.time.unfinished) * 100 : 0
+const getDeviationDayTotal = (cuttingDay: ICuttingDay) => {
+    const statistics = getDayStatistics(cuttingDay)
+    return statistics.time.unfinished !== 0 ? (getDeviationDay(cuttingDay) / statistics.time.unfinished) * 100 : 0
 }
 
 // __ Текст для опережения/отставания
-const getDeviationDayTotalText = (sewingDay: ISewingDay) => {
-    const deviation = getDeviationDay(sewingDay)
+const getDeviationDayTotalText = (cuttingDay: ICuttingDay) => {
+    const deviation = getDeviationDay(cuttingDay)
     if (deviation === 0) {
         return 'В графике'
     }
@@ -731,9 +731,9 @@ const getAddingCondition = () => {
     // __ Получаем сегодняшнюю дату в формате Y-m-d
     const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
 
-    const filtered = globalSewingTasksPending.value
-        // .filter((task: ISewingTask) => task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
-        .filter((task: ISewingTask) => {
+    const filtered = globalCuttingTasksPending.value
+        // .filter((task: ICuttingTask) => task.current_status.id === CUTTING_TASK_STATUSES.RUNNING.ID)
+        .filter((task: ICuttingTask) => {
             const compare = task.action_at.split(' ')[0]
             return compare == today
         })
@@ -743,7 +743,7 @@ const getAddingCondition = () => {
 
 
 // __ Добавление СЗ в текущий производственный день
-const addSewingTaskToCurrentDay = async () => {
+const addCuttingTaskToCurrentDay = async () => {
 
     if (tasksAvailable.value.length === 0) {
         return
@@ -768,7 +768,7 @@ const addSewingTaskToCurrentDay = async () => {
 
             // __ Получаем сегодняшнюю дату в формате Y-m-d
             const today  = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-            const result = await sewingStore.setSewingTaskActionAt(selectedTask.id, today)
+            const result = await cuttingStore.setCuttingTaskActionAt(selectedTask.id, today)
 
             if (checkCRUD(result)) {
                 modalInfoType.value = 'success'
@@ -790,9 +790,9 @@ const addSewingTaskToCurrentDay = async () => {
 
 
 // __ Получаем производственные дни
-const getSewingDays = async () => {
-    const dates      = getSewingDates(globalSewingTasksPending.value) // __ Получаем даты из СЗ
-    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)  // __ Получаем дни по этим датам
+const getCuttingDays = async () => {
+    const dates      = getCuttingDates(globalCuttingTasksPending.value) // __ Получаем даты из СЗ
+    cuttingDays.value = await cuttingStore.getCuttingDaysByDates(dates)  // __ Получаем дни по этим датам
 }
 
 onMounted(async () => {
@@ -802,21 +802,21 @@ onMounted(async () => {
     await loaderHandler(
         loadingService,
         async () => {
-            // __ Получаем SewingTasks по статусу и записываем в глобальную переменную в SewingStore
-            await sewingStore.getSewingTasksByStatus([SEWING_TASK_STATUSES.PENDING.ID, SEWING_TASK_STATUSES.RUNNING.ID])
+            // __ Получаем CuttingTasks по статусу и записываем в глобальную переменную в CuttingStore
+            await cuttingStore.getCuttingTasksByStatus([CUTTING_TASK_STATUSES.PENDING.ID, CUTTING_TASK_STATUSES.RUNNING.ID])
 
             // __ Получаем дни
-            await getSewingDays()
+            await getCuttingDays()
 
             // __ Объединяем задания с днями
-            unionDatesWithSewingTasks(sewingDays.value, globalSewingTasksPending.value)
+            unionDatesWithCuttingTasks(cuttingDays.value, globalCuttingTasksPending.value)
 
             // __ Добавляем свернутость
             addCollapsed()
 
-            if (DEBUG) console.log('globalSewingTasksPending:', globalSewingTasksPending.value)
-            if (DEBUG) console.log('sewingDays:', sewingDays.value)
-            if (DEBUG) console.log('renderSewingDays:', renderSewingDays.value)
+            if (DEBUG) console.log('globalCuttingTasksPending:', globalCuttingTasksPending.value)
+            if (DEBUG) console.log('cuttingDays:', cuttingDays.value)
+            if (DEBUG) console.log('renderCuttingDays:', renderCuttingDays.value)
         },
         undefined
         // false,

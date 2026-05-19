@@ -20,37 +20,37 @@
 
                     <div class="w-full pl-8 border-b border-slate-800/50 pb-4">
                         <h3 class="text-left text-slate-500 uppercase tracking-widest text-[10px] font-bold mb-1">
-                            Редактирование
+                            Редактирование / добавление
                         </h3>
                         <h2 class="text-left text-white text-lg font-bold">
-                            Изменение данных схемы
+                            Изменение/добавление комментария
                         </h2>
                     </div>
 
                     <div class="p-6 flex flex-col space-y-6 overflow-y-auto custom-scrollbar">
 
-                        <div class="flex flex-col space-y-2">
-                            <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight">
-                               Название Схемы
-                            </label>
-                            <input
-                                v-model="formData.title"
-                                type="text"
-                                placeholder="Введите текст..."
-                                class="bg-slate-900 text-slate-200 text-sm border border-slate-700 rounded-lg px-4 py-2
-                                       focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            />
-                        </div>
+                        <!--<div class="flex flex-col space-y-2">-->
+                        <!--    <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight">-->
+                        <!--       Название Схемы-->
+                        <!--    </label>-->
+                        <!--    <input-->
+                        <!--        v-model="formData.title"-->
+                        <!--        type="text"-->
+                        <!--        placeholder="Введите текст..."-->
+                        <!--        class="bg-slate-900 text-slate-200 text-sm border border-slate-700 rounded-lg px-4 py-2-->
+                        <!--               focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"-->
+                        <!--    />-->
+                        <!--</div>-->
 
                         <div class="flex flex-col space-y-2">
                             <label class="text-slate-500 text-[11px] uppercase font-semibold tracking-tight">
-                                Описание Схемы
+                                {{ label}}
                             </label>
                             <div class="relative group">
                                 <textarea
-                                    v-model="formData.content"
+                                    v-model="formData.comment"
                                     rows="8"
-                                    placeholder="Добавьте описание..."
+                                    placeholder="Добавьте комментарий..."
                                     class="w-full bg-[#161e2d] text-blue-400 text-sm font-mono leading-relaxed
                                            border border-slate-800/50 rounded-xl px-4 py-3
                                            focus:ring-1 focus:ring-blue-500 outline-none transition-all
@@ -88,7 +88,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, reactive, ref } from 'vue'
-import type { ICuttingOperationSchema, IColorTypes } from '@/types'
+import type { IColorTypes } from '@/types'
 
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -98,33 +98,32 @@ interface IProps {
     type?: IColorTypes,
     width?: string,
     height?: string,
-    schema: ICuttingOperationSchema | null
+    comment: string | null,
+    label?: string,
 }
 
 const props = withDefaults(defineProps<IProps>(), {
     type:   'primary',
     width:  'min-w-[700px] max-w-[700px]',
     height: 'min-h-[400px]',
+    label:  'Комментарий',
 })
 
 const showModal = ref(false)
 
 const formData = reactive({
-    title: '',
-    content: ''
+    comment: '',
+    // title: '',
+    // content: ''
 })
 
 let resolvePromise: ((value: boolean) => void) | null
 
 const show = async () => {
-    if (!props.schema) {
-        return
-    }
 
     await nextTick()
 
-    formData.title = props.schema.name
-    formData.content = props.schema.description ?? ''
+    formData.comment = props.comment ?? ''
 
     showModal.value = true
 
@@ -145,8 +144,7 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 defineExpose({
     show,
-    get name() { return formData.title },
-    get description() { return formData.content }
+    get comment() { return formData.comment },
 })
 </script>
 

@@ -169,11 +169,11 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watch } from 'vue'
-import type { IRenderData, ISewingDay, ISewingTaskLine, ISewingTaskLinesGroupData, ISewingTaskLinesSubgroup } from '@/types'
+import type { IRenderData, ICuttingDay, ICuttingTaskLine, ICuttingTaskLinesGroupData, ICuttingTaskLinesSubgroup } from '@/types'
 
-import { SEWING_UNION_TASK_NAME } from '@/app/constants/sewing.ts'
+import { CUTTING_UNION_TASK_NAME } from '@/app/constants/cutting.ts'
 
-import { getSewingTaskLineTime, groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getCuttingTaskLineTime, groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
@@ -182,12 +182,12 @@ import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 // import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
 
 interface IProps {
-    sewingDay: ISewingDay | null
+    cuttingDay: ICuttingDay | null
 }
 
 interface IDataObject {
     taskTitle: string
-    groups: ISewingTaskLinesGroupData[]
+    groups: ICuttingTaskLinesGroupData[]
     collapsed: boolean
     id: number
 }
@@ -240,7 +240,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: IEntity) => entity?.taskTitle === SEWING_UNION_TASK_NAME ? 'info' : 'stone',
+        type          : (entity: IEntity) => entity?.taskTitle === CUTTING_UNION_TASK_NAME ? 'info' : 'stone',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -296,12 +296,12 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (entity: ISewingTaskLinesGroupData) => entity.groupType,
+        type          : (entity: ICuttingTaskLinesGroupData) => entity.groupType,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => entity.groupName,
+        data          : (entity: ICuttingTaskLinesGroupData) => entity.groupName,
     },
     group_total     : {
         header        : ['ВСЕГО', ''],
@@ -315,7 +315,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups)),
+        data          : (entity: ICuttingTaskLinesGroupData) => subgroupSumPics(entity.subgroups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups)),
     },
     group_done      : {
         header        : ['ВЫПОЛНЕНО', ''],
@@ -329,7 +329,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, true)),
+        data          : (entity: ICuttingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, true)),
     },
     group_false     : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
@@ -343,7 +343,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, false)),
+        data          : (entity: ICuttingTaskLinesGroupData) => subgroupSumPics(entity.subgroups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, false)),
     },
     subgroup_title  : {
         header    : ['СМЕННОЕ ЗАДАНИЕ', ''],
@@ -353,12 +353,12 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType  : () => DATA_TYPE,
         type      : () => DEFAULT_TYPE,
-        // type          : (entity: ISewingTaskLinesSubgroup) => entity.subgroupType,
+        // type          : (entity: ICuttingTaskLinesSubgroup) => entity.subgroupType,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => entity.subgroupName,
+        data          : (entity: ICuttingTaskLinesSubgroup) => entity.subgroupName,
     },
     subgroup_total  : {
         header    : ['ВСЕГО', ''],
@@ -368,12 +368,12 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType  : () => DATA_TYPE,
         type      : () => TOTAL_TYPE,
-        // type          : (entity: ISewingTaskLinesSubgroup) => entity.subgroupType,
+        // type          : (entity: ICuttingTaskLinesSubgroup) => entity.subgroupType,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines)),
+        data          : (entity: ICuttingTaskLinesSubgroup) => linesSumPics(entity.lines).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines)),
     },
     subgroup_done   : {
         header        : ['ВЫПОЛНЕНО', ''],
@@ -387,7 +387,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, true)),
+        data          : (entity: ICuttingTaskLinesSubgroup) => linesSumPics(entity.lines, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, true)),
     },
     subgroup_false  : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
@@ -401,12 +401,12 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: ISewingTaskLinesSubgroup) => linesSumPics(entity.lines, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, false)),
+        data          : (entity: ICuttingTaskLinesSubgroup) => linesSumPics(entity.lines, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, false)),
     },
 })
 
 // __ Сумма по подгруппе (Глухие, УШМ + окантователь, УШМ и т.д.)
-const linesSumPics = (lines: ISewingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
+const linesSumPics = (lines: ICuttingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
     if (checkType === null) return accLines + line.amount
     if (checkType) {
         return line.finished_at ? accLines + line.amount : accLines
@@ -416,23 +416,23 @@ const linesSumPics = (lines: ISewingTaskLine[] = [], checkType: boolean | null =
     }
 }, 0)
 
-const linesSumTime = (lines: ISewingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
-    if (checkType === null) return accLines + getSewingTaskLineTime(line)
+const linesSumTime = (lines: ICuttingTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
+    if (checkType === null) return accLines + getCuttingTaskLineTime(line)
     if (checkType) {
-        return line.finished_at ? accLines + getSewingTaskLineTime(line) : accLines
+        return line.finished_at ? accLines + getCuttingTaskLineTime(line) : accLines
     } else {
-        return !line.finished_at ? accLines + getSewingTaskLineTime(line) : accLines
+        return !line.finished_at ? accLines + getCuttingTaskLineTime(line) : accLines
     }
 }, 0)
 
 
 // __ Сумма по группе (АШМ, УШМ и Н/Д)
-const subgroupSumPics = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumPics(subgroup.lines, checkType), 0)
-const subgroupSumTime = (subgroups: ISewingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumTime(subgroup.lines, checkType), 0)
+const subgroupSumPics = (subgroups: ICuttingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumPics(subgroup.lines, checkType), 0)
+const subgroupSumTime = (subgroups: ICuttingTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumTime(subgroup.lines, checkType), 0)
 
 // __ Сумма по объекту (СЗ)
-const groupSumPics = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumPics(group.subgroups, checkType), 0)
-const groupSumTime = (groups: ISewingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumTime(group.subgroups, checkType), 0)
+const groupSumPics = (groups: ICuttingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumPics(group.subgroups, checkType), 0)
+const groupSumTime = (groups: ICuttingTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumTime(group.subgroups, checkType), 0)
 
 // __ Сумма по всем объектам (СЗ + объединенное)
 // const dataSumPics     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSumPics(dataObject.groups, checkType), 0)
@@ -445,16 +445,16 @@ const prepareDataObjects = (): IDataObject[] => {
 
 
     let resultObject: IDataObject[] = []
-    if (!props.sewingDay) {
+    if (!props.cuttingDay) {
         return []
     }
-    let unionTasks: ISewingTaskLine[] = []
-    props.sewingDay.sewing_tasks.forEach((task, idx) => {
-        unionTasks = [...unionTasks, ...task.sewing_lines]
+    let unionTasks: ICuttingTaskLine[] = []
+    props.cuttingDay.cutting_tasks.forEach((task, idx) => {
+        unionTasks = [...unionTasks, ...task.cutting_lines]
 
         resultObject.push({
             taskTitle: `${task.position}. ${task.order.client.short_name} №${task.order.order_no_num}`,
-            groups   : groupTaskLinesForExecute(task.sewing_lines),
+            groups   : groupTaskLinesForExecute(task.cutting_lines),
             collapsed: COLLAPSED_STATE,
             id       : idx
         })
@@ -463,7 +463,7 @@ const prepareDataObjects = (): IDataObject[] => {
     const resultObjectLength = resultObject.length
 
     resultObject.push({
-        taskTitle: SEWING_UNION_TASK_NAME,
+        taskTitle: CUTTING_UNION_TASK_NAME,
         groups   : groupTaskLinesForExecute(unionTasks),
         collapsed: COLLAPSED_STATE,
         id       : resultObjectLength
@@ -508,7 +508,7 @@ const toggleCollapsedTask = (dataObject: IDataObject) => {
 }
 
 
-const toggleCollapsedGroup = (group: ISewingTaskLinesGroupData) => {
+const toggleCollapsedGroup = (group: ICuttingTaskLinesGroupData) => {
     group.collapsed = !group.collapsed
 }
 
@@ -520,7 +520,7 @@ onMounted(() => {
     isLoading.value = false
 })
 
-watch(() => props.sewingDay, () => {
+watch(() => props.cuttingDay, () => {
     dataObjects.value = prepareDataObjects()
 }, { deep: true, immediate: true })
 

@@ -5,9 +5,9 @@ import { ref } from 'vue'
 
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
 import type {
-    IPeriod, IRenderMatrixDiff, ISewingDayWorker, ISewingOperation, ISewingOperationSchema,
-    ISewingOperationUpdateObject, ISewingTask,
-    ISewingTaskLine, ISewingTaskLinesSubgroup, ISewingTaskStatusEntity, ISewingTaskStatusesSet,
+    IPeriod, IRenderMatrixDiff, ICuttingDayWorker, ICuttingOperation, ICuttingOperationSchema,
+    ICuttingOperationUpdateObject, ICuttingTask,
+    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet,
 } from '@/types'
 
 
@@ -15,9 +15,9 @@ import type {
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import { additionDaysInStrFormat } from '@/app/helpers/helpers_date'
 import {
-    getSewingTasksDiff, isAddItemsInDiffsPresents, mergeSewingTasks, repositionSewingTaskInDay,
-    repositionSewingTaskLines,
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+    getCuttingTasksDiff, isAddItemsInDiffsPresents, mergeCuttingTasks, repositionCuttingTaskInDay,
+    repositionCuttingTaskLines,
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { isNumber } from '@/app/helpers/helpers_lib.ts'
 
 const DEBUG = true
@@ -80,48 +80,48 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ------------------------------------------------------------------------------------------
 
     // __ Массив СЗ Пошива
-    const globalSewingTasks = ref<ISewingTask[]>([])
+    const globalCuttingTasks = ref<ICuttingTask[]>([])
 
     // __ Копия массива СЗ Пошива для отслеживания изменений
-    let globalSewingTasksCopy: ISewingTask[] = []
+    let globalCuttingTasksCopy: ICuttingTask[] = []
 
     // __ Массив СЗ, готовых к выполнению
-    const globalSewingTasksPending = ref<ISewingTask[]>([])
+    const globalCuttingTasksPending = ref<ICuttingTask[]>([])
 
     // __ Копия массива СЗ Пошива для отслеживания изменений
-    let globalSewingTasksPendingCopy: ISewingTask[] = []
+    let globalCuttingTasksPendingCopy: ICuttingTask[] = []
 
     // __ Период рендеринга календаря
     const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
 
     // __ Показывать ли Трудозатраты в календаре СЗ Пошива
-    const globalSewingTaskTimesShow = ref(true)
+    const globalCuttingTaskTimesShow = ref(true)
 
     // __ Показывать ли Раскрытый день или нет в календаре СЗ Пошива
-    const globalSewingTaskFullDaysShow = ref(true)
+    const globalCuttingTaskFullDaysShow = ref(true)
 
     // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
-    const globalSewingTaskOrderTypeColor = ref(false)
+    const globalCuttingTaskOrderTypeColor = ref(false)
 
-    // __ Текущая Запись (SewingLine) в карточке СЗ в календаре СЗ Пошива
-    const globalManageTaskCardActiveSewingLine = ref<ISewingTaskLine | null>(null)
+    // __ Текущая Запись (CuttingLine) в карточке СЗ в календаре СЗ Пошива
+    const globalManageTaskCardActiveCuttingLine = ref<ICuttingTaskLine | null>(null)
 
     // __ Текущее Заявка, на которое ссылается кликнутое СЗ (для календаря для подсветки СЗ, которые ссылаются на одну заявку)
-    const globalSewingTaskActiveOrderId = ref<number | null>(null)
+    const globalCuttingTaskActiveOrderId = ref<number | null>(null)
 
     // __ Глобальное состояние разницы состояний до и после редактирования в карточке СЗ или перетаскивания в календаре
     // const globalDiffs = ref<IRenderMatrixDiff[]>([])
 
     // __ Статусы Движения СЗ
-    const globalSewingTaskStatuses = ref<ISewingTaskStatusEntity[]>([])
+    const globalCuttingTaskStatuses = ref<ICuttingTaskStatusEntity[]>([])
 
     // __ Массив Рабочих
-    const globalWorkers = ref<ISewingDayWorker[]>([])
+    const globalWorkers = ref<ICuttingDayWorker[]>([])
 
     // --- ------------------------------------------------------------------------------------------
 
     // __ Объект печати СЗ
-    const globalSewingTaskPrintData = ref<ISewingTaskLinesSubgroup[]>([])
+    const globalCuttingTaskPrintData = ref<ICuttingTaskLinesSubgroup[]>([])
 
 
     // const planStore   = usePlansStore()
@@ -134,35 +134,35 @@ export const useCuttingStore = defineStore('cutting', () => {
 
     /**
      * __ Добавление новой части СЗ и изменение старой части СЗ, на основе которого была создана новая часть
-     * @param addSewingTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
+     * @param addCuttingTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
      * @param leftPanel         - __ контент в новом СЗ (правая панель)__
-     * @param oldSewingTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
+     * @param oldCuttingTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
      * @param rightPanel        - __ контент в старом СЗ (левая панель)__
      */
-    const addSewingTaskToGlobal = async (
-        oldSewingTask: ISewingTask,
-        leftPanel: ISewingTaskLine[],
-        addSewingTask: ISewingTask | null    = null,
-        rightPanel: ISewingTaskLine[] | null = null,
+    const addCuttingTaskToGlobal = async (
+        oldCuttingTask: ICuttingTask,
+        leftPanel: ICuttingTaskLine[],
+        addCuttingTask: ICuttingTask | null    = null,
+        rightPanel: ICuttingTaskLine[] | null = null,
     ) => {
 
-        leftPanel                  = repositionSewingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (SewingLines[])
-        oldSewingTask.sewing_lines = leftPanel              // __ oldSewingTask приходит по ссылке
+        leftPanel                  = repositionCuttingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+        oldCuttingTask.cutting_lines = leftPanel              // __ oldCuttingTask приходит по ссылке
 
         // __ Если есть правая панель, то добавляем ее в массив СЗ
-        if (addSewingTask && rightPanel) {
+        if (addCuttingTask && rightPanel) {
 
             // console.log('passed')
 
-            rightPanel                 = repositionSewingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (SewingLines[])
-            addSewingTask.sewing_lines = rightPanel             // __ addSewingTask приходит новым объектом
+            rightPanel                 = repositionCuttingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+            addCuttingTask.cutting_lines = rightPanel             // __ addCuttingTask приходит новым объектом
 
             // __ Добавляем новый объект в массив
-            globalSewingTasks.value.push(addSewingTask)
+            globalCuttingTasks.value.push(addCuttingTask)
 
             // __ Переопределяем порядок СЗ.
             // __ Находим все СЗ в глабальной переменной с датой созданного СЗ и меняем порядок
-            globalSewingTasks.value = repositionSewingTaskInDay(globalSewingTasks.value, addSewingTask.action_at)
+            globalCuttingTasks.value = repositionCuttingTaskInDay(globalCuttingTasks.value, addCuttingTask.action_at)
 
         }
 
@@ -171,19 +171,19 @@ export const useCuttingStore = defineStore('cutting', () => {
 
 
     // __ Устанавливаем содерживое СЗ
-    const setSewingTasksLines = (sewingTask: ISewingTask, sewingTaskLines: ISewingTaskLine[]) => {
-        sewingTask.sewing_lines = sewingTaskLines
+    const setCuttingTasksLines = (cuttingTask: ICuttingTask, cuttingTaskLines: ICuttingTaskLine[]) => {
+        cuttingTask.cutting_lines = cuttingTaskLines
     }
 
 
     // __ Устанавливаем комментарий в СЗ
-    const applySewingTaskComment = (sewingTaskId: number, comment: string) => {
-        const sewingTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === sewingTaskId)
+    const applyCuttingTaskComment = (cuttingTaskId: number, comment: string) => {
+        const cuttingTask = globalCuttingTasks.value.find((task: ICuttingTask) => task.id === cuttingTaskId)
 
-        console.log('sewingTask: ', sewingTask)
+        console.log('cuttingTask: ', cuttingTask)
         console.log('comment: ', comment)
-        if (sewingTask) {
-            sewingTask.comment = comment
+        if (cuttingTask) {
+            cuttingTask.comment = comment
         }
     }
 
@@ -196,15 +196,15 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
 
         // __ Если нет статусов, то получаем их с сервера
-        if (globalSewingTaskStatuses.value.length === 0) {
-            await getSewingTaskStatuses()
+        if (globalCuttingTaskStatuses.value.length === 0) {
+            await getCuttingTaskStatuses()
         }
 
         diffs.forEach(diff => {
 
             // __ Если изменилась позиция или дата производства или статус, то меняем ее в глобальном массиве
             if (diff.isPositionChanged || diff.isMoved || diff.statusId) {
-                const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === diff.taskId)
+                const findTask = globalCuttingTasks.value.find((task: ICuttingTask) => task.id === diff.taskId)
                 if (findTask) {
 
                     if (diff.newTaskPosition) {
@@ -216,7 +216,7 @@ export const useCuttingStore = defineStore('cutting', () => {
                     }
 
                     if (diff.statusId) {
-                        const findStatus = globalSewingTaskStatuses.value.find((status: ISewingTaskStatusEntity) => status.id === diff.statusId)
+                        const findStatus = globalCuttingTaskStatuses.value.find((status: ICuttingTaskStatusEntity) => status.id === diff.statusId)
                         if (findStatus) {
                             findTask.current_status.id = findStatus.id
                             findTask.current_status.name = findStatus.name
@@ -232,122 +232,91 @@ export const useCuttingStore = defineStore('cutting', () => {
     }
 
     // __ Объединение СЗ для одинаковых Заявок в одном календарном дне
-    const mergeTasks = (sewingTasks: ISewingTask[]) => {
+    const mergeTasks = (cuttingTasks: ICuttingTask[]) => {
 
         // __ Если массив СЗ меньше 2, то выход
-        if (sewingTasks.length < 2) {
+        if (cuttingTasks.length < 2) {
             return
         }
 
         // __ Объединяем СЗ
-        const mergedTasks = mergeSewingTasks(sewingTasks)
+        const mergedTasks = mergeCuttingTasks(cuttingTasks)
 
         // __ Пересчитываем позиции !!! Важно выполнение после объединения СЗ
-        mergedTasks[0].sewing_lines = repositionSewingTaskLines(mergedTasks[0].sewing_lines)
+        mergedTasks[0].cutting_lines = repositionCuttingTaskLines(mergedTasks[0].cutting_lines)
 
         // __ Заменяем СЗ в глобальном массиве
-        const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === mergedTasks[0].id)
+        const findTask = globalCuttingTasks.value.find((task: ICuttingTask) => task.id === mergedTasks[0].id)
         if (findTask) {
-            findTask.sewing_lines = mergedTasks[0].sewing_lines
+            findTask.cutting_lines = mergedTasks[0].cutting_lines
         }
 
         // __ Удаляем лишние СЗ
-        for (let i = 1; i < sewingTasks.length; i++) {
+        for (let i = 1; i < cuttingTasks.length; i++) {
 
             // __ Находим то, что нужно удалить
-            const workTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === sewingTasks[i].id)
+            const workTask = globalCuttingTasks.value.find((task: ICuttingTask) => task.id === cuttingTasks[i].id)
             if (workTask) {
 
                 // __ Удаляем
-                globalSewingTasks.value = globalSewingTasks.value.filter((task: ISewingTask) => {
-                    return task.id !== sewingTasks[i].id
+                globalCuttingTasks.value = globalCuttingTasks.value.filter((task: ICuttingTask) => {
+                    return task.id !== cuttingTasks[i].id
                 })
 
                 // __ Переопределяем порядок СЗ в дне, из которого удалили
-                globalSewingTasks.value = repositionSewingTaskInDay(globalSewingTasks.value, workTask.action_at)
+                globalCuttingTasks.value = repositionCuttingTaskInDay(globalCuttingTasks.value, workTask.action_at)
             }
         }
 
         // __ Переопределяем порядок СЗ в дне, в котором добавили
-        globalSewingTasks.value = repositionSewingTaskInDay(globalSewingTasks.value, mergedTasks[0].action_at)
+        globalCuttingTasks.value = repositionCuttingTaskInDay(globalCuttingTasks.value, mergedTasks[0].action_at)
 
     }
 
     // __ Применение объединения СЗ для массива СЗ
-    const applyMergeTasks = async (sewingTasks: ISewingTask[]) => {
+    const applyMergeTasks = async (cuttingTasks: ICuttingTask[]) => {
 
-        mergeTasks(sewingTasks)
+        mergeTasks(cuttingTasks)
         return await saveChanges()
     }
 
     // __ Применение объединения СЗ для массива массивов СЗ  [[...], [...]]
-    const applyMergeTasksGroups = async (sewingTasksGroups: ISewingTask[][]) => {
-        sewingTasksGroups.forEach(sewingTasks => mergeTasks(sewingTasks))
+    const applyMergeTasksGroups = async (cuttingTasksGroups: ICuttingTask[][]) => {
+        cuttingTasksGroups.forEach(cuttingTasks => mergeTasks(cuttingTasks))
         return await saveChanges()
     }
 
 
     // __ Сохранение изменений (Синхронизация с сервером)
-    const saveChanges = async (globalArray = globalSewingTasks.value, globalArrayCopy = globalSewingTasksCopy, period: IPeriod | null = null) => {
-        const diffsInGlobalSewingTasks = getSewingTasksDiff(globalArray, globalArrayCopy)
+    const saveChanges = async (globalArray = globalCuttingTasks.value, globalArrayCopy = globalCuttingTasksCopy, period: IPeriod | null = null) => {
+        const diffsInGlobalCuttingTasks = getCuttingTasksDiff(globalArray, globalArrayCopy)
 
         // __ Если нет изменений, то выход
-        if (diffsInGlobalSewingTasks.length === 0) {
+        if (diffsInGlobalCuttingTasks.length === 0) {
             return
         }
 
-        console.log(diffsInGlobalSewingTasks)
+        console.log(diffsInGlobalCuttingTasks)
         console.log('Сохраняем изменения')
 
-        const result = await jwtPost(URL_CUTTING_TASKS_UPDATE, { diffs: diffsInGlobalSewingTasks })
+        const result = await jwtPost(URL_CUTTING_TASKS_UPDATE, { diffs: diffsInGlobalCuttingTasks })
         if (DEBUG) console.log('saveChanges: ', result)
 
 
         // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
         // __ Если это изменение позиции, то просто пишем в базу
-        if (isAddItemsInDiffsPresents(diffsInGlobalSewingTasks)) {
+        if (isAddItemsInDiffsPresents(diffsInGlobalCuttingTasks)) {
 
             // __ Получаем СЗ с сервера и реактивное обновление
-            await getSewingTasks(period)
+            await getCuttingTasks(period)
             console.log('Server data updated')
         } else {
 
-            globalSewingTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+            globalCuttingTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
             // globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
         }
 
         return result
-    }
-
-    // __ Сохранение изменений (Синхронизация с сервером)
-    const saveChanges_Old = async () => {
-        const diffsInGlobalSewingTasks = getSewingTasksDiff(globalSewingTasks.value, globalSewingTasksCopy)
-
-        // __ Если нет изменений, то выход
-        if (diffsInGlobalSewingTasks.length === 0) {
-            return
-        }
-
-        console.log(diffsInGlobalSewingTasks)
-        console.log('Сохраняем изменения')
-
-        const result = await jwtPost(URL_CUTTING_TASKS_UPDATE, { diffs: diffsInGlobalSewingTasks })
-        if (DEBUG) console.log('saveChanges: ', result)
-
-
-        // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
-        // __ Если это изменение позиции, то просто пишем в базу
-        if (isAddItemsInDiffsPresents(diffsInGlobalSewingTasks)) {
-
-            // __ Получаем СЗ с сервера и реактивное обновление
-            await getSewingTasks()
-            console.log('Server data updated')
-        } else {
-
-            globalSewingTasksCopy = JSON.parse(JSON.stringify(globalSewingTasks.value))     // __ копия для отслеживания изменений
-        }
-
-        return result.data
     }
     // --- ------------------------------------------------------------------------------------------
 
@@ -357,7 +326,7 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ----------------------------------------------------------
 
     // __ Получение СЗ Пошива с сервера за период
-    const getSewingTasks = async (period: IPeriod | null = null) => {
+    const getCuttingTasks = async (period: IPeriod | null = null) => {
         let response
         if (period) {
             response = await jwtGet(URL_CUTTING_TASKS, { period })
@@ -366,50 +335,50 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        globalSewingTasks.value = result.data                                   // __ кэшируем
-        globalSewingTasksCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalCuttingTasks.value = result.data                                   // __ кэшируем
+        globalCuttingTasksCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
-        if (DEBUG) console.log('SewingStore: getSewingTasks: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasks: ', result)
         return result.data
     }
 
 
     // __ Получение СЗ Пошива по ID Заявки
-    const getSewingTasksByOrderId = async (id: number | null = null) => {
+    const getCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
         }
         const response = await jwtGet(`${URL_CUTTING_TASKS_ORDER_ID}/${id}`)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingTasksByOrderId: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByOrderId: ', result)
         return result.data
     }
 
 
     // __ Удаление СЗ Пошива по ID Заявки
-    const deleteSewingTasksByOrderId = async (id: number | null = null) => {
+    const deleteCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
         }
         const response = await jwtDelete(URL_CUTTING_TASKS_DELETE_BY_ORDER_ID, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: deleteSewingTasksByOrderId: ', result)
+        if (DEBUG) console.log('CuttingStore: deleteCuttingTasksByOrderId: ', result)
         return result
     }
 
     // __ Добавление СЗ Пошива по ID Заявки
-    const addSewingTasksByOrderId = async (id: number | null = null) => {
+    const addCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
         }
         const response = await jwtPost(URL_CUTTING_TASKS_ADD_BY_ORDER_ID, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addSewingTasksByOrderId: ', result)
+        if (DEBUG) console.log('CuttingStore: addCuttingTasksByOrderId: ', result)
         return result
     }
 
     // __ Получение СЗ Пошива по статусу или массиву статусов до определенной даты
-    const getSewingTasksByStatusBeforeDate = async (date: string, status: number[] | number | null = null) => {
+    const getCuttingTasksByStatusBeforeDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
             if (isNumber(status)) {
@@ -422,13 +391,13 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusBeforeDate: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatusBeforeDate: ', result)
         return result.data
     }
 
 
     // __ Получение СЗ Пошива по статусу или массиву статусов в определенную дату
-    const getSewingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
+    const getCuttingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
             if (isNumber(status)) {
@@ -441,12 +410,12 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusOnDate: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatusOnDate: ', result)
         return result.data
     }
 
     // __ Проверка на наличие СЗ Пошива по статусу или массиву статусов в определенную дату
-    const checkSewingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
+    const checkCuttingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
             if (isNumber(status)) {
@@ -459,23 +428,23 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        if (DEBUG) console.log('SewingStore: checkSewingTasksByStatusOnDate: ', result)
+        if (DEBUG) console.log('CuttingStore: checkCuttingTasksByStatusOnDate: ', result)
         return result.data
     }
 
     // __ Сохранение Комментария к Сменному заданию - СЗ
-    const setSewingTaskComment = async (id: number, comment: string | null = null) => {
+    const setCuttingTaskComment = async (id: number, comment: string | null = null) => {
         const response = await jwtPost(URL_CUTTING_TASKS_COMMENT, { id, comment })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: setSewingTaskComment: ', result)
+        if (DEBUG) console.log('CuttingStore: setCuttingTaskComment: ', result)
         return result.data
     }
 
     // __ Установка даты выполнения СЗ
-    const setSewingTaskActionAt = async (id: number, date: string) => {
+    const setCuttingTaskActionAt = async (id: number, date: string) => {
         const response = await jwtPost(URL_CUTTING_TASKS_ACTION_AT_SET, { id, date })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: setSewingTaskActionAt: ', result)
+        if (DEBUG) console.log('CuttingStore: setCuttingTaskActionAt: ', result)
         return result.data
     }
 
@@ -484,22 +453,22 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ----------------------------------------------------------
 
     // __ Разделение линий СЗ при выполнении СЗ
-    const divideLineInSewingTaskPending = async (sewingTask: ISewingTask, period: IPeriod | null = null) => {
+    const divideLineInCuttingTaskPending = async (cuttingTask: ICuttingTask, period: IPeriod | null = null) => {
 
-        const findTask = globalSewingTasks.value.find((task: ISewingTask) => task.id === sewingTask.id)
+        const findTask = globalCuttingTasks.value.find((task: ICuttingTask) => task.id === cuttingTask.id)
         if (!findTask) {
             return
         }
         console.log('findTask: ', findTask)
 
-        repositionSewingTaskLines(findTask)
+        repositionCuttingTaskLines(findTask)
         // const result = await saveChanges()
-        return await saveChanges(globalSewingTasks.value, globalSewingTasksCopy, period)
-        // return saveChanges(globalSewingTasksPending.value, globalSewingTasksPendingCopy)
+        return await saveChanges(globalCuttingTasks.value, globalCuttingTasksCopy, period)
+        // return saveChanges(globalCuttingTasksPending.value, globalCuttingTasksPendingCopy)
     }
 
     // __ Получение СЗ Пошива по статусу или массиву статусов
-    const getSewingTasksByStatus = async (status: number[] | number | null = null) => {
+    const getCuttingTasksByStatus = async (status: number[] | number | null = null) => {
         let response
         if (status) {
             if (isNumber(status)) {
@@ -513,16 +482,16 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        globalSewingTasksPending.value = result.data                                   // __ кэшируем
-        globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalCuttingTasksPending.value = result.data                                   // __ кэшируем
+        globalCuttingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
 
-        if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatus: ', result)
         return result.data
     }
 
     // __ Получение СЗ Пошива за период
-    const getSewingTasksByStatusAndPeriod = async (period: IPeriod | null = null, statuses: number[] | number | null = null) => {
+    const getCuttingTasksByStatusAndPeriod = async (period: IPeriod | null = null, statuses: number[] | number | null = null) => {
         let response
 
         if (statuses && isNumber(statuses)) {
@@ -542,16 +511,16 @@ export const useCuttingStore = defineStore('cutting', () => {
 
         const result = await response
 
-        globalSewingTasksPending.value = result.data                                   // __ кэшируем
-        globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalCuttingTasksPending.value = result.data                                   // __ кэшируем
+        globalCuttingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
-        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusAndPeriod: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatusAndPeriod: ', result)
         return result.data
     }
 
 
     // __ Проверка на наличие СЗ с определенным статусом на определенную дату
-    // const checkSewingTasksByStatusAndDate = async (date: string, status: number[] | number | null = null) => {
+    // const checkCuttingTasksByStatusAndDate = async (date: string, status: number[] | number | null = null) => {
     //     let response
     //     if (status) {
     //         if (isNumber(status)) {
@@ -565,17 +534,17 @@ export const useCuttingStore = defineStore('cutting', () => {
     //     }
     //     const result = await response
     //
-    //     globalSewingTasksPending.value = result.data                                   // __ кэшируем
-    //     globalSewingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+    //     globalCuttingTasksPending.value = result.data                                   // __ кэшируем
+    //     globalCuttingTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
     //
     //
-    //     if (DEBUG) console.log('SewingStore: getSewingTasksByStatus: ', result)
+    //     if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatus: ', result)
     //     return result.data
     // }
 
 
     // __ Один статус
-    const getSewingTasksByStatusOneStatus = async (status: number | null = null) => {
+    const getCuttingTasksByStatusOneStatus = async (status: number | null = null) => {
         let response
         if (status) {
             response = await jwtGet(`${URL_CUTTING_TASKS_STATUS}/${status}`)
@@ -585,41 +554,41 @@ export const useCuttingStore = defineStore('cutting', () => {
         }
         const result = await response
 
-        globalSewingTasksPending.value = result.data                                   // __ кэшируем
-        // globalSewingTasksCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+        globalCuttingTasksPending.value = result.data                                   // __ кэшируем
+        // globalCuttingTasksCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
 
-        if (DEBUG) console.log('SewingStore: getSewingTasksByStatusOneStatus: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingTasksByStatusOneStatus: ', result)
         return result.data
     }
 
-    // __ Устанавливаем "Выполнено" на SewingTaskLines
-    const setSewingTaskLinesDone = async (sewingTaskLinesIds: number[]) => {
-        if (!sewingTaskLinesIds.length) {
+    // __ Устанавливаем "Выполнено" на CuttingTaskLines
+    const setCuttingTaskLinesDone = async (cuttingTaskLinesIds: number[]) => {
+        if (!cuttingTaskLinesIds.length) {
             return []
         }
-        const result = await jwtPost(URL_CUTTING_TASK_LINE_DONE, { ids: sewingTaskLinesIds })
-        if (DEBUG) console.log('SewingStore: setSewingTaskLinesDone: ', result)
+        const result = await jwtPost(URL_CUTTING_TASK_LINE_DONE, { ids: cuttingTaskLinesIds })
+        if (DEBUG) console.log('CuttingStore: setCuttingTaskLinesDone: ', result)
         return result.data
     }
 
 
-    // __ Устанавливаем "Не Выполнено" на SewingTaskLines
-    const setSewingTaskLinesFalse = async (sewingTaskLinesIds: number[], falseReason: string | null = null) => {
-        if (!sewingTaskLinesIds.length && !falseReason) {
+    // __ Устанавливаем "Не Выполнено" на CuttingTaskLines
+    const setCuttingTaskLinesFalse = async (cuttingTaskLinesIds: number[], falseReason: string | null = null) => {
+        if (!cuttingTaskLinesIds.length && !falseReason) {
             return []
         }
-        const result = await jwtPost(URL_CUTTING_TASK_LINE_FALSE, { ids: sewingTaskLinesIds, reason: falseReason })
-        if (DEBUG) console.log('SewingStore: setSewingTaskLinesFalse: ', result)
+        const result = await jwtPost(URL_CUTTING_TASK_LINE_FALSE, { ids: cuttingTaskLinesIds, reason: falseReason })
+        if (DEBUG) console.log('CuttingStore: setCuttingTaskLinesFalse: ', result)
         return result.data
     }
 
-    // __ Сбрасываем статусы на SewingTaskLines
-    const setSewingTaskLinesReset = async (sewingTaskLinesIds: number[]) => {
-        if (!sewingTaskLinesIds.length) {
+    // __ Сбрасываем статусы на CuttingTaskLines
+    const setCuttingTaskLinesReset = async (cuttingTaskLinesIds: number[]) => {
+        if (!cuttingTaskLinesIds.length) {
             return []
         }
-        const result = await jwtPost(URL_CUTTING_TASK_LINE_RESET, { ids: sewingTaskLinesIds })
-        if (DEBUG) console.log('SewingStore: setSewingTaskLinesReset: ', result)
+        const result = await jwtPost(URL_CUTTING_TASK_LINE_RESET, { ids: cuttingTaskLinesIds })
+        if (DEBUG) console.log('CuttingStore: setCuttingTaskLinesReset: ', result)
         return result.data
     }
 
@@ -627,92 +596,92 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ------------------ Типовые операции ----------------------
     // --- ----------------------------------------------------------
     // __ Получение Типовых операций
-    const getSewingOperations = async () => {
+    const getCuttingOperations = async () => {
         const response = await jwtGet(URL_CUTTING_OPERATIONS)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperations: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingOperations: ', result)
         return result.data
     }
 
     // __ Получение Типовой операции
-    const getSewingOperation = async (id: string | number) => {
+    const getCuttingOperation = async (id: string | number) => {
         const response = await jwtGet(URL_CUTTING_OPERATION + '/' + id)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperation: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingOperation: ', result)
         return result.data
     }
 
     // __ Создаем Типовую операцию
-    const createSewingOperation = async (sewingOperation: ISewingOperation) => {
-        const result = await jwtPost(URL_CUTTING_OPERATION, sewingOperation)
-        if (DEBUG) console.log('SewingStore: createSewingOperation: ', result)
+    const createCuttingOperation = async (cuttingOperation: ICuttingOperation) => {
+        const result = await jwtPost(URL_CUTTING_OPERATION, cuttingOperation)
+        if (DEBUG) console.log('CuttingStore: createCuttingOperation: ', result)
         return result
     }
 
     // __ Обновляем Типовую операцию
-    const updateSewingOperation = async (sewingOperation: ISewingOperation) => {
-        const result = await jwtPut_(URL_CUTTING_OPERATION, sewingOperation)
-        if (DEBUG) console.log('SewingStore: updateSewingOperation: ', result)
+    const updateCuttingOperation = async (cuttingOperation: ICuttingOperation) => {
+        const result = await jwtPut_(URL_CUTTING_OPERATION, cuttingOperation)
+        if (DEBUG) console.log('CuttingStore: updateCuttingOperation: ', result)
         return result
     }
 
 
     // __ Получение Схем Типовых операций
-    const getSewingOperationSchemas = async () => {
+    const getCuttingOperationSchemas = async () => {
         const response = await jwtGet(URL_CUTTING_OPERATION_SCHEMAS)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperationSchemas: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingOperationSchemas: ', result)
         return result.data
     }
 
     // __ Получение Схемы Типовой операции
-    const getSewingOperationSchema = async (id: string | number) => {
+    const getCuttingOperationSchema = async (id: string | number) => {
         const response = await jwtGet(URL_CUTTING_OPERATION_SCHEMAS + '/' + id)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingOperationSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingOperationSchema: ', result)
         return result.data
     }
 
     // __ Создание Схемы Типовой операции
-    const createSewingOperationSchema = async (schema: ISewingOperationSchema) => {
+    const createCuttingOperationSchema = async (schema: ICuttingOperationSchema) => {
         const response = await jwtPost(URL_CUTTING_OPERATION_SCHEMAS_CREATE, schema)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: createSewingOperationSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: createCuttingOperationSchema: ', result)
         return result
     }
 
     // __ Обновление Схемы Типовой операции
-    const updateSewingOperationSchema = async (schema: ISewingOperationSchema) => {
+    const updateCuttingOperationSchema = async (schema: ICuttingOperationSchema) => {
         const response = await jwtPut(URL_CUTTING_OPERATION_SCHEMAS_UPDATE, schema)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: updateSewingOperationSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: updateCuttingOperationSchema: ', result)
         return result
     }
 
     // __ Удаление Типовой операции из схемы
-    const deleteSewingOperationFromSchema = async (deleteObject: ISewingOperationUpdateObject) => {
+    const deleteCuttingOperationFromSchema = async (deleteObject: ICuttingOperationUpdateObject) => {
         const response = await jwtDelete(URL_CUTTING_OPERATION_SCHEMAS_DELETE, deleteObject)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: deleteSewingOperationFromSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: deleteCuttingOperationFromSchema: ', result)
         return result.data
     }
 
     // __ Обновление Типовой операции в схеме
-    const addSewingOperationToSchema = async (addObject: ISewingOperationUpdateObject) => {
+    const addCuttingOperationToSchema = async (addObject: ICuttingOperationUpdateObject) => {
         const response = await jwtPost(URL_CUTTING_OPERATION_SCHEMAS_ADD, addObject)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addSewingOperationToSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: addCuttingOperationToSchema: ', result)
         return result.data
     }
 
     // __ Проверка Схемы Типовых операций на суммарное время
-    const checkSewingOperationSchemaForSummaryTime = async (schemaId: number | null = null) => {
+    const checkCuttingOperationSchemaForSummaryTime = async (schemaId: number | null = null) => {
         if (!schemaId) {
             return null
         }
         const response = await jwtGet(`${URL_CUTTING_OPERATION_SCHEMAS_CHECK}/${schemaId}`)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: checkSewingOperationSchemaForSummaryTime: ', result)
+        if (DEBUG) console.log('CuttingStore: checkCuttingOperationSchemaForSummaryTime: ', result)
         return result.data
     }
 
@@ -723,31 +692,31 @@ export const useCuttingStore = defineStore('cutting', () => {
     const getModelsForLabor = async () => {
         const response = await jwtGet(URL_CUTTING_OPERATION_MODELS)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getModelsForLabor: ', result)
+        if (DEBUG) console.log('CuttingStore: getModelsForLabor: ', result)
         return result.data
     }
 
     // __ Обновление Схемы Типовых операций для модели
-    const updateModelSewingOperationSchema = async (code_1c: string, schema_id: number) => {
+    const updateModelCuttingOperationSchema = async (code_1c: string, schema_id: number) => {
         const response = await jwtPatch(URL_CUTTING_OPERATION_SCHEMAS_MODEL, { code_1c, schema_id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: updateModelSewingOperationSchema: ', result)
+        if (DEBUG) console.log('CuttingStore: updateModelCuttingOperationSchema: ', result)
         return result.data
     }
 
     // __ Удаление Типовой опрерации из схемы
-    const deleteSewingOperationFromModel = async (deleteObject: ISewingOperationUpdateObject) => {
+    const deleteCuttingOperationFromModel = async (deleteObject: ICuttingOperationUpdateObject) => {
         const response = await jwtPost(URL_CUTTING_OPERATION_MODELS_DELETE, deleteObject)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: deleteSewingOperationFromModel: ', result)
+        if (DEBUG) console.log('CuttingStore: deleteCuttingOperationFromModel: ', result)
         return result.data
     }
 
     // __ Обновление Типовой операции в схеме
-    const addSewingOperationToModel = async (addObject: ISewingOperationUpdateObject) => {
+    const addCuttingOperationToModel = async (addObject: ICuttingOperationUpdateObject) => {
         const response = await jwtPost(URL_CUTTING_OPERATION_MODELS_ADD, addObject)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addSewingOperationToModel: ', result)
+        if (DEBUG) console.log('CuttingStore: addCuttingOperationToModel: ', result)
         return result.data
     }
 
@@ -756,28 +725,28 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ----------------------------------------------------------
 
     // __ Получение Статусов Движения СЗ
-    const getSewingTaskStatuses = async () => {
+    const getCuttingTaskStatuses = async () => {
         const response = await jwtGet(URL_CUTTING_TASK_STATUSES)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingTaskStatuses: ', result)
-        globalSewingTaskStatuses.value = result.data    // __ кэшируем
+        if (DEBUG) console.log('CuttingStore: getCuttingTaskStatuses: ', result)
+        globalCuttingTaskStatuses.value = result.data    // __ кэшируем
         return result.data
     }
 
     // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
-    const patchSewingTaskStatusColor = async (sewingTaskStatusId: number, color: string) => {
-        const result = await jwtPatch(URL_CUTTING_TASK_STATUSES_COLOR_PATCH, { id: sewingTaskStatusId, color })
-        if (DEBUG) console.log('SewingStore: patchSewingTaskStatusColor', result)
-        await getSewingTaskStatuses()   // __ Обновляем статусы, чтобы был актуальный цвет
+    const patchCuttingTaskStatusColor = async (cuttingTaskStatusId: number, color: string) => {
+        const result = await jwtPatch(URL_CUTTING_TASK_STATUSES_COLOR_PATCH, { id: cuttingTaskStatusId, color })
+        if (DEBUG) console.log('CuttingStore: patchCuttingTaskStatusColor', result)
+        await getCuttingTaskStatuses()   // __ Обновляем статусы, чтобы был актуальный цвет
         return result.data
     }
 
     // __ Устанавливаем статусы для СЗ.
     // __ data: [{ task: number, status: number }]
-    const setSewingTasksStatuses = async (data: ISewingTaskStatusesSet[]) => {
+    const setCuttingTasksStatuses = async (data: ICuttingTaskStatusesSet[]) => {
         const response = await jwtPost(URL_CUTTING_TASK_STATUSES_SET, data)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: setStatuses: ', result)
+        if (DEBUG) console.log('CuttingStore: setStatuses: ', result)
         return result.data
     }
 
@@ -787,31 +756,31 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ----------------------------------------------------------
 
     // __ Получение производственного дня по дате и смене
-    const getSewingDayByDateAndChange = async (date: string, change: number = 1) => {
+    const getCuttingDayByDateAndChange = async (date: string, change: number = 1) => {
         const response = await jwtGet(`${URL_CUTTING_DAY}/${date}/${change}`)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingDayByDateAndChange: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingDayByDateAndChange: ', result)
         return result.data
     }
 
     // __ Сохранение Комментария к производственному дню
-    const setSewingDayComment = async (id: number, comment: string | null = null) => {
+    const setCuttingDayComment = async (id: number, comment: string | null = null) => {
         const response = await jwtPost(URL_CUTTING_DAY_COMMENT, { id, comment })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: setSewingDayComment: ', result)
+        if (DEBUG) console.log('CuttingStore: setCuttingDayComment: ', result)
         return result.data
     }
 
     // __ Получение производственных дней по массиву дат
     // __ Тут по хорошему надо прикрутить еще и смену, но оставим на потом
-    const getSewingDaysByDates = async (dates: string[]) => {
+    const getCuttingDaysByDates = async (dates: string[]) => {
         if (!dates.length) {
             return []
         }
 
         const response = await jwtGet(URL_CUTTING_DAY_DATES, { dates })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: getSewingDaysByDates: ', result)
+        if (DEBUG) console.log('CuttingStore: getCuttingDaysByDates: ', result)
         return result.data
     }
 
@@ -826,102 +795,102 @@ export const useCuttingStore = defineStore('cutting', () => {
 
         // __ кэшируем
         globalWorkers.value = result.data
-            .filter((w: ISewingDayWorker) => w.id !== 0)
-            .sort((a: ISewingDayWorker, b: ISewingDayWorker) => a.surname.localeCompare(b.surname))
+            .filter((w: ICuttingDayWorker) => w.id !== 0)
+            .sort((a: ICuttingDayWorker, b: ICuttingDayWorker) => a.surname.localeCompare(b.surname))
 
 
-        if (DEBUG) console.log('SewingStore: getActiveWorkers: ', result)
+        if (DEBUG) console.log('CuttingStore: getActiveWorkers: ', result)
         return result.data
     }
 
     // __ Добавление Рабочего в Производственный день
-    const addWorkerToSewingDay = async (day_id: number | null = null, worker_id: number | null = null) => {
+    const addWorkerToCuttingDay = async (day_id: number | null = null, worker_id: number | null = null) => {
         if (!day_id || !worker_id) {
             return
         }
         const response = await jwtPost(URL_CUTTING_DAY_WORKER_ADD, { day_id, worker_id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addWorkerToSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: addWorkerToCuttingDay: ', result)
         return result.data
     }
 
     // __ Добавление Группы Рабочих в Производственный день
-    const addWorkersToSewingDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
+    const addWorkersToCuttingDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
         if (!day_id || !worker_ids) {
             return
         }
         const response = await jwtPost(URL_CUTTING_DAY_WORKER_GROUP_ADD, { day_id, worker_ids })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addWorkersGroupToSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: addWorkersGroupToCuttingDay: ', result)
         return result.data
     }
 
     // __ Удаление Рабочего из Производственного дня
-    const removeWorkerFromSewingDay = async (day_id: number, worker_id: number) => {
+    const removeWorkerFromCuttingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPost(URL_CUTTING_DAY_WORKER_REMOVE, { day_id, worker_id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: removeWorkerToSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: removeWorkerToCuttingDay: ', result)
         return result.data
     }
 
     // __ Добавление Ответственного в Производственный день
-    const addResponsibleToSewingDay = async (day_id: number, worker_id: number) => {
+    const addResponsibleToCuttingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_RESPONSIBLE_ADD, { day_id, worker_id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: addResponsibleToSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: addResponsibleToCuttingDay: ', result)
         return result.data
     }
 
     // __ Удаление Ответственного из Производственного дня
-    const removeResponsibleFromSewingDay = async (day_id: number, worker_id: number) => {
+    const removeResponsibleFromCuttingDay = async (day_id: number, worker_id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_RESPONSIBLE_REMOVE, { day_id, worker_id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: removeResponsibleFromSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: removeResponsibleFromCuttingDay: ', result)
         return result.data
     }
 
     // __ Старт СЗ
-    const startSewingDay = async (id: number) => {
+    const startCuttingDay = async (id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_START, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: startSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: startCuttingDay: ', result)
         return result.data
     }
 
     // __ Стоп СЗ
-    const finishSewingDay = async (id: number) => {
+    const finishCuttingDay = async (id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_FINISH, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: finishSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: finishCuttingDay: ', result)
         return result.data
     }
 
     // __ Получение маячка готовности дня с СЗ к добавлению новых СЗ
-    const readyGetSewingDay = async (date: string, change: number = 1) => {
+    const readyGetCuttingDay = async (date: string, change: number = 1) => {
         const response = await jwtGet(`${URL_CUTTING_DAY_READY_GET}/${date}/${change}`)
         const result   = await response
-        if (DEBUG) console.log('SewingStore: readyGetSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: readyGetCuttingDay: ', result)
         return result.data
     }
 
     // __ Установки маяка готовности к добавлению новых СЗ
-    const readySetSewingDay = async (id: number) => {
+    const readySetCuttingDay = async (id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_READY_SET, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: readySetSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: readySetCuttingDay: ', result)
         return result.data
     }
 
     // __ Снятие маяка готовности к добавлению новых СЗ
-    const readyUnsetSewingDay = async (id: number) => {
+    const readyUnsetCuttingDay = async (id: number) => {
         const response = await jwtPatch_(URL_CUTTING_DAY_READY_UNSET, { id })
         const result   = await response
-        if (DEBUG) console.log('SewingStore: readyUnsetSewingDay: ', result)
+        if (DEBUG) console.log('CuttingStore: readyUnsetCuttingDay: ', result)
         return result.data
     }
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
-    // watch(() => globalSewingTasks.value, () => {
+    // watch(() => globalCuttingTasks.value, () => {
     //
     //     console.log('save task')
     //
@@ -930,76 +899,76 @@ export const useCuttingStore = defineStore('cutting', () => {
 
 
     return {
-        globalSewingTasks,
-        globalSewingTaskStatuses,
+        globalCuttingTasks,
+        globalCuttingTaskStatuses,
         globalRenderPeriod,
 
-        globalSewingTaskTimesShow,
-        globalSewingTaskFullDaysShow,
-        globalSewingTaskOrderTypeColor,
-        globalManageTaskCardActiveSewingLine,
-        globalSewingTaskActiveOrderId,
+        globalCuttingTaskTimesShow,
+        globalCuttingTaskFullDaysShow,
+        globalCuttingTaskOrderTypeColor,
+        globalManageTaskCardActiveCuttingLine,
+        globalCuttingTaskActiveOrderId,
 
-        globalSewingTasksPending,
+        globalCuttingTasksPending,
 
         globalWorkers,
 
-        globalSewingTaskPrintData,
+        globalCuttingTaskPrintData,
 
-        getSewingTasks,
-        getSewingTasksByOrderId,
-        getSewingTasksByStatus,
-        getSewingTasksByStatusAndPeriod,
-        getSewingTasksByStatusBeforeDate,
-        getSewingTasksByStatusOnDate,
-        checkSewingTasksByStatusOnDate,
-        deleteSewingTasksByOrderId,
-        addSewingTasksByOrderId,
-        setSewingTaskComment,
-        setSewingTaskActionAt,
-        getSewingTaskStatuses,
-        patchSewingTaskStatusColor,
-        setSewingTaskLinesDone,
-        setSewingTaskLinesFalse,
-        setSewingTaskLinesReset,
+        getCuttingTasks,
+        getCuttingTasksByOrderId,
+        getCuttingTasksByStatus,
+        getCuttingTasksByStatusAndPeriod,
+        getCuttingTasksByStatusBeforeDate,
+        getCuttingTasksByStatusOnDate,
+        checkCuttingTasksByStatusOnDate,
+        deleteCuttingTasksByOrderId,
+        addCuttingTasksByOrderId,
+        setCuttingTaskComment,
+        setCuttingTaskActionAt,
+        getCuttingTaskStatuses,
+        patchCuttingTaskStatusColor,
+        setCuttingTaskLinesDone,
+        setCuttingTaskLinesFalse,
+        setCuttingTaskLinesReset,
 
-        getSewingOperations,
-        getSewingOperation,
-        createSewingOperation,
-        updateSewingOperation,
+        getCuttingOperations,
+        getCuttingOperation,
+        createCuttingOperation,
+        updateCuttingOperation,
 
-        getSewingOperationSchemas,
-        getSewingOperationSchema,
-        createSewingOperationSchema,
-        updateSewingOperationSchema,
-        deleteSewingOperationFromSchema,
-        addSewingOperationToSchema,
-        checkSewingOperationSchemaForSummaryTime,
+        getCuttingOperationSchemas,
+        getCuttingOperationSchema,
+        createCuttingOperationSchema,
+        updateCuttingOperationSchema,
+        deleteCuttingOperationFromSchema,
+        addCuttingOperationToSchema,
+        checkCuttingOperationSchemaForSummaryTime,
 
         getModelsForLabor,
-        updateModelSewingOperationSchema,
-        deleteSewingOperationFromModel,
-        addSewingOperationToModel,
+        updateModelCuttingOperationSchema,
+        deleteCuttingOperationFromModel,
+        addCuttingOperationToModel,
 
-        setSewingTasksStatuses,
+        setCuttingTasksStatuses,
 
-        getSewingDayByDateAndChange,
-        setSewingDayComment,
-        getSewingDaysByDates,
+        getCuttingDayByDateAndChange,
+        setCuttingDayComment,
+        getCuttingDaysByDates,
         getActiveWorkers,
-        addWorkerToSewingDay, addWorkersToSewingDay,
-        removeWorkerFromSewingDay,
-        addResponsibleToSewingDay,
-        removeResponsibleFromSewingDay,
-        startSewingDay, finishSewingDay, readyGetSewingDay, readySetSewingDay, readyUnsetSewingDay,
-        divideLineInSewingTaskPending,
+        addWorkerToCuttingDay, addWorkersToCuttingDay,
+        removeWorkerFromCuttingDay,
+        addResponsibleToCuttingDay,
+        removeResponsibleFromCuttingDay,
+        startCuttingDay, finishCuttingDay, readyGetCuttingDay, readySetCuttingDay, readyUnsetCuttingDay,
+        divideLineInCuttingTaskPending,
 
-        addSewingTaskToGlobal,
+        addCuttingTaskToGlobal,
         saveChanges,
         applyChanges,
         applyMergeTasks,
         applyMergeTasksGroups,
-        setSewingTasksLines,
-        applySewingTaskComment,
+        setCuttingTasksLines,
+        applyCuttingTaskComment,
     }
 })

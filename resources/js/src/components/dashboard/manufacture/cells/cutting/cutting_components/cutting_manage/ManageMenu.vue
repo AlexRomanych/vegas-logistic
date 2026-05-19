@@ -7,7 +7,7 @@
                 <!-- __ Цвет ярлычка -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalSewingTaskOrderTypeColor"
+                    :state="globalCuttingTaskOrderTypeColor"
                     :state-false-char="['Цвет ярлычка', 'типа заявки']"
                     :state-true-char="['Цвет ярлычка', 'статуса заявки']"
                     :width="MENU_ITEM_LENGTH"
@@ -16,13 +16,13 @@
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalSewingTaskOrderTypeColor = !globalSewingTaskOrderTypeColor"
+                    @label-click="globalCuttingTaskOrderTypeColor = !globalCuttingTaskOrderTypeColor"
                 />
 
                 <!-- __ Показать / Скрыть детали ШМ -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalSewingTaskFullDaysShow"
+                    :state="globalCuttingTaskFullDaysShow"
                     :state-false-char="['Показать', 'детали ШМ']"
                     :state-true-char="['Скрыть', 'детали ШМ']"
                     :width="MENU_ITEM_LENGTH"
@@ -31,13 +31,13 @@
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalSewingTaskFullDaysShow = !globalSewingTaskFullDaysShow"
+                    @label-click="globalCuttingTaskFullDaysShow = !globalCuttingTaskFullDaysShow"
                 />
 
                 <!-- __ Показать / Скрыть Трудозатраты -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalSewingTaskTimesShow"
+                    :state="globalCuttingTaskTimesShow"
                     :state-false-char="['Показать', 'трудозатраты']"
                     :state-true-char="['Скрыть', 'трудозатраты']"
                     :width="MENU_ITEM_LENGTH"
@@ -46,7 +46,7 @@
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalSewingTaskTimesShow = !globalSewingTaskTimesShow"
+                    @label-click="globalCuttingTaskTimesShow = !globalCuttingTaskTimesShow"
                 />
 
 
@@ -60,13 +60,13 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import AppLabelMultilineCheckBoxTS from '@/components/ui/labels/AppLabelMultilineCheckBoxTS.vue'
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
-const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow, globalSewingTaskOrderTypeColor, } = storeToRefs(sewingStore)
+const { globalCuttingTaskTimesShow, globalCuttingTaskFullDaysShow, globalCuttingTaskOrderTypeColor, } = storeToRefs(cuttingStore)
 
 const MENU_ITEM_HEIGHT = 'h-[20px]'
 const MENU_ITEM_LENGTH = 'w-[150px]'

@@ -1,6 +1,6 @@
 <template>
     <div
-        :class="[shadowColor, globalSewingTaskFullDaysShow ? 'min-w-[379px]' : 'min-w-[184px]']"
+        :class="[shadowColor, globalCuttingTaskFullDaysShow ? 'min-w-[379px]' : 'min-w-[184px]']"
         class="m-1 pb-0.5 border-[1px] rounded border-slate-600 bg-slate-200 w-fit min-w-[184px] min-h-[129px] shadow-xl"
     >
         <!-- __ День недели -->
@@ -57,7 +57,7 @@
 
             <!-- __ УШМ -->
             <AppLabelTS
-                v-if="globalSewingTaskFullDaysShow"
+                v-if="globalCuttingTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -69,7 +69,7 @@
 
             <!-- __ АШМ -->
             <AppLabelTS
-                v-if="globalSewingTaskFullDaysShow"
+                v-if="globalCuttingTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -81,7 +81,7 @@
 
             <!-- __ Глухие сложные -->
             <AppLabelTS
-                v-if="globalSewingTaskFullDaysShow"
+                v-if="globalCuttingTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -93,7 +93,7 @@
 
             <!-- __ Глухие простые -->
             <AppLabelTS
-                v-if="globalSewingTaskFullDaysShow"
+                v-if="globalCuttingTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -105,7 +105,7 @@
 
             <!-- __ Глухие Неопознанные -->
             <AppLabelTS
-                v-if="globalSewingTaskFullDaysShow"
+                v-if="globalCuttingTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -140,15 +140,15 @@
         >
             <template #item="{ element, index }">
                 <div
-                    @click="selectSewingTask(element)"
-                    @dblclick="showSewingTaskCard(element)"
+                    @click="selectCuttingTask(element)"
+                    @dblclick="showCuttingTaskCard(element)"
                 >
                     <ManageItem
-                        :amount-and-time="getSewingTaskAmountAndTime(element)"
+                        :amount-and-time="getCuttingTaskAmountAndTime(element)"
                         :columns-width="columnsWidth"
                         :index="index"
                         :item="element"
-                        :order-id="globalSewingTaskActiveOrderId"
+                        :order-id="globalCuttingTaskActiveOrderId"
                     />
                 </div>
             </template>
@@ -203,7 +203,7 @@
                 :height="heightTotals"
                 :reference="REFERENCE_TIME * 4"
                 :time="getTotalTimeDay"
-                :time-show="globalSewingTaskTimesShow"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -211,12 +211,12 @@
 
             <!-- __ Количество + Трудозатраты УШМ -->
             <ManageItemDataLabel
-                v-if="globalSewingTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[SEWING_MACHINES.UNIVERSAL].amount"
+                v-if="globalCuttingTaskFullDaysShow"
+                :amount="amountAndTimeTotalDay[CUTTING_MACHINES.UNIVERSAL].amount"
                 :height="heightTotals"
                 :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[SEWING_MACHINES.UNIVERSAL].time"
-                :time-show="globalSewingTaskTimesShow"
+                :time="amountAndTimeTotalDay[CUTTING_MACHINES.UNIVERSAL].time"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -224,12 +224,12 @@
 
             <!-- __ Количество + Трудозатраты АШМ -->
             <ManageItemDataLabel
-                v-if="globalSewingTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[SEWING_MACHINES.AUTO].amount"
+                v-if="globalCuttingTaskFullDaysShow"
+                :amount="amountAndTimeTotalDay[CUTTING_MACHINES.AUTO].amount"
                 :height="heightTotals"
                 :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[SEWING_MACHINES.AUTO].time"
-                :time-show="globalSewingTaskTimesShow"
+                :time="amountAndTimeTotalDay[CUTTING_MACHINES.AUTO].time"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -237,12 +237,12 @@
 
             <!-- __ Количество + Трудозатраты Solid Hard -->
             <ManageItemDataLabel
-                v-if="globalSewingTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[SEWING_MACHINES.SOLID_HARD].amount"
+                v-if="globalCuttingTaskFullDaysShow"
+                :amount="amountAndTimeTotalDay[CUTTING_MACHINES.SOLID_HARD].amount"
                 :height="heightTotals"
                 :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[SEWING_MACHINES.SOLID_HARD].time"
-                :time-show="globalSewingTaskTimesShow"
+                :time="amountAndTimeTotalDay[CUTTING_MACHINES.SOLID_HARD].time"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -250,12 +250,12 @@
 
             <!-- __ Количество + Трудозатраты Solid Lite -->
             <ManageItemDataLabel
-                v-if="globalSewingTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[SEWING_MACHINES.SOLID_LITE].amount"
+                v-if="globalCuttingTaskFullDaysShow"
+                :amount="amountAndTimeTotalDay[CUTTING_MACHINES.SOLID_LITE].amount"
                 :height="heightTotals"
                 :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[SEWING_MACHINES.SOLID_LITE].time"
-                :time-show="globalSewingTaskTimesShow"
+                :time="amountAndTimeTotalDay[CUTTING_MACHINES.SOLID_LITE].time"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -263,13 +263,13 @@
 
             <!-- __ Количество + Трудозатраты Неопознанные -->
             <ManageItemDataLabel
-                v-if="globalSewingTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[SEWING_MACHINES.UNDEFINED].amount"
-                :color="amountAndTimeTotalDay[SEWING_MACHINES.UNDEFINED].amount === 0 ? '' : 'red'"
+                v-if="globalCuttingTaskFullDaysShow"
+                :amount="amountAndTimeTotalDay[CUTTING_MACHINES.UNDEFINED].amount"
+                :color="amountAndTimeTotalDay[CUTTING_MACHINES.UNDEFINED].amount === 0 ? '' : 'red'"
                 :height="heightTotals"
                 :reference="null"
-                :time="amountAndTimeTotalDay[SEWING_MACHINES.UNDEFINED].time"
-                :time-show="globalSewingTaskTimesShow"
+                :time="amountAndTimeTotalDay[CUTTING_MACHINES.UNDEFINED].time"
+                :time-show="globalCuttingTaskTimesShow"
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.amount"
                 class="plan-item"
@@ -315,15 +315,9 @@ import type {
     IColorTypes,
     IDay,
     IModalAsyncMenu,
-    IPlanMatrix, ISewingDay,
-    ISewingTask,
-    ISewingTaskStatusesSet,
-    // IPlanMatrixDayItem,
-    // ISewingTaskLine,
-    // IAmountAndTime,
-    // ISewingMachineKeys,
-    // IPlanMatrixDay,
-    // ISewingTaskLine
+    IPlanMatrix, ICuttingDay,
+    ICuttingTask,
+    ICuttingTaskStatusesSet,
 } from '@/types'
 
     import { computed, inject, type Ref, ref } from 'vue'
@@ -331,7 +325,7 @@ import type {
     import draggable from 'vuedraggable'
 
     import { usePlansStore } from '@/stores/PlansStore.ts'
-    import { useSewingStore } from '@/stores/SewingStore.ts'
+    import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
     import {
         additionDaysInStrFormat,
@@ -348,38 +342,38 @@ import {
     clearRenderMatrixDay,
     correctRenderMatrix,
     createAmountAndTimeObj,
-    getDaysDifferenceFromSewingDates,
+    getDaysDifferenceFromCuttingDates,
     getDiffsWithPositions,
-    getSewingTaskAmountAndTime,
-    getSewingTasksDiff,
-    getSewingTasksGroupedByOrder,
-    getSewingTasksSameOrderInDay,
+    getCuttingTaskAmountAndTime,
+    getCuttingTasksDiff,
+    getCuttingTasksGroupedByOrder,
+    getCuttingTasksSameOrderInDay,
     isTaskAverage,
     isTaskStatusCreated, isTaskStatusRunning,
-    orderSewingTasksByStatus,
-    repositionSewingTaskLines,
+    orderCuttingTasksByStatus,
+    repositionCuttingTaskLines,
     setTaskPositionInRenderMatrix,
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
     import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
     import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
-    import { SEWING_MACHINES, SEWING_TASK_DRAFT, SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
+    import { CUTTING_MACHINES, CUTTING_TASK_DRAFT, CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
 
-    import ManageItem from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItem.vue'
+    import ManageItem from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageItem.vue'
     import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
     import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
-    import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
-    import ManageTaskCard from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
+    import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageItemDataLabel.vue'
+    import ManageTaskCard from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
     import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
     import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
-    import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
+    import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
 
-    // type IDay = ISewingTask & IPlanMatrixDayItem
+    // type IDay = ICuttingTask & IPlanMatrixDayItem
 
     interface IProps {
         date: Date
-        day?: IDay[]
+        day?: IDay[],
     }
 
     const props = withDefaults(defineProps<IProps>(), {
@@ -399,16 +393,16 @@ import {
     // console.log('renderMatrixCopy: ', renderMatrixCopy)
 
     // __ Данные из Хранилища
-    const sewingStore = useSewingStore()
+    const cuttingStore = useCuttingStore()
 
     const {
-        globalSewingTaskTimesShow,
-        globalSewingTaskFullDaysShow,
+        globalCuttingTaskTimesShow,
+        globalCuttingTaskFullDaysShow,
         /*globalDiffs,*/
-        globalSewingTasks,
-        globalSewingTaskActiveOrderId,
-        globalSewingTaskStatuses,
-    } = storeToRefs(sewingStore)
+        globalCuttingTasks,
+        globalCuttingTaskActiveOrderId,
+        globalCuttingTaskStatuses,
+    } = storeToRefs(cuttingStore)
 
     const planStore = usePlansStore()
     const { planPeriodGlobal } = storeToRefs(planStore)
@@ -420,10 +414,10 @@ import {
     const REFERENCE_TIME = 10.5 * 60 * 60 // в секунды
 
     // __ Высота под Итого
-    const heightTotals = computed(() => (globalSewingTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
+    const heightTotals = computed(() => (globalCuttingTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
 
     // __ Дата
-    const renderDate = computed(() => formatDateInFullFormat(props.date, !globalSewingTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
+    const renderDate = computed(() => formatDateInFullFormat(props.date, !globalCuttingTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
     // const renderDate = computed(() => getDateFromDateTimeString(props.date))
 
     // TODO: Переписать все в dateType()
@@ -466,12 +460,12 @@ import {
 
     // __ Общее количество и время в виде Объекта
     const amountAndTimeTotalDay = computed(() => {
-        //  __ Создаем сам объект данных с ключами из SEWING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+        //  __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
         const amountAndTimeObj = createAmountAndTimeObj()
 
-        props.day.forEach(sewingTask => {
-            const amountAndTime = getSewingTaskAmountAndTime(sewingTask)
-            // const amountAndTime = getAmountAndTime(sewingTask)
+        props.day.forEach(cuttingTask => {
+            const amountAndTime = getCuttingTaskAmountAndTime(cuttingTask as ICuttingTask)
+            // const amountAndTime = getAmountAndTime(cuttingTask)
 
             Object.entries(amountAndTime).forEach(([key, value]) => {
                 amountAndTimeObj[key].amount += value.amount
@@ -510,15 +504,15 @@ import {
     const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
     // __ Установка активного Заказа
-    const selectSewingTask = (sewingTask: ISewingTask) => {
-        globalSewingTaskActiveOrderId.value = sewingTask.order.id
+    const selectCuttingTask = (cuttingTask: ICuttingTask) => {
+        globalCuttingTaskActiveOrderId.value = cuttingTask.order.id
     }
 
     // __ Карточка СЗ
-    const taskCard = ref<ISewingTask>(SEWING_TASK_DRAFT)
+    const taskCard = ref<ICuttingTask>(CUTTING_TASK_DRAFT)
 
-    const showSewingTaskCard = async (sewingTask: ISewingTask) => {
-        taskCard.value = JSON.parse(JSON.stringify(sewingTask)) // __ Копируем объект, чтобы не мутировал оригинал
+    const showCuttingTaskCard = async (cuttingTask: ICuttingTask) => {
+        taskCard.value = JSON.parse(JSON.stringify(cuttingTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
         // __ Показываем модальное окно обработки СЗ
         const answer = await manageTaskCard.value!.show()
@@ -533,35 +527,35 @@ import {
         // __ Если есть правая панель, то это создание нового СЗ
         if (rightPanel.length > 0) {
             // __ Создаем новое СЗ на основе копии
-            const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
+            const newCuttingTask = JSON.parse(JSON.stringify(cuttingTask))
 
             // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-            newSewingTask.position += 0.1
+            newCuttingTask.position += 0.1
 
             // __ Устанавливаем id
             // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-            newSewingTask.id = 0
+            newCuttingTask.id = 0
 
-            // __ Пересчитываем позиции для строк СЗ (SewingLines[])
-            // leftPanel  = repositionSewingTaskLines(leftPanel)
-            // rightPanel = repositionSewingTaskLines(rightPanel)
+            // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+            // leftPanel  = repositionCuttingTaskLines(leftPanel)
+            // rightPanel = repositionCuttingTaskLines(rightPanel)
 
             // __ Обновляем глобальный state СЗ
-            // sewingTask.sewing_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
-            // newSewingTask.sewing_lines = rightPanel
+            // cuttingTask.cutting_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+            // newCuttingTask.cutting_lines = rightPanel
 
             // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel) // __ Тут реактивное перерисовывание
+            await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel, newCuttingTask, rightPanel) // __ Тут реактивное перерисовывание
 
             // console.log(taskCard.value)
         } else {
             // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
 
-            // __ Пересчитываем позиции для строк СЗ (SewingLines[])
-            // leftPanel = repositionSewingTaskLines(leftPanel)
+            // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+            // leftPanel = repositionCuttingTaskLines(leftPanel)
 
             // __ Обновляем глобальный state СЗ
-            await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel) // __ Тут реактивное перерисовывание
+            await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel) // __ Тут реактивное перерисовывание
         }
     }
 
@@ -596,7 +590,7 @@ import {
 
         // __ Проверяем, что перемещаемый элемент не в прошлом
         const nowDate = formatToYMD(new Date())
-        const dateDiff = getDaysDifferenceFromSewingDates(movedElement.action_at, nowDate)
+        const dateDiff = getDaysDifferenceFromCuttingDates(movedElement.action_at, nowDate)
 
         // console.log('movedElement.action_at: ', movedElement.action_at)
         // console.log('nowDate: ', nowDate)
@@ -659,7 +653,7 @@ import {
             if (isTaskStatusRunning(movedElement)) {
 
                 // __ Получаем флаг готовности к добавлению новых СЗ
-                const isReady: ISewingDay = await sewingStore.readyGetSewingDay(splitDate(movedElement.action_at))
+                const isReady: ICuttingDay = await cuttingStore.readyGetCuttingDay(splitDate(movedElement.action_at))
 
                 if (!isReady) {
                     await showError([
@@ -676,7 +670,7 @@ import {
             }
 
             // __ Перемещаем СЗ без вывода дополнительной информации
-            await sewingStore.applyChanges(diffs) // __ Применяем изменения
+            await cuttingStore.applyChanges(diffs) // __ Применяем изменения
 
         } else {
 
@@ -695,8 +689,8 @@ import {
             }
 
             // __ Находим те изменения, которые относятся к перемещаемой СЗ
-            const diffsForSewingTask = diffs.find(diff => diff.isMoved)
-            if (!diffsForSewingTask) {
+            const diffsForCuttingTask = diffs.find(diff => diff.isMoved)
+            if (!diffsForCuttingTask) {
                 // __ Откатываем изменения
                 console.error('Не найдено изменений для перемещения СЗ')
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
@@ -704,8 +698,8 @@ import {
             }
 
             // __ Получаем СЗ, которое перемещаем, здесь не мутируем
-            const sewingTask = globalSewingTasks.value.find(task => task.id === diffsForSewingTask.taskId)
-            if (!sewingTask) {
+            const cuttingTask = globalCuttingTasks.value.find(task => task.id === diffsForCuttingTask.taskId)
+            if (!cuttingTask) {
                 // __ Откатываем изменения
                 console.error('Не найдено СЗ для перемещения')
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
@@ -714,15 +708,15 @@ import {
 
             // __ Получаем дату, на которую нужно переместить СЗ
             const targetDate = additionDaysInStrFormat(
-                sewingTask.action_at,
-                (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0)
+                cuttingTask.action_at,
+                (diffsForCuttingTask.dayToOffset ?? 0) - (diffsForCuttingTask.dayFromOffset ?? 0)
             )
 
             // __ Проверяем, на даты СЗ и отгрузки
-            let dateDiff = getDaysDifferenceFromSewingDates(sewingTask.order.load_at ?? targetDate, targetDate)
+            let dateDiff = getDaysDifferenceFromCuttingDates(cuttingTask.order.load_at ?? targetDate, targetDate)
 
             // console.log('targetDate: ', targetDate)
-            // console.log('sewingTask.order.load_at: ', sewingTask.order.load_at)
+            // console.log('cuttingTask.order.load_at: ', cuttingTask.order.load_at)
             // console.log('dateDiff: ', dateDiff)
 
             if (dateDiff < 0) {
@@ -730,7 +724,7 @@ import {
                     'Ошибка!',
                     'Дата СЗ не может быть позднее даты загрузки',
                     'на складе!',
-                    `Дата загрузки на складе: ${formatDateIntl(splitDate(sewingTask.order.load_at ?? targetDate), true)}`,
+                    `Дата загрузки на складе: ${formatDateIntl(splitDate(cuttingTask.order.load_at ?? targetDate), true)}`,
                 ])
                 renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
                 return
@@ -738,7 +732,7 @@ import {
 
             // __ Проверяем, на даты СЗ и текущую дату (чтобы не было в прошлом)
             const nowDate = formatToYMD(new Date())
-            dateDiff = getDaysDifferenceFromSewingDates(targetDate, nowDate)
+            dateDiff = getDaysDifferenceFromCuttingDates(targetDate, nowDate)
 
             // console.log('targetDate: ', targetDate)
             // console.log('nowDate: ', nowDate)
@@ -751,10 +745,10 @@ import {
             }
 
             // __ Проверяем, что СЗ не находится в процессе выполнения
-            if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
+            if (await cuttingStore.checkCuttingTasksByStatusOnDate(splitDate(targetDate), CUTTING_TASK_STATUSES.RUNNING.ID)) {
 
                 // __ Получаем флаг готовности к добавлению новых СЗ
-                const isReady: boolean = await sewingStore.readyGetSewingDay(splitDate(targetDate))
+                const isReady: boolean = await cuttingStore.readyGetCuttingDay(splitDate(targetDate))
 
                 if (!isReady) {
                     // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
@@ -785,11 +779,11 @@ import {
                 if (answer) {
 
                     // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
-                    diffsForSewingTask.statusId = SEWING_TASK_STATUSES.RUNNING.ID
-                    // console.log('diffsForSewingTask: ', diffsForSewingTask)
+                    diffsForCuttingTask.statusId = CUTTING_TASK_STATUSES.RUNNING.ID
+                    // console.log('diffsForCuttingTask: ', diffsForCuttingTask)
                     // console.log('diffs: ', diffs)
 
-                    const result = await sewingStore.applyChanges(diffs) // __ Применяем изменения
+                    const result = await cuttingStore.applyChanges(diffs) // __ Применяем изменения
                     // console.log('result: ', result)
 
                     if (!checkCRUD(result)) {
@@ -810,7 +804,7 @@ import {
             }
 
             // // __ Проверяем, что СЗ не находится в процессе выполнения (Старый вариант)
-            // if (await sewingStore.checkSewingTasksByStatusOnDate(splitDate(targetDate), SEWING_TASK_STATUSES.RUNNING.ID)) {
+            // if (await cuttingStore.checkCuttingTasksByStatusOnDate(splitDate(targetDate), CUTTING_TASK_STATUSES.RUNNING.ID)) {
             //     await showError([
             //         'Ошибка!',
             //         'Нельзя переместить СЗ в день, в котором',
@@ -824,13 +818,13 @@ import {
 
             // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
             // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-            const existingSewingTasks = getSewingTasksSameOrderInDay(sewingTask, globalSewingTasks.value, targetDate, true)
+            const existingCuttingTasks = getCuttingTasksSameOrderInDay(cuttingTask, globalCuttingTasks.value, targetDate, true)
 
             // __ Формируем текст для модального окна
-            const orderInfo = `${sewingTask.order.client.short_name} №${sewingTask.order.order_no_str}`
+            const orderInfo = `${cuttingTask.order.client.short_name} №${cuttingTask.order.order_no_str}`
 
             // __ Находим количество для формирования динамического меню
-            const totalAmount = sewingTask.sewing_lines.reduce((acc, item) => acc + item.amount, 0)
+            const totalAmount = cuttingTask.cutting_lines.reduce((acc, item) => acc + item.amount, 0)
 
             // __ Показываем модальное меню и обрабатываем результаты
             modalMenuType.value = 'primary'
@@ -860,7 +854,7 @@ import {
                 // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
                 // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-                if (existingSewingTasks.length) {
+                if (existingCuttingTasks.length) {
                     // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                     modalInfoType.value = 'success'
                     modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -870,21 +864,21 @@ import {
 
                     if (result) {
                         // __ С объединением
-                        // console.warn('Union SewingTasks')
+                        // console.warn('Union CuttingTasks')
 
                         // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                        await sewingStore.applyMergeTasks([existingSewingTasks[0], sewingTask]) // __ Объединяем СЗ с первой
-                        // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
+                        await cuttingStore.applyMergeTasks([existingCuttingTasks[0], cuttingTask]) // __ Объединяем СЗ с первой
+                        // cuttingStore.applyMergeTasks([cuttingTask, ...existingCuttingTasks])   // __ Объединяем все остальные
                         return
                     }
                 }
 
-                await sewingStore.applyChanges(diffs) // __ Применяем изменения
+                await cuttingStore.applyChanges(diffs) // __ Применяем изменения
             } else if (result.menuItem === 2) {
                 // __ Перемещаем часть СЗ в другой день
                 // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
-                taskCard.value = JSON.parse(JSON.stringify(sewingTask)) // __ Копируем объект, чтобы не мутировал оригинал
+                taskCard.value = JSON.parse(JSON.stringify(cuttingTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
                 // __ Показываем модальное окно обработки СЗ
                 const answer = await manageTaskCard.value!.show()
@@ -901,23 +895,23 @@ import {
                 // __ Если есть правая панель, то это создание нового СЗ
                 if (rightPanel.length > 0) {
                     // __ Создаем новое СЗ на основе копии
-                    const newSewingTask = JSON.parse(JSON.stringify(sewingTask))
+                    const newCuttingTask = JSON.parse(JSON.stringify(cuttingTask))
 
                     // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-                    newSewingTask.position = (diffsForSewingTask.newTaskPosition ?? 1) - 0.1
+                    newCuttingTask.position = (diffsForCuttingTask.newTaskPosition ?? 1) - 0.1
 
                     // __ Устанавливаем новую дату, высчитываем новую дату по смещению
-                    newSewingTask.action_at = additionDaysInStrFormat(
-                        newSewingTask.action_at,
-                        (diffsForSewingTask.dayToOffset ?? 0) - (diffsForSewingTask.dayFromOffset ?? 0)
+                    newCuttingTask.action_at = additionDaysInStrFormat(
+                        newCuttingTask.action_at,
+                        (diffsForCuttingTask.dayToOffset ?? 0) - (diffsForCuttingTask.dayFromOffset ?? 0)
                     )
 
                     // __ Устанавливаем id
                     // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-                    newSewingTask.id = 0
+                    newCuttingTask.id = 0
 
                     // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-                    if (existingSewingTasks.length) {
+                    if (existingCuttingTasks.length) {
                         // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                         modalInfoType.value = 'success'
                         modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -927,25 +921,25 @@ import {
 
                         if (result) {
                             // __ С объединением
-                            console.warn('Union SewingTasks')
+                            console.warn('Union CuttingTasks')
 
                             // __ Переносим правую панель в новый СЗ
-                            rightPanel = repositionSewingTaskLines(rightPanel)
-                            newSewingTask.sewing_lines = rightPanel
+                            rightPanel = repositionCuttingTaskLines(rightPanel)
+                            newCuttingTask.cutting_lines = rightPanel
 
                             // __ Изменяем содержимое в СЗ
-                            leftPanel = repositionSewingTaskLines(leftPanel)
-                            sewingStore.setSewingTasksLines(sewingTask, leftPanel) // __ Делаем это в родителе
+                            leftPanel = repositionCuttingTaskLines(leftPanel)
+                            cuttingStore.setCuttingTasksLines(cuttingTask, leftPanel) // __ Делаем это в родителе
 
                             // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                            await sewingStore.applyMergeTasks([existingSewingTasks[0], newSewingTask]) // __ Объединяем СЗ с первой
-                            // sewingStore.applyMergeTasks([sewingTask, ...existingSewingTasks])   // __ Объединяем все остальные
+                            await cuttingStore.applyMergeTasks([existingCuttingTasks[0], newCuttingTask]) // __ Объединяем СЗ с первой
+                            // cuttingStore.applyMergeTasks([cuttingTask, ...existingCuttingTasks])   // __ Объединяем все остальные
                             return
                         }
                     }
 
                     // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-                    await sewingStore.addSewingTaskToGlobal(sewingTask, leftPanel, newSewingTask, rightPanel) // __ Тут реактивное перерисовывание
+                    await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel, newCuttingTask, rightPanel) // __ Тут реактивное перерисовывание
                 } else {
                     // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
                     // __ Игнорируем это поведение и просто показываем сообщение об ошибке
@@ -981,21 +975,21 @@ import {
     }
 
     // __ Вспомогалка. Устанавливаем статусы для СЗ
-    const setStatuses = async (setStatuses: ISewingTaskStatusesSet[]) => {
+    const setStatuses = async (setStatuses: ICuttingTaskStatusesSet[]) => {
         if (setStatuses.length) {
             // __ Отправляем запрос на сервер
-            const result = await sewingStore.setSewingTasksStatuses(setStatuses)
+            const result = await cuttingStore.setCuttingTasksStatuses(setStatuses)
 
             // __ Установка статусов на лету
             if (checkCRUD(result)) {
                 // __ Получаем статусы, если не получили их ранее
-                if (!globalSewingTaskStatuses.value.length) {
-                    await sewingStore.getSewingTaskStatuses()
+                if (!globalCuttingTaskStatuses.value.length) {
+                    await cuttingStore.getCuttingTaskStatuses()
                 }
 
                 setStatuses.forEach(item => {
-                    const task = globalSewingTasks.value.find(task => task.id === item.task)
-                    const status = globalSewingTaskStatuses.value.find(status => status.id === item.status)
+                    const task = globalCuttingTasks.value.find(task => task.id === item.task)
+                    const status = globalCuttingTaskStatuses.value.find(status => status.id === item.status)
 
                     if (task && status) {
                         task.current_status.id = item.status
@@ -1012,7 +1006,7 @@ import {
     const actionDayMenu = async () => {
         console.log('props.day: ', props.day)
 
-        const clearDay = clearRenderMatrixDay(props.day) // __ Возвращаем новый массив без пустых элементов
+        const clearDay = clearRenderMatrixDay(props.day) as ICuttingTask[]  // __ Возвращаем новый массив без пустых элементов
 
         // __ Проверяем, есть ли СЗ в дне
         if (!clearDay.length) {
@@ -1048,7 +1042,7 @@ import {
                 // __ Отправляем на выполнение то, что создано или создано при закрытии смены
                 // __ и не является AVERAGE
                 if (isTaskStatusCreated(task) && !isTaskAverage(task)) {
-                    return { task: task.id, status: SEWING_TASK_STATUSES.PENDING.ID }
+                    return { task: task.id, status: CUTTING_TASK_STATUSES.PENDING.ID }
                 }
 
                 return []
@@ -1059,15 +1053,15 @@ import {
             // __ Отправляем СЗ со статусом Pending вверх списка
             const dayClone = JSON.parse(JSON.stringify(clearDay))
 
-            const newOrders = orderSewingTasksByStatus(dayClone)
-            const diffsTask = getSewingTasksDiff(newOrders, clearDay)
+            const newOrders = orderCuttingTasksByStatus(dayClone)
+            const diffsTask = getCuttingTasksDiff(newOrders, clearDay)
 
-            const result = await sewingStore.saveChanges(newOrders, clearDay)
+            const result = await cuttingStore.saveChanges(newOrders, clearDay)
 
             // __ Меняем реактивно позиции в отображении
             if (checkCRUD(result)) {
                 diffsTask.forEach(item => {
-                    const task = globalSewingTasks.value.find(task => task.id === item.taskId)
+                    const task = globalCuttingTasks.value.find(task => task.id === item.taskId)
                     if (task && item.taskChanges?.position?.new) {
                         task.position = item.taskChanges.position.new
                     }
@@ -1082,8 +1076,8 @@ import {
             const setStatusesData = clearDay.flatMap(task => {
                 // return { task: task.id, status: 1 }
                 // __ Отправляем на выполнение то, что создано или создано при закрытии смены
-                if (task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID) {
-                    return { task: task.id, status: SEWING_TASK_STATUSES.CREATED.ID }
+                if (task.current_status.id === CUTTING_TASK_STATUSES.PENDING.ID) {
+                    return { task: task.id, status: CUTTING_TASK_STATUSES.CREATED.ID }
                 }
 
                 return []
@@ -1095,23 +1089,23 @@ import {
 
         // __ Объединение СЗ для одной Заявки
         if (result.menuItem === 3) {
-            const grouped = getSewingTasksGroupedByOrder(clearDay) // __ Получаем массив массивов СЗ по одинаковым Заявкам
+            const grouped = getCuttingTasksGroupedByOrder(clearDay) // __ Получаем массив массивов СЗ по одинаковым Заявкам
             // console.log('target: ', grouped)
-            await sewingStore.applyMergeTasksGroups(grouped)
+            await cuttingStore.applyMergeTasksGroups(grouped)
             return
         }
 
         // __ Сохранение комментария
         if (result.menuItem === 4) {
             // __ Получаем день
-            const sewingDay = await sewingStore.getSewingDayByDateAndChange(formatToYMD(props.date))
-            console.log('day: ', sewingDay)
+            const cuttingDay = await cuttingStore.getCuttingDayByDateAndChange(formatToYMD(props.date))
+            console.log('day: ', cuttingDay)
 
-            comment.value = sewingDay.comment ?? '' // __ Устанавливаем комментарий
+            comment.value = cuttingDay.comment ?? '' // __ Устанавливаем комментарий
             const answer = await commentEdit.value!.show()
             if (answer) {
                 const newComment = commentEdit.value!.comment.trim()
-                const result = await sewingStore.setSewingDayComment(sewingDay.id, newComment)
+                const result = await cuttingStore.setCuttingDayComment(cuttingDay.id, newComment)
                 if (!checkCRUD(result)) {
                     await showError()
                     return

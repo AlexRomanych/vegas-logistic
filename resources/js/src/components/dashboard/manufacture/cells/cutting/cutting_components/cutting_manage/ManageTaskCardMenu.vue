@@ -137,7 +137,7 @@
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
             :text-size="MENU_ITEMS_TEXT_SIZE"
-            :type="sewingTask.comment ? 'orange' : MENU_ITEMS_TYPE"
+            :type="cuttingTask.comment ? 'orange' : MENU_ITEMS_TYPE"
             class="field"
             text="Комментарий"
             width="w-[90px]"
@@ -159,16 +159,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 
-import type { IColorTypes, ISewingLinesPanel, ISewingTask, ISewingTaskLine } from '@/types'
+import type { IColorTypes, ICuttingLinesPanel, ICuttingTask, ICuttingTaskLine } from '@/types'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 interface IProps {
-    activePanel: ISewingLinesPanel
-    sewingLines: ISewingTaskLine[],
-    sewingTask: ISewingTask,
+    activePanel: ICuttingLinesPanel
+    cuttingLines: ICuttingTaskLine[],
+    cuttingTask: ICuttingTask,
     showComments?: boolean,
     showDetails?: boolean,
 }
@@ -215,7 +215,7 @@ const reloadData = async () => {
     }
 }
 
-const canMerge = computed(() => props.sewingLines.length > 1)
+const canMerge = computed(() => props.cuttingLines.length > 1)
 
 // __ Объединить строки
 const mergeLines = async () => {

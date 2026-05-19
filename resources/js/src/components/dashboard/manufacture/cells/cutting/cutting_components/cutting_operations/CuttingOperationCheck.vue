@@ -71,7 +71,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, ref } from 'vue'
-import type { IColorTypes, ISewingOperationSchema } from '@/types'
+import type { IColorTypes, ICuttingOperationSchema } from '@/types'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
@@ -82,7 +82,7 @@ interface IProps {
     subtitle?: string,
     headers: string[], // Заголовки таблицы
     tableData: string[][],  // Массив объектов с данными
-    schema: ISewingOperationSchema | null
+    schema: ICuttingOperationSchema | null
     // title?: string,
 }
 

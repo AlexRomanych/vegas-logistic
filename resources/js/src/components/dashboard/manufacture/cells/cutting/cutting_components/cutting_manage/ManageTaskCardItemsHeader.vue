@@ -212,32 +212,32 @@
 </template>
 
 <script lang="ts" setup>
-import type { ISewingLinesPanel, ISewingTaskCardSort } from '@/types'
+import type { ICuttingLinesPanel, ICuttingTaskCardSort } from '@/types'
 import type {
-    IRenderSewingLineData
-} from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageTaskCard.vue'
+    IRenderCuttingLineData
+} from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 
 interface IProps {
-    renderData: IRenderSewingLineData
-    panel: ISewingLinesPanel
-    activePanel: ISewingLinesPanel
+    renderData: IRenderCuttingLineData
+    panel: ICuttingLinesPanel
+    activePanel: ICuttingLinesPanel
     showComments?: boolean,
     showDetails?: boolean,
-    sortPosition?: ISewingTaskCardSort
-    sortName?: ISewingTaskCardSort
-    sortUniversal?: ISewingTaskCardSort
-    sortAuto?: ISewingTaskCardSort
-    sortSolidHard?: ISewingTaskCardSort
-    sortSolidLite?: ISewingTaskCardSort
-    sortTextile?: ISewingTaskCardSort
-    sortKant?: ISewingTaskCardSort
-    sortTkch?: ISewingTaskCardSort
-    sortAmount?: ISewingTaskCardSort
-    sortTime?: ISewingTaskCardSort
-    sortSize?: ISewingTaskCardSort
+    sortPosition?: ICuttingTaskCardSort
+    sortName?: ICuttingTaskCardSort
+    sortUniversal?: ICuttingTaskCardSort
+    sortAuto?: ICuttingTaskCardSort
+    sortSolidHard?: ICuttingTaskCardSort
+    sortSolidLite?: ICuttingTaskCardSort
+    sortTextile?: ICuttingTaskCardSort
+    sortKant?: ICuttingTaskCardSort
+    sortTkch?: ICuttingTaskCardSort
+    sortAmount?: ICuttingTaskCardSort
+    sortTime?: ICuttingTaskCardSort
+    sortSize?: ICuttingTaskCardSort
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -272,7 +272,7 @@ const SORT_BY_DESC_TYPE = 'indigo'
 
 
 // __ Получаем тип в зависимости от направления сортировки
-const getPositionBySort = (sort: ISewingTaskCardSort) => {
+const getPositionBySort = (sort: ICuttingTaskCardSort) => {
     if (props.panel !== props.activePanel) return DEFAULT_TYPE
     if (sort === 'none') return DEFAULT_TYPE
     if (sort === 'asc') return SORT_BY_ASC_TYPE

@@ -1,11 +1,11 @@
 <template>
 
-    <div :class="[!sewingTask.collapsed ? 'mt-1' : '']" class="flex">
+    <div :class="[!cuttingTask.collapsed ? 'mt-1' : '']" class="flex">
 
         <!-- __ Collapsed -->
         <AppLabelTSWrapper
             :render-object="render.collapsed"
-            @click="sewingTask.collapsed = !sewingTask.collapsed"
+            @click="cuttingTask.collapsed = !cuttingTask.collapsed"
         />
 
         <!-- __ id -->
@@ -44,20 +44,20 @@
 
     </div>
 
-    <div v-if="!sewingTask.collapsed">
+    <div v-if="!cuttingTask.collapsed">
         <div class="ml-[34px] mb-2">
 
             <!-- __ Заголовок -->
             <ExecuteTaskLineHeader
-                :fields-width="sewingLineFieldsWidth"
+                :fields-width="cuttingLineFieldsWidth"
             />
 
             <!-- __ Данные -->
-            <div v-for="sewingLine of sewingTask.sewing_lines" :key="sewingLine.id">
+            <div v-for="cuttingLine of cuttingTask.cutting_lines" :key="cuttingLine.id">
                 <ExecuteTaskLine
-                    :fields-width="sewingLineFieldsWidth"
-                    :sewing-line="sewingLine"
-                    @dblclick="showLineInfo(sewingLine)"
+                    :fields-width="cuttingLineFieldsWidth"
+                    :cutting-line="cuttingLine"
+                    @dblclick="showLineInfo(cuttingLine)"
                 />
             </div>
 
@@ -95,30 +95,30 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue'
 
-import type { IRenderData, ISewingTask, ISewingTaskLine, ISewingTaskOrderLine } from '@/types'
+import type { IRenderData, ICuttingTask, ICuttingTaskLine, ICuttingTaskOrderLine } from '@/types'
 
 import {
-    getExecuteTaskStatistics, getSewingTaskAmountAndTime, getTaskStatusById,
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+    getExecuteTaskStatistics, getCuttingTaskAmountAndTime, getTaskStatusById,
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import ExecuteTaskLine
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskLine.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskLine.vue'
 import ExecuteTaskLineHeader
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskLineHeader.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskLineHeader.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import ExecuteTaskTotals
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskTotals.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskTotals.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
-import OrderItemInfo from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/OrderItemInfo.vue'
-// import CommentEdit from '@/components/dashboard/manufacture/cells/sewing/sewing_components/common/CommentEdit.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/OrderItemInfo.vue'
+// import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
 
 interface IProps {
-    sewingTask: ISewingTask
+    cuttingTask: ICuttingTask
     fieldsWidth: Record<string, string>
     clientShow?: boolean
     orderInfo?: boolean
@@ -131,7 +131,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 
 // __ Тип для модального окна информации о записи в Заявке
-const orderLine     = ref<ISewingTaskOrderLine | null>(null)
+const orderLine     = ref<ICuttingTaskOrderLine | null>(null)
 const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)
 
 
@@ -168,7 +168,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍collapsed...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.collapsed ? '▲' : '▼',
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.collapsed ? '▲' : '▼',
         class:          'cursor-pointer',
     },
     id:            {
@@ -186,7 +186,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍id...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.id.toString(),
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.id.toString(),
     },
     position:      {
         id:             () => 'position-search',
@@ -203,7 +203,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.position.toString(),
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.position.toString(),
     },
     client:        {
         id:             () => 'client-search',
@@ -220,7 +220,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Клиент...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.order.client.short_name,
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.client.short_name,
     },
     order_no:      {
         id:             () => 'order-no-search',
@@ -237,7 +237,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍№ ...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.order.order_no_num.toString(),
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.order_no_num.toString(),
     },
     status:        {
         id:             () => 'status-search',
@@ -254,8 +254,8 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Статус...',
-        data:           (/*sewingTask: ISewingTask*/) => {
-            const status = getTaskStatusById(props.sewingTask.current_status.id)
+        data:           (/*cuttingTask: ICuttingTask*/) => {
+            const status = getTaskStatusById(props.cuttingTask.current_status.id)
             return status?.TITLE ?? ''
         },
     },
@@ -274,7 +274,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍 Дата загрузки...',
-        data:           (/*sewingTask: ISewingTask*/) => formatDateInFullFormat(props.sewingTask.order.load_at, true, false),
+        data:           (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.order.load_at, true, false),
     },
     action_at:       {
         id:             () => 'action-at-search',
@@ -291,7 +291,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Прогресс...',
-        data:           (/*sewingTask: ISewingTask*/) => formatDateInFullFormat(props.sewingTask.action_at, true, false),
+        data:           (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.action_at, true, false),
     },
     progressTotal: {
         id:             () => 'progress-total-search',
@@ -307,7 +307,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Прогресс...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.comment ?? '',
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
     },
     comment:       {
         id:             () => 'comment-search',
@@ -324,7 +324,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Комментарий...',
-        data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.comment ?? '',
+        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
         class:          'truncate',
     },
 
@@ -332,7 +332,7 @@ const render: IRenderData = reactive({
 
 
 // __ Ширина полей для вывода СЗ
-const sewingLineFieldsWidth = {
+const cuttingLineFieldsWidth = {
     checker:      'w-[30px]',
     id:           'w-[30px]',
     position:     'w-[30px]',
@@ -353,17 +353,17 @@ const sewingLineFieldsWidth = {
 }
 
 // __ Пересчитываем Итого
-const calculateTotals = computed(() => getSewingTaskAmountAndTime(props.sewingTask.sewing_lines))
+const calculateTotals = computed(() => getCuttingTaskAmountAndTime(props.cuttingTask.cutting_lines))
 
 // __ Цвет от статуса СЗ
-const color = computed<string>(() => props.sewingTask.current_status.color)
+const color = computed<string>(() => props.cuttingTask.current_status.color)
 
 // __ Объект статистики
-const statistics = computed(() => getExecuteTaskStatistics(props.sewingTask))
+const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
 
 // __ Показать информацию о записи
-const showLineInfo = async (sewingLine: ISewingTaskLine) => {
-    orderLine.value = sewingLine.order_line
+const showLineInfo = async (cuttingLine: ICuttingTaskLine) => {
+    orderLine.value = cuttingLine.order_line
     await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 }
 

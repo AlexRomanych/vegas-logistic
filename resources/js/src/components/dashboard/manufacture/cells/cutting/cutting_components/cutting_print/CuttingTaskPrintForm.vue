@@ -7,7 +7,7 @@
             <h1>Сменное задание участка <span class="font-semibold">Пошива</span> от <span
                 class="font-semibold">{{ formatDateInFullFormat(metaData.action_at) }}</span></h1>
             <h1>Сменное задание: <span class="font-semibold">{{ metaData.task_title }}</span></h1>
-            <h1>Группа ШМ: <span class="font-semibold">{{ metaData.sewing_group }}</span></h1>
+            <h1>Группа ШМ: <span class="font-semibold">{{ metaData.cutting_group }}</span></h1>
             <!--<p>Дата печати: <span class="font-semibold">{{ new Date().toLocaleDateString() }}</span></p>-->
             <p>Дата печати: <span class="font-semibold">{{ formatDateInFullFormat(new Date().toDateString()) }}</span></p>
         </header>
@@ -47,11 +47,11 @@
                 <tr v-for="(line, index) of subgroup.lines" :key="line.id">
                     <td class="data-td">{{ index + 1 }}</td>
                     <td class="data-td">{{ getCoverSizeString(line) }}</td>
-                    <td>{{ getSewingTaskModelCoverName(line) }}</td>
+                    <td>{{ getCuttingTaskModelCoverName(line) }}</td>
                     <td class="data-td">{{ line.amount }}</td>
                     <!--<td class="time-cell">{{ time(line) }}</td>-->
                     <td class="data-td">{{ line.order_line.textile ?? '' }}</td>
-                    <td class="data-td">{{ sewingMachine(line) }}</td>
+                    <td class="data-td">{{ cuttingMachine(line) }}</td>
                     <td class="data-td">{{ line.order_line.model.main.tkch ?? '' }}</td>
                     <td class="data-td">{{ line.order_line.model.main.kant ?? '' }}</td>
                     <td class="data-td">{{ line.order_line.model.main.kdch ?? '' }}</td>
@@ -71,31 +71,31 @@
 
 
 <script lang="ts" setup>
-import type { ISewingTaskLine, ISewingTaskLinesSubgroup } from '@/types'
+import type { ICuttingTaskLine, ICuttingTaskLinesSubgroup } from '@/types'
 
 import { onMounted, ref } from 'vue'
 
-import { getCoverSizeString, getSewingLineMachineType, getSewingTaskModelCoverName, /*getTimeString*/ } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getCoverSizeString, getCuttingLineMachineType, getCuttingTaskModelCoverName, /*getTimeString*/ } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 
-const printData = ref<ISewingTaskLinesSubgroup[]>([]) // массив строк для печати
+const printData = ref<ICuttingTaskLinesSubgroup[]>([]) // массив строк для печати
 const metaData  = ref<Record<string, string>>({})
-// const time = (line: ISewingTaskLine) => getTimeString(line, true).replaceAll('.', '')
+// const time = (line: ICuttingTaskLine) => getTimeString(line, true).replaceAll('.', '')
 
-const sewingMachine = (sewingLine: ISewingTaskLine) => {
-    const machine = getSewingLineMachineType(sewingLine)
+const cuttingMachine = (cuttingLine: ICuttingTaskLine) => {
+    const machine = getCuttingLineMachineType(cuttingLine)
 
     switch (machine) {
-        case SEWING_MACHINES.UNIVERSAL:
+        case CUTTING_MACHINES.UNIVERSAL:
             return 'У'
-        case SEWING_MACHINES.AUTO:
+        case CUTTING_MACHINES.AUTO:
             return 'А'
-        case SEWING_MACHINES.SOLID_HARD:
+        case CUTTING_MACHINES.SOLID_HARD:
             return 'ГС'
-        case SEWING_MACHINES.SOLID_LITE:
+        case CUTTING_MACHINES.SOLID_LITE:
             return 'ГП'
     }
 

@@ -37,10 +37,10 @@
         <!-- __ Количество + Трудозатраты УШМ -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[SEWING_MACHINES.UNIVERSAL].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.UNIVERSAL].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[SEWING_MACHINES.UNIVERSAL].time"
+            :time="amountAndTime[CUTTING_MACHINES.UNIVERSAL].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
@@ -48,10 +48,10 @@
         <!-- __ Количество + Трудозатраты АШМ -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[SEWING_MACHINES.AUTO].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.AUTO].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[SEWING_MACHINES.AUTO].time"
+            :time="amountAndTime[CUTTING_MACHINES.AUTO].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
@@ -59,10 +59,10 @@
         <!-- __ Количество + Трудозатраты Solid Hard -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[SEWING_MACHINES.SOLID_HARD].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.SOLID_HARD].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[SEWING_MACHINES.SOLID_HARD].time"
+            :time="amountAndTime[CUTTING_MACHINES.SOLID_HARD].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
@@ -70,22 +70,22 @@
         <!-- __ Количество + Трудозатраты Solid Lite -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[SEWING_MACHINES.SOLID_LITE].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.SOLID_LITE].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[SEWING_MACHINES.SOLID_LITE].time"
+            :time="amountAndTime[CUTTING_MACHINES.SOLID_LITE].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
         <ManageItemDataLabel
-            v-if="amountAndTime[SEWING_MACHINES.UNKNOWN].time"
+            v-if="amountAndTime[CUTTING_MACHINES.UNKNOWN].time"
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[SEWING_MACHINES.UNKNOWN].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.UNKNOWN].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[SEWING_MACHINES.UNKNOWN].time"
+            :time="amountAndTime[CUTTING_MACHINES.UNKNOWN].time"
             type="danger"
             :width="TOTAL_ITEMS_WIDTH"
         />
@@ -99,10 +99,10 @@ import { computed } from 'vue'
 
 import type { IAmountAndTime } from '@/types'
 
-import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 
 import ManageItemDataLabel
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageItemDataLabel.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface IProps {

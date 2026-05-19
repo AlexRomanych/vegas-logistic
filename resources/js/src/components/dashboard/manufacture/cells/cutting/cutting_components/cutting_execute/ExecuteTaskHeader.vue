@@ -82,8 +82,8 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍collapsed...',
-        data:           (/*sewingTask: ISewingTask*/) => '',
-        // data:           (/*sewingTask: ISewingTask*/) => props.sewingTask.collapsed ? '▲' : '▼'
+        data:           (/*cuttingTask: ICuttingTask*/) => '',
+        // data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.collapsed ? '▲' : '▼'
 
     },
     id:            {
@@ -100,7 +100,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍id...',
-        data:           (/*sewingTask: ISewingTask*/) => 'ID',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'ID',
     },
     position:      {
         id:             () => 'position-search',
@@ -116,7 +116,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => '#',
+        data:           (/*cuttingTask: ICuttingTask*/) => '#',
     },
     client:        {
         id:             () => 'client-search',
@@ -132,7 +132,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Клиент',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Клиент',
     },
     order_no:      {
         id:             () => 'order-no-search',
@@ -148,7 +148,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => '№',
+        data:           (/*cuttingTask: ICuttingTask*/) => '№',
     },
     status:        {
         id:             () => 'status-search',
@@ -164,7 +164,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Статус',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Статус',
     },
     load_at:       {
         id:             () => 'load-at-search',
@@ -180,7 +180,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Дата загрузки',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Дата загрузки',
     },
     action_at:       {
         id:             () => 'action-at-search',
@@ -196,7 +196,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Дата выполнения',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Дата выполнения',
     },
     progressTotal: {
         id:             () => 'progress-total-search',
@@ -212,7 +212,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Дата...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Прогресс',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Прогресс',
     },
     comment:       {
         id:             () => 'comment-search',
@@ -228,7 +228,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingTask: ISewingTask*/) => 'Комментарий к СЗ',
+        data:           (/*cuttingTask: ICuttingTask*/) => 'Комментарий к СЗ',
     },
 
 })

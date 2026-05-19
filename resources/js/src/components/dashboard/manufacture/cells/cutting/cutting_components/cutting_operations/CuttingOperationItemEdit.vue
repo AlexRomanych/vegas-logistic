@@ -150,12 +150,12 @@ import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import type {
-    ISewingOperation, ISewingOperationSchema,
+    ICuttingOperation, ICuttingOperationSchema,
 } from '@/types'
 
 interface IProps {
-    operation: ISewingOperation | null,
-    schema: ISewingOperationSchema | null,
+    operation: ICuttingOperation | null,
+    schema: ICuttingOperationSchema | null,
 
     type?: IColorTypes,
     width?: string,
@@ -185,7 +185,7 @@ const setEditableData = () => {
     if (!props.schema || !props.operation) {
         return
     }
-    const findIndex = props.schema.operations.findIndex(item => item.id === props.operation.id)
+    const findIndex = props.schema.operations.findIndex(item => item.id === props.operation?.id)
     if (findIndex !== -1) {
         editableData.present = true
         editableData.ratio   = props.schema.operations[findIndex].pivot.ratio ?? 0
@@ -243,11 +243,11 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 // const present = ref(false)
 
 const shortData = computed(() => [
-    { label: 'Схема', value: props.schema.name },
-    { label: 'Операция', value: props.operation.name },
-    { label: 'Оборудование', value: props.operation.machine },
-    { label: 'Время операции', value: `${props.operation.time.toString()} сек.` },
-    { label: 'Тип операции', value: props.operation.type === 'dynamic' ? 'Динамическая' : 'Статическая' },
+    { label: 'Схема', value: props.schema?.name },
+    { label: 'Операция', value: props.operation?.name },
+    { label: 'Оборудование', value: props.operation?.machine },
+    { label: 'Время операции', value: `${props.operation?.time.toString()} сек.` },
+    { label: 'Тип операции', value: props.operation?.type === 'dynamic' ? 'Динамическая' : 'Статическая' },
     { label: 'Коэффициент', value: '', key: 'ratio' },      // Добавили key
     { label: 'Есть в схеме', value: '', key: 'present' },   // Добавили key
 ])

@@ -70,24 +70,24 @@
 <script lang="ts" setup>
 import { computed, reactive } from 'vue'
 
-import type { IColorTypes, IRenderData, ISewingMachineKeys, ISewingTaskLine } from '@/types'
+import type { IColorTypes, IRenderData, ICuttingMachineKeys, ICuttingTaskLine } from '@/types'
 
 import {
     getCoverSizeString,
-    getSewingLineMachineType,
-    getSewingTaskModelCoverName,
+    getCuttingLineMachineType,
+    getCuttingTaskModelCoverName,
     getTimeString
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
-import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
 
 interface IProps {
-    sewingLine: ISewingTaskLine
+    cuttingLine: ICuttingTaskLine
     fieldsWidth: Record<string, string>
 }
 
@@ -121,7 +121,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍?...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.finished_at ? '✓' : '✗'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.finished_at ? '✓' : '✗'
     },
     id:          {
         id:             () => 'id-search',
@@ -137,7 +137,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍id...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.id.toString()
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.id.toString()
     },
     position:    {
         id:             () => 'position-search',
@@ -153,7 +153,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.position.toString(),
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.position.toString(),
     },
     size:        {
         id:             () => 'size-search',
@@ -169,7 +169,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Размер...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => getSize.value
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getSize.value
     },
     cover:       {
         id:             () => 'cover-search',
@@ -185,7 +185,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Чехол...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => getSewingTaskModelCoverName(props.sewingLine)
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getCuttingTaskModelCoverName(props.cuttingLine)
     },
     amount:      {
         id:             () => 'amount-search',
@@ -201,7 +201,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Кол-во...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.amount.toString()
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.amount.toString()
     },
     time:      {
         id:             () => 'time-search',
@@ -217,7 +217,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Время...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => getTime.value
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getTime.value
     },
     universal:   {
         id:             () => 'universal-search',
@@ -227,13 +227,13 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(SEWING_MACHINES.UNIVERSAL),
+        type:           () => getTypeForMachine(CUTTING_MACHINES.UNIVERSAL),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍УШМ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'У'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'У'
     },
     auto:        {
         id:             () => 'auto-search',
@@ -243,13 +243,13 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(SEWING_MACHINES.AUTO),
+        type:           () => getTypeForMachine(CUTTING_MACHINES.AUTO),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍АШМ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'А'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'А'
     },
     solid_hard:  {
         id:             () => 'solid-hard-search',
@@ -259,13 +259,13 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(SEWING_MACHINES.SOLID_HARD),
+        type:           () => getTypeForMachine(CUTTING_MACHINES.SOLID_HARD),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍ГС...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ГС'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГС'
     },
     solid_lite:  {
         id:             () => 'solid-lite-search',
@@ -275,13 +275,13 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(SEWING_MACHINES.SOLID_LITE),
+        type:           () => getTypeForMachine(CUTTING_MACHINES.SOLID_LITE),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍ГП...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ГП'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГП'
     },
     tkch:     {
         id:             () => 'tkch-search',
@@ -297,7 +297,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍ТКЧ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.model.main.tkch ?? ''
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.model.main.tkch ?? ''
     },
     kant:     {
         id:             () => 'kant-search',
@@ -313,7 +313,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Кант...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.model.main.kant ?? ''
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.model.main.kant ?? ''
     },
     textile:     {
         id:             () => 'textile-search',
@@ -329,7 +329,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Ткань...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.textile ?? ''
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.textile ?? ''
     },
     composition: {
         id:             () => 'composition-search',
@@ -345,7 +345,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Состав...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.composition ?? '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.composition ?? '',
         class:          'truncate',
     },
     describe_1:  {
@@ -362,7 +362,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 1...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.describe_1 ?? '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.describe_1 ?? '',
         class:          'truncate',
     },
     describe_2:  {
@@ -379,7 +379,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 2...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.describe_2 ?? '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.describe_2 ?? '',
         class:          'truncate',
     },
     describe_3:  {
@@ -396,7 +396,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 3...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.order_line.describe_3 ?? '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.describe_3 ?? '',
         class:          'truncate',
     },
     finished_at: {
@@ -413,11 +413,11 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Время...',
-        data:           (/*sewingLine: ISewingTaskLine*/) =>
-                            props.sewingLine.finished_at ?
-                                formatTimeInFullFormat(props.sewingLine.finished_at) :
-                                props.sewingLine.false_at ?
-                                    formatTimeInFullFormat(props.sewingLine.false_at) : '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) =>
+                            props.cuttingLine.finished_at ?
+                                formatTimeInFullFormat(props.cuttingLine.finished_at) :
+                                props.cuttingLine.false_at ?
+                                    formatTimeInFullFormat(props.cuttingLine.false_at) : '',
     },
     false_reason:  {
         id:             () => 'false-reason-search',
@@ -427,31 +427,31 @@ const render: IRenderData = reactive({
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => props.sewingLine.false_reason ? 'danger' : DEFAULT_TYPE,
+        type:           () => props.cuttingLine.false_reason ? 'danger' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Причина...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => props.sewingLine.false_reason ?? '',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.false_reason ?? '',
         class:          'truncate',
     },
 })
 
 // __ Тип подсветки для стегальной машины элемента
-const getTypeForMachine = (sewingMachineTarget: ISewingMachineKeys) => {
+const getTypeForMachine = (cuttingMachineTarget: ICuttingMachineKeys) => {
 
     // !!! Порядок важен !!!
 
-    if (machineType.value === SEWING_MACHINES.AVERAGE) {
-        // if (sewingMachineTarget === SEWING_MACHINES.UNKNOWN) {
+    if (machineType.value === CUTTING_MACHINES.AVERAGE) {
+        // if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
         //     return 'danger'
         // }
         return ACCENT_TYPE
     }
 
-    if (machineType.value === sewingMachineTarget) {
-        // if (sewingMachineTarget === SEWING_MACHINES.UNKNOWN) {
+    if (machineType.value === cuttingMachineTarget) {
+        // if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
         //     return 'danger'
         // }
         return ACCENT_TYPE
@@ -461,22 +461,22 @@ const getTypeForMachine = (sewingMachineTarget: ISewingMachineKeys) => {
 }
 
 // __ Получаем тип стегальной машины
-const machineType = computed(() => getSewingLineMachineType(props.sewingLine))
+const machineType = computed(() => getCuttingLineMachineType(props.cuttingLine))
 
 // __ Получаем трудозатраты
-const getTime = computed(() => getTimeString(props.sewingLine, true).replaceAll('.', ''))
+const getTime = computed(() => getTimeString(props.cuttingLine, true).replaceAll('.', ''))
 
 // __ Получаем размер чехла (Высота из размеров чехла модели)
-const getSize = computed(() => getCoverSizeString(props.sewingLine))
+const getSize = computed(() => getCoverSizeString(props.cuttingLine))
 
 // __ Тип подсветки для основного элемента
 const getType = computed<IColorTypes>(() =>
     DEFAULT_TYPE
-    // props.sewingLine === globalManageTaskCardActiveSewingLine.value ? ACTIVE_TYPE : 'dark'
+    // props.cuttingLine === globalManageTaskCardActiveCuttingLine.value ? ACTIVE_TYPE : 'dark'
 )
 
 // __ Тип подсветки для выполненного элемента
-const finishedAtType = computed<IColorTypes>(() => props.sewingLine.finished_at ? 'success' : 'danger')
+const finishedAtType = computed<IColorTypes>(() => props.cuttingLine.finished_at ? 'success' : 'danger')
 
 </script>
 

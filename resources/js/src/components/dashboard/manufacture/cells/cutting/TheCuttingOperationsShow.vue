@@ -73,7 +73,7 @@
 
                     <div>
                         <!-- __ + Типовая операция -->
-                        <router-link :to="{ name: 'manufacture.cell.sewing.operations.create' }">
+                        <router-link :to="{ name: 'manufacture.cell.cutting.operations.create' }">
                             <AppLabelMultiLineTS
                                 :text="['➕', '']"
                                 align="center"
@@ -107,36 +107,36 @@
         </div>
 
         <!-- __ Данные -->
-        <div v-for="sewingOperation of sewingOperationsRender" :key="sewingOperation.id" class="ml-2 max-w-fit">
+        <div v-for="cuttingOperation of cuttingOperationsRender" :key="cuttingOperation.id" class="ml-2 max-w-fit">
             <div class="flex ">
 
                 <!-- __ id -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.id"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.id"/>
 
                 <!-- __ Название -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.name"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.name"/>
 
                 <!-- __ Оборудование -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.machine"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.machine"/>
 
                 <!-- __ Active -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.active"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.active"/>
 
                 <!-- __ Тип расчета (Динамический, Статический, ...) -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.type"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.type"/>
 
                 <!-- __ Время операции -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.time"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.time"/>
 
                 <!-- __ Цвет (Picker) -->
                 <AppRGBPickerModalTS
                     v-if="render.color.show"
-                    v-model="sewingOperation.color"
-                    @confirm="saveSewingOperationColor($event, sewingOperation)"
+                    v-model="cuttingOperation.color"
+                    @confirm="saveCuttingOperationColor($event, cuttingOperation)"
                 />
 
                 <!-- __ Описание -->
-                <AppLabelTSWrapper :arg="sewingOperation" :render-object="render.description"/>
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.description"/>
 
                 <!-- __ Удалить -->
                 <AppLabelTS
@@ -146,12 +146,12 @@
                     text-size="mini"
                     type="danger"
                     width="w-[30px]"
-                    @click="deleteOperation(sewingOperation)"
+                    @click="deleteOperation(cuttingOperation)"
                 />
 
                 <!-- __ Редактировать -->
                 <router-link
-                    :to="{ name: 'manufacture.cell.sewing.operations.edit', params: { id: sewingOperation.id } }">
+                    :to="{ name: 'manufacture.cell.cutting.operations.edit', params: { id: cuttingOperation.id } }">
                     <AppLabelTS
                         v-if="CAN_EDIT"
                         align="center"
@@ -172,10 +172,10 @@
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import type {
-    IRenderData, ISelectData, ISelectDataItem, ISewingOperation,
+    IRenderData, ISelectData, ISelectDataItem, ICuttingOperation,
 } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import AppLabelMultilineTSWrapper
     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -194,7 +194,7 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 const isLoading = ref(false)
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 const DEBUG = true
 
@@ -203,8 +203,8 @@ const CAN_EDIT   = true
 const CAN_DELETE = true
 
 // __ Определяем переменные
-const sewingOperations       = ref<ISewingOperation[]>([])
-const sewingOperationsRender = ref<ISewingOperation[]>([])
+const cuttingOperations       = ref<ICuttingOperation[]>([])
+const cuttingOperationsRender = ref<ICuttingOperation[]>([])
 
 // __ Объект отображения данных
 const DEFAULT_WIDTH_BOOL = 'w-[70px]'
@@ -231,13 +231,13 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
         type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍id...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.id.toString()
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.id.toString()
     },
     name:    {
         id:         () => 'name-search',
@@ -248,13 +248,13 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
         type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Название...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.name
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.name
     },
     machine: {
         id:         () => 'machine-search',
@@ -265,13 +265,13 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
         type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Обор-ние...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.machine
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.machine
     },
     active:  {
         id:         () => 'active-search',
@@ -281,14 +281,14 @@ const render: IRenderData = reactive({
         show:       true,
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
-        type:       (sewingOperation: ISewingOperation) => sewingOperation.active ? 'success' : 'danger',
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        type:       (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? 'success' : 'danger',
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Active...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.active ? '✓' : '✗'
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? '✓' : '✗'
     },
     type:        {
         id:         () => 'type-search',
@@ -298,11 +298,11 @@ const render: IRenderData = reactive({
         show:       true,
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
-        type:       (sewingOperation: ISewingOperation) => {
-            if (!sewingOperation) {
+        type:       (cuttingOperation: ICuttingOperation) => {
+            if (!cuttingOperation) {
                 return 'dark'
             }
-            switch (sewingOperation.type) {
+            switch (cuttingOperation.type) {
                 case 'dynamic':
                     return 'indigo'
                 case 'static':
@@ -310,14 +310,14 @@ const render: IRenderData = reactive({
             }
         },
         // type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Тип...',
-        data:           (sewingOperation: ISewingOperation) => {
-            switch (sewingOperation.type) {
+        data:           (cuttingOperation: ICuttingOperation) => {
+            switch (cuttingOperation.type) {
                 case 'dynamic':
                     return 'Динамический'
                 case 'static':
@@ -333,11 +333,11 @@ const render: IRenderData = reactive({
         show:       true,
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
-        type:       (sewingOperation: ISewingOperation) => {
-            if (!sewingOperation) {
+        type:       (cuttingOperation: ICuttingOperation) => {
+            if (!cuttingOperation) {
                 return 'dark'
             }
-            switch (sewingOperation.type) {
+            switch (cuttingOperation.type) {
                 case 'dynamic':
                     return 'indigo'
                 case 'static':
@@ -345,13 +345,13 @@ const render: IRenderData = reactive({
             }
         },
         // type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Время...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.time.toString()
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.time.toString()
     },
     color:       {
         id:         () => 'color-search',
@@ -362,13 +362,13 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
         type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Цвет...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.color,
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         class:          'cursor-pointer'
     },
     description: {  // __ Описание Заявки
@@ -380,13 +380,13 @@ const render: IRenderData = reactive({
         headerType: () => HEADER_TYPE,
         dataType:   () => DATA_TYPE,
         type:       () => DEFAULT_TYPE,
-        // color:          (sewingOperation: ISewingOperation) => sewingOperation.color,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Описание...',
-        data:           (sewingOperation: ISewingOperation) => sewingOperation.description ?? ''
+        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.description ?? ''
     },
 })
 
@@ -429,34 +429,34 @@ const resetFilters = () => {
 
 
 // __ Получаем данные
-const getSewingOperations = async () => {
-    sewingOperations.value = await sewingStore.getSewingOperations()
-    sewingOperations.value = sewingOperations.value
-        .map(sewingOperation => ({ ...sewingOperation, description: sewingOperation.description ?? '', can_edit: true }))
+const getCuttingOperations = async () => {
+    cuttingOperations.value = await cuttingStore.getCuttingOperations()
+    cuttingOperations.value = cuttingOperations.value
+        .map(cuttingOperation => ({ ...cuttingOperation, description: cuttingOperation.description ?? '', can_edit: true }))
         .sort((a, b) => a.id - b.id)
 }
 
 
 // __ Формируем отображение Типовых операций
-const getSewingOperationsRender = () => {
-    sewingOperationsRender.value = sewingOperations.value
+const getCuttingOperationsRender = () => {
+    cuttingOperationsRender.value = cuttingOperations.value
 }
 
 // __ Удаляем типовую операцию
-const deleteOperation = async (sewingOperation: ISewingOperation) => {
+const deleteOperation = async (cuttingOperation: ICuttingOperation) => {
     return
 }
 
 // __ Сохраняем данные по цвету
-const saveSewingOperationColor = async (event: string, sewingOperation: ISewingOperation) => {
+const saveCuttingOperationColor = async (event: string, cuttingOperation: ICuttingOperation) => {
     return
-    // await sewingStore.patchSewingOperationColor(sewingOperation.id, event)
+    // await cuttingStore.patchCuttingOperationColor(cuttingOperation.id, event)
 }
 
 
 // __ Реализация фильтров
 watchEffect(() => {
-    sewingOperationsRender.value = sewingOperations.value
+    cuttingOperationsRender.value = cuttingOperations.value
         .filter(orderType => orderType.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
         .filter(orderType => orderType.name.toLowerCase().includes(nameFilter.value.toLowerCase()))
         .filter(orderType => orderType.machine.toLowerCase().includes(machineFilter.value.toLowerCase()))
@@ -483,9 +483,9 @@ onMounted(async () => {
         loadingService,
         async () => {
 
-            await getSewingOperations()
-            getSewingOperationsRender()
-            // if (DEBUG) console.log('sewingOperations: ', sewingOperations.value)
+            await getCuttingOperations()
+            getCuttingOperationsRender()
+            // if (DEBUG) console.log('cuttingOperations: ', cuttingOperations.value)
 
         },
         undefined,

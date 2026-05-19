@@ -81,10 +81,10 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
-import type { ISewingTaskOrderLine } from '@/types'
+import type { ICuttingTaskOrderLine } from '@/types'
 
 interface IProps {
-    orderLine: ISewingTaskOrderLine | null,
+    orderLine: ICuttingTaskOrderLine | null,
     type?: IColorTypes,
     width?: string,
     height?: string,

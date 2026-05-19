@@ -9,7 +9,7 @@
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
-            :text="globalSewingTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
+            :text="globalCuttingTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
             :text-size="render.client.textSize"
             :type="render.client.type"
             :width="render.client.width"
@@ -22,7 +22,7 @@
             :align="render.orderNo.align"
             :color="color"
             :height="dataHeight"
-            :text="globalSewingTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
+            :text="globalCuttingTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
             :text-size="render.orderNo.textSize"
             :type="render.orderNo.type"
             :width="render.orderNo.width"
@@ -40,82 +40,82 @@
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="getTotalTime"
-            :time-show="globalSewingTaskTimesShow"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты УШМ -->
         <ManageItemDataLabel
-            v-if="globalSewingTaskFullDaysShow"
+            v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[SEWING_MACHINES.UNIVERSAL].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.UNIVERSAL].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[SEWING_MACHINES.UNIVERSAL].time"
-            :time-show="globalSewingTaskTimesShow"
+            :time="amountAndTime[CUTTING_MACHINES.UNIVERSAL].time"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты АШМ -->
         <ManageItemDataLabel
-            v-if="globalSewingTaskFullDaysShow"
+            v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[SEWING_MACHINES.AUTO].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.AUTO].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[SEWING_MACHINES.AUTO].time"
-            :time-show="globalSewingTaskTimesShow"
+            :time="amountAndTime[CUTTING_MACHINES.AUTO].time"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты Solid Hard -->
         <ManageItemDataLabel
-            v-if="globalSewingTaskFullDaysShow"
+            v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[SEWING_MACHINES.SOLID_HARD].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.SOLID_HARD].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[SEWING_MACHINES.SOLID_HARD].time"
-            :time-show="globalSewingTaskTimesShow"
+            :time="amountAndTime[CUTTING_MACHINES.SOLID_HARD].time"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты Solid Lite -->
         <ManageItemDataLabel
-            v-if="globalSewingTaskFullDaysShow"
+            v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[SEWING_MACHINES.SOLID_LITE].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.SOLID_LITE].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[SEWING_MACHINES.SOLID_LITE].time"
-            :time-show="globalSewingTaskTimesShow"
+            :time="amountAndTime[CUTTING_MACHINES.SOLID_LITE].time"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
         <ManageItemDataLabel
-            v-if="globalSewingTaskFullDaysShow"
+            v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[SEWING_MACHINES.UNDEFINED].amount"
+            :amount="amountAndTime[CUTTING_MACHINES.UNDEFINED].amount"
             :class="animatedClass"
-            :color="amountAndTime[SEWING_MACHINES.UNDEFINED].amount === 0 ? color : 'red'"
+            :color="amountAndTime[CUTTING_MACHINES.UNDEFINED].amount === 0 ? color : 'red'"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[SEWING_MACHINES.UNDEFINED].time"
-            :time-show="globalSewingTaskTimesShow"
+            :time="amountAndTime[CUTTING_MACHINES.UNDEFINED].time"
+            :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
@@ -129,28 +129,28 @@ import { computed, reactive, } from 'vue'
 
 import { storeToRefs } from 'pinia'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import type {
     IHorizontalAlign,
-    ISewingTask,
+    ICuttingTask,
     IFontsType,
     IColorTypes,
     IAmountAndTime
 } from '@/types'
 
-import { SEWING_MACHINES, SEWING_TASK_DRAFT, } from '@/app/constants/sewing.ts'
+import { CUTTING_MACHINES, CUTTING_TASK_DRAFT, } from '@/app/constants/cutting.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageItemDataLabel.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageItemDataLabel.vue'
 
 interface IProps {
     amountAndTime: IAmountAndTime
-    item?: ISewingTask
+    item?: ICuttingTask
     columnsWidth?: Record<string, string>
     index?: number
     orderId?: number | null     // __ Для подсветки СЗ для Заявки
@@ -169,7 +169,7 @@ type IRender = Record<string, IRenderItem>
 
 const props = withDefaults(defineProps<IProps>(), {
 
-    item:         () => SEWING_TASK_DRAFT,
+    item:         () => CUTTING_TASK_DRAFT,
     columnsWidth: () => ({
         client:  'w-[90px]',
         amount:  'w-[50px]',
@@ -181,12 +181,12 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 // __ Данные из Хранилища
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
-const { globalSewingTaskTimesShow, globalSewingTaskFullDaysShow, globalSewingTaskOrderTypeColor } = storeToRefs(sewingStore)
+const { globalCuttingTaskTimesShow, globalCuttingTaskFullDaysShow, globalCuttingTaskOrderTypeColor } = storeToRefs(cuttingStore)
 
 // __ Высота данных
-const dataHeight = computed(() => globalSewingTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
+const dataHeight = computed(() => globalCuttingTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
 
 // __ Подготавливаем рендер
 const render: IRender = reactive({
@@ -211,7 +211,7 @@ const render: IRender = reactive({
         width:    props.columnsWidth.amount,
         type:     'dark',
         align:    'center',
-        data:     () => props.item.sewing_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
+        data:     () => props.item.cutting_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
         textSize: 'micro',
     },
 })
@@ -234,7 +234,7 @@ const color = computed(() => {
     // }
 
     // __ Если цвет по типу заявки, то берем его, или по статусу движения
-    return globalSewingTaskOrderTypeColor.value ? props.item.order.order_type.color : props.item.current_status.color
+    return globalCuttingTaskOrderTypeColor.value ? props.item.order.order_type.color : props.item.current_status.color
 })
 
 // __ Анимация, СЗ для текущей Заявки

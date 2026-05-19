@@ -14,7 +14,7 @@
 
                 <ManageDay
                     :date="getDate(idx)"
-                    :day="(week[idx].length ? week[idx] : []) as ISewingTask[]"
+                    :day="(week[idx].length ? week[idx] : []) as ICuttingTask[]"
                 />
 
             </div>
@@ -25,13 +25,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { IPlanMatrixWeek, ISewingTask } from '@/types'
+import type { IPlanMatrixWeek, ICuttingTask } from '@/types'
 
 import { computed } from 'vue'
 
 import { additionDays, getWeekNumber } from '@/app/helpers/helpers_date'
 
-import ManageDay from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_manage/ManageDay.vue'
+import ManageDay from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageDay.vue'
 
 interface IProps {
     date: Date                      // __ Дата начала недели

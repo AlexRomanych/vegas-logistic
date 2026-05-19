@@ -3,56 +3,56 @@
     <!-- __ id -->
     <div class="flex">
         <AppLabelTSWrapper :render-object="render.id" header/>
-        <AppLabelTSWrapper :arg="sewingDay" :render-object="render.id"/>
+        <AppLabelTSWrapper :arg="cuttingDay" :render-object="render.id"/>
     </div>
 
     <!-- __ Дата производства -->
     <div class="flex">
         <AppLabelTSWrapper :render-object="render.manufacture_date" header/>
-        <AppLabelTSWrapper :arg="sewingDay" :render-object="render.manufacture_date"/>
+        <AppLabelTSWrapper :arg="cuttingDay" :render-object="render.manufacture_date"/>
     </div>
 
     <!-- __ Смена производства -->
     <div class="flex">
         <AppLabelTSWrapper :render-object="render.manufacture_change" header/>
-        <AppLabelTSWrapper :arg="sewingDay" :render-object="render.manufacture_change"/>
+        <AppLabelTSWrapper :arg="cuttingDay" :render-object="render.manufacture_change"/>
     </div>
 
     <!-- __ Количество заявок -->
     <div class="flex">
         <AppLabelTSWrapper :render-object="render.tasks_amount" header/>
-        <AppLabelTSWrapper :arg="sewingDay" :render-object="render.tasks_amount"/>
+        <AppLabelTSWrapper :arg="cuttingDay" :render-object="render.tasks_amount"/>
     </div>
 
     <!-- __ Количество сотрудников -->
     <div class="flex">
         <AppLabelTSWrapper :render-object="render.workers_amount" header/>
-        <AppLabelTSWrapper :arg="sewingDay" :render-object="render.workers_amount"/>
+        <AppLabelTSWrapper :arg="cuttingDay" :render-object="render.workers_amount"/>
     </div>
 
     <!-- __ Сводка по заявкам -->
     <div class="mt-[20px]">
         <ExecuteDayInfoTasksSummary
-            :sewing-day="sewingDay"
+            :cutting-day="cuttingDay"
         />
     </div>
 
 </template>
 
 <script lang="ts" setup>
-import type { IRenderData, ISewingDay, } from '@/types'
+import type { IRenderData, ICuttingDay, } from '@/types'
 
 import { reactive } from 'vue'
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
-import ExecuteDayInfoTasksSummary from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayInfoTasksSummary.vue'
+import ExecuteDayInfoTasksSummary from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayInfoTasksSummary.vue'
 
 interface IProps {
-    sewingDay: ISewingDay | null
+    cuttingDay: ICuttingDay | null
 }
 
-type IEntity = ISewingDay
+type IEntity = ICuttingDay
 
 /*const props =*/
 defineProps<IProps>()
@@ -125,7 +125,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => entity?.sewing_tasks.length.toString()
+        data          : (entity: IEntity) => entity?.cutting_tasks.length.toString()
     },
     workers_amount    : {
         header        : () => 'Количество сотрудников',

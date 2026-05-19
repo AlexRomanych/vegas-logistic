@@ -39,23 +39,23 @@
         </div>
 
         <!-- __ Данные -->
-        <div v-for="sewingTaskStatus of sewingTaskStatusesRender" :key="sewingTaskStatus.id" class="ml-2 max-w-fit">
+        <div v-for="cuttingTaskStatus of cuttingTaskStatusesRender" :key="cuttingTaskStatus.id" class="ml-2 max-w-fit">
             <div class="flex ">
 
                 <!-- __ id -->
-                <AppLabelTSWrapper :arg="sewingTaskStatus" :render-object="render.id"/>
+                <AppLabelTSWrapper :arg="cuttingTaskStatus" :render-object="render.id"/>
 
                 <!-- __ Название -->
-                <AppLabelTSWrapper :arg="sewingTaskStatus" :render-object="render.name"/>
+                <AppLabelTSWrapper :arg="cuttingTaskStatus" :render-object="render.name"/>
 
                 <!-- __ Порядковый номер -->
-                <AppLabelTSWrapper :arg="sewingTaskStatus" :render-object="render.position"/>
+                <AppLabelTSWrapper :arg="cuttingTaskStatus" :render-object="render.position"/>
 
                 <!-- __ Цвет (Picker) -->
-                <AppRGBPickerModalTS v-model="sewingTaskStatus.color" @confirm="saveSewingTaskStatusColor($event, sewingTaskStatus)"/>
+                <AppRGBPickerModalTS v-model="cuttingTaskStatus.color" @confirm="saveCuttingTaskStatusColor($event, cuttingTaskStatus)"/>
 
                 <!-- __ Описание -->
-                <AppLabelTSWrapper :arg="sewingTaskStatus" :render-object="render.description"/>
+                <AppLabelTSWrapper :arg="cuttingTaskStatus" :render-object="render.description"/>
 
             </div>
         </div>
@@ -67,10 +67,10 @@
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import type {
-    IRenderData, ISewingTaskStatusEntity,
+    IRenderData, ICuttingTaskStatusEntity,
 } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
@@ -83,13 +83,13 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 const isLoading = ref(false)
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 // const DEBUG = false
 
 // __ Определяем переменные
-const sewingTaskStatuses       = ref<ISewingTaskStatusEntity[]>([])
-const sewingTaskStatusesRender = ref<ISewingTaskStatusEntity[]>([])
+const cuttingTaskStatuses       = ref<ICuttingTaskStatusEntity[]>([])
+const cuttingTaskStatusesRender = ref<ICuttingTaskStatusEntity[]>([])
 
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[30px]'
@@ -115,13 +115,13 @@ const render: IRenderData = reactive({
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
-        color:          (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        color:          (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍id...',
-        data:           (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.id.toString()
+        data:           (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.id.toString()
     },
     name:        {
         id:             () => 'name-search',
@@ -132,13 +132,13 @@ const render: IRenderData = reactive({
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
-        color:          (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        color:          (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Название...',
-        data:           (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.name
+        data:           (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.name
     },
     position:        {
         id:             () => 'position-search',
@@ -149,13 +149,13 @@ const render: IRenderData = reactive({
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
-        color:          (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        color:          (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍№...',
-        data:           (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.position.toString()
+        data:           (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.position.toString()
     },
     color:       {
         id:             () => 'color-search',
@@ -166,13 +166,13 @@ const render: IRenderData = reactive({
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
-        color:          (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        color:          (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
         placeholder:    '🔍Цвет...',
-        data:           (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        data:           (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         class:          'cursor-pointer'
     },
     description: {  // __ Описание Заявки
@@ -184,13 +184,13 @@ const render: IRenderData = reactive({
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
-        color:          (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.color,
+        color:          (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Описание...',
-        data:           (sewingTaskStatus: ISewingTaskStatusEntity) => sewingTaskStatus.description ?? ''
+        data:           (cuttingTaskStatus: ICuttingTaskStatusEntity) => cuttingTaskStatus.description ?? ''
     },
 })
 
@@ -203,27 +203,27 @@ const descriptionFilter = ref('')
 
 
 // __ Получаем данные
-const getSewingTaskStatuses = async () => {
-    sewingTaskStatuses.value = await sewingStore.getSewingTaskStatuses()
-    sewingTaskStatuses.value = sewingTaskStatuses.value
-        .map(sewingTaskStatus => ({...sewingTaskStatus, description: sewingTaskStatus.description ?? ''}))
+const getCuttingTaskStatuses = async () => {
+    cuttingTaskStatuses.value = await cuttingStore.getCuttingTaskStatuses()
+    cuttingTaskStatuses.value = cuttingTaskStatuses.value
+        .map(cuttingTaskStatus => ({...cuttingTaskStatus, description: cuttingTaskStatus.description ?? ''}))
         .sort((a, b) => a.id - b.id)
 }
 
 // __ Формируем отображение Заявок
-const getSewingTaskStatusesRender = () => {
-    sewingTaskStatusesRender.value = sewingTaskStatuses.value
+const getCuttingTaskStatusesRender = () => {
+    cuttingTaskStatusesRender.value = cuttingTaskStatuses.value
 }
 
 // __ Сохраняем данные по цвету
-const saveSewingTaskStatusColor = async (event: string, sewingTaskStatus: ISewingTaskStatusEntity) => {
-    await sewingStore.patchSewingTaskStatusColor(sewingTaskStatus.id, event)
+const saveCuttingTaskStatusColor = async (event: string, cuttingTaskStatus: ICuttingTaskStatusEntity) => {
+    await cuttingStore.patchCuttingTaskStatusColor(cuttingTaskStatus.id, event)
 }
 
 
 // __ Реализация фильтров
 watchEffect(() => {
-    sewingTaskStatusesRender.value = sewingTaskStatuses.value
+    cuttingTaskStatusesRender.value = cuttingTaskStatuses.value
         .filter(orderType => orderType.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
         .filter(orderType => orderType.name.toLowerCase().includes(nameFilter.value.toLowerCase()))
         .filter(orderType => orderType.position.toString().toLowerCase().includes(positionFilter.value.toLowerCase()))
@@ -240,10 +240,10 @@ onMounted(async () => {
         loadingService,
         async () => {
 
-            await getSewingTaskStatuses()
-            // if (DEBUG) console.log('sewingTaskStatuses: ', sewingTaskStatuses.value)
-            getSewingTaskStatusesRender()
-            // if (DEBUG) console.log('sewingTaskStatusesRender: ', sewingTaskStatusesRender.value)
+            await getCuttingTaskStatuses()
+            // if (DEBUG) console.log('cuttingTaskStatuses: ', cuttingTaskStatuses.value)
+            getCuttingTaskStatusesRender()
+            // if (DEBUG) console.log('cuttingTaskStatusesRender: ', cuttingTaskStatusesRender.value)
         },
         undefined,
         // false,

@@ -1,6 +1,6 @@
 <template>
     <div v-for="[key, value] of Object.entries(calculateTotals)" :key="key">
-        <template v-if="!([AVERAGE, UNDEFINED] as ISewingMachineKeys[]).includes(key as ISewingMachineKeys)">
+        <template v-if="!([AVERAGE, UNDEFINED] as ICuttingMachineKeys[]).includes(key as ICuttingMachineKeys)">
 
             <div class="flex">
 
@@ -88,14 +88,14 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { ISewingDay, ISewingMachineKeys, ISewingTaskLine } from '@/types'
+import type { ICuttingDay, ICuttingMachineKeys, ICuttingTaskLine } from '@/types'
 
-import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
+import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 import { AVERAGE, UNDEFINED } from '@/app/constants/textile_common.ts'
 
 import {
-    getExecuteTaskStatistics, getSewingLineMachineType, getSewingTaskAmountAndTime
-} from '@/app/helpers/manufacture/helpers_sewing.ts'
+    getExecuteTaskStatistics, getCuttingLineMachineType, getCuttingTaskAmountAndTime
+} from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -103,7 +103,7 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 
 interface IProps {
-    sewingDay: ISewingDay
+    cuttingDay: ICuttingDay
 }
 
 const props = defineProps<IProps>()
@@ -115,21 +115,21 @@ const PROGRESS_WIDTH = 'w-[300px]'
 
 
 // __ Собираем все Записи в один массив
-const commonSewingLines = computed(() => {
-    const result: ISewingTaskLine[] = []
-    props.sewingDay.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => result.push(line)))
+const commonCuttingLines = computed(() => {
+    const result: ICuttingTaskLine[] = []
+    props.cuttingDay.cutting_tasks.forEach(task => task.cutting_lines.forEach(line => result.push(line)))
     return result
 })
 
 // __ Пересчитываем Итого
-const calculateTotals = computed(() => getSewingTaskAmountAndTime(commonSewingLines.value))
+const calculateTotals = computed(() => getCuttingTaskAmountAndTime(commonCuttingLines.value))
 
 // __ Получаем процент выполнения по каждой машине
 const getMachinePercent = (key: string) => {
-    const sewingLinesByMachine = commonSewingLines.value.filter(item => getSewingLineMachineType(item) === key)
+    const cuttingLinesByMachine = commonCuttingLines.value.filter(item => getCuttingLineMachineType(item) === key)
 
     // __ Получаем объект статистики
-    const statistics = getExecuteTaskStatistics(sewingLinesByMachine)
+    const statistics = getExecuteTaskStatistics(cuttingLinesByMachine)
     // console.log('statistics: ', statistics)
     return statistics.time.total !==0 ? statistics.time.finished / statistics.time.total * 100 : 0
 }
@@ -144,16 +144,16 @@ const totalTime = computed(() => Object.values(calculateTotals.value).reduce((ac
 const getMachineTitle = (key: string) => {
     console.log(key)
 
-    if (key === SEWING_MACHINES.UNIVERSAL) {
+    if (key === CUTTING_MACHINES.UNIVERSAL) {
         return 'УШМ'
     }
-    if (key === SEWING_MACHINES.AUTO) {
+    if (key === CUTTING_MACHINES.AUTO) {
         return 'АШМ'
     }
-    if (key === SEWING_MACHINES.SOLID_HARD) {
+    if (key === CUTTING_MACHINES.SOLID_HARD) {
         return 'Глухие Сложные'
     }
-    if (key === SEWING_MACHINES.SOLID_LITE) {
+    if (key === CUTTING_MACHINES.SOLID_LITE) {
         return 'Глухие Простые'
     }
 

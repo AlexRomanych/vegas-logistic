@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, } from 'vue'
+import { computed, ref, } from 'vue'
 
 import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 

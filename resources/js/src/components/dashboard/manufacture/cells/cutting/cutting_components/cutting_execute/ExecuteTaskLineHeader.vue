@@ -103,7 +103,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍?...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => '✓'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '✓'
     },
     id:          {
         id:             () => 'id-search',
@@ -119,7 +119,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍id...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ID'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ID'
     },
     position:    {
         id:             () => 'position-search',
@@ -135,7 +135,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍№ п/п...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => '#',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '#',
     },
     size:        {
         id:             () => 'size-search',
@@ -151,7 +151,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Размер...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Размер'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Размер'
     },
     cover:       {
         id:             () => 'cover-search',
@@ -167,7 +167,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Чехол...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Чехол'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Чехол'
     },
     amount:      {
         id:             () => 'amount-search',
@@ -183,7 +183,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Кол-во...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Шт.'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Шт.'
     },
     time:      {
         id:             () => 'time-search',
@@ -199,7 +199,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Время...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Время'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Время'
     },
     universal:   {
         id:             () => 'universal-search',
@@ -215,7 +215,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍УШМ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'У'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'У'
     },
     auto:        {
         id:             () => 'auto-search',
@@ -231,7 +231,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍АШМ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'А'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'А'
     },
     solid_hard:  {
         id:             () => 'solid-hard-search',
@@ -247,7 +247,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍ГС...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ГС'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГС'
     },
     solid_lite:  {
         id:             () => 'solid-lite-search',
@@ -263,7 +263,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍ГП...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ГП'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГП'
     },
     tkch:     {
         id:             () => 'tkch-search',
@@ -279,7 +279,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍ТКЧ...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'ТКЧ'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ТКЧ'
     },
     kant:     {
         id:             () => 'kant-search',
@@ -295,7 +295,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Кант...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Кант'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Кант'
     },
     textile:     {
         id:             () => 'textile-search',
@@ -311,7 +311,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Ткань...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Ткань'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Ткань'
     },
     composition: {
         id:             () => 'composition-search',
@@ -327,7 +327,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Состав...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Состав',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Состав',
         class:          'truncate',
     },
     describe_1:  {
@@ -344,7 +344,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 1...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Прим. 1',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Прим. 1',
         class:          'truncate',
     },
     describe_2:  {
@@ -361,7 +361,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 2...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Прим. 2',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Прим. 2',
         class:          'truncate',
     },
     describe_3:  {
@@ -378,7 +378,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Примечание 3...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Прим. 3',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Прим. 3',
         class:          'truncate',
     },
     finished_at: {
@@ -395,7 +395,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Завершено'
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Завершено'
     },
     false_reason:  {
         id:             () => 'false-reason-search',
@@ -411,7 +411,7 @@ const render: IRenderData = reactive({
         headerAlign:    HEADER_ALIGN,
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Причина...',
-        data:           (/*sewingLine: ISewingTaskLine*/) => 'Причина',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'Причина',
     },
 })
 
