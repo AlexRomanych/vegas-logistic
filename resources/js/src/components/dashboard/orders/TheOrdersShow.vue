@@ -383,12 +383,12 @@ const collapseAll = ref(true)
 
 // __ Определяем переменные
 const orders       = ref<IRenderOrder[]>([])
-const ordersRender = ref<IRenderOrder[]>([])
 const renderPeriod = ref<IPeriod | null>(null)
+// const ordersRender = ref<IRenderOrder[]>([])
 
 // __ Возможность редактирования
 // TODO: Реализовать через систему ролей
-const canEdit = ref(false)
+// const canEdit = ref(false)
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH = 'w-[100px]'
@@ -790,65 +790,11 @@ const getOrders = async (period: IPeriod | null = null) => {
 }
 
 // __ Формируем отображение Заявок
-const getOrdersRender = () => {
-    // ordersRender.value = orders.value
-    // ordersRender.value = orders.value.sort((a, b) => a.no_1c.localeCompare(b.no_1c))
-    ordersRender.value = orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
-}
-
-// __ Удаление заявки
-const deleteOrder = async (order: IRenderOrder) => {
-
-    modalInfoType.value = 'danger'
-    modalInfoMode.value = 'confirm'
-    modalInfoText.value = [
-        `Заявка ${order.client.short_name} №${order.order_no_str}`,
-        'будет удалена!',
-        'Продолжить?',
-    ]
-    const answer        = await appModalAsyncMultiline.value!.show()
-
-    if (answer) {
-        const result = await ordersStore.deleteOrders(order.id)
-
-        if (checkCRUD(result)) {
-            // __ Удаляем из массивов
-            orders.value       = orders.value.filter(item => item.id !== order.id)
-            ordersRender.value = ordersRender.value.filter(item => item.id !== order.id)
-        } else {
-            await showError()
-            return
-        }
-    }
-}
-
-// __ Удаление записи (orderLine: IRenderOrderLine) в заявке
-// __ Реализовано в каоточке заявки
-const deleteOrderLine = async (orderLine: IRenderOrderLine) => {
-
-    modalInfoType.value = 'danger'
-    modalInfoMode.value = 'confirm'
-    modalInfoText.value = [
-        `Запись ${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
-        'будет удалена!',
-        'Продолжить?',
-    ]
-
-    const answer = await appModalAsyncMultiline.value!.show()
-
-    if (answer) {
-        // const result = await ordersStore.deleteOrderLine(orderLine.id)
-
-        // if (checkCRUD(result)) {
-        //     // __ Удаляем из массивов
-        //     orders.value       = orders.value.filter(item => item.id !== order.id)
-        //     ordersRender.value = ordersRender.value.filter(item => item.id !== order.id)
-        // } else {
-        //     await showError()
-        //     return
-        // }
-    }
-}
+// const getOrdersRender = () => {
+//     // ordersRender.value = orders.value
+//     // ordersRender.value = orders.value.sort((a, b) => a.no_1c.localeCompare(b.no_1c))
+//     ordersRender.value = orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
+// }
 
 
 // __ Печать заявки
@@ -884,12 +830,19 @@ interface ITab {
 const tabs           = ref<ITab[]>([])
 const activeTabIndex = ref(LIST_TAB_ID)
 
+// __ Простое отображение
+const setListPlainTab = () => {
+    return orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
+}
 
 // __ Группировка по клиентам
 const getGroupByClientsData = () => {
     const groupedData            = Object.groupBy(orders.value, order => order.client.short_name)
     const groupedDataArray       = Object.entries(groupedData).sort((a, b) => a[0].localeCompare(b[0]))
-    const groupedDataArrayMapped = groupedDataArray.map((item: any) => [{ client: item[0], collapsed: true }, item[1].sort((a, b) => a.order_no_str.localeCompare(b.order_no_str))])
+    const groupedDataArrayMapped = groupedDataArray.map((item: any) => [{
+        client   : item[0],
+        collapsed: true
+    }, item[1].sort((a, b) => a.order_no_str.localeCompare(b.order_no_str))])
     // console.log(groupedDataArrayMapped)
     return groupedDataArrayMapped
 }
@@ -914,7 +867,7 @@ const setTabs = () => {
         tabType   : 'stone',
         title     : 'Список',
         active    : true,
-        renderData: orders.value.sort((a, b) => (new Date(a.load_at!)).getTime() - (new Date(b.load_at!)).getTime())
+        renderData: setListPlainTab()
     }
     tabs.value[LIST_TAB_ID] = listTab
 
@@ -938,35 +891,113 @@ const setTabs = () => {
 
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---              Удаление Заявки                  !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Удаление заявки
+const deleteOrder = async (order: IRenderOrder) => {
+
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Заявка ${order.client.short_name} №${order.order_no_str}`,
+        'будет удалена!',
+        'Продолжить?',
+    ]
+    const answer        = await appModalAsyncMultiline.value!.show()
+
+    if (answer) {
+        const result = await ordersStore.deleteOrders(order.id)
+
+        if (checkCRUD(result)) {
+            // __ Удаляем из массивов
+            orders.value                          = orders.value.filter(item => item.id !== order.id)
+            // ordersRender.value = ordersRender.value.filter(item => item.id !== order.id)
+            tabs.value[LIST_TAB_ID].renderData    = setListPlainTab()
+            tabs.value[CLIENTS_TAB_ID].renderData = getGroupByClientsData()
+            tabs.value[DATES_TAB_ID].renderData   = getGroupByDatesData()
+
+        } else {
+            await showError()
+            return
+        }
+    }
+}
+
+// __ Удаление записи (orderLine: IRenderOrderLine) в заявке
+// __ Реализовано в карточке заявки
+const deleteOrderLine = async (orderLine: IRenderOrderLine) => {
+
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Запись ${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
+        'будет удалена!',
+        'Продолжить?',
+    ]
+
+    const answer = await appModalAsyncMultiline.value!.show()
+
+    if (answer) {
+        // const result = await ordersStore.deleteOrderLine(orderLine.id)
+
+        // if (checkCRUD(result)) {
+        //     // __ Удаляем из массивов
+        //     orders.value       = orders.value.filter(item => item.id !== order.id)
+        //     ordersRender.value = ordersRender.value.filter(item => item.id !== order.id)
+        // } else {
+        //     await showError()
+        //     return
+        // }
+    }
+}
+
 
 // __ Реализация фильтров
 watchEffect(() => {
-    ordersRender.value = orders.value
-        .filter(order => order.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
-        .filter(order => order.client.short_name.toLowerCase().includes(clientFilter.value.toLowerCase()))
-        .filter(order => order.order_no_str.toLowerCase().includes(orderNoStrFilter.value.toLowerCase()))
-        .filter(order => order.elements_type_render.toLowerCase().includes(elementsTypeFilter.value.toLowerCase()))
-        .filter(order => order.comment_1c?.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
-        .filter(order => order.description!.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
-        .filter(order => getDateFromDateTimeString(order.load_at).includes(loadAtFilter.value))
-        .filter(order => getDateFromDateTimeString(order.unload_at).includes(unloadAtFilter.value))
-        .filter(order => getDateFromDateTimeString(order.order_period).includes(orderPeriodFilter.value))
-        .filter(order => {
-            if (orderActiveFilter.value === 0) return true
-            else if (orderActiveFilter.value === 1) return order.active
-            else if (orderActiveFilter.value === 2) return !order.active
-        })
-        .filter(order => {
-            if (orderForecastFilter.value === 0) return true
-            else if (orderForecastFilter.value === 1) return order.is_forecast
-            else if (orderForecastFilter.value === 2) return !order.is_forecast
-        })
-        .filter(order => {
-            if (orderShownFilter.value === 0) return true
-            else if (orderShownFilter.value === 1) return order.shown
-            else if (orderShownFilter.value === 2) return !order.shown
-        })
-    return
+    if (!tabs.value || !tabs.value.length) {
+        return
+    }
+
+    const filterOrders = (inOrders: IRenderOrder[]) => {
+        return inOrders
+            .filter(order => order.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
+            .filter(order => order.client.short_name.toLowerCase().includes(clientFilter.value.toLowerCase()))
+            .filter(order => order.order_no_str.toLowerCase().includes(orderNoStrFilter.value.toLowerCase()))
+            .filter(order => order.elements_type_render.toLowerCase().includes(elementsTypeFilter.value.toLowerCase()))
+            .filter(order => order.comment_1c?.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
+            .filter(order => order.description!.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
+            .filter(order => getDateFromDateTimeString(order.load_at).includes(loadAtFilter.value))
+            .filter(order => getDateFromDateTimeString(order.unload_at).includes(unloadAtFilter.value))
+            .filter(order => getDateFromDateTimeString(order.order_period).includes(orderPeriodFilter.value))
+            .filter(order => {
+                if (orderActiveFilter.value === 0) return true
+                else if (orderActiveFilter.value === 1) return order.active
+                else if (orderActiveFilter.value === 2) return !order.active
+            })
+            .filter(order => {
+                if (orderForecastFilter.value === 0) return true
+                else if (orderForecastFilter.value === 1) return order.is_forecast
+                else if (orderForecastFilter.value === 2) return !order.is_forecast
+            })
+            .filter(order => {
+                if (orderShownFilter.value === 0) return true
+                else if (orderShownFilter.value === 1) return order.shown
+                else if (orderShownFilter.value === 2) return !order.shown
+            })
+    }
+
+    if (activeTabIndex.value === LIST_TAB_ID) {
+        tabs.value[activeTabIndex.value].renderData = filterOrders(orders.value)
+    } else if (activeTabIndex.value === CLIENTS_TAB_ID || activeTabIndex.value === DATES_TAB_ID) {
+        tabs.value[activeTabIndex.value].renderData = activeTabIndex.value === CLIENTS_TAB_ID
+            ? getGroupByClientsData()
+            : getGroupByDatesData()
+        tabs.value[activeTabIndex.value].renderData.forEach((item: any) => item[1] = filterOrders(item[1]))
+        tabs.value[activeTabIndex.value].renderData.forEach((item: any) => item[0].collapsed = !item[1].length)
+
+    }
 })
 
 
@@ -983,10 +1014,8 @@ const loadOrders = async (period: IPeriod | null = null) => {
             await getOrders(period)
             // console.log('orders: ', orders.value)
 
-            getOrdersRender()
-            console.log('ordersRender: ', ordersRender.value)
-
             setTabs()
+            console.log('tabs: ', tabs.value)
         },
         undefined,
         // false,

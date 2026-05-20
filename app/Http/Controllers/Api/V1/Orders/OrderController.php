@@ -402,31 +402,34 @@ class OrderController extends Controller
                         ]
                     ]);
 
-                    // __ Если тип элементов в Заявке - не матрасы, то пропускаем
-                    // __ Создаем СЗ на Участки только для матрасов
-                    if ($targetOrder->elements_type_ref !== ElementTypes::MATTRESSES->value) {
-                        continue;
-                    }
 
                     // __ Тут добавляем или распределяем СЗ на нужные участки
                     if ($needToDistribute) {
 
-                        // __ Распределяем СЗ на Пошив
-                        /** @var Order $forecastOrder */
-                        $result = SewingService::distributeSewingTaskFromOrderId($forecastOrder->id);
-                        if (!$result) {
-                            throw new Exception('Error while distributing Sewing Task with Client id = ' . $client->id);
+                        // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+                        // __ Создаем СЗ на Участки только для матрасов
+                        if ($targetOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
+                            //continue;
+
+
+                            // __ Распределяем СЗ на Пошив
+                            /** @var Order $forecastOrder */
+                            $result = SewingService::distributeSewingTaskFromOrderId($forecastOrder->id);
+                            if (!$result) {
+                                throw new Exception('Error while distributing Sewing Task with Client id = ' . $client->id);
+                            }
+
+                            // __ Распределяем СЗ на Раскрой
+                            /** @var Order $forecastOrder */
+                            //$result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
+                            //if (!$result) {
+                            //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
+                            //}
+
+                            // __ Распределяем СЗ на Сборку
+                            // __ ...
+
                         }
-
-                        // __ Распределяем СЗ на Раскрой
-                        /** @var Order $forecastOrder */
-                        //$result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
-                        //if (!$result) {
-                        //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
-                        //}
-
-                        // __ Распределяем СЗ на Сборку
-                        // __ ...
 
                         // __ И только после этого удаляем строки с кодом средней модели и !!! автоматом удаляем их из всех СЗ
                         // __ Получаем код средней модели по клиенту и типу элементов в Заявке
@@ -443,11 +446,11 @@ class OrderController extends Controller
                         }
 
                         // __ Создаем СЗ на Раскрой
-                        /** @var Order $createdOrder */
-                        $sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
-                        if (!$sewingTask) {
-                            throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
-                        }
+                        ///** @var Order $createdOrder */
+                        //$sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                        //if (!$sewingTask) {
+                        //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                        //}
 
                         // __ Создаем СЗ на Сборку
                         // __ ...
