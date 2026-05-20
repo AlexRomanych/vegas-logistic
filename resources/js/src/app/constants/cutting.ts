@@ -1,6 +1,11 @@
 // Info Константы для работы с Пошивом (Cutting)
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
 
+// __ Констианты деталей чехда в Операциях Раскроя
+export const DETAIL_COVER  = 'cover'
+export const DETAIL_DETAIL = 'detail'
+
+
 // __ Название вкладки с общим СЗ
 export const CUTTING_UNION_TASK_NAME = 'Объединение СЗ'
 
@@ -120,7 +125,7 @@ export const CUTTING_TASK_DRAFT: ICuttingTask = {
             color       : '',
         }
     },
-    cutting_lines  : [],
+    cutting_lines : [],
     statuses      : [],
     current_status: {
         id   : 0,
@@ -157,7 +162,10 @@ export const CUTTING_OPERATION_DRAFT: ICuttingOperation = {
     name       : '',
     time       : 0,
     type       : 'dynamic',
-    color      : '#64748B'
+    color      : '#64748B',
+    cover_type : null,
+    table      : null,
+    detail     : null,
 }
 
 
@@ -174,7 +182,7 @@ export const CUTTING_DAY_DRAFT: ICuttingDay = {
     resume_at    : null,
     finish_at    : null,
     duration     : 0,
-    cutting_tasks : [],
+    cutting_tasks: [],
     responsible  : {
         name      : '',
         surname   : '',

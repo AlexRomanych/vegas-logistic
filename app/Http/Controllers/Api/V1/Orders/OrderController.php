@@ -13,6 +13,7 @@ use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
 use App\Services\DefaultsService;
+use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
@@ -409,6 +410,7 @@ class OrderController extends Controller
 
                     // __ Тут добавляем или распределяем СЗ на нужные участки
                     if ($needToDistribute) {
+
                         // __ Распределяем СЗ на Пошив
                         /** @var Order $forecastOrder */
                         $result = SewingService::distributeSewingTaskFromOrderId($forecastOrder->id);
@@ -417,7 +419,11 @@ class OrderController extends Controller
                         }
 
                         // __ Распределяем СЗ на Раскрой
-                        // __ ...
+                        /** @var Order $forecastOrder */
+                        //$result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
+                        //if (!$result) {
+                        //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
+                        //}
 
                         // __ Распределяем СЗ на Сборку
                         // __ ...
@@ -437,7 +443,11 @@ class OrderController extends Controller
                         }
 
                         // __ Создаем СЗ на Раскрой
-                        // __ ...
+                        /** @var Order $createdOrder */
+                        $sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                        if (!$sewingTask) {
+                            throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                        }
 
                         // __ Создаем СЗ на Сборку
                         // __ ...

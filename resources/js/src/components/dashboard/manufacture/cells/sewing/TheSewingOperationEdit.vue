@@ -24,7 +24,7 @@
                     :errors="v$.name.$errors"
                     label="Название операции"
                     mode="text"
-                    placeholder="Введите название операции..."
+                    placeholder="Укажите название операции..."
                 />
 
                 <!-- __ Оборудование -->
@@ -34,7 +34,7 @@
                     :errors="v$.machine.$errors"
                     label="Оборудование"
                     mode="text"
-                    placeholder="Введите название оборудования..."
+                    placeholder="Укажите название оборудования..."
                 />
 
                 <!-- __ Актуальность -->
@@ -74,12 +74,12 @@
                     width="w-[500px]"
                 />
 
-                <!-- __ Описание клиента -->
+                <!-- __ Описание операции -->
                 <AppInputTextAreaSimpleTS
                     id="description"
                     v-model:text-value.trim="v$.description.$model as unknown as string"
                     :value="v$.description.$model"
-                    label="Описание клиента"
+                    label="Описание операции"
                     placeholder="Заполните описание..."
                 />
 
@@ -156,7 +156,7 @@ const sewingStore = useSewingStore()
 const route  = useRoute()
 const router = useRouter()                 // Определяем роутер
 
-let updateKey = 0
+const updateKey = 0
 
 const isLoading     = ref(false)
 const isFormCorrect = ref(false)

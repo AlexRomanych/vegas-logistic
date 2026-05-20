@@ -91,7 +91,7 @@
                                 id="filters-reset"
                                 align="center"
                                 class="cursor-pointer"
-                                height="h-[26px]"
+                                height="h-[29px]"
                                 text="Очистить"
                                 text-size="mini"
                                 type="orange"
@@ -147,6 +147,7 @@
                     type="danger"
                     width="w-[30px]"
                     @click="deleteOperation(sewingOperation)"
+                    rounded="4"
                 />
 
                 <!-- __ Редактировать -->
@@ -159,6 +160,7 @@
                         text-size="mini"
                         type="warning"
                         width="w-[30px]"
+                        rounded="4"
                     />
                 </router-link>
 

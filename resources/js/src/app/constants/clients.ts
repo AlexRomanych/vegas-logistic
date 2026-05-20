@@ -18,6 +18,7 @@ export const CLIENT_DRAFT: IClient = {
     meta: null,
     note: null,
     region: 'east',
+    code_1c: '',
 
     // can_edit: true,
 }

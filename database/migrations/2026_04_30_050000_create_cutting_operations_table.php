@@ -1,5 +1,6 @@
 <?php
 
+//use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Traits\AddCommonColumnsInTableTrait;
 use Illuminate\Database\Migrations\Migration;
@@ -20,72 +21,132 @@ return new class extends Migration {
             $table->string('name')->nullable(false)->comment('Название операции');
             $table->string('machine')->nullable()->comment('Оборудование');
             $table->string('type')->nullable()->comment('Тип операции (статическая, динамическая и т.д.)');
-            $table->integer('time')->nullable(false)->default(0)->comment('Время операции, сек.');
+            $table->double('time')->nullable(false)->default(0)->comment('Время операции, сек.');
 
-            // $table->foreignIdFor(CuttingOperation::class)->nullable()->comment('Связь со схемой');
-
+            $table->string('detail')->nullable()->comment('Определения того, к какому виду детали относится операция, например, крышка или бурлет');
+            $table->string('cover_type')->nullable()->comment('Тип чехла (м. Авт, УШМ и т.д.)');
+            $table->string('table')->nullable()->comment('Стол, к которому относится операция');
             $table->string('additional')->nullable()->comment('Для дополнительной информации');
 
-            $table->unique(['name', 'machine']);
-
+            $table->unique(['name']);
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
 
         DB::table(self::TABLE_NAME)->insert([
-            ['name' => 'Обметка панелей 100С', 'machine' => 'Оверлок', 'type' => 'dynamic', 'time' => 8],
-            ['name' => 'Обметка панелей 200С/300С', 'machine' => 'Оверлок', 'type' => 'dynamic', 'time' => 11],
-            ['name' => 'Обметка нестеганых панелей', 'machine' => 'Оверлок', 'type' => 'dynamic', 'time' => 11],
-            ['name' => 'Обметка крышки с одноиголки', 'machine' => 'Оверлок', 'type' => 'dynamic', 'time' => 13],
-            ['name' => 'Обметка бурлета', 'machine' => 'Оверлок', 'type' => 'dynamic', 'time' => 10],
-            ['name' => 'Застрочить 1 угол', 'machine' => 'Угол', 'type' => 'dynamic', 'time' => 7],
-            ['name' => 'Вшить молнию в один прием 100С', 'machine' => 'АШМ', 'type' => 'dynamic', 'time' => 28],
-            ['name' => 'Вшить молнию в один прием 200С/300С', 'machine' => 'АШМ', 'type' => 'dynamic', 'time' => 30],
-            ['name' => 'Вшить молнию в один прием нестеганая ткань', 'machine' => 'АШМ', 'type' => 'dynamic', 'time' => 33],
-            ['name' => 'Стачать 3D сетку', 'machine' => 'УШМ', 'type' => 'static', 'time' => 10],
-            ['name' => 'Стачать цельный бурлет', 'machine' => 'УШМ', 'type' => 'static', 'time' => 15],
-            ['name' => 'Стачать бурлет из 2-ух частей', 'machine' => 'УШМ', 'type' => 'static', 'time' => 30],
-            ['name' => 'Стачать бурлет из 4 частей/пилоутопер', 'machine' => 'УШМ', 'type' => 'static', 'time' => 60],
-            ['name' => 'Пришить ярлык коллекции', 'machine' => 'УШМ', 'type' => 'static', 'time' => 10],
-            ['name' => 'Пришить этикетку', 'machine' => 'УШМ', 'type' => 'static', 'time' => 10],
-            ['name' => 'Настрочить вертикальные ручки (1шт)', 'machine' => 'УШМ', 'type' => 'static', 'time' => 20],
-            ['name' => 'Настрочить нашивку на бурлет', 'machine' => 'УШМ', 'type' => 'static', 'time' => 60],
-            ['name' => 'Притачать одну сторону молнии к бурлету', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 28],
-            ['name' => 'Притачать одну сторону молнию к 3D сетке', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 28],
-            ['name' => 'Притачать одну сторону молнии к крышке 100С/нестеганая', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 30],
-            ['name' => 'Притачать одну сторону молнию к крышке 200С/300С', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 33],
-            ['name' => 'Притачать крышку к бурлету /3D сетке', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 30],
-            ['name' => 'Настрочить кант-пайпинг к 3D сетке', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 18],
-            ['name' => 'Стачать пилоутопер с мембраной/торцевую вставку', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 20],
-            ['name' => 'Проложить закрепляющую строчку', 'machine' => 'УШМ', 'type' => 'dynamic', 'time' => 25],
-            [
-                'name'    => 'Притачать одну сторону молнии к крышке окантовывая 200С/300С',
-                'machine' => 'Окантователь',
-                'type'    => 'dynamic',
-                'time'    => 30
+            ['name'       => 'Раскрой панелей 100С (м. Авт)',
+             'cover_type' => 'м. Авт',
+             'table'      => '2 и 3',
+             'time'       => 10.6,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
             ],
-            [
-                'name'    => 'Притачать одну сторону молнию к крышке с одноиголки окантовывая',
-                'machine' => 'Окантователь',
-                'type'    => 'dynamic',
-                'time'    => 35
+            ['name'       => 'Раскрой панелей 200С (м. Авт)',
+             'cover_type' => 'м. Авт',
+             'table'      => '2 и 3',
+             'time'       => 23.7,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
             ],
-            [
-                'name'    => 'Притачать бурлет к крышке окантовывая 100С/ нестеганая',
-                'machine' => 'Окантователь',
-                'type'    => 'dynamic',
-                'time'    => 28
+            ['name'       => 'Раскрой панелей 300С (м. Авт)',
+             'cover_type' => 'м. Авт',
+             'table'      => '2 и 3',
+             'time'       => 23.7,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
             ],
-            ['name' => 'Притачать бурлет к крышке окантовывая 200С/300С', 'machine' => 'Окантователь', 'type' => 'dynamic', 'time' => 30],
-            ['name' => 'Притачать бурлет к крышке с одноиголки окантовывая', 'machine' => 'Окантователь', 'type' => 'dynamic', 'time' => 35],
-            ['name' => 'Притачать бурлет к крышке окантовывая 100С/ нестеганая', 'machine' => 'Обшивка', 'type' => 'dynamic', 'time' => 18],
-            ['name' => 'Притачать бурлет к крышке окантовывая 200С/300С', 'machine' => 'Обшивка', 'type' => 'dynamic', 'time' => 20],
-            ['name' => 'Притачать бурлет к крышке с одноиголки', 'machine' => 'Обшивка', 'type' => 'dynamic', 'time' => 30],
+            ['name'       => 'Раскрой панелей с торцевой вставкой',
+             'cover_type' => 'м. Авт',
+             'table'      => '2 и 3',
+             'time'       => 20.5,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой панелей 100С (УШМ)',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 10.6,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой панелей 200С (УШМ)',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 10.6,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой панелей 300С (УШМ)',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 17.8,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой панелей нестеганых',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 13.0,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой 1 наполнителя',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 10.0,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой 2-х наполнителей',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 20.0,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой 5-и наполнителей',
+             'cover_type' => 'УШМ',
+             'table'      => '2 и 3',
+             'time'       => 50.0,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_COVER
+            ],
+            ['name'       => 'Раскрой детали боковина цельная',
+             'cover_type' => 'УШМ',
+             'table'      => '1',
+             'time'       => 6.6,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_DETAIL
+            ],
+            ['name'       => 'Раскрой детали боковина',
+             'cover_type' => '2 детали	УШМ',
+             'table'      => '1',
+             'time'       => 10.6,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_DETAIL
+            ],
+            ['name'       => 'Раскрой детали боковина цельная не стеганая',
+             'cover_type' => 'УШМ',
+             'table'      => '1',
+             'time'       => 4.5,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_DETAIL
+            ],
+            ['name'       => 'Раскрой детали боковина 3D сетка',
+             'cover_type' => 'УШМ',
+             'table'      => '1',
+             'time'       => 7.0,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_DETAIL
+            ],
+            ['name'       => 'Раскрой детали боковины с пилоутопером',
+             'cover_type' => 'УШМ',
+             'table'      => '1',
+             'time'       => 42.7,
+             'type'       => CuttingOperation::DYNAMIC_TYPE,
+             'detail'     => CuttingOperation::DETAIL_DETAIL
+            ],
         ]);
-
-
-
-
     }
 
     /**

@@ -23,7 +23,6 @@ class CellCuttingOperationController extends Controller
         try {
             $cuttingOperations = CuttingOperation::all();
             return CuttingOperationResource::collection($cuttingOperations);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -32,7 +31,7 @@ class CellCuttingOperationController extends Controller
 
     /**
      * ___ Получаем Типовую операцию по швейке
-     * @param  string  $id
+     * @param string $id
      * @return CuttingOperationResource|string
      */
     public function getCuttingOperation(string $id)
@@ -43,7 +42,6 @@ class CellCuttingOperationController extends Controller
 
             $cuttingOperation = CuttingOperation::query()->findOrFail($id);
             return new CuttingOperationResource($cuttingOperation);
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -52,13 +50,12 @@ class CellCuttingOperationController extends Controller
 
     /**
      * ___ Создание Типовой операции по швейке
-     * @param  Request  $request
+     * @param Request $request
      * @return string
      */
     public function createCuttingOperation(Request $request)
     {
         try {
-
             $all = $request->all();
 
             $data = $request->validate([
@@ -68,6 +65,9 @@ class CellCuttingOperationController extends Controller
                 'time'        => 'required|integer',
                 'active'      => 'required|boolean',
                 'description' => 'required|string',
+                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_COVER . ',' . CuttingOperation::DETAIL_DETAIL,
+                'table'       => 'required|string',
+                'cover_type'  => 'required|string',
             ]);
 
 
@@ -78,6 +78,9 @@ class CellCuttingOperationController extends Controller
                 'time'        => $data['time'],
                 'active'      => $data['active'],
                 'description' => $data['description'],
+                'detail'      => $data['detail'],
+                'table'       => $data['table'],
+                'cover_type'  => $data['cover_type'],
 
             ]);
 
@@ -85,7 +88,7 @@ class CellCuttingOperationController extends Controller
                 throw new Exception('Error creating cutting operation');
             }
 
-            return EndPointStaticRequestAnswer::ok();
+            return EndPointStaticRequestAnswer::ok('Сохранено');
             // return new CuttingOperationResource($cuttingOperation);
 
         } catch (Exception $e) {
@@ -94,31 +97,33 @@ class CellCuttingOperationController extends Controller
     }
 
     /**
-     * ___ Создание Типовой операции по швейке
-     * @param  Request  $request
+     * ___ Обновление Типовой операции по швейке
+     * @param Request $request
      * @return string
      */
     public function updateCuttingOperation(Request $request)
     {
         try {
-
             $all = $request->all();
 
             $data = $request->validate([
                 'id'          => 'required|numeric|exists:cutting_operations,id',
                 'name'        => 'string',
                 // 'name'        =>'unique:cutting_operations,name,machine,' . $request->id, // Игнорируем текущий ID',
-                'machine'     => 'string',
+                'machine'     => 'nullable|string',
                 'type'        => 'in:dynamic,static',
                 'time'        => 'integer',
                 'active'      => 'boolean',
                 'description' => 'nullable|string',
+                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_COVER . ',' . CuttingOperation::DETAIL_DETAIL,
+                'table'       => 'required|string',
+                'cover_type'  => 'required|string',
             ]);
 
             $cuttingOperation = CuttingOperation::query()->findOrFail($data['id']);
 
             // __ Оставляем все поля, которые БЫЛИ в запросе, включая пустые/null
-            $updates = $request->only(['name', 'machine', 'type', 'time', 'active', 'description']);
+            $updates = $request->only(['name', 'machine', 'type', 'time', 'active', 'description', 'detail', 'table', 'cover_type']);
 
             // __ Проверяем, было ли поле в запросе изначально, даже если оно стало null
             // $updates = collect($data)
@@ -132,7 +137,7 @@ class CellCuttingOperationController extends Controller
             // __ Обновляем именно найденную модель
             $cuttingOperation->update($updates);
 
-            return EndPointStaticRequestAnswer::ok();
+            return EndPointStaticRequestAnswer::ok('Сохранено');
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

@@ -24,7 +24,7 @@
                     :errors="v$.name.$errors"
                     label="Название операции"
                     mode="text"
-                    placeholder="Введите название операции..."
+                    placeholder="Укажите название операции..."
                 />
 
                 <!-- __ Оборудование -->
@@ -34,7 +34,27 @@
                     :errors="v$.machine.$errors"
                     label="Оборудование"
                     mode="text"
-                    placeholder="Введите название оборудования..."
+                    placeholder="Укажите название оборудования..."
+                />
+
+                <!-- __ Стол -->
+                <AppInputTextTS
+                    id="machine"
+                    v-model:textValue.trim="v$.table.$model as unknown as string"
+                    :errors="v$.table.$errors"
+                    label="Стол"
+                    mode="text"
+                    placeholder="Укажите стол..."
+                />
+
+                <!-- __ Тип чехла -->
+                <AppInputTextTS
+                    id="machine"
+                    v-model:textValue.trim="v$.coverType.$model as unknown as string"
+                    :errors="v$.coverType.$errors"
+                    label="Тип чехла"
+                    mode="text"
+                    placeholder="Укажите тип чехла..."
                 />
 
                 <!-- __ Актуальность -->
@@ -63,6 +83,19 @@
                     @checked="calcModeCheckedHandler"
                 />
 
+                <!-- __ Тип детали -->
+                <div class="mt-5"></div>
+                <AppCheckboxTS
+                    id="calc-mode"
+                    :checkboxData="detailTypeCheckboxData"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Тип детали"
+                    type="secondary"
+                    width="w-[500px]"
+                    @checked="detailTypeCheckedHandler"
+                />
+
                 <!-- __ Время операции -->
                 <AppInputNumberSimpleTS
                     id="time"
@@ -74,12 +107,12 @@
                     width="w-[500px]"
                 />
 
-                <!-- __ Описание клиента -->
+                <!-- __ Описание операции -->
                 <AppInputTextAreaSimpleTS
                     id="description"
                     v-model:text-value.trim="v$.description.$model as unknown as string"
                     :value="v$.description.$model"
-                    label="Описание клиента"
+                    label="Описание операции"
                     placeholder="Заполните описание..."
                 />
 
@@ -128,18 +161,18 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICalcMode, ICheckboxData, ICheckboxDataItem, ICuttingOperation } from '@/types'
+import type { ICalcMode, ICheckboxData, ICheckboxDataItem, ICuttingOperation, ICuttingOperationDetailTypes } from '@/types'
 
 import { onMounted, ref, watch } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, helpers, minValue, integer } from '@vuelidate/validators'
+import { required, minLength, helpers, minValue, /*integer*/ } from '@vuelidate/validators'
 
 import { useCuttingStore } from '@/stores/CuttingStore'
 
-import { CUTTING_OPERATION_DRAFT } from '@/app/constants/cutting.ts'
+import { CUTTING_OPERATION_DRAFT, DETAIL_COVER, DETAIL_DETAIL } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -156,7 +189,7 @@ const cuttingStore = useCuttingStore()
 const route  = useRoute()
 const router = useRouter()                 // Определяем роутер
 
-let updateKey = 0
+const updateKey = 0
 
 const isLoading     = ref(false)
 const isFormCorrect = ref(false)
@@ -174,6 +207,7 @@ const calloutHandler = () => setInterval(() => (confirmClick.value = false), 500
 const operation = ref<ICuttingOperation>(CUTTING_OPERATION_DRAFT)
 let activeCheckboxData: ICheckboxData         // выбор активности
 let calcModeCheckboxData: ICheckboxData       // выбор типа расчета
+let detailTypeCheckboxData: ICheckboxData     // выбор типа детали
 
 // __ Подгружаем данные по операции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
@@ -193,15 +227,22 @@ const active      = ref(true)
 const calcMode    = ref<ICalcMode>('dynamic')
 const time        = ref(0)
 const description = ref('')
+const detail      = ref<ICuttingOperationDetailTypes>('cover')
+const table       = ref('')
+const coverType   = ref('')
+
 
 // __ Заполняем объекты валидации
 const fillData = () => {
     name.value        = operation.value.name
-    machine.value     = operation.value.machine
+    machine.value     = operation.value.machine ?? ''
     active.value      = operation.value.active
     calcMode.value    = operation.value.type ?? 'dynamic'
     time.value        = operation.value.time
     description.value = operation.value.description ?? ''
+    table.value       = operation.value.table ?? ''
+    coverType.value   = operation.value.cover_type ?? ''
+
 }
 
 
@@ -212,12 +253,15 @@ const verify = {
     machine,
     time,
     description,
+    table,
+    coverType,
 }
 
 // __ Определяем правила валидации
-const MIN_NAME_LENGTH    = 3
-const MIN_MACHINE_LENGTH = 3
-const REQUIRED_MESSAGE   = 'Поле обязательно для заполнения'
+const MIN_NAME_LENGTH  = 3
+const MIN_TABLE_LENGTH = 1
+// const MIN_MACHINE_LENGTH = 3
+const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
 
 const rules = {
     // id: {
@@ -228,27 +272,36 @@ const rules = {
     //     integer: helpers.withMessage(`Поле должно быть целочисленным`, integer),
     //     required: helpers.withMessage(REQUIRED_MESSAGE, required),
     // },
-    name:        {
+    name       : {
         $autoDirty: true,
-        required:   helpers.withMessage(REQUIRED_MESSAGE, required),
-        minLength:  helpers.withMessage(
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        minLength : helpers.withMessage(
             `Минимальная длина названия - ${MIN_NAME_LENGTH} символов`,
             minLength(MIN_NAME_LENGTH),
         ),
     },
-    machine:     {
+    table      : {
         $autoDirty: true,
-        required:   helpers.withMessage(REQUIRED_MESSAGE, required),
-        minLength:  helpers.withMessage(
-            `Минимальная длина названия - ${MIN_MACHINE_LENGTH} символов`,
-            minLength(MIN_MACHINE_LENGTH),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        minLength : helpers.withMessage(
+            `Минимальная длина текста - ${MIN_TABLE_LENGTH} символов`,
+            minLength(MIN_TABLE_LENGTH),
         ),
     },
-    time:        {
+    machine    : {
+        // $autoDirty: true,
+        // required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        // minLength : helpers.withMessage(
+        //     `Минимальная длина названия - ${MIN_MACHINE_LENGTH} символов`,
+        //     minLength(MIN_MACHINE_LENGTH),
+        // ),
+    },
+    coverType  : {},
+    time       : {
         $autoDirty: true,
-        minValue:   helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
-        integer:    helpers.withMessage(`Поле должно быть целочисленным`, integer),
-        required:   helpers.withMessage(REQUIRED_MESSAGE, required),
+        minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
+        // integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        required: helpers.withMessage(REQUIRED_MESSAGE, required),
         // $lazy: true,
         // numeric: helpers.withMessage(`Поле должно содержать только цифры`, numeric),
     },
@@ -275,6 +328,15 @@ const fillSelects = () => {
             { id: 2, name: 'Статический', checked: calcMode.value === 'static' },
         ]
     }
+
+    detailTypeCheckboxData = {
+        name: 'detail_type',
+        data: [
+            { id: 1, name: 'Панель', checked: detail.value === DETAIL_COVER },
+            { id: 2, name: 'Деталь', checked: detail.value === DETAIL_DETAIL },
+        ]
+    }
+
 }
 
 
@@ -295,6 +357,15 @@ const calcModeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) =
     }
 }
 
+// __ Обработчик чекбокса на Типе детали
+const detailTypeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        operation.value.detail = data.id === 1 ? DETAIL_COVER : DETAIL_DETAIL
+        detail.value           = operation.value.detail
+    }
+}
+
+
 // __ Отправка формы
 const formSubmit = async () => {
 
@@ -307,6 +378,9 @@ const formSubmit = async () => {
     operation.value.type        = calcMode.value
     operation.value.time        = time.value
     operation.value.description = description.value
+    operation.value.table       = table.value
+    operation.value.detail      = detail.value
+    operation.value.cover_type  = coverType.value
 
     console.log('operation.value', operation.value)
 

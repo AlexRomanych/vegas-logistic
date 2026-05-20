@@ -407,7 +407,12 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    // ___ Обновляем СЗ на Пошив
+    // TODO: Union into Textile!!!
+    /**
+     * ___ Обновляем СЗ на Пошив
+     * @param SyncCuttingTasksRequest $request
+     * @return mixed|string
+     */
     public function updateCuttingTasks(SyncCuttingTasksRequest $request)
     {
         // !!! TODO: SyncCuttingTasksRequest
@@ -574,7 +579,7 @@ class CellCuttingTaskController extends Controller
                 // __ Смотрим, если еще прилетел статус, который нужно установить для СЗ,
                 // __ то устанавливаем его
                 foreach ($diffs as $diff) {
-                    if (!is_null($diff['taskChanges']['status'])) {
+                    if (!is_null($diff['taskChanges']) && !is_null($diff['taskChanges']['status'])) {
 
                         // __ Пропускаем тот случай, кагда с фронта прилетает создание нового СЗ (ADDED)
                         // __ Это обрабатываем выше

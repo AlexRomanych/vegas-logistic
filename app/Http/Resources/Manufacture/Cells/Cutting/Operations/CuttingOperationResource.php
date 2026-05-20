@@ -24,6 +24,10 @@ class CuttingOperationResource extends JsonResource
             'description' => $this->description,
             'active'      => $this->active,
             'color'       => $this->color,
+
+            'cover_type' => $this->cover_type,
+            'table'      => $this->table,
+            'detail'     => $this->detail,
             // 'created_at'  => $this->created_at,
             // 'updated_at'  => $this->updated_at,
             // 'meta'        => $this->meta,

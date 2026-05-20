@@ -73,8 +73,12 @@ const menuData = () => {
                     {name: 'Причины изменения статуса', path: 'reasons', shown: true, isActive: true,},
                     {name: 'Типы заявок', path: 'orders.types', shown: true, isActive: true,},
 
-                    {name: 'Модели', path: 'models', shown: false, isActive: true,},
-                    {name: 'Процедуры расчета', path: 'plan', shown: false, isActive: true,},
+                    {name: 'Справочник моделей', path: 'models', shown: true, isActive: true,},
+                    {name: 'Справочник материалов', path: 'materials', shown: true, isActive: true,},
+                    {name: 'Справочник процедур расчета', path: 'procedures', shown: true, isActive: true,},
+                    {name: 'Справочник спецификаций', path: 'constructs', shown: true, isActive: true,},
+
+                    {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
                 ]
         },
         {

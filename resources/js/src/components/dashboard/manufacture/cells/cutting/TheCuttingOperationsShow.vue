@@ -65,6 +65,24 @@
                         <AppInputTextTSWrapper v-model="colorFilter" :render-object="render.color"/>
                     </div>
 
+                    <!-- __ Тип чехла -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.cover_type"/>
+                        <AppInputTextTSWrapper v-model="coverTypeFilter" :render-object="render.cover_type"/>
+                    </div>
+
+                    <!-- __ Стол -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.table"/>
+                        <AppInputTextTSWrapper v-model="tableFilter" :render-object="render.table"/>
+                    </div>
+
+                    <!-- __ Деталь, к которой применяется операция -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.detail"/>
+                        <AppInputTextTSWrapper v-model="detailFilter" :render-object="render.detail"/>
+                    </div>
+
                     <!-- __ Описание -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.description"/>
@@ -78,10 +96,10 @@
                                 :text="['➕', '']"
                                 align="center"
                                 class="cursor-pointer"
+                                rounded="4"
                                 text-size="large"
                                 type="warning"
                                 width="w-[64px]"
-                                rounded="4"
                             />
                         </router-link>
 
@@ -91,13 +109,13 @@
                                 id="filters-reset"
                                 align="center"
                                 class="cursor-pointer"
-                                height="h-[26px]"
+                                height="h-[29px]"
+                                rounded="4"
                                 text="Очистить"
                                 text-size="mini"
                                 type="orange"
                                 width="w-[64px]"
                                 @click="resetFilters"
-                                rounded="4"
                             />
                         </div>
                     </div>
@@ -135,6 +153,15 @@
                     @confirm="saveCuttingOperationColor($event, cuttingOperation)"
                 />
 
+                <!-- __ Тип чехла -->
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.cover_type"/>
+
+                <!-- __ Стол -->
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.table"/>
+
+                <!-- __ Тип детали -->
+                <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.detail"/>
+
                 <!-- __ Описание -->
                 <AppLabelTSWrapper :arg="cuttingOperation" :render-object="render.description"/>
 
@@ -146,6 +173,7 @@
                     text-size="mini"
                     type="danger"
                     width="w-[30px]"
+                    rounded="4"
                     @click="deleteOperation(cuttingOperation)"
                 />
 
@@ -159,6 +187,7 @@
                         text-size="mini"
                         type="warning"
                         width="w-[30px]"
+                        rounded="4"
                     />
                 </router-link>
 
@@ -189,14 +218,14 @@ import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-
+import { DETAIL_COVER, DETAIL_DETAIL } from '@/app/constants/cutting.ts'
 
 
 const isLoading = ref(false)
 
 const cuttingStore = useCuttingStore()
 
-const DEBUG = true
+// const DEBUG = true
 
 // __ Права изменения
 const CAN_EDIT   = true
@@ -222,83 +251,83 @@ const DATA_ALIGN         = 'left'
 // const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    id:      {
-        id:         () => 'id-search',
-        header:     ['ID', ''],
-        width:      'w-[50px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    id         : {
+        id        : () => 'id-search',
+        header    : ['ID', ''],
+        width     : 'w-[50px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍id...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.id.toString()
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍id...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.id.toString()
     },
-    name:    {
-        id:         () => 'name-search',
-        header:     ['Название', 'типовой операции'],
-        width:      'w-[300px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    name       : {
+        id        : () => 'name-search',
+        header    : ['Название', 'типовой операции'],
+        width     : 'w-[300px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Название...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.name
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Название...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.name
     },
-    machine: {
-        id:         () => 'machine-search',
-        header:     ['Оборудо-', 'вание'],
-        width:      'w-[100px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    machine    : {
+        id        : () => 'machine-search',
+        header    : ['Оборудо-', 'вание'],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Обор-ние...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.machine
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Обор-ние...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.machine ?? ''
     },
-    active:  {
-        id:         () => 'active-search',
-        header:     ['Актуаль-', 'ность'],
-        width:      DEFAULT_WIDTH_BOOL,
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    active     : {
+        id        : () => 'active-search',
+        header    : ['Актуаль-', 'ность'],
+        width     : DEFAULT_WIDTH_BOOL,
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? 'success' : 'danger',
+        dataType  : () => DATA_TYPE,
+        type      : (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? 'success' : 'danger',
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Active...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? '✓' : '✗'
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Active...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.active ? '✓' : '✗'
     },
-    type:        {
-        id:         () => 'type-search',
-        header:     ['Тип', 'расчета'],
-        width:      'w-[100px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    type       : {
+        id        : () => 'type-search',
+        header    : ['Тип', 'расчета'],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       (cuttingOperation: ICuttingOperation) => {
+        dataType  : () => DATA_TYPE,
+        type      : (cuttingOperation: ICuttingOperation) => {
             if (!cuttingOperation) {
                 return 'dark'
             }
@@ -312,11 +341,11 @@ const render: IRenderData = reactive({
         // type:       () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Тип...',
-        data:           (cuttingOperation: ICuttingOperation) => {
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Тип...',
+        data          : (cuttingOperation: ICuttingOperation) => {
             switch (cuttingOperation.type) {
                 case 'dynamic':
                     return 'Динамический'
@@ -325,15 +354,15 @@ const render: IRenderData = reactive({
             }
         }
     },
-    time:        {
-        id:         () => 'time-search',
-        header:     ['Время', 'операции, сек.'],
-        width:      'w-[100px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    time       : {
+        id        : () => 'time-search',
+        header    : ['Время', 'операции, сек.'],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       (cuttingOperation: ICuttingOperation) => {
+        dataType  : () => DATA_TYPE,
+        type      : (cuttingOperation: ICuttingOperation) => {
             if (!cuttingOperation) {
                 return 'dark'
             }
@@ -347,46 +376,98 @@ const render: IRenderData = reactive({
         // type:       () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Время...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.time.toString()
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Время...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.time.toString()
     },
-    color:       {
-        id:         () => 'color-search',
-        header:     ['Цвет', 'ярлычка'],
-        width:      'w-[100px]',
-        height:     DEFAULT_HEIGHT,
-        show:       false,
+    color      : {
+        id        : () => 'color-search',
+        header    : ['Цвет', 'ярлычка'],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : false,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Цвет...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
-        class:          'cursor-pointer'
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Цвет...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
+        class         : 'cursor-pointer'
     },
-    description: {  // __ Описание Заявки
-        id:         () => 'description-search',
-        header:     ['Описание', ''],
-        width:      'w-[450px]',
-        height:     DEFAULT_HEIGHT,
-        show:       true,
+    cover_type : {
+        id        : () => 'cover-type-search',
+        header    : ['Тип', 'чехла'],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
         headerType: () => HEADER_TYPE,
-        dataType:   () => DATA_TYPE,
-        type:       () => DEFAULT_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Описание...',
-        data:           (cuttingOperation: ICuttingOperation) => cuttingOperation.description ?? ''
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Чехол...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.cover_type ?? ''
+    },
+    table      : {
+        id        : () => 'table-search',
+        header    : ['Стол', ''],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
+        headerType: () => HEADER_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Стол...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.table ?? ''
+    },
+    detail     : {
+        id        : () => 'detail-search',
+        header    : ['Деталь', ''],
+        width     : 'w-[100px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
+        headerType: () => HEADER_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Деталь...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.detail ?? '',
+
+    },
+    description: {
+        id        : () => 'description-search',
+        header    : ['Описание', ''],
+        width     : 'w-[450px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
+        headerType: () => HEADER_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : () => DEFAULT_TYPE,
+        // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Описание...',
+        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.description ?? ''
     },
 })
 
@@ -399,6 +480,9 @@ const timeFilter        = ref('')
 const colorFilter       = ref('')
 const descriptionFilter = ref('')
 const activeFilter      = ref(0)
+const tableFilter       = ref('')
+const detailFilter      = ref('')
+const coverTypeFilter   = ref('')
 
 // __ Подготавливаем селекты
 const activeSelect: ISelectData = {
@@ -425,14 +509,36 @@ const resetFilters = () => {
     colorFilter.value       = ''
     descriptionFilter.value = ''
     activeFilter.value      = 0
+    tableFilter.value       = ''
+    detailFilter.value      = ''
+    coverTypeFilter.value   = ''
 }
 
+// __ Получаем название детали
+function getDetailTitle(cuttingOperation: ICuttingOperation) {
+    switch (cuttingOperation.detail) {
+        case DETAIL_COVER:
+            return 'Панель'
+        case DETAIL_DETAIL:
+            return 'Деталь'
+        default:
+            return ''
+    }
+}
 
 // __ Получаем данные
 const getCuttingOperations = async () => {
     cuttingOperations.value = await cuttingStore.getCuttingOperations()
     cuttingOperations.value = cuttingOperations.value
-        .map(cuttingOperation => ({ ...cuttingOperation, description: cuttingOperation.description ?? '', can_edit: true }))
+        .map(cuttingOperation => ({
+            ...cuttingOperation,
+            description: cuttingOperation.description ?? '',
+            machine    : cuttingOperation.machine ?? '',
+            cover_type : cuttingOperation.cover_type ?? '',
+            table      : cuttingOperation.table ?? '',
+            detail     : getDetailTitle(cuttingOperation),
+            can_edit   : true
+        }))
         .sort((a, b) => a.id - b.id)
 }
 
@@ -459,7 +565,7 @@ watchEffect(() => {
     cuttingOperationsRender.value = cuttingOperations.value
         .filter(orderType => orderType.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
         .filter(orderType => orderType.name.toLowerCase().includes(nameFilter.value.toLowerCase()))
-        .filter(orderType => orderType.machine.toLowerCase().includes(machineFilter.value.toLowerCase()))
+        .filter(orderType => orderType.machine!.toLowerCase().includes(machineFilter.value.toLowerCase()))
         .filter(orderType => {
             const calcType = orderType.type === 'dynamic' ? 'Динамический' : 'Статический'
             return calcType.toLowerCase().includes(typeFilter.value.toLowerCase())
@@ -467,6 +573,9 @@ watchEffect(() => {
         .filter(orderType => orderType.time.toString().includes(timeFilter.value.toLowerCase()))
         .filter(orderType => orderType.color.toLowerCase().includes(colorFilter.value.toLowerCase()))
         .filter(orderType => orderType.description!.toLowerCase().includes(descriptionFilter.value.toLowerCase()))
+        .filter(orderType => orderType.table!.toLowerCase().includes(tableFilter.value.toLowerCase()))
+        .filter(orderType => orderType.cover_type!.toLowerCase().includes(coverTypeFilter.value.toLowerCase()))
+        .filter(orderType => orderType.detail!.toLowerCase().includes(detailFilter.value.toLowerCase()))
         .filter(order => {
             if (activeFilter.value === 0) return true
             else if (activeFilter.value === 1) return order.active

@@ -85,7 +85,7 @@ class CellSewingOperationController extends Controller
                 throw new Exception('Error creating sewing operation');
             }
 
-            return EndPointStaticRequestAnswer::ok();
+            return EndPointStaticRequestAnswer::ok('Сохранено');
             // return new SewingOperationResource($sewingOperation);
 
         } catch (Exception $e) {
@@ -94,7 +94,7 @@ class CellSewingOperationController extends Controller
     }
 
     /**
-     * ___ Создание Типовой операции по швейке
+     * ___ Обновление Типовой операции по швейке
      * @param  Request  $request
      * @return string
      */
@@ -132,7 +132,7 @@ class CellSewingOperationController extends Controller
             // __ Обновляем именно найденную модель
             $sewingOperation->update($updates);
 
-            return EndPointStaticRequestAnswer::ok();
+            return EndPointStaticRequestAnswer::ok('Сохранено');
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

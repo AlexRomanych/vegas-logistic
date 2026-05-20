@@ -9,7 +9,7 @@ import {
     CUTTING_TASK_STATUS_ROLLING,
     CUTTING_TASK_STATUS_PENDING,
     CUTTING_TASK_STATUS_RUNNING,
-    CUTTING_TASK_STATUS_DONE,
+    CUTTING_TASK_STATUS_DONE, DETAIL_COVER, DETAIL_DETAIL,
 
 } from '@/app/constants/cutting.ts'
 
@@ -266,15 +266,20 @@ export interface ICuttingTaskArrayLineDiffs {
 // --- ------------------------------------------------------------
 // __ Тип для Типовой операции Пошива
 export interface ICuttingOperation {
+    id: number
+    name: string
     active: boolean
     description: string | null
-    id: number
-    machine: string
-    name: string
+    machine: string | null
     time: number
-    type: ICalcMode
     color: string
+    type: ICalcMode
+    cover_type: string | null
+    table: string | null
+    detail: ICuttingOperationDetailTypes | null
 }
+
+export type ICuttingOperationDetailTypes = typeof DETAIL_COVER | typeof DETAIL_DETAIL
 
 // export type ICalcMode = 'dynamic' | 'static'
 // --- ------------------------------------------------------------

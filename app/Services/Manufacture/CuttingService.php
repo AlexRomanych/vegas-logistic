@@ -120,21 +120,6 @@ final class CuttingService
                 ]);
             }
 
-            // __ !!! Старая логика, когда в СЗ записывали общие трудозатраты
-            // $createdTaskLine = CuttingTaskLine::query()->create([
-            //     'cutting_task_id'             => $createdTask->id,
-            //     'order_line_id'              => $line->id,
-            //     'amount'                     => $line->amount,
-            //     'position'                   => $position++,
-            //     'time_labor'                 => $cuttingTimeLabor->getTimeLaborArray(), // __ Записываем общие трудозатраты в jsonb в БД
-            //
-            //     // __ Эти поля убрал
-            //     // CuttingTask::FIELD_UNIVERSAL  => $cuttingTimeLabor->getTimeUniversal(),
-            //     // CuttingTask::FIELD_AUTO       => $cuttingTimeLabor->getTimeAuto(),
-            //     // CuttingTask::FIELD_SOLID_HARD => $cuttingTimeLabor->getTimeSolidHard(),
-            //     // CuttingTask::FIELD_SOLID_LITE => $cuttingTimeLabor->getTimeSolidLite(),
-            //     // CuttingTask::FIELD_UNDEFINED  => $cuttingTimeLabor->getTimeUndefined(),
-            // ]);
         }
 
         // __ Создаем запись в Статусе: Создано

@@ -11,12 +11,15 @@ class CuttingOperation extends Model
     public const DYNAMIC_TYPE = 'dynamic';
     public const STATIC_TYPE = 'static';
 
+    // __ Константы Детали Операции
+    public const DETAIL_COVER = 'cover';
+    public const DETAIL_DETAIL = 'detail';
 
 
     protected $guarded = [];
 
     protected $casts = [
-        'time' => 'integer'
+        'time' => 'double'
     ];
 
 }
