@@ -125,6 +125,16 @@ const cutting = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Учет ПС на раскрое
+        path: _MAIN_PREFIX + 'fabrics/movement',
+        name     : 'manufacture.cell.cutting.fabrics.movement',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingFabricsMovement.vue'),
+        meta: {
+            title: 'Учет ПС раскроя'
+        }
+    },
+
     //
     // {
     //     // ___ Печать

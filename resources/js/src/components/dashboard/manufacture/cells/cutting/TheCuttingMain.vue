@@ -30,6 +30,7 @@ const menuItems: IMenuItem[] = [
     // { name: 'Управление СЗ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
     { name: 'Выполнение СЗ', path: 'manufacture.cell.cutting.tasks.execute', shown: true, isActive: true },
     { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },
+    { name: 'Учет ПС на раскрое', path: 'manufacture.cell.cutting.fabrics.movement', shown: true, isActive: true, },
     { name: 'Статусы движения СЗ', path: 'manufacture.cell.cutting.task.statuses', shown: true, isActive: true },
     { name: 'Типовые операции', path: 'manufacture.cell.cutting.operations', shown: true, isActive: true },
     { name: 'Схемы типовых операций', path: 'manufacture.cell.cutting.operation.schemas', shown: true, isActive: true },
