@@ -143,7 +143,7 @@ class OrderController extends Controller
      */
     public function uploadOrders(Request $request)
     {
-        try {
+        //try {
             $data = $request->validate(['data' => 'required|json']);
 
             // TODO: Сделать проверку на валидность данных и соответствие шаблону
@@ -405,7 +405,6 @@ class OrderController extends Controller
 
                     // __ Тут добавляем или распределяем СЗ на нужные участки
                     if ($needToDistribute) {
-
                         // __ Если тип элементов в Заявке - не матрасы, то пропускаем
                         // __ Создаем СЗ на Участки только для матрасов
                         if ($targetOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
@@ -438,23 +437,27 @@ class OrderController extends Controller
                         // __ Удаляем строки с кодом средней модели и автоматом удаляем их из СЗ
                         $forecastOrder->lines()->where('model_code_1c', $averageModelCode)->delete();
                     } else {
-                        // __ Создаем СЗ на Пошив
-                        /** @var Order $createdOrder */
-                        $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
-                        if (!$sewingTask) {
-                            throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
+
+                        // __ Если тип элементов в Заявке - не матрасы, то пропускаем
+                        // __ Создаем СЗ на Участки только для матрасов
+                        if ($targetOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
+                            // __ Создаем СЗ на Пошив !!!
+                            /** @var Order $createdOrder */
+                            $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
+                            if (!$sewingTask) {
+                                throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
+                            }
+
+                            // __ Создаем СЗ на Раскрой !!!
+                            /** @var Order $createdOrder */
+                            $sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                            if (!$sewingTask) {
+                                throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                            }
+
+                            // __ Создаем СЗ на Сборку
+                            // __ ...
                         }
-
-                        // __ Создаем СЗ на Раскрой
-                        ///** @var Order $createdOrder */
-                        //$sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
-                        //if (!$sewingTask) {
-                        //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
-                        //}
-
-                        // __ Создаем СЗ на Сборку
-                        // __ ...
-
                     }
                 }
                 // }); // transaction
@@ -468,9 +471,9 @@ class OrderController extends Controller
             // return 'done...';
 
             return EndPointStaticRequestAnswer::ok();
-        } catch (Exception|Throwable $e) {
-            return EndPointStaticRequestAnswer::fail($e);
-        }
+        //} catch (Exception|Throwable $e) {
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
     }
 
 

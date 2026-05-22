@@ -1020,4 +1020,13 @@ class CellCuttingTaskController extends Controller
         return array_unique($result);
     }
 
+
+    public function test()
+    {
+        $result = CuttingService::test();
+
+
+        return $result;
+    }
+
 }

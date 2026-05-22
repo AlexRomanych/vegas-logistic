@@ -63,11 +63,27 @@ final class ModelsService implements VegasDataUpdateContract
     {
         if (!self::isModelsCashed()) {
             $models = Model::query()
-                ->with(['modelType', 'cover', 'base', 'sewingSchema.operations', 'sewingOperations'])
+                ->with([
+                    'modelType',
+                    'cover',
+                    'base',
+                    'sewingSchema.operations',
+                    'sewingOperations',
+                    //'cuttingSchema.operations',
+                    //'cuttingOperations',
+                    //'constructs',           // __ Используем отношение один ко многим, чтобы выявить ошибку, если спецификация не одна
+                    ////'constructSingle',    // __ Один к одному (Одна спецификация на модель)
+                    //'constructs.constructItems',
+
+                    'cover.constructs', // __ Подгружаем спецификацию чехла, если она есть
+                    //'constructSingle',
+                    'cover.constructs.constructItems',
+
+                ])
                 ->get();
 
             foreach ($models as $model) {
-                self::$modelsCacheByCode1C[$model->code_1c]           = $model;
+                self::$modelsCacheByCode1C[$model->code_1c] = $model;
                 self::$modelsCacheByName[mb_strtolower($model->name)] = $model;
 
                 // Добавление чехла в кэш
@@ -78,6 +94,35 @@ final class ModelsService implements VegasDataUpdateContract
         }
 
         return self::$modelsCacheByCode1C;
+    }
+
+    /**
+     * ___ Получает Model по коду 1С или имени или, если передать не строку, а объект модели, проверяет его в кэше
+     * @param Model|string $model
+     * @return Model|null
+     */
+    public static function getModel(Model|string $model): ?Model
+    {
+        if ($model instanceof Model) {
+            if (!is_null(self::$modelsCacheByCode1C[$model->code_1c])) {
+                return $model;
+            }
+            if (!is_null(self::$modelsCacheByName[$model->name])) {
+                return $model;
+            }
+        } else {
+            $findModel = self::getModelByCode1C($model);
+            if ($findModel) {
+                return $findModel;
+            }
+
+            $findModel = self::getModelByName($model);
+            if ($findModel) {
+                return $findModel;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -139,7 +184,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelsCollections as $modelsCollection) {
                 self::$modelsCollectionsCacheByCode1C[$modelsCollection->code_1c] = $modelsCollection;
-                self::$modelsCollectionsCacheByName[$modelsCollection->name]      = $modelsCollection;
+                self::$modelsCollectionsCacheByName[$modelsCollection->name] = $modelsCollection;
             }
         }
     }
@@ -191,7 +236,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelManufactureTypes as $modelManufactureType) {
                 self::$modelManufactureTypeCacheByCode1C[$modelManufactureType->code_1c] = $modelManufactureType;
-                self::$modelManufactureTypeCacheByName[$modelManufactureType->name]      = $modelManufactureType;
+                self::$modelManufactureTypeCacheByName[$modelManufactureType->name] = $modelManufactureType;
             }
         }
     }
@@ -244,7 +289,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelTypes as $modelType) {
                 self::$modelTypeCacheByCode1C[$modelType->code_1c] = $modelType;
-                self::$modelTypeCacheByName[$modelType->name]      = $modelType;
+                self::$modelTypeCacheByName[$modelType->name] = $modelType;
             }
         }
     }
@@ -296,7 +341,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureStatuses = ModelManufactureStatus::all();
 
             foreach ($modelManufactureStatuses as $modelManufactureStatus) {
-                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id]     = $modelManufactureStatus;
+                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id] = $modelManufactureStatus;
                 self::$modelManufactureStatusCacheByName[$modelManufactureStatus->name] = $modelManufactureStatus;
             }
         }
@@ -349,7 +394,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureGroups = ModelManufactureGroup::all();
 
             foreach ($modelManufactureGroups as $modelManufactureGroup) {
-                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id]     = $modelManufactureGroup;
+                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id] = $modelManufactureGroup;
                 self::$modelManufactureGroupCacheByName[$modelManufactureGroup->name] = $modelManufactureGroup;
             }
         }
@@ -389,21 +434,19 @@ final class ModelsService implements VegasDataUpdateContract
      * __ Статусы производства (Выпускается, архив и т.д.)
      * __ Группы сортировки
      * @param string $modelEntity Класс сущности
-     * @param array $attributes Атрибуты сущности
+     * @param array $attributes   Атрибуты сущности
      * @return ModelCollection|ModelManufactureType|ModelType|ModelManufactureStatus|ModelManufactureGroup|null
      */
     public static function createOrUpdateModelEntity(
         string $modelEntity = '',
-        array  $attributes = []
-    ): ModelCollection|ModelManufactureType|ModelType|ModelManufactureStatus|ModelManufactureGroup|null
-    {
+        array $attributes = []
+    ): ModelCollection|ModelManufactureType|ModelType|ModelManufactureStatus|ModelManufactureGroup|null {
         if ($modelEntity === '') {
             return null;
         }
 
 
         if ($modelEntity === ModelCollection::class) {
-
             // __ Коллекция моделей
             if (!isset($attributes['model_collection_code_1c']) || !isset($attributes['model_collection_name'])) {
                 return null;
@@ -411,8 +454,9 @@ final class ModelsService implements VegasDataUpdateContract
 
             $modelsCollection = self::getModelsCollectionByCode1C($attributes['model_collection_code_1c']);
             if (!$modelsCollection || $modelsCollection->name !== $attributes['model_collection_name'] || !$modelsCollection->active) {
-
-                if ($modelsCollection) $modelsCollection->active = true;
+                if ($modelsCollection) {
+                    $modelsCollection->active = true;
+                }
 
                 $insertedModelsCollection = ModelCollection::query()->updateOrCreate(
                     [
@@ -431,127 +475,131 @@ final class ModelsService implements VegasDataUpdateContract
                 return $insertedModelsCollection;
             }
             return $modelsCollection;
-
-        } else if ($modelEntity === ModelManufactureType::class) {
-
-            // __ Тип производства
-            if (!isset($attributes['model_manufacture_type_code_1c']) || !isset($attributes['model_manufacture_type_name'])) {
-                return null;
-            }
-
-            $modelManufactureType = self::getModelManufactureTypeByCode1C($attributes['model_manufacture_type_code_1c']);
-            if (!$modelManufactureType || $modelManufactureType->name !== $attributes['model_manufacture_type_name'] || !$modelManufactureType->active) {
-
-                if ($modelManufactureType) $modelManufactureType->active = true;    // Устанавливаем в кэше, чтобы не перегружать БД
-
-                $insertedManufactureType = ModelManufactureType::query()->updateOrCreate(
-                    [
-                        CODE_1C => $attributes['model_manufacture_type_code_1c'],
-                    ],
-                    [
-                        'name'   => $attributes['model_manufacture_type_name'],
-                        'active' => true,
-                    ]
-                );
-
-                if (!$insertedManufactureType) {
+        } else {
+            if ($modelEntity === ModelManufactureType::class) {
+                // __ Тип производства
+                if (!isset($attributes['model_manufacture_type_code_1c']) || !isset($attributes['model_manufacture_type_name'])) {
                     return null;
                 }
 
-                return $insertedManufactureType;
-            }
+                $modelManufactureType = self::getModelManufactureTypeByCode1C($attributes['model_manufacture_type_code_1c']);
+                if (!$modelManufactureType || $modelManufactureType->name !== $attributes['model_manufacture_type_name'] || !$modelManufactureType->active) {
+                    if ($modelManufactureType) {
+                        $modelManufactureType->active = true;
+                    }    // Устанавливаем в кэше, чтобы не перегружать БД
 
-            return $modelManufactureType;
+                    $insertedManufactureType = ModelManufactureType::query()->updateOrCreate(
+                        [
+                            CODE_1C => $attributes['model_manufacture_type_code_1c'],
+                        ],
+                        [
+                            'name'   => $attributes['model_manufacture_type_name'],
+                            'active' => true,
+                        ]
+                    );
 
-        } else if ($modelEntity === ModelType::class) {
+                    if (!$insertedManufactureType) {
+                        return null;
+                    }
 
-            // __ Тип модели
-            if (!isset($attributes['model_type_code_1c']) || !isset($attributes['model_type_name'])) {
-                return null;
-            }
-
-            $modelType = self::getModelTypeByCode1C($attributes['model_type_code_1c']);
-            if (!$modelType || $modelType->name !== $attributes['model_type_name'] || !$modelType->active) {
-
-                if ($modelType) $modelType->active = true;
-
-                $insertedModelType = ModelType::query()->updateOrCreate(
-                    [
-                        CODE_1C => $attributes['model_type_code_1c'],
-                    ],
-                    [
-                        'name'   => $attributes['model_type_name'],
-                        'active' => true,
-                    ]
-                );
-
-                if (!$insertedModelType) {
-                    return null;
+                    return $insertedManufactureType;
                 }
 
-                return $insertedModelType;
-            }
-            return $modelType;
+                return $modelManufactureType;
+            } else {
+                if ($modelEntity === ModelType::class) {
+                    // __ Тип модели
+                    if (!isset($attributes['model_type_code_1c']) || !isset($attributes['model_type_name'])) {
+                        return null;
+                    }
 
-        } else if ($modelEntity === ModelManufactureStatus::class) {
+                    $modelType = self::getModelTypeByCode1C($attributes['model_type_code_1c']);
+                    if (!$modelType || $modelType->name !== $attributes['model_type_name'] || !$modelType->active) {
+                        if ($modelType) {
+                            $modelType->active = true;
+                        }
 
-            // __ Статус производства
-            if (!isset($attributes['model_manufacture_status_id']) || !isset($attributes['model_manufacture_status_name'])) {
-                return null;
-            }
+                        $insertedModelType = ModelType::query()->updateOrCreate(
+                            [
+                                CODE_1C => $attributes['model_type_code_1c'],
+                            ],
+                            [
+                                'name'   => $attributes['model_type_name'],
+                                'active' => true,
+                            ]
+                        );
 
-            $modelManufactureStatus = self::getModelManufactureStatusById($attributes['model_manufacture_status_id']);
-            if (!$modelManufactureStatus || $modelManufactureStatus->name !== $attributes['model_manufacture_status_name'] || !$modelManufactureStatus->active) {
+                        if (!$insertedModelType) {
+                            return null;
+                        }
 
-                if ($modelManufactureStatus) $modelManufactureStatus->active = true;
+                        return $insertedModelType;
+                    }
+                    return $modelType;
+                } else {
+                    if ($modelEntity === ModelManufactureStatus::class) {
+                        // __ Статус производства
+                        if (!isset($attributes['model_manufacture_status_id']) || !isset($attributes['model_manufacture_status_name'])) {
+                            return null;
+                        }
 
-                $insertedModelManufactureStatus = ModelManufactureStatus::query()->updateOrCreate(
-                    [
-                        'id' => $attributes['model_manufacture_status_id'],
-                    ],
-                    [
-                        'name'   => $attributes['model_manufacture_status_name'],
-                        'active' => true,
-                    ]
-                );
+                        $modelManufactureStatus = self::getModelManufactureStatusById($attributes['model_manufacture_status_id']);
+                        if (!$modelManufactureStatus || $modelManufactureStatus->name !== $attributes['model_manufacture_status_name'] || !$modelManufactureStatus->active) {
+                            if ($modelManufactureStatus) {
+                                $modelManufactureStatus->active = true;
+                            }
 
-                if (!$insertedModelManufactureStatus) {
-                    return null;
+                            $insertedModelManufactureStatus = ModelManufactureStatus::query()->updateOrCreate(
+                                [
+                                    'id' => $attributes['model_manufacture_status_id'],
+                                ],
+                                [
+                                    'name'   => $attributes['model_manufacture_status_name'],
+                                    'active' => true,
+                                ]
+                            );
+
+                            if (!$insertedModelManufactureStatus) {
+                                return null;
+                            }
+
+                            return $insertedModelManufactureStatus;
+                        }
+                        return $modelManufactureStatus;
+                    } else {
+                        if ($modelEntity === ModelManufactureGroup::class) {
+                            // __ Группа сортировки производства
+                            if (!isset($attributes['model_manufacture_group_id']) || !isset($attributes['model_manufacture_group_name'])) {
+                                return null;
+                            }
+
+                            $modelManufactureGroup = self::getModelManufactureGroupById($attributes['model_manufacture_group_id']);
+                            if (!$modelManufactureGroup || $modelManufactureGroup->name !== $attributes['model_manufacture_group_name'] || !$modelManufactureGroup->active) {
+                                if ($modelManufactureGroup) {
+                                    $modelManufactureGroup->active = true;
+                                }
+
+                                $insertedModelManufactureGroup = ModelManufactureGroup::query()->updateOrCreate(
+                                    [
+                                        'id' => $attributes['model_manufacture_group_id'],
+                                    ],
+                                    [
+                                        'name'   => $attributes['model_manufacture_group_name'],
+                                        'active' => true,
+                                    ]
+                                );
+
+                                if (!$insertedModelManufactureGroup) {
+                                    return null;
+                                }
+
+                                return $insertedModelManufactureGroup;
+                            }
+                            return $modelManufactureGroup;
+                        }
+                    }
                 }
-
-                return $insertedModelManufactureStatus;
             }
-            return $modelManufactureStatus;
-
-        } else if ($modelEntity === ModelManufactureGroup::class) {
-
-            // __ Группа сортировки производства
-            if (!isset($attributes['model_manufacture_group_id']) || !isset($attributes['model_manufacture_group_name'])) {
-                return null;
-            }
-
-            $modelManufactureGroup = self::getModelManufactureGroupById($attributes['model_manufacture_group_id']);
-            if (!$modelManufactureGroup || $modelManufactureGroup->name !== $attributes['model_manufacture_group_name'] || !$modelManufactureGroup->active) {
-
-                if ($modelManufactureGroup) $modelManufactureGroup->active = true;
-
-                $insertedModelManufactureGroup = ModelManufactureGroup::query()->updateOrCreate(
-                    [
-                        'id' => $attributes['model_manufacture_group_id'],
-                    ],
-                    [
-                        'name'   => $attributes['model_manufacture_group_name'],
-                        'active' => true,
-                    ]
-                );
-
-                if (!$insertedModelManufactureGroup) {
-                    return null;
-                }
-
-                return $insertedModelManufactureGroup;
-            }
-            return $modelManufactureGroup;
         }
 
         return null;
@@ -579,13 +627,13 @@ final class ModelsService implements VegasDataUpdateContract
 
     public function updateData(VegasDataGetContract $getter = null): void
     {
-        $fileName   = config('vegas.models_1C_json_name');
+        $fileName = config('vegas.models_1C_json_name');
         $modelsList = !is_null($getter) ? $getter->getDataFromFile($fileName) : $this->getter->getDataFromFile($fileName);
 
         Model::query()->update(['active' => 0]);
 
         foreach ($modelsList as $modelItem) {
-            $base  = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
+            $base = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
             $cover = json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
             //            $base = $modelItem['bs'];
             //            $cover = $modelItem['cv'];
@@ -670,13 +718,12 @@ final class ModelsService implements VegasDataUpdateContract
             'serial' => '',
         ]);
         Model::query()->updateOrCreate(['code1C' => $modelItem->code1C], $modelItem->getAttributes());
-
     }
 
     // ___ Возвращаем фейковую модель
     public function createFakeModel(array $attributes = []): Model
     {
-        $model           = new Model();
+        $model = new Model();
         $modelAttributes = $model->getAttributes();
         $modelAttributes = array_merge($modelAttributes, $attributes);
 
@@ -704,9 +751,9 @@ final class ModelsService implements VegasDataUpdateContract
         // !!! Порядок важен
         return match (true) {
             self::isElementCoversTypeGroup($data, $name) => ElementTypes::COVERS->value,
-            self::isElementMattressTypeGroup($data)      => ElementTypes::MATTRESSES->value,
-            self::isElementAccessoriesTypeGroup($data)   => ElementTypes::ACCESSORIES->value,
-            default                                      => ElementTypes::UNDEFINED->value,
+            self::isElementMattressTypeGroup($data) => ElementTypes::MATTRESSES->value,
+            self::isElementAccessoriesTypeGroup($data) => ElementTypes::ACCESSORIES->value,
+            default => ElementTypes::UNDEFINED->value,
         };
     }
 
@@ -894,7 +941,6 @@ final class ModelsService implements VegasDataUpdateContract
             // Если модель прогнозная, то проверяем по префиксу в коде 1С, который создаем сами
             return mb_stripos($model->code_1c, CLIENT_AVERAGE_MATTRESS_PREFIX) !== false
                 || mb_stripos($model->code_1c, CLIENT_AVERAGE_ACCESSORY_PREFIX) !== false;
-
         }
 
         // __ Если не находим модель, пробуем определить ее по имени
@@ -905,13 +951,25 @@ final class ModelsService implements VegasDataUpdateContract
         return str_contains(mb_strtolower($name), 'average');
     }
 
+
+    /**
+     * ___ Проверка, есть ли у элемента чехол
+     * @param string|Model $data
+     * @return bool
+     */
+    public static function hasElementCover(string|Model $data): bool
+    {
+        $model = self::getElementByNameOrCode1C($data);
+        return !is_null($model->getRelation('cover'));
+    }
+
     // line ---------------------------------------------------------------------------
     // line ---------------------------------------------------------------------------
     // line ---------------------------------------------------------------------------
 
     /**
      * ___ Создание средней модели
-     * @param string $clientId id клиента
+     * @param string $clientId    id клиента
      * @param string $elementType тип элемента
      * @return Model|null
      */
@@ -930,7 +988,7 @@ final class ModelsService implements VegasDataUpdateContract
         $isMattressType = ($elementType === ElementTypes::MATTRESSES->value);
 
         // __ Проверка на присутствие средней модели в базе
-        $PREFIX  = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
+        $PREFIX = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
         $code_1c = $PREFIX . str_pad($client->id, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
 
         // __ Получаем среднюю модель напрямую, без кэша, т.к. она создается динамически
@@ -1008,17 +1066,17 @@ final class ModelsService implements VegasDataUpdateContract
      */
     public static function getAverageModelCodeByClientAndElementsType(
         Client|int $client = null,
-        string $modelType = ElementTypes::MATTRESSES->value): string|null
-    {
+        string $modelType = ElementTypes::MATTRESSES->value
+    ): string|null {
         if (!$client) {
             return null;
         }
 
         if ($modelType === ElementTypes::MATTRESSES->value) {
-            $PREFIX  =  CLIENT_AVERAGE_MATTRESS_PREFIX;
+            $PREFIX = CLIENT_AVERAGE_MATTRESS_PREFIX;
             // $PREFIX  =  ElementTypes::MATTRESSES->value;
         } elseif ($modelType === ElementTypes::ACCESSORIES->value) {
-            $PREFIX  =  CLIENT_AVERAGE_ACCESSORY_PREFIX;
+            $PREFIX = CLIENT_AVERAGE_ACCESSORY_PREFIX;
             // $PREFIX  =  ElementTypes::ACCESSORIES->value;
         } else {
             return null;

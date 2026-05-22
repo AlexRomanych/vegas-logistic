@@ -307,8 +307,8 @@
                                             :arg="i === 1 ? model : model.cover"
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.code_1c"
-                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                             class="cursor-pointer"
+                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                         />
 
                                         <!-- __ Название -->
@@ -316,8 +316,8 @@
                                             :arg="i === 1 ? model : model.cover"
                                             :class="i === 2 ? 'italic' : ''"
                                             :render-object="render.model_name"
-                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                             class="cursor-pointer"
+                                            @dblclick="i === 1 ? showSpecification(model) : showSpecification(model.cover)"
                                         />
 
                                         <!-- __ Тип изделия -->
@@ -1037,7 +1037,7 @@ const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineT
 
 // __ Карточка Спецификаций
 const cardSpecification = ref<InstanceType<typeof CardSpecification> | null>(null)
-const modelConstruct = ref<IModelConstruct | null>(null)
+const modelConstruct    = ref<IModelConstruct | null>(null)
 
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
@@ -1093,6 +1093,7 @@ const getEntities = async () => {
                 tkch                   : model.tkch ?? '',
                 kdch                   : model.kdch ?? '',
                 barcode                : model.barcode ?? '',
+                cover_type             : model.cover_type ?? '',
                 description            : model.description ?? '',
                 manufacture_type       : model.manufacture_type ?? { name: '', code_1c: '' },
                 manufacture_group      : model.manufacture_group ?? { name: '', id: 0, group_number: 0 },
@@ -1137,7 +1138,7 @@ watchEffect(() => {
     const manufactureGroupSearch      = manufactureGroupFilter.value.toLowerCase()
     const manufactureStatusSearch     = manufactureStatusFilter.value.toLowerCase()
     const sewingOperationSchemaSearch = sewingOperationSchemaFilter.value.toLowerCase()
-
+    const coverTypeFilterSearch       = coverTypeFilter.value.toLowerCase()
 
     entitiesRender.value = entities.map(collection => {
         // Создаем новый объект группы, чтобы не менять оригинал
@@ -1163,6 +1164,7 @@ watchEffect(() => {
             .filter(model => model.manufacture_group!.name.toLowerCase().includes(manufactureGroupSearch))
             .filter(model => model.manufacture_status!.name.toLowerCase().includes(manufactureStatusSearch))
             .filter(model => model.sewing_operation_schema!.name.toLowerCase().includes(sewingOperationSchemaSearch))
+            .filter(model => model.cover_type!.toLowerCase().includes(coverTypeFilterSearch))
 
         return {
             ...collection,

@@ -57,7 +57,7 @@ const URL_CUTTING_OPERATION_MODELS_ADD       = '/cutting/operation/models/add'  
 const URL_CUTTING_DAY                        = '/cutting/day'                         // URL для получения рабочего дня
 const URL_CUTTING_DAY_DATES                  = '/cutting/day/dates'                   // URL для получения рабочих дней по статусу
 const URL_CUTTING_DAY_COMMENT                = '/cutting/day/comment'                 // URL для сохранения комментария к дню
-const URL_CUTTING_DAY_WORKERS_ACTIVE         = '/workers/active'                     // URL для получения активных рабочих
+const URL_CUTTING_DAY_WORKERS_ACTIVE         = '/workers/active'                      // URL для получения активных рабочих
 const URL_CUTTING_DAY_WORKER_ADD             = '/cutting/day/worker/add'              // URL для добавления исполнителя к дню
 const URL_CUTTING_DAY_WORKER_GROUP_ADD       = '/cutting/day/workers/add'             // URL для добавления группы исполнителей к дню
 const URL_CUTTING_DAY_WORKER_REMOVE          = '/cutting/day/worker/remove'           // URL для удаления исполнителя к дню
@@ -68,6 +68,7 @@ const URL_CUTTING_DAY_FINISH                 = '/cutting/day/finish'            
 const URL_CUTTING_DAY_READY_GET              = '/cutting/day/ready/get'               // URL для получения маячка готовности дня с СЗ к добавлению новых СЗ
 const URL_CUTTING_DAY_READY_SET              = '/cutting/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
 const URL_CUTTING_DAY_READY_UNSET            = '/cutting/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
+const URL_CUTTING_TEST                       = '/cutting/test'                        // URL для тестирования
 
 export const useCuttingStore = defineStore('cutting', () => {
 
@@ -898,6 +899,14 @@ export const useCuttingStore = defineStore('cutting', () => {
     // }, { immediate: true, deep: true })
 
 
+    const test = async () => {
+        const response = await jwtGet(URL_CUTTING_TEST)
+        const result   = await response
+        if (DEBUG) console.log('CuttingStore: test: ', result)
+        return result
+    }
+
+
     return {
         globalCuttingTasks,
         globalCuttingTaskStatuses,
@@ -970,5 +979,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         applyMergeTasksGroups,
         setCuttingTasksLines,
         applyCuttingTaskComment,
+
+        test,
     }
 })

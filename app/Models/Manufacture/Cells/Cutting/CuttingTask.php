@@ -17,15 +17,21 @@ class CuttingTask extends Model
     ];
 
 
-    // --- Константы
+    //// --- Константы
+    //
+    //// --- Поля
+    //public const FIELD_TABLE_1 = 'table_1';
+    //public const FIELD_TABLE_2 = 'table_2';
+    //public const FIELD_TABLE_3 = 'table_3';
+    //public const FIELD_AVERAGE = 'average';
 
-    // --- Поля
+
     public const FIELD_UNIVERSAL = 'universal';
     public const FIELD_AUTO = 'auto';
     public const FIELD_SOLID_HARD = 'solid_hard';
     public const FIELD_SOLID_LITE = 'solid_lite';
     public const FIELD_UNDEFINED = 'undefined';
-    public const FIELD_AVERAGE = 'average';
+
 
 
     // --- -------------------------------

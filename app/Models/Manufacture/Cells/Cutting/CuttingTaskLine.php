@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CuttingTaskLine extends Model
 {
+    // --- Константы
+
+    // --- Поля
+    public const FIELD_TABLE_1 = 'table_1';
+    public const FIELD_TABLE_2 = 'table_2';
+    public const FIELD_TABLE_3 = 'table_3';
+    public const FIELD_AVERAGE = 'average';
+    public const FIELD_UNDEFINED = 'undefined';
+
     protected $guarded = false;
 
     protected $casts = [

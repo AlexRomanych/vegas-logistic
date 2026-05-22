@@ -13,6 +13,11 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue'
+import { useUserStore } from '@/stores/UserStore'
+import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
+
+const userStore = useUserStore()
 
 interface IMenuItem {
     name: string,
@@ -21,10 +26,8 @@ interface IMenuItem {
     isActive: boolean
 }
 
-import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
-
-const menuItems: IMenuItem[] = [
+const menuItems = ref<IMenuItem[]>([
     // { name: 'Тест', path: 'manufacture.cell.cutting.test', shown: true, isActive: true },
     { name: 'Управление планом РЦ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
     // { name: 'Управление СЗ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
@@ -36,7 +39,18 @@ const menuItems: IMenuItem[] = [
     { name: 'Схемы типовых операций', path: 'manufacture.cell.cutting.operation.schemas', shown: true, isActive: true },
     { name: 'Трудозатраты моделей', path: 'manufacture.cell.cutting.operation.models', shown: true, isActive: true },
     // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
-]
+])
+
+if (userStore.hasAdminRole()) {
+    menuItems.value.push({
+        name: 'Тест',
+        path: 'manufacture.cell.cutting.test',
+        shown: true,
+        isActive: true,
+    })
+}
+
+
 // menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
 
 

@@ -9,6 +9,7 @@ use App\Classes\CuttingTimeLabor;
 use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskStatus;
+use App\Models\Models\Model;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
@@ -22,17 +23,17 @@ final class CuttingService
 
     /**
      * ___ Создать СЗ для Пошива из основного Заказа
-     * @param int $orderId ID основного Заказа
+     * @param int $orderId             ID основного Заказа
      * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
      * @return CuttingTask|null
      * @throws Throwable
+     * @noinspection DuplicatedCode
      */
     public static function createCuttingTaskFromOrderId(
-        int         $orderId,
+        int $orderId,
         string|null $plannedDate = null
-    ): ?CuttingTask
-    {
-        // try {
+    ): ?CuttingTask {
+         try {
         // __ Проверяем на существование заказа
         $order = Order::query()->with(['lines', 'client'])->find($orderId);
         if (!$order) {
@@ -43,7 +44,7 @@ final class CuttingService
             $plannedDate = normalizeToCarbon($plannedDate);
         } else {
             // __ Получаем смещение в днях для Пошива
-            $offset = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
+            $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
             $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
         }
 
@@ -79,47 +80,92 @@ final class CuttingService
 
             // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
             // __ Для каждой ШМ записываем отдельно
-            $cuttingMachines = [
-                CuttingTask::FIELD_UNIVERSAL  => [
-                    'time'   => $cuttingTimeLabor->getTimeUniversal(),
-                    'amount' => $cuttingTimeLabor->getAmountUniversal()
+            $cuttingTables = [
+                CuttingTaskLine::FIELD_TABLE_1   => [
+                    'time'   => $cuttingTimeLabor->getTimeTable_1(),
+                    'amount' => $cuttingTimeLabor->getAmountTable_1()
                 ],
-                CuttingTask::FIELD_AUTO       => [
-                    'time'   => $cuttingTimeLabor->getTimeAuto(),
-                    'amount' => $cuttingTimeLabor->getAmountAuto()
+                CuttingTaskLine::FIELD_TABLE_2   => [
+                    'time'   => $cuttingTimeLabor->getTimeTable_2(),
+                    'amount' => $cuttingTimeLabor->getAmountTable_2()
                 ],
-                CuttingTask::FIELD_SOLID_HARD => [
-                    'time'   => $cuttingTimeLabor->getTimeSolidHard(),
-                    'amount' => $cuttingTimeLabor->getAmountSolidHard()
+                CuttingTaskLine::FIELD_TABLE_3   => [
+                    'time'   => $cuttingTimeLabor->getTimeTable_3(),
+                    'amount' => $cuttingTimeLabor->getAmountTable_3()
                 ],
-                CuttingTask::FIELD_SOLID_LITE => [
-                    'time'   => $cuttingTimeLabor->getTimeSolidLite(),
-                    'amount' => $cuttingTimeLabor->getAmountSolidLite()
-                ],
-                CuttingTask::FIELD_UNDEFINED  => [
+                CuttingTaskLine::FIELD_UNDEFINED => [
                     'time'   => $cuttingTimeLabor->getTimeUndefined(),
                     'amount' => $cuttingTimeLabor->getAmountUndefined()
                 ],
             ];
 
-            foreach ($cuttingMachines as $machine => $data) {
+            foreach ($cuttingTables as $table => $data) {
                 if ($data['amount'] < 1) {
                     continue;
                 }
-                $createdTaskLine = CuttingTaskLine::query()->create([
+
+                // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
+                //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
+                //    continue;
+                //}
+
+                // __ Получаем стол
+                $targetTable = CuttingService::getTableByModel($line->model_code_1c);
+                $hasPanel    = CuttingService::hasPanel($line->model_code_1c);
+                $hasSide     = CuttingService::hasSide($line->model_code_1c);
+
+                $panelTaskLine = CuttingTaskLine::query()->create([
                     'cutting_task_id' => $createdTask->id,
-                    'order_line_id'  => $line->id,
-                    'amount'         => $data['amount'],
-                    'position'       => $position++,
-                    'time'           => $data['time'],
+                    'order_line_id'   => $line->id,
+                    'amount'          => $data['amount'],
+                    'position'        => $position++,
+                    'time'            => $data['time'],
+                    'table'           => $targetTable,
+
+                    // __ Задаем детальки
+                    'is_panel'        => true,
+                    'has_panel'       => $hasPanel,
+                    'is_side'         => false,
+                    'has_side'        => $hasSide,
 
                     // __ Задаем подмену свойств
-                    'phantom'        => $machine,
-                    'phantom_json'   => ['is_' . $machine => true],
-
+                    'phantom'         => $table,
+                    'phantom_json'    => [$table => true],
                 ]);
-            }
 
+                // __ Если нет Боковины у Изделтя, то пропускаем
+                if (!$hasSide) {
+                    continue;
+                }
+
+                try {
+
+                // __ Создаем Боковину
+                $baseTaskLine = CuttingTaskLine::query()->create([
+                    'cutting_task_id' => $createdTask->id,
+                    'order_line_id'   => $line->id,
+                    'parent_id'       => $panelTaskLine->id,                // __ Указываем родительскую панельку
+                    'amount'          => $data['amount'],
+                    'position'        => $position++,
+                    'time'            => $data['time'],
+                    'table'           => $targetTable === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,    // __ Все детальки отправляем на Стол 3
+
+                    // __ Задаем детальки
+                    'is_panel'        => false,
+                    'has_panel'       => false,
+                    'is_side'         => true,
+                    'has_side'        => false,
+
+                    // __ Задаем подмену свойств
+                    'phantom'         => $table,
+                    'phantom_json'    => [$table => true],
+                ]);
+
+                } catch (Exception $e) {
+                    $err = $e->getMessage();
+                    continue;
+                }
+            }
         }
 
         // __ Создаем запись в Статусе: Создано
@@ -132,9 +178,9 @@ final class CuttingService
 
         // });
         return $createdTask;
-        // } catch (Exception|Throwable $e) {
-        //     return EndPointStaticRequestAnswer::fail($e);
-        // }
+         } catch (Exception|Throwable $e) {
+             return EndPointStaticRequestAnswer::fail($e);
+         }
 
 
     }
@@ -177,36 +223,33 @@ final class CuttingService
 
         // __ Разбиваем Заявку на ШМ
         $universals = [];
-        $autos = [];
+        $autos      = [];
         $solidHards = [];
         $solidLites = [];
-        $unknowns = [];
+        $unknowns   = [];
 
         foreach ($order->lines as $orderLine) {
             $model = ModelsService::getModelByCode1C($orderLine->model_code_1c);
 
             if (!ModelsService::isElementAverage($model)) {
                 match ($model->machine_type_name) {
-                    CuttingTask::FIELD_UNIVERSAL => $universals[] = $orderLine,
-                    CuttingTask::FIELD_AUTO => $autos[] = $orderLine,
+                    CuttingTask::FIELD_UNIVERSAL  => $universals[] = $orderLine,
+                    CuttingTask::FIELD_AUTO       => $autos[] = $orderLine,
                     CuttingTask::FIELD_SOLID_HARD => $solidHards[] = $orderLine,
                     CuttingTask::FIELD_SOLID_LITE => $solidLites[] = $orderLine,
-                    default => $unknowns[] = $orderLine,
+                    default                       => $unknowns[] = $orderLine,
                 };
-
             }
         }
 
-        $FIELD_DATA = 'data';
+        $FIELD_DATA   = 'data';
         $FIELD_MEMORY = 'memory';
         $FIELD_MERGED = 'merged';
 
         $cuttingTaskContent = [];
         // $idx               = 0;
         foreach ($cuttingTasks as $key => $cuttingTask) {
-
             foreach ($cuttingTask->cuttingLines as $cuttingLine) {
-
                 switch ($cuttingLine->phantom):
                     case CuttingTask::FIELD_UNIVERSAL:
                         $workField = CuttingTask::FIELD_UNIVERSAL;
@@ -240,22 +283,21 @@ final class CuttingService
 
                 // __ Если есть что распределять и есть куда распределять
                 while ($lineAmount > 0 && count($workArray) > 0) {
-
                     $item = array_pop($workArray);
 
                     if ($item->amount <= $lineAmount) {
                         // __ Если есть куда распределить
-                        $data[] = $item;
+                        $data[]     = $item;
                         $lineAmount -= $item->amount;
                     } else {
                         // __ Если не хватает для распределения
-                        $newItem = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
+                        $newItem         = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
                         $newItem->amount = $lineAmount;
 
                         $data[] = $newItem;
 
-                        $item->amount -= $lineAmount;    // Уменьшаем остаток в оригинале
-                        $workArray[] = $item;           // Возвращаем остаток в массив
+                        $item->amount -= $lineAmount;     // Уменьшаем остаток в оригинале
+                        $workArray[]  = $item;            // Возвращаем остаток в массив
 
                         $lineAmount = 0;
                     }
@@ -276,22 +318,19 @@ final class CuttingService
 
         if (count($rest) > 0) {
             foreach ($cuttingTasks as $key => $cuttingTask) {
-
                 foreach ($cuttingTask->cuttingLines as $cuttingLine) {
-
                     $workField = match ($cuttingLine->phantom) {
-                        CuttingTask::FIELD_UNIVERSAL => CuttingTask::FIELD_UNIVERSAL,
-                        CuttingTask::FIELD_AUTO => CuttingTask::FIELD_AUTO,
+                        CuttingTask::FIELD_UNIVERSAL  => CuttingTask::FIELD_UNIVERSAL,
+                        CuttingTask::FIELD_AUTO       => CuttingTask::FIELD_AUTO,
                         CuttingTask::FIELD_SOLID_HARD => CuttingTask::FIELD_SOLID_HARD,
                         CuttingTask::FIELD_SOLID_LITE => CuttingTask::FIELD_SOLID_LITE,
-                        default => CuttingTask::FIELD_UNDEFINED,
+                        default                       => CuttingTask::FIELD_UNDEFINED,
                     };
 
                     $lineAmount = $cuttingTaskContent[$key][$workField][$FIELD_MEMORY];
 
                     // __ Если есть что распределять и есть куда распределять
                     while ($lineAmount > 0 && count($rest) > 0) {
-
                         $item = array_pop($rest);
 
                         if ($item->amount <= $lineAmount) {
@@ -301,13 +340,13 @@ final class CuttingService
                             $lineAmount -= $item->amount;
                         } else {
                             // __ Если не хватает для распределения
-                            $newItem = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
+                            $newItem         = clone $item; // Создаем копию, чтобы изменения не затронули оригинал
                             $newItem->amount = $lineAmount;
 
                             $cuttingTaskContent[$key][$workField][$FIELD_DATA][] = $newItem;
 
-                            $item->amount -= $lineAmount;       // Уменьшаем остаток в оригинале
-                            $rest[] = $item;              // Возвращаем остаток в массив []
+                            $item->amount -= $lineAmount;             // Уменьшаем остаток в оригинале
+                            $rest[]       = $item;                    // Возвращаем остаток в массив []
 
                             $lineAmount = 0;
                         }
@@ -315,7 +354,6 @@ final class CuttingService
 
                     $cuttingTaskContent[$key][$workField][$FIELD_MEMORY] = $lineAmount;
                 }
-
             }
         }
 
@@ -329,17 +367,15 @@ final class CuttingService
 
         // __ Теперь нужно объединить все те Lines, которые были разбиты на несколько и попали в одну часть СЗ
         foreach ($cuttingTasks as $key => $cuttingTask) {
-
             $merged = [];
 
             foreach ($cuttingTask->cuttingLines as $cuttingLine) {
-
                 $workField = match ($cuttingLine->phantom) {
-                    CuttingTask::FIELD_UNIVERSAL => CuttingTask::FIELD_UNIVERSAL,
-                    CuttingTask::FIELD_AUTO => CuttingTask::FIELD_AUTO,
+                    CuttingTask::FIELD_UNIVERSAL  => CuttingTask::FIELD_UNIVERSAL,
+                    CuttingTask::FIELD_AUTO       => CuttingTask::FIELD_AUTO,
                     CuttingTask::FIELD_SOLID_HARD => CuttingTask::FIELD_SOLID_HARD,
                     CuttingTask::FIELD_SOLID_LITE => CuttingTask::FIELD_SOLID_LITE,
-                    default => CuttingTask::FIELD_UNDEFINED,
+                    default                       => CuttingTask::FIELD_UNDEFINED,
                 };
 
                 // __ Сгружаем в кучу
@@ -367,7 +403,6 @@ final class CuttingService
 
         // __ Сохраняем содержимое
         DB::transaction(function () use ($cuttingTasks, $cuttingTaskContent, $FIELD_MERGED) {
-
             // __ Заводим позиции записей в СЗ в отрицательную зону
             // __ Или удаляем
             foreach ($cuttingTasks as $key => $cuttingTask) {
@@ -383,7 +418,6 @@ final class CuttingService
 
                     if (isset($cuttingTaskContent[$key][$FIELD_MERGED])) {
                         foreach ($cuttingTaskContent[$key][$FIELD_MERGED] as $line) {
-
                             // __ Получаем трудозатраты
                             /** @noinspection DuplicatedCode */
                             $cuttingTimeLabor = new CuttingTimeLabor(
@@ -394,12 +428,11 @@ final class CuttingService
 
                             $createdTaskLine = CuttingTaskLine::query()->create([
                                 'cutting_task_id' => $cuttingTask->id,
-                                'order_line_id'  => $line->id,
-                                'amount'         => $line->amount,
-                                'position'       => $position++,
-                                'time'           => $cuttingTimeLabor->getTime(),
+                                'order_line_id'   => $line->id,
+                                'amount'          => $line->amount,
+                                'position'        => $position++,
+                                'time'            => $cuttingTimeLabor->getTime(),
                             ]);
-
                         }
                     }
                 } else {
@@ -440,13 +473,12 @@ final class CuttingService
      */
     public static function getNextChange(
         ManufactureDayAndChange|Carbon|string $manufactureEntity,
-        int                             $change = null
-    ): ManufactureDayAndChange
-    {
+        int $change = null
+    ): ManufactureDayAndChange {
         $manufDateAndChange = null;
         if ($manufactureEntity instanceof ManufactureDayAndChange) {
             $manufDateAndChange = new ManufactureDayAndChange($manufactureEntity->getManufactureDay()->addDay(), 1);
-        } else  {
+        } else {
             $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), 1);
             // $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), $change);
         }
@@ -457,13 +489,12 @@ final class CuttingService
 
     /**
      * ___ Массовое обновление СЗ
-     * @param  array  $rows
+     * @param array $rows
      * @return void
      * @throws Throwable
      */
     public static function bulkUpdateTasks(array $rows): void
     {
-
         // ___ Формат входных данных:
         // $tasksToUpdate[] = [
         //     'id'        => taskId,
@@ -482,7 +513,6 @@ final class CuttingService
         $allIds = array_column($rows, 'id');
 
         DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
-
             // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
             if (!empty($idsForMinus)) {
                 $placeholders = implode(',', array_fill(0, count($idsForMinus), '?'));
@@ -510,12 +540,12 @@ final class CuttingService
             $finalParams = [];
 
             if (!empty($casesActionAt)) {
-                $setParts[]  = "action_at = CASE ".implode(' ', $casesActionAt)." ELSE action_at END";
+                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
                 $finalParams = array_merge($finalParams, $paramsActionAt);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[]  = "position = CASE ".implode(' ', $casesPosition)." ELSE position END";
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -524,14 +554,157 @@ final class CuttingService
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql               = "UPDATE {$table} SET ".implode(', ', $setParts)." WHERE id IN ({$wherePlaceholders})";
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
         });
-
     }
 
+
+    /**
+     * ___ Получаем стол по модели
+     * @param Model|string $model
+     * @return string
+     */
+    public static function getTableByModel(Model|string $model): string
+    {
+        $findModel = ModelsService::getModel($model);
+        if (!$findModel) {
+            return CuttingTaskLine::FIELD_UNDEFINED;
+        }
+
+        /*
+            __ Для сортировки по столам получаются вот такие условия.
+            __ Тип чехла - источник карточка Модели товара, вкладка КД
+            __ Деталь - источник Спецификация на модель, столбец Деталь
+            __ *Если Тип чехла=м.авт и Деталь=Крышка тогда Стол 1.
+            __ *Если Тип чехла=м.бок. или Тип чехла=глух. и Деталь=Крышка тогда Стол 2.
+            __ *Если Тип чехла=м.бок. или Тип чехла=глух. и Деталь=Боковина тогда Стол 3.
+            __ *Если Тип чехла=м.книж. и Деталь=Крышка тогда Стол 3.
+        */
+
+        if ($findModel->cover_type === 'м.авт') {
+            return CuttingTaskLine::FIELD_TABLE_1;
+        }
+
+        // __ Используем такую конструкцию, потому что в модели есть поле cover
+        $cover = $findModel->getRelation('cover');
+
+        if (!is_null($cover) && !is_null($cover->constructs)) {
+            // __ Та ситуация, когда у 1 чехла несколько спецификаций
+            // __ Пока пропускаем
+            //if (count($cover_type->constructs) > 1) {
+            //    return CuttingTaskLine::FIELD_UNDEFINED;
+            //}
+
+            //$coverConstruct = $cover->constructs[0]->toArray();
+            //$coverConstructItems = $cover->constructs[0]->constructItems;
+            //$cond_1 = !is_null($cover->constructs[0]);
+            //$cond_2 = !is_null($cover->constructs[0]->constructItems);
+
+            // __ Ищем крышку и боковину
+            $hasPanel = false;
+            $hasSide  = false;
+            if (!is_null($cover->constructs[0]) && !is_null($cover->constructs[0]->constructItems)) {
+                $items = $cover->constructs[0]->constructItems;
+                foreach ($items as $item) {
+                    if (!is_null($item->detail) && mb_strtolower($item->detail) === 'крышка') {
+                        $hasPanel = true;
+                    } elseif (!is_null($item->detail) && mb_strtolower($item->detail) === 'боковина') {
+                        $hasSide = true;
+                    }
+                }
+            }
+
+            if ($findModel->cover_type === 'м.бок.' || $findModel->cover_type === 'глух.') {
+                if ($hasPanel && !$hasSide) {
+                    return CuttingTaskLine::FIELD_TABLE_2;
+                } elseif ($hasSide) {
+                    return CuttingTaskLine::FIELD_TABLE_3;
+                }
+            } elseif ($findModel->cover_type === 'м.книж.') {
+                if ($hasPanel) {
+                    return CuttingTaskLine::FIELD_TABLE_3;
+                }
+            }
+        }
+
+        return CuttingTaskLine::FIELD_UNDEFINED;
+    }
+
+
+    /**
+     * ___ Проверяем, есть ли Крышка у Модели в Спецификации
+     * @param Model|string $model
+     * @return bool
+     */
+    public static function hasPanel(Model|string $model): bool
+    {
+        $findModel = ModelsService::getModel($model);
+        if (!$findModel) {
+            return false;
+        }
+
+        // __ Используем такую конструкцию, потому что в модели есть поле cover
+        $cover = $findModel->getRelation('cover');
+
+        if (!is_null($cover) && !is_null($cover->constructs)) {
+            // __ Ищем крышку и боковину
+            if (!is_null($cover->constructs[0]) && !is_null($cover->constructs[0]->constructItems)) {
+                $items = $cover->constructs[0]->constructItems;
+                foreach ($items as $item) {
+                    if (!is_null($item->detail) && mb_strtolower($item->detail) === 'крышка') {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ___ Проверяем, есть ли Боковина у Модели в Спецификации
+     * @param Model|string $model
+     * @return bool
+     */
+    public static function hasSide(Model|string $model): bool
+    {
+        $findModel = ModelsService::getModel($model);
+        if (!$findModel) {
+            return false;
+        }
+
+        // __ Используем такую конструкцию, потому что в модели есть поле cover
+        $cover = $findModel->getRelation('cover');
+
+        if (!is_null($cover) && !is_null($cover->constructs)) {
+            // __ Ищем крышку и боковину
+            if (!is_null($cover->constructs[0]) && !is_null($cover->constructs[0]->constructItems)) {
+                $items = $cover->constructs[0]->constructItems;
+                foreach ($items as $item) {
+                    if (!is_null($item->detail) && mb_strtolower($item->detail) === 'боковина') {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    public static function test()
+    {
+        $model = ModelsService::getModel('000000137');
+        //$model = ModelsService::getModel('000002853');
+        $modelArray = $model->toArray();
+
+        $table = self::getTableByModel($model);
+
+        $a = 0;
+    }
 
 
 }

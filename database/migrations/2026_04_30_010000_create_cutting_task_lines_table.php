@@ -31,6 +31,13 @@ return new class extends Migration {
                 ->constrained('order_lines')
                 ->cascadeOnDelete();                    // __ Удалили запись в Заявке - удалили все строки
 
+            // __ Делаем связь на само себя, потому что сама запись может быть разбита на несколько частей (Крышка + Боковина)
+            $table->foreignId('parent_id')
+                ->comment('Ссылка на основную запись СЗ')
+                ->nullable()
+                ->constrained(self::TABLE_NAME, 'id')
+                ->cascadeOnDelete();                    // __ Удалили запись в Заявке - удалили все строки
+
             // __ Количество. При разбиении СЗ на строки оно будет складываться из таких же частей
             $table->unsignedInteger('amount')
                 ->nullable(false)
@@ -65,7 +72,7 @@ return new class extends Migration {
 
             // __ Ставим ограничение уникальности по позиции (порядковый номер Элемента в сочетании с id - Части СЗ - CuttingTask)
             // __ должно быть уникальным
-            $table->unique(['cutting_task_id', 'position']);
+            //$table->unique(['cutting_task_id', 'position']); // __ Пока отключаем
 
             // __ Ставим ограничение уникальности по позиции (порядковый номер Элемента в сочетании с id - Части СЗ - CuttingTask)
             // __ должно быть уникальным в рамках одного дня. Пока оставляем так
@@ -96,64 +103,27 @@ return new class extends Migration {
             $table->text('false_history')->nullable()->comment('История невыполнения');
 
             // __ Стол для раскроя (Определяем в момент создания СЗ)
-            $table->string('cutting_table')->nullable()->comment('Стол для раскроя');
+            $table->string('table')->nullable()->comment('Стол для раскроя');
 
-            // --- Трудозатраты на Швейную машину в момент создания СЗ в секундах
+            // __ Признак того, что сама запись - есть действие к закрою Крышка
+            $table->boolean('is_panel')->nullable()->comment('Признак того, что это Крышка');
 
-            // __ Трудозатраты на ШМ отдельное поле
+            // __ Признак того, что у записи есть Крышка
+            $table->boolean('has_panel')->nullable()->comment('Признак того, что у записи есть Крышка');
+
+            // __ Признак того, что сама запись - есть действие к закрою Боковина
+            $table->boolean('is_side')->nullable()->comment('Признак того, что это Боковина>');
+
+            // __ Признак того, что у записи есть Боковина
+            $table->boolean('has_side')->nullable()->comment('Признак того, что у записи есть Боковина>');
+
+            // --- Трудозатраты на стол в момент создания СЗ в секундах
+
+            // __ Трудозатраты на стол
             $table->unsignedInteger('time')
                 ->nullable(false)
                 ->default(0)
-                ->comment('Трудозатраты на УШМ, секунды');
-
-            // !!! Пока не используем
-            /*
-            // __ Суммарное время
-            $defaultLaborTime = json_encode([
-                CuttingTask::FIELD_UNIVERSAL  => 0,
-                CuttingTask::FIELD_AUTO       => 0,
-                CuttingTask::FIELD_SOLID_HARD => 0,
-                CuttingTask::FIELD_SOLID_LITE => 0,
-                CuttingTask::FIELD_UNDEFINED  => 0,
-            ]);
-
-            $table->jsonb('time_labor')
-                ->nullable(false)
-                ->default($defaultLaborTime)
-                ->comment('Трудозатраты в момент создания СЗ, секунды');
-
-
-
-            // __ УШМ
-            $table->unsignedInteger(CuttingTask::FIELD_UNIVERSAL)
-                ->nullable(false)
-                ->default(0)
-                ->comment('Трудозатраты на УШМ, секунды');
-
-            // __ АШМ
-            $table->unsignedInteger(CuttingTask::FIELD_AUTO)
-                ->nullable(false)
-                ->default(0)
-                ->comment('Трудозатраты на AШМ, секунды');
-
-            // __ Глухие Сложные
-            $table->unsignedInteger(CuttingTask::FIELD_SOLID_HARD)
-                ->nullable(false)
-                ->default(0)
-                ->comment('Трудозатраты на Глухие Сложные, секунды');
-
-            // __ Глухие Простые
-            $table->unsignedInteger(CuttingTask::FIELD_SOLID_LITE)
-                ->nullable(false)
-                ->default(0)
-                ->comment('Трудозатраты на Глухие Простые, секунды');
-
-            // __ Неопознанные
-            $table->unsignedInteger(CuttingTask::FIELD_UNDEFINED)
-                ->nullable(false)
-                ->default(0)
-                ->comment('Трудозатраты на Неопознанные, секунды');
-*/
+                ->comment('Трудозатраты');
         });
 
         $this->addCommonColumns(self::TABLE_NAME);

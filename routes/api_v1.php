@@ -194,6 +194,8 @@ Route::prefix('cutting')
     ->middleware('cutting_tasks_check')
     ->group(function () {
 
+        Route::get('test', [CellCuttingTaskController::class, 'test']);
+
         // __ СЗ Раскроя
         Route::get('tasks', [CellCuttingTaskController::class, 'getCuttingTasks']);
         Route::get('tasks/order/{id}', [CellCuttingTaskController::class, 'getCuttingTasksByOrderId']);
