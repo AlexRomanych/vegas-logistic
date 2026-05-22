@@ -39,112 +39,112 @@ return new class extends Migration {
              'table'      => '2 и 3',
              'time'       => 10.6,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей 200С (м. Авт)',
              'cover_type' => 'м. Авт',
              'table'      => '2 и 3',
              'time'       => 23.7,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей 300С (м. Авт)',
              'cover_type' => 'м. Авт',
              'table'      => '2 и 3',
              'time'       => 23.7,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей с торцевой вставкой',
              'cover_type' => 'м. Авт',
              'table'      => '2 и 3',
              'time'       => 20.5,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей 100С (УШМ)',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 10.6,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей 200С (УШМ)',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 10.6,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей 300С (УШМ)',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 17.8,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой панелей нестеганых',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 13.0,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой 1 наполнителя',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 10.0,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой 2-х наполнителей',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 20.0,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой 5-и наполнителей',
              'cover_type' => 'УШМ',
              'table'      => '2 и 3',
              'time'       => 50.0,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_COVER
+             'detail'     => CuttingOperation::DETAIL_PANEL
             ],
             ['name'       => 'Раскрой детали боковина цельная',
              'cover_type' => 'УШМ',
              'table'      => '1',
              'time'       => 6.6,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_DETAIL
+             'detail'     => CuttingOperation::DETAIL_SIDE
             ],
             ['name'       => 'Раскрой детали боковина',
              'cover_type' => '2 детали	УШМ',
              'table'      => '1',
              'time'       => 10.6,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_DETAIL
+             'detail'     => CuttingOperation::DETAIL_SIDE
             ],
             ['name'       => 'Раскрой детали боковина цельная не стеганая',
              'cover_type' => 'УШМ',
              'table'      => '1',
              'time'       => 4.5,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_DETAIL
+             'detail'     => CuttingOperation::DETAIL_SIDE
             ],
             ['name'       => 'Раскрой детали боковина 3D сетка',
              'cover_type' => 'УШМ',
              'table'      => '1',
              'time'       => 7.0,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_DETAIL
+             'detail'     => CuttingOperation::DETAIL_SIDE
             ],
             ['name'       => 'Раскрой детали боковины с пилоутопером',
              'cover_type' => 'УШМ',
              'table'      => '1',
              'time'       => 42.7,
              'type'       => CuttingOperation::DYNAMIC_TYPE,
-             'detail'     => CuttingOperation::DETAIL_DETAIL
+             'detail'     => CuttingOperation::DETAIL_SIDE
             ],
         ]);
     }

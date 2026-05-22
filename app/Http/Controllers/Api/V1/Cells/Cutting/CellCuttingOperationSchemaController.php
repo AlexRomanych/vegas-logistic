@@ -175,7 +175,7 @@ class CellCuttingOperationSchemaController extends Controller
 
             $result = [];
             foreach ($SIZES as $size) {
-                $result[] = [mb_substr($size, 0, -3) => $timeObject->getTimeLaborBySizeAndCuttingSchema($size, $schema)];
+                $result[] = [mb_substr($size, 0, -3) => $timeObject->getTimeLaborBySizeAndCuttingSchema($size, $schema)[0]];
             }
 
             return ['data' => $result];

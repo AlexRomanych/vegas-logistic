@@ -450,10 +450,10 @@ class OrderController extends Controller
 
                             // __ Создаем СЗ на Раскрой !!!
                             /** @var Order $createdOrder */
-                            //$sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
-                            //if (!$sewingTask) {
-                            //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
-                            //}
+                            $sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                            if (!$sewingTask) {
+                                throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                            }
 
                             // __ Создаем СЗ на Сборку
                             // __ ...
@@ -470,7 +470,7 @@ class OrderController extends Controller
 
             // return 'done...';
 
-            return EndPointStaticRequestAnswer::ok();
+            return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
         //} catch (Exception|Throwable $e) {
         //    return EndPointStaticRequestAnswer::fail($e);
         //}

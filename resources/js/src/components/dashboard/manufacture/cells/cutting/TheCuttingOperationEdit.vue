@@ -172,7 +172,7 @@ import { required, minLength, helpers, minValue, /*integer*/ } from '@vuelidate/
 
 import { useCuttingStore } from '@/stores/CuttingStore'
 
-import { CUTTING_OPERATION_DRAFT, DETAIL_COVER, DETAIL_DETAIL } from '@/app/constants/cutting.ts'
+import { CUTTING_OPERATION_DRAFT, DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -332,8 +332,8 @@ const fillSelects = () => {
     detailTypeCheckboxData = {
         name: 'detail_type',
         data: [
-            { id: 1, name: 'Панель', checked: detail.value === DETAIL_COVER },
-            { id: 2, name: 'Деталь', checked: detail.value === DETAIL_DETAIL },
+            { id: 1, name: 'Панель', checked: detail.value === DETAIL_PANEL },
+            { id: 2, name: 'Деталь', checked: detail.value === DETAIL_SIDE },
         ]
     }
 
@@ -360,7 +360,7 @@ const calcModeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) =
 // __ Обработчик чекбокса на Типе детали
 const detailTypeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
-        operation.value.detail = data.id === 1 ? DETAIL_COVER : DETAIL_DETAIL
+        operation.value.detail = data.id === 1 ? DETAIL_PANEL : DETAIL_SIDE
         detail.value           = operation.value.detail
     }
 }

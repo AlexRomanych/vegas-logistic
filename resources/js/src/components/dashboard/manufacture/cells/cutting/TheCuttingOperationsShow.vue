@@ -218,7 +218,7 @@ import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { DETAIL_COVER, DETAIL_DETAIL } from '@/app/constants/cutting.ts'
+import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 
 
 const isLoading = ref(false)
@@ -517,10 +517,10 @@ const resetFilters = () => {
 // __ Получаем название детали
 function getDetailTitle(cuttingOperation: ICuttingOperation) {
     switch (cuttingOperation.detail) {
-        case DETAIL_COVER:
-            return 'Панель'
-        case DETAIL_DETAIL:
-            return 'Деталь'
+        case DETAIL_PANEL:
+            return 'Крышка'
+        case DETAIL_SIDE:
+            return 'Боковина    '
         default:
             return ''
     }

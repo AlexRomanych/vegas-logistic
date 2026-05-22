@@ -39,7 +39,7 @@
                     <div v-for="operation of cuttingOperations" :key="operation.id" class="sticky-header">
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
-                            :text="`${operation.name} (${operation.machine})`"
+                            :text="`${operation.name} (${operation.cover_type})`"
                             :type="getOperationType(operation)"
                             :width="CELL_WIDTH"
                             align="center"
@@ -162,6 +162,7 @@ import CuttingOperationCheck from '@/components/dashboard/manufacture/cells/cutt
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 
@@ -394,15 +395,14 @@ const checkSchema = async (schema: ICuttingOperationSchema | null = null) => {
         const result: string[] = []
         for (const [key, value] of Object.entries(item)) {
             result.push(key)
-            result.push(value.toString())
-            result.push(formatTimeWithLeadingZeros(value as number))
-            result.push(formatTimeWithLeadingZeros((value as number) * 5))
-            result.push(formatTimeWithLeadingZeros((value as number) * 10))
+            result.push(round(value as number).toString())
+            result.push(formatTimeWithLeadingZeros(round(value as number)))
+            result.push(formatTimeWithLeadingZeros(round((value as number)) * 5))
+            result.push(formatTimeWithLeadingZeros(round((value as number)) * 10))
         }
 
         return result
     })
-
 
     console.log(checkResultsData.value)
 

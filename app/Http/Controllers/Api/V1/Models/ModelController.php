@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api\V1\Models;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Contracts\VegasDataGetContract;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Model\Labors\CollectionGroupResource;
+use App\Http\Resources\Model\Labors\Cutting\CuttingCollectionGroupResource;
+use App\Http\Resources\Model\Labors\Sewing\SewingCollectionGroupResource;
 use App\Http\Resources\Model\ModelResource;
 use App\Http\Resources\Model\Show\ModelShowCollectionResource;
 use App\Models\Models\Model;
@@ -219,7 +220,7 @@ class ModelController extends Controller
 
 
     // ___ Получение моделей для трудозатрат (изначально такая идея)
-    public function getModelsForLabors()
+    public function getModelsForSewingLabors()
     {
         try {
             $models = Model::query()
@@ -238,12 +239,38 @@ class ModelController extends Controller
             //     return $item->collection ? $item->collection->name : 'Прочее';
             // });
 
-            return new CollectionGroupResource($grouped);
+            return new SewingCollectionGroupResource($grouped);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
 
+
+    // ___ Получение моделей для трудозатрат (изначально такая идея)
+    public function getModelsForCuttingLabors()
+    {
+        try {
+            $models = Model::query()
+                ->basics()      // __ Базовые модели (Швейка)
+                ->with(['collection', 'cuttingSchema', 'cuttingOperations'])
+                ->orderBy('name')
+                ->get();
+
+            $grouped = $models
+                ->groupBy(fn($item) => $item->collection->name ?? 'Прочее')
+                ->sortKeys();
+
+
+            // $grouped = $models->groupBy(function ($item) {
+            //     // Если коллекции может не быть, используем проверку или optional
+            //     return $item->collection ? $item->collection->name : 'Прочее';
+            // });
+
+            return new CuttingCollectionGroupResource($grouped);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!!    --- Сзема Типовой операции Пошива для Модели         !!!

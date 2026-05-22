@@ -57,6 +57,7 @@ class CellCuttingTaskController extends Controller
                     'order.orderType',
                     'cuttingLines.orderLine.model.cover',
                     'cuttingLines.orderLine.model.base',
+                    'cuttingLines.details', // __ Детальки (боковины)
                     'statuses',
                 ])
                 // ->with(['cuttingLines', 'cuttingLines.orderLine','cuttingLines.orderLine.model','cuttingLines.orderLine.model.cover', 'statuses'])
@@ -67,7 +68,7 @@ class CellCuttingTaskController extends Controller
             // !!!!!!!!!!!!!!!!!!!!!
             // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
             // !!! __ То автоматом переносить на следующий день
-            // !!! __ Отдельная функция
+            // !!! __ Отдельная функция - Реализовано через Middleware
             // !!!!!!!!!!!!!!!!!!!!!
 
 

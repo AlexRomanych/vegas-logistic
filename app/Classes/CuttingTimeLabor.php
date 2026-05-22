@@ -4,6 +4,7 @@ namespace App\Classes;
 
 use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperationSchema;
+
 //use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Models\Model;
@@ -17,25 +18,27 @@ final class CuttingTimeLabor
 {
     // --- Трудозатраты на единицу изделия для ШМ
     // !!! TODO: Эти значения нужно брать из БД для средней модели и рассчитывать для конкретной модели
+    private int $timePerPic = 0;
+    private int $timePerPicPanel = 0;
+    private int $timePerPicSide = 0;
     private int $timePerPicTable_1 = 0;
     private int $timePerPicTable_2 = 0;
     private int $timePerPicTable_3 = 0;
     private int $timePerPicUndefined = 0;
-    //private int $timeUniversalPerPic = 0;
-    //private int $timeAutoPerPic = 0;
-    //private int $timeSolidHardPerPic = 0;
-    //private int $timeSolidLitePerPic = 0;
 
 
     // --- Трудозатраты на общее количество изделий для ШМ
+    //private int $time = 0;
+    //private int $timeTotal = 0;
     private int $timeTable_1 = 0;
     private int $timeTable_2 = 0;
     private int $timeTable_3 = 0;
     private int $timeUndefined = 0;
-    //private int $timeUniversal = 0;
-    //private int $timeAuto = 0;
-    //private int $timeSolidHard = 0;
-    //private int $timeSolidLite = 0;
+
+    private int $time = 0;              // __ Время, которое будем возвращать единым значением по строке
+    private int $timePanel = 0;
+    private int $timeSide = 0;
+
 
     // --- Количество изделий по типам ШМ
     private int $amount = 0;            // __ Общее Количество (То, что было передано в конструкторе)
@@ -43,18 +46,22 @@ final class CuttingTimeLabor
     private float $amountTable_2 = 0;
     private float $amountTable_3 = 0;
     private float $amountUndefined = 0;
-    //private float $amountUniversal = 0;
-    //private float $amountAuto = 0;
-    //private float $amountSolidHard = 0;
-    //private float $amountSolidLite = 0;
 
     // --- Тип ШМ
     private string $cuttingType = '';
 
-
     // --- Модель + Размер
     private string $modelCode1C = '';   // __ Код 1С Модели, не сохраняем всю модель, чтобы экономить память
     // private Size $size;
+
+    // --- Phantom
+    private string $phantom = '';
+    private array $phantomJson = [];
+
+    // --- Panel/Side
+    private bool $isPanel = false;
+    private bool $isSide = false;
+
 
     /**
      * ___ Получаем трудозатраты либо по Строке СЗ, либо по Модели, Размеру и количеству
@@ -74,9 +81,14 @@ final class CuttingTimeLabor
 
         // __ Если передана строка Сменного задания
         if ($cuttingTaskLine /*&& $cuttingTaskLine instanceof CuttingTaskLine*/) {
-            $orderLine = OrderLine::query()->find($cuttingTaskLine->order_line_id);  // __ Получаем Контекст Строки Заказа
+            $this->phantom     = $cuttingTaskLine->phantom;
+            $this->phantomJson = $cuttingTaskLine->phantom_json;
+            $this->isPanel     = $cuttingTaskLine->is_panel;
+            $this->isSide      = $cuttingTaskLine->is_side;
+            $orderLine         = OrderLine::query()->find($cuttingTaskLine->order_line_id);  // __ Получаем Контекст Строки Заказа
             if ($orderLine) {
-                $model = ModelsService::getModelByCode1C($orderLine->model_code_1c); // __ Получаем Модель
+                $model = $this->getModel($orderLine->model_code_1c); // __ Получаем Модель
+                //$model = ModelsService::getModelByCode1C($orderLine->model_code_1c); // __ Получаем Модель
                 if ($model) {
                     // !!! Порядок важен
                     $this->setCuttingTable($model);             // __ Устанавливаем Стол Раскроя
@@ -84,8 +96,29 @@ final class CuttingTimeLabor
 
                     $size = new Size($orderLine->width, $orderLine->length, $orderLine->height); // __ Получаем Размер
                     // $size = $this->getSize($orderLine->size);
+
+                    //if ($orderLine->model_code_1c === '000002754') {
+                    //    $workModel = Model::query()
+                    //        ->where(CODE_1C, '000002754')
+                    //        ->with([
+                    //            'modelType',
+                    //            'cover',
+                    //            'base',
+                    //            'cuttingSchema.operations',
+                    //            'cuttingOperations',
+                    //        ])
+                    //        ->first();
+                    //    $workModelArray = $workModel->toArray();
+                    //
+                    //    $a = 0;
+                    //}
+
+
                     $this->calcTimePerPic($size);                                                // __ Считаем трудозатраты на ед.
                     $this->calcTimeLabor();                                                      // __ Считаем трудозатраты на общее количество
+
+
+
                 }
             }
         } else {
@@ -114,15 +147,6 @@ final class CuttingTimeLabor
             $this->cuttingType = CuttingTaskLine::FIELD_AVERAGE;
         } else {
             $this->cuttingType = CuttingService::getTableByModel($model);
-
-            //$this->cuttingType = match (true) {
-            //    $model->is_universal => CuttingTask::FIELD_UNIVERSAL,
-            //    $model->is_auto => CuttingTask::FIELD_AUTO,
-            //    $model->is_solid_hard => CuttingTask::FIELD_SOLID_HARD,
-            //    $model->is_solid_lite => CuttingTask::FIELD_SOLID_LITE,
-            //    // $model->is_undefined  => CuttingTask::FIELD_UNDEFINED,
-            //    default => CuttingTask::FIELD_UNDEFINED,
-            //};
         }
     }
 
@@ -141,7 +165,15 @@ final class CuttingTimeLabor
         // __ Если модель не найдена, то ищем ее в БД
         if (!$workModel) {
             $workModel = Model::query()
-                ->with(['modelType', 'cover', 'base', 'cuttingSchema.operations', 'cuttingOperations'])
+                ->where(CODE_1C, $model)
+                ->orWhere('name', $model)
+                ->with([
+                    'modelType',
+                    'cover',
+                    'base',
+                    'cuttingSchema.operations',
+                    'cuttingOperations',
+                ])
                 ->first();
             //$a = 0;
         }
@@ -206,26 +238,18 @@ final class CuttingTimeLabor
 
         $model = $this->getModel($this->modelCode1C);
 
+        $modelToArray = $model->toArray();
+
         $this->timePerPicTable_1   = 0;
         $this->timePerPicTable_2   = 0;
         $this->timePerPicTable_3   = 0;
         $this->timePerPicUndefined = 0;
-        //$this->timeUniversalPerPic = 0;
-        //$this->timeAutoPerPic = 0;
-        //$this->timeSolidHardPerPic = 0;
-        //$this->timeSolidLitePerPic = 0;
 
         if ($this->cuttingType === CuttingTaskLine::FIELD_AVERAGE) {
             $this->timePerPicTable_1   = 100;
             $this->timePerPicTable_2   = 150;
             $this->timePerPicTable_3   = 200;
             $this->timePerPicUndefined = 0;
-
-            //$this->timeUniversalPerPic = 100;
-            //$this->timeAutoPerPic = 150;
-            //$this->timeSolidHardPerPic = 200;
-            //$this->timeSolidLitePerPic = 250;
-            //$this->timeUndefinedPerPic = 0;
         } else {
             // __ Получаем операции (Если нет схемы (schema_id === 0), то операции из модели, иначе из схемы)
             $operations = $model->cuttingSchema->id !== 0 ? $model->cuttingSchema->operations : $model->cuttingOperations;
@@ -234,37 +258,19 @@ final class CuttingTimeLabor
             // $op = [];
             // $operations->each(function ($operation) use ($op) {$op[] = $operation->all();});
 
-            $timePerPic = $this->getTimeLaborPerPic($operations, $size);
-
-            //$timePerPic = 0;
-            //foreach ($operations as $operation) {
-            //    if (!$operation->active) {
-            //        continue;
-            //    }  // __ Если операция не активна, то пропускаем ее
-            //
-            //    // $o = $operation->toArray();
-            //
-            //    // __ Получаем тот дополнительный коэффициент, который нужно умножить на время
-            //    $ratio = is_null($operation->pivot->ratio) || $operation->pivot->ratio === 0 ? 1 : $operation->pivot->ratio;
-            //    $time = 0;
-            //
-            //    if ($operation->type === CuttingOperation::DYNAMIC_TYPE) {
-            //        $time = $operation->time * $size->getPerimeter();
-            //    } elseif ($operation->type === CuttingOperation::STATIC_TYPE) {
-            //        $time = $operation->time;
-            //    }
-            //
-            //    $timePerPic += $time * $ratio;
-            //}
+            $timePerPicArr         = $this->getTimeLaborPerPic($operations, $size);
+            $this->timePerPic      = $timePerPicArr[0];
+            $this->timePerPicPanel = $timePerPicArr[1];
+            $this->timePerPicSide  = $timePerPicArr[2];
 
             if ($this->cuttingType === CuttingTaskLine::FIELD_TABLE_1) {
-                $this->timePerPicTable_1 = $timePerPic;
+                $this->timePerPicTable_1 = $timePerPicArr[0];
             } elseif ($this->cuttingType === CuttingTaskLine::FIELD_TABLE_2) {
-                $this->timePerPicTable_2 = $timePerPic;
+                $this->timePerPicTable_2 = $timePerPicArr[0];
             } elseif ($this->cuttingType === CuttingTaskLine::FIELD_TABLE_3) {
-                $this->timePerPicTable_3 = $timePerPic;
+                $this->timePerPicTable_3 = $timePerPicArr[0];
             } elseif ($this->cuttingType === CuttingTaskLine::FIELD_UNDEFINED) {
-                $this->timePerPicUndefined = $timePerPic;
+                $this->timePerPicUndefined = $timePerPicArr[0];
             }
         }
     }
@@ -288,6 +294,10 @@ final class CuttingTimeLabor
             } elseif ($this->cuttingType === CuttingTaskLine::FIELD_UNDEFINED) {
                 $this->timeUndefined = $this->timePerPicUndefined * $this->amountUndefined;
             }
+
+            $this->time      = $this->timePerPic * $this->amount;
+            $this->timePanel = $this->timePerPicPanel * $this->amount;
+            $this->timeSide  = $this->timePerPicSide * $this->amount;
         }
     }
 
@@ -347,8 +357,6 @@ final class CuttingTimeLabor
     //}
 
 
-
-
     // --- Трудозатраты
 
     // ___ Получаем трудозатраты в массив
@@ -374,6 +382,41 @@ final class CuttingTimeLabor
         ];
     }
 
+    // --- Возвращаем время одним значением
+    // __ Если расчетная модель - проверяем по фантому
+    /**
+     * @param bool $isFullTime
+     * @return float|int
+     */
+    public function getRealTime(bool $isFullTime = false)
+    {
+        if ($isFullTime) {
+            return $this->time;
+        }
+        if ($this->isPanel && !$this->isSide) {
+            return $this->timePanel;
+        }
+        if ($this->isSide && !$this->isPanel) {
+            return $this->timeSide;
+        }
+
+
+        return match ($this->cuttingType) {
+            CuttingTaskLine::FIELD_AVERAGE   => match ($this->phantom) {
+                CuttingTaskLine::FIELD_TABLE_1   => $this->amountTable_1,
+                CuttingTaskLine::FIELD_TABLE_2   => $this->amountTable_2,
+                CuttingTaskLine::FIELD_TABLE_3   => $this->amountTable_3,
+                CuttingTaskLine::FIELD_UNDEFINED => $this->amountUndefined,
+                default                          => 0,
+            },
+            CuttingTaskLine::FIELD_TABLE_1   => $this->amountTable_1,
+            CuttingTaskLine::FIELD_TABLE_2   => $this->amountTable_2,
+            CuttingTaskLine::FIELD_TABLE_3   => $this->amountTable_3,
+            CuttingTaskLine::FIELD_UNDEFINED => $this->amountUndefined,
+            default                          => 0,
+        };
+    }
+
     // --- Возвращаем трудозатраты в числовом формате, те, которые определены (кроме Average)
     public function getTimeTable_1(): int
     {
@@ -394,27 +437,6 @@ final class CuttingTimeLabor
     {
         return $this->timeUndefined;
     }
-    //
-    //
-    //public function getTimeUniversal(): int
-    //{
-    //    return $this->timeUniversal;
-    //}
-    //
-    //public function getTimeAuto(): int
-    //{
-    //    return $this->timeAuto;
-    //}
-    //
-    //public function getTimeSolidHard(): int
-    //{
-    //    return $this->timeSolidHard;
-    //}
-    //
-    //public function getTimeSolidLite(): int
-    //{
-    //    return $this->timeSolidLite;
-    //}
 
 
     // --- Возвращаем трудозатраты в ассоциативном массиве, если Average - то все, разбитые по статистике
@@ -487,27 +509,6 @@ final class CuttingTimeLabor
         return [CuttingTaskLine::FIELD_UNDEFINED => $totalAmount ? $this->amount * $this->timePerPicUndefined : $this->timeUndefined];
     }
 
-    //public function getTimeUniversalArray(bool $totalAmount = false): array
-    //{
-    //    return [CuttingTask::FIELD_UNIVERSAL => $totalAmount ? $this->amount * $this->timeUniversalPerPic : $this->timeUniversal];
-    //}
-    //
-    //public function getTimeAutoArray(bool $totalAmount = false): array
-    //{
-    //    return [CuttingTask::FIELD_AUTO => $totalAmount ? $this->amount * $this->timeAutoPerPic : $this->timeAuto];
-    //}
-    //
-    //public function getTimeSolidHardArray(bool $totalAmount = false): array
-    //{
-    //    return [CuttingTask::FIELD_SOLID_HARD => $totalAmount ? $this->amount * $this->timeSolidHardPerPic : $this->timeSolidHard];
-    //}
-    //
-    //public function getTimeSolidLiteArray(bool $totalAmount = false): array
-    //{
-    //    return [CuttingTask::FIELD_SOLID_LITE => $totalAmount ? $this->amount * $this->timeSolidLitePerPic : $this->timeSolidLite];
-    //}
-
-
 
     // ___ Корректируем количество, если оно не целое
     private function correctAmounts(): void
@@ -558,19 +559,19 @@ final class CuttingTimeLabor
      * ___ Получаем трудозатраты на единицу изделия по размеру и схеме
      * @param string|null $size
      * @param CuttingOperationSchema|null $schema
-     * @return int
+     * @return array
      */
-    public function getTimeLaborBySizeAndCuttingSchema(string|null $size = null, CuttingOperationSchema $schema = null): int
+    public function getTimeLaborBySizeAndCuttingSchema(string|null $size = null, CuttingOperationSchema $schema = null): array
     {
         // __ Страховка
         if (is_null($size) || is_null($schema)) {
-            return 0;
+            return [0, 0, 0];
         }
 
         $parsedSize = $this->getSize($size);
 
         if (is_null($parsedSize)) {
-            return 0;
+            return [0, 0, 0];
         }
 
         return $this->getTimeLaborPerPic($schema->operations, $parsedSize);
@@ -581,11 +582,13 @@ final class CuttingTimeLabor
      * ___ Сама логика расчета времени на единицу
      * @param $operations
      * @param Size $size
-     * @return int
+     * @return array
      */
-    private function getTimeLaborPerPic($operations, Size $size): int
+    private function getTimeLaborPerPic($operations, Size $size): array
     {
-        $timePerPic = 0;
+        $timePerPic      = 0;
+        $timePerPicPanel = 0;
+        $timePerPicSide  = 0;
         foreach ($operations as $operation) {
             if (!$operation->active) {
                 continue;   // __ Если операция не активна, то пропускаем ее
@@ -603,9 +606,14 @@ final class CuttingTimeLabor
                 $time = $operation->time;
             }
 
+            if ($operation->detail === CuttingOperation::DETAIL_PANEL) {
+                $timePerPicPanel += $time * $ratio;
+            } elseif ($operation->detail === CuttingOperation::DETAIL_SIDE) {
+                $timePerPicSide += $time * $ratio;
+            }
             $timePerPic += $time * $ratio;
         }
-        return $timePerPic;
+        return [$timePerPic, $timePerPicPanel, $timePerPicSide];
     }
 
 }

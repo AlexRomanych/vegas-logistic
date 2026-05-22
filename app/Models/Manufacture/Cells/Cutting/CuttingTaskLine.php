@@ -5,6 +5,7 @@ namespace App\Models\Manufacture\Cells\Cutting;
 use App\Models\Order\OrderLine;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CuttingTaskLine extends Model
 {
@@ -29,5 +30,12 @@ class CuttingTaskLine extends Model
     public function orderLine(): BelongsTo
     {
         return $this->belongsTo(OrderLine::class);
+    }
+
+
+    // Relations: Cвязь с самим собой (Боковина)
+    public function details(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id', 'id');
     }
 }

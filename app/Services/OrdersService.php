@@ -11,6 +11,7 @@ use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
 use App\Models\Plan\PlanLoad;
+use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
 use Exception;
@@ -797,6 +798,12 @@ final class OrdersService
                 $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
                 if (!$sewingTask) {
                     throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
+                };
+
+                // __ Создаем СЗ на Раскрой
+                $cuttingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                if (!$cuttingTask) {
+                    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
                 };
             }
         });

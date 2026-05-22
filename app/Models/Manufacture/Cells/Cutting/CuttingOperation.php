@@ -12,8 +12,8 @@ class CuttingOperation extends Model
     public const STATIC_TYPE = 'static';
 
     // __ Константы Детали Операции
-    public const DETAIL_COVER = 'cover';
-    public const DETAIL_DETAIL = 'detail';
+    public const DETAIL_PANEL = 'panel';
+    public const DETAIL_SIDE = 'side';
 
 
     protected $guarded = [];

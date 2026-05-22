@@ -18,14 +18,9 @@ class CuttingTaskLineResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // __ Получаем объект с трудозатратами
+        // __ Получаем объект с трудозатратами по самой записи
         /** @noinspection PhpUndefinedFieldInspection */
-        $labor = new CuttingTimeLabor(
-            model: $this->orderLine->model,
-            size: $this->orderLine->size,
-            amount: $this->amount
-        );
-
+        $labor = new CuttingTimeLabor($this->resource);
 
         /** @noinspection PhpUndefinedFieldInspection */
         return [
@@ -38,9 +33,11 @@ class CuttingTaskLineResource extends JsonResource
             'finished_by'  => $this->finished_by,
             'false_at'     => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason' => $this->false_reason,
+            'table'        => $this->phantom,
 
-            'amount_avg' => null,
-            'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
+            //'amount_avg' => null,
+            'time'         => $labor->getRealTime(),
+            //'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
             // 'time'       => ['time_'.$this->phantom => $this->time],
             // 'time'       => $labor->getTime(),
 

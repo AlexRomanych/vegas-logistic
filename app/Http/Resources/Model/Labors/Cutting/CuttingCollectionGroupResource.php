@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Resources\Model\Labors;
+namespace App\Http\Resources\Model\Labors\Cutting;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CollectionGroupResource extends JsonResource
+class CuttingCollectionGroupResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,7 +18,7 @@ class CollectionGroupResource extends JsonResource
         return $this->map(function ($models, $collectionName) {
             return [
                 'collection' => $collectionName,
-                'items' => ModelLaborResource::collection($models),  // __ Используем ресурс для самих моделей
+                'items' => CuttingModelLaborResource::collection($models),  // __ Используем ресурс для самих моделей
             ];
         })
             ->values() // __ values() сбросит ключи в массив [0, 1, 2]

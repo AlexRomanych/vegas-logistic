@@ -70,9 +70,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref } from 'vue'
 import type { IColorTypes, ICuttingOperationSchema } from '@/types'
+
+import { computed, nextTick, ref } from 'vue'
+
 import { getColorClassByType } from '@/app/helpers/helpers.js'
+
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 
 interface IProps {

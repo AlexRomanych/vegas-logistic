@@ -2,8 +2,8 @@
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
 
 // __ Констианты деталей чехда в Операциях Раскроя
-export const DETAIL_COVER  = 'cover'
-export const DETAIL_DETAIL = 'detail'
+export const DETAIL_PANEL  = 'panel'
+export const DETAIL_SIDE = 'side'
 
 
 // __ Название вкладки с общим СЗ

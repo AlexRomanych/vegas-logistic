@@ -69,8 +69,8 @@ final class ModelsService implements VegasDataUpdateContract
                     'base',
                     'sewingSchema.operations',
                     'sewingOperations',
-                    //'cuttingSchema.operations',
-                    //'cuttingOperations',
+                    'cuttingSchema.operations',
+                    'cuttingOperations',
                     //'constructs',           // __ Используем отношение один ко многим, чтобы выявить ошибку, если спецификация не одна
                     ////'constructSingle',    // __ Один к одному (Одна спецификация на модель)
                     //'constructs.constructItems',
@@ -83,7 +83,7 @@ final class ModelsService implements VegasDataUpdateContract
                 ->get();
 
             foreach ($models as $model) {
-                self::$modelsCacheByCode1C[$model->code_1c] = $model;
+                self::$modelsCacheByCode1C[$model->code_1c]           = $model;
                 self::$modelsCacheByName[mb_strtolower($model->name)] = $model;
 
                 // Добавление чехла в кэш
@@ -104,12 +104,20 @@ final class ModelsService implements VegasDataUpdateContract
     public static function getModel(Model|string $model): ?Model
     {
         if ($model instanceof Model) {
-            if (!is_null(self::$modelsCacheByCode1C[$model->code_1c])) {
-                return $model;
+            $tempModel = self::getModelByCode1C($model->code_1c);
+            if (!is_null($tempModel)) {
+                return $tempModel;
             }
-            if (!is_null(self::$modelsCacheByName[$model->name])) {
-                return $model;
+            $tempModel = self::getModelByCode1C($model->name);
+            if (!is_null($tempModel)) {
+                return $tempModel;
             }
+            //if (!is_null(self::$modelsCacheByCode1C[$model->code_1c])) {
+            //    return $model;
+            //}
+            //if (!is_null(self::$modelsCacheByName[$model->name])) {
+            //    return $model;
+            //}
         } else {
             $findModel = self::getModelByCode1C($model);
             if ($findModel) {
@@ -184,7 +192,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelsCollections as $modelsCollection) {
                 self::$modelsCollectionsCacheByCode1C[$modelsCollection->code_1c] = $modelsCollection;
-                self::$modelsCollectionsCacheByName[$modelsCollection->name] = $modelsCollection;
+                self::$modelsCollectionsCacheByName[$modelsCollection->name]      = $modelsCollection;
             }
         }
     }
@@ -236,7 +244,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelManufactureTypes as $modelManufactureType) {
                 self::$modelManufactureTypeCacheByCode1C[$modelManufactureType->code_1c] = $modelManufactureType;
-                self::$modelManufactureTypeCacheByName[$modelManufactureType->name] = $modelManufactureType;
+                self::$modelManufactureTypeCacheByName[$modelManufactureType->name]      = $modelManufactureType;
             }
         }
     }
@@ -289,7 +297,7 @@ final class ModelsService implements VegasDataUpdateContract
 
             foreach ($modelTypes as $modelType) {
                 self::$modelTypeCacheByCode1C[$modelType->code_1c] = $modelType;
-                self::$modelTypeCacheByName[$modelType->name] = $modelType;
+                self::$modelTypeCacheByName[$modelType->name]      = $modelType;
             }
         }
     }
@@ -341,7 +349,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureStatuses = ModelManufactureStatus::all();
 
             foreach ($modelManufactureStatuses as $modelManufactureStatus) {
-                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id] = $modelManufactureStatus;
+                self::$modelManufactureStatusCacheById[$modelManufactureStatus->id]     = $modelManufactureStatus;
                 self::$modelManufactureStatusCacheByName[$modelManufactureStatus->name] = $modelManufactureStatus;
             }
         }
@@ -394,7 +402,7 @@ final class ModelsService implements VegasDataUpdateContract
             $modelManufactureGroups = ModelManufactureGroup::all();
 
             foreach ($modelManufactureGroups as $modelManufactureGroup) {
-                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id] = $modelManufactureGroup;
+                self::$modelManufactureGroupCacheById[$modelManufactureGroup->id]     = $modelManufactureGroup;
                 self::$modelManufactureGroupCacheByName[$modelManufactureGroup->name] = $modelManufactureGroup;
             }
         }
@@ -627,13 +635,13 @@ final class ModelsService implements VegasDataUpdateContract
 
     public function updateData(VegasDataGetContract $getter = null): void
     {
-        $fileName = config('vegas.models_1C_json_name');
+        $fileName   = config('vegas.models_1C_json_name');
         $modelsList = !is_null($getter) ? $getter->getDataFromFile($fileName) : $this->getter->getDataFromFile($fileName);
 
         Model::query()->update(['active' => 0]);
 
         foreach ($modelsList as $modelItem) {
-            $base = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
+            $base  = json_encode($modelItem['bs'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES);
             $cover = json_encode($modelItem['cv'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
             //            $base = $modelItem['bs'];
             //            $cover = $modelItem['cv'];
@@ -723,7 +731,7 @@ final class ModelsService implements VegasDataUpdateContract
     // ___ Возвращаем фейковую модель
     public function createFakeModel(array $attributes = []): Model
     {
-        $model = new Model();
+        $model           = new Model();
         $modelAttributes = $model->getAttributes();
         $modelAttributes = array_merge($modelAttributes, $attributes);
 
@@ -751,9 +759,9 @@ final class ModelsService implements VegasDataUpdateContract
         // !!! Порядок важен
         return match (true) {
             self::isElementCoversTypeGroup($data, $name) => ElementTypes::COVERS->value,
-            self::isElementMattressTypeGroup($data) => ElementTypes::MATTRESSES->value,
-            self::isElementAccessoriesTypeGroup($data) => ElementTypes::ACCESSORIES->value,
-            default => ElementTypes::UNDEFINED->value,
+            self::isElementMattressTypeGroup($data)      => ElementTypes::MATTRESSES->value,
+            self::isElementAccessoriesTypeGroup($data)   => ElementTypes::ACCESSORIES->value,
+            default                                      => ElementTypes::UNDEFINED->value,
         };
     }
 
@@ -988,7 +996,7 @@ final class ModelsService implements VegasDataUpdateContract
         $isMattressType = ($elementType === ElementTypes::MATTRESSES->value);
 
         // __ Проверка на присутствие средней модели в базе
-        $PREFIX = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
+        $PREFIX  = $isMattressType ? CLIENT_AVERAGE_MATTRESS_PREFIX : CLIENT_AVERAGE_ACCESSORY_PREFIX;
         $code_1c = $PREFIX . str_pad($client->id, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
 
         // __ Получаем среднюю модель напрямую, без кэша, т.к. она создается динамически

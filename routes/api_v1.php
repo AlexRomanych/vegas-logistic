@@ -158,7 +158,7 @@ Route::prefix('sewing')
         Route::post('operation/schemas/add', [CellSewingOperationSchemaController::class, 'addSewingOperationToSchema']);
 
         // __ Модели + Типовые операции пошива
-        Route::get('operation/models', [ModelController::class, 'getModelsForLabors']);
+        Route::get('operation/models', [ModelController::class, 'getModelsForSewingLabors']);
         Route::patch('operation/schemas/models', [ModelController::class, 'updateModelSewingOperationSchema']);
         Route::post('operation/models/delete', [ModelController::class, 'deleteSewingOperationFromModel']);
         Route::post('operation/models/add', [ModelController::class, 'addSewingOperationToModel']);
@@ -229,7 +229,7 @@ Route::prefix('cutting')
         Route::post('operation/schemas/add', [CellCuttingOperationSchemaController::class, 'addCuttingOperationToSchema']);
 
         // __ Модели + Типовые операции Раскроя
-        Route::get('operation/models', [ModelController::class, 'getModelsForLabors']);
+        Route::get('operation/models', [ModelController::class, 'getModelsForCuttingLabors']);
         Route::patch('operation/schemas/models', [ModelController::class, 'updateModelCuttingOperationSchema']);
         Route::post('operation/models/delete', [ModelController::class, 'deleteCuttingOperationFromModel']);
         Route::post('operation/models/add', [ModelController::class, 'addCuttingOperationToModel']);

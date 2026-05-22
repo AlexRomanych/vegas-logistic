@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Manufacture\Cells\Cutting\CuttingTaskManage;
 
 use App\Models\Manufacture\Cells\Cutting\CuttingTask;
+use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -74,7 +75,7 @@ class CuttingTaskModelResource extends JsonResource
     private function setPhantomMachineTypeAverage(): bool
     {
         if ($this->isPhantomMachineTypeSet()) {
-            return $this->additional['phantom_data']['phantom'] === CuttingTask::FIELD_AVERAGE;
+            return $this->additional['phantom_data']['phantom'] === CuttingTaskLine::FIELD_AVERAGE;
         } else {
             return $this->is_average;
         }
@@ -153,7 +154,7 @@ class CuttingTaskModelResource extends JsonResource
             // 'updated_at'                     => $this->updated_at,
             // 'cover_code_1c'                  => $this->cover_code_1c,
 
-            // '_' => parent::toArray($request),
+             //'_' => parent::toArray($request),
 
         ];
     }
