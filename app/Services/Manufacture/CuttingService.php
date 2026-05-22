@@ -105,6 +105,7 @@ final class CuttingService
                 }
 
                 // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
+                // __ Пока отключаем, потому что может прилететь 314, а там непонятно что
                 //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
                 //    continue;
                 //}
