@@ -9,7 +9,9 @@ import {
     CUTTING_TASK_STATUS_ROLLING,
     CUTTING_TASK_STATUS_PENDING,
     CUTTING_TASK_STATUS_RUNNING,
-    CUTTING_TASK_STATUS_DONE, DETAIL_COVER, DETAIL_DETAIL,
+    CUTTING_TASK_STATUS_DONE,
+    DETAIL_PANEL, DETAIL_SIDE,
+    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED,
 
 } from '@/app/constants/cutting.ts'
 
@@ -37,7 +39,8 @@ export interface ICuttingTaskLine {
     id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
     amount: number                                  // __ Общее количество в заявке
     amount_avg: null | ICuttingTaskLineAmountAvg     // __ Количество для средней модели по статистике
-    time: ICuttingTaskLineTime                       // __ Трудозатраты
+    // time: ICuttingTaskLineTime                       // __ Трудозатраты
+    time: number                                    // __ Трудозатраты
     element_type: {
         is_average: boolean                         // __ Флаг для расчетной модели
         is_base: boolean                            // __ Флаг для базы
@@ -50,7 +53,14 @@ export interface ICuttingTaskLine {
     false_at: string | null
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
+
+    table: ICuttingTableKeys
     order_line: ICuttingTaskOrderLine
+    details?: ICuttingTaskLine[]
+
+    is_panel: boolean
+    is_side: boolean
+    has_side: boolean
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
@@ -169,6 +179,13 @@ export type ICuttingTaskLineTime = Record<ICuttingMachineTimesKeys, number>
 // __ Типы моделей
 export type ICuttingTaskElementTypes = 'base' | 'cover' | 'average' | 'unknown'
 
+
+export type ICuttingTableKeys =
+    typeof TABLE_1 |
+    typeof TABLE_2 |
+    typeof TABLE_3 |
+    typeof TABLE_UNDEFINED
+
 // --- --------------------------------------------------------------
 // --- Типы для работы со статусами СЗ
 // --- --------------------------------------------------------------
@@ -279,7 +296,7 @@ export interface ICuttingOperation {
     detail: ICuttingOperationDetailTypes | null
 }
 
-export type ICuttingOperationDetailTypes = typeof DETAIL_COVER | typeof DETAIL_DETAIL
+export type ICuttingOperationDetailTypes = typeof DETAIL_PANEL | typeof DETAIL_SIDE
 
 // export type ICalcMode = 'dynamic' | 'static'
 // --- ------------------------------------------------------------
@@ -445,7 +462,7 @@ export interface ICuttingTaskLinesGroupData {
 
 
 export interface ICuttingTaskLinesSubgroup {
-    subgroupName:ICuttingTaskLinesSubGroupNames
+    subgroupName: ICuttingTaskLinesSubGroupNames
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean

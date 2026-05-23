@@ -45,61 +45,46 @@
             :width="render.amount.width"
         />
 
-        <!-- __ Количество + Трудозатраты УШМ -->
+        <!-- __ Количество + Трудозатраты Стол 1 -->
         <ManageItemDataLabel
             v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[CUTTING_MACHINES.UNIVERSAL].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_1].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[CUTTING_MACHINES.UNIVERSAL].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_1].time"
             :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
-        <!-- __ Количество + Трудозатраты АШМ -->
+        <!-- __ Количество + Трудозатраты Стол 2 -->
         <ManageItemDataLabel
             v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[CUTTING_MACHINES.AUTO].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_2].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[CUTTING_MACHINES.AUTO].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_2].time"
             :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
-        <!-- __ Количество + Трудозатраты Solid Hard -->
+        <!-- __ Количество + Трудозатраты Стол 3 -->
         <ManageItemDataLabel
             v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[CUTTING_MACHINES.SOLID_HARD].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_3].amount"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[CUTTING_MACHINES.SOLID_HARD].time"
-            :time-show="globalCuttingTaskTimesShow"
-            :type="render.amount.type"
-            :width="render.amount.width"
-        />
-
-        <!-- __ Количество + Трудозатраты Solid Lite -->
-        <ManageItemDataLabel
-            v-if="globalCuttingTaskFullDaysShow"
-            :align="render.amount.align"
-            :amount="amountAndTime[CUTTING_MACHINES.SOLID_LITE].amount"
-            :class="animatedClass"
-            :color="color"
-            :height="dataHeight"
-            :text-size="render.amount.textSize"
-            :time="amountAndTime[CUTTING_MACHINES.SOLID_LITE].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_3].time"
             :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
@@ -109,12 +94,12 @@
         <ManageItemDataLabel
             v-if="globalCuttingTaskFullDaysShow"
             :align="render.amount.align"
-            :amount="amountAndTime[CUTTING_MACHINES.UNDEFINED].amount"
+            :amount="amountAndTime[CUTTING_TABLES.UNDEFINED].amount"
             :class="animatedClass"
-            :color="amountAndTime[CUTTING_MACHINES.UNDEFINED].amount === 0 ? color : 'red'"
+            :color="amountAndTime[CUTTING_TABLES.UNDEFINED].amount === 0 ? color : 'red'"
             :height="dataHeight"
             :text-size="render.amount.textSize"
-            :time="amountAndTime[CUTTING_MACHINES.UNDEFINED].time"
+            :time="amountAndTime[CUTTING_TABLES.UNDEFINED].time"
             :time-show="globalCuttingTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
@@ -139,7 +124,7 @@ import type {
     IAmountAndTime
 } from '@/types'
 
-import { CUTTING_MACHINES, CUTTING_TASK_DRAFT, } from '@/app/constants/cutting.ts'
+import { CUTTING_MACHINES, CUTTING_TABLES, CUTTING_TASK_DRAFT, } from '@/app/constants/cutting.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
@@ -217,10 +202,12 @@ const render: IRender = reactive({
 })
 
 // __ Общее Количество
-const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
+const getTotalAmount = computed(() => props.item.cutting_lines.reduce((acc, line) => line.amount + acc, 0))
+// const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
 
 // __ Общее Трудозатраты
-const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))
+const getTotalTime = computed(() => props.item.cutting_lines.reduce((acc, line) => line.time + acc, 0))
+// const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))
 
 // __ Подготавливаем дату отгрузки для отображения
 const formattedLoadDate = computed(() => {

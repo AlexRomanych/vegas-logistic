@@ -1,9 +1,29 @@
 // Info Константы для работы с Пошивом (Cutting)
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
 
+
+// __ Константы столов
+export const TABLE_1         = 'table_1'
+export const TABLE_2         = 'table_2'
+export const TABLE_3         = 'table_3'
+export const TABLE_UNDEFINED = 'undefined'
+
+
+// __ Объект раскройных столов
+export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {
+    TABLE_1,
+    TABLE_2,
+    TABLE_3,
+    TABLE_UNDEFINED,
+}
+
+
 // __ Констианты деталей чехда в Операциях Раскроя
-export const DETAIL_PANEL  = 'panel'
-export const DETAIL_SIDE = 'side'
+export const DETAIL_PANEL = 'panel'
+export const DETAIL_PANEL_TITLE = 'Крышка'
+export const DETAIL_SIDE  = 'side'
+export const DETAIL_SIDE_TITLE  = 'Боковина'
+export const DETAIL_SIDE_TITLE_SHORT  = 'Бок-на'
 
 
 // __ Название вкладки с общим СЗ
@@ -19,7 +39,7 @@ export const START_SHIFT_TIME = '07:30'
 import type {
     ICuttingDay,
     ICuttingMachineKeys,
-    ICuttingOperation,
+    ICuttingOperation, ICuttingTableKeys,
     ICuttingTask,
     ICuttingTaskLinesGroup,
     ICuttingTaskStatusItem,

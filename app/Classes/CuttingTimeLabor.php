@@ -97,27 +97,26 @@ final class CuttingTimeLabor
                     $size = new Size($orderLine->width, $orderLine->length, $orderLine->height); // __ Получаем Размер
                     // $size = $this->getSize($orderLine->size);
 
+                    //if ($cuttingTaskLine->id === 47) {
                     //if ($orderLine->model_code_1c === '000002754') {
-                    //    $workModel = Model::query()
-                    //        ->where(CODE_1C, '000002754')
-                    //        ->with([
-                    //            'modelType',
-                    //            'cover',
-                    //            'base',
-                    //            'cuttingSchema.operations',
-                    //            'cuttingOperations',
-                    //        ])
-                    //        ->first();
-                    //    $workModelArray = $workModel->toArray();
-                    //
+                        //$workModel = Model::query()
+                        //    ->where(CODE_1C, '000002754')
+                        //    ->with([
+                        //        'modelType',
+                        //        'cover',
+                        //        'base',
+                        //        'cuttingSchema.operations',
+                        //        'cuttingOperations',
+                        //    ])
+                        //    ->first();
+                        //$workModelArray = $workModel->toArray();
+                        //
                     //    $a = 0;
                     //}
 
 
                     $this->calcTimePerPic($size);                                                // __ Считаем трудозатраты на ед.
                     $this->calcTimeLabor();                                                      // __ Считаем трудозатраты на общее количество
-
-
 
                 }
             }

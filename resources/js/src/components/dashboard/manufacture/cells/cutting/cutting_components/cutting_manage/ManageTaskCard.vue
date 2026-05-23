@@ -43,11 +43,11 @@
                     </div>
 
                     <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
-                    <div class="flex h-screen w-full    bg-slate-900 p-4 gap-4 overflow-x-auto">
+                    <div class="flex h-screen w-full bg-slate-900 p-4 gap-4 overflow-x-auto">
 
                         <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
                              :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
-                             class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden"
+                             class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden max-w-fit"
                              @click="activePanel = panel"
                         >
 
@@ -100,8 +100,8 @@
                                         >
 
                                             <ManageTaskCardItem
-                                                :render-data="renderData"
                                                 :cutting-line="element"
+                                                :render-data="renderData"
                                                 :show-comments="showComments"
                                                 :show-details="showDetails"
                                             />
@@ -254,8 +254,6 @@ import OrderItemInfo from '@/components/dashboard/manufacture/cells/cutting/cutt
 //     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/_ManageTaskCardItemInfo.vue'
 
 
-
-
 interface IProps {
     type?: IColorTypes,
     width?: string,
@@ -273,10 +271,10 @@ interface IRenderCuttingLineDataItem {
 export type IRenderCuttingLineData = Record<string, IRenderCuttingLineDataItem>
 
 const props = withDefaults(defineProps<IProps>(), {
-    type:   'primary',
-    width:  'min-w-[1000px]',
+    type  : 'primary',
+    width : 'min-w-[1000px]',
     height: 'min-h-[800px]',
-    mode:   'inform'
+    mode  : 'inform'
 })
 
 // const emits = defineEmits<{
@@ -305,7 +303,7 @@ const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 // __ Переключатель панелей
 const LEFT_PANEL_ID: ICuttingLinesPanel  = 'left'
 const RIGHT_PANEL_ID: ICuttingLinesPanel = 'right'
-const activePanel                       = ref<ICuttingLinesPanel>(LEFT_PANEL_ID)
+const activePanel                        = ref<ICuttingLinesPanel>(LEFT_PANEL_ID)
 
 const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
 const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
@@ -358,15 +356,17 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 // __ Размеры колонок
 const renderData = {
     position: { width: 'min-w-[25px] max-w-[25px]', },
-    size:     { width: 'min-w-[70px] max-w-[70px]', },
-    model:    { width: 'min-w-[150px] max-w-[150px]', },
-    amount:   { width: 'min-w-[30px] max-w-[30px]', },
-    time:     { width: 'min-w-[50px] max-w-[50px]', },
-    textile:  { width: 'min-w-[50px] max-w-[50px]', },
-    machine:  { width: 'min-w-[25px] max-w-[25px]', },
+    size    : { width: 'min-w-[70px] max-w-[70px]', },
+    model   : { width: 'min-w-[150px] max-w-[150px]', },
+    amount  : { width: 'min-w-[30px] max-w-[30px]', },
+    time    : { width: 'min-w-[50px] max-w-[50px]', },
+    textile : { width: 'min-w-[50px] max-w-[50px]', },
+    detail  : { width: 'min-w-[50px] max-w-[50px]', },
+    machine : { width: 'min-w-[30px] max-w-[30px]', },
+    table   : { width: 'min-w-[25px] max-w-[25px]', },
     describe: { width: 'min-w-[50px] max-w-[50px]', },
-    tkch:     { width: 'min-w-[35px] max-w-[35px]', },
-    kant:     { width: 'min-w-[60px] max-w-[60px]', },
+    tkch    : { width: 'min-w-[35px] max-w-[35px]', },
+    kant    : { width: 'min-w-[60px] max-w-[60px]', },
 }
 
 
@@ -466,7 +466,7 @@ const calculateTotals = () => {
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
 const setActiveCuttingLine = (cuttingLine: ICuttingTaskLine, panel: ICuttingLinesPanel) => {
     globalManageTaskCardActiveCuttingLine.value = cuttingLine
-    activePanel.value                          = panel
+    activePanel.value                           = panel
 }
 
 // __ Показать информацию о записи
@@ -554,7 +554,7 @@ const divideElementAmount = async () => {
         newCuttingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
         // __ Пересчитываем время и количество
-        newCuttingLine                  = calculateDividedAmountAndTime(newCuttingLine, range.take)
+        newCuttingLine                 = calculateDividedAmountAndTime(newCuttingLine, range.take)
         workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
 
         // __ Вставляем новую строку
@@ -711,16 +711,16 @@ interface SortConfig {
 
 // __ Карта конфигураций. Ключи — это произвольные идентификаторы (ID колонок)
 const sortConfigs: Record<string, SortConfig> = {
-    position:    {
-        type:     'number',
+    position   : {
+        type    : 'number',
         getValue: (item) => item.position
     },
-    amount:      {
-        type:     'number',
+    amount     : {
+        type    : 'number',
         getValue: (item) => item.amount
     },
     name_report: {
-        type:     'string',
+        type    : 'string',
         getValue: (item) => {
             const modelCover = getCuttingTaskModelCover(item)    // __ Получаем название модели
             if (!modelCover) return ''
@@ -732,36 +732,36 @@ const sortConfigs: Record<string, SortConfig> = {
                 : ''
         }
     },
-    universal:   {
-        type:     'boolean',
+    universal  : {
+        type    : 'boolean',
         getValue: (item) => item.order_line.model.main.is_universal
     },
-    auto:        {
-        type:     'boolean',
+    auto       : {
+        type    : 'boolean',
         getValue: (item) => item.order_line.model.main.is_auto
     },
-    solid_hard:  {
-        type:     'boolean',
+    solid_hard : {
+        type    : 'boolean',
         getValue: (item) => item.order_line.model.main.is_solid_hard
     },
-    solid_lite:  {
-        type:     'boolean',
+    solid_lite : {
+        type    : 'boolean',
         getValue: (item) => item.order_line.model.main.is_solid_lite
     },
-    tkch:        {
-        type:     'string',
+    tkch       : {
+        type    : 'string',
         getValue: (item) => item.order_line.model.main.tkch ?? ''
     },
-    kant:        {
-        type:     'string',
+    kant       : {
+        type    : 'string',
         getValue: (item) => item.order_line.model.main.kant ?? ''
     },
-    textile:     {
-        type:     'string',
+    textile    : {
+        type    : 'string',
         getValue: (item) => item.order_line.textile ?? ''
     },
-    time:        {
-        type:     'number',
+    time       : {
+        type    : 'number',
         getValue: (item) => Object.values(getCuttingTimes(item)).reduce((acc, value) => acc + value.time, 0)
     }
 }
@@ -777,7 +777,7 @@ const compareValues = (a: any, b: any, type: SortType, modifier: number) => {
 
     // numeric: true позволяет правильно сортировать "Размер 2" и "Размер 10"
     return String(a).localeCompare(String(b), undefined, {
-        numeric:     true,
+        numeric    : true,
         sensitivity: 'base'
     }) * modifier
 }
@@ -877,10 +877,10 @@ const sortBySize = (panel: ICuttingLinesPanel) => {
 // __ Опции для draggable
 const dragOptions = computed(() => {
     return {
-        animation:   300,
-        group:       'cards',
-        ghostClass:  'ghost',
-        dragClass:   'drag',
+        animation  : 300,
+        group      : 'cards',
+        ghostClass : 'ghost',
+        dragClass  : 'drag',
         chosenClass: 'chosen',
         // sort: true,
         // disabled: false, // Выносим в отдельное свойство

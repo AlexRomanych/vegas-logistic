@@ -35,8 +35,12 @@ class CuttingTaskLineResource extends JsonResource
             'false_reason' => $this->false_reason,
             'table'        => $this->phantom,
 
+            'is_panel' => $this->is_panel,
+            'is_side'  => $this->is_side,
+            'has_side' => $this->has_side,
+
             //'amount_avg' => null,
-            'time'         => $labor->getRealTime(),
+            'time'     => $labor->getRealTime(),
             //'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
             // 'time'       => ['time_'.$this->phantom => $this->time],
             // 'time'       => $labor->getTime(),
@@ -64,6 +68,8 @@ class CuttingTaskLineResource extends JsonResource
                     },
             ],
 
+
+            'detail' => self::collection($this->whenLoaded('details')),
 
             // 'order_line_id' => $this->order_line_id,
             // 'cutting_task_id' => $this->cutting_task_id,

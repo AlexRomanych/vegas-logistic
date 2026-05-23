@@ -61,52 +61,40 @@
             @click="emits('sortByField', 'time')"
         />
 
-        <!-- __ УШМ -->
+        <!-- __ Стол 1 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortUniversal)"
-            :width="renderData.machine.width"
+            :width="renderData.table.width"
             class="field"
-            text="У"
+            text="1"
             @click="emits('sortByField', 'universal')"
         />
 
-        <!-- __ АШМ -->
+        <!-- __ Стол 2 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortAuto)"
-            :width="renderData.machine.width"
+            :width="renderData.table.width"
             class="field"
-            text="А"
+            text="2"
             @click="emits('sortByField', 'auto')"
         />
 
-        <!-- __ Глухие сложные -->
+        <!-- __ Стол 3 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortSolidHard)"
-            :width="renderData.machine.width"
+            :width="renderData.table.width"
             class="field"
-            text="ГС"
+            text="3"
             @click="emits('sortByField', 'solid_hard')"
-        />
-
-        <!-- __ Глухие простые -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortSolidLite)"
-            :width="renderData.machine.width"
-            class="field"
-            text="ГП"
-            @click="emits('sortByField', 'solid_lite')"
         />
 
         <!-- __ Неопознанные -->
@@ -115,9 +103,33 @@
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="DEFAULT_TYPE"
+            :width="renderData.table.width"
+            class="field"
+            text="??"
+        />
+
+        <!-- __ ШМ -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortTextile)"
             :width="renderData.machine.width"
             class="field"
-            text="Н"
+            text="ШМ"
+            @click="emits('sortByField', 'textile')"
+        />
+
+        <!-- __ Элемент (Деталь) -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortTextile)"
+            :width="renderData.detail.width"
+            class="field"
+            text="Элемент"
+            @click="emits('sortByField', 'textile')"
         />
 
         <!-- __ Ткань -->

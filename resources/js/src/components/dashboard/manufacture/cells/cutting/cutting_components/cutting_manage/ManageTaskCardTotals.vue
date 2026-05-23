@@ -34,62 +34,50 @@
             width="w-[50px]"
         />
 
-        <!-- __ Количество + Трудозатраты УШМ -->
+        <!-- __ Количество + Трудозатраты Стол 1 -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_MACHINES.UNIVERSAL].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_1].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_MACHINES.UNIVERSAL].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_1].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
 
-        <!-- __ Количество + Трудозатраты АШМ -->
+        <!-- __ Количество + Трудозатраты Стол 2 -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_MACHINES.AUTO].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_2].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_MACHINES.AUTO].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_2].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
 
-        <!-- __ Количество + Трудозатраты Solid Hard -->
+        <!-- __ Количество + Трудозатраты Стол 3 -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_MACHINES.SOLID_HARD].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_3].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_MACHINES.SOLID_HARD].time"
-            :type="TOTAL_ITEMS_TYPE"
-            :width="TOTAL_ITEMS_WIDTH"
-        />
-
-        <!-- __ Количество + Трудозатраты Solid Lite -->
-        <ManageItemDataLabel
-            :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_MACHINES.SOLID_LITE].amount"
-            :height="TOTAL_ITEMS_HEIGHT"
-            :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_MACHINES.SOLID_LITE].time"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_3].time"
             :type="TOTAL_ITEMS_TYPE"
             :width="TOTAL_ITEMS_WIDTH"
         />
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
         <ManageItemDataLabel
-            v-if="amountAndTime[CUTTING_MACHINES.UNKNOWN].time"
+            v-if="amountAndTime[CUTTING_TABLES.UNKNOWN].time"
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_MACHINES.UNKNOWN].amount"
+            :amount="amountAndTime[CUTTING_TABLES.UNKNOWN].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_MACHINES.UNKNOWN].time"
+            :time="amountAndTime[CUTTING_TABLES.UNKNOWN].time"
             type="danger"
             :width="TOTAL_ITEMS_WIDTH"
         />
-
 
     </div>
 </template>
@@ -99,7 +87,7 @@ import { computed } from 'vue'
 
 import type { IAmountAndTime } from '@/types'
 
-import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
+import { CUTTING_TABLES } from '@/app/constants/cutting.ts'
 
 import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageItemDataLabel.vue'

@@ -57,48 +57,37 @@
             :width="renderData.time.width"
         />
 
-        <!-- __ УШМ -->
+        <!-- __ Стол 1 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(CUTTING_MACHINES.UNIVERSAL)"
-            :width="renderData.machine.width"
+            :type="getTypeForTable(CUTTING_TABLES.TABLE_1)"
+            :width="renderData.table.width"
             class="field"
-            text="У"
+            text="1"
         />
 
-        <!-- __ АШМ -->
+        <!-- __ Стол 2 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(CUTTING_MACHINES.AUTO)"
-            :width="renderData.machine.width"
+            :type="getTypeForTable(CUTTING_TABLES.TABLE_2)"
+            :width="renderData.table.width"
             class="field"
-            text="А"
+            text="2"
         />
 
-        <!-- __ Глухие сложные -->
+        <!-- __ Стол 3 -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(CUTTING_MACHINES.SOLID_HARD)"
-            :width="renderData.machine.width"
+            :type="getTypeForTable(CUTTING_TABLES.TABLE_3)"
+            :width="renderData.table.width"
             class="field"
-            text="ГС"
-        />
-
-        <!-- __ Глухие простые -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(CUTTING_MACHINES.SOLID_LITE)"
-            :width="renderData.machine.width"
-            class="field"
-            text="ГП"
+            text="3"
         />
 
         <!-- __ Неопознанные -->
@@ -106,11 +95,34 @@
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForMachine(CUTTING_MACHINES.UNKNOWN)"
+            :type="getTypeForTable(CUTTING_TABLES.UNKNOWN)"
+            :width="renderData.table.width"
+            class="field"
+            text="??"
+        />
+
+        <!-- __ ШМ Пошива -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
             :width="renderData.machine.width"
             class="field"
-            text="Н"
+            :text="sewingMachine"
         />
+
+        <!-- __ Элемент (Деталь) -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="cuttingLine.is_side ? 'warning' : 'indigo'"
+            :width="renderData.detail.width"
+            class="field"
+            :text="cuttingLine.is_side ? DETAIL_SIDE_TITLE_SHORT : DETAIL_PANEL_TITLE"
+        />
+
 
         <!-- __ Ткань -->
         <AppLabelTS
@@ -199,25 +211,25 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { ICuttingMachineKeys, ICuttingTaskLine } from '@/types'
+import type { ICuttingTableKeys, ICuttingTaskLine } from '@/types'
 import type {
     IRenderCuttingLineData
 } from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
 
-import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
+import { CUTTING_MACHINES, CUTTING_TABLES, DETAIL_PANEL_TITLE, DETAIL_SIDE_TITLE_SHORT } from '@/app/constants/cutting.ts'
 
 
 import { storeToRefs } from 'pinia'
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 import {
     getCoverSizeString,
-    getCuttingLineMachineType,
     getCuttingTaskModelCover,
     getCuttingTaskModelCoverName,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import { getSewingMachineTitle } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 
 interface IProps {
@@ -230,7 +242,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     showComments: false,
-    showDetails:  false,
+    showDetails : false,
 })
 
 // console.log('props.cuttingLine: ', props.cuttingLine)
@@ -255,35 +267,19 @@ const modelCover = computed(() => getCuttingTaskModelCover(props.cuttingLine))
 // __ Получаем название модели
 const coverName = computed(() => getCuttingTaskModelCoverName(props.cuttingLine))
 
-// const coverName = computed(() => {
-//     return modelCover.value
-//         ? isAverage(props.cuttingLine)
-//             ? 'Чехол для Планового матраса'
-//             : modelCover.value.name_report
-//         : ''
-// })
-
 // __ Тип подсветки для основного элемента
 const getType = computed(() =>
     props.cuttingLine === globalManageTaskCardActiveCuttingLine.value ? ACTIVE_TYPE : 'dark')
 
 // __ Получаем тип стегальной машины
-const machineType = computed(() => getCuttingLineMachineType(props.cuttingLine))
+const table = computed(() => props.cuttingLine.table)
 
 // __ Тип подсветки для стегальной машины элемента
-const getTypeForMachine = (cuttingMachineTarget: ICuttingMachineKeys) => {
+const getTypeForTable = (cuttingTableTarget: ICuttingTableKeys) => {
 
     // !!! Порядок важен !!!
-
-    if (machineType.value === CUTTING_MACHINES.AVERAGE) {
-        if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
-            return 'danger'
-        }
-        return ACCENT_TYPE
-    }
-
-    if (machineType.value === cuttingMachineTarget) {
-        if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
+    if (table.value === cuttingTableTarget) {
+        if (cuttingTableTarget === CUTTING_MACHINES.UNKNOWN) {
             return 'danger'
         }
 
@@ -298,6 +294,9 @@ const getTime = computed(() => getTimeString(props.cuttingLine, true).replaceAll
 
 // __ Получаем размер чехла (Высота из размеров чехла модели)
 const getSize = computed(() => getCoverSizeString(props.cuttingLine))
+
+
+const sewingMachine = computed(() => getSewingMachineTitle(props.cuttingLine))
 
 // console.log('activeCuttingLine: ', globalManageTaskCardActiveCuttingLine.value)
 

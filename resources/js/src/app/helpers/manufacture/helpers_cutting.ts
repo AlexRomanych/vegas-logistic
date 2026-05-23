@@ -6,10 +6,10 @@ import type {
     ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
     ICuttingTaskLine, ICuttingTaskLineAmountAvg, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskLineTime,
     ICuttingTaskModel, ICuttingTaskOrder,
-    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys,
+    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys,
 } from '@/types'
 
-import { CUTTING_MACHINES, CUTTING_TASK_DRAFT, CUTTING_TASK_GROUP_RULES, CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
+import { CUTTING_MACHINES, CUTTING_TABLES, CUTTING_TASK_DRAFT, CUTTING_TASK_GROUP_RULES, CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
@@ -60,22 +60,37 @@ export function getCuttingTimes(cuttingLine: ICuttingTaskLine): IAmountAndTime {
 
 // __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
 export function createAmountAndTimeObj() {
-    return Object.values(CUTTING_MACHINES).reduce((acc, value) => {
+    return Object.values(CUTTING_TABLES).reduce((acc, value) => {
         acc[value] = { time: 0, amount: 0 }
         return acc
     }, {} as IAmountAndTime)
 }
 
+// export function createAmountAndTimeObj() {
+//     return Object.values(CUTTING_MACHINES).reduce((acc, value) => {
+//         acc[value] = { time: 0, amount: 0 }
+//         return acc
+//     }, {} as IAmountAndTime)
+// }
+
 
 // __ Функция для получения типа машины по ключу (константы ШМ)
+export function getTable(table: ICuttingTableKeys) {
+    const findTableKey = Object.keys(CUTTING_TABLES).find(key => CUTTING_TABLES[key] === table)
+    return findTableKey ? CUTTING_TABLES[findTableKey] : null
+}
+
 export function getMachineType(machineType: ICuttingMachineKeys) {
     const findMachineTypeKey = Object.keys(CUTTING_MACHINES).find(key => CUTTING_MACHINES[key] === machineType)
     return findMachineTypeKey ? CUTTING_MACHINES[findMachineTypeKey] : null
 }
 
-
 // __ Функция для получения типа ШМ по Записи в СЗ
 // __ Тут может быть ситуация, когда модель - чехол, тогда получаем тип машины по базовой модели
+export function getCuttingLineTable(cuttingLine: ICuttingTaskLine) {
+    return cuttingLine.table
+}
+
 export function getCuttingLineMachineType(cuttingLine: ICuttingTaskLine) {
 
     // __ Получаем тип машины модели
@@ -92,24 +107,27 @@ export function getCuttingLineMachineType(cuttingLine: ICuttingTaskLine) {
 }
 
 
+
+
 // __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
 export function getTimeString(cuttingLine: ICuttingTaskLine, twoLines: boolean = false) {
+    const time = cuttingLine.time
 
-    const machineType = getCuttingLineMachineType(cuttingLine)
-    if (!machineType) {
-        return 'н/д'
-    }
-
-    const amountAndTimeObj = getCuttingTimes(cuttingLine)
-    let time               = 0
-
-    // __ Получаем количество
-    if (machineType === CUTTING_MACHINES.AVERAGE) {
-        time = Object.keys(amountAndTimeObj).reduce((acc, key) => acc + amountAndTimeObj[key].time, time)
-    } else {
-        time = amountAndTimeObj[machineType as ICuttingMachineKeys].time
-    }
+    // const machineType = getCuttingLineMachineType(cuttingLine)
+    // if (!machineType) {
+    //     return 'н/д'
+    // }
+    //
+    // const amountAndTimeObj = getCuttingTimes(cuttingLine)
+    // let time               = 0
+    //
+    // // __ Получаем количество
+    // if (machineType === CUTTING_MACHINES.AVERAGE) {
+    //     time = Object.keys(amountAndTimeObj).reduce((acc, key) => acc + amountAndTimeObj[key].time, time)
+    // } else {
+    //     time = amountAndTimeObj[machineType as ICuttingMachineKeys].time
+    // }
 
     // __ Если больше часа, то выводим часы и минуты (обрезаем секунды)
     if (twoLines) {
@@ -132,7 +150,7 @@ export function getTimeString(cuttingLine: ICuttingTaskLine, twoLines: boolean =
 export function getCuttingTaskAmountAndTime(item: ICuttingTask | ICuttingTaskLine[]) {
 
     //  __ Создаем сам объект данных с ключами из CUTTING_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-    const amountAndTimeObj = createAmountAndTimeObj()
+    // const amountAndTimeObj = createAmountAndTimeObj()
 
     // __ Проверяем, что пришло на вход
     let itemArr = []
@@ -142,51 +160,31 @@ export function getCuttingTaskAmountAndTime(item: ICuttingTask | ICuttingTaskLin
         itemArr = item.cutting_lines
     }
 
-    // __ Проходим по всем cutting_lines и суммируем данные
-    itemArr?.forEach(cutting_line => {
+    const data = Object.groupBy(itemArr, item => item.table)
 
-        // __ Получаем тип машины модели
-        const machineType = getCuttingLineMachineType(cutting_line)
-        if (!machineType) {
-            return  // __ Страховочка
-        }
-
-        // __ Получаем количество
-        if (machineType === CUTTING_MACHINES.AVERAGE) {
-            if (cutting_line.amount_avg) {
-                Object.entries(cutting_line.amount_avg).forEach(([key, value]) => {
-                    const machineType = getMachineType(key as ICuttingMachineKeys)
-                    if (!machineType) {
-                        return  // __ Страховочка
-                    }
-                    amountAndTimeObj[machineType].amount += value
-                })
-            } else {
-                console.log('Error! Amount_avg is not defined for: ' + cutting_line.order_line.model.main.name)
-            }
+    return Object.values(CUTTING_TABLES).reduce((acc, value) => {
+        const findTableKey = Object.keys(data).find(key => key === value)
+        if (findTableKey) {
+            const key = findTableKey as ICuttingTableKeys
+            const amount = data[key]!.reduce((acc, line) => acc + line.amount, 0)
+            const time = data[key]!.reduce((acc, line) => acc + line.time, 0)
+            acc[value] = { time, amount }
         } else {
-            amountAndTimeObj[machineType].amount += cutting_line.amount
+            acc[value] = { time: 0, amount: 0 }
         }
 
-        // __ Получаем время
-        Object.entries(cutting_line.time).forEach(([key, value]) => {
-            const machineTypeKey = key.replace('time_', '') as ICuttingMachineKeys
-            const machineType    = getMachineType(machineTypeKey)
-            if (!machineType) {
-                return  // __ Страховочка
-            }
-            amountAndTimeObj[machineType].time += value
-        })
-    })
-    return amountAndTimeObj
+        return acc
+    }, {} as IAmountAndTime)
+
 }
 
 
 // __ Возвращаем числовое значение времени по Записи в СЗ (taskLine) для конкретных матрасов (не расчетных),
 // __ где запись из одного поля: time = {auto: 306} или time = {universal: 400}
-export function getCuttingTaskLineTime(line: ICuttingTaskLine) {
-    const machine: ICuttingMachineKeys | null = getCuttingLineMachineType(line)
-    return machine && machine in line.time ? line.time[machine] : 0
+export function getCuttingTaskLineTime(line: ICuttingTaskLine): number {
+    return line.time
+    // const machine: ICuttingMachineKeys | null = getCuttingLineMachineType(line)
+    // return machine && machine in line.time ? line.time[machine] : 0
 }
 
 
