@@ -8,6 +8,10 @@ export const TABLE_2         = 'table_2'
 export const TABLE_3         = 'table_3'
 export const TABLE_UNDEFINED = 'undefined'
 
+export const TABLE_1_TITLE         = 'Стол 1'
+export const TABLE_2_TITLE         = 'Стол 2'
+export const TABLE_3_TITLE         = 'Стол 3'
+export const TABLE_UNDEFINED_TITLE = 'Стол ??'
 
 // __ Объект раскройных столов
 export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {

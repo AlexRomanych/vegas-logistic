@@ -129,7 +129,7 @@
             <template #item="{ element, index }">
                 <div
                     @click="selectCuttingTask(element)"
-                    @dblclick="showCuttingTaskCard(element)"
+                    @dblclick="showCuttingTaskMenu(element)"
                 >
                     <ManageItem
                         :amount-and-time="getCuttingTaskAmountAndTime(element)"
@@ -261,6 +261,15 @@
         :type="modalType"
     />
 
+    <!-- __ Карточка СЗ -->
+    <ManageTaskTables
+        ref="manageTaskTables"
+        :mode="modalMode"
+        :task="taskCard"
+        :text="modalText"
+        :type="modalType"
+    />
+
     <!-- __ Модальное Меню -->
     <AppModalMenuTS
         ref="appModalMenuTS"
@@ -343,6 +352,7 @@ import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppM
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
+import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
 
 // type IDay = ICuttingTask & IPlanMatrixDayItem
 
@@ -460,11 +470,12 @@ const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
 const getTotalTimeDay = computed(() =>
     props.day.reduce((totalAcc, task) => totalAcc + task.cutting_lines.reduce((acc: number, line: ICuttingTaskLine) => acc + line.time, 0), 0))
 
-// __ Тип для модального окна
-const modalType      = ref<IColorTypes>('primary')
-const modalText      = ref<string>('')
-const modalMode      = ref<'inform' | 'confirm'>('inform')
-const manageTaskCard = ref<InstanceType<typeof ManageTaskCard> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+// __ Тип для Каротчки и Изменения стола
+const modalType        = ref<IColorTypes>('primary')
+const modalText        = ref<string>('')
+const modalMode        = ref<'inform' | 'confirm'>('inform')
+const manageTaskCard   = ref<InstanceType<typeof ManageTaskCard> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const manageTaskTables = ref<InstanceType<typeof ManageTaskTables> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального Меню
 const modalMenuType  = ref<IColorTypes>('primary')
@@ -536,6 +547,91 @@ const showCuttingTaskCard = async (cuttingTask: ICuttingTask) => {
         await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel) // __ Тут реактивное перерисовывание
     }
 }
+
+// __ Изменение стола
+const showCuttingTaskTables = async (cuttingTask: ICuttingTask) => {
+    taskCard.value = JSON.parse(JSON.stringify(cuttingTask)) // __ Копируем объект, чтобы не мутировал оригинал
+
+    // __ Показываем модальное окно обработки СЗ
+    const answer = await manageTaskTables.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Получаем ссылки на панели
+    const leftPanel  = manageTaskTables.value!.leftPanel
+    const rightPanel = manageTaskTables.value!.rightPanel
+
+    // __ Если есть правая панель, то это создание нового СЗ
+    if (rightPanel.length > 0) {
+        // __ Создаем новое СЗ на основе копии
+        const newCuttingTask = JSON.parse(JSON.stringify(cuttingTask))
+
+        // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+        newCuttingTask.position += 0.1
+
+        // __ Устанавливаем id
+        // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+        newCuttingTask.id = 0
+
+        // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+        // leftPanel  = repositionCuttingTaskLines(leftPanel)
+        // rightPanel = repositionCuttingTaskLines(rightPanel)
+
+        // __ Обновляем глобальный state СЗ
+        // cuttingTask.cutting_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+        // newCuttingTask.cutting_lines = rightPanel
+
+        // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+        await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel, newCuttingTask, rightPanel) // __ Тут реактивное перерисовывание
+
+        // console.log(taskCard.value)
+    } else {
+        // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+
+        // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+        // leftPanel = repositionCuttingTaskLines(leftPanel)
+
+        // __ Обновляем глобальный state СЗ
+        await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel) // __ Тут реактивное перерисовывание
+    }
+}
+
+
+// __ Меню при двойном клике на Заявке (Разделить количество + Изменить стол)
+const showCuttingTaskMenu = async (cuttingTask: ICuttingTask) => {
+    // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
+    modalMenuType.value = 'indigo'
+    modalMenu.value     = {
+        data: [
+            { id: 1, title: 'Разделить количество' },
+            { id: 2, title: 'Изменить стол' },
+            { id: 3, title: 'Отмена' },
+        ],
+    }
+
+    const result = await appModalMenuTS.value!.show()
+    // let result = { menuItem: 3, value: true } as IModalResponse
+
+    // __ Отмена
+    if (result.menuItem === 3 && result.value) {
+        return
+    }
+
+    // __ Разделить количество
+    if (result.menuItem === 1 && result.value) {
+        await showCuttingTaskCard(cuttingTask)
+        return
+    }
+
+    // __ Изменить стол
+    if (result.menuItem === 2 && result.value) {
+        await showCuttingTaskTables(cuttingTask)
+        return
+    }
+
+}
+
 
 // --- ------------------------------------------------------
 // --- ----------- Управление Druggable ---------------------

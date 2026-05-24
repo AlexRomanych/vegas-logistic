@@ -124,7 +124,7 @@ import type {
     IAmountAndTime
 } from '@/types'
 
-import { CUTTING_MACHINES, CUTTING_TABLES, CUTTING_TASK_DRAFT, } from '@/app/constants/cutting.ts'
+import { CUTTING_TABLES, CUTTING_TASK_DRAFT, } from '@/app/constants/cutting.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'

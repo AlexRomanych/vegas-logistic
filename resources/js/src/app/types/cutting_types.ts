@@ -226,6 +226,7 @@ export interface ICuttingTaskStatusEntity {
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
 export type ICuttingLinesPanel = 'left' | 'right'
+export type ICuttingTablePanel = 'table_1' | 'table_2' | 'table_3' | 'table_undefined'
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------

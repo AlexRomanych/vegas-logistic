@@ -1,53 +1,53 @@
 <template>
     <Teleport to="body">
+        <Transition name="modal">
+            <div v-if="showModal" class="dark-container" @click.self="select(false)">
 
-        <div v-if="showModal" class="dark-container" @click.self="select(false)">
+                <div :class="[width, height, borderColor, 'modal-container']">
 
-            <div :class="[width, height, borderColor, 'modal-container']">
+                    <!-- __ Крестик Закрыть -->
+                    <div class="close-cross-container">
+                        <div class="m-1 p-1">
+                            <AppInputButton
+                                id="close"
+                                :type="type"
+                                height="w-5"
+                                title="x"
+                                width="w-[30px]"
+                                @buttonClick="select(false)"
+                            />
+                        </div>
+                    </div>
 
-                <!-- __ Крестик Закрыть -->
-                <div class="close-cross-container">
-                    <div class="m-1 p-1">
+                    <!-- __ Меню -->
+                    <div class="flex flex-col w-[90%] px-6 gap-0.5 overflow-y-auto custom-scrollbar">
+                        <div v-for="item of menu.data" :key="item.id" class="w-full" @click="selectMenuItem(item.id)">
+                            <AppLabelMultiLineTS
+                                :text="item.title"
+                                :type="type"
+                                align="center"
+                                class="w-full cursor-pointer hover:opacity-90 transition-opacity"
+                                height="min-h-[40px]"
+                                rounded="4"
+                                width="w-full"
+                            />
+                        </div>
+                    </div>
+
+
+                    <!-- __ Закрыть -->
+                    <div class="w-full flex justify-end px-6 mt-4">
                         <AppInputButton
-                            id="close"
+                            id="confirm"
                             :type="type"
-                            height="w-5"
-                            title="x"
-                            width="w-[30px]"
+                            title="Закрыть"
                             @buttonClick="select(false)"
                         />
                     </div>
+
                 </div>
-
-                <!-- __ Меню -->
-                <div class="flex flex-col w-[90%] px-6 gap-0.5 overflow-y-auto custom-scrollbar">
-                    <div v-for="item of menu.data" :key="item.id" class="w-full" @click="selectMenuItem(item.id)">
-                        <AppLabelMultiLineTS
-                            :text="item.title"
-                            :type="type"
-                            align="center"
-                            class="w-full cursor-pointer hover:opacity-90 transition-opacity"
-                            height="min-h-[40px]"
-                            rounded="4"
-                            width="w-full"
-                        />
-                    </div>
-                </div>
-
-
-                <!-- __ Закрыть -->
-                <div class="w-full flex justify-end px-6 mt-4">
-                    <AppInputButton
-                        id="confirm"
-                        :type="type"
-                        title="Закрыть"
-                        @buttonClick="select(false)"
-                    />
-                </div>
-
             </div>
-        </div>
-
+        </Transition>
     </Teleport>
 </template>
 
@@ -68,8 +68,8 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type:   'primary',
-    width:  'min-w-[500px]',
+    type  : 'primary',
+    width : 'min-w-[500px]',
     height: 'min-h-[300px]',
 })
 
@@ -91,7 +91,7 @@ let resolvePromise: ModalResolve | null = null
 
 // Определяем тип прямо над show
 const show = (): Promise<IModalResponse> => {
-    showModal.value = true
+    showModal.value        = true
     selectedMenuItem.value = null // Сбрасываем выбор при каждом открытии
 
     return new Promise((resolve) => {
@@ -111,7 +111,7 @@ const select = (value: boolean) => {
 
 const selectedMenuItem = ref<null | number>(null)
 
-const selectMenuItem   = (item: number) => {
+const selectMenuItem = (item: number) => {
     selectedMenuItem.value = item
     select(true)
 }
@@ -151,5 +151,16 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
     @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
 }
 
+/* Состояние появления и исчезновения */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.5s ease;
+}
 
+/* Стартовое состояние при появлении / Финальное при исчезновении */
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
+}
 </style>

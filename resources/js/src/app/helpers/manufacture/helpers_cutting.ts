@@ -107,8 +107,6 @@ export function getCuttingLineMachineType(cuttingLine: ICuttingTaskLine) {
 }
 
 
-
-
 // __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
 export function getTimeString(cuttingLine: ICuttingTaskLine, twoLines: boolean = false) {
@@ -165,10 +163,10 @@ export function getCuttingTaskAmountAndTime(item: ICuttingTask | ICuttingTaskLin
     return Object.values(CUTTING_TABLES).reduce((acc, value) => {
         const findTableKey = Object.keys(data).find(key => key === value)
         if (findTableKey) {
-            const key = findTableKey as ICuttingTableKeys
+            const key    = findTableKey as ICuttingTableKeys
             const amount = data[key]!.reduce((acc, line) => acc + line.amount, 0)
-            const time = data[key]!.reduce((acc, line) => acc + line.time, 0)
-            acc[value] = { time, amount }
+            const time   = data[key]!.reduce((acc, line) => acc + line.time, 0)
+            acc[value]   = { time, amount }
         } else {
             acc[value] = { time: 0, amount: 0 }
         }
@@ -467,11 +465,13 @@ export function calculateDividedAmountAndTime(cuttingLine: ICuttingTaskLine, new
 
         newAmountAvg = {} as ICuttingTaskLineAmountAvg
         Object.entries(refCuttingLine.amount_avg).forEach(([key, value]) => {
-            const amount                             = refCuttingLine.amount ? value / refCuttingLine.amount * newAmount : 0
+            const amount                              = refCuttingLine.amount ? value / refCuttingLine.amount * newAmount : 0
             newAmountAvg![key as ICuttingMachineKeys] = amount
 
             const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
-            newTime[arrKey]                       = value ? round(refCuttingLine.time[arrKey] / value * amount) : 0 // __ Уже новое пересчитанное количество
+
+            // @ts-expect-error 1111111111111111
+            newTime[arrKey] = value ? round((refCuttingLine.time[arrKey]) / value * amount) : 0 // __ Уже новое пересчитанное количество
         })
 
         // Object.entries(refCuttingLine.time).forEach(([key, value]) => {
@@ -488,6 +488,7 @@ export function calculateDividedAmountAndTime(cuttingLine: ICuttingTaskLine, new
 
     refCuttingLine.amount     = newAmount
     refCuttingLine.amount_avg = newAmountAvg
+    // @ts-expect-error 1111111111111111
     refCuttingLine.time       = newTime
 
     return refCuttingLine
@@ -764,8 +765,8 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
             if (filteredDay.length === 0) {
                 const draft = {
                     ...CUTTING_TASK_DRAFT,
-                    id          : draftId--,
-                    position    : 100,
+                    id           : draftId--,
+                    position     : 100,
                     cutting_lines: [],  /* !!! Тут пустой массив, потому что где-то по ссылке сохраняется  */
                 }
                 filteredDay.push(draft)
@@ -969,7 +970,7 @@ export function getCuttingTasksDiff(currentTasks: ICuttingTask[], originalTasks:
                 taskChanges: {
                     action_at: { old: null, new: task.action_at },
                     position : { old: null, new: task.position },
-                    status : { old: null, new: task.current_status.id ?? null },
+                    status   : { old: null, new: task.current_status.id ?? null },
                 },
                 lineChanges,
 
@@ -982,7 +983,7 @@ export function getCuttingTasksDiff(currentTasks: ICuttingTask[], originalTasks:
         // __ Сравниваем основные поля задачи
         const hasDateChanged     = task.action_at !== original.action_at
         const hasPositionChanged = task.position !== original.position
-        const hasStatusChanged = task.current_status.id !== original.current_status.id
+        const hasStatusChanged   = task.current_status.id !== original.current_status.id
 
         // __ Сравниваем строки пошива (детально)
         const lineDiffs = getTaskLinesDiff(task.cutting_lines, original.cutting_lines)
@@ -997,7 +998,7 @@ export function getCuttingTasksDiff(currentTasks: ICuttingTask[], originalTasks:
                 taskChanges: {
                     action_at: hasDateChanged ? { old: original.action_at, new: task.action_at } : null,
                     position : hasPositionChanged ? { old: original.position, new: task.position } : null,
-                    status: hasStatusChanged ? {old: original.current_status.id, new: task.current_status.id} : null,
+                    status   : hasStatusChanged ? { old: original.current_status.id, new: task.current_status.id } : null,
                 },
                 // __ Массив изменений в строках
                 lineChanges: lineDiffs,
@@ -1026,7 +1027,7 @@ export function getCuttingTasksDiff(currentTasks: ICuttingTask[], originalTasks:
  */
 function getTaskLinesDiff(currentLines: ICuttingTaskLine[], originalLines: ICuttingTaskLine[]) {
     const diffs: ICuttingTaskArrayLineDiffs[] = []
-    const originalLinesMap                   = new Map(originalLines.map(l => [l.id, l]))
+    const originalLinesMap                    = new Map(originalLines.map(l => [l.id, l]))
 
     currentLines.forEach((line) => {
         const originalLine = originalLinesMap.get(line.id)

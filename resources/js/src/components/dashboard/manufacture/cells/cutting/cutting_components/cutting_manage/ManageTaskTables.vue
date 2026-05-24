@@ -14,18 +14,13 @@
                     <div class="flex justify-between w-full h-full items-center">
 
                         <!-- __ Меню Карточки Заявки  -->
-                        <ManageTaskCardMenu
+                        <ManageTaskTableMenu
                             :active-panel="activePanel"
-                            :cutting-lines="activePanel === LEFT_PANEL_ID ? sourceCuttingLines : targetCuttingLines"
+                            :cutting-lines="getList(activePanel)"
                             :cutting-task="props.task"
-                            :show-comments="showComments"
                             :show-details="showDetails"
-                            @divide-element-amount="divideElementAmount"
-                            @show-comments="showComments = !showComments"
                             @show-details="showDetails = !showDetails"
                             @reload-data="reloadData"
-                            @move-to-panel="moveToPanel(activePanel, $event)"
-                            @merge-lines="mergeLines(activePanel)"
                             @add-comment="addComment"
                         />
 
@@ -45,7 +40,7 @@
                     <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
                     <div class="flex h-screen w-full bg-slate-900 p-4 gap-4 overflow-x-auto">
 
-                        <div v-for="panel in [LEFT_PANEL_ID, RIGHT_PANEL_ID]" :key="panel"
+                        <div v-for="panel in [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID, TABLE_UNDEFINED_PANEL_ID]" :key="panel"
                              :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
                              class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden max-w-fit"
                              @click="activePanel = panel"
@@ -53,11 +48,22 @@
 
                             <div class="flex-none bg-slate-700 shadow-md">
 
+                                <!-- __ Название Стола -->
+                                <AppLabelTS
+                                    :text="getTableName(panel).toUpperCase()"
+                                    :type="panel === TABLE_UNDEFINED_PANEL_ID ? 'danger' : panel === TABLE_3_PANEL_ID ? 'warning' : 'indigo'"
+                                    align="center"
+                                    rounded="4"
+                                    text-size="mini"
+                                    width="w-[99%]"
+                                />
+
                                 <!-- __ Заголовок (Шапка изделий) Панели -->
-                                <ManageTaskCardItemsHeader
+                                <ManageTaskTableItemsHeader
                                     :active-panel="activePanel"
                                     :panel="panel"
                                     :render-data="renderData"
+                                    :short="true"
                                     :show-comments="showComments"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
@@ -84,7 +90,7 @@
                                 <draggable
                                     :="dragOptions"
                                     :disabled="!isDragging"
-                                    :list="panel === LEFT_PANEL_ID ? sourceCuttingLines : targetCuttingLines"
+                                    :list="getList(panel)"
                                     :move="checkMove"
                                     class="min-h-[25px]"
                                     item-key="position"
@@ -99,9 +105,10 @@
                                              @dblclick="showLineInfo(element)"
                                         >
 
-                                            <ManageTaskCardItem
+                                            <ManageTaskTableItem
                                                 :cutting-line="element"
                                                 :render-data="renderData"
+                                                :short="true"
                                                 :show-comments="showComments"
                                                 :show-details="showDetails"
                                             />
@@ -117,8 +124,9 @@
                             <div class="flex-none bg-slate-700 py-1 border-t border-slate-600">
 
                                 <!-- __ Итого: -->
-                                <ManageTaskCardTotals
-                                    :amount-and-time="panel === LEFT_PANEL_ID ? leftPanelAmountAndTimeTotal : rightPanelAmountAndTimeTotal"
+                                <ManageTaskTableTotals
+                                    :amount-and-time="getDataForTotals(panel)"
+                                    :short="true"
                                 />
 
                             </div>
@@ -217,10 +225,12 @@ import type {
     IAmountAndTime,
     ICuttingLinesPanel,
     ICuttingTaskCardSort,
-    ICuttingTaskOrderLine,
+    ICuttingTaskOrderLine, ICuttingTablePanel,
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
+
+import { TABLE_1, TABLE_1_TITLE, TABLE_2, TABLE_2_TITLE, TABLE_3, TABLE_3_TITLE, TABLE_UNDEFINED, TABLE_UNDEFINED_TITLE } from '@/app/constants/cutting.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
@@ -238,21 +248,15 @@ import { round } from '@/app/helpers/helpers_lib.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
-import ManageTaskCardItem
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardItem.vue'
-import ManageTaskCardItemsHeader
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardItemsHeader.vue'
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
-import ManageTaskCardMenu
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardMenu.vue'
-import ManageTaskCardTotals
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCardTotals.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
 import OrderItemInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/OrderItemInfo.vue'
-// import ManageTaskCardItemInfo
-//     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/_ManageTaskCardItemInfo.vue'
-
+import ManageTaskTableItem from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTableItem.vue'
+import ManageTaskTableTotals from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTableTotals.vue'
+import ManageTaskTableItemsHeader from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTableItemsHeader.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import ManageTaskTableMenu from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTableMenu.vue'
 
 interface IProps {
     type?: IColorTypes,
@@ -288,6 +292,12 @@ const { globalManageTaskCardActiveCuttingLine } = storeToRefs(cuttingStore)
 
 
 // __ Данные (объект) правой панели
+const tableCuttingLines_1 = ref<ICuttingTaskLine[]>([])
+const tableCuttingLines_2 = ref<ICuttingTaskLine[]>([])
+const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
+const tableCuttingLines_0 = ref<ICuttingTaskLine[]>([])
+
+
 const targetCuttingLines = ref<ICuttingTaskLine[]>([])
 const sourceCuttingLines = ref<ICuttingTaskLine[]>([])
 
@@ -301,12 +311,66 @@ const needForSave = ref(false)
 const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 
 // __ Переключатель панелей
-const LEFT_PANEL_ID: ICuttingLinesPanel  = 'left'
-const RIGHT_PANEL_ID: ICuttingLinesPanel = 'right'
-const activePanel                        = ref<ICuttingLinesPanel>(LEFT_PANEL_ID)
+const TABLE_1_PANEL_ID: ICuttingTablePanel         = 'table_1'
+const TABLE_2_PANEL_ID: ICuttingTablePanel         = 'table_2'
+const TABLE_3_PANEL_ID: ICuttingTablePanel         = 'table_3'
+const TABLE_UNDEFINED_PANEL_ID: ICuttingTablePanel = 'table_undefined'
+const activePanel                                  = ref<ICuttingTablePanel>(TABLE_1_PANEL_ID)
 
-const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
-const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
+// const LEFT_PANEL_ID: ICuttingLinesPanel  = 'left'
+// const RIGHT_PANEL_ID: ICuttingLinesPanel = 'right'
+
+// __ Получаем объект для Druggable
+const getList = (panel: ICuttingTablePanel): ICuttingTaskLine[] => {
+    switch (panel) {
+        case TABLE_1_PANEL_ID:
+            return tableCuttingLines_1.value
+        case TABLE_2_PANEL_ID:
+            return tableCuttingLines_2.value
+        case TABLE_3_PANEL_ID:
+            return tableCuttingLines_3.value
+        case TABLE_UNDEFINED_PANEL_ID:
+            return tableCuttingLines_0.value
+
+    }
+}
+
+// __ Получаем Название Стола
+const getTableName = (panel: ICuttingTablePanel): string => {
+    switch (panel) {
+        case TABLE_1_PANEL_ID:
+            return TABLE_1_TITLE
+        case TABLE_2_PANEL_ID:
+            return TABLE_2_TITLE
+        case TABLE_3_PANEL_ID:
+            return TABLE_3_TITLE
+        case TABLE_UNDEFINED_PANEL_ID:
+            return TABLE_UNDEFINED_TITLE
+    }
+}
+
+const tablePanelAmountAndTimeTotal_1 = ref<IAmountAndTime>()
+const tablePanelAmountAndTimeTotal_2 = ref<IAmountAndTime>()
+const tablePanelAmountAndTimeTotal_3 = ref<IAmountAndTime>()
+const tablePanelAmountAndTimeTotal_0 = ref<IAmountAndTime>()
+
+// const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
+// const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
+
+// __ Получаем объект для Totals
+const getDataForTotals = (panel: ICuttingTablePanel) => {
+    switch (panel) {
+        case TABLE_1_PANEL_ID:
+            return tablePanelAmountAndTimeTotal_1.value
+        case TABLE_2_PANEL_ID:
+            return tablePanelAmountAndTimeTotal_2.value
+        case TABLE_3_PANEL_ID:
+            return tablePanelAmountAndTimeTotal_3.value
+        case TABLE_UNDEFINED_PANEL_ID:
+            return tablePanelAmountAndTimeTotal_0.value
+    }
+}
+
 
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
@@ -355,18 +419,21 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 // __ Размеры колонок
 const renderData = {
-    position: { width: 'min-w-[25px] max-w-[25px]', },
-    size    : { width: 'min-w-[70px] max-w-[70px]', },
-    model   : { width: 'min-w-[150px] max-w-[150px]', },
-    amount  : { width: 'min-w-[30px] max-w-[30px]', },
-    time    : { width: 'min-w-[50px] max-w-[50px]', },
-    textile : { width: 'min-w-[50px] max-w-[50px]', },
-    detail  : { width: 'min-w-[50px] max-w-[50px]', },
-    machine : { width: 'min-w-[30px] max-w-[30px]', },
-    table   : { width: 'min-w-[25px] max-w-[25px]', },
-    describe: { width: 'min-w-[50px] max-w-[50px]', },
-    tkch    : { width: 'min-w-[35px] max-w-[35px]', },
-    kant    : { width: 'min-w-[60px] max-w-[60px]', },
+    position   : { width: 'min-w-[25px] max-w-[25px]', },
+    size       : { width: 'min-w-[70px] max-w-[70px]', },
+    sizeShort  : { width: 'min-w-[65px] max-w-[65px]', },
+    model      : { width: 'min-w-[150px] max-w-[150px]', },
+    modelShort : { width: 'min-w-[130px] max-w-[130px]', },
+    amount     : { width: 'min-w-[30px] max-w-[30px]', },
+    time       : { width: 'min-w-[50px] max-w-[50px]', },
+    textile    : { width: 'min-w-[50px] max-w-[50px]', },
+    detail     : { width: 'min-w-[50px] max-w-[50px]', },
+    detailShort: { width: 'min-w-[30px] max-w-[30px]', },
+    machine    : { width: 'min-w-[30px] max-w-[30px]', },
+    table      : { width: 'min-w-[25px] max-w-[25px]', },
+    describe   : { width: 'min-w-[50px] max-w-[50px]', },
+    tkch       : { width: 'min-w-[35px] max-w-[35px]', },
+    kant       : { width: 'min-w-[60px] max-w-[60px]', },
 }
 
 
@@ -459,12 +526,17 @@ defineExpose({
 
 // __ Пересчитываем Итого
 const calculateTotals = () => {
-    leftPanelAmountAndTimeTotal.value  = getCuttingTaskAmountAndTime(sourceCuttingLines.value)
-    rightPanelAmountAndTimeTotal.value = getCuttingTaskAmountAndTime(targetCuttingLines.value)
+    tablePanelAmountAndTimeTotal_1.value = getCuttingTaskAmountAndTime(tableCuttingLines_1.value)
+    tablePanelAmountAndTimeTotal_2.value = getCuttingTaskAmountAndTime(tableCuttingLines_2.value)
+    tablePanelAmountAndTimeTotal_3.value = getCuttingTaskAmountAndTime(tableCuttingLines_3.value)
+    tablePanelAmountAndTimeTotal_0.value = getCuttingTaskAmountAndTime(tableCuttingLines_0.value)
+
+    // leftPanelAmountAndTimeTotal.value  = getCuttingTaskAmountAndTime(sourceCuttingLines.value)
+    // rightPanelAmountAndTimeTotal.value = getCuttingTaskAmountAndTime(targetCuttingLines.value)
 }
 
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
-const setActiveCuttingLine = (cuttingLine: ICuttingTaskLine, panel: ICuttingLinesPanel) => {
+const setActiveCuttingLine = (cuttingLine: ICuttingTaskLine, panel: ICuttingTablePanel) => {
     globalManageTaskCardActiveCuttingLine.value = cuttingLine
     activePanel.value                           = panel
 }
@@ -783,7 +855,7 @@ const compareValues = (a: unknown, b: unknown, type: SortType, modifier: number)
 }
 
 // __ Сортировка
-const sortByField = (panel: ICuttingLinesPanel, configKey: string) => {
+const sortByField = (panel: ICuttingTablePanel, configKey: string) => {
     const config = sortConfigs[configKey]
     if (!config) return
 
@@ -854,7 +926,7 @@ const sortByField = (panel: ICuttingLinesPanel, configKey: string) => {
 }
 
 // __ Сортировка по размеру
-const sortBySize = (panel: ICuttingLinesPanel) => {
+const sortBySize = (panel: ICuttingTablePanel) => {
     sortSize.value = changeSortDirection(sortSize.value)
 
     let sourceArray = panel === LEFT_PANEL_ID
@@ -922,8 +994,17 @@ watch(() => props.task, () => {
     footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
 
     // __ Копируем данные для левой и правой панели
-    sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
-    targetCuttingLines.value = []
+    tableCuttingLines_1.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_1)))
+    tableCuttingLines_2.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_2)))
+    tableCuttingLines_3.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_3)))
+    tableCuttingLines_0.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_UNDEFINED)))
+    // const tableCuttingLines_2 = ref<ICuttingTaskLine[]>([])
+    // const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
+    // const tableCuttingLines_0 = ref<ICuttingTaskLine[]>([])
+
+
+    // sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
+    // targetCuttingLines.value = []
 
     // console.log(sourceCuttingLines.value)
     // console.log(targetCuttingLines.value)
