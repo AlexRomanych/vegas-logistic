@@ -2,10 +2,9 @@
 
 import type {
     IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ICuttingDay,
-    ICuttingMachineKeys, ICuttingMachineTimesKeys,
+    ICuttingMachineKeys,
     ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
-    ICuttingTaskLine, ICuttingTaskLineAmountAvg, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskLineTime,
-    ICuttingTaskModel, ICuttingTaskOrder,
+    ICuttingTaskLine, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskModel, ICuttingTaskOrder,
     ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys,
 } from '@/types'
 
@@ -458,48 +457,54 @@ export function getCoverSizeString(item: ICuttingTaskLine | ICuttingTaskOrderLin
  * __ Функция, которая возвращает высчитанный объект количества при разделении строки на количество
  * __ Возвращает новый экземпляр с пересчитанными данными
  * @param cuttingLine    __Входная строка__
- * @param newAmount     __Новое количество__
+ * @param newAmount      __Новое количество__
  */
-export function calculateDividedAmountAndTime(cuttingLine: ICuttingTaskLine, newAmount: number) {
+export function calculateDividedAmountAndTime(cuttingLine: ICuttingTaskLine, newAmount: number): ICuttingTaskLine {
 
     // __ Создаем копию строки (референсная)
     const refCuttingLine = { ...cuttingLine }
 
-    let newAmountAvg: ICuttingTaskLineAmountAvg | null = null
-    const newTime: ICuttingTaskLineTime                = {} as ICuttingTaskLineTime
-
-    // __ Средняя модель
-    if (refCuttingLine.amount_avg) {
-
-        newAmountAvg = {} as ICuttingTaskLineAmountAvg
-        Object.entries(refCuttingLine.amount_avg).forEach(([key, value]) => {
-            const amount                              = refCuttingLine.amount ? value / refCuttingLine.amount * newAmount : 0
-            newAmountAvg![key as ICuttingMachineKeys] = amount
-
-            const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
-
-            // @ts-expect-error 1111111111111111
-            newTime[arrKey] = value ? round((refCuttingLine.time[arrKey]) / value * amount) : 0 // __ Уже новое пересчитанное количество
-        })
-
-        // Object.entries(refCuttingLine.time).forEach(([key, value]) => {
-        //     const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
-        //     let amount                            = 0
-        //     if (newAmountAvg && newAmountAvg[key as ICuttingMachineKeys]) amount = newAmountAvg[key as ICuttingMachineKeys]
-        //     // newTime[arrKey] = value ? refCuttingLine.time[arrKey] / value * amount : 0 // __ Уже новое пересчитанное количество
-        // })
-    } else {
-        Object.entries(cuttingLine.time).forEach(([key, value]) => {
-            newTime[key as ICuttingMachineTimesKeys] = cuttingLine.amount ? round(value / cuttingLine.amount) * newAmount : 0
-        })
-    }
-
-    refCuttingLine.amount     = newAmount
-    refCuttingLine.amount_avg = newAmountAvg
-    // @ts-expect-error 1111111111111111
-    refCuttingLine.time       = newTime
+    const timePerPic      = cuttingLine.amount !== 0 ? cuttingLine.time / cuttingLine.amount : 0
+    refCuttingLine.time   = round(timePerPic * newAmount)
+    refCuttingLine.amount = newAmount
 
     return refCuttingLine
+
+    // let newAmountAvg: ICuttingTaskLineAmountAvg | null = null
+    // const newTime: ICuttingTaskLineTime                = {} as ICuttingTaskLineTime
+    //
+    // // __ Средняя модель
+    // if (refCuttingLine.amount_avg) {
+    //
+    //     newAmountAvg = {} as ICuttingTaskLineAmountAvg
+    //     Object.entries(refCuttingLine.amount_avg).forEach(([key, value]) => {
+    //         const amount                              = refCuttingLine.amount ? value / refCuttingLine.amount * newAmount : 0
+    //         newAmountAvg![key as ICuttingMachineKeys] = amount
+    //
+    //         const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
+    //
+    //         // @ts-expect-error 1111111111111111
+    //         newTime[arrKey] = value ? round((refCuttingLine.time[arrKey]) / value * amount) : 0 // __ Уже новое пересчитанное количество
+    //     })
+    //
+    //     // Object.entries(refCuttingLine.time).forEach(([key, value]) => {
+    //     //     const arrKey: ICuttingMachineTimesKeys = `time_${key}` as ICuttingMachineTimesKeys
+    //     //     let amount                            = 0
+    //     //     if (newAmountAvg && newAmountAvg[key as ICuttingMachineKeys]) amount = newAmountAvg[key as ICuttingMachineKeys]
+    //     //     // newTime[arrKey] = value ? refCuttingLine.time[arrKey] / value * amount : 0 // __ Уже новое пересчитанное количество
+    //     // })
+    // } else {
+    //     Object.entries(cuttingLine.time).forEach(([key, value]) => {
+    //         newTime[key as ICuttingMachineTimesKeys] = cuttingLine.amount ? round(value / cuttingLine.amount) * newAmount : 0
+    //     })
+    // }
+    //
+    // refCuttingLine.amount     = newAmount
+    // refCuttingLine.amount_avg = newAmountAvg
+    // // @ts-expect-error 1111111111111111
+    // refCuttingLine.time       = newTime
+
+    // return refCuttingLine
 }
 
 

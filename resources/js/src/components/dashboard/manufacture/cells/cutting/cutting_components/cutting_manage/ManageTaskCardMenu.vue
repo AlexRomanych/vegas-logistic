@@ -13,52 +13,52 @@
             @click="emits('moveToPanel', 'all')"
         />
 
-        <!-- __ Переместить все УШМ в другую группу -->
+        <!-- __ Переместить все элементы Стола 1 в другую группу -->
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
-            :text="activePanel === 'left' ? ' УШМ ▶' : '◀ УШМ'"
+            :text="activePanel === 'left' ? ' Стол 1 ▶' : '◀ Стол 1'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', 'universal')"
+            @click="emits('moveToPanel', CUTTING_TABLES.TABLE_1)"
         />
 
-        <!-- __ Переместить все АШМ в другую группу -->
+        <!-- __ Переместить все элементы Стола 2 в другую группу -->
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
-            :text="activePanel === 'left' ? ' АШМ ▶' : '◀ АШМ'"
+            :text="activePanel === 'left' ? ' Стол 2 ▶' : '◀ Стол 2'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', 'auto')"
+            @click="emits('moveToPanel', CUTTING_TABLES.TABLE_2)"
         />
 
-        <!-- __ Переместить все ГС в другую группу -->
+        <!-- __ Переместить все элементы Стола 3 в другую группу -->
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
-            :text="activePanel === 'left' ? ' ГС ▶' : '◀ ГС'"
+            :text="activePanel === 'left' ? ' Стол 3 ▶' : '◀ Стол 3'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', 'solid_hard')"
+            @click="emits('moveToPanel', CUTTING_TABLES.TABLE_3)"
         />
 
-        <!-- __ Переместить все ГП в другую группу -->
+        <!-- __ Переместить все элементы Стола ?? в другую группу -->
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
-            :text="activePanel === 'left' ? ' ГП ▶' : '◀ ГП'"
+            :text="activePanel === 'left' ? ' Стол ?? ▶' : '◀ Стол ??'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', 'solid_lite')"
+            @click="emits('moveToPanel', CUTTING_TABLES.TABLE_0)"
         />
 
         <!-- __ Разбить количество -->
@@ -163,6 +163,7 @@ import type { IColorTypes, ICuttingLinesPanel, ICuttingTask, ICuttingTaskLine } 
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import { CUTTING_TABLES } from '@/app/constants/cutting.ts'
 
 
 interface IProps {
@@ -190,7 +191,7 @@ const emits = defineEmits<{
 
 
 // __ Константы панелей меню
-const MENU_ITEMS_WIDTH       = 'w-[60px]'
+const MENU_ITEMS_WIDTH       = 'w-[75px]'
 const MENU_ITEMS_HEIGHT      = 'h-[35px]'
 const MENU_ITEMS_TYPE        = 'primary'
 const MENU_ITEMS_ACTIVE_TYPE = 'success'

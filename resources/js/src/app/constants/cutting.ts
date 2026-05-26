@@ -14,6 +14,7 @@ export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {
     TABLE_1,
     TABLE_2,
     TABLE_3,
+    TABLE_0,
     TABLE_UNDEFINED,
 }
 

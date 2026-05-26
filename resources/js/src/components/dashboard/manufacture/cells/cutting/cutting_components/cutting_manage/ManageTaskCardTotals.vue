@@ -15,20 +15,20 @@
         <!-- __ Количество в штуках -->
         <AppLabelTS
             :text="getTotalAmount === 0 ? '' : `${getTotalAmount.toFixed(0)} шт.`"
+            :text-size="TOTAL_ITEMS_TEXT_SIZE"
             align="center"
             height="h-[60px]"
             rounded="4"
-            :text-size="TOTAL_ITEMS_TEXT_SIZE"
             type="primary"
             width="w-[30px]"
         />
 
         <!-- __ Количество + Трудозатраты Общие -->
         <ManageItemDataLabel
-            :text-size="TOTAL_ITEMS_TEXT_SIZE"
             :align="TOTAL_ITEMS_ALIGN"
             :amount="getTotalAmount"
             :height="TOTAL_ITEMS_HEIGHT"
+            :text-size="TOTAL_ITEMS_TEXT_SIZE"
             :time="getTotalTime"
             type="danger"
             width="w-[50px]"
@@ -69,14 +69,14 @@
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
         <ManageItemDataLabel
-            v-if="amountAndTime[CUTTING_TABLES.UNKNOWN].time"
+            v-if="amountAndTime[CUTTING_TABLES.TABLE_0].amount"
             :align="TOTAL_ITEMS_ALIGN"
-            :amount="amountAndTime[CUTTING_TABLES.UNKNOWN].amount"
+            :amount="amountAndTime[CUTTING_TABLES.TABLE_0].amount"
             :height="TOTAL_ITEMS_HEIGHT"
             :text-size="TOTAL_ITEMS_TEXT_SIZE"
-            :time="amountAndTime[CUTTING_TABLES.UNKNOWN].time"
-            type="danger"
+            :time="amountAndTime[CUTTING_TABLES.TABLE_0].time"
             :width="TOTAL_ITEMS_WIDTH"
+            type="danger"
         />
 
     </div>

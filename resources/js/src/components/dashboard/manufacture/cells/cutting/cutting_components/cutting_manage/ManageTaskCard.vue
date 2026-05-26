@@ -8,7 +8,6 @@
                  tabindex="-1"
                  @keydown.esc="select(false)"
             >
-
                 <div :class="[width, height, borderColor, 'modal-container max-h-[90vh] overflow-hidden']">
 
                     <div class="flex justify-between w-full h-full items-center">
@@ -61,17 +60,19 @@
                                     :show-comments="showComments"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
-                                    :sort-auto="sortAuto"
+                                    :sort-detail="sortDetail"
                                     :sort-kant="sortKant"
+                                    :sort-machine="sortMachine"
                                     :sort-name="sortName"
                                     :sort-position="sortPosition"
                                     :sort-size="sortSize"
-                                    :sort-solid-hard="sortSolidHard"
-                                    :sort-solid-lite="sortSolidLite"
+                                    :sort-table_0="sortTable_0"
+                                    :sort-table_1="sortTable_1"
+                                    :sort-table_2="sortTable_2"
+                                    :sort-table_3="sortTable_3"
                                     :sort-textile="sortTextile"
                                     :sort-time="sortTime"
                                     :sort-tkch="sortTkch"
-                                    :sort-universal="sortUniversal"
                                     @sort-by-field="sortByField(panel, $event)"
                                     @sort-by-size="sortBySize(panel)"
                                 />
@@ -98,7 +99,6 @@
                                              @click="setActiveCuttingLine(element, panel)"
                                              @dblclick="showLineInfo(element)"
                                         >
-
                                             <ManageTaskCardItem
                                                 :cutting-line="element"
                                                 :render-data="renderData"
@@ -228,7 +228,6 @@ import {
     getCoverSizeString,
     getCuttingTaskAmountAndTime,
     getCuttingTaskModelCover, getCuttingTaskModelCoverName,
-    getCuttingTimes,
     isAverage, mergeCuttingLines,
     sortCuttingTaskLinesBySize,
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
@@ -250,6 +249,8 @@ import ManageTaskCardTotals
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
 import OrderItemInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/OrderItemInfo.vue'
+import { CUTTING_TABLES } from '@/app/constants/cutting.ts'
+import { getSewingMachineTitle } from '@/app/helpers/manufacture/helpers_textile.ts'
 // import ManageTaskCardItemInfo
 //     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/_ManageTaskCardItemInfo.vue'
 
@@ -333,20 +334,22 @@ const comment     = ref('')
 const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
 // __ Функционал меню + Сортировка
-const showComments  = ref(false)
-const showDetails   = ref(false)
-const sortPosition  = ref<ICuttingTaskCardSort>('none')
-const sortName      = ref<ICuttingTaskCardSort>('none')
-const sortUniversal = ref<ICuttingTaskCardSort>('none')
-const sortAuto      = ref<ICuttingTaskCardSort>('none')
-const sortSolidHard = ref<ICuttingTaskCardSort>('none')
-const sortSolidLite = ref<ICuttingTaskCardSort>('none')
-const sortTextile   = ref<ICuttingTaskCardSort>('none')
-const sortKant      = ref<ICuttingTaskCardSort>('none')
-const sortTkch      = ref<ICuttingTaskCardSort>('none')
-const sortAmount    = ref<ICuttingTaskCardSort>('none')
-const sortTime      = ref<ICuttingTaskCardSort>('none')
-const sortSize      = ref<ICuttingTaskCardSort>('none')
+const showComments = ref(false)
+const showDetails  = ref(false)
+const sortPosition = ref<ICuttingTaskCardSort>('none')
+const sortName     = ref<ICuttingTaskCardSort>('none')
+const sortTable_1  = ref<ICuttingTaskCardSort>('none')
+const sortTable_2  = ref<ICuttingTaskCardSort>('none')
+const sortTable_3  = ref<ICuttingTaskCardSort>('none')
+const sortTable_0  = ref<ICuttingTaskCardSort>('none')
+const sortTextile  = ref<ICuttingTaskCardSort>('none')
+const sortKant     = ref<ICuttingTaskCardSort>('none')
+const sortTkch     = ref<ICuttingTaskCardSort>('none')
+const sortAmount   = ref<ICuttingTaskCardSort>('none')
+const sortTime     = ref<ICuttingTaskCardSort>('none')
+const sortSize     = ref<ICuttingTaskCardSort>('none')
+const sortDetail   = ref<ICuttingTaskCardSort>('none')
+const sortMachine  = ref<ICuttingTaskCardSort>('none')
 
 
 // __ Стилистика
@@ -361,7 +364,7 @@ const renderData = {
     amount  : { width: 'min-w-[30px] max-w-[30px]', },
     time    : { width: 'min-w-[50px] max-w-[50px]', },
     textile : { width: 'min-w-[50px] max-w-[50px]', },
-    detail  : { width: 'min-w-[50px] max-w-[50px]', },
+    detail  : { width: 'min-w-[60px] max-w-[60px]', },
     machine : { width: 'min-w-[30px] max-w-[30px]', },
     table   : { width: 'min-w-[25px] max-w-[25px]', },
     describe: { width: 'min-w-[50px] max-w-[50px]', },
@@ -609,17 +612,17 @@ const moveToPanel = (activePanel: ICuttingLinesPanel, cuttingType: string) => {
             case 'all':
                 compareValue = true
                 break
-            case 'universal':
-                compareValue = sourceArray[i].order_line.model.main.is_universal
+            case CUTTING_TABLES.TABLE_1:
+                compareValue = sourceArray[i].table === CUTTING_TABLES.TABLE_1
                 break
-            case 'auto':
-                compareValue = sourceArray[i].order_line.model.main.is_auto
+            case CUTTING_TABLES.TABLE_2:
+                compareValue = sourceArray[i].table === CUTTING_TABLES.TABLE_2
                 break
-            case 'solid_hard':
-                compareValue = sourceArray[i].order_line.model.main.is_solid_hard
+            case CUTTING_TABLES.TABLE_3:
+                compareValue = sourceArray[i].table === CUTTING_TABLES.TABLE_3
                 break
-            case 'solid_lite':
-                compareValue = sourceArray[i].order_line.model.main.is_solid_lite
+            case CUTTING_TABLES.TABLE_0:
+                compareValue = sourceArray[i].table === CUTTING_TABLES.TABLE_0
                 break
         }
 
@@ -685,18 +688,20 @@ const addComment = async () => {
 
 // __ Меняем направление сортировки
 const changeSortDirection = (sortDirection: ICuttingTaskCardSort) => {
-    sortPosition.value  = 'none'
-    sortName.value      = 'none'
-    sortUniversal.value = 'none'
-    sortAuto.value      = 'none'
-    sortSolidHard.value = 'none'
-    sortSolidLite.value = 'none'
-    sortTextile.value   = 'none'
-    sortKant.value      = 'none'
-    sortTkch.value      = 'none'
-    sortAmount.value    = 'none'
-    sortTime.value      = 'none'
-    sortSize.value      = 'none'
+    sortPosition.value = 'none'
+    sortName.value     = 'none'
+    sortTable_1.value  = 'none'
+    sortTable_2.value  = 'none'
+    sortTable_3.value  = 'none'
+    sortTable_0.value  = 'none'
+    sortTextile.value  = 'none'
+    sortKant.value     = 'none'
+    sortTkch.value     = 'none'
+    sortAmount.value   = 'none'
+    sortTime.value     = 'none'
+    sortSize.value     = 'none'
+    sortDetail.value   = 'none'
+    sortMachine.value  = 'none'
 
     return ['none', 'desc'].includes(sortDirection) ? 'asc' : 'desc'
 }
@@ -732,21 +737,21 @@ const sortConfigs: Record<string, SortConfig> = {
                 : ''
         }
     },
-    universal  : {
+    [CUTTING_TABLES.TABLE_1]      : {
         type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_universal
+        getValue: (item) => item.table === CUTTING_TABLES.TABLE_1
     },
-    auto       : {
+    [CUTTING_TABLES.TABLE_2]      : {
         type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_auto
+        getValue: (item) => item.table === CUTTING_TABLES.TABLE_2
     },
-    solid_hard : {
+    [CUTTING_TABLES.TABLE_3]      : {
         type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_solid_hard
+        getValue: (item) => item.table === CUTTING_TABLES.TABLE_3
     },
-    solid_lite : {
+    [CUTTING_TABLES.TABLE_0]      : {
         type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_solid_lite
+        getValue: (item) => item.table === CUTTING_TABLES.TABLE_0
     },
     tkch       : {
         type    : 'string',
@@ -760,9 +765,17 @@ const sortConfigs: Record<string, SortConfig> = {
         type    : 'string',
         getValue: (item) => item.order_line.textile ?? ''
     },
+    detail     : {
+        type    : 'boolean',
+        getValue: (item) => item.is_panel
+    },
+    machine    : {
+        type    : 'string',
+        getValue: (item) => getSewingMachineTitle(item)
+    },
     time       : {
         type    : 'number',
-        getValue: (item) => Object.values(getCuttingTimes(item)).reduce((acc, value) => acc + value.time, 0)
+        getValue: (item) => item.time
     }
 }
 
@@ -802,25 +815,33 @@ const sortByField = (panel: ICuttingLinesPanel, configKey: string) => {
             sortName.value = changeSortDirection(sortName.value)
             direction      = sortName.value
             break
-        case 'universal':
-            sortUniversal.value = changeSortDirection(sortUniversal.value)
-            direction           = sortUniversal.value
+        case CUTTING_TABLES.TABLE_1:
+            sortTable_1.value = changeSortDirection(sortTable_1.value)
+            direction         = sortTable_1.value
             break
-        case 'auto':
-            sortAuto.value = changeSortDirection(sortAuto.value)
-            direction      = sortAuto.value
+        case CUTTING_TABLES.TABLE_2:
+            sortTable_2.value = changeSortDirection(sortTable_2.value)
+            direction         = sortTable_2.value
             break
-        case 'solid_hard':
-            sortSolidHard.value = changeSortDirection(sortSolidHard.value)
-            direction           = sortSolidHard.value
+        case CUTTING_TABLES.TABLE_3:
+            sortTable_3.value = changeSortDirection(sortTable_3.value)
+            direction         = sortTable_3.value
             break
-        case 'solid_lite':
-            sortSolidLite.value = changeSortDirection(sortSolidLite.value)
-            direction           = sortSolidLite.value
+        case CUTTING_TABLES.TABLE_0:
+            sortTable_0.value = changeSortDirection(sortTable_0.value)
+            direction         = sortTable_0.value
             break
         case 'textile':
             sortTextile.value = changeSortDirection(sortTextile.value)
             direction         = sortTextile.value
+            break
+        case 'detail':
+            sortDetail.value = changeSortDirection(sortDetail.value)
+            direction        = sortDetail.value
+            break
+        case 'machine':
+            sortMachine.value = changeSortDirection(sortMachine.value)
+            direction         = sortMachine.value
             break
         case 'tkch':
             sortTkch.value = changeSortDirection(sortTkch.value)
