@@ -163,6 +163,7 @@ import CuttingOperationCheck from '@/components/dashboard/manufacture/cells/cutt
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
+import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 
 
 
@@ -223,11 +224,21 @@ const getOperationValue = (schema: ICuttingOperationSchema, operation: ICuttingO
 const getOperationType = (operation: ICuttingOperation) => {
     if (!operation.active) {
         return 'danger'
-    } else if (operation.type === 'static') {
+    } else if (operation.detail === DETAIL_SIDE) {
         return 'warning'
+    } else if (operation.detail === DETAIL_PANEL) {
+        return 'indigo'
     } else {
         return 'stone'
     }
+
+    // if (!operation.active) {
+    //     return 'danger'
+    // } else if (operation.type === 'static') {
+    //     return 'warning'
+    // } else {
+    //     return 'stone'
+    // }
 }
 
 

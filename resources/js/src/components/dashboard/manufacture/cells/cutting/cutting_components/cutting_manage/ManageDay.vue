@@ -283,6 +283,7 @@
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        ok-word="Понятно"
     />
 
     <!-- __ Модальное окно для изменения/добавления комментария -->
@@ -301,7 +302,7 @@ import type {
     IModalAsyncMenu,
     IPlanMatrix, ICuttingDay,
     ICuttingTask,
-    ICuttingTaskStatusesSet, ICuttingTaskLine,
+    ICuttingTaskStatusesSet, ICuttingTaskLine, ICuttingLineTableSetData,
 } from '@/types'
 
 import { computed, inject, type Ref, ref } from 'vue'
@@ -336,7 +337,7 @@ import {
     isTaskStatusCreated, isTaskStatusRunning,
     orderCuttingTasksByStatus,
     repositionCuttingTaskLines,
-    setTaskPositionInRenderMatrix,
+    setTaskPositionInRenderMatrix, hasTaskUnknownTable,
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
@@ -550,7 +551,11 @@ const showCuttingTaskCard = async (cuttingTask: ICuttingTask) => {
 
 // __ Изменение стола
 const showCuttingTaskTables = async (cuttingTask: ICuttingTask) => {
-    taskCard.value = JSON.parse(JSON.stringify(cuttingTask)) // __ Копируем объект, чтобы не мутировал оригинал
+    // __ Копируем объект, чтобы не мутировал оригинал
+    taskCard.value = JSON.parse(JSON.stringify(cuttingTask))
+    // __ Добавляем метаданные Заявки в каждую строку
+    taskCard.value.cutting_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
+
 
     // __ Показываем модальное окно обработки СЗ
     const answer = await manageTaskTables.value!.show()
@@ -559,42 +564,61 @@ const showCuttingTaskTables = async (cuttingTask: ICuttingTask) => {
     }
 
     // __ Получаем ссылки на панели
-    const leftPanel  = manageTaskTables.value!.leftPanel
-    const rightPanel = manageTaskTables.value!.rightPanel
+    const mutations                                 = manageTaskTables.value!.mutations
+    const setTablesData: ICuttingLineTableSetData[] = mutations.map(line => ({ id: line.id, table: line.table }))
 
-    // __ Если есть правая панель, то это создание нового СЗ
-    if (rightPanel.length > 0) {
-        // __ Создаем новое СЗ на основе копии
-        const newCuttingTask = JSON.parse(JSON.stringify(cuttingTask))
+    console.log('mutations: ', setTablesData)
 
-        // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-        newCuttingTask.position += 0.1
+    const result = await cuttingStore.taskLinesTableSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        cuttingStore.setGlobalArrayChangeTables(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = 'Данные успешно обновлены'
+        await appModalAsyncMultiline.value!.show()
 
-        // __ Устанавливаем id
-        // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-        newCuttingTask.id = 0
-
-        // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
-        // leftPanel  = repositionCuttingTaskLines(leftPanel)
-        // rightPanel = repositionCuttingTaskLines(rightPanel)
-
-        // __ Обновляем глобальный state СЗ
-        // cuttingTask.cutting_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
-        // newCuttingTask.cutting_lines = rightPanel
-
-        // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-        await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel, newCuttingTask, rightPanel) // __ Тут реактивное перерисовывание
-
-        // console.log(taskCard.value)
     } else {
-        // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
-
-        // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
-        // leftPanel = repositionCuttingTaskLines(leftPanel)
-
-        // __ Обновляем глобальный state СЗ
-        await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel) // __ Тут реактивное перерисовывание
+        await showError()
     }
+
+
+
+
+
+    // // __ Если есть правая панель, то это создание нового СЗ
+    // if (rightPanel.length > 0) {
+    //     // __ Создаем новое СЗ на основе копии
+    //     const newCuttingTask = JSON.parse(JSON.stringify(cuttingTask))
+    //
+    //     // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+    //     newCuttingTask.position += 0.1
+    //
+    //     // __ Устанавливаем id
+    //     // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+    //     newCuttingTask.id = 0
+    //
+    //     // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+    //     // leftPanel  = repositionCuttingTaskLines(leftPanel)
+    //     // rightPanel = repositionCuttingTaskLines(rightPanel)
+    //
+    //     // __ Обновляем глобальный state СЗ
+    //     // cuttingTask.cutting_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+    //     // newCuttingTask.cutting_lines = rightPanel
+    //
+    //     // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+    //     await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel, newCuttingTask, rightPanel) // __ Тут реактивное перерисовывание
+    //
+    //     // console.log(taskCard.value)
+    // } else {
+    //     // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+    //
+    //     // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+    //     // leftPanel = repositionCuttingTaskLines(leftPanel)
+    //
+    //     // __ Обновляем глобальный state СЗ
+    //     await cuttingStore.addCuttingTaskToGlobal(cuttingTask, leftPanel) // __ Тут реактивное перерисовывание
+    // }
 }
 
 
@@ -680,7 +704,7 @@ const checkMove = (evt: any) => {
 }
 
 // __ Начало перетаскивания СЗ
-const startDrag = (evt: any) => {
+const startDrag = (/*evt: any*/) => {
     // const element = evt.item._underlying_vm_
     // console.log('startDrag: ', evt.oldIndex)
     // console.log('element: ', element)
@@ -1114,13 +1138,22 @@ const actionDayMenu = async () => {
         const setStatusesData = clearDay.flatMap(task => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
-            // __ и не является AVERAGE
-            if (isTaskStatusCreated(task) && !isTaskAverage(task)) {
+            // __ и не является AVERAGE и там нет нераспределенных Столов
+            if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownTable(task)) {
                 return { task: task.id, status: CUTTING_TASK_STATUSES.PENDING.ID }
+            } else {
+                // __ Тут не асинхронный вывод ошибки
             }
 
             return []
         })
+
+        if (clearDay.length !== setStatusesData.length) {
+            await showError([
+                'В дне присутствуют расчетные СЗ или',
+                'СЗ с неопределенным раскройным столом!',
+            ])
+        }
 
         await setStatuses(setStatusesData)
 

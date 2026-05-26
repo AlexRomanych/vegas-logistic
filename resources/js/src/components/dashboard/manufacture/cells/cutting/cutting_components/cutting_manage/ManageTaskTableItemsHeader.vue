@@ -17,11 +17,11 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
+            :text="'Размер' + getSortIcon(sortSize)"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortSize)"
             :width="short ? renderData.sizeShort.width : renderData.size.width"
             class="field"
-            :text="'Размер' + getSortIcon(sortName)"
             @click="emits('sortBySize')"
         />
 
@@ -29,11 +29,11 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
+            :text="'Модель' + getSortIcon(sortName)"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortName)"
             :width="short ? renderData.modelShort.width : renderData.model.width"
             class="field"
-            :text="'Модель' + getSortIcon(sortName)"
             @click="emits('sortByField', 'name_report')"
         />
 
@@ -57,7 +57,7 @@
             :type="getPositionBySort(sortTime)"
             :width="renderData.time.width"
             class="field"
-            text="Тр-ты"
+            :text="'Тр-ты' + getSortIcon(sortTime)"
             @click="emits('sortByField', 'time')"
         />
 
@@ -67,11 +67,11 @@
                 :align="DEFAULT_ALIGN"
                 :rounded="DEFAULT_ROUNDED"
                 :text-size="DEFAULT_TEXT_SIZE"
-                :type="getPositionBySort(sortUniversal)"
+                :type="getPositionBySort(sortTable_1)"
                 :width="renderData.table.width"
                 class="field"
                 text="1"
-                @click="emits('sortByField', 'universal')"
+                @click="emits('sortByField', 'table_1')"
             />
 
             <!-- __ Стол 2 -->
@@ -79,11 +79,11 @@
                 :align="DEFAULT_ALIGN"
                 :rounded="DEFAULT_ROUNDED"
                 :text-size="DEFAULT_TEXT_SIZE"
-                :type="getPositionBySort(sortAuto)"
+                :type="getPositionBySort(sortTable_2)"
                 :width="renderData.table.width"
                 class="field"
                 text="2"
-                @click="emits('sortByField', 'auto')"
+                @click="emits('sortByField', 'table_2')"
             />
 
             <!-- __ Стол 3 -->
@@ -91,11 +91,11 @@
                 :align="DEFAULT_ALIGN"
                 :rounded="DEFAULT_ROUNDED"
                 :text-size="DEFAULT_TEXT_SIZE"
-                :type="getPositionBySort(sortSolidHard)"
+                :type="getPositionBySort(sortTable_3)"
                 :width="renderData.table.width"
                 class="field"
                 text="3"
-                @click="emits('sortByField', 'solid_hard')"
+                @click="emits('sortByField', 'table_3')"
             />
 
             <!-- __ Неопознанные -->
@@ -103,10 +103,11 @@
                 :align="DEFAULT_ALIGN"
                 :rounded="DEFAULT_ROUNDED"
                 :text-size="DEFAULT_TEXT_SIZE"
-                :type="DEFAULT_TYPE"
+                :type="getPositionBySort(sortTable_0)"
                 :width="renderData.table.width"
                 class="field"
                 text="??"
+                @click="emits('sortByField', 'table_0')"
             />
         </template>
 
@@ -115,7 +116,7 @@
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortTextile)"
+            :type="getPositionBySort(sortMachine)"
             :width="renderData.machine.width"
             class="field"
             text="ШМ"
@@ -126,11 +127,11 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
+            :text="short ? 'Эл.' : 'Элемент'"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortTextile)"
+            :type="getPositionBySort(sortDetail)"
             :width="short ? renderData.detailShort.width : renderData.detail.width"
             class="field"
-            :text="short ? 'Эл.' : 'Элемент'"
             @click="emits('sortByField', 'detail')"
         />
 
@@ -143,82 +144,21 @@
             :type="getPositionBySort(sortTextile)"
             :width="renderData.textile.width"
             class="field"
-            text="Ткань"
+            :text="'Ткань' + getSortIcon(sortTextile)"
             @click="emits('sortByField', 'textile')"
         />
 
-        <!-- __ Типовая конструкция чехла (ТКЧ) -->
+        <!-- __ Номер заявки -->
         <AppLabelTS
             v-if="showDetails"
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortTkch)"
-            :width="renderData.tkch.width"
+            :type="getPositionBySort(sortOrder)"
+            :width="renderData.order.width"
             class="field"
-            text="ТКЧ"
-            @click="emits('sortByField', 'tkch')"
-        />
-
-        <!-- __ Кант -->
-        <AppLabelTS
-            v-if="showDetails"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortKant)"
-            :width="renderData.kant.width"
-            class="field"
-            text="Кант"
-            @click="emits('sortByField', 'kant')"
-        />
-
-        <!-- __ Состав -->
-        <AppLabelTS
-            v-if="showComments"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.describe.width"
-            class="field"
-            text="Состав"
-        />
-
-        <!-- __ Примечание 1 -->
-        <AppLabelTS
-            v-if="showComments"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.describe.width"
-            class="field"
-            text="Прим. 1"
-        />
-
-        <!-- __ Примечание 2 -->
-        <AppLabelTS
-            v-if="showComments"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.describe.width"
-            class="field"
-            text="Прим. 2"
-        />
-
-        <!-- __ Примечание 3 -->
-        <AppLabelTS
-            v-if="showComments"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="renderData.describe.width"
-            class="field"
-            text="Прим. 3"
+            :text="'Заявка' + getSortIcon(sortOrder)"
+            @click="emits('sortByField', 'order')"
         />
 
     </div>
@@ -238,39 +178,39 @@ interface IProps {
     renderData: IRenderCuttingLineData
     panel: ICuttingTablePanel
     activePanel: ICuttingTablePanel
-    showComments?: boolean
     showDetails?: boolean
     short?: boolean
     sortPosition?: ICuttingTaskCardSort
     sortName?: ICuttingTaskCardSort
-    sortUniversal?: ICuttingTaskCardSort
-    sortAuto?: ICuttingTaskCardSort
-    sortSolidHard?: ICuttingTaskCardSort
-    sortSolidLite?: ICuttingTaskCardSort
+    sortTable_1?: ICuttingTaskCardSort
+    sortTable_2?: ICuttingTaskCardSort
+    sortTable_3?: ICuttingTaskCardSort
+    sortTable_0?: ICuttingTaskCardSort
     sortTextile?: ICuttingTaskCardSort
-    sortKant?: ICuttingTaskCardSort
-    sortTkch?: ICuttingTaskCardSort
+    sortOrder?: ICuttingTaskCardSort
     sortAmount?: ICuttingTaskCardSort
     sortTime?: ICuttingTaskCardSort
     sortSize?: ICuttingTaskCardSort
+    sortDetail?: ICuttingTaskCardSort
+    sortMachine?: ICuttingTaskCardSort
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    showComments : false,
-    showDetails  : false,
-    short        : false,
-    sortPosition : 'none',
-    sortName     : 'none',
-    sortUniversal: 'none',
-    sortAuto     : 'none',
-    sortSolidHard: 'none',
-    sortSolidLite: 'none',
-    sortTextile  : 'none',
-    sortKant     : 'none',
-    sortTkch     : 'none',
-    sortAmount   : 'none',
-    sortTime     : 'none',
-    sortSize     : 'none',
+    showDetails : false,
+    short       : false,
+    sortPosition: 'none',
+    sortName    : 'none',
+    sortTable_1 : 'none',
+    sortTable_2 : 'none',
+    sortTable_3 : 'none',
+    sortTable_0 : 'none',
+    sortTextile : 'none',
+    sortAmount  : 'none',
+    sortTime    : 'none',
+    sortSize    : 'none',
+    sortOrder   : 'none',
+    sortDetail  : 'none',
+    sortMachine : 'none',
 })
 
 

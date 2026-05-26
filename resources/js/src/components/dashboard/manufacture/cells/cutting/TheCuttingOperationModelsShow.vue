@@ -304,6 +304,7 @@ import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 
 const cuttingStore = useCuttingStore()
 
@@ -386,12 +387,23 @@ const getOperationValue = (model: ICuttingOperationModel, operation: ICuttingOpe
 const getOperationType = (operation: ICuttingOperation) => {
     if (!operation.active) {
         return 'danger'
-    } else if (operation.type === 'static') {
+    } else if (operation.detail === DETAIL_SIDE) {
         return 'warning'
+    } else if (operation.detail === DETAIL_PANEL) {
+        return 'indigo'
     } else {
         return 'stone'
     }
+
+    // if (!operation.active) {
+    //     return 'danger'
+    // } else if (operation.type === 'static') {
+    //     return 'warning'
+    // } else {
+    //     return 'stone'
+    // }
 }
+
 
 // __ Получаем тип ячейки
 const getType = (model: ICuttingOperationModel, operation: ICuttingOperation) => {

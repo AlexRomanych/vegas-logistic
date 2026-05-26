@@ -207,6 +207,7 @@ Route::prefix('cutting')
         Route::post('tasks/update', [CellCuttingTaskController::class, 'updateCuttingTasks']);
         Route::post('tasks/comment', [CellCuttingTaskController::class, 'setCuttingTaskComment']);
         Route::post('tasks/action/set', [CellCuttingTaskController::class, 'setCuttingTaskActionAt']);
+        Route::post('tasks/lines/table/set', [CellCuttingTaskController::class, 'taskLinesTableSet']);
         Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);
         Route::post('tasks/line/false', [CellCuttingTaskController::class, 'setCuttingTaskLinesFalse']);
         Route::post('tasks/line/reset', [CellCuttingTaskController::class, 'setCuttingTaskLinesReset']);

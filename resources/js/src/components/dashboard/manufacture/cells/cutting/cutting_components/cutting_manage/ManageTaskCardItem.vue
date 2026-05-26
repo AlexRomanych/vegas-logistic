@@ -95,7 +95,7 @@
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForTable(CUTTING_TABLES.UNKNOWN)"
+            :type="getTypeForTable(CUTTING_TABLES.TABLE_UNDEFINED)"
             :width="renderData.table.width"
             class="field"
             text="??"
@@ -216,7 +216,7 @@ import type {
     IRenderCuttingLineData
 } from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
 
-import { CUTTING_MACHINES, CUTTING_TABLES, DETAIL_PANEL_TITLE, DETAIL_SIDE_TITLE_SHORT } from '@/app/constants/cutting.ts'
+import { CUTTING_TABLES, DETAIL_PANEL_TITLE, DETAIL_SIDE_TITLE_SHORT } from '@/app/constants/cutting.ts'
 
 
 import { storeToRefs } from 'pinia'
@@ -279,7 +279,7 @@ const getTypeForTable = (cuttingTableTarget: ICuttingTableKeys) => {
 
     // !!! Порядок важен !!!
     if (table.value === cuttingTableTarget) {
-        if (cuttingTableTarget === CUTTING_MACHINES.UNKNOWN) {
+        if (cuttingTableTarget === CUTTING_TABLES.TABLE_UNDEFINED) {
             return 'danger'
         }
 
@@ -294,7 +294,6 @@ const getTime = computed(() => getTimeString(props.cuttingLine, true).replaceAll
 
 // __ Получаем размер чехла (Высота из размеров чехла модели)
 const getSize = computed(() => getCoverSizeString(props.cuttingLine))
-
 
 const sewingMachine = computed(() => getSewingMachineTitle(props.cuttingLine))
 

@@ -33,157 +33,176 @@ final class CuttingService
         int $orderId,
         string|null $plannedDate = null
     ): ?CuttingTask {
-         try {
-        // __ Проверяем на существование заказа
-        $order = Order::query()->with(['lines', 'client'])->find($orderId);
-        if (!$order) {
-            return null;
-        }
+        try {
+            // __ Проверяем на существование заказа
+            $order = Order::query()->with(['lines', 'client'])->find($orderId);
+            if (!$order) {
+                return null;
+            }
 
-        if (!(is_null($plannedDate) || $plannedDate === '')) {
-            $plannedDate = normalizeToCarbon($plannedDate);
-        } else {
-            // __ Получаем смещение в днях для Пошива
-            $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
-            $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
-        }
+            if (!(is_null($plannedDate) || $plannedDate === '')) {
+                $plannedDate = normalizeToCarbon($plannedDate);
+            } else {
+                // __ Получаем смещение в днях для Пошива
+                $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
+                $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
+            }
 
-        $createdTask = null;
-        // DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
+            $createdTask = null;
+            // DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
 
-        // __ Создаем СЗ
-        $createdTask = CuttingTask::query()->create([
-            'action_at' => $plannedDate,
-            'order_id'  => $order->id,
-            'position'  => self::getCuttingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для новой СЗ
-        ]);
-        if (!$createdTask) {
-            throw new Exception('Failed to create CuttingTask');
-        }
+            // __ Создаем СЗ
+            $createdTask = CuttingTask::query()->create([
+                'action_at' => $plannedDate,
+                'order_id'  => $order->id,
+                'position'  => self::getCuttingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для новой СЗ
+            ]);
+            if (!$createdTask) {
+                throw new Exception('Failed to create CuttingTask');
+            }
 
-        // __ Создаем контент (строки) СЗ
-        $position = 1;
-        foreach ($order->lines as $line) {
-            // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
-            // if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
-            //     $position = 0;
-            // }
+            // __ Создаем контент (строки) СЗ
+            $position = 1;
+            foreach ($order->lines as $line) {
+                // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
+                // if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
+                //     $position = 0;
+                // }
 
-            // __ Получаем трудозатраты
-            /** @noinspection DuplicatedCode */
-            $cuttingTimeLabor = new CuttingTimeLabor(
-                model: $line->model_code_1c,
-                size: $line->size,
-                amount: $line->amount,
-            );
+                // __ Получаем трудозатраты
+                /** @noinspection DuplicatedCode */
+                $cuttingTimeLabor = new CuttingTimeLabor(
+                    model: $line->model_code_1c,
+                    size: $line->size,
+                    amount: $line->amount,
+                );
 
+                // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
+                // __ Для каждой ШМ записываем отдельно
+                $cuttingTables = [
+                    CuttingTaskLine::FIELD_TABLE_1   => [
+                        'time'   => $cuttingTimeLabor->getTimeTable_1(),
+                        'amount' => $cuttingTimeLabor->getAmountTable_1()
+                    ],
+                    CuttingTaskLine::FIELD_TABLE_2   => [
+                        'time'   => $cuttingTimeLabor->getTimeTable_2(),
+                        'amount' => $cuttingTimeLabor->getAmountTable_2()
+                    ],
+                    CuttingTaskLine::FIELD_TABLE_3   => [
+                        'time'   => $cuttingTimeLabor->getTimeTable_3(),
+                        'amount' => $cuttingTimeLabor->getAmountTable_3()
+                    ],
+                    CuttingTaskLine::FIELD_UNDEFINED => [
+                        'time'   => $cuttingTimeLabor->getTimeUndefined(),
+                        'amount' => $cuttingTimeLabor->getAmountUndefined()
+                    ],
+                ];
 
-            // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
-            // __ Для каждой ШМ записываем отдельно
-            $cuttingTables = [
-                CuttingTaskLine::FIELD_TABLE_1   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_1(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_1()
-                ],
-                CuttingTaskLine::FIELD_TABLE_2   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_2(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_2()
-                ],
-                CuttingTaskLine::FIELD_TABLE_3   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_3(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_3()
-                ],
-                CuttingTaskLine::FIELD_UNDEFINED => [
-                    'time'   => $cuttingTimeLabor->getTimeUndefined(),
-                    'amount' => $cuttingTimeLabor->getAmountUndefined()
-                ],
-            ];
+                foreach ($cuttingTables as $table => $data) {
+                    if ($data['amount'] < 1) {
+                        continue;
+                    }
 
-            foreach ($cuttingTables as $table => $data) {
-                if ($data['amount'] < 1) {
-                    continue;
-                }
+                    // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
+                    // __ Пока отключаем, потому что может прилететь 314, а там непонятно что
+                    //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
+                    //    continue;
+                    //}
 
-                // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
-                // __ Пока отключаем, потому что может прилететь 314, а там непонятно что
-                //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
-                //    continue;
-                //}
+                    // __ Получаем стол
+                    //$targetTable = CuttingService::getTableByModel($line->model_code_1c);
+                    $hasPanel    = CuttingService::hasPanel($line->model_code_1c);
+                    $hasSide     = CuttingService::hasSide($line->model_code_1c);
 
-                // __ Получаем стол
-                $targetTable = CuttingService::getTableByModel($line->model_code_1c);
-                $hasPanel    = CuttingService::hasPanel($line->model_code_1c);
-                $hasSide     = CuttingService::hasSide($line->model_code_1c);
+                    $workTable = $table; // __ берем стол из объекта времени, он там определяеся
 
-                $panelTaskLine = CuttingTaskLine::query()->create([
-                    'cutting_task_id' => $createdTask->id,
-                    'order_line_id'   => $line->id,
-                    'amount'          => $data['amount'],
-                    'position'        => $position++,
-                    'time'            => $data['time'],
-                    'table'           => $targetTable,
+                    // __ Обрабатываем ситуацию, когда у чехла есть и Крышка и Боковина, но система выдает 3 Стол
+                    // __ Отправляем Крышки на 2 Стол, а Боковины на 3 Стол
+                    if ($workTable === CuttingTaskLine::FIELD_TABLE_3 && $hasSide && $hasPanel) {
+                        $workTable = CuttingTaskLine::FIELD_TABLE_2;
+                    }
 
-                    // __ Задаем детальки
-                    'is_panel'        => true,
-                    'has_panel'       => $hasPanel,
-                    'is_side'         => false,
-                    'has_side'        => $hasSide,
+                    $panelTaskLine = CuttingTaskLine::query()->create([
+                        'cutting_task_id' => $createdTask->id,
+                        'order_line_id'   => $line->id,
+                        'amount'          => $data['amount'],
+                        'position'        => $position++,
+                        'time'            => $data['time'],
+                        'table'           => $workTable,
+                        //'table'           => $targetTable,
 
-                    // __ Задаем подмену свойств
-                    'phantom'         => $table,
-                    'phantom_json'    => [$table => true],
-                ]);
+                        // __ Задаем детальки
+                        'is_panel'        => true,
+                        'has_panel'       => $hasPanel,
+                        'is_side'         => false,
+                        'has_side'        => $hasSide,
 
-                // __ Если нет Боковины у Изделтя, то пропускаем
-                if (!$hasSide) {
-                    continue;
-                }
+                        // __ Задаем подмену свойств
+                        'phantom'         => $table,
+                        'phantom_json'    => [$table => true],
+                    ]);
 
-                try {
+                    //if ($table === CuttingTaskLine::FIELD_TABLE_3) {
+                    //    $lineArray = $line->toArray();
+                    //    $panelTaskLineArray = $panelTaskLine->toArray();
+                    //    $a = 0;
+                    //}
 
-                // __ Создаем Боковину
-                $baseTaskLine = CuttingTaskLine::query()->create([
-                    'cutting_task_id' => $createdTask->id,
-                    'order_line_id'   => $line->id,
-                    'parent_id'       => $panelTaskLine->id,                // __ Указываем родительскую панельку
-                    'amount'          => $data['amount'],
-                    'position'        => $position++,
-                    'time'            => $data['time'],
-                    'table'           => $targetTable === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,    // __ Все детальки отправляем на Стол 3
+                    // __ Если нет Боковины у Изделия, то пропускаем
+                    if (!$hasSide) {
+                        continue;
+                    }
 
-                    // __ Задаем детальки
-                    'is_panel'        => false,
-                    'has_panel'       => false,
-                    'is_side'         => true,
-                    'has_side'        => false,
+                    try {
+                        // __ Создаем Боковину
+                        $baseTaskLine = CuttingTaskLine::query()->create([
+                            'cutting_task_id' => $createdTask->id,
+                            'order_line_id'   => $line->id,
+                            'parent_id'       => $panelTaskLine->id,
+                            // __ Указываем родительскую панельку
+                            'amount'          => $data['amount'],
+                            'position'        => $position++,
+                            'time'            => $data['time'],
+                            'table'           => $table === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
+                            //'table'           => $targetTable === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
+                            // __ Все детальки отправляем на Стол 3
 
-                    // __ Задаем подмену свойств
-                    'phantom'         => $table,
-                    'phantom_json'    => [$table => true],
-                ]);
+                            // __ Задаем детальки
+                            'is_panel'        => false,
+                            'has_panel'       => false,
+                            'is_side'         => true,
+                            'has_side'        => false,
 
-                } catch (Exception $e) {
-                    $err = $e->getMessage();
-                    continue;
+                            // __ Задаем подмену свойств
+                            'phantom'         => $table,
+                            'phantom_json'    => [$table => true],
+                        ]);
+
+                        //$b = $baseTaskLine->toArray();
+                        //$c = 0;
+
+                    } catch (Exception $e) {
+                        $err = $e->getMessage();
+                        continue;
+                    }
+
                 }
             }
+
+            // __ Создаем запись в Статусе: Создано
+            $createdTask->statuses()->attach([
+                CuttingTaskStatus::CUTTING_STATUS_CREATED_ID => [
+                    'set_at'     => now(),
+                    'created_by' => auth()->id(),
+                ]
+            ]);
+
+            // });
+            return $createdTask;
+        } catch (Exception|Throwable $e) {
+            $a = 0;
+            return EndPointStaticRequestAnswer::fail($e);
         }
-
-        // __ Создаем запись в Статусе: Создано
-        $createdTask->statuses()->attach([
-            CuttingTaskStatus::CUTTING_STATUS_CREATED_ID => [
-                'set_at'     => now(),
-                'created_by' => auth()->id(),
-            ]
-        ]);
-
-        // });
-        return $createdTask;
-         } catch (Exception|Throwable $e) {
-             return EndPointStaticRequestAnswer::fail($e);
-         }
-
-
     }
 
 
@@ -699,10 +718,16 @@ final class CuttingService
     public static function test()
     {
         $model = ModelsService::getModel('000000137');
+        $hasSide = self::hasSide($model);
+        $table = self::getTableByModel($model);
+
         //$model = ModelsService::getModel('000002853');
         $modelArray = $model->toArray();
 
-        $table = self::getTableByModel($model);
+
+
+
+
 
         $a = 0;
     }

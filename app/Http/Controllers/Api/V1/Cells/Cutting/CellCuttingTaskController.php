@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 // use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class CellCuttingTaskController extends Controller
@@ -38,11 +39,11 @@ class CellCuttingTaskController extends Controller
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
-                $end = Carbon::parse($validated['period']['end']);
+                $end   = Carbon::parse($validated['period']['end']);
             } else {
                 $period = DefaultsService::getDefaultPeriodPlanLoads();
-                $start = Carbon::parse($period->getStart());
-                $end = Carbon::parse($period->getEnd());
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
             }
 
             $cuttingTasks = CuttingTask::query()
@@ -168,7 +169,7 @@ class CellCuttingTaskController extends Controller
                 'statuses.*' => 'integer|exists:cutting_task_statuses,id',
             ]);
 
-            $data = $validated['statuses'] ?? null;
+            $data         = $validated['statuses'] ?? null;
             $cuttingTasks = CuttingTask::query()
                 ->byStatus($data)
                 // ->whereBetween('action_at', [
@@ -224,14 +225,14 @@ class CellCuttingTaskController extends Controller
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
-                $end = Carbon::parse($validated['period']['end']);
+                $end   = Carbon::parse($validated['period']['end']);
             } else {
                 $period = DefaultsService::getDefaultPeriodCuttingTaskArchive();
-                $start = Carbon::parse($period->getStart());
-                $end = Carbon::parse($period->getEnd());
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
             }
 
-            $data = $validated['statuses'] ?? null;
+            $data         = $validated['statuses'] ?? null;
             $cuttingTasks = CuttingTask::query()
                 ->byStatus($data)
                 ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
@@ -282,7 +283,7 @@ class CellCuttingTaskController extends Controller
                 'statuses.*' => 'integer|exists:cutting_task_statuses,id',
             ]);
 
-            $data = $validated['statuses'] ?? null;
+            $data        = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $cuttingTasks = CuttingTask::query()
@@ -334,7 +335,7 @@ class CellCuttingTaskController extends Controller
                 'statuses.*' => 'integer|exists:cutting_task_statuses,id',
             ]);
 
-            $data = $validated['statuses'] ?? null;
+            $data        = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $cuttingTasks = CuttingTask::query()
@@ -386,7 +387,7 @@ class CellCuttingTaskController extends Controller
                 'statuses.*' => 'integer|exists:cutting_task_statuses,id',
             ]);
 
-            $data = $validated['statuses'] ?? null;
+            $data        = $validated['statuses'] ?? null;
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $cuttingTasks = CuttingTask::query()
@@ -409,6 +410,7 @@ class CellCuttingTaskController extends Controller
 
 
     // TODO: Union into Textile!!!
+
     /**
      * ___ Обновляем СЗ на Пошив
      * @param SyncCuttingTasksRequest $request
@@ -428,10 +430,10 @@ class CellCuttingTaskController extends Controller
                 usort($diffs, function ($a, $b) {
                     // Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                     $priorities = fn($type) => match ($type) {
-                        'ADDED' => 1,
+                        'ADDED'   => 1,
                         'UPDATED' => 2,
                         'DELETED' => 3,
-                        default => 4,
+                        default   => 4,
                     };
 
                     return $priorities($a['type']) <=> $priorities($b['type']);
@@ -474,7 +476,7 @@ class CellCuttingTaskController extends Controller
                             ];
 
                             $idMap[$diff['taskId']] = $newTask->id;
-                            $currentTaskId = $newTask->id;
+                            $currentTaskId          = $newTask->id;
 
                             break;
 
@@ -509,10 +511,10 @@ class CellCuttingTaskController extends Controller
                         usort($diffs, function ($a, $b) {
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
-                                'ADDED' => 1,
+                                'ADDED'   => 1,
                                 'UPDATED' => 2,
                                 'DELETED' => 3,
-                                default => 4,
+                                default   => 4,
                             };
 
                             return $priorities($a['type']) <=> $priorities($b['type']);
@@ -581,11 +583,9 @@ class CellCuttingTaskController extends Controller
                 // __ то устанавливаем его
                 foreach ($diffs as $diff) {
                     if (!is_null($diff['taskChanges']) && !is_null($diff['taskChanges']['status'])) {
-
                         // __ Пропускаем тот случай, кагда с фронта прилетает создание нового СЗ (ADDED)
                         // __ Это обрабатываем выше
                         if ($diff['taskId'] !== 0) {
-
                             // __ Меняем статус только в случае, если нужно установить статус "Выполняется"
                             // __ Случай, когда перетасктваем СЗ в день, гже есть статус "Выполняется"
                             // __ Остальное не трогаем, потому что начинаются проблемы, такой костыль получился
@@ -651,9 +651,9 @@ class CellCuttingTaskController extends Controller
             }
 
             // __ ШАГ 2: Собираем финальный запрос
-            $casesActionAt = [];
+            $casesActionAt  = [];
             $paramsActionAt = [];
-            $casesPosition = [];
+            $casesPosition  = [];
             $paramsPosition = [];
 
             foreach ($rows as $row) {
@@ -667,16 +667,16 @@ class CellCuttingTaskController extends Controller
                 }
             }
 
-            $setParts = [];
+            $setParts    = [];
             $finalParams = [];
 
             if (!empty($casesActionAt)) {
-                $setParts[] = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
+                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
                 $finalParams = array_merge($finalParams, $paramsActionAt);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[] = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -685,7 +685,7 @@ class CellCuttingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
@@ -706,7 +706,7 @@ class CellCuttingTaskController extends Controller
 
         // __ 1. Находим только те ID, у которых действительно меняется позиция (чтобы не уводить в минус лишнее)
         $rowsWithPosition = array_filter($rows, fn($row) => !is_null($row['position'] ?? null));
-        $idsForMinus = array_column($rowsWithPosition, 'id');
+        $idsForMinus      = array_column($rowsWithPosition, 'id');
 
         // __ 2. Находим все ID, которые участвуют в обновлении (хоть позиция, хоть amount)
         $allIds = array_column($rows, 'id');
@@ -722,9 +722,9 @@ class CellCuttingTaskController extends Controller
             }
 
             // __ ШАГ 2: Собираем финальный запрос
-            $casesAmount = [];
-            $paramsAmount = [];
-            $casesPosition = [];
+            $casesAmount    = [];
+            $paramsAmount   = [];
+            $casesPosition  = [];
             $paramsPosition = [];
             // $casesTaskId    = [];
             // $paramsTaskId   = [];
@@ -744,16 +744,16 @@ class CellCuttingTaskController extends Controller
                 // }
             }
 
-            $setParts = [];
+            $setParts    = [];
             $finalParams = [];
 
             if (!empty($casesAmount)) {
-                $setParts[] = "amount = CASE " . implode(' ', $casesAmount) . " ELSE amount END";
+                $setParts[]  = "amount = CASE " . implode(' ', $casesAmount) . " ELSE amount END";
                 $finalParams = array_merge($finalParams, $paramsAmount);
             }
 
             if (!empty($casesPosition)) {
-                $setParts[] = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
             }
 
@@ -767,7 +767,7 @@ class CellCuttingTaskController extends Controller
             }
 
             $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
-            $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
 
             // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
             DB::update($sql, array_merge($finalParams, $allIds));
@@ -825,9 +825,9 @@ class CellCuttingTaskController extends Controller
             DB::transaction(function () use ($validated) {
                 // __ Получаем само СЗ и его старую дату + применяем изменения
                 $cuttingTask = CuttingTask::query()->find($validated['id']);
-                $oldDate = $cuttingTask->action_at;
+                $oldDate     = $cuttingTask->action_at;
                 // __ Устанавливаем позицию в отрицательную зону, так как наверняка в день, куда перемещаем уже есть такая позиция
-                $cuttingTask->position = -1 * $cuttingTask->id;
+                $cuttingTask->position  = -1 * $cuttingTask->id;
                 $cuttingTask->action_at = Carbon::parse($validated['date'])->startOfDay()->format(RETURN_DATE_TIME_FORMAT);
                 $cuttingTask->save();
 
@@ -868,9 +868,9 @@ class CellCuttingTaskController extends Controller
                     $cuttingTasks = $i == 0 ? $cuttingTasksFrom : $cuttingTasksTo;
 
                     $tasksToUpdate = [];
-                    $position = 1;
+                    $position      = 1;
                     foreach ($cuttingTasks as $task) {
-                      if ($task->position !== $position) {
+                        if ($task->position !== $position) {
                             $tasksToUpdate[] = [
                                 'id'        => $task->id,
                                 'action_at' => null,        // оставляем дату прежней
@@ -942,7 +942,7 @@ class CellCuttingTaskController extends Controller
                     throw new Exception('Missing cutting task line with id: ' . $id . '.');
                 }
 
-                $line->false_at = now();
+                $line->false_at     = now();
                 $line->false_reason = $validated['reason'];
 
                 $history = $line->false_history;
@@ -950,13 +950,13 @@ class CellCuttingTaskController extends Controller
                     $history = [];
                 }
 
-                $history[] = [
+                $history[]           = [
                     'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
                     'by'     => auth()->id(),
                     'reason' => $validated['reason'],
                 ];
                 $line->false_history = $history;
-                $line->finished_at = null;
+                $line->finished_at   = null;
                 $line->save();
             }
 
@@ -986,8 +986,8 @@ class CellCuttingTaskController extends Controller
                     throw new Exception('Missing cutting task line with id: ' . $id . '.');
                 }
 
-                $line->finished_at = null;
-                $line->false_at = null;
+                $line->finished_at  = null;
+                $line->false_at     = null;
                 $line->false_reason = null;
                 $line->save();
             }
@@ -995,6 +995,93 @@ class CellCuttingTaskController extends Controller
             $lines = CuttingTaskLine::query()->whereIn('id', $validated['ids'])->get();
             return CuttingTaskLineResource::collection($lines);
         } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    public function taskLinesTableSet(Request $request)
+    {
+        try {
+            $all = $request->all();
+
+            $validated = $request->validate([
+                // __ Проверяем, что 'data' — это обязательный, не пустой массив
+                'data'         => 'required|array|min:1',
+
+                // __ Проверяем ID внутри каждого элемента массива
+                'data.*.id'    => 'required|integer|exists:cutting_task_lines,id',
+
+                // __ Проверяем строку 'table' на соответствие конкретным значениям
+                'data.*.table' => [
+                    'required',
+                    'string',
+                    Rule::in([
+                        CuttingTaskLine::FIELD_TABLE_1,
+                        CuttingTaskLine::FIELD_TABLE_2,
+                        CuttingTaskLine::FIELD_TABLE_3
+                    ]),
+                ],
+            ]);
+
+            // __ Валидация с кастомными сообщениями
+            //$validated = $request->validate([
+            //    'data' => 'required|array|min:1',
+            //    'data.*.id' => 'required|integer|exists:cutting_task_lines,id',
+            //    'data.*.table' => ['required', 'string', Rule::in([CuttingTaskLine::FIELD_TABLE_1, CuttingTaskLine::FIELD_TABLE_2, CuttingTaskLine::FIELD_TABLE_3])],
+            //], [
+            //    'data.required' => 'Массив данных обязателен для заполнения.',
+            //    'data.min' => 'Массив данных не должен быть пустым.',
+            //    'data.*.id.exists' => 'Выбранный ID задачи не существует в базе данных.',
+            //    'data.*.table.in' => 'Поле table должно принимать значения: table_1, table_2 или table_3.',
+            //]);
+
+            $data = $validated['data'];
+            DB::transaction(function () use ($data) {
+                foreach ($data as $item) {
+                    $line = CuttingTaskLine::query()->find($item['id']);
+                    if (!$line) {
+                        throw new Exception('Missing cutting task line with id: ' . $item['id'] . '.');
+                    }
+                    $line->table = $item['table'];
+                    $line->save();
+                }
+            });
+
+
+            // __ Скрипт для обновления одним запросом
+            //// Строим сырой запрос для массового обновления (Bulk Update)
+            //// Формируем плейсхолдеры (?, ?) для каждого элемента массива данных
+            //$valuePairs = array_map(function () {
+            //    return '(?, ?)';
+            //}, $data);
+            //
+            //$valuesSql = implode(', ', $valuePairs);
+            //
+            //// Собираем все значения в один плоский массив для безопасной привязки параметров (SQL Injection Protection)
+            //$bindings = [];
+            //foreach ($data as $item) {
+            //    $bindings[] = $item['id'];
+            //    $bindings[] = $item['table'];
+            //}
+            //
+            //// Итоговый SQL-запрос для PostgreSQL
+            ///** @noinspection SqlDialectInspection */
+            //$query = "
+            //    UPDATE cutting_task_lines AS c
+            //    SET \"table\" = v.new_table
+            //    FROM (VALUES {$valuesSql}) AS v(id, new_table)
+            //    WHERE c.id = CAST(v.id AS INTEGER)
+            //";
+            //
+            //// Выполняем одним запросом внутри транзакции
+            //DB::transaction(function () use ($query, $bindings) {
+            //    DB::update($query, $bindings);
+            //});
+
+
+            return EndPointStaticRequestAnswer::ok('Изменено успешно');
+        } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }

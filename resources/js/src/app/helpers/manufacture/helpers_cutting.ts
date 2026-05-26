@@ -9,7 +9,15 @@ import type {
     ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys,
 } from '@/types'
 
-import { CUTTING_MACHINES, CUTTING_TABLES, CUTTING_TASK_DRAFT, CUTTING_TASK_GROUP_RULES, CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
+import {
+    CUTTING_MACHINES,
+    CUTTING_TABLES,
+    CUTTING_TASK_DRAFT,
+    CUTTING_TASK_GROUP_RULES,
+    CUTTING_TASK_STATUSES,
+    DETAIL_PANEL,
+    DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE
+} from '@/app/constants/cutting.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
@@ -1202,9 +1210,9 @@ export function mergeCuttingLines(lines: ICuttingTaskLine[]): ICuttingTaskLine[]
 
     const grouped = lines.reduce((acc, line) => {
 
-        // __ Создаем составной ключ: ID + Тип машины
-        const machineType = line.order_line.model.main.machine_type
-        const groupKey    = `${line.order_line.id}_${machineType}`
+        // __ Создаем составной ключ: ID + Раскройный Стол
+        const table    = line.table
+        const groupKey = `${line.order_line.id}_${table}`
 
         if (!acc[groupKey]) {
             acc[groupKey] = JSON.parse(JSON.stringify(line))
@@ -1280,7 +1288,7 @@ export function isTaskStatusRunning(entity: ICuttingTask | ICuttingTaskStatus | 
 // __ Проверяем, является ли СЗ расчетным (AVERAGE) или нет
 export function isTaskAverage(entity: ICuttingTask | ICuttingTaskLine[]) {
 
-    let items
+    let items: ICuttingTaskLine[]
     if (isCuttingTask(entity)) {
         items = entity.cutting_lines
     } else if (Array.isArray(entity)) {
@@ -1291,6 +1299,26 @@ export function isTaskAverage(entity: ICuttingTask | ICuttingTaskLine[]) {
 
     for (let i = 0; i < items.length; i++) {
         if (items[i].element_type.is_average) return true
+    }
+
+    return false
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли СЗ со столом Undefined
+export function hasTaskUnknownTable(entity: ICuttingTask | ICuttingTaskLine[]) {
+
+    let items: ICuttingTaskLine[]
+    if (isCuttingTask(entity)) {
+        items = entity.cutting_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        throw new Error('isTaskAverage: unknown incoming data type')
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].table === CUTTING_TABLES.TABLE_UNDEFINED) return true
     }
 
     return false
@@ -1797,6 +1825,19 @@ export function sortCuttingTaskLinesByAmountStableSize(
     return sourceArray
 }
 
+// __ Возвращаем печатное название детальки
+export function getCuttingDetailTitle(detailType: string | null | undefined): string {
+    if (!detailType) {
+        return ''
+    }
+    switch (detailType) {
+        case DETAIL_PANEL:
+            return DETAIL_PANEL_TITLE
+        case DETAIL_SIDE:
+            return DETAIL_SIDE_TITLE
+    }
+    return ''
+}
 
 /**
  * __ Вычисляет время завершения смены и возвращает таймстемп

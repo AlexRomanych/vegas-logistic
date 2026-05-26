@@ -169,11 +169,11 @@
                 <AppLabelTS
                     v-if="CAN_DELETE"
                     align="center"
+                    rounded="4"
                     text="🗑️"
                     text-size="mini"
                     type="danger"
                     width="w-[30px]"
-                    rounded="4"
                     @click="deleteOperation(cuttingOperation)"
                 />
 
@@ -183,11 +183,11 @@
                     <AppLabelTS
                         v-if="CAN_EDIT"
                         align="center"
+                        rounded="4"
                         text="✏️"
                         text-size="mini"
                         type="warning"
                         width="w-[30px]"
-                        rounded="4"
                     />
                 </router-link>
 
@@ -234,6 +234,26 @@ const CAN_DELETE = true
 // __ Определяем переменные
 const cuttingOperations       = ref<ICuttingOperation[]>([])
 const cuttingOperationsRender = ref<ICuttingOperation[]>([])
+
+
+// __ Получаем раскраску операции
+const getOperationType = (operation: ICuttingOperation) => {
+    console.log(operation)
+    if (!operation) {
+        return 'dark'
+    }
+    if (!operation.active) {
+        return 'danger'
+    } else if (operation.detail === DETAIL_SIDE) {
+        return 'warning'
+    } else if (operation.detail === DETAIL_PANEL) {
+        return 'indigo'
+    } else {
+        return 'stone'
+    }
+
+}
+
 
 // __ Объект отображения данных
 const DEFAULT_WIDTH_BOOL = 'w-[70px]'
@@ -442,15 +462,15 @@ const render: IRenderData = reactive({
         show      : true,
         headerType: () => HEADER_TYPE,
         dataType  : () => DATA_TYPE,
-        type      : () => DEFAULT_TYPE,
+        type      : (cuttingOperation: ICuttingOperation) => getOperationType(cuttingOperation),
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Деталь...',
-        data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.detail ?? '',
-
+        data          : (cuttingOperation: ICuttingOperation) => getDetailTitle(cuttingOperation),
+        // data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.detail ?? '',
     },
     description: {
         id        : () => 'description-search',
@@ -516,6 +536,9 @@ const resetFilters = () => {
 
 // __ Получаем название детали
 function getDetailTitle(cuttingOperation: ICuttingOperation) {
+    if (!cuttingOperation || !cuttingOperation.detail) {
+        return ''
+    }
     switch (cuttingOperation.detail) {
         case DETAIL_PANEL:
             return 'Крышка'
@@ -536,7 +559,7 @@ const getCuttingOperations = async () => {
             machine    : cuttingOperation.machine ?? '',
             cover_type : cuttingOperation.cover_type ?? '',
             table      : cuttingOperation.table ?? '',
-            detail     : getDetailTitle(cuttingOperation),
+            // detail     : getDetailTitle(cuttingOperation),
             can_edit   : true
         }))
         .sort((a, b) => a.id - b.id)

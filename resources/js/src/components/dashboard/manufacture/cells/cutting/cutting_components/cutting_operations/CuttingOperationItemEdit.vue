@@ -152,6 +152,8 @@ import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import type {
     ICuttingOperation, ICuttingOperationSchema,
 } from '@/types'
+import { DETAIL_PANEL } from '@/app/constants/cutting.ts'
+import { getCuttingDetailTitle } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 interface IProps {
     operation: ICuttingOperation | null,
@@ -245,7 +247,10 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 const shortData = computed(() => [
     { label: 'Схема', value: props.schema?.name },
     { label: 'Операция', value: props.operation?.name },
-    { label: 'Оборудование', value: props.operation?.machine },
+    { label: 'Тип чехла', value: props.operation?.cover_type },
+    { label: 'Тип элемента', value: getCuttingDetailTitle(props.operation?.detail) },
+    { label: 'Оборудование', value: props.operation?.cover_type },
+    // { label: 'Оборудование', value: props.operation?.machine },
     { label: 'Время операции', value: `${props.operation?.time.toString()} сек.` },
     { label: 'Тип операции', value: props.operation?.type === 'dynamic' ? 'Динамическая' : 'Статическая' },
     { label: 'Коэффициент', value: '', key: 'ratio' },      // Добавили key
@@ -256,6 +261,8 @@ const longData = computed(() => [
     // { label: 'Состав', value: '123' },
     // { label: 'Примечание 1', value: '456' },
 ] as { label: string, value: string }[])
+
+
 
 
 </script>

@@ -38,50 +38,47 @@
                     </div>
 
                     <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
-                    <div class="flex h-screen w-full bg-slate-900 p-4 gap-4 overflow-x-auto">
+                    <div class="flex h-screen w-full bg-slate-900 p-4 gap-2 overflow-x-auto">
 
                         <div v-for="panel in [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID, TABLE_UNDEFINED_PANEL_ID]" :key="panel"
                              :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
                              class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden max-w-fit"
                              @click="activePanel = panel"
                         >
+                            <!-- __ Название Стола -->
+                            <AppLabelTS
+                                :text="getTableName(panel).toUpperCase()"
+                                :type="panel === TABLE_UNDEFINED_PANEL_ID ? 'danger' : panel === TABLE_3_PANEL_ID ? 'warning' : 'indigo'"
+                                align="center"
+                                rounded="4"
+                                text-size="mini"
+                                width="w-[99%]"
+                            />
 
-                            <div class="flex-none bg-slate-700 shadow-md">
-
-                                <!-- __ Название Стола -->
-                                <AppLabelTS
-                                    :text="getTableName(panel).toUpperCase()"
-                                    :type="panel === TABLE_UNDEFINED_PANEL_ID ? 'danger' : panel === TABLE_3_PANEL_ID ? 'warning' : 'indigo'"
-                                    align="center"
-                                    rounded="4"
-                                    text-size="mini"
-                                    width="w-[99%]"
-                                />
-
+                            <div class="flex-none bg-slate-700 shadow-md overflow-y-auto">
                                 <!-- __ Заголовок (Шапка изделий) Панели -->
                                 <ManageTaskTableItemsHeader
                                     :active-panel="activePanel"
                                     :panel="panel"
                                     :render-data="renderData"
                                     :short="true"
-                                    :show-comments="showComments"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
-                                    :sort-auto="sortAuto"
-                                    :sort-kant="sortKant"
+                                    :sort-detail="sortDetail"
+                                    :sort-machine="sortMachine"
                                     :sort-name="sortName"
+                                    :sort-order="sortOrder"
                                     :sort-position="sortPosition"
                                     :sort-size="sortSize"
-                                    :sort-solid-hard="sortSolidHard"
-                                    :sort-solid-lite="sortSolidLite"
+                                    :sort-table_0="sortTable_0"
+                                    :sort-table_1="sortTable_1"
+                                    :sort-table_2="sortTable_2"
+                                    :sort-table_3="sortTable_3"
                                     :sort-textile="sortTextile"
                                     :sort-time="sortTime"
-                                    :sort-tkch="sortTkch"
-                                    :sort-universal="sortUniversal"
                                     @sort-by-field="sortByField(panel, $event)"
                                     @sort-by-size="sortBySize(panel)"
                                 />
-
                             </div>
 
                             <div class="flex-grow overflow-y-auto custom-scrollbar">
@@ -195,6 +192,7 @@
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        ok-word="Понятно"
     />
 
     <!-- __ Модальное окно для информации о записи -->
@@ -223,28 +221,30 @@ import type {
     ICuttingTaskLine,
     IDividerItem,
     IAmountAndTime,
-    ICuttingLinesPanel,
     ICuttingTaskCardSort,
     ICuttingTaskOrderLine, ICuttingTablePanel,
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
-import { TABLE_1, TABLE_1_TITLE, TABLE_2, TABLE_2_TITLE, TABLE_3, TABLE_3_TITLE, TABLE_UNDEFINED, TABLE_UNDEFINED_TITLE } from '@/app/constants/cutting.ts'
+import {
+    TABLE_0,
+    TABLE_1, TABLE_2, TABLE_3,
+    // TABLE_1_TITLE,TABLE_2_TITLE,TABLE_3_TITLE,
+    TABLE_1_TITLE_EXT, TABLE_2_TITLE_EXT, TABLE_3_TITLE_EXT,
+    TABLE_UNDEFINED, TABLE_UNDEFINED_TITLE
+} from '@/app/constants/cutting.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+import { getSewingMachineTitle } from '@/app/helpers/manufacture/helpers_textile.ts'
 import {
-    calculateDividedAmountAndTime,
-    getCoverSizeString,
     getCuttingTaskAmountAndTime,
-    getCuttingTaskModelCover, getCuttingTaskModelCoverName,
-    getCuttingTimes,
-    isAverage, mergeCuttingLines,
+    getCuttingTaskModelCover,
+    isAverage,
     sortCuttingTaskLinesBySize,
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
-import { round } from '@/app/helpers/helpers_lib.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
@@ -258,6 +258,7 @@ import ManageTaskTableItemsHeader from '@/components/dashboard/manufacture/cells
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ManageTaskTableMenu from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTableMenu.vue'
 
+
 interface IProps {
     type?: IColorTypes,
     width?: string,
@@ -268,11 +269,11 @@ interface IProps {
     task: ICuttingTask
 }
 
-interface IRenderCuttingLineDataItem {
-    width: string
-}
+// interface IRenderCuttingLineDataItem {
+//     width: string
+// }
 
-export type IRenderCuttingLineData = Record<string, IRenderCuttingLineDataItem>
+// export type IRenderCuttingLineData = Record<string, IRenderCuttingLineDataItem>
 
 const props = withDefaults(defineProps<IProps>(), {
     type  : 'primary',
@@ -290,19 +291,16 @@ const cuttingStore = useCuttingStore()
 
 const { globalManageTaskCardActiveCuttingLine } = storeToRefs(cuttingStore)
 
-
 // __ Данные (объект) правой панели
 const tableCuttingLines_1 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_2 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_0 = ref<ICuttingTaskLine[]>([])
-
-
-const targetCuttingLines = ref<ICuttingTaskLine[]>([])
-const sourceCuttingLines = ref<ICuttingTaskLine[]>([])
+const mutations           = ref<ICuttingTaskLine[]>([])
 
 // __ Копия входящих данных (объект левой панели) для отслеживания изменений
 let taskMem: ICuttingTask = JSON.parse(JSON.stringify(props.task))
+taskMem.cutting_lines     = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
 
 // __ Маяк изменений (для сохранения состояния при перетаскивании)
 const needForSave = ref(false)
@@ -311,14 +309,17 @@ const needForSave = ref(false)
 const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 
 // __ Переключатель панелей
-const TABLE_1_PANEL_ID: ICuttingTablePanel         = 'table_1'
-const TABLE_2_PANEL_ID: ICuttingTablePanel         = 'table_2'
-const TABLE_3_PANEL_ID: ICuttingTablePanel         = 'table_3'
-const TABLE_UNDEFINED_PANEL_ID: ICuttingTablePanel = 'table_undefined'
+const TABLE_1_PANEL_ID: ICuttingTablePanel         = TABLE_1
+const TABLE_2_PANEL_ID: ICuttingTablePanel         = TABLE_2
+const TABLE_3_PANEL_ID: ICuttingTablePanel         = TABLE_3
+const TABLE_UNDEFINED_PANEL_ID: ICuttingTablePanel = TABLE_UNDEFINED
+const TABLE_0_PANEL_ID                             = TABLE_UNDEFINED_PANEL_ID
 const activePanel                                  = ref<ICuttingTablePanel>(TABLE_1_PANEL_ID)
 
-// const LEFT_PANEL_ID: ICuttingLinesPanel  = 'left'
-// const RIGHT_PANEL_ID: ICuttingLinesPanel = 'right'
+let tableLengthMem_1 = 0
+let tableLengthMem_2 = 0
+let tableLengthMem_3 = 0
+let tableLengthMem_0 = 0
 
 // __ Получаем объект для Druggable
 const getList = (panel: ICuttingTablePanel): ICuttingTaskLine[] => {
@@ -331,19 +332,18 @@ const getList = (panel: ICuttingTablePanel): ICuttingTaskLine[] => {
             return tableCuttingLines_3.value
         case TABLE_UNDEFINED_PANEL_ID:
             return tableCuttingLines_0.value
-
     }
 }
 
 // __ Получаем Название Стола
 const getTableName = (panel: ICuttingTablePanel): string => {
     switch (panel) {
-        case TABLE_1_PANEL_ID:
-            return TABLE_1_TITLE
         case TABLE_2_PANEL_ID:
-            return TABLE_2_TITLE
+            return TABLE_2_TITLE_EXT
+        case TABLE_1_PANEL_ID:
+            return TABLE_1_TITLE_EXT
         case TABLE_3_PANEL_ID:
-            return TABLE_3_TITLE
+            return TABLE_3_TITLE_EXT
         case TABLE_UNDEFINED_PANEL_ID:
             return TABLE_UNDEFINED_TITLE
     }
@@ -353,9 +353,6 @@ const tablePanelAmountAndTimeTotal_1 = ref<IAmountAndTime>()
 const tablePanelAmountAndTimeTotal_2 = ref<IAmountAndTime>()
 const tablePanelAmountAndTimeTotal_3 = ref<IAmountAndTime>()
 const tablePanelAmountAndTimeTotal_0 = ref<IAmountAndTime>()
-
-// const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
-// const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
 
 // __ Получаем объект для Totals
 const getDataForTotals = (panel: ICuttingTablePanel) => {
@@ -370,7 +367,6 @@ const getDataForTotals = (panel: ICuttingTablePanel) => {
             return tablePanelAmountAndTimeTotal_0.value
     }
 }
-
 
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
@@ -397,25 +393,24 @@ const comment     = ref('')
 const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
 // __ Функционал меню + Сортировка
-const showComments  = ref(false)
-const showDetails   = ref(false)
-const sortPosition  = ref<ICuttingTaskCardSort>('none')
-const sortName      = ref<ICuttingTaskCardSort>('none')
-const sortUniversal = ref<ICuttingTaskCardSort>('none')
-const sortAuto      = ref<ICuttingTaskCardSort>('none')
-const sortSolidHard = ref<ICuttingTaskCardSort>('none')
-const sortSolidLite = ref<ICuttingTaskCardSort>('none')
-const sortTextile   = ref<ICuttingTaskCardSort>('none')
-const sortKant      = ref<ICuttingTaskCardSort>('none')
-const sortTkch      = ref<ICuttingTaskCardSort>('none')
-const sortAmount    = ref<ICuttingTaskCardSort>('none')
-const sortTime      = ref<ICuttingTaskCardSort>('none')
-const sortSize      = ref<ICuttingTaskCardSort>('none')
-
+const showComments = ref(false)
+const showDetails  = ref(false)
+const sortPosition = ref<ICuttingTaskCardSort>('none')
+const sortName     = ref<ICuttingTaskCardSort>('none')
+const sortTable_1  = ref<ICuttingTaskCardSort>('none')
+const sortTable_2  = ref<ICuttingTaskCardSort>('none')
+const sortTable_3  = ref<ICuttingTaskCardSort>('none')
+const sortTable_0  = ref<ICuttingTaskCardSort>('none')
+const sortTextile  = ref<ICuttingTaskCardSort>('none')
+const sortAmount   = ref<ICuttingTaskCardSort>('none')
+const sortTime     = ref<ICuttingTaskCardSort>('none')
+const sortSize     = ref<ICuttingTaskCardSort>('none')
+const sortOrder    = ref<ICuttingTaskCardSort>('none')
+const sortDetail   = ref<ICuttingTaskCardSort>('none')
+const sortMachine  = ref<ICuttingTaskCardSort>('none')
 
 // __ Стилистика
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
-
 
 // __ Размеры колонок
 const renderData = {
@@ -434,6 +429,7 @@ const renderData = {
     describe   : { width: 'min-w-[50px] max-w-[50px]', },
     tkch       : { width: 'min-w-[35px] max-w-[35px]', },
     kant       : { width: 'min-w-[60px] max-w-[60px]', },
+    order      : { width: 'min-w-[100px] max-w-[10px]', },
 }
 
 
@@ -479,20 +475,11 @@ const select = async (value: boolean) => {
                 }
             }
 
-            targetCuttingLines.value = []
-            sourceCuttingLines.value = []
+            tableCuttingLines_1.value = []
+            tableCuttingLines_2.value = []
+            tableCuttingLines_3.value = []
+            tableCuttingLines_0.value = []
         } else {
-
-            // __ Левая часть не должна быть пуста
-            if (sourceCuttingLines.value.length === 0) {
-                modalInfoText.value = ['Левая часть должна содержать хотя бы одну строку!']
-                modalInfoType.value = 'danger'
-                modalInfoMode.value = 'inform'
-                await appModalAsyncMultiline.value!.show()
-                return
-            }
-
-
             modalInfoText.value = ['Все изменения будут сохранены.', 'Продолжить?']
             modalInfoType.value = 'primary'
             modalInfoMode.value = 'confirm'
@@ -510,14 +497,43 @@ const select = async (value: boolean) => {
 
 defineExpose({
     show,
-    get leftPanel() {
-        return sourceCuttingLines.value
+    get tablePanel_1() {
+        return tableCuttingLines_1.value
     },
-    get rightPanel() {
-        return targetCuttingLines.value
-    }
+    get tablePanel_2() {
+        return tableCuttingLines_2.value
+    },
+    get tablePanel_3() {
+        return tableCuttingLines_3.value
+    },
+    get tablePanel_0() {
+        return tableCuttingLines_0.value
+    },
+    get mutations() {
+        return mutations.value
+    },
 })
 // --- -------------------------------------------------------------------------------------
+
+
+// --- -------------------------------------------------------------------------------------
+// --- ----------------------------------- Ошибки ------------------------------------------
+// --- -------------------------------------------------------------------------------------
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
 
 
 // --- -------------------------------------------------------------------------------------
@@ -530,9 +546,6 @@ const calculateTotals = () => {
     tablePanelAmountAndTimeTotal_2.value = getCuttingTaskAmountAndTime(tableCuttingLines_2.value)
     tablePanelAmountAndTimeTotal_3.value = getCuttingTaskAmountAndTime(tableCuttingLines_3.value)
     tablePanelAmountAndTimeTotal_0.value = getCuttingTaskAmountAndTime(tableCuttingLines_0.value)
-
-    // leftPanelAmountAndTimeTotal.value  = getCuttingTaskAmountAndTime(sourceCuttingLines.value)
-    // rightPanelAmountAndTimeTotal.value = getCuttingTaskAmountAndTime(targetCuttingLines.value)
 }
 
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
@@ -547,172 +560,22 @@ const showLineInfo = async (cuttingLine: ICuttingTaskLine) => {
     await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 }
 
-// __ Разбить количество
-const divideElementAmount = async () => {
-
-    // __ Проверяем, есть ли активная строка
-    if (!globalManageTaskCardActiveCuttingLine.value) {
-        return
-    }
-
-    // __ Проверяем, больше ли количество, чем 1
-    if (globalManageTaskCardActiveCuttingLine.value.amount <= 1) {
-        return
-    }
-
-    // __ Копируем объект, чтобы не мутировать оригинал
-    const activeCuttingLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveCuttingLine.value))
-
-    const modelCoverExt = getCuttingTaskModelCoverName(activeCuttingLineCopy.order_line.model)
-
-    dividerElement.value.name =
-        getCoverSizeString(activeCuttingLineCopy) + ' ' +
-        modelCoverExt + ' ' +
-        activeCuttingLineCopy.order_line.amount.toString() + ' шт.'
-
-    dividerElement.value.amount = activeCuttingLineCopy.amount
-
-    // console.log('dividerElement.value: ', dividerElement.value)
-
-    const answer = await appRangeModalAsyncTS.value!.show()             // показываем модалку и ждем ответ
-    if (answer) {
-
-        // __ Получаем диапазон + проверяем его (страховочка)
-        const range = appRangeModalAsyncTS.value!.range
-        if (!range || range.take === 0 || range.keep === 0) {
-            return
-        }
-
-        // console.log(range)
-
-        // __ Логика разделения
-        // __ Получаем целевой массив по ссылке
-        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceCuttingLines.value : targetCuttingLines.value
-        const dividerElementIndex = workArray.findIndex(item => item.id === activeCuttingLineCopy.id && item.position === activeCuttingLineCopy.position)
-        if (dividerElementIndex === -1) {
-            return // страховка
-        }
-
-        // __ Обрабатываем тот кейс, когда разделяем ужу разделенную строку
-        // __ Десятичное значение позиции должно быть меньше xx.9
-        const workElement = workArray[dividerElementIndex]
-
-        // __ Ищем сразу по 2 массивам, потому что строка уже может быть перемещена в другую панель
-        const filteredSourceCuttingLines = sourceCuttingLines.value.filter(item => item.id_ref === workElement.id_ref)
-        const filteredTargetCuttingLines = targetCuttingLines.value.filter(item => item.id_ref === workElement.id_ref)
-
-        const maxPosition = [...filteredSourceCuttingLines, ...filteredTargetCuttingLines]
-            .filter(item => /*item.id === workElement.id ||*/ item.id_ref === workElement.id_ref)   // __ у новых строк ID = 0
-            .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
-
-        const fraction = ((maxPosition - Math.trunc(maxPosition)) * 10 | 0) / 10
-
-        // __ Если позиция больше 0.9, то не даем разделить
-        if (fraction > 0.8) {
-            modalInfoText.value = [
-                'Максимальное количество разделений',
-                'одной строки - 9.',
-                'Для продолжения разделения',
-                'необходимо сохранить промежуточные результаты.'
-            ]
-            modalInfoType.value = 'danger'
-            modalInfoMode.value = 'inform'
-            await appModalAsyncMultiline.value!.show()
-            return
-        }
-
-        let newCuttingLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
-        newCuttingLine.id       = 0                                                  // __ Устанавливаем новый ID
-        newCuttingLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
-
-        // __ Пересчитываем время и количество
-        newCuttingLine                 = calculateDividedAmountAndTime(newCuttingLine, range.take)
-        workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
-
-        // __ Вставляем новую строку
-        workArray.splice(dividerElementIndex + 1, 0, newCuttingLine)
-
-        // console.log(activeCuttingLineCopy)
-        // console.log(workArray[dividerElementIndex])
-        // console.log(workArray[dividerElementIndex + 1])
-    }
+// __ Запоминаем данные лоя сравнения
+const setMemories = () => {
+    tableLengthMem_1 = [...tableCuttingLines_1.value].length
+    tableLengthMem_2 = [...tableCuttingLines_2.value].length
+    tableLengthMem_3 = [...tableCuttingLines_3.value].length
+    tableLengthMem_0 = [...tableCuttingLines_0.value].length
 }
 
 // __ Перезагрузить данные
 const reloadData = () => {
-    sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
-    targetCuttingLines.value = []
-
+    tableCuttingLines_1.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_1)))
+    tableCuttingLines_2.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_2)))
+    tableCuttingLines_3.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_3)))
+    tableCuttingLines_0.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_0)))
     calculateTotals()
-}
-
-// __ Объединить строки
-const mergeLines = (activePanel: ICuttingLinesPanel) => {
-    const workArray = activePanel === LEFT_PANEL_ID
-        ? [...sourceCuttingLines.value]
-        : [...targetCuttingLines.value]
-
-    const mergedCuttingLines = mergeCuttingLines(workArray)
-
-    if (activePanel === LEFT_PANEL_ID) {
-        sourceCuttingLines.value = [...mergedCuttingLines]
-    } else {
-        targetCuttingLines.value = [...mergedCuttingLines]
-    }
-}
-
-
-// __ Переместить в другую панель
-const moveToPanel = (activePanel: ICuttingLinesPanel, cuttingType: string) => {
-    let sourceArray, targetArray
-
-    if (activePanel === LEFT_PANEL_ID) {
-        sourceArray = [...sourceCuttingLines.value]
-        targetArray = [...targetCuttingLines.value]
-    } else {
-        targetArray = [...sourceCuttingLines.value]
-        sourceArray = [...targetCuttingLines.value]
-    }
-
-    for (let i = 0; i < sourceArray.length; i++) {
-        let compareValue = false
-
-        switch (cuttingType) {
-            case 'all':
-                compareValue = true
-                break
-            case 'universal':
-                compareValue = sourceArray[i].order_line.model.main.is_universal
-                break
-            case 'auto':
-                compareValue = sourceArray[i].order_line.model.main.is_auto
-                break
-            case 'solid_hard':
-                compareValue = sourceArray[i].order_line.model.main.is_solid_hard
-                break
-            case 'solid_lite':
-                compareValue = sourceArray[i].order_line.model.main.is_solid_lite
-                break
-        }
-
-        if (compareValue) {
-            const moveElement = { ...sourceArray[i] }
-            targetArray.push(moveElement)
-            sourceArray[i].amount = 0
-        }
-    }
-
-    sourceArray = sourceArray.filter(item => item.amount > 0)
-
-    if (activePanel === LEFT_PANEL_ID) {
-        sourceCuttingLines.value = [...sourceArray]
-        targetCuttingLines.value = [...targetArray]
-    } else {
-        sourceCuttingLines.value = [...targetArray]
-        targetCuttingLines.value = [...sourceArray]
-    }
-
-    calculateTotals()
+    setMemories()
 }
 
 
@@ -725,19 +588,10 @@ const addComment = async () => {
     if (answer) {
 
         const newComment = commentEdit.value!.comment.trim()
-
         const result = await cuttingStore.setCuttingTaskComment(props.task.id, newComment)
 
         if (!checkCRUD(result)) {
-
-            modalInfoText.value = [
-                'Упс! Что-то пошло не так.',
-                'Попробуйте повторить операцию позже.',
-            ]
-            modalInfoType.value = 'danger'
-            modalInfoMode.value = 'inform'
-            await appModalAsyncMultiline.value!.show()
-
+           await showError()
             return
         }
 
@@ -757,18 +611,19 @@ const addComment = async () => {
 
 // __ Меняем направление сортировки
 const changeSortDirection = (sortDirection: ICuttingTaskCardSort) => {
-    sortPosition.value  = 'none'
-    sortName.value      = 'none'
-    sortUniversal.value = 'none'
-    sortAuto.value      = 'none'
-    sortSolidHard.value = 'none'
-    sortSolidLite.value = 'none'
-    sortTextile.value   = 'none'
-    sortKant.value      = 'none'
-    sortTkch.value      = 'none'
-    sortAmount.value    = 'none'
-    sortTime.value      = 'none'
-    sortSize.value      = 'none'
+    sortPosition.value = 'none'
+    sortName.value     = 'none'
+    sortTable_1.value  = 'none'
+    sortTable_2.value  = 'none'
+    sortTable_3.value  = 'none'
+    sortTable_0.value  = 'none'
+    sortTextile.value  = 'none'
+    sortAmount.value   = 'none'
+    sortTime.value     = 'none'
+    sortSize.value     = 'none'
+    sortDetail.value   = 'none'
+    sortOrder.value    = 'none'
+    sortMachine.value  = 'none'
 
     return ['none', 'desc'].includes(sortDirection) ? 'asc' : 'desc'
 }
@@ -804,37 +659,30 @@ const sortConfigs: Record<string, SortConfig> = {
                 : ''
         }
     },
-    universal  : {
-        type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_universal
-    },
-    auto       : {
-        type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_auto
-    },
-    solid_hard : {
-        type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_solid_hard
-    },
-    solid_lite : {
-        type    : 'boolean',
-        getValue: (item) => item.order_line.model.main.is_solid_lite
-    },
-    tkch       : {
+    table      : {
         type    : 'string',
-        getValue: (item) => item.order_line.model.main.tkch ?? ''
+        getValue: (item) => item.table ?? ''
     },
-    kant       : {
+    order      : {
         type    : 'string',
-        getValue: (item) => item.order_line.model.main.kant ?? ''
+        getValue: (item) => item.order_meta ?? ''
+    },
+    detail     : {
+        type    : 'boolean',
+        getValue: (item) => item.is_panel
     },
     textile    : {
         type    : 'string',
         getValue: (item) => item.order_line.textile ?? ''
     },
+    machine    : {
+        type    : 'string',
+        getValue: (item) => getSewingMachineTitle(item)
+    },
     time       : {
         type    : 'number',
-        getValue: (item) => Object.values(getCuttingTimes(item)).reduce((acc, value) => acc + value.time, 0)
+        getValue: (item) => item.time
+        // getValue: (item) => Object.values(getCuttingTimes(item)).reduce((acc, value) => acc + value.time, 0)
     }
 }
 
@@ -852,6 +700,25 @@ const compareValues = (a: unknown, b: unknown, type: SortType, modifier: number)
         numeric    : true,
         sensitivity: 'base'
     }) * modifier
+}
+
+
+// __ Вспомогательный, возвращает обработанные данные в реактивный массив
+const setDataToPanel = (panel: ICuttingTablePanel, data: ICuttingTaskLine[]) => {
+    switch (panel) {
+        case TABLE_1_PANEL_ID:
+            tableCuttingLines_1.value = data
+            break
+        case TABLE_2_PANEL_ID:
+            tableCuttingLines_2.value = data
+            break
+        case TABLE_3_PANEL_ID:
+            tableCuttingLines_3.value = data
+            break
+        case TABLE_0_PANEL_ID:
+            tableCuttingLines_0.value = data
+            break
+    }
 }
 
 // __ Сортировка
@@ -874,33 +741,37 @@ const sortByField = (panel: ICuttingTablePanel, configKey: string) => {
             sortName.value = changeSortDirection(sortName.value)
             direction      = sortName.value
             break
-        case 'universal':
-            sortUniversal.value = changeSortDirection(sortUniversal.value)
-            direction           = sortUniversal.value
+        case 'table_1':
+            sortTable_1.value = changeSortDirection(sortTable_1.value)
+            direction         = sortTable_1.value
             break
-        case 'auto':
-            sortAuto.value = changeSortDirection(sortAuto.value)
-            direction      = sortAuto.value
+        case 'table_2':
+            sortTable_2.value = changeSortDirection(sortTable_2.value)
+            direction         = sortTable_2.value
             break
-        case 'solid_hard':
-            sortSolidHard.value = changeSortDirection(sortSolidHard.value)
-            direction           = sortSolidHard.value
+        case 'table_3':
+            sortTable_3.value = changeSortDirection(sortTable_3.value)
+            direction         = sortTable_3.value
             break
-        case 'solid_lite':
-            sortSolidLite.value = changeSortDirection(sortSolidLite.value)
-            direction           = sortSolidLite.value
+        case 'table_0':
+            sortTable_0.value = changeSortDirection(sortTable_0.value)
+            direction         = sortTable_0.value
             break
         case 'textile':
             sortTextile.value = changeSortDirection(sortTextile.value)
             direction         = sortTextile.value
             break
-        case 'tkch':
-            sortTkch.value = changeSortDirection(sortTkch.value)
-            direction      = sortTkch.value
+        case 'order':
+            sortOrder.value = changeSortDirection(sortOrder.value)
+            direction       = sortOrder.value
             break
-        case 'kant':
-            sortKant.value = changeSortDirection(sortKant.value)
-            direction      = sortKant.value
+        case 'detail':
+            sortDetail.value = changeSortDirection(sortDetail.value)
+            direction        = sortDetail.value
+            break
+        case 'machine':
+            sortMachine.value = changeSortDirection(sortMachine.value)
+            direction         = sortMachine.value
             break
         case 'time':
             sortTime.value = changeSortDirection(sortTime.value)
@@ -908,9 +779,7 @@ const sortByField = (panel: ICuttingTablePanel, configKey: string) => {
             break
     }
 
-    const workArray = panel === LEFT_PANEL_ID
-        ? [...sourceCuttingLines.value]
-        : [...targetCuttingLines.value]
+    const workArray = getList(panel)
 
     const modifier = direction === 'asc' ? 1 : -1
 
@@ -918,34 +787,33 @@ const sortByField = (panel: ICuttingTablePanel, configKey: string) => {
         return compareValues(config.getValue(a), config.getValue(b), config.type, modifier)
     })
 
-    if (panel === LEFT_PANEL_ID) {
-        sourceCuttingLines.value = workArray
-    } else {
-        targetCuttingLines.value = workArray
-    }
+    // __ Возвращаем все обратно в реактивные переменные
+    setDataToPanel(panel, workArray)
 }
 
 // __ Сортировка по размеру
 const sortBySize = (panel: ICuttingTablePanel) => {
     sortSize.value = changeSortDirection(sortSize.value)
 
-    let sourceArray = panel === LEFT_PANEL_ID
-        ? [...sourceCuttingLines.value]
-        : [...targetCuttingLines.value]
+    let sourceArray = getList(panel)
+    sourceArray     = sortCuttingTaskLinesBySize(sourceArray, sortSize.value)
 
-    sourceArray = sortCuttingTaskLinesBySize(sourceArray, sortSize.value)
-
-    if (panel === LEFT_PANEL_ID) {
-        sourceCuttingLines.value = sourceArray
-    } else {
-        targetCuttingLines.value = sourceArray
-    }
+    // __ Возвращаем все обратно в реактивные переменные
+    setDataToPanel(panel, sourceArray)
 }
 // --- -------------------------------------------------------------------------------------
 
 // --- -------------------------------------------------------------------------------------
 // --- ------------------------------- Drag and Drop ---------------------------------------
 // --- -------------------------------------------------------------------------------------
+// __ Запоминаем для Undo
+// let fromDataMem
+// let toDataMem
+let tableDataMem_1: ICuttingTaskLine[]
+let tableDataMem_2: ICuttingTaskLine[]
+let tableDataMem_3: ICuttingTaskLine[]
+let tableDataMem_0: ICuttingTaskLine[]
+
 // __ Опции для draggable
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const dragOptions = computed(() => {
@@ -968,15 +836,121 @@ const startDrag  = (/*evt: any*/) => {
     // console.log('startDrag: evt: ', evt)
     // const element = evt.item._underlying_vm_
     // console.log('startDrag: ', evt.oldIndex)
-    // console.log('element: ', element)
+    // console.log('start element: ', element)
+
+    // __ Запоминаем для Undo
+    tableDataMem_1 = [...tableCuttingLines_1.value]
+    tableDataMem_2 = [...tableCuttingLines_2.value]
+    tableDataMem_3 = [...tableCuttingLines_3.value]
+    tableDataMem_0 = [...tableCuttingLines_0.value]
+
+    tableLengthMem_1 = tableDataMem_1.length
+    tableLengthMem_2 = tableDataMem_2.length
+    tableLengthMem_3 = tableDataMem_3.length
+    tableLengthMem_0 = tableDataMem_0.length
+
 }
-const finishDrag = (/*evt: any*/) => {
-    calculateTotals()
+const finishDrag = async (evt: any) => {
     // const element = evt.item._underlying_vm_
     // emits('drag-and-drop')
     // console.log('finishDrag')
+    const element = evt.item._underlying_vm_
+    // console.log('finish element: ', element)
+
+    const getToTable = () => {
+        if (tableLengthMem_1 < tableCuttingLines_1.value.length) {
+            return TABLE_1_PANEL_ID
+        }
+        if (tableLengthMem_2 < tableCuttingLines_2.value.length) {
+            return TABLE_2_PANEL_ID
+        }
+        if (tableLengthMem_3 < tableCuttingLines_3.value.length) {
+            return TABLE_3_PANEL_ID
+        }
+        if (tableLengthMem_0 < tableCuttingLines_0.value.length) {
+            return TABLE_0_PANEL_ID
+        }
+        return null
+    }
+
+    const getFromTable = () => {
+        if (tableLengthMem_1 > tableCuttingLines_1.value.length) {
+            return TABLE_1_PANEL_ID
+        }
+        if (tableLengthMem_2 > tableCuttingLines_2.value.length) {
+            return TABLE_2_PANEL_ID
+        }
+        if (tableLengthMem_3 > tableCuttingLines_3.value.length) {
+            return TABLE_3_PANEL_ID
+        }
+        if (tableLengthMem_0 > tableCuttingLines_0.value.length) {
+            return TABLE_0_PANEL_ID
+        }
+        return null
+    }
+
+    const fromTable = getFromTable()    // Откуда перемещаем
+    const toTable   = getToTable()      // Куда перемещаем
+
+    // console.log('fromTable: ', fromTable)
+    // console.log('toTable: ', toTable)
+
+    // __ Проверяем, что что-то куда-то переместили
+    if (!fromTable || !toTable) {
+        return
+    }
+
+    // __ Проверяем, что целевой стол не undefined
+    if (toTable === TABLE_0_PANEL_ID) {
+
+        await showError([
+            'Ошибка!',
+            'Нельзя переместить строку',
+            'непонятно куда!',
+        ])
+
+        // __ Возвращаем все в исходное состояние
+        tableCuttingLines_1.value = tableDataMem_1
+        tableCuttingLines_2.value = tableDataMem_2
+        tableCuttingLines_3.value = tableDataMem_3
+        tableCuttingLines_0.value = tableDataMem_0
+        return
+    }
+
+    // __ Предупреждение о том, что детали кроятся на Столе 3
+    if (element.table === TABLE_3_PANEL_ID && toTable !== TABLE_3_PANEL_ID && element.is_side) {
+        modalInfoType.value = 'danger'
+        modalInfoMode.value = 'confirm'
+
+        modalInfoText.value = [
+            'Боковины и детали кроятся на Столе 3!',
+            'Запись будет отнесена к другому столу.',
+            'Продолжить?'
+        ]
+        const answer        = await appModalAsyncMultiline.value!.show()
+        if (!answer) {
+            // __ Возвращаем все в исходное состояние
+            tableCuttingLines_1.value = tableDataMem_1
+            tableCuttingLines_2.value = tableDataMem_2
+            tableCuttingLines_3.value = tableDataMem_3
+            tableCuttingLines_0.value = tableDataMem_0
+            return
+        }
+    }
+
+    const targetPanelData = getList(toTable)
+    const targetLine      = targetPanelData.find(line => line.id === element.id)
+    if (targetLine) {
+        targetLine.table = toTable
+    }
+
+    // console.log('targetLine: ', targetLine)
+
+    calculateTotals()
+    // setMemories()
 }
 // --- -------------------------------------------------------------------------------------
+
 
 // __ Следим за входящими данными
 // __ При монтировании компонента, они еще undefined
@@ -986,31 +960,16 @@ watch(() => props.task, () => {
     globalManageTaskCardActiveCuttingLine.value = props.task?.cutting_lines[0]
 
     // __ Копируем входящие данные для отслеживания изменений
-    taskMem = JSON.parse(JSON.stringify(props.task))
+    taskMem               = JSON.parse(JSON.stringify(props.task))
+    taskMem.cutting_lines = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
 
     // __ Обновляем инфу в нижней части
     footTitle.action_at = formatDateInFullFormat(props.task.action_at)
     footTitle.order     = props.task.order.client.short_name + ' №' + props.task.order.order_no_str
     footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
 
-    // __ Копируем данные для левой и правой панели
-    tableCuttingLines_1.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_1)))
-    tableCuttingLines_2.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_2)))
-    tableCuttingLines_3.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_3)))
-    tableCuttingLines_0.value = JSON.parse(JSON.stringify(props.task.cutting_lines.filter(line => line.table === TABLE_UNDEFINED)))
-    // const tableCuttingLines_2 = ref<ICuttingTaskLine[]>([])
-    // const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
-    // const tableCuttingLines_0 = ref<ICuttingTaskLine[]>([])
-
-
-    // sourceCuttingLines.value = JSON.parse(JSON.stringify(props.task.cutting_lines))
-    // targetCuttingLines.value = []
-
-    // console.log(sourceCuttingLines.value)
-    // console.log(targetCuttingLines.value)
-
-    // __ Обновляем суммы
-    calculateTotals()
+    // __ Создаем данные для панелей + Обновляем суммы
+    reloadData()
 })
 
 
@@ -1037,26 +996,28 @@ watchEffect(() => {
 
     needForSave.value = true
 
-    // __ Ситуация, когда мы перетаскиваем строки в правую часть
-    if (targetCuttingLines.value.length > 0) {
-        return
-    }
+    // __ Ищем мутировавшие элементы
+    const linesActual = [
+        ...tableCuttingLines_1.value,
+        ...tableCuttingLines_2.value,
+        ...tableCuttingLines_3.value,
+        ...tableCuttingLines_0.value
+    ]
+    // __ Создаем Map, где ключом будет id, а значением — старое имя стола
+    // __ Map в JS работает быстрее, чем поиск через .find() на каждой итерации
+    const beforeTableMap = new Map(taskMem.cutting_lines.map(item => [item.id, item.table]))
+    mutations.value      = linesActual.filter(line => {
+        const oldTable = beforeTableMap.get(line.id)
 
-    // __ Ситуация, когда мы меняем порядок строк в левой части
-    // __ Сравниваем длину массивов (исходного и копии)
-    if (sourceCuttingLines.value.length !== taskMem.cutting_lines.length) {
-        return
-    }
+        // __ Если элемент существовал ранее И его стол изменился — забираем его в результат
+        return oldTable !== undefined && oldTable !== line.table
+    })
 
-    // __ Сравниваем содержимое массивов
-    for (let i = 0; i < sourceCuttingLines.value.length; i++) {
-        const isEqual = JSON.stringify(sourceCuttingLines.value[i]) === JSON.stringify(taskMem.cutting_lines[i])
-        if (!isEqual) {
-            return
-        }
-    }
+    // console.log('mutations: ', mutations)
 
-    needForSave.value = false
+    if (mutations.value.length === 0) {
+        needForSave.value = false
+    }
 })
 
 </script>

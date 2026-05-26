@@ -54,6 +54,8 @@ export interface ICuttingTaskLine {
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
 
+    order_meta?: string                             // __ Номер заявки
+
     table: ICuttingTableKeys
     order_line: ICuttingTaskOrderLine
     details?: ICuttingTaskLine[]
@@ -226,7 +228,7 @@ export interface ICuttingTaskStatusEntity {
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
 export type ICuttingLinesPanel = 'left' | 'right'
-export type ICuttingTablePanel = 'table_1' | 'table_2' | 'table_3' | 'table_undefined'
+export type ICuttingTablePanel = typeof TABLE_1 |  typeof TABLE_2 |  typeof TABLE_3 | typeof TABLE_UNDEFINED
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
@@ -479,3 +481,6 @@ export interface ICuttingTaskLinesSubgroup {
     }
     lines: ICuttingTaskLine[]
 }
+
+// __ Тип для сохранения (изменения) стола для записи СЗ Раскроя
+export type ICuttingLineTableSetData = {id: number, table: ICuttingTableKeys}

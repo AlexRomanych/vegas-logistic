@@ -6,12 +6,8 @@ import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/a
 export const TABLE_1         = 'table_1'
 export const TABLE_2         = 'table_2'
 export const TABLE_3         = 'table_3'
-export const TABLE_UNDEFINED = 'undefined'
-
-export const TABLE_1_TITLE         = 'Стол 1'
-export const TABLE_2_TITLE         = 'Стол 2'
-export const TABLE_3_TITLE         = 'Стол 3'
-export const TABLE_UNDEFINED_TITLE = 'Стол ??'
+export const TABLE_0         = 'undefined'
+export const TABLE_UNDEFINED = TABLE_0
 
 // __ Объект раскройных столов
 export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {
@@ -21,13 +17,24 @@ export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {
     TABLE_UNDEFINED,
 }
 
+// __ Константы отображения
+export const TABLE_1_TITLE         = 'Стол 1'
+export const TABLE_1_TITLE_EXT     = 'Стол 1 - Крышки АШМ'
+export const TABLE_2_TITLE         = 'Стол 2'
+export const TABLE_2_TITLE_EXT     = 'Стол 2 - Крышки (УШМ + Глух.)'
+export const TABLE_3_TITLE         = 'Стол 3'
+export const TABLE_3_TITLE_EXT     = 'Стол 3 - Детали (УШМ + Глух.)'
+export const TABLE_UNDEFINED_TITLE = 'Стол ??'
+
+
+
 
 // __ Констианты деталей чехда в Операциях Раскроя
-export const DETAIL_PANEL = 'panel'
-export const DETAIL_PANEL_TITLE = 'Крышка'
-export const DETAIL_SIDE  = 'side'
-export const DETAIL_SIDE_TITLE  = 'Боковина'
-export const DETAIL_SIDE_TITLE_SHORT  = 'Бок-на'
+export const DETAIL_PANEL            = 'panel'
+export const DETAIL_PANEL_TITLE      = 'Крышка'
+export const DETAIL_SIDE             = 'side'
+export const DETAIL_SIDE_TITLE       = 'Боковина'
+export const DETAIL_SIDE_TITLE_SHORT = 'Бок-на'
 
 
 // __ Название вкладки с общим СЗ

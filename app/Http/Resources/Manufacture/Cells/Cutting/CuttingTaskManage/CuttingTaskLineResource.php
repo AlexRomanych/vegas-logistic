@@ -33,7 +33,8 @@ class CuttingTaskLineResource extends JsonResource
             'finished_by'  => $this->finished_by,
             'false_at'     => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason' => $this->false_reason,
-            'table'        => $this->phantom,
+            'table'        => $this->table,
+            //'table'        => $this->phantom,
 
             'is_panel' => $this->is_panel,
             'is_side'  => $this->is_side,

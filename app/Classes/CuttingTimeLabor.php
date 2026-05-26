@@ -327,7 +327,7 @@ final class CuttingTimeLabor
 
     public function getAmountTable_3(): int
     {
-        return $this->amountTable_2;
+        return $this->amountTable_3;
     }
 
     public function getAmountUndefined(): int

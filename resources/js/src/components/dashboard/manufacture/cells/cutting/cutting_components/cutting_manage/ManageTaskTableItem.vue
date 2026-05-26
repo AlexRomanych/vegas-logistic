@@ -96,7 +96,7 @@
                 :align="DEFAULT_ALIGN"
                 :rounded="DEFAULT_ROUNDED"
                 :text-size="DEFAULT_TEXT_SIZE"
-                :type="getTypeForTable(CUTTING_TABLES.UNKNOWN)"
+                :type="getTypeForTable(CUTTING_TABLES.TABLE_UNDEFINED)"
                 :width="renderData.table.width"
                 class="field"
                 text="??"
@@ -150,72 +150,16 @@
             class="field"
         />
 
-        <!-- __ Типовая конструкция чехла (ТКЧ) -->
+        <!-- __ Номер заявки -->
         <AppLabelTS
             v-if="showDetails"
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.model.main.tkch ?? ''"
+            :text="cuttingLine.order_meta ?? ''"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
-            :width="renderData.tkch.width"
+            :width="renderData.order.width"
             class="field"
-        />
-
-        <!-- __ Кант -->
-        <AppLabelTS
-            v-if="showDetails"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.model.main.kant ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.kant.width"
-            class="field"
-        />
-
-        <!-- __ Состав -->
-        <AppLabelTS
-            v-if="showComments"
-            :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.composition ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 1 -->
-        <AppLabelTS
-            v-if="showComments"
-            :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.describe_1 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 2 -->
-        <AppLabelTS
-            v-if="showComments"
-            :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.describe_2 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
-        />
-
-        <!-- __ Примечание 3 -->
-        <AppLabelTS
-            v-if="showComments"
-            :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_line.describe_3 ?? ''"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.describe.width"
-            class="describe field"
         />
 
     </div>
@@ -230,7 +174,7 @@ import type {
     IRenderCuttingLineData
 } from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
 
-import { CUTTING_MACHINES, CUTTING_TABLES, DETAIL_PANEL_TITLE, DETAIL_SIDE_TITLE_SHORT } from '@/app/constants/cutting.ts'
+import { CUTTING_MACHINES, CUTTING_TABLES, DETAIL_PANEL_TITLE, DETAIL_SIDE_TITLE_SHORT, } from '@/app/constants/cutting.ts'
 
 
 import { storeToRefs } from 'pinia'
@@ -249,14 +193,12 @@ import { getSewingMachineTitle } from '@/app/helpers/manufacture/helpers_textile
 interface IProps {
     cuttingLine: ICuttingTaskLine
     renderData: IRenderCuttingLineData
-    showComments?: boolean,
     showDetails?: boolean,
     short?: boolean
 }
 
 
 const props = withDefaults(defineProps<IProps>(), {
-    showComments: false,
     showDetails : false,
     short       : false,
 })
@@ -295,7 +237,7 @@ const getTypeForTable = (cuttingTableTarget: ICuttingTableKeys) => {
 
     // !!! Порядок важен !!!
     if (table.value === cuttingTableTarget) {
-        if (cuttingTableTarget === CUTTING_MACHINES.UNKNOWN) {
+        if (cuttingTableTarget === CUTTING_MACHINES.TABLE_UNDEFINED) {
             return 'danger'
         }
 

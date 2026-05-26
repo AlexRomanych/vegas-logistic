@@ -7,7 +7,7 @@ import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, j
 import type {
     IPeriod, IRenderMatrixDiff, ICuttingDayWorker, ICuttingOperation, ICuttingOperationSchema,
     ICuttingOperationUpdateObject, ICuttingTask,
-    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet,
+    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet, ICuttingLineTableSetData,
 } from '@/types'
 
 
@@ -39,6 +39,7 @@ const URL_CUTTING_TASKS_ACTION_AT_SET        = '/cutting/tasks/action/set'      
 const URL_CUTTING_TASK_LINE_DONE             = '/cutting/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 const URL_CUTTING_TASK_LINE_FALSE            = '/cutting/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 const URL_CUTTING_TASK_LINE_RESET            = '/cutting/tasks/line/reset'            // URL для сброса статуса для записи СЗ
+const URL_CUTTING_TASK_LINES_TABLE_SET       = '/cutting/tasks/lines/table/set'       // URL для изменения раскройного стола для записи СЗ
 const URL_CUTTING_TASK_STATUSES              = '/cutting/task/statuses'               // URL для получения Статуса Движения СЗ
 const URL_CUTTING_TASK_STATUSES_SET          = '/cutting/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 const URL_CUTTING_TASK_STATUSES_COLOR_PATCH  = '/cutting/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
@@ -143,11 +144,11 @@ export const useCuttingStore = defineStore('cutting', () => {
     const addCuttingTaskToGlobal = async (
         oldCuttingTask: ICuttingTask,
         leftPanel: ICuttingTaskLine[],
-        addCuttingTask: ICuttingTask | null    = null,
+        addCuttingTask: ICuttingTask | null   = null,
         rightPanel: ICuttingTaskLine[] | null = null,
     ) => {
 
-        leftPanel                  = repositionCuttingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+        leftPanel                    = repositionCuttingTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
         oldCuttingTask.cutting_lines = leftPanel              // __ oldCuttingTask приходит по ссылке
 
         // __ Если есть правая панель, то добавляем ее в массив СЗ
@@ -155,7 +156,7 @@ export const useCuttingStore = defineStore('cutting', () => {
 
             // console.log('passed')
 
-            rightPanel                 = repositionCuttingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+            rightPanel                   = repositionCuttingTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
             addCuttingTask.cutting_lines = rightPanel             // __ addCuttingTask приходит новым объектом
 
             // __ Добавляем новый объект в массив
@@ -219,8 +220,8 @@ export const useCuttingStore = defineStore('cutting', () => {
                     if (diff.statusId) {
                         const findStatus = globalCuttingTaskStatuses.value.find((status: ICuttingTaskStatusEntity) => status.id === diff.statusId)
                         if (findStatus) {
-                            findTask.current_status.id = findStatus.id
-                            findTask.current_status.name = findStatus.name
+                            findTask.current_status.id    = findStatus.id
+                            findTask.current_status.name  = findStatus.name
                             findTask.current_status.color = findStatus.color
                         }
 
@@ -319,6 +320,34 @@ export const useCuttingStore = defineStore('cutting', () => {
 
         return result
     }
+
+
+    // __ Меняем динамически Столы раскроя в глобальном массиве, чтобы не перезагружать данные с сервера
+    const setGlobalArrayChangeTables = (data: ICuttingLineTableSetData[]) => {
+        for (const item of data) {
+            let isFind = false
+            for (const task of globalCuttingTasks.value) {
+                for (const line of task.cutting_lines) {
+                    if (item.id === line.id) {
+                        line.table = item.table
+                        isFind     = true
+                        break
+                    }
+                    if (isFind) {
+                        break
+                    }
+                }
+                if (isFind) {
+                    break
+                }
+            }
+        }
+
+        // __ Копия для отслеживания изменений
+        globalCuttingTasksCopy = JSON.parse(JSON.stringify(globalCuttingTasks.value))
+    }
+
+
     // --- ------------------------------------------------------------------------------------------
 
 
@@ -890,6 +919,15 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
+    // __ Устаноавливаем новые Раскройные столы
+    const taskLinesTableSet = async (data: ICuttingLineTableSetData[]) => {
+        const response = await jwtPost(URL_CUTTING_TASK_LINES_TABLE_SET, { data })
+        const result   = await response
+        if (DEBUG) console.log('CuttingStore: taskLinesTableSet: ', result)
+        return result.data
+    }
+
+
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalCuttingTasks.value, () => {
     //
@@ -979,6 +1017,9 @@ export const useCuttingStore = defineStore('cutting', () => {
         applyMergeTasksGroups,
         setCuttingTasksLines,
         applyCuttingTaskComment,
+
+        taskLinesTableSet,
+        setGlobalArrayChangeTables,
 
         test,
     }
