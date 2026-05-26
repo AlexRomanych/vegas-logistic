@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
@@ -236,7 +237,7 @@ Route::prefix('cutting')
         Route::post('operation/models/add', [ModelController::class, 'addCuttingOperationToModel']);
 
 
-        // __ Статусы СЗ Паскроя
+        // __ Статусы СЗ Раскроя
         Route::get('/task/statuses', [CellCuttingStatusController::class, 'getCuttingTaskStatuses']);
         Route::patch('/task/statuses/color/patch', [CellCuttingStatusController::class, 'patchCuttingTaskStatusColor']);
         Route::post('/task/statuses/set', [CellCuttingStatusController::class, 'setCuttingTasksStatuses']);
@@ -255,6 +256,10 @@ Route::prefix('cutting')
         Route::get('/day/ready/get/{date}/{change}', [CellCuttingDayController::class, 'readyGetCuttingDay']);
         Route::patch('/day/ready/set', [CellCuttingDayController::class, 'readySetCuttingDay']);
         Route::patch('/day/ready/unset', [CellCuttingDayController::class, 'readyUnsetCuttingDay']);
+
+        // __ Процедуры Раскроя
+        Route::get('/procedures', [CellCuttingProcedureController::class, 'getCuttingProcedures']);
+        Route::get('/procedure/{id}', [CellCuttingProcedureController::class, 'getCuttingProcedure']);
 
     });
 //hr--------------------------------------------------------------------------------------------------------------------

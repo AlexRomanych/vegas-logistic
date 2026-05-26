@@ -484,3 +484,20 @@ export interface ICuttingTaskLinesSubgroup {
 
 // __ Тип для сохранения (изменения) стола для записи СЗ Раскроя
 export type ICuttingLineTableSetData = {id: number, table: ICuttingTableKeys}
+
+
+// --- --------------------------------------------------------------------
+// --- ------------ Для рендера Процедур расчета (Show) -------------------
+// --- --------------------------------------------------------------------
+
+// __ Процедура расчета Раскроя
+export interface ICuttingProcedure {
+    id: number
+    active: boolean
+    name: string
+    object_name: string | null
+    text: string | null
+    description: string | null
+
+    collapsed: boolean
+}

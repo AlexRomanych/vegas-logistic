@@ -127,12 +127,33 @@ const cutting = [
 
     {
         // ___ Учет ПС на раскрое
-        path: _MAIN_PREFIX + 'fabrics/movement',
+        path     : _MAIN_PREFIX + 'fabrics/movement',
         name     : 'manufacture.cell.cutting.fabrics.movement',
         component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingFabricsMovement.vue'),
-        meta: {
+        meta     : {
             title: 'Учет ПС раскроя'
         }
+    },
+
+    {
+        // ___ Справочник Процедур Раскроя
+        path     : _MAIN_PREFIX + 'procedures',
+        name     : 'manufacture.cell.cutting.procedures',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingProceduresShow.vue'),
+        meta     : {
+            title: 'Процедуры расчета для Раскроя',
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Редактирование Процедуры Раскроя
+        path     : _MAIN_PREFIX + 'procedures/edit/:id',
+        name     : 'manufacture.cell.procedure.edit',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/TheCuttingProcedureEdit.vue'),
+        meta     : {
+            title: 'Редактирование Процедуры расчета для Раскроя',
+            mode : ROUTER_PAGE_MODE.EDIT,
+        } as IRouteMeta,
     },
 
     //

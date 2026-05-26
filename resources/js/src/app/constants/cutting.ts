@@ -28,8 +28,6 @@ export const TABLE_3_TITLE_EXT     = 'Стол 3 - Детали (УШМ + Глу
 export const TABLE_UNDEFINED_TITLE = 'Стол ??'
 
 
-
-
 // __ Констианты деталей чехда в Операциях Раскроя
 export const DETAIL_PANEL            = 'panel'
 export const DETAIL_PANEL_TITLE      = 'Крышка'
@@ -51,7 +49,7 @@ export const START_SHIFT_TIME = '07:30'
 import type {
     ICuttingDay,
     ICuttingMachineKeys,
-    ICuttingOperation, ICuttingTableKeys,
+    ICuttingOperation, ICuttingProcedure, ICuttingTableKeys,
     ICuttingTask,
     ICuttingTaskLinesGroup,
     ICuttingTaskStatusItem,
@@ -198,6 +196,17 @@ export const CUTTING_OPERATION_DRAFT: ICuttingOperation = {
     cover_type : null,
     table      : null,
     detail     : null,
+}
+
+
+// __ Объект Типовой Процедуры Раскроя
+export const CUTTING_PROCEDURE_DRAFT: ICuttingProcedure = {
+    id         : 0,
+    name       : '',
+    text       : null,
+    object_name: null,
+    collapsed  : true,
+    description: null,
 }
 
 

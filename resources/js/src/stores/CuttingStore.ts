@@ -69,6 +69,8 @@ const URL_CUTTING_DAY_FINISH                 = '/cutting/day/finish'            
 const URL_CUTTING_DAY_READY_GET              = '/cutting/day/ready/get'               // URL для получения маячка готовности дня с СЗ к добавлению новых СЗ
 const URL_CUTTING_DAY_READY_SET              = '/cutting/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
 const URL_CUTTING_DAY_READY_UNSET            = '/cutting/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
+const URL_CUTTING_PROCEDURES                 = '/cutting/procedures'                  // URL для получения процедур расчета Раскроя
+const URL_CUTTING_PROCEDURE                  = '/cutting/procedure'                   // URL для получения процедуры расчета Раскроя по id
 const URL_CUTTING_TEST                       = '/cutting/test'                        // URL для тестирования
 
 export const useCuttingStore = defineStore('cutting', () => {
@@ -927,6 +929,31 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
+    // --- ----------------------------------------------------------
+    // --- ------------------ Процедуры Раскроя ---------------------
+    // --- ----------------------------------------------------------
+
+    // __ Получаем процедуры расчета Раскроя
+    const getCuttingProcedures = async () => {
+        const response = await jwtGet(URL_CUTTING_PROCEDURES)
+        const result   = await response
+
+        if (DEBUG) console.log('CuttingStore: getCuttingProcedures: ', result)
+        return result.data
+    }
+
+    // __ Получаем процедуру расчета Раскроя по ID
+    const getCuttingProcedure = async (id: number | null = null) => {
+        if (id === null) {
+            return
+        }
+        const response = await jwtGet(`${URL_CUTTING_PROCEDURE}/${id}`)
+        const result   = await response
+
+        if (DEBUG) console.log('CuttingStore: getCuttingProcedure: ', result)
+        return result.data
+    }
+
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalCuttingTasks.value, () => {
@@ -1020,6 +1047,9 @@ export const useCuttingStore = defineStore('cutting', () => {
 
         taskLinesTableSet,
         setGlobalArrayChangeTables,
+
+        getCuttingProcedures,
+        getCuttingProcedure,
 
         test,
     }
