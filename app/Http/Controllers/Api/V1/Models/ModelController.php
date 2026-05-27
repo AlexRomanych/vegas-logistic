@@ -252,7 +252,7 @@ class ModelController extends Controller
         try {
             $models = Model::query()
                 ->basics()      // __ Базовые модели (Швейка)
-                ->with(['collection', 'cuttingSchema', 'cuttingOperations'])
+                ->with(['collection', 'cuttingSchema', 'cuttingOperations', 'cuttingProcedure'])
                 ->orderBy('name')
                 ->get();
 
@@ -366,9 +366,37 @@ class ModelController extends Controller
     }
 
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!!           --- Процедура Раскроя для Модели              !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /**
+     * ___ Обновление Процедуры Раскроя для Модели
+     * @param Request $request
+     * @return string
+     */
+    public function updateModelCuttingProcedure(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'data'           => 'required|array',
+                'data.code_1c'   => 'required|string|exists:models,code_1c',
+                'data.procedure_id' => 'required|integer|exists:cutting_procedures,id',
+            ]);
+
+            Model::query()
+                ->where('code_1c', $data['data']['code_1c'])
+                ->update(['cutting_procedure_id' => $data['data']['procedure_id']]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // !!!    --- Сзема Типовой операции Раскроя для Модели        !!!
+    // !!!    --- Схема Типовой операции Раскроя для Модели        !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     /**
      * ___ Обновление Схему Типовой операции Пошива для Модели
@@ -393,6 +421,8 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
 
 
     /**

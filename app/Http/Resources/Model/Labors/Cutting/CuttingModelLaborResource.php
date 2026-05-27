@@ -17,11 +17,12 @@ class CuttingModelLaborResource extends JsonResource
     {
         /** @noinspection PhpUndefinedFieldInspection */
         return [
-            'code_1c'          => $this->code_1c,
-            'name'             => $this->name,
-            'name_report'      => $this->name_report,
+            'code_1c'           => $this->code_1c,
+            'name'              => $this->name,
+            'name_report'       => $this->name_report,
             'cutting_schema_id' => $this->cuttingSchema->id,
-            'operations'       => CuttingOperationForSchemaResource::collection($this->cuttingOperations),
+            'cutting_procedure_id' => $this->cuttingProcedure->id,
+            'operations'        => CuttingOperationForSchemaResource::collection($this->cuttingOperations),
             // 'operations'       => $this->operations
             // '_' => parent::toArray($request)
         ];

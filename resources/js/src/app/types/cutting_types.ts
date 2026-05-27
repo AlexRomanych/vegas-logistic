@@ -348,6 +348,7 @@ export interface ICuttingOperationModel {
     name: string
     name_report: string
     cutting_schema_id: number
+    cutting_procedure_id: number
     operations: ICuttingOperationItem[]
 }
 

@@ -1,12 +1,4 @@
 <template>
-    <!--<AppModalAsyncSelectTS-->
-    <!--    v-model="selectedSchemaId"-->
-    <!--    :items="test()"-->
-    <!--    width="w-[600px]"-->
-    <!--    placeholder="Выберите схему"-->
-    <!--    @change="console.log(123)"-->
-    <!--/>-->
-
     <div
         v-if="!isLoading"
         class="ml-2 mt-2"
@@ -19,15 +11,26 @@
                     <!-- __ Угол -->
                     <div class="sticky-corner">
                         <div class="flex">
-                            <!-- __  Заголовок 'Модели / Операции' -->
+                            <!-- __  Заголовок 'Модели /Процедуры/ Операции' -->
                             <AppLabelTS
                                 :height="'h-[134px]'"
                                 :width="HEADER_ROWS_WIDTH"
                                 align="center"
                                 rounded="4"
-                                text="Модели / Операции"
+                                text="Модели/Процедуры/Операции"
                                 text-size="normal"
                                 type="primary"
+                            />
+
+                            <!-- __  Заголовок 'Процедура' -->
+                            <AppLabelTS
+                                :height="'h-[134px]'"
+                                align="center"
+                                rounded="4"
+                                text="Процедура"
+                                text-size="normal"
+                                type="stone"
+                                width="w-[150px]"
                             />
 
                             <!-- __  Заголовок 'Схема' -->
@@ -46,7 +49,7 @@
                             <!-- __  Свернуть все '▲' -->
                             <AppLabelTS
                                 :height="CELL_HEIGHT"
-                                :width="'w-[202px]'"
+                                :width="COLLAPSE_ALL_WIDTH"
                                 align="center"
                                 class="cursor-pointer"
                                 rounded="4"
@@ -59,7 +62,7 @@
                             <!-- __  Развернуть все '▼' -->
                             <AppLabelTS
                                 :height="CELL_HEIGHT"
-                                :width="'w-[202px]'"
+                                :width="COLLAPSE_ALL_WIDTH"
                                 align="center"
                                 class="cursor-pointer"
                                 rounded="4"
@@ -70,7 +73,7 @@
                             />
                         </div>
 
-                        <div class="flex mt-[-6px] mb-[2px]">
+                        <div class="flex mt-[-6px] mb-[2px] ml-[20px]">
                             <!-- __ Фильтр: Код 1С -->
                             <AppInputTextTS
                                 id="code-1c-search"
@@ -93,6 +96,16 @@
 
                             <!-- __ Фильтр: Схема Типовых операций -->
                             <AppInputTextTS
+                                id="procedure-search"
+                                v-model:text-value.trim="procedureFilter"
+                                :width="PROCEDURE_WIDTH"
+                                placeholder="🔍Процедура..."
+                                text-size="mini"
+                                type="stone"
+                            />
+
+                            <!-- __ Фильтр: Схема Типовых операций -->
+                            <AppInputTextTS
                                 id="schema-search"
                                 v-model:text-value.trim="schemaFilter"
                                 :width="SCHEMA_WIDTH"
@@ -100,6 +113,7 @@
                                 text-size="mini"
                                 type="success"
                             />
+
                         </div>
                     </div>
 
@@ -181,7 +195,7 @@
                         >
                             <!-- __ Шапка строки -->
                             <div class="sticky-col">
-                                <div class="flex">
+                                <div class="flex ml-[20px]">
                                     <!-- __ Код по 1С -->
                                     <AppLabelTS
                                         :height="CELL_HEIGHT"
@@ -191,7 +205,7 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        type="stone"
+                                        type="dark"
                                     />
 
                                     <!-- __ Название модели -->
@@ -203,7 +217,20 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        type="stone"
+                                        type="dark"
+                                    />
+
+                                    <!-- __ Название Процедуры -->
+                                    <AppLabelTS
+                                        :height="CELL_HEIGHT"
+                                        :text="getProcedureName(model)"
+                                        :type="model.cutting_procedure_id ? 'stone' : 'danger'"
+                                        :width="PROCEDURE_WIDTH"
+                                        align="left"
+                                        class="cursor-pointer"
+                                        rounded="4"
+                                        text-size="micro"
+                                        @dblclick="selectProcedure(model)"
                                     />
 
                                     <!-- __ Название Схемы -->
@@ -269,9 +296,9 @@
     <!-- __ Выпадающий список-->
     <AppModalAsyncSelectTS
         ref="appModalAsyncSelectTS"
-        v-model="selectedSchemaId"
-        :items="cuttingOperationSchemas"
-        title="Выберите схему"
+        v-model="selectedItemId"
+        :items="selectedItems"
+        title="Выберите данные"
         width="w-[600px]"
     />
 </template>
@@ -286,7 +313,7 @@ import type {
     ICuttingOperationSchema,
     ICuttingOperationItem,
     ICuttingOperationUpdateObject,
-    ICuttingOperationModel,
+    ICuttingOperationModel, ICuttingProcedure,
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -306,6 +333,8 @@ import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 
+type ISelectableItem = (ICuttingOperationSchema | ICuttingProcedure) & { id: number; name: string };
+
 const cuttingStore = useCuttingStore()
 
 const isLoading = ref(false)
@@ -318,28 +347,33 @@ const DEBUG = true
 
 // __ Константы
 const HEADER_COLUMNS_HEIGHT = 'h-[200px]'
-const HEADER_ROWS_WIDTH     = 'w-[254px]'
+const HEADER_ROWS_WIDTH     = 'w-[274px]'
 
 const COLLECTION_COLLAPSE_WIDTH = 'w-[40px]'
-const COLLECTION_NAME_WIDTH     = 'w-[364px]'
+const COLLECTION_NAME_WIDTH     = 'w-[538px]'
 
 const MODEL_CODE_1C_WIDTH = 'w-[70px]'
 const MODEL_NAME_WIDTH    = 'w-[180px]'
 const SCHEMA_WIDTH        = 'w-[150px]'
+const PROCEDURE_WIDTH     = 'w-[150px]'
 
 const CELL_WIDTH  = 'w-[50px]'
 const CELL_HEIGHT = 'h-[30px]'
 
+const COLLAPSE_ALL_WIDTH = 'w-[289px]'
+
 // __ Определяем переменные
 const cuttingOperationSchemas = ref<ICuttingOperationSchema[]>([])
 const cuttingOperations       = ref<ICuttingOperation[]>([])
+const cuttingProcedures       = ref<ICuttingProcedure[]>([])
 const models                  = ref<ICuttingOperationModelsCollection[]>([])
 const modelsRender            = ref<ICuttingOperationModelsCollection[]>([])
 
 // __ Фильтр
-const codeFilter   = ref('')
-const nameFilter   = ref('')
-const schemaFilter = ref('')
+const codeFilter      = ref('')
+const nameFilter      = ref('')
+const schemaFilter    = ref('')
+const procedureFilter = ref('')
 
 // __ Тип для модального окна ячейки
 const modalOperation           = ref<ICuttingOperation | null>(null)
@@ -356,7 +390,8 @@ const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> |
 const cuttingOperationSchemaDataEdit = ref<InstanceType<typeof CuttingOperationSchemaDataEdit> | null>(null)
 
 // __ Тип для модального окна выбора Схемы
-const selectedSchemaId      = ref<number | null>(null)
+const selectedItems  = ref<ISelectableItem[]>([])
+const selectedItemId = ref()
 const appModalAsyncSelectTS = ref<any>(null)
 // const appModalAsyncSelectTS = ref<InstanceType<typeof AppModalAsyncSelectTS> | null>(null)
 
@@ -422,6 +457,11 @@ const getType = (model: ICuttingOperationModel, operation: ICuttingOperation) =>
 const getSchemaName = (model: ICuttingOperationModel) => {
     const schema = cuttingOperationSchemas.value.find((schema) => schema.id === model.cutting_schema_id)
     return schema ? schema.name : ''
+}
+
+const getProcedureName = (model: ICuttingOperationModel) => {
+    const procedure = cuttingProcedures.value.find(procedure => procedure.id === model.cutting_procedure_id)
+    return procedure ? procedure.name : ''
 }
 
 // __ Показываем сообщение об ошибке
@@ -525,8 +565,10 @@ const editOperation = async (model: ICuttingOperationModel, operation: ICuttingO
 
 // __ Выбираем схему для модели
 const selectSchema = async (model: ICuttingOperationModel) => {
-    selectedSchemaId.value = model.cutting_schema_id
-    const answer           = await appModalAsyncSelectTS.value!.show(selectedSchemaId.value)
+    selectedItems.value  = cuttingOperationSchemas.value
+    selectedItemId.value = model.cutting_schema_id
+    // selectedSchemaId.value = model.cutting_schema_id
+    const answer         = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
     if (answer) {
         const selectedSchema = appModalAsyncSelectTS.value!.selected
         if (selectedSchema.id === model.cutting_schema_id) {
@@ -537,6 +579,29 @@ const selectSchema = async (model: ICuttingOperationModel) => {
 
         if (checkCRUD(result)) {
             model.cutting_schema_id = selectedSchema.id
+        } else {
+            await showError()
+            return
+        }
+    }
+}
+
+// __ Выбираем Процедуру Раскроя для модели
+const selectProcedure = async (model: ICuttingOperationModel) => {
+    selectedItems.value  = cuttingProcedures.value
+    selectedItemId.value = model.cutting_procedure_id
+    // selectedProcedureId.value = model.cutting_procedure_id
+    const answer         = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
+    if (answer) {
+        const selectedProcedure = appModalAsyncSelectTS.value!.selected
+        if (selectedProcedure.id === model.cutting_procedure_id) {
+            return
+        }
+
+        const result = await cuttingStore.updateModelCuttingProcedure(model.code_1c, selectedProcedure.id)
+
+        if (checkCRUD(result)) {
+            model.cutting_procedure_id = selectedProcedure.id
         } else {
             await showError()
             return
@@ -556,14 +621,15 @@ const expandAll = () => {
 
 // __ Получаем данные
 const getData = async () => {
-    [cuttingOperations.value, cuttingOperationSchemas.value, models.value] = await Promise.all([
+    [cuttingOperations.value, cuttingOperationSchemas.value, models.value, cuttingProcedures.value] = await Promise.all([
         cuttingStore.getCuttingOperations(),
         cuttingStore.getCuttingOperationSchemas(),
         cuttingStore.getModelsForLabor(),
+        cuttingStore.getCuttingProcedures(),
     ])
 
     cuttingOperations.value = cuttingOperations.value
-        .map((cuttingOperation) => ({
+        .map(cuttingOperation => ({
             ...cuttingOperation,
             description: cuttingOperation.description ?? '',
             can_edit   : true,
@@ -573,6 +639,15 @@ const getData = async () => {
 
     // cuttingOperationSchemas.value = cuttingOperationSchemas.value
     //     .filter(schema => schema.id !== 0)
+
+    cuttingProcedures.value = cuttingProcedures.value
+        .map(cuttingProcedure => ({
+            ...cuttingProcedure,
+            description: cuttingProcedure.description ?? '',
+            can_edit   : true
+        }))
+        .sort((a, b) => a.id - b.id)
+
 
     models.value = models.value.map((collection) => ({ ...collection, collapsed: true }))
 }

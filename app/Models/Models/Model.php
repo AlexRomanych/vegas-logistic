@@ -3,6 +3,7 @@
 namespace App\Models\Models;
 
 // use App\Models\Order\Line;
+use App\Models\Manufacture\Cells\Cutting\CuttingProcedure;
 use App\Models\Manufacture\Cells\Sewing\SewingOperation;
 use App\Models\Manufacture\Cells\Sewing\SewingOperationModelPivot;
 use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
@@ -296,6 +297,13 @@ final class Model extends LaravelModel
             )
             ->using(CuttingOperationModelPivot::class)
             ->withPivot(['ratio', 'amount', 'position', 'condition']);
+    }
+
+
+    // Relations: Связь Модели с Процедурами Раскроя
+    public function cuttingProcedure(): BelongsTo
+    {
+        return $this->belongsTo(CuttingProcedure::class, 'cutting_procedure_id', 'id');
     }
 
 

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!isLoading" :key="updateKey" class="m-2 p-2 w-max-fit">
+    <div v-if="!isLoading" class="m-2 p-2 w-max-fit">
 
         <form @submit.prevent="formSubmit">
 
@@ -17,44 +17,27 @@
                 <!--    width="w-[500px]"-->
                 <!--/>-->
 
-                <!-- __ Название Операции -->
+                <!-- __ Название Процедуры -->
                 <AppInputTextTS
                     id="name"
                     v-model:textValue.trim="v$.name.$model as unknown as string"
                     :errors="v$.name.$errors"
-                    label="Название операции"
+                    :width="DEFAULT_WIDTH"
+                    label="Название Процедуры"
                     mode="text"
-                    placeholder="Укажите название операции..."
+                    placeholder="Укажите название процедуры..."
                 />
 
-                <!-- __ Оборудование -->
+                <!-- __ Object_name -->
                 <AppInputTextTS
-                    id="machine"
-                    v-model:textValue.trim="v$.machine.$model as unknown as string"
-                    :errors="v$.machine.$errors"
-                    label="Оборудование"
+                    id="object-name"
+                    v-model:textValue.trim="v$.objectName.$model as unknown as string"
+                    :errors="v$.objectName.$errors"
+                    :width="DEFAULT_WIDTH"
+                    disabled
+                    label="Объект Процедуры"
                     mode="text"
-                    placeholder="Укажите название оборудования..."
-                />
-
-                <!-- __ Стол -->
-                <AppInputTextTS
-                    id="machine"
-                    v-model:textValue.trim="v$.table.$model as unknown as string"
-                    :errors="v$.table.$errors"
-                    label="Стол"
-                    mode="text"
-                    placeholder="Укажите стол..."
-                />
-
-                <!-- __ Тип чехла -->
-                <AppInputTextTS
-                    id="machine"
-                    v-model:textValue.trim="v$.coverType.$model as unknown as string"
-                    :errors="v$.coverType.$errors"
-                    label="Тип чехла"
-                    mode="text"
-                    placeholder="Укажите тип чехла..."
+                    placeholder="Укажите объект процедуры..."
                 />
 
                 <!-- __ Актуальность -->
@@ -62,41 +45,60 @@
                 <AppCheckboxTS
                     id="active"
                     :checkboxData="activeCheckboxData"
+                    :width="DEFAULT_WIDTH"
                     dir="horizontal"
                     inputType="radio"
                     legend="Актуальность записи"
                     type="secondary"
-                    width="w-[500px]"
                     @checked="activeCheckedHandler"
                 />
 
-                      <!-- __ Время операции -->
-                <AppInputNumberSimpleTS
-                    id="time"
-                    v-model:input-number.number="v$.time.$model as unknown as number"
-                    :errors="v$.time.$errors"
-                    label="Время операции"
-                    mode="text"
-                    placeholder="Время операции..."
-                    width="w-[500px]"
-                />
-
-                <!-- __ Описание операции -->
+                <!-- __ Описание процедуры -->
                 <AppInputTextAreaSimpleTS
                     id="description"
                     v-model:text-value.trim="v$.description.$model as unknown as string"
                     :value="v$.description.$model"
-                    label="Описание операции"
+                    :width="DEFAULT_WIDTH"
+                    label="Описание процедуры"
                     placeholder="Заполните описание..."
                 />
 
+                <!-- __ Сама процедура -->
+                <AppInputTextAreaSimpleTS
+                    id="machine"
+                    v-model:textValue.trim="v$.text.$model as unknown as string"
+                    :bold="false"
+                    :errors="v$.text.$errors"
+                    :maxlength="5000"
+                    :read="false"
+                    :rows="15"
+                    :width="DEFAULT_WIDTH"
+                    height="min-h-[300px]"
+                    label="Процедура Раскроя"
+                    mode="text"
+                    placeholder="Текст процедуры..."
+                    text-size="normal"
+                />
+
+                <!--&lt;!&ndash; __ Время операции &ndash;&gt;-->
+                <!--<AppInputNumberSimpleTS-->
+                <!--    id="time"-->
+                <!--    v-model:input-number.number="v$.time.$model as unknown as number"-->
+                <!--    :errors="v$.time.$errors"-->
+                <!--    label="Время операции"-->
+                <!--    mode="text"-->
+                <!--    placeholder="Время операции..."-->
+                <!--    width="w-[500px]"-->
+                <!--/>-->
+
+
                 <!-- __ К списку -->
                 <div class="m-3 mt-5 flex justify-between">
-                    <router-link :to="{ name: 'manufacture.cell.cutting.operations' }">
+                    <router-link :to="{ name: 'manufacture.cell.cutting.procedures' }">
                         <AppInputButton
                             id="returnButton"
                             func="button"
-                            title="К списку операций"
+                            title="К списку процедур"
                             width="w-[230px]"
                         />
                     </router-link>
@@ -115,7 +117,7 @@
                         :type="isFormCorrect ? 'success' : 'danger'"
                         func="submit"
                         title="Сохранить"
-                        width="w-[230px]"
+                        width="w-[300px]"
                     />
                 </div>
 
@@ -137,7 +139,7 @@
 <script lang="ts" setup>
 import type { ICheckboxData, ICheckboxDataItem, ICuttingProcedure } from '@/types'
 
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -154,34 +156,33 @@ import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
-import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+// import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 
 
 const cuttingStore = useCuttingStore()
 
 const route  = useRoute()
-const router = useRouter()                 // Определяем роутер
+const router = useRouter()
 
-const updateKey = 0
+// const updateKey = 0
+const DEFAULT_WIDTH = 'w-[1000px]'
 
 const isLoading     = ref(false)
 const isFormCorrect = ref(false)
-const editMode      = ref(false)         // определяем режим работы формы (редактирование или создание)
+const editMode      = ref(false)        // определяем режим работы формы (редактирование или создание)
 let paramId: number = -1
 
-const calloutShow    = ref(false)      // состояние окна
-const confirmClick   = ref(false)     // определяем для вывода этого callout
-const calloutMessage = ref('')      // определяем показываемое сообщение
-const calloutType    = ref('danger')   // определяем тип callout
+const calloutShow    = ref(false)       // состояние окна
+const confirmClick   = ref(false)       // определяем для вывода этого callout
+const calloutMessage = ref('')          // определяем показываемое сообщение
+const calloutType    = ref('danger')    // определяем тип callout
 const calloutHandler = () => setInterval(() => (confirmClick.value = false), 5000)
 
 
 // __ Подготавливаем переменные
 const procedure = ref<ICuttingProcedure>(CUTTING_PROCEDURE_DRAFT)
 let activeCheckboxData: ICheckboxData         // выбор активности
-let calcModeCheckboxData: ICheckboxData       // выбор типа расчета
-let detailTypeCheckboxData: ICheckboxData     // выбор типа детали
 
 // __ Подгружаем данные по операции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
@@ -196,10 +197,10 @@ const loadEntity = async (paramId: number) => {
 // __ Определяем объекты валидации
 // const id = ref(-1)
 const name        = ref('')
+const objectName  = ref('')
 const active      = ref(true)
 const description = ref('')
 const text        = ref('')
-const objectName  = ref('')
 
 
 // __ Заполняем объекты валидации
@@ -219,6 +220,14 @@ const verify = {
     objectName,
     description,
 }
+
+// const verify = {
+//     // id,
+//     name,
+//     text,
+//     objectName,
+//     description,
+// }
 
 // __ Определяем правила валидации
 const MIN_NAME_LENGTH   = 10
@@ -255,6 +264,7 @@ const rules = {
 }
 
 // __ Оборачиваем в объект
+// const v$ = useVuelidate(rules, procedure)
 const v$ = useVuelidate(rules, verify)
 
 // __ Заполняем селекты данными
@@ -287,18 +297,18 @@ const formSubmit = async () => {
 
     procedure.value.name        = name.value
     procedure.value.active      = active.value
-    procedure.value.text      = text.value
-    procedure.value.object_name      = objectName.value
-    procedure.value.description      = description.value
+    procedure.value.text        = text.value
+    procedure.value.object_name = objectName.value
+    procedure.value.description = description.value
 
     console.log('procedure.value', procedure.value)
 
     let result
 
     if (!editMode.value) {
-        result = await cuttingStore.createCuttingOperation(procedure.value)
+        result = await cuttingStore.createCuttingProcedure(procedure.value)
     } else {
-        result = await cuttingStore.updateCuttingOperation(procedure.value)
+        result = await cuttingStore.updateCuttingProcedure(procedure.value)
     }
 
     if (checkCRUD(result.data)) {
@@ -315,10 +325,10 @@ const formSubmit = async () => {
 }
 
 watch([
-    () => name,
-    () => text,
-    () => description,
-    () => objectName
+    () => name.value,
+    () => text.value,
+    () => description.value,
+    () => objectName.value
 ], async () => {
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму
 }, { deep: true, immediate: true })

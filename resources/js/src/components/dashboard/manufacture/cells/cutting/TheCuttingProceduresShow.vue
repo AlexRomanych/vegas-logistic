@@ -32,6 +32,11 @@
                         />
                     </div>
 
+                    <!-- __ Active -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.active"/>
+                    </div>
+
                     <!-- __ Тип объекта процедуры -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.object_name"/>
@@ -41,14 +46,43 @@
                         />
                     </div>
 
+                    <div>
+                        <!-- __ + Типовая операция -->
+                        <router-link :to="{ name: 'manufacture.cell.cutting.procedures.create' }">
+                            <AppLabelMultiLineTS
+                                :text="['➕', '']"
+                                align="center"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="large"
+                                type="warning"
+                                width="w-[64px]"
+                            />
+                        </router-link>
 
+                        <!-- __ Сброс фильтров -->
+                        <div class=" mt-[8px]">
+                            <AppLabelTS
+                                id="filters-reset"
+                                align="center"
+                                class="cursor-pointer"
+                                height="h-[29px]"
+                                rounded="4"
+                                text="Очистить"
+                                text-size="mini"
+                                type="orange"
+                                width="w-[64px]"
+                                @click="resetFilters"
+                            />
+                        </div>
+                    </div>
 
                 </div>
             </div>
         </div>
 
         <div class="ml-2">
-            <!-- __ Данные (Коллекции) -->
+            <!-- __ Данные (Процедуры) -->
             <div
                 v-for="procedure of entitiesRender"
                 :key="procedure.id"
@@ -78,6 +112,13 @@
                         @click="render.collapsed.click!(procedure)"
                     />
 
+                    <!-- __ Active -->
+                    <AppLabelTSWrapper
+                        :arg="procedure"
+                        :render-object="render.active"
+                        @click="render.collapsed.click!(procedure)"
+                    />
+
                     <!-- __ Тип объекта процедуры -->
                     <AppLabelTSWrapper
                         :arg="procedure"
@@ -99,7 +140,7 @@
 
                     <!-- __ Редактировать -->
                     <router-link
-                        :to="{ name: 'manufacture.cell.procedure.edit', params: { id: procedure.id } }">
+                        :to="{ name: 'manufacture.cell.cutting.procedures.edit', params: { id: procedure.id } }">
                         <AppLabelTS
                             v-if="CAN_EDIT"
                             align="center"
@@ -114,15 +155,13 @@
                 </div>
 
                 <!-- __ Процедуры. VBA показываем только для админа -->
-                <div v-if="!procedure.collapsed">
+                <template v-if="!procedure.collapsed">
                     <div class="flex gap-x-1">
                         <pre><code contenteditable="false">{{ procedure.text }}</code></pre>
                         <!--<pre v-if="userStore.hasAdminRole()"><code contenteditable="false">{{ procedure.text_vba }}</code></pre>-->
                     </div>
                     <div class="mt-2"></div>
-                </div>
-
-
+                </template>
 
 
             </div>
@@ -132,7 +171,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICuttingProcedure, IRenderData } from '@/types'
+import type { ICuttingOperation, ICuttingProcedure, IRenderData } from '@/types'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -145,6 +184,7 @@ import AppInputTextTSWrapper from '@/components/dashboard/models/components/AppI
 import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 
 
 const cuttingStore = useCuttingStore()
@@ -226,6 +266,23 @@ const render: IRenderData = reactive({
         data          : (procedure: ICuttingProcedure) => procedure.name,
         class         : 'cursor-pointer',
     },
+    active       : {
+        id            : () => 'active-search',
+        header        : ['Актуаль-', 'ность'],
+        width         : 'w-[80px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (procedure: ICuttingProcedure) => procedure.active ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Название...',
+        data          : (procedure: ICuttingProcedure) => procedure.active ? '✓' : '✗',
+        class         : 'cursor-pointer',
+    },
     object_name: {
         id            : () => 'object-name-search',
         header        : ['Тип объекта', 'процедуры'],
@@ -262,6 +319,13 @@ const deleteProcedure = async (procedure: ICuttingProcedure) => {
     return
 }
 
+// __ Обнуляем фильтры
+const resetFilters = () => {
+    idFilter.value         = ''
+    nameFilter.value       = ''
+    objectNameFilter.value = ''
+}
+
 
 watchEffect(() => {
 
@@ -285,6 +349,7 @@ const getEntities = async () => {
             collapsed  : true
         }))
         .sort((a, b) => a.name.localeCompare(b.name))
+        .filter(procedure => procedure.id !== 0)
 }
 
 // __ Формирование данных для рендера
@@ -321,7 +386,7 @@ pre {
     bg-white
     font-semibold
     p-3
-    max-w-[1024px]
+    max-w-[800px] min-w-[800px]
     max-h-[600px]
     text-xs;
     /* Ограничиваем ширину контейнера, чтобы он не растягивался бесконечно */

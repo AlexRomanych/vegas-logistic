@@ -238,7 +238,6 @@ const cuttingOperationsRender = ref<ICuttingOperation[]>([])
 
 // __ Получаем раскраску операции
 const getOperationType = (operation: ICuttingOperation) => {
-    console.log(operation)
     if (!operation) {
         return 'dark'
     }
@@ -262,7 +261,7 @@ const HEADER_TYPE        = 'primary'
 const DATA_TYPE          = 'primary'
 const DEFAULT_TYPE       = 'dark'
 const HEADER_TEXT_SIZE   = 'mini'
-const DATA_TEXT_SIZE     = 'micro'
+const DATA_TEXT_SIZE     = 'mini'
 const HEADER_ALIGN       = 'center'
 const DATA_ALIGN         = 'left'
 // const DEFAULT_WIDTH = 'w-[100px]'
@@ -342,7 +341,7 @@ const render: IRenderData = reactive({
     type       : {
         id        : () => 'type-search',
         header    : ['Тип', 'расчета'],
-        width     : 'w-[100px]',
+        width     : 'w-[140px]',
         height    : DEFAULT_HEIGHT,
         show      : true,
         headerType: () => HEADER_TYPE,

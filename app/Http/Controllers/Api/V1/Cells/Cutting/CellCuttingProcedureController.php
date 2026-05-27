@@ -22,6 +22,9 @@ class CellCuttingProcedureController extends Controller
     {
         try {
             $cuttingProcedures = CuttingProcedure::all();
+            //$cuttingProcedures = CuttingProcedure::query()
+            //    ->where('id', '<>', 0)
+            //    ->get();
             return CuttingProcedureResource::collection($cuttingProcedures);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
@@ -45,5 +48,87 @@ class CellCuttingProcedureController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+    /**
+     * ___ Создание Процедуры Раскроя
+     * @param Request $request
+     * @return string
+     */
+    public function createCuttingProcedure(Request $request)
+    {
+        try {
+            $all = $request->all();
+
+            $data = $request->validate([
+                'name'        => 'required|unique:cutting_operations',
+                'active'      => 'required|boolean',
+                'description' => 'nullable|string',
+                'object_name' => 'required|string',
+                'text'        => 'required|string',
+            ]);
+
+            $cuttingProcedure = CuttingProcedure::query()->create([
+                'name'        => $data['name'],
+                'active'      => $data['active'],
+                'description' => $data['description'],
+                'text'        => $data['text'],
+                'object_name' => $data['object_name'],
+
+            ]);
+
+            if (!$cuttingProcedure) {
+                throw new Exception('Error creating cutting Procedure');
+            }
+
+            return EndPointStaticRequestAnswer::ok('Сохранено');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Обновление Процедуры Раскроя
+     * @param Request $request
+     * @return string
+     */
+    public function updateCuttingProcedure(Request $request)
+    {
+        try {
+            //$all = $request->all();
+
+            $data = $request->validate([
+                'id'          => 'required|numeric|exists:cutting_procedures,id',
+                'name'        => 'string',
+                'active'      => 'required|boolean',
+                'description' => 'nullable|string',
+                'object_name' => 'required|string',
+                'text'        => 'required|string',
+            ]);
+
+            $cuttingProcedure = CuttingProcedure::query()->findOrFail($data['id']);
+
+            // __ Оставляем все поля, которые БЫЛИ в запросе, включая пустые/null
+            $updates = $request->only(['name', 'active', 'description', 'object_name', 'text']);
+
+            // __ Проверяем, было ли поле в запросе изначально, даже если оно стало null
+            // $updates = collect($data)
+            //     ->except('id')
+            //     ->filter(fn($value, $key) => $request->has($key))
+            //     ->toArray();
+
+            // __ Фильтруем данные: оставляем только те, что есть в запросе и не null
+            // $updates = collect($data)->except('id')->filter(fn($value) => !is_null($value))->toArray();
+
+            // __ Обновляем именно найденную модель
+            $cuttingProcedure->update($updates);
+
+            return EndPointStaticRequestAnswer::ok('Сохранено');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
 }

@@ -3,22 +3,14 @@
 
         <label v-if="label" :class="['input-label', textColor, labelTextSizeClass ]" :for="id">{{ label }}</label>
 
-        <textarea
+        <pre
             :id="id"
-            v-model="textModel"
-
-            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass, semibold]"
-
-            :cols="cols.toString()"
-            :disabled="disabled"
-            :maxlength="maxlength.toString()"
-            :placeholder="placeholder"
-
-            :readonly="read"
-            :rows="rows.toString()"
-
+            :contenteditable="!read && !disabled ? 'plaintext-only' : 'false'"
             :spellcheck="false"
-        />
+            :placeholder="placeholder"
+            :class="['app-input', borderColor, focusBorderColor, placeholderColor, textSizeClass, semibold]"
+            @input="onInput"
+        >{{ textModel }}</pre>
 
         <div v-if="errors">
             <div v-for="(err, index) in errors" :key="index">
@@ -29,7 +21,6 @@
         </div>
 
     </div>
-
 </template>
 
 
@@ -91,6 +82,12 @@ const props = withDefaults(defineProps<IProps>(), {
 // __ Задаем модель
 const textModel = defineModel<string>('textValue', { required: true })
 
+// Добавляем функцию для синхронизации текста из contenteditable во Vue-модель
+const onInput = (event: Event) => {
+    const target = event.target as HTMLPreElement
+    textModel.value = target.innerText
+}
+
 
 const currentColorIndex = 600       // задаем основной индекс палитры tailwinds
 const currentColor      = computed(() => getColorClassByType(props.type)).value + currentColorIndex
@@ -129,9 +126,23 @@ textColorErrors = textColorErrors.replace(currentColorIndex.toString(), (current
 </script>
 
 <style scoped>
+/* Добавляем стили, чтобы <pre> вел себя аккуратно как инпут */
 .app-input {
-    @apply p-1 border rounded focus:outline-none focus:ring-2 ;
+    @apply p-1 border rounded focus:outline-none focus:ring-2;
+    white-space: pre-wrap;       /* Чтобы длинные строки переносились, а не уходили вбок */
+    word-wrap: break-word;
+    overflow-y: auto;            /* Появится скролл, если текст превысит высоту height */
 }
+
+/* Эмуляция placeholder для contenteditable элементов, если они пустые */
+.app-input:empty::before {
+    content: attr(placeholder);
+    @apply text-slate-400 text-xs pointer-events-none;
+}
+
+/*.app-input {
+    @apply p-1 border rounded focus:outline-none focus:ring-2 ;
+}*/
 
 .app-input::placeholder {
     @apply text-xs;

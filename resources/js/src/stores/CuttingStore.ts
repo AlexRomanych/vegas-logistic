@@ -7,7 +7,7 @@ import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, j
 import type {
     IPeriod, IRenderMatrixDiff, ICuttingDayWorker, ICuttingOperation, ICuttingOperationSchema,
     ICuttingOperationUpdateObject, ICuttingTask,
-    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet, ICuttingLineTableSetData,
+    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet, ICuttingLineTableSetData, ICuttingProcedure,
 } from '@/types'
 
 
@@ -70,7 +70,7 @@ const URL_CUTTING_DAY_READY_GET              = '/cutting/day/ready/get'         
 const URL_CUTTING_DAY_READY_SET              = '/cutting/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
 const URL_CUTTING_DAY_READY_UNSET            = '/cutting/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
 const URL_CUTTING_PROCEDURES                 = '/cutting/procedures'                  // URL для получения процедур расчета Раскроя
-const URL_CUTTING_PROCEDURE                  = '/cutting/procedure'                   // URL для получения процедуры расчета Раскроя по id
+const URL_CUTTING_PROCEDURES_MODEL           = '/cutting/models/procedures'           // URL для обновления процедуры раскроя для модели
 const URL_CUTTING_TEST                       = '/cutting/test'                        // URL для тестирования
 
 export const useCuttingStore = defineStore('cutting', () => {
@@ -752,6 +752,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
+
     // --- ----------------------------------------------------------
     // --- ------------------- Статусы СЗ ---------------------------
     // --- ----------------------------------------------------------
@@ -947,13 +948,37 @@ export const useCuttingStore = defineStore('cutting', () => {
         if (id === null) {
             return
         }
-        const response = await jwtGet(`${URL_CUTTING_PROCEDURE}/${id}`)
+        const response = await jwtGet(`${URL_CUTTING_PROCEDURES}/${id}`)
         const result   = await response
 
         if (DEBUG) console.log('CuttingStore: getCuttingProcedure: ', result)
         return result.data
     }
 
+    // __ Создаем Процедуру Раскроя
+    const createCuttingProcedure = async (cuttingProcedure: ICuttingProcedure) => {
+        const result = await jwtPost(URL_CUTTING_PROCEDURES, cuttingProcedure)
+        if (DEBUG) console.log('CuttingStore: createCuttingProcedure: ', result)
+        return result
+    }
+
+    // __ Обновляем Процедуру Раскроя
+    const updateCuttingProcedure = async (cuttingProcedure: ICuttingProcedure) => {
+        const result = await jwtPut_(URL_CUTTING_PROCEDURES, cuttingProcedure)
+        if (DEBUG) console.log('CuttingStore: updateCuttingProcedure: ', result)
+        return result
+    }
+
+
+    // __ Обновление Процедуры раскроя для модели
+    const updateModelCuttingProcedure = async (code_1c: string, procedure_id: number) => {
+        const response = await jwtPatch(URL_CUTTING_PROCEDURES_MODEL, { code_1c, procedure_id })
+        const result   = await response
+        if (DEBUG) console.log('CuttingStore: updateModelCuttingProcedure: ', result)
+        return result.data
+    }
+
+    // --- ----------------------------------------------------------
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalCuttingTasks.value, () => {
@@ -1050,6 +1075,9 @@ export const useCuttingStore = defineStore('cutting', () => {
 
         getCuttingProcedures,
         getCuttingProcedure,
+        updateCuttingProcedure,
+        createCuttingProcedure,
+        updateModelCuttingProcedure,
 
         test,
     }

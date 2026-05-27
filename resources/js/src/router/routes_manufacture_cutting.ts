@@ -146,15 +146,28 @@ const cutting = [
     },
 
     {
+        // ___ Создание Процедуры Раскроя
+        path     : _MAIN_PREFIX + 'procedures/create',
+        name     : 'manufacture.cell.cutting.procedures.create',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/TheCuttingProcedureEdit.vue'),
+        meta     : {
+            title: 'Создание Процедуры расчета для Раскроя',
+            mode : ROUTER_PAGE_MODE.CREATE,
+        } as IRouteMeta,
+    },
+
+    {
         // ___ Редактирование Процедуры Раскроя
         path     : _MAIN_PREFIX + 'procedures/edit/:id',
-        name     : 'manufacture.cell.procedure.edit',
+        name     : 'manufacture.cell.cutting.procedures.edit',
         component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/TheCuttingProcedureEdit.vue'),
         meta     : {
             title: 'Редактирование Процедуры расчета для Раскроя',
             mode : ROUTER_PAGE_MODE.EDIT,
         } as IRouteMeta,
     },
+
+
 
     //
     // {

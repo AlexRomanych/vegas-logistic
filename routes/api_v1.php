@@ -259,8 +259,10 @@ Route::prefix('cutting')
 
         // __ Процедуры Раскроя
         Route::get('/procedures', [CellCuttingProcedureController::class, 'getCuttingProcedures']);
-        Route::get('/procedure/{id}', [CellCuttingProcedureController::class, 'getCuttingProcedure']);
-
+        Route::get('/procedures/{id}', [CellCuttingProcedureController::class, 'getCuttingProcedure']);
+        Route::post('/procedures', [CellCuttingProcedureController::class, 'createCuttingProcedure']);
+        Route::put('/procedures', [CellCuttingProcedureController::class, 'updateCuttingProcedure']);
+        Route::patch('/models/procedures', [ModelController::class, 'updateModelCuttingProcedure']);
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 

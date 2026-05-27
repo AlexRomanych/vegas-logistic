@@ -21,6 +21,13 @@ return new class extends Migration
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
+
+        DB::table(self::TABLE_NAME)->insert(
+            [
+                'id' => 0,
+                'name' => 'Без процедуры',
+            ]
+        );
     }
 
     /**

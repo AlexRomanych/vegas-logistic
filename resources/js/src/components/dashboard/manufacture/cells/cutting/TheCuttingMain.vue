@@ -37,7 +37,7 @@ const menuItems = ref<IMenuItem[]>([
     { name: 'Статусы движения СЗ', path: 'manufacture.cell.cutting.task.statuses', shown: true, isActive: true },
     { name: 'Типовые операции', path: 'manufacture.cell.cutting.operations', shown: true, isActive: true },
     { name: 'Схемы типовых операций', path: 'manufacture.cell.cutting.operation.schemas', shown: true, isActive: true },
-    { name: 'Трудозатраты моделей', path: 'manufacture.cell.cutting.operation.models', shown: true, isActive: true },
+    { name: 'Трудозатраты + процедуры раскроя для моделей', path: 'manufacture.cell.cutting.operation.models', shown: true, isActive: true },
     { name: 'Процедуры расчета раскроя', path: 'manufacture.cell.cutting.procedures', shown: true, isActive: true },
     // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
 ])
