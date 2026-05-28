@@ -75,8 +75,10 @@ class CuttingTask extends Model
         $targetDate = is_string($inDate) ? Carbon::parse($inDate) : $inDate->copy();
 
         return $query
-            ->whereDate('action_at', '>=', $targetDate->startOfDay())
-            ->whereDate('action_at', '<=', $targetDate->endOfDay());
+            ->where('action_at', '>=', $targetDate->startOfDay())
+            ->where('action_at', '<=', $targetDate->endOfDay());
+            //->whereDate('action_at', '>=', $targetDate->startOfDay())
+            //->whereDate('action_at', '<=', $targetDate->endOfDay());
     }
 
 

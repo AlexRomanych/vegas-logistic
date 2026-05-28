@@ -69,15 +69,37 @@
             text="Время"
         />
 
+        <!-- __ Элемент -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.detail"
+            rounded="4"
+            text="Эл."
+        />
+
+        <!-- __ Стол -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.table"
+            align="center"
+            rounded="4"
+            text="Ст."
+        />
+
         <!-- __ Швейная машина -->
         <AppLabelTS
             :height="LINE_HEIGHT"
-            text="ШМ"
             :text-size="LINE_TEXT_SIZE"
             :type="DEFAULT_TYPE"
             :width="fieldWidths.machine"
             align="center"
             rounded="4"
+            text="ШМ"
         />
 
         <!-- __ Ткань -->
@@ -91,28 +113,6 @@
             text="Ткань"
         />
 
-        <!-- __ ТКЧ -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :height="LINE_HEIGHT"
-            :text-size="LINE_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="fieldWidths.tkch"
-            rounded="4"
-            text="ТКЧ"
-        />
-
-        <!-- __ Кант -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :height="LINE_HEIGHT"
-            :text-size="LINE_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="fieldWidths.kant"
-            rounded="4"
-            text="Кант"
-        />
-
         <!-- __ КДЧ -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -123,6 +123,116 @@
             rounded="4"
             text="КДЧ"
         />
+
+        <!-- __ Крой -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.cut"
+            rounded="4"
+            text="Крой"
+        />
+
+        <!-- __ Угол -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.angle"
+            rounded="4"
+            text="Угол"
+        />
+
+        <!-- __ Настил -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.layers"
+            rounded="4"
+            text="Настил"
+        />
+
+        <!-- __ Расход -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.expense"
+            rounded="4"
+            text="Расход"
+        />
+
+        <!-- __ Рулон -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.fabric_roll"
+            rounded="4"
+            text="Рулон"
+        />
+
+        <!-- __ Отметка Рулона -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.fabric_roll_at"
+            rounded="4"
+            text="Отм. рул."
+        />
+
+        <!-- __ Брак -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.defects"
+            rounded="4"
+            text="Брак"
+        />
+
+        <!-- __ Причина брака -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.defects_reason"
+            rounded="4"
+            text="Причина брака"
+        />
+
+        <!--&lt;!&ndash; __ ТКЧ &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :align="DEFAULT_ALIGN"-->
+        <!--    :height="LINE_HEIGHT"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="DEFAULT_TYPE"-->
+        <!--    :width="fieldWidths.tkch"-->
+        <!--    rounded="4"-->
+        <!--    text="ТКЧ"-->
+        <!--/>-->
+
+        <!--&lt;!&ndash; __ Кант &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :align="DEFAULT_ALIGN"-->
+        <!--    :height="LINE_HEIGHT"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="DEFAULT_TYPE"-->
+        <!--    :width="fieldWidths.kant"-->
+        <!--    rounded="4"-->
+        <!--    text="Кант"-->
+        <!--/>-->
 
         <!-- __ Состав -->
         <AppLabelTS
@@ -195,6 +305,18 @@
             rounded="4"
             text="Причина"
         />
+
+        <!-- __ Заявка -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.order"
+            rounded="4"
+            text="Заявка"
+        />
+
 
     </div>
 </template>

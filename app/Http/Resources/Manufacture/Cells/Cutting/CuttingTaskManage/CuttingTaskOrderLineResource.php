@@ -24,17 +24,32 @@ class CuttingTaskOrderLineResource extends JsonResource
                 'height' => $this->height,
             ],
 
+
             'model' => [
                 'main'  => (new CuttingTaskModelResource($this->whenLoaded('model')))
-                    ->additional(['phantom_data' => $this->additional['phantom_data']]),
+                    ->additional(['phantom_data' => $this->additional['phantom_data'] ?? null]),
 
-                // !!! Используем $this->model->getRelation('cover' и 'base'), потому что есть поле $this->model->cover и $this->model->base,
-                'base'  => new CuttingTaskModelResource($this->model->getRelation('base')),
-                'cover' => new CuttingTaskModelResource($this->model->getRelation('cover')),
-                // 'cover' => new CuttingTaskModelResource($this->whenLoaded('cover')),
-                // 'base' => new CuttingTaskModelResource($this->whenLoaded('base')),
-                // 'cover' => $this->model->getRelation('cover'),
+                // Безопасно вытаскиваем base и cover только если связь 'model' загружена и существует
+                'base'  => $this->relationLoaded('model') && $this->model
+                    ? new CuttingTaskModelResource($this->model->getRelation('base'))
+                    : null,
+
+                'cover' => $this->relationLoaded('model') && $this->model
+                    ? new CuttingTaskModelResource($this->model->getRelation('cover'))
+                    : null,
             ],
+
+            //'model' => [
+            //    'main'  => (new CuttingTaskModelResource($this->whenLoaded('model')))
+            //        ->additional(['phantom_data' => $this->additional['phantom_data']]),
+            //
+            //    // !!! Используем $this->model->getRelation('cover' и 'base'), потому что есть поле $this->model->cover и $this->model->base,
+            //    'base'  => new CuttingTaskModelResource($this->model->getRelation('base')),
+            //    'cover' => new CuttingTaskModelResource($this->model->getRelation('cover')),
+            //    // 'cover' => new CuttingTaskModelResource($this->whenLoaded('cover')),
+            //    // 'base' => new CuttingTaskModelResource($this->whenLoaded('base')),
+            //    // 'cover' => $this->model->getRelation('cover'),
+            //],
 
             'amount'      => $this->amount,
             'textile'     => $this->textile,

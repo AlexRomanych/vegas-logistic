@@ -13,6 +13,7 @@ use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskStatus;
 use App\Services\DefaultsService;
 use App\Services\Manufacture\CuttingService;
+use App\Services\ModelsService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -53,14 +54,71 @@ class CellCuttingTaskController extends Controller
                 ])
                 // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
                 // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                //->with([
+                //    'order.client', // Оптимизация: берем только нужные поля
+                //    'order.orderType',
+                //    'statuses',
+                //
+                //    // Основные строки раскроя
+                //    'cuttingLines.orderLine.model' => function($query) {
+                //        // Загружаем модель только с необходимыми для вывода полями
+                //        $query->with(['cover', 'base']);
+                //    },
+                //
+                //    // Детали (боковины) — грузим только саму модель без ухода в рекурсию чехлов
+                //    'cuttingLines.details.orderLine.model'
+                //])
+
+                //->with([
+                //    'order.client:id,name',
+                //    'order.orderType:id,name',
+                //    'statuses',
+                //
+                //    // 1. Основные строки задания
+                //    'cuttingLines' => function($query) {
+                //        $query->orderBy('position');
+                //    },
+                //    'cuttingLines.orderLine.model' => function($query) {
+                //        // Грузим модель со всеми нужными связями,
+                //        // но БЕЗ ухода в бесконечные HasOne/BelongsTo
+                //        $query->with(['cover', 'base']);
+                //    },
+                //
+                //    // 2. Оптимизация деталей (боковин)
+                //    // Для боковин НЕ подгружаем .cover и .base, так как у них
+                //    // либо нет чехла, либо именно здесь Eloquent ломается на рекурсии
+                //    'cuttingLines.details' => function($query) {
+                //        $query->orderBy('position');
+                //    },
+                //    'cuttingLines.details.orderLine.model'
+                //])
+
                 ->with([
                     'order.client',
                     'order.orderType',
+                    'statuses',
+                    // Главные строки задания
                     'cuttingLines.orderLine.model.cover',
                     'cuttingLines.orderLine.model.base',
-                    'cuttingLines.details', // __ Детальки (боковины)
-                    'statuses',
+                    'cuttingLines.orderLine.model.constructs', // <-- Сюда
+                    // !! ОПТИМИЗАЦИЯ: Глубокая жадная загрузка для вложенных деталей (боковин)
+                    'cuttingLines.details.orderLine.model.cover',
+                    'cuttingLines.details.orderLine.model.base',
+                    'cuttingLines.details.orderLine.model.constructs', // <-- И сюда
                 ])
+
+
+
+
+                //->with([
+                //    'order.client',
+                //    'order.orderType',
+                //    'statuses',
+                //    'cuttingLines.orderLine.model.cover',
+                //    'cuttingLines.orderLine.model.base',
+                //    'cuttingLines.details', // __ Детальки (боковины)
+                //
+                //])
                 // ->with(['cuttingLines', 'cuttingLines.orderLine','cuttingLines.orderLine.model','cuttingLines.orderLine.model.cover', 'statuses'])
                 ->orderBy('action_at')
                 ->get();
@@ -72,6 +130,34 @@ class CellCuttingTaskController extends Controller
             // !!! __ Отдельная функция - Реализовано через Middleware
             // !!!!!!!!!!!!!!!!!!!!!
 
+
+            // Собираем коды с основных строк
+            $mainCodes = $cuttingTasks->flatMap(function ($task) {
+                return $task->cuttingLines->map(fn($line) => $line->orderLine?->model_code_1c);
+            });
+
+            // Собираем коды из вложенных деталей (боковин)
+            $detailCodes = $cuttingTasks->flatMap(function ($task) {
+                return $task->cuttingLines->flatMap(function ($line) {
+                    return $line->details->map(fn($detail) => $detail->orderLine?->model_code_1c);
+                });
+            });
+
+            // Объединяем, убираем дубликаты, null, пустые строки и приводя к массиву строк
+            $allCodes = collect([])
+                ->concat($mainCodes)
+                ->concat($detailCodes)
+                ->map(fn($code) => trim((string)$code))
+                ->filter(fn($code) => $code !== '')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Прогреваем
+            ModelsService::warmUpCacheByCodes($allCodes);
+
+            // 4. Прогреваем статический кэш сервиса перед передачей в ресурс
+            ModelsService::warmUpCacheByCodes($allCodes);
 
             return CuttingTaskResource::collection($cuttingTasks);
         } catch (Exception $e) {

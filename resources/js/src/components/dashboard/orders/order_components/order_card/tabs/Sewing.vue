@@ -6,28 +6,28 @@
             <AppLabelTS
                 :text="actionText"
                 :type="actionType"
-                width="w-[400px]"
+                align="center"
                 height="h-[50px]"
                 rounded="4"
-                align="center"
+                width="w-[400px]"
                 @click="actionTask"
             />
         </div>
 
         <!-- __ Шапка СЗ -->
         <ExecuteTaskHeader
-            :fields-width="sewingTaskFieldsWidth"
             :client-show="false"
+            :fields-width="sewingTaskFieldsWidth"
             :order-info="false"
         />
 
         <!-- __ Сами СЗ -->
         <div v-for="sewingTask of sewingTasks" :key="sewingTask.id" class="bg-green-100">
             <ExecuteTask
-                :fields-width="sewingTaskFieldsWidth"
-                :sewing-task="sewingTask"
                 :client-show="false"
+                :fields-width="sewingTaskFieldsWidth"
                 :order-info="false"
+                :sewing-task="sewingTask"
             />
         </div>
     </div>
@@ -43,8 +43,8 @@
 
 </template>
 
-<script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue'
+<script lang="ts" setup>
+import { onMounted, ref, computed } from 'vue'
 
 import type { IColorTypes, IRenderOrder, ISewingTask } from '@/types'
 
@@ -87,15 +87,15 @@ const COLLAPSED_WIDTH = 'w-[30px]'
 const PROGRESS_WIDTH  = 'w-[266px]'
 
 const sewingTaskFieldsWidth = {
-    collapsed:     COLLAPSED_WIDTH,
-    id:            'w-[30px]',
-    position:      'w-[30px]',
-    client:        'w-[190px]',
-    order_no:      'w-[50px]',
-    status:        'w-[140px]',
+    collapsed    : COLLAPSED_WIDTH,
+    id           : 'w-[30px]',
+    position     : 'w-[30px]',
+    client       : 'w-[190px]',
+    order_no     : 'w-[50px]',
+    status       : 'w-[140px]',
     progressTotal: PROGRESS_WIDTH,
-    load_at:       'w-[163px]',
-    comment:       'w-[793px]',
+    load_at      : 'w-[163px]',
+    comment      : 'w-[793px]',
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -195,7 +195,7 @@ onMounted(async () => {
         async () => {
 
             await getTasks()
-            DEBUG && console.log('sewingTasks: ', sewingTasks.value)
+            if (DEBUG) console.log('sewingTasks: ', sewingTasks.value)
         },
         undefined,
         // false,

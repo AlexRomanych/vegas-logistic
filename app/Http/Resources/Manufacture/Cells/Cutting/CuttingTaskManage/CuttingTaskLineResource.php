@@ -22,6 +22,11 @@ class CuttingTaskLineResource extends JsonResource
         /** @noinspection PhpUndefinedFieldInspection */
         $labor = new CuttingTimeLabor($this->resource);
 
+        $modelMem = $this->relationLoaded('orderLine') && $this->orderLine->relationLoaded('model')
+            ? $this->orderLine->model
+            : null;
+
+
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'id'           => $this->id,
@@ -57,14 +62,19 @@ class CuttingTaskLineResource extends JsonResource
                 ]),        // __ Добавляем подмену свойств в потомке
 
             'element_type' => [
-                'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная
-                'is_base'    => ModelsService::isElementBase($this->orderLine->model->code_1c),
-                'is_cover'   => ModelsService::isElementCover($this->orderLine->model->code_1c),
+                'is_average' => $modelMem->is_average,    // __ Динамическое поле, указывает, что модель расчетная
+                //'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная
+                'is_base'    => ModelsService::isElementBase($modelMem->code_1c),
+                //'is_base'    => ModelsService::isElementBase($this->orderLine->model->code_1c),
+                'is_cover'   => ModelsService::isElementCover($modelMem->code_1c),
+                //'is_cover'   => ModelsService::isElementCover($this->orderLine->model->code_1c),
                 'type'       =>
                     match (true) {
                         $this->orderLine->model->is_average                             => 'average',
-                        ModelsService::isElementBase($this->orderLine->model->code_1c)  => 'base',
-                        ModelsService::isElementCover($this->orderLine->model->code_1c) => 'cover',
+                        ModelsService::isElementBase($modelMem->code_1c)  => 'base',
+                        //ModelsService::isElementBase($this->orderLine->model->code_1c)  => 'base',
+                        ModelsService::isElementCover($modelMem->code_1c) => 'cover',
+                        //ModelsService::isElementCover($this->orderLine->model->code_1c) => 'cover',
                         default                                                         => 'unknown',
                     },
             ],
@@ -86,4 +96,58 @@ class CuttingTaskLineResource extends JsonResource
             // '_' => parent::toArray($request),
         ];
     }
+
+
+    //public function toArray(Request $request): array
+    //{
+    //    $labor = new CuttingTimeLabor($this->resource);
+    //
+    //    // 1. Безопасно вытаскиваем модель, ТОЛЬКО если вся цепочка связей уже загружена
+    //    $model = $this->relationLoaded('orderLine') && $this->orderLine->relationLoaded('model')
+    //        ? $this->orderLine->model
+    //        : null;
+    //
+    //    return [
+    //        'id'           => $this->id,
+    //        'id_ref'       => $this->id,
+    //        'amount'       => $this->amount,
+    //        'position'     => $this->position,
+    //        'created_at'   => $this->created_at ? Carbon::parse($this->created_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+    //        'finished_at'  => $this->finished_at ? Carbon::parse($this->finished_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+    //        'finished_by'  => $this->finished_by,
+    //        'false_at'     => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+    //        'false_reason' => $this->false_reason,
+    //        'table'        => $this->table,
+    //
+    //        'is_panel' => $this->is_panel,
+    //        'is_side'  => $this->is_side,
+    //        'has_side' => $this->has_side,
+    //
+    //        'time'     => $labor->getRealTime(),
+    //
+    //        'order_line' => (new CuttingTaskOrderLineResource($this->whenLoaded('orderLine')))
+    //            ->additional([
+    //                'phantom_data' => [
+    //                    'phantom'      => $this->phantom,
+    //                    'phantom_json' => $this->phantom_json,
+    //                ]
+    //            ]),
+    //
+    //        // 2. Формируем элемент на основе проверенной модели, иначе отдаем дефолт
+    //        'element_type' => [
+    //            'is_average' => $model ? $model->is_average : false,
+    //            'is_base'    => $model ? ModelsService::isElementBase($model->code_1c) : false,
+    //            'is_cover'   => $model ? ModelsService::isElementCover($model->code_1c) : false,
+    //            'type'       => match (true) {
+    //                !$model                                           => 'unknown',
+    //                $model->is_average                                => 'average',
+    //                ModelsService::isElementBase($model->code_1c)  => 'base',
+    //                ModelsService::isElementCover($model->code_1c) => 'cover',
+    //                default                                           => 'unknown',
+    //            },
+    //        ],
+    //
+    //        'detail' => self::collection($this->whenLoaded('details')),
+    //    ];
+    //}
 }

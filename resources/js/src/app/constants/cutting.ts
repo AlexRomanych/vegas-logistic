@@ -21,11 +21,16 @@ export const CUTTING_TABLES: Record<string, ICuttingTableKeys> = {
 // __ Константы отображения
 export const TABLE_1_TITLE         = 'Стол 1'
 export const TABLE_1_TITLE_EXT     = 'Стол 1 - Крышки АШМ'
+export const TABLE_1_TITLE_SHORT   = '1'
 export const TABLE_2_TITLE         = 'Стол 2'
 export const TABLE_2_TITLE_EXT     = 'Стол 2 - Крышки (УШМ + Глух.)'
+export const TABLE_2_TITLE_SHORT   = '2'
 export const TABLE_3_TITLE         = 'Стол 3'
 export const TABLE_3_TITLE_EXT     = 'Стол 3 - Детали (УШМ + Глух.)'
-export const TABLE_UNDEFINED_TITLE = 'Стол ??'
+export const TABLE_3_TITLE_SHORT   = '3'
+export const TABLE_0_TITLE         = 'Стол ??'
+export const TABLE_0_TITLE_SHORT   = '??'
+export const TABLE_UNDEFINED_TITLE = TABLE_0_TITLE
 
 
 // __ Констианты деталей чехда в Операциях Раскроя
@@ -207,6 +212,7 @@ export const CUTTING_PROCEDURE_DRAFT: ICuttingProcedure = {
     object_name: null,
     collapsed  : true,
     description: null,
+    active     : false,
 }
 
 
@@ -235,72 +241,127 @@ export const CUTTING_DAY_DRAFT: ICuttingDay = {
 }
 
 
-// __ Настройка групп задач на Пошиве
+// __ Настройка групп задач на Раскрое
 export const CUTTING_TASK_GROUP_RULES: ICuttingTaskLinesGroup[] = [
     {
-        GROUP_NAME : 'АШМ',
+        GROUP_NAME : TABLE_1_TITLE,
         GROUP_TYPE : 'orange',
         GROUP_COLOR: '#FF9800',
         SUBGROUPS  : [
             {
-                SUBGROUP_NAME : 'Автоматы',
+                SUBGROUP_NAME : TABLE_1_TITLE,
                 SUBGROUP_TYPE : 'orange',
                 SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['А 1', 'А 2', 'А 3', 'А 4',],
+                SUBGROUP_TABLE: [CUTTING_TABLES.TABLE_1],
             }
         ]
     },
     {
-        GROUP_NAME : 'УШМ',
+        GROUP_NAME : TABLE_2_TITLE,
         GROUP_TYPE : 'warning',
         GROUP_COLOR: '#FF9800',
         SUBGROUPS  : [
-            // {
-            //     SUBGROUP_NAME : 'Глухие, автоматическое чехление',
-            //     SUBGROUP_TYPE : 'orange',
-            //     SUBGROUP_COLOR: '#FF9800',
-            //     SUBGROUP_TCHK : ['ОБ 2',],
-            // },
             {
-                SUBGROUP_NAME : 'Глухие',
+                SUBGROUP_NAME : TABLE_2_TITLE,
                 SUBGROUP_TYPE : 'orange',
                 SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОБ 1', 'ОБ 2', 'ОБ 6', 'ОБ 7',],
-            },
-            {
-                SUBGROUP_NAME : 'Глухие сложные',
-                SUBGROUP_TYPE : 'orange',
-                SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОБ 3', 'ОБ 4', 'ОБ 5',],
-            },
-            {
-                SUBGROUP_NAME : 'УШМ + окантователь',
-                SUBGROUP_TYPE : 'orange',
-                SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['ОК 1', 'ОК 2', 'ОК 3', 'ОК 4'],
-            },
-            {
-                SUBGROUP_NAME : 'УШМ',
-                SUBGROUP_TYPE : 'orange',
-                SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : ['У 1', 'У 2', 'У 3', 'У 4', 'У 5',],
-            },
+                SUBGROUP_TABLE: [CUTTING_TABLES.TABLE_2],
+            }
         ]
     },
     {
-        GROUP_NAME : 'Н/Д',
+        GROUP_NAME : TABLE_3_TITLE,
+        GROUP_TYPE : 'success',
+        GROUP_COLOR: '#FF9800',
+        SUBGROUPS  : [
+            {
+                SUBGROUP_NAME : TABLE_3_TITLE,
+                SUBGROUP_TYPE : 'orange',
+                SUBGROUP_COLOR: '#FF9800',
+                SUBGROUP_TABLE: [CUTTING_TABLES.TABLE_3],
+            }
+        ]
+    },
+    {
+        GROUP_NAME : TABLE_0_TITLE,
         GROUP_TYPE : 'danger',
         GROUP_COLOR: '#FF9800',
         SUBGROUPS  : [
             {
-                SUBGROUP_NAME : 'Без ТКЧ',
+                SUBGROUP_NAME : TABLE_0_TITLE,
                 SUBGROUP_TYPE : 'orange',
                 SUBGROUP_COLOR: '#FF9800',
-                SUBGROUP_TCHK : [],
+                SUBGROUP_TABLE: [CUTTING_TABLES.TABLE_0],
             }
         ]
     },
 ]
+
+// export const CUTTING_TASK_GROUP_RULES: ICuttingTaskLinesGroup[] = [
+//     {
+//         GROUP_NAME : 'АШМ',
+//         GROUP_TYPE : 'orange',
+//         GROUP_COLOR: '#FF9800',
+//         SUBGROUPS  : [
+//             {
+//                 SUBGROUP_NAME : 'Автоматы',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : ['А 1', 'А 2', 'А 3', 'А 4',],
+//             }
+//         ]
+//     },
+//     {
+//         GROUP_NAME : 'УШМ',
+//         GROUP_TYPE : 'warning',
+//         GROUP_COLOR: '#FF9800',
+//         SUBGROUPS  : [
+//             // {
+//             //     SUBGROUP_NAME : 'Глухие, автоматическое чехление',
+//             //     SUBGROUP_TYPE : 'orange',
+//             //     SUBGROUP_COLOR: '#FF9800',
+//             //     SUBGROUP_TCHK : ['ОБ 2',],
+//             // },
+//             {
+//                 SUBGROUP_NAME : 'Глухие',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : ['ОБ 1', 'ОБ 2', 'ОБ 6', 'ОБ 7',],
+//             },
+//             {
+//                 SUBGROUP_NAME : 'Глухие сложные',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : ['ОБ 3', 'ОБ 4', 'ОБ 5',],
+//             },
+//             {
+//                 SUBGROUP_NAME : 'УШМ + окантователь',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : ['ОК 1', 'ОК 2', 'ОК 3', 'ОК 4'],
+//             },
+//             {
+//                 SUBGROUP_NAME : 'УШМ',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : ['У 1', 'У 2', 'У 3', 'У 4', 'У 5',],
+//             },
+//         ]
+//     },
+//     {
+//         GROUP_NAME : 'Н/Д',
+//         GROUP_TYPE : 'danger',
+//         GROUP_COLOR: '#FF9800',
+//         SUBGROUPS  : [
+//             {
+//                 SUBGROUP_NAME : 'Без ТКЧ',
+//                 SUBGROUP_TYPE : 'orange',
+//                 SUBGROUP_COLOR: '#FF9800',
+//                 SUBGROUP_TCHK : [],
+//             }
+//         ]
+//     },
+// ]
 
 
 

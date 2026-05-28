@@ -5,7 +5,7 @@ import type {
     ICuttingMachineKeys,
     ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
     ICuttingTaskLine, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskModel, ICuttingTaskOrder,
-    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys,
+    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys, IColorTypes,
 } from '@/types'
 
 import {
@@ -15,12 +15,39 @@ import {
     CUTTING_TASK_GROUP_RULES,
     CUTTING_TASK_STATUSES,
     DETAIL_PANEL,
-    DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE
+    DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE,
+    TABLE_1_TITLE, TABLE_1_TITLE_SHORT,
+    TABLE_2_TITLE, TABLE_2_TITLE_SHORT,
+    TABLE_3_TITLE, TABLE_3_TITLE_SHORT,
+    TABLE_0_TITLE, TABLE_0_TITLE_SHORT, TABLE_0,
 } from '@/app/constants/cutting.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
+
+// __ Получаем название детальки
+export function getDetailTitle(item: ICuttingTaskLine, short: boolean  = false) {
+    let title: string = ''
+    if (item.is_side) {
+        title = DETAIL_SIDE_TITLE
+    } else if (item.is_panel) {
+        title = DETAIL_PANEL_TITLE
+    }
+
+    return short ? title.charAt(0) : title
+}
+
+
+// __ Получаем раскраску детальки
+export function getDetailType(item: ICuttingTaskLine): IColorTypes {
+    if (item.is_side) {
+        return 'warning'
+    } else if (item.is_panel) {
+        return 'indigo'
+    }
+    return 'dark'
+}
 
 // __ Функция для получения трудозатрат для Записи (CuttingLine) в СЗ
 export function getCuttingTimes(cuttingLine: ICuttingTaskLine): IAmountAndTime {
@@ -81,11 +108,30 @@ export function createAmountAndTimeObj() {
 // }
 
 
-// __ Функция для получения типа машины по ключу (константы ШМ)
+// __ Функция для получения Стола по ключу (константы Стола)
 export function getTable(table: ICuttingTableKeys) {
     const findTableKey = Object.keys(CUTTING_TABLES).find(key => CUTTING_TABLES[key] === table)
     return findTableKey ? CUTTING_TABLES[findTableKey] : null
 }
+
+// __ Функция для получения названия Стола по ключу (константы Стола)
+export function getTableTitle(item: ICuttingTableKeys | ICuttingTaskLine, short: boolean = false) {
+    let table = ''
+    if (isCuttingTaskLine(item)) {
+        table = item.table
+    } else {
+        table = item
+    }
+
+    switch (table) {
+        case CUTTING_TABLES.TABLE_1: return short ? TABLE_1_TITLE_SHORT : TABLE_1_TITLE
+        case CUTTING_TABLES.TABLE_2: return short ? TABLE_2_TITLE_SHORT : TABLE_2_TITLE
+        case CUTTING_TABLES.TABLE_3: return short ? TABLE_3_TITLE_SHORT : TABLE_3_TITLE
+        case CUTTING_TABLES.TABLE_0: return short ? TABLE_0_TITLE_SHORT : TABLE_0_TITLE
+    }
+    return ''
+}
+
 
 export function getMachineType(machineType: ICuttingMachineKeys) {
     const findMachineTypeKey = Object.keys(CUTTING_MACHINES).find(key => CUTTING_MACHINES[key] === machineType)
@@ -361,9 +407,18 @@ export function sortCuttingTaskLinesForExecute(
 
     const sourceArray = Array.isArray(item) ? [...item] : [...item.cutting_lines]
 
+    // __ Предварительно считаем сумму amount для каждой ткани (textile)
+    const textileAmountsMap = new Map<string, number>()
+
+    for (const line of sourceArray) {
+        const textile = line.order_line.textile || ''
+        const currentSum = textileAmountsMap.get(textile) || 0
+        textileAmountsMap.set(textile, currentSum + line.amount)
+    }
+
     sourceArray.sort((a, b) => {
-        const tkchA = a.order_line.model.main.tkch || ''
-        const tkchB = b.order_line.model.main.tkch || ''
+        // const tkchA = a.order_line.model.main.tkch || ''
+        // const tkchB = b.order_line.model.main.tkch || ''
 
         const modelA = a.order_line.model.main.name
         const modelB = b.order_line.model.main.name
@@ -382,47 +437,28 @@ export function sortCuttingTaskLinesForExecute(
             ? b.order_line.model.main.cover_height
             : dimsB.height
 
+        // Достаем предсчитанные суммы для тканей (если ткани нет, вес = 0)
+        const textileSumA = textileAmountsMap.get(textileA) || 0
+        const textileSumB = textileAmountsMap.get(textileB) || 0
 
         // !!! Пока с 05.05.2026 неважно какая ШМ, все сортируем одинаково
         // __ Создаем массив приоритетов сравнения:
         const criteria = [
-            tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
-            textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
+            -(textileSumA - textileSumB),       // __ Сортируем по суммарному количеству ткани по убыванию
+            textileA.localeCompare(textileB),   // __ Если суммы равны, оставляем алфавитный порядок для стабильности
+
             -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
             -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
             -(hA - hB),                         // __ Сортируем по высоте по убыванию
+
             modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
             -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
+
+            // tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
+            // textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
         ]
 
-
-        // let criteria: number[]
-
-        // if (machineGroup === 'УШМ') {
-        //     criteria = [
-        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
-        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
-        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
-        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
-        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
-        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
-        //     ]
-        // } else if (machineGroup === 'АШМ') {
-        //     criteria = [
-        //         modelA.localeCompare(modelB),       // __ Сортируем по модели по возрастанию
-        //         textileA.localeCompare(textileB),   // __ Сортируем по ткани по возрастанию
-        //         tkchA.localeCompare(tkchB),         // __ Сортируем по ТКЧ по возрастанию
-        //         -(dimsA.width - dimsB.width),       // __ Сортируем по ширине по убыванию
-        //         -(dimsA.length - dimsB.length),     // __ Сортируем по длине по убыванию
-        //         -(hA - hB),                         // __ Сортируем по высоте по убыванию
-        //         -(a.amount - b.amount),             // __ Сортируем по количеству по убыванию
-        //     ]
-        // } else {
-        //     criteria = []
-        // }
-
-
-        // Ищем первое различие
+        // __ Ищем первое различие
         for (const diff of criteria) {
             if (diff !== 0) {
                 return diff
@@ -1510,11 +1546,11 @@ export function getCoverTKCH(line: ICuttingTaskLine) {
 export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: string | null = null): ICuttingTaskLinesGroupData[] {
 
     // __ Собираем все ТКЧ в один сет для проверки, что в исходных данных ничего криво не написано и не добавлено
-    const ALL_TKCH = new Set<string>()
+    const ALL_TABLES = new Set<string>()
     CUTTING_TASK_GROUP_RULES.forEach(rule => {
         rule.SUBGROUPS.forEach(subgroup => {
-            subgroup.SUBGROUP_TCHK.forEach(tkch => {
-                ALL_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+            subgroup.SUBGROUP_TABLE.forEach(tkch => {
+                ALL_TABLES.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
             })
         })
     })
@@ -1557,9 +1593,9 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
 
             // const TEMP_TKCH = new Set<string>(CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.map(tkch => tkch.trim().toUpperCase().replaceAll(' ', '')))
 
-            const TEMP_TKCH = new Set<string>()
-            CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.forEach(tkch => {
-                TEMP_TKCH.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+            const TEMP_TABLE = new Set<string>()
+            CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TABLE.forEach(tkch => {
+                TEMP_TABLE.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
             })
 
             let hasDataSubgroup = false
@@ -1591,11 +1627,9 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
             }
 
             for (let k = 0; k < lines.length; k++) {
-                const tkch = getCoverTKCH(lines[k])?.trim().toUpperCase().replaceAll(' ', '')
-                if (tkch && ALL_TKCH.has(tkch)) {
-                    if (TEMP_TKCH.has(tkch)) {
-                        // if (CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.toUpperCase().replaceAll(' ', '').includes(tkch || '')) {
-                        // if (CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.includes(lines[k].order_line.model.main.tkch!)) {
+                const table = lines[k].table.trim().toUpperCase().replaceAll(' ', '')
+                if (table && ALL_TABLES.has(table)) {
+                    if (TEMP_TABLE.has(table)) {
                         result[i].subgroups[j].lines.push(lines[k])
                         hasDataSubgroup = true
 
@@ -1611,7 +1645,7 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
                         amountSubgroupTotal += lines[k].amount
                     }
                 } else {
-                    if (result[i].groupName === 'Н/Д') {
+                    if (result[i].groupName === TABLE_0_TITLE) {
                         result[i].subgroups[j].lines.push(lines[k])
                         hasDataSubgroup = true
 

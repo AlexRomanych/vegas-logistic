@@ -11,7 +11,7 @@ import {
     CUTTING_TASK_STATUS_RUNNING,
     CUTTING_TASK_STATUS_DONE,
     DETAIL_PANEL, DETAIL_SIDE,
-    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED,
+    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE,
 
 } from '@/app/constants/cutting.ts'
 
@@ -186,6 +186,7 @@ export type ICuttingTableKeys =
     typeof TABLE_1 |
     typeof TABLE_2 |
     typeof TABLE_3 |
+    typeof TABLE_0 |
     typeof TABLE_UNDEFINED
 
 // --- --------------------------------------------------------------
@@ -228,7 +229,7 @@ export interface ICuttingTaskStatusEntity {
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
 export type ICuttingLinesPanel = 'left' | 'right'
-export type ICuttingTablePanel = typeof TABLE_1 |  typeof TABLE_2 |  typeof TABLE_3 | typeof TABLE_UNDEFINED
+export type ICuttingTablePanel = typeof TABLE_1 | typeof TABLE_2 | typeof TABLE_3 | typeof TABLE_UNDEFINED
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------
@@ -415,15 +416,9 @@ export interface ICuttingTaskExecuteStatisticsItem {
 // --- -------------------------------------------------------------------
 // --- --------------- Тип для группировки СЗ по ШМ ----------------------
 // --- -------------------------------------------------------------------
-export type ICuttingTaskLinesGroupNames = 'АШМ' | 'УШМ' | 'Н/Д'
-export type ICuttingTaskLinesSubGroupNames =
-    'Автоматы'
-    | 'Глухие, автоматическое чехление'
-    | 'Глухие'
-    | 'Глухие сложные'
-    | 'УШМ + окантователь'
-    | 'УШМ'
-    | 'Без ТКЧ'
+export type ICuttingTaskLinesGroupNames = typeof TABLE_1_TITLE | typeof TABLE_2_TITLE | typeof TABLE_3_TITLE | typeof TABLE_0_TITLE
+export type ICuttingTaskLinesSubGroupNames = typeof TABLE_1_TITLE | typeof TABLE_2_TITLE | typeof TABLE_3_TITLE | typeof TABLE_0_TITLE
+
 
 // __ Для набора правил Группировки СЗ по ШМ
 export interface ICuttingTaskLinesGroup {
@@ -434,7 +429,7 @@ export interface ICuttingTaskLinesGroup {
         SUBGROUP_NAME: ICuttingTaskLinesSubGroupNames
         SUBGROUP_TYPE: IColorTypes
         SUBGROUP_COLOR?: string | null,
-        SUBGROUP_TCHK: string[]
+        SUBGROUP_TABLE: string[]
     }[]
 }
 
@@ -484,7 +479,7 @@ export interface ICuttingTaskLinesSubgroup {
 }
 
 // __ Тип для сохранения (изменения) стола для записи СЗ Раскроя
-export type ICuttingLineTableSetData = {id: number, table: ICuttingTableKeys}
+export type ICuttingLineTableSetData = { id: number, table: ICuttingTableKeys }
 
 
 // --- --------------------------------------------------------------------

@@ -67,6 +67,29 @@
             rounded="4"
         />
 
+        <!-- __ Элемент -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text="detail"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.detail"
+            align="center"
+            rounded="4"
+        />
+
+        <!-- __ Стол -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text="table"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.table"
+            align="center"
+            rounded="4"
+        />
+
+
         <!-- __ Швейная машина -->
         <AppLabelTS
             :height="LINE_HEIGHT"
@@ -89,28 +112,6 @@
             rounded="4"
         />
 
-        <!-- __ ТКЧ -->
-        <AppLabelTS
-            :height="LINE_HEIGHT"
-            :text="cuttingLine.order_line.model.main.tkch ?? ''"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.tkch"
-            align="center"
-            rounded="4"
-        />
-
-        <!-- __ Кант -->
-        <AppLabelTS
-            :height="LINE_HEIGHT"
-            :text="cuttingLine.order_line.model.main.kant ?? ''"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.kant"
-            align="center"
-            rounded="4"
-        />
-
         <!-- __ КДЧ -->
         <AppLabelTS
             :height="LINE_HEIGHT"
@@ -121,6 +122,117 @@
             align="center"
             rounded="4"
         />
+
+        <!-- __ Крой -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.cut"
+            align="center"
+            rounded="4"
+            text="159x199"
+        />
+
+        <!-- __ Угол -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.angle"
+            align="center"
+            rounded="4"
+            text="Угол"
+        />
+
+        <!-- __ Настил -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.layers"
+            align="center"
+            rounded="4"
+            text="Настил"
+        />
+
+        <!-- __ Расход -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.expense"
+            align="center"
+            rounded="4"
+            text="100.0"
+        />
+
+        <!-- __ Рулон -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.fabric_roll"
+            align="center"
+            rounded="4"
+            text="15000"
+        />
+
+        <!-- __ Отметка Рулона -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.fabric_roll_at"
+            align="center"
+            rounded="4"
+            text="28.05.2026"
+        />
+
+        <!-- __ Брак -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.defects"
+            align="center"
+            rounded="4"
+            text="Брак"
+        />
+
+        <!-- __ Причина брака -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.defects_reason"
+            align="center"
+            rounded="4"
+            text="Причина брака"
+        />
+
+        <!--&lt;!&ndash; __ ТКЧ &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="LINE_HEIGHT"-->
+        <!--    :text="cuttingLine.order_line.model.main.tkch ?? ''"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.tkch"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--/>-->
+
+        <!--&lt;!&ndash; __ Кант &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="LINE_HEIGHT"-->
+        <!--    :text="cuttingLine.order_line.model.main.kant ?? ''"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.kant"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--/>-->
+
 
         <!-- __ Состав -->
         <AppLabelTS
@@ -200,6 +312,17 @@
             rounded="4"
         />
 
+        <!-- __ Заявка -->
+        <AppLabelTS
+            :height="LINE_HEIGHT"
+            :text="cuttingLine.groupAttr"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.order"
+            align="left"
+            rounded="4"
+        />
+
     </div>
 
 
@@ -214,13 +337,12 @@ import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 
 import {
     getCoverSizeString, getCuttingLineMachineType,
-    getCuttingTaskModelCoverName,
+    getCuttingTaskModelCoverName, getDetailTitle, getTableTitle,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-
 
 
 interface IProps {
@@ -233,7 +355,6 @@ const props = defineProps<IProps>()
 const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
 const LINE_TEXT_SIZE = 'mini'
-
 
 // __ Получаем символ завершенности
 const getCheckSymbol = (cuttingLine: ICuttingTaskLine) => {
@@ -296,6 +417,10 @@ const cuttingMachine = computed(() => {
 
     return '??'
 })
+
+
+const detail = computed(() => getDetailTitle(props.cuttingLine, true))
+const table  = computed(() => getTableTitle(props.cuttingLine, true))
 
 
 </script>

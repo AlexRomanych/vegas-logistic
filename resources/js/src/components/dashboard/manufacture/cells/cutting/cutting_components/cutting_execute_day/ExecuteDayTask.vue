@@ -187,8 +187,8 @@
                     >
                         <!-- __ Строка СЗ -->
                         <ExecuteDayTaskLine
-                            :field-widths="fieldWidths"
                             :cutting-line="cuttingLine"
+                            :field-widths="fieldWidths"
                             @dblclick="showLineInfo(cuttingLine)"
                         />
 
@@ -369,7 +369,7 @@ const emits = defineEmits<{
     (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number; keep: number }): void
 }>()
 
-const router      = useRouter()
+const router       = useRouter()
 const cuttingStore = useCuttingStore()
 
 // console.log('props.cuttingTask: ', props.cuttingTask)
@@ -434,9 +434,9 @@ const taskTitle = computed(() => {
 // const cuttingLines       = ref<ICuttingTaskLine[]>([])
 const cuttingLinesGroups = computed(() => {
     // if (isUnionTask.value) {
-    if (props.cuttingTask.id === UNION_TASKS_ID) {
-        return groupTaskLinesForExecuteForUnion(props.cuttingTask.cutting_lines)
-    }
+    // if (props.cuttingTask.id === UNION_TASKS_ID) {
+    //     return groupTaskLinesForExecuteForUnion(props.cuttingTask.cutting_lines)
+    // }
     const title = `${props.cuttingTask.position}. ${props.cuttingTask.order.client.short_name} №${props.cuttingTask.order.order_no_num}`
     return groupTaskLinesForExecute(props.cuttingTask.cutting_lines, title)
 })
@@ -491,24 +491,36 @@ const showLineInfo = async (cuttingLine: ICuttingTaskLine) => {
 
 // __ Поля данных
 const fieldWidths: Record<string, string> = {
-    check      : 'min-w-[25px] max-w-[25px]',
-    space      : 'min-w-[10px] max-w-[10px]',
-    position   : 'min-w-[30px] max-w-[30px]',
-    size       : 'min-w-[80px] max-w-[80px]',
-    coverName  : 'min-w-[300px] max-w-[300px]',
-    amount     : 'min-w-[40px] max-w-[40px]',
-    time       : 'min-w-[70px] max-w-[70px]',
-    machine    : 'min-w-[30px] max-w-[30px]',
-    textile    : 'min-w-[100px] max-w-[100px]',
-    tkch       : 'min-w-[70px] max-w-[70px]',
-    kant       : 'min-w-[90px] max-w-[90px]',
-    kdch       : 'min-w-[50px] max-w-[50px]',
-    composition: 'min-w-[70px] max-w-[70px]',
-    describe_1 : 'min-w-[70px] max-w-[70px]',
-    describe_2 : 'min-w-[70px] max-w-[70px]',
-    describe_3 : 'min-w-[70px] max-w-[70px]',
-    timeLabel  : 'min-w-[100px] max-w-[100px]',
-    reason     : 'min-w-[300px] max-w-[300px]',
+    check         : 'min-w-[25px] max-w-[25px]',
+    space         : 'min-w-[10px] max-w-[10px]',
+    position      : 'min-w-[30px] max-w-[30px]',
+    size          : 'min-w-[80px] max-w-[80px]',
+    coverName     : 'min-w-[300px] max-w-[300px]',
+    amount        : 'min-w-[40px] max-w-[40px]',
+    time          : 'min-w-[70px] max-w-[70px]',
+    machine       : 'min-w-[35px] max-w-[35px]',
+    textile       : 'min-w-[100px] max-w-[100px]',
+    tkch          : 'min-w-[70px] max-w-[70px]',
+    kant          : 'min-w-[90px] max-w-[90px]',
+    kdch          : 'min-w-[50px] max-w-[50px]',
+    composition   : 'min-w-[70px] max-w-[70px]',
+    describe_1    : 'min-w-[70px] max-w-[70px]',
+    describe_2    : 'min-w-[70px] max-w-[70px]',
+    describe_3    : 'min-w-[70px] max-w-[70px]',
+    timeLabel     : 'min-w-[100px] max-w-[100px]',
+    reason        : 'min-w-[300px] max-w-[300px]',
+    table         : 'min-w-[25px] max-w-[25px]',
+    detail        : 'min-w-[25px] max-w-[25px]',
+    false_reason  : 'min-w-[110px] max-w-[110px]',
+    cut           : 'min-w-[60px] max-w-[60px]',
+    angle         : 'min-w-[50px] max-w-[50px]',
+    layers        : 'min-w-[50px] max-w-[50px]',
+    expense       : 'min-w-[50px] max-w-[50px]',
+    fabric_roll   : 'min-w-[50px] max-w-[50px]',
+    fabric_roll_at: 'min-w-[100px] max-w-[100px]',
+    defects       : 'min-w-[50px] max-w-[50px]',
+    defects_reason: 'min-w-[110px] max-w-[110px]',
+    order         : 'min-w-[200px] max-w-[200px]',
 }
 
 // --- Состояние выделения ---
@@ -920,8 +932,8 @@ const printTask = () => {
 
     localStorage.setItem(TASK_TO_PRINT_KEY, JSON.stringify(cuttingLinesGroup.value))
     localStorage.setItem(TASK_TO_PRINT_META_KEY, JSON.stringify({
-        action_at   : props.cuttingTask.action_at,
-        task_title  : taskTitle.value,
+        action_at    : props.cuttingTask.action_at,
+        task_title   : taskTitle.value,
         cutting_group: cuttingLinesGroups.value[activeTabIndex.value].groupName,
     }))
 

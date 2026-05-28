@@ -23,26 +23,59 @@
         <!-- __ Трудозатраты -->
         <AppLabelTSWrapper :render-object="render.time"/>
 
-        <!-- __ УШМ -->
-        <AppLabelTSWrapper :render-object="render.universal"/>
+        <!-- __ Деталька -->
+        <AppLabelTSWrapper :render-object="render.detail"/>
 
-        <!-- __ АШМ -->
-        <AppLabelTSWrapper :render-object="render.auto"/>
+        <!-- __ Стол 1 -->
+        <AppLabelTSWrapper :render-object="render.table_1"/>
 
-        <!-- __ ГС -->
-        <AppLabelTSWrapper :render-object="render.solid_hard"/>
+        <!-- __ Стол 2 -->
+        <AppLabelTSWrapper :render-object="render.table_2"/>
 
-        <!-- __ ГП -->
-        <AppLabelTSWrapper :render-object="render.solid_lite"/>
+        <!-- __ Стол 3 -->
+        <AppLabelTSWrapper :render-object="render.table_3"/>
+
+        <!-- __ Стол ?? -->
+        <AppLabelTSWrapper :render-object="render.table_0"/>
+
+        <!-- __ ШМ -->
+        <AppLabelTSWrapper :render-object="render.machine"/>
+
+        <!-- __ Ткань -->
+        <AppLabelTSWrapper :render-object="render.textile"/>
+
+        <!-- __ КДЧ -->
+        <AppLabelTSWrapper :render-object="render.kdch"/>
+
+        <!-- __ Крой -->
+        <AppLabelTSWrapper :render-object="render.cut"/>
+
+        <!-- __ Угол -->
+        <AppLabelTSWrapper :render-object="render.angle"/>
+
+        <!-- __ Настилы -->
+        <AppLabelTSWrapper :render-object="render.layers"/>
+
+        <!-- __ Расход -->
+        <AppLabelTSWrapper :render-object="render.expense"/>
+
+        <!-- __ Рулон ПС -->
+        <AppLabelTSWrapper :render-object="render.fabric_roll"/>
+
+        <!-- __ Отметка Рулона ПС -->
+        <AppLabelTSWrapper :render-object="render.fabric_roll_at"/>
+
+        <!-- __ Брак -->
+        <AppLabelTSWrapper :render-object="render.defects"/>
+
+        <!-- __ Причина Брака -->
+        <AppLabelTSWrapper :render-object="render.defects_reason"/>
 
         <!-- __ ТКЧ -->
         <AppLabelTSWrapper :render-object="render.tkch"/>
 
         <!-- __ Кант -->
         <AppLabelTSWrapper :render-object="render.kant"/>
-
-        <!-- __ Ткань -->
-        <AppLabelTSWrapper :render-object="render.textile"/>
 
         <!-- __ Состав -->
         <AppLabelTSWrapper :render-object="render.composition"/>
@@ -70,18 +103,18 @@
 <script lang="ts" setup>
 import { computed, reactive } from 'vue'
 
-import type { IColorTypes, IRenderData, ICuttingMachineKeys, ICuttingTaskLine } from '@/types'
+import type { IColorTypes, IRenderData, ICuttingTaskLine, ICuttingTableKeys } from '@/types'
 
 import {
     getCoverSizeString,
-    getCuttingLineMachineType,
-    getCuttingTaskModelCoverName,
+    getCuttingTaskModelCoverName, getDetailTitle, getDetailType,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
-import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
+import { CUTTING_TABLES } from '@/app/constants/cutting.ts'
+import { getKDCH, getSewingMachineTitle } from '@/app/helpers/manufacture/helpers_textile.ts'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
@@ -219,76 +252,124 @@ const render: IRenderData = reactive({
         placeholder:    '🔍Время...',
         data:           (/*cuttingLine: ICuttingTaskLine*/) => getTime.value
     },
-    universal:   {
-        id:             () => 'universal-search',
+    detail:   {
+        id:             () => 'detail-search',
         header:         ['', ''],
-        width:          props.fieldsWidth.machine,
+        width:          props.fieldsWidth.detail,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(CUTTING_MACHINES.UNIVERSAL),
+        type:           () => getDetailType(props.cuttingLine),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
-        placeholder:    '🔍УШМ...',
-        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'У'
+        placeholder:    '🔍Элемент...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getDetailTitle(props.cuttingLine, true)
     },
-    auto:        {
-        id:             () => 'auto-search',
+    table_1:   {
+        id:             () => 'table-1-search',
         header:         ['', ''],
-        width:          props.fieldsWidth.machine,
+        width:          props.fieldsWidth.table,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(CUTTING_MACHINES.AUTO),
+        type:           () => getTypeForTable(CUTTING_TABLES.TABLE_1),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
-        placeholder:    '🔍АШМ...',
-        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'А'
+        placeholder:    '🔍Стол 1...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '1'
     },
-    solid_hard:  {
-        id:             () => 'solid-hard-search',
+    table_2:   {
+        id:             () => 'table-2-search',
         header:         ['', ''],
-        width:          props.fieldsWidth.machine,
+        width:          props.fieldsWidth.table,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(CUTTING_MACHINES.SOLID_HARD),
+        type:           () => getTypeForTable(CUTTING_TABLES.TABLE_2),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
-        placeholder:    '🔍ГС...',
-        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГС'
+        placeholder:    '🔍Стол 2...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '2'
     },
-    solid_lite:  {
-        id:             () => 'solid-lite-search',
+    table_3:   {
+        id:             () => 'table-3-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.table,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => getTypeForTable(CUTTING_TABLES.TABLE_3),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Стол 3...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '3'
+    },
+    table_0:   {
+        id:             () => 'table-0-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.table,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => getTypeForTable(CUTTING_TABLES.TABLE_0),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Стол ??...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    machine:   {
+        id:             () => 'machine-search',
         header:         ['', ''],
         width:          props.fieldsWidth.machine,
         height:         DEFAULT_HEIGHT,
         show:           true,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
-        type:           () => getTypeForMachine(CUTTING_MACHINES.SOLID_LITE),
+        type:           () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize:   DATA_TEXT_SIZE,
         headerAlign:    HEADER_ALIGN,
         dataAlign:      'center',
-        placeholder:    '🔍ГП...',
-        data:           (/*cuttingLine: ICuttingTaskLine*/) => 'ГП'
+        placeholder:    '🔍ШМ ??...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getSewingMachineTitle(props.cuttingLine)
+    },
+    kdch:     {
+        id:             () => 'kdch-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.kdch,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍КДЧ...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => getKDCH(props.cuttingLine)
     },
     tkch:     {
         id:             () => 'tkch-search',
         header:         ['', ''],
         width:          props.fieldsWidth.tkch,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           false,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -304,7 +385,7 @@ const render: IRenderData = reactive({
         header:         ['', ''],
         width:          props.fieldsWidth.kant,
         height:         DEFAULT_HEIGHT,
-        show:           true,
+        show:           false,
         headerType:     () => HEADER_TYPE,
         dataType:       () => DATA_TYPE,
         type:           () => DEFAULT_TYPE,
@@ -330,6 +411,134 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍Ткань...',
         data:           (/*cuttingLine: ICuttingTaskLine*/) => props.cuttingLine.order_line.textile ?? ''
+    },
+    cut:     {
+        id:             () => 'cut-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.cut,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Крой...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '159x199'
+    },
+    angle:     {
+        id:             () => 'angle-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.angle,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Угол...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    layers:     {
+        id:             () => 'layers-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.layers,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Настилы...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    expense:     {
+        id:             () => 'expense-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.expense,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Расход...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    fabric_roll:     {
+        id:             () => 'fabric-roll-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.fabric_roll,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Рулон ПС...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    fabric_roll_at:     {
+        id:             () => 'fabric-roll-at-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.fabric_roll_at,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Отметка Рулон ПС...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    defects:     {
+        id:             () => 'defects-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.defects,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Брак...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
+    },
+    defects_reason:     {
+        id:             () => 'defects_reason-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.defects_reason,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Причины брака...',
+        data:           (/*cuttingLine: ICuttingTaskLine*/) => '??'
     },
     composition: {
         id:             () => 'composition-search',
@@ -439,21 +648,21 @@ const render: IRenderData = reactive({
 })
 
 // __ Тип подсветки для стегальной машины элемента
-const getTypeForMachine = (cuttingMachineTarget: ICuttingMachineKeys) => {
+const getTypeForTable = (cuttingTableTarget: ICuttingTableKeys) => {
 
     // !!! Порядок важен !!!
 
-    if (machineType.value === CUTTING_MACHINES.AVERAGE) {
-        // if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
-        //     return 'danger'
-        // }
-        return ACCENT_TYPE
-    }
+    // if (machineType.value === CUTTING_MACHINES.AVERAGE) {
+    //     // if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
+    //     //     return 'danger'
+    //     // }
+    //     return ACCENT_TYPE
+    // }
 
-    if (machineType.value === cuttingMachineTarget) {
-        // if (cuttingMachineTarget === CUTTING_MACHINES.UNKNOWN) {
-        //     return 'danger'
-        // }
+    if (table.value === cuttingTableTarget) {
+        if (cuttingTableTarget === CUTTING_TABLES.TABLE_0) {
+            return 'danger'
+        }
         return ACCENT_TYPE
     }
 
@@ -461,7 +670,7 @@ const getTypeForMachine = (cuttingMachineTarget: ICuttingMachineKeys) => {
 }
 
 // __ Получаем тип стегальной машины
-const machineType = computed(() => getCuttingLineMachineType(props.cuttingLine))
+const table = computed(() => props.cuttingLine.table)
 
 // __ Получаем трудозатраты
 const getTime = computed(() => getTimeString(props.cuttingLine, true).replaceAll('.', ''))

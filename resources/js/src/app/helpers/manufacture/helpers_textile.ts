@@ -1,7 +1,15 @@
-import type { ICuttingMachineKeys, ICuttingTaskLine, ISewingMachineKeys, ISewingTaskLine } from '@/types'
+import type {
+    ICuttingMachineKeys,
+    ICuttingTaskLine,
+    ICuttingTaskModel,
+    ICuttingTaskOrderLine,
+    ISewingMachineKeys,
+    ISewingTaskLine,
+    ISewingTaskModel, ISewingTaskOrderLine
+} from '@/types'
 import { SEWING_MACHINES } from '@/app/constants/sewing.ts'
 
-
+// __ Получаем название ШМ
 export function getSewingMachineTitle(line: ISewingTaskLine | ICuttingTaskLine) {
     const machine = getLineMachineType(line)
 
@@ -22,6 +30,9 @@ export function getSewingMachineTitle(line: ISewingTaskLine | ICuttingTaskLine) 
     return '??'
 }
 
+
+
+
 export function getLineMachineType(line: ISewingTaskLine | ICuttingTaskLine) {
 
     // __ Получаем тип машины модели
@@ -41,4 +52,46 @@ export function getLineMachineType(line: ISewingTaskLine | ICuttingTaskLine) {
 export function getMachineType(machineType: ISewingMachineKeys) {
     const findMachineTypeKey = Object.keys(SEWING_MACHINES).find(key => SEWING_MACHINES[key] === machineType)
     return findMachineTypeKey ? SEWING_MACHINES[findMachineTypeKey] : null
+}
+
+
+
+// __ Получаем КДЧ
+export function getKDCH(item: ISewingTaskLine | ICuttingTaskLine | ISewingTaskModel | ICuttingTaskModel | ICuttingTaskOrderLine | ISewingTaskOrderLine): string {
+    let source
+    if (isModel(item)) {
+        return item.kdch ?? ''
+    } else if (isTaskLine(item)) {
+        source = item.order_line.model
+    } else if (isTaskOrderLine(item)) {
+        source = item.model
+    } else {
+        return ''
+    }
+
+    if (source.cover && source.cover.kdch) {
+        return source.cover.kdch
+    } else if (source.main && source.main.kdch) {
+        return source.main.kdch
+    } else if (source.base && source.base.kdch) {
+        return source.base.kdch
+    }
+
+    return ''
+}
+
+
+// __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine или ICuttingTaskLine
+function isTaskLine(item: unknown): item is (ISewingTaskLine | ICuttingTaskLine) {
+    return !!item && typeof item === 'object' && 'order_line' in item /*&& !('table' in item)*/
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskModel или ISewingTaskModel
+function isModel(item: unknown): item is (ICuttingTaskModel | ISewingTaskModel) {
+    return !!item && typeof item === 'object' && 'kdch' in item && 'tkch' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskOrderLine или ISewingTaskModel
+function isTaskOrderLine(item: unknown): item is (ICuttingTaskOrderLine | ISewingTaskOrderLine) {
+    return !!item && typeof item === 'object' && 'dims' in item && 'model' in item
 }

@@ -1,13 +1,13 @@
 <template>
     <div v-for="[key, value] of Object.entries(calculateTotals)" :key="key">
-        <template v-if="!([AVERAGE, UNDEFINED] as ICuttingMachineKeys[]).includes(key as ICuttingMachineKeys)">
+        <template v-if="!([UNDEFINED] as ICuttingTableKeys[]).includes(key as ICuttingTableKeys)">
 
             <div class="flex">
 
-                <!-- __ ШМ -->
+                <!-- __ Стол -->
                 <AppLabelTS
-                    :text="getMachineTitle(key) + ':'"
-                    :width="MACHINE_WIDTH"
+                    :text="getTableTitle(key) + ':'"
+                    :width="TABLE_WIDTH"
                     rounded="4"
                     text-size="mini"
                     type="dark"
@@ -35,7 +35,7 @@
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
-                    :progress="getMachinePercent(key)"
+                    :progress="getTablePercent(key as ICuttingTableKeys)"
                     :width="PROGRESS_WIDTH"
                 />
             </div>
@@ -48,7 +48,7 @@
     <!--__ Итого-->
     <div class="flex">
         <AppLabelTS
-            :width="MACHINE_WIDTH"
+            :width="TABLE_WIDTH"
             rounded="4"
             text="Всего:"
             text-size="mini"
@@ -88,13 +88,13 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { ICuttingDay, ICuttingMachineKeys, ICuttingTaskLine } from '@/types'
+import type { ICuttingDay, ICuttingTableKeys, ICuttingTaskLine } from '@/types'
 
-import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
-import { AVERAGE, UNDEFINED } from '@/app/constants/textile_common.ts'
+import { CUTTING_TABLES, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE } from '@/app/constants/cutting.ts'
+import { UNDEFINED } from '@/app/constants/textile_common.ts'
 
 import {
-    getExecuteTaskStatistics, getCuttingLineMachineType, getCuttingTaskAmountAndTime
+    getExecuteTaskStatistics, getCuttingTaskAmountAndTime
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -108,7 +108,7 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
-const MACHINE_WIDTH  = 'w-[120px]'
+const TABLE_WIDTH    = 'w-[120px]'
 const PICS_WIDTH     = 'w-[120px]'
 const TIME_WIDTH     = 'w-[120px]'
 const PROGRESS_WIDTH = 'w-[300px]'
@@ -125,13 +125,13 @@ const commonCuttingLines = computed(() => {
 const calculateTotals = computed(() => getCuttingTaskAmountAndTime(commonCuttingLines.value))
 
 // __ Получаем процент выполнения по каждой машине
-const getMachinePercent = (key: string) => {
-    const cuttingLinesByMachine = commonCuttingLines.value.filter(item => getCuttingLineMachineType(item) === key)
+const getTablePercent = (key: ICuttingTableKeys) => {
+    const cuttingLinesByMachine = commonCuttingLines.value.filter(item => item.table === key)
 
     // __ Получаем объект статистики
     const statistics = getExecuteTaskStatistics(cuttingLinesByMachine)
     // console.log('statistics: ', statistics)
-    return statistics.time.total !==0 ? statistics.time.finished / statistics.time.total * 100 : 0
+    return statistics.time.total !== 0 ? statistics.time.finished / statistics.time.total * 100 : 0
 }
 
 // __ Общее Количество
@@ -140,21 +140,21 @@ const totalAmount = computed(() => Object.values(calculateTotals.value).reduce((
 // __ Общее Трудозатраты
 const totalTime = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.time + acc, 0))
 
-// __ Название машины
-const getMachineTitle = (key: string) => {
+// __ Название Стола
+const getTableTitle = (key: string) => {
     console.log(key)
 
-    if (key === CUTTING_MACHINES.UNIVERSAL) {
-        return 'УШМ'
+    if (key === CUTTING_TABLES.TABLE_1) {
+        return TABLE_1_TITLE
     }
-    if (key === CUTTING_MACHINES.AUTO) {
-        return 'АШМ'
+    if (key === CUTTING_TABLES.TABLE_2) {
+        return TABLE_2_TITLE
     }
-    if (key === CUTTING_MACHINES.SOLID_HARD) {
-        return 'Глухие Сложные'
+    if (key === CUTTING_TABLES.TABLE_3) {
+        return TABLE_3_TITLE
     }
-    if (key === CUTTING_MACHINES.SOLID_LITE) {
-        return 'Глухие Простые'
+    if (key === CUTTING_TABLES.TABLE_0) {
+        return TABLE_0_TITLE
     }
 
     throw new Error('Неизвестная машина')

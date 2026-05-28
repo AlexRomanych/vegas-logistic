@@ -42,9 +42,83 @@ final class ModelsService implements VegasDataUpdateContract
     private static array $modelManufactureGroupCacheById = [];
     private static array $modelManufactureGroupCacheByName = [];
 
+    protected static bool $isWarmedUp = false; // Флаг: был ли массовый прогрев
     // line -------------------------------------------------------------------
     // line ------------------------- Модели ----------------------------------
     // line -------------------------------------------------------------------
+
+
+    public static function warmUpCacheByCodes(array $codes): void
+    {
+        // Отсекаем то, что уже закэшировано
+        $codesToLoad = array_diff($codes, array_keys(self::$modelsCacheByCode1C));
+
+        if (!empty($codesToLoad)) {
+            $models = Model::query()
+                ->with([
+                    'modelType',
+                    'cover',
+                    'base',
+                    'constructs',
+                    'sewingSchema.operations',
+                    'sewingOperations',
+                    'cuttingSchema.operations',
+                    'cuttingOperations',
+                    //'constructs',           // __ Используем отношение один ко многим, чтобы выявить ошибку, если спецификация не одна
+                    ////'constructSingle',    // __ Один к одному (Одна спецификация на модель)
+                    //'constructs.constructItems',
+
+                    'cover.constructs', // __ Подгружаем спецификацию чехла, если она есть
+                    //'constructSingle',
+                    'cover.constructs.constructItems',
+
+                ])
+                //->with(['modelType', 'cover', 'base'])
+                ->whereIn('code_1c', $codesToLoad)
+                ->get();
+
+            foreach ($models as $model) {
+                self::$modelsCacheByCode1C[$model->code_1c] = $model;
+            }
+
+            // Обязательно пишем null для кодов, которых нет в базе,
+            // чтобы isset() не промахивался в будущем
+            foreach ($codesToLoad as $code) {
+                if (!array_key_exists($code, self::$modelsCacheByCode1C)) {
+                    self::$modelsCacheByCode1C[$code] = null;
+                }
+            }
+        }
+
+        self::$isWarmedUp = true; // Выставляем щит
+    }
+
+    public static function getModelByCode1C(?string $code): ?Model
+    {
+        $code = trim((string)$code);
+        if ($code === '') {
+            return null;
+        }
+
+        // Если кэш уже прогревался, берем только из него
+        if (self::$isWarmedUp) {
+            return self::$modelsCacheByCode1C[$code] ?? null;
+        }
+
+        // Фоллбек на случай, если этот метод вызвали ГДЕ-ТО ЕЩЕ,
+        // в другом контроллере, без вызова warmUpCacheByCodes
+        if (!array_key_exists($code, self::$modelsCacheByCode1C)) {
+            // Точечный запрос в базу вместо лавины select *
+            self::$modelsCacheByCode1C[$code] = Model::query()
+                ->with(['modelType', 'cover', 'base'])
+                ->where('code_1c', $code)
+                ->first();
+        }
+
+        return self::$modelsCacheByCode1C[$code];
+    }
+
+
 
     /**
      * ___ Проверка на заполненность кэша моделей
@@ -61,6 +135,18 @@ final class ModelsService implements VegasDataUpdateContract
      */
     public static function getModels(): array
     {
+
+        //\Illuminate\Support\Facades\Log::info('🎯 МЕТОД getModels() ВЫЗВАН! Стек:', [
+        //    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5))
+        //        ->map(fn($frame) => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? '') . ' в ' . ($frame['file'] ?? 'unknown') . ':' . ($frame['line'] ?? '?'))
+        //        ->toArray()
+        //]);
+
+        //\Illuminate\Support\Facades\Log::info('🎯 МЕТОД getModels() ВЫЗВАН!', [
+        //    'pid' => getmypid(),
+        //    'request_uri' => request()->getRequestUri(),
+        //]);
+
         if (!self::isModelsCashed()) {
             $models = Model::query()
                 ->with([
@@ -138,11 +224,11 @@ final class ModelsService implements VegasDataUpdateContract
      * @param string $code1C
      * @return Model|null
      */
-    public static function getModelByCode1C(string $code1C): ?Model
-    {
-        self::getModels();
-        return self::$modelsCacheByCode1C[$code1C] ?? null;
-    }
+    //public static function getModelByCode1C(string $code1C): ?Model
+    //{
+    //    self::getModels();
+    //    return self::$modelsCacheByCode1C[$code1C] ?? null;
+    //}
 
     /**
      * ___ Получение модели по имени

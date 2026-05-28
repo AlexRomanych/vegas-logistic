@@ -20,6 +20,7 @@ class OrderLine extends Model
     public function model(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Models\Model::class, 'model_code_1c', CODE_1C);
+        //return $this->belongsTo(\App\Models\Models\Model::class, 'model_code_1c', CODE_1C);
     }
 
 }

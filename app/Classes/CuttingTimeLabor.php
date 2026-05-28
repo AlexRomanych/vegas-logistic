@@ -85,7 +85,29 @@ final class CuttingTimeLabor
             $this->phantomJson = $cuttingTaskLine->phantom_json;
             $this->isPanel     = $cuttingTaskLine->is_panel;
             $this->isSide      = $cuttingTaskLine->is_side;
-            $orderLine         = OrderLine::query()->find($cuttingTaskLine->order_line_id);  // __ Получаем Контекст Строки Заказа
+
+            // Проверяем, загружена ли уже связь в памяти этой конкретной строки
+            if ($cuttingTaskLine->relationLoaded('orderLine')) {
+                // Берем прямо из памяти, в базу запрос НЕ идёт
+                $orderLine = $cuttingTaskLine->orderLine;
+            } else {
+                // Связи в памяти нет, идём в базу по старинке
+                $orderLine = OrderLine::find($cuttingTaskLine->order_line_id);
+
+                // Опционально: можно "затолкнуть" её в память модели вручную,
+                // чтобы при следующем вызове она уже считалась загруженной:
+                // $cuttingTaskLine->setRelation('orderLine', $orderLine);
+            }
+
+            //// Ищет строго в загруженных отношениях. Если не находит — возвращает null (в базу не идёт)
+            //$orderLine = $cuttingTaskLine->getRelationValue('orderLine');
+            //
+            //if (is_null($orderLine)) {
+            //    // В памяти не было, делаем ручной запрос
+            //    $orderLine = OrderLine::find($cuttingTaskLine->order_line_id);
+            //}
+
+            //$orderLine         = OrderLine::query()->find($cuttingTaskLine->order_line_id);  // __ Получаем Контекст Строки Заказа
             if ($orderLine) {
                 $model = $this->getModel($orderLine->model_code_1c); // __ Получаем Модель
                 //$model = ModelsService::getModelByCode1C($orderLine->model_code_1c); // __ Получаем Модель

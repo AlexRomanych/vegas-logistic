@@ -9,25 +9,25 @@
         />
 
         <!-- __ id -->
-        <AppLabelTSWrapper :render-object="render.id" />
+        <AppLabelTSWrapper :render-object="render.id"/>
 
         <!-- __ position -->
-        <AppLabelTSWrapper :render-object="render.position" />
+        <AppLabelTSWrapper :render-object="render.position"/>
 
         <!-- __ Клиент -->
-        <AppLabelTSWrapper :render-object="render.client" />
+        <AppLabelTSWrapper :render-object="render.client"/>
 
         <!-- __ № Заявки -->
-        <AppLabelTSWrapper :render-object="render.order_no" />
+        <AppLabelTSWrapper :render-object="render.order_no"/>
 
         <!-- __ Статус  -->
-        <AppLabelTSWrapper :render-object="render.status" />
+        <AppLabelTSWrapper :render-object="render.status"/>
 
         <!-- __ Дата загрузки  -->
-        <AppLabelTSWrapper :render-object="render.load_at" />
+        <AppLabelTSWrapper :render-object="render.load_at"/>
 
         <!-- __ Action_at  -->
-        <AppLabelTSWrapper :render-object="render.action_at" />
+        <AppLabelTSWrapper :render-object="render.action_at"/>
 
         <!-- __ Прогресс общий -->
         <AppProgressBar
@@ -40,7 +40,7 @@
         <!--<AppLabelTSWrapper :render-object="render.progressTotal"/>-->
 
         <!-- __ Комментарий  -->
-        <AppLabelTSWrapper :render-object="render.comment" />
+        <AppLabelTSWrapper :render-object="render.comment"/>
 
     </div>
 
@@ -55,8 +55,8 @@
             <!-- __ Данные -->
             <div v-for="cuttingLine of cuttingTask.cutting_lines" :key="cuttingLine.id">
                 <ExecuteTaskLine
-                    :fields-width="cuttingLineFieldsWidth"
                     :cutting-line="cuttingLine"
+                    :fields-width="cuttingLineFieldsWidth"
                     @dblclick="showLineInfo(cuttingLine)"
                 />
             </div>
@@ -126,7 +126,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     clientShow: true,
-    orderInfo: true,
+    orderInfo : true,
 })
 
 
@@ -138,7 +138,6 @@ const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)
 // __ Тип для модального окна изменения Комментария
 // const comment = ref('')
 // const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
-
 
 
 // __ Объект отображения данных
@@ -154,178 +153,178 @@ const HEADER_ALIGN     = 'center'
 const DATA_ALIGN       = 'left'
 
 const render: IRenderData = reactive({
-    collapsed:     {
-        id:             () => 'collapsed-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.collapsed,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => 'indigo',
+    collapsed    : {
+        id            : () => 'collapsed-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.collapsed,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => 'indigo',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍collapsed...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.collapsed ? '▲' : '▼',
-        class:          'cursor-pointer',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍collapsed...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.collapsed ? '▲' : '▼',
+        class         : 'cursor-pointer',
     },
-    id:            {
-        id:             () => 'id-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.id,
-        height:         DEFAULT_HEIGHT,
-        show:           false,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    id           : {
+        id            : () => 'id-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.id,
+        height        : DEFAULT_HEIGHT,
+        show          : false,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍id...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.id.toString(),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍id...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.id.toString(),
     },
-    position:      {
-        id:             () => 'position-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.position,
-        height:         DEFAULT_HEIGHT,
-        show:           props.orderInfo,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    position     : {
+        id            : () => 'position-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.position,
+        height        : DEFAULT_HEIGHT,
+        show          : props.orderInfo,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍№ п/п...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.position.toString(),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍№ п/п...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.position.toString(),
     },
-    client:        {
-        id:             () => 'client-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.client,
-        height:         DEFAULT_HEIGHT,
-        show:           props.clientShow,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    client       : {
+        id            : () => 'client-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.client,
+        height        : DEFAULT_HEIGHT,
+        show          : props.clientShow,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Клиент...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.client.short_name,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Клиент...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.client.short_name,
     },
-    order_no:      {
-        id:             () => 'order-no-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.order_no,
-        height:         DEFAULT_HEIGHT,
-        show:           props.orderInfo,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    order_no     : {
+        id            : () => 'order-no-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.order_no,
+        height        : DEFAULT_HEIGHT,
+        show          : props.orderInfo,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍№ ...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.order_no_num.toString(),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍№ ...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.order.order_no_num.toString(),
     },
-    status:        {
-        id:             () => 'status-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.status,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    status       : {
+        id            : () => 'status-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.status,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   'micro',
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Статус...',
-        data:           (/*cuttingTask: ICuttingTask*/) => {
+        dataTextSize  : 'micro',
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Статус...',
+        data          : (/*cuttingTask: ICuttingTask*/) => {
             const status = getTaskStatusById(props.cuttingTask.current_status.id)
             return status?.TITLE ?? ''
         },
     },
-    load_at:       {
-        id:             () => 'load-at-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.load_at,
-        height:         DEFAULT_HEIGHT,
-        show:           props.orderInfo,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    load_at      : {
+        id            : () => 'load-at-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.load_at,
+        height        : DEFAULT_HEIGHT,
+        show          : props.orderInfo,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍 Дата загрузки...',
-        data:           (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.order.load_at, true, false),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍 Дата загрузки...',
+        data          : (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.order.load_at, true, false),
     },
-    action_at:       {
-        id:             () => 'action-at-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.load_at,
-        height:         DEFAULT_HEIGHT,
-        show:           !props.orderInfo,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    action_at    : {
+        id            : () => 'action-at-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.load_at,
+        height        : DEFAULT_HEIGHT,
+        show          : !props.orderInfo,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Прогресс...',
-        data:           (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.action_at, true, false),
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Прогресс...',
+        data          : (/*cuttingTask: ICuttingTask*/) => formatDateInFullFormat(props.cuttingTask.action_at, true, false),
     },
     progressTotal: {
-        id:             () => 'progress-total-search',
-        header:         ['Процесс выполнения от', 'общего времени СЗ'],
-        width:          props.fieldsWidth.progressTotal,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+        id            : () => 'progress-total-search',
+        header        : ['Процесс выполнения от', 'общего времени СЗ'],
+        width         : props.fieldsWidth.progressTotal,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Прогресс...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Прогресс...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
     },
-    comment:       {
-        id:             () => 'comment-search',
-        header:         ['', ''],
-        width:          props.fieldsWidth.comment,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
-        color:          () => color.value,
+    comment      : {
+        id            : () => 'comment-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.comment,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        color         : () => color.value,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   'micro',
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Комментарий...',
-        data:           (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
-        class:          'truncate',
+        dataTextSize  : 'micro',
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Комментарий...',
+        data          : (/*cuttingTask: ICuttingTask*/) => props.cuttingTask.comment ?? '',
+        class         : 'truncate',
     },
 
 })
@@ -333,23 +332,36 @@ const render: IRenderData = reactive({
 
 // __ Ширина полей для вывода СЗ
 const cuttingLineFieldsWidth = {
-    checker:      'w-[30px]',
-    id:           'w-[30px]',
-    position:     'w-[30px]',
-    size:         'w-[70px]',
-    cover:        'w-[230px]',
-    amount:       'w-[30px]',
-    textile:      'w-[80px]',
-    composition:  'w-[100px]',
-    describe_1:   'w-[90px]',
-    describe_2:   'w-[90px]',
-    describe_3:   'w-[90px]',
-    finished_at:  'w-[80px]',
-    machine:      'w-[25px]',
-    time:         'w-[50px]',
-    tkch:         'w-[50px]',
-    kant:         'w-[70px]',
-    false_reason: 'w-[110px]',
+    checker       : 'w-[30px]',
+    id            : 'w-[30px]',
+    position      : 'w-[30px]',
+    size          : 'w-[70px]',
+    cover         : 'w-[230px]',
+    amount        : 'w-[30px]',
+    textile       : 'w-[80px]',
+    composition   : 'w-[100px]',
+    describe_1    : 'w-[90px]',
+    describe_2    : 'w-[90px]',
+    describe_3    : 'w-[90px]',
+    finished_at   : 'w-[80px]',
+    machine       : 'w-[25px]',
+    table         : 'w-[25px]',
+    detail        : 'w-[25px]',
+    time          : 'w-[50px]',
+    tkch          : 'w-[50px]',
+    kdch          : 'w-[50px]',
+    kant          : 'w-[70px]',
+    false_reason  : 'w-[110px]',
+    cut           : 'w-[60px]',
+    angle         : 'w-[50px]',
+    layers        : 'w-[50px]',
+    expense       : 'w-[50px]',
+    fabric_roll   : 'w-[50px]',
+    fabric_roll_at: 'w-[80px]',
+    defects       : 'w-[50px]',
+    defects_reason: 'w-[110px]',
+
+
 }
 
 // __ Пересчитываем Итого
