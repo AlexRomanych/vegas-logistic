@@ -110,7 +110,7 @@
             :type="DEFAULT_TYPE"
             :width="fieldWidths.textile"
             rounded="4"
-            text="Ткань"
+            text="ПС / Ткань"
         />
 
         <!-- __ КДЧ -->

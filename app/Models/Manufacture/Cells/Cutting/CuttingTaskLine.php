@@ -21,9 +21,10 @@ class CuttingTaskLine extends Model
     protected $guarded = false;
 
     protected $casts = [
-        'time_labor'    => 'array',
-        'phantom_json'  => 'array',
-        'false_history' => 'array',
+        'time_labor'       => 'array',
+        'phantom_json'     => 'array',
+        'false_history'    => 'array',
+        'fabric_construct' => 'array',
     ];
 
     // Relations: Связь с Контекстом Заявки (OrderLine)

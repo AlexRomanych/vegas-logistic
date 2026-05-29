@@ -4,7 +4,7 @@
     <div class="flex items-center">
         <div
             :class="[getCheckClass(cuttingLine)]"
-            class="w-[25px] h-[25px] rounded flex items-center justify-center transition-all"
+            class="w-[25px] h-[30px] rounded flex items-center justify-center transition-all"
         >
             <span :class="getCheckClass(cuttingLine)" class="text-[12px] font-semibold text-white">
                 {{ getCheckSymbol(cuttingLine) }}
@@ -15,8 +15,8 @@
 
         <!-- __ Позиция -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
-            :text="cuttingLine.position.toString()"
+            :height="lineHeight"
+            :text="ordering === 'position' ? cuttingLine.position.toString() : index.toString()"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.position"
@@ -26,7 +26,7 @@
 
         <!-- __ Размер -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="getCoverSizeString(cuttingLine)"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -37,7 +37,7 @@
 
         <!-- __ Название чехла -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="getCuttingTaskModelCoverName(cuttingLine)"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -47,7 +47,7 @@
 
         <!-- __ Количество -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.amount.toString()"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -58,7 +58,7 @@
 
         <!-- __ Трудозатраты -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="time"
             :text-size="LINE_TEXT_SIZE"
             :type="time === '00с' ? 'danger' : getCheckType(cuttingLine)"
@@ -69,7 +69,7 @@
 
         <!-- __ Элемент -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="detail"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -80,7 +80,7 @@
 
         <!-- __ Стол -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="table"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -92,7 +92,7 @@
 
         <!-- __ Швейная машина -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingMachine"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -101,11 +101,23 @@
             rounded="4"
         />
 
-        <!-- __ Ткань -->
-        <AppLabelTS
-            :height="LINE_HEIGHT"
-            :text="cuttingLine.order_line.textile ?? ''"
-            :text-size="LINE_TEXT_SIZE"
+        <!--&lt;!&ndash; __ Ткань из Заявки &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text="cuttingLine.order_line.textile ?? ''"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.textile"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--/>-->
+
+
+        <!-- __ Ткань из Спецификаций-->
+        <AppLabelMultiLineTS
+            :height="lineHeightFabric"
+            :text="fabric"
+            :text-size="fabricTextSize"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.textile"
             align="center"
@@ -114,7 +126,7 @@
 
         <!-- __ КДЧ -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.order_line.model.main.kdch ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -125,7 +137,7 @@
 
         <!-- __ Крой -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.cut"
@@ -136,7 +148,7 @@
 
         <!-- __ Угол -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.angle"
@@ -147,7 +159,7 @@
 
         <!-- __ Настил -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.layers"
@@ -158,7 +170,7 @@
 
         <!-- __ Расход -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.expense"
@@ -169,7 +181,7 @@
 
         <!-- __ Рулон -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.fabric_roll"
@@ -180,18 +192,18 @@
 
         <!-- __ Отметка Рулона -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.fabric_roll_at"
             align="center"
             rounded="4"
-            text="28.05.2026"
+            text="10ч. 45м. 59с."
         />
 
         <!-- __ Брак -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.defects"
@@ -202,7 +214,7 @@
 
         <!-- __ Причина брака -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
             :width="fieldWidths.defects_reason"
@@ -213,7 +225,7 @@
 
         <!--&lt;!&ndash; __ ТКЧ &ndash;&gt;-->
         <!--<AppLabelTS-->
-        <!--    :height="LINE_HEIGHT"-->
+        <!--    :height="lineHeight"-->
         <!--    :text="cuttingLine.order_line.model.main.tkch ?? ''"-->
         <!--    :text-size="LINE_TEXT_SIZE"-->
         <!--    :type="getCheckType(cuttingLine)"-->
@@ -224,7 +236,7 @@
 
         <!--&lt;!&ndash; __ Кант &ndash;&gt;-->
         <!--<AppLabelTS-->
-        <!--    :height="LINE_HEIGHT"-->
+        <!--    :height="lineHeight"-->
         <!--    :text="cuttingLine.order_line.model.main.kant ?? ''"-->
         <!--    :text-size="LINE_TEXT_SIZE"-->
         <!--    :type="getCheckType(cuttingLine)"-->
@@ -236,7 +248,7 @@
 
         <!-- __ Состав -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.order_line.composition ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -248,7 +260,7 @@
 
         <!-- __ Примечание 1 -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.order_line.describe_1 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -260,7 +272,7 @@
 
         <!-- __ Примечание 2 -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.order_line.describe_2 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -272,7 +284,7 @@
 
         <!-- __ Примечание 3 -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.order_line.describe_3 ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -284,7 +296,7 @@
 
         <!-- __ finished_at -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="
                 cuttingLine.finished_at ?
                     formatTimeInFullFormat(cuttingLine.finished_at) :
@@ -302,7 +314,7 @@
 
         <!-- __ Причина не выполнения -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.false_reason ?? ''"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -314,7 +326,7 @@
 
         <!-- __ Заявка -->
         <AppLabelTS
-            :height="LINE_HEIGHT"
+            :height="lineHeight"
             :text="cuttingLine.groupAttr"
             :text-size="LINE_TEXT_SIZE"
             :type="getCheckType(cuttingLine)"
@@ -343,16 +355,24 @@ import {
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 
 
 interface IProps {
     cuttingLine: ICuttingTaskLine
     fieldWidths: Record<string, string>
+    index?: number
+    ordering?: 'index' | 'position'
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    index: 0,
+    ordering: 'position'
+})
 
-const LINE_HEIGHT    = 'h-[25px]'
+
+
+// const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
 const LINE_TEXT_SIZE = 'mini'
 
@@ -421,8 +441,26 @@ const cuttingMachine = computed(() => {
 
 const detail = computed(() => getDetailTitle(props.cuttingLine, true))
 const table  = computed(() => getTableTitle(props.cuttingLine, true))
+const fabric = computed(() => Array.from(new Set(props.cuttingLine.fabric_construct)))
+
+// __ Возвращаем высоту строки в зависимости от количества ПС
+const lineHeight = computed(() => {
+    switch (fabric.value.length) {
+        case 1: return 'h-[30px]'
+        case 2: return 'h-[30px]'
+        case 3: return 'h-[45px]'
+        default: return 'h-[30px]'
+    }
+})
+
+// __ Возвращаем высоту строки в зависимости от количества ПС для fabric
+const lineHeightFabric = computed(() => fabric.value.length > 1 ? 'h-[15px]' : 'h-[30px]')
+
+// __ Возвращаем размер шрифта для favbic в зависимости от количества ПС для fabric
+const fabricTextSize = computed(() => fabric.value.length > 1 ? 'micro' : LINE_TEXT_SIZE)
 
 
+// console.log(fabric)
 </script>
 
 <style scoped>

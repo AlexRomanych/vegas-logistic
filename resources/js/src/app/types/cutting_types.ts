@@ -11,7 +11,7 @@ import {
     CUTTING_TASK_STATUS_RUNNING,
     CUTTING_TASK_STATUS_DONE,
     DETAIL_PANEL, DETAIL_SIDE,
-    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE,
+    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE, TABLE_0,
 
 } from '@/app/constants/cutting.ts'
 
@@ -63,6 +63,8 @@ export interface ICuttingTaskLine {
     is_panel: boolean
     is_side: boolean
     has_side: boolean
+
+    fabric_construct: string[]
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк

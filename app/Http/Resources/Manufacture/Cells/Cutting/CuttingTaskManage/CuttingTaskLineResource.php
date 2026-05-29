@@ -41,12 +41,13 @@ class CuttingTaskLineResource extends JsonResource
             'table'        => $this->table,
             //'table'        => $this->phantom,
 
-            'is_panel' => $this->is_panel,
-            'is_side'  => $this->is_side,
-            'has_side' => $this->has_side,
+            'is_panel'         => $this->is_panel,
+            'is_side'          => $this->is_side,
+            'has_side'         => $this->has_side,
+            'fabric_construct' => $this->fabric_construct,
 
             //'amount_avg' => null,
-            'time'     => $labor->getRealTime(),
+            'time'             => $labor->getRealTime(),
             //'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
             // 'time'       => ['time_'.$this->phantom => $this->time],
             // 'time'       => $labor->getTime(),
@@ -70,12 +71,12 @@ class CuttingTaskLineResource extends JsonResource
                 //'is_cover'   => ModelsService::isElementCover($this->orderLine->model->code_1c),
                 'type'       =>
                     match (true) {
-                        $this->orderLine->model->is_average                             => 'average',
+                        $this->orderLine->model->is_average               => 'average',
                         ModelsService::isElementBase($modelMem->code_1c)  => 'base',
                         //ModelsService::isElementBase($this->orderLine->model->code_1c)  => 'base',
                         ModelsService::isElementCover($modelMem->code_1c) => 'cover',
                         //ModelsService::isElementCover($this->orderLine->model->code_1c) => 'cover',
-                        default                                                         => 'unknown',
+                        default                                           => 'unknown',
                     },
             ],
 

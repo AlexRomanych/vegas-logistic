@@ -117,8 +117,14 @@ return new class extends Migration {
             // __ Признак того, что у записи есть Боковина
             $table->boolean('has_side')->nullable()->comment('Признак того, что у записи есть Боковина>');
 
+            // __ Ткань из спецификации
+            $table->jsonb('fabric_construct')->nullable(false)->default('[]')->comment('Крой');
+
             // __ Крой (деталька типа 159x199)
             $table->string('cut')->nullable()->comment('Крой');
+
+            // __ Угол
+            $table->string('angle')->nullable()->comment('Угол');
 
             // --- Трудозатраты на стол в момент создания СЗ в секундах
 

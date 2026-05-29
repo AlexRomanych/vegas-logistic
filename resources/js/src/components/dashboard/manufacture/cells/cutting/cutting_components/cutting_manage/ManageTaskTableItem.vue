@@ -153,9 +153,9 @@
         <!-- __ Номер заявки -->
         <AppLabelTS
             v-if="showDetails"
-            :align="DEFAULT_ALIGN"
+            :align="'left'"
             :rounded="DEFAULT_ROUNDED"
-            :text="cuttingLine.order_meta ?? ''"
+            :text="cuttingLine.groupAttr ?? ''"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.order.width"

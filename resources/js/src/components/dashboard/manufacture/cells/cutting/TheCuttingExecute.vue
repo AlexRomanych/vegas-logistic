@@ -593,7 +593,7 @@ const cuttingTaskFieldsWidth = {
     status       : 'w-[90px]',
     progressTotal: PROGRESS_WIDTH,
     load_at      : 'w-[143px]',
-    comment      : 'w-[578px]',
+    comment      : 'w-[1095px]',
 }
 
 // __ Определяем тип календарного дня

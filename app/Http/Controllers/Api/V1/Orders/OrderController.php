@@ -52,6 +52,8 @@ class OrderController extends Controller
             $orders = Order::query()
                 ->whereDate('load_at', '>=', $start)     // Используем такую конструкцию, потому что
                 ->whereDate('load_at', '<=', $end)      // ->whereBetween() не включает периоды
+                ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
+                ->withExists('sewingTask') // <-- Добавит boolean-поле sewing_task_exists
                 ->with(['lines.model.modelType', 'client', 'orderType'])
                 ->orderBy('load_at')
                 ->get();

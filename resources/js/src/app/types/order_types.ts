@@ -49,6 +49,11 @@ export interface IRenderOrder {
     lines: IRenderOrderLine[]
 
     collapsed?: boolean
+
+    has_tasks: {
+        cutting_task: boolean,
+        sewing_task: boolean,
+    }
 }
 
 export interface IRenderOrderClient {

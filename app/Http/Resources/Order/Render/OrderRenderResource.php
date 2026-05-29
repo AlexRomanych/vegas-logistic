@@ -16,7 +16,6 @@ class OrderRenderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-
         return [
             'id'                   => $this->id,
             'order_no_str'         => $this->order_no_str,
@@ -60,6 +59,12 @@ class OrderRenderResource extends JsonResource
 
             'lines' => OrderLineRenderResource::collection($this->lines),
 
+            // __ Наличие СЗ
+            'has_tasks' => [
+                'cutting_task' => $this->cutting_task_exists,
+                'sewing_task'  => $this->sewing_task_exists,
+            ],
+
 
             // 'updated_at'             => $this->updated_at,
             // 'load_at_dates_conflict' => $this->load_at_dates_conflict,
@@ -83,6 +88,5 @@ class OrderRenderResource extends JsonResource
             // 'note'                   => $this->note,
             // 'comment'                => $this->comment,
         ];
-
     }
 }

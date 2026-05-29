@@ -85,6 +85,19 @@
                         width="w-[200px]"
                     />
 
+                    <!-- __ Изменить Стол -->
+                    <AppLabelTS
+                        :height="MENU_HEIGHT"
+                        align="center"
+                        class="menu-button"
+                        rounded="4"
+                        text="⚙️"
+                        text-size="huge"
+                        type="dark"
+                        width="w-[50px]"
+                        @click="changeTable"
+                    />
+
                     <!-- __ Выполнено -->
                     <AppLabelMultiLineTS
                         :disabled="selectedIds.size === 0"
@@ -173,15 +186,17 @@
                         <!--<span class="font-semibold italic underline">{{ getSubgroupTitle(subgroup) }}</span>-->
                     </div>
 
+                    <!-- !!! С фиксированной высотой строки СЗ !!! -->
+                    <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
                     <div
-                        v-for="cuttingLine of subgroup.lines"
+                        v-for="(cuttingLine, index) of subgroup.lines"
                         :key="cuttingLine.id"
                         :class="[
                             selectedIds.has(cuttingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
                             cuttingLine.completed ? '' : '',
                         ]"
                         :data-task-id="cuttingLine.id"
-                        class="h-[30px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
+                        class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
                         @mousedown="startSelectionById(cuttingLine.id, $event)"
                         @mouseenter="updateSelectionById(cuttingLine.id, $event)"
                     >
@@ -189,6 +204,8 @@
                         <ExecuteDayTaskLine
                             :cutting-line="cuttingLine"
                             :field-widths="fieldWidths"
+                            :index="index + 1"
+                            :ordering="'index'"
                             @dblclick="showLineInfo(cuttingLine)"
                         />
 
@@ -317,6 +334,15 @@
         :type="modalInfoType"
     />
 
+    <!-- __ Смена Стола -->
+    <ManageTaskTables
+        ref="manageTaskTables"
+        :mode="modalModeTable"
+        :task="taskCardTable"
+        :text="modalTextTable"
+        :type="modalTypeTable"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -328,19 +354,22 @@ import type {
     IDividerItem,
     ICuttingTask,
     ICuttingTaskLine,
+    ICuttingTaskOrderLine, ICuttingLineTableSetData
     /*ICuttingTaskLinesSubgroup,*/
-    ICuttingTaskOrderLine
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { CUTTING_UNION_TASK_NAME } from '@/app/constants/cutting.ts'
+import { CUTTING_TASK_DRAFT, CUTTING_UNION_TASK_NAME } from '@/app/constants/cutting.ts'
 
 import {
     getCoverSizeString,
     getExecuteTaskStatistics,
-    getCuttingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion, isTaskLineReset,
+    getCuttingTaskModelCoverName,
+    groupTaskLinesForExecute,
+    isTaskLineReset,
+    // groupTaskLinesForExecuteForUnion,
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 
@@ -353,6 +382,8 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
 interface IProps {
@@ -401,6 +432,14 @@ const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
+// __ Тип для Каротчки и Изменения стола
+const modalTypeTable   = ref<IColorTypes>('primary')
+const modalTextTable   = ref<string>('')
+const modalModeTable   = ref<'inform' | 'confirm'>('inform')
+const manageTaskTables = ref<InstanceType<typeof ManageTaskTables> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Карточка СЗ
+const taskCardTable = ref<ICuttingTask>(CUTTING_TASK_DRAFT)
 
 const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
 
@@ -499,7 +538,7 @@ const fieldWidths: Record<string, string> = {
     amount        : 'min-w-[40px] max-w-[40px]',
     time          : 'min-w-[70px] max-w-[70px]',
     machine       : 'min-w-[35px] max-w-[35px]',
-    textile       : 'min-w-[100px] max-w-[100px]',
+    textile       : 'min-w-[250px] max-w-[250px]',
     tkch          : 'min-w-[70px] max-w-[70px]',
     kant          : 'min-w-[90px] max-w-[90px]',
     kdch          : 'min-w-[50px] max-w-[50px]',
@@ -920,6 +959,40 @@ const stopGlobalSelection = () => {
     stopAutoScroll()
 }
 
+
+// __ Изменить Стол
+const changeTable = async () => {
+    // __ Копируем объект, чтобы не мутировал оригинал
+    taskCardTable.value = JSON.parse(JSON.stringify(props.cuttingTask))
+    // __ Добавляем метаданные Заявки в каждую строку
+    taskCardTable.value.cutting_lines.forEach(line => line.order_meta = `${taskCardTable.value.order.client.short_name} №${taskCardTable.value.order.order_no_str}`)
+
+
+    // __ Показываем модальное окно обработки СЗ
+    const answer = await manageTaskTables.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Получаем ссылки на панели
+    const mutations                                 = manageTaskTables.value!.mutations
+    const setTablesData: ICuttingLineTableSetData[] = mutations.map(line => ({ id: line.id, table: line.table }))
+
+    console.log('mutations: ', setTablesData)
+
+    const result = await cuttingStore.taskLinesTableSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        cuttingStore.setGlobalArrayChangeTables(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = 'Данные успешно обновлены'
+        await appModalAsyncMultiline.value!.show()
+
+    } else {
+        await showError()
+    }
+}
 
 // __ Печать
 const printTask = () => {

@@ -30,23 +30,23 @@ class AppServiceProvider extends ServiceProvider
 
         FabricTaskRoll::observe(FabricTaskRollObserver::class);
 
-        if ($this->app->environment('local')) {
-            DB::listen(function ($query) {
-                // Ищем в истории вызовов первый файл, который находится в нашей папке app/
-                $trace = collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS))
-                    ->first(function ($frame) {
-                        return isset($frame['file']) &&
-                            str_contains($frame['file'], base_path('app')) &&
-                            !str_contains($frame['file'], 'vendor'); // Исключаем сам фреймворк
-                    });
-
-                $location = $trace
-                    ? str_replace(base_path() . '/', '', $trace['file']) . ':' . $trace['line']
-                    : 'Unknown';
-
-                Log::info("SQL: {$query->sql} | Bindings: " . json_encode($query->bindings) . " | Вызвано в: {$location}");
-            });
-        }
+        //if ($this->app->environment('local')) {
+        //    DB::listen(function ($query) {
+        //        // Ищем в истории вызовов первый файл, который находится в нашей папке app/
+        //        $trace = collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS))
+        //            ->first(function ($frame) {
+        //                return isset($frame['file']) &&
+        //                    str_contains($frame['file'], base_path('app')) &&
+        //                    !str_contains($frame['file'], 'vendor'); // Исключаем сам фреймворк
+        //            });
+        //
+        //        $location = $trace
+        //            ? str_replace(base_path() . '/', '', $trace['file']) . ':' . $trace['line']
+        //            : 'Unknown';
+        //
+        //        Log::info("SQL: {$query->sql} | Bindings: " . json_encode($query->bindings) . " | Вызвано в: {$location}");
+        //    });
+        //}
 
 
         // Логируем запросы только в локальной среде разработки

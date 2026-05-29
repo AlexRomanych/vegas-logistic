@@ -127,7 +127,7 @@ const tabs: ITab[] = [
     },
     {
         name:        'Закрой',
-        displayName: ['СЗ:', 'Закрой'],
+        displayName: ['СЗ:', 'Раскрой'],
         component:   'Cutting',
         icon:        '🚀',
         active:      false,

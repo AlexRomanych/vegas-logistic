@@ -156,6 +156,16 @@
                         <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description"/>
                     </div>
 
+                    <!-- __ Наличие СЗ Раскроя -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.has_cutting_task"/>
+                    </div>
+
+                    <!-- __ Наличие СЗ Пошива -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.has_sewing_task"/>
+                    </div>
+
                     <div>
                         <div class="flex">
                             <!-- __ Добавить заявку -->
@@ -394,6 +404,7 @@ const renderPeriod = ref<IPeriod | null>(null)
 // const DEFAULT_WIDTH = 'w-[100px]'
 const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 const DEFAULT_WIDTH_DATE = 'w-[100px]'
+const DEFAULT_WIDTH_TASK = 'w-[70px]'
 const DEFAULT_HEIGHT     = 'h-[30px]'
 const HEADER_TYPE        = 'primary'
 const DATA_TYPE          = 'primary'
@@ -668,6 +679,38 @@ const render: IRenderData = reactive({
         class         : 'cursor-pointer',
         data          : (/*order: IRenderOrder*/) => '📄',
     },
+    has_cutting_task   : {
+        id            : () => 'comment-1c-search',
+        header        : ['СЗ', 'Раскрой'],
+        width         : DEFAULT_WIDTH_TASK,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.has_tasks.cutting_task ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍СЗ Раскроя...',
+        data          : (order: IRenderOrder) => order.has_tasks.cutting_task ? '✓' : '✗',
+    },
+    has_sewing_task   : {
+        id            : () => 'comment-1c-search',
+        header        : ['СЗ', 'Пошив'],
+        width         : DEFAULT_WIDTH_TASK,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.has_tasks.sewing_task ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍СЗ Раскроя...',
+        data          : (order: IRenderOrder) => order.has_tasks.sewing_task ? '✓' : '✗',
+    },
 })
 
 // __ Фильтры
@@ -895,8 +938,19 @@ const setTabs = () => {
 // !!! ---              Удаление Заявки                  !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+// __ Проверка наличия СЗ
+const hasOrderTasks = (order: IRenderOrder) => {
+    let hasTask = false
+    Object.values(order.has_tasks).forEach(val => hasTask ||= val )
+    return hasTask
+}
+
+
 // __ Удаление заявки
 const deleteOrder = async (order: IRenderOrder) => {
+    if (hasOrderTasks(order)) {
+        return
+    }
 
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'confirm'
@@ -1012,10 +1066,10 @@ const loadOrders = async (period: IPeriod | null = null) => {
         async () => {
 
             await getOrders(period)
-            // console.log('orders: ', orders.value)
+            console.log('orders: ', orders.value)
 
             setTabs()
-            console.log('tabs: ', tabs.value)
+            // console.log('tabs: ', tabs.value)
         },
         undefined,
         // false,

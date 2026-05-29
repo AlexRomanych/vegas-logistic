@@ -109,10 +109,13 @@ final class CuttingService
                     //    continue;
                     //}
 
-                    // __ Получаем стол
+                    // __ Получаем стол + С тканью из Спецификаций
                     //$targetTable = CuttingService::getTableByModel($line->model_code_1c);
-                    $hasPanel    = CuttingService::hasPanel($line->model_code_1c);
-                    $hasSide     = CuttingService::hasSide($line->model_code_1c);
+                    $panelFabrics = [];
+                    $hasPanel     = CuttingService::hasPanel($line->model_code_1c, $panelFabrics);
+
+                    $sideFabrics = [];
+                    $hasSide     = CuttingService::hasSide($line->model_code_1c, $sideFabrics);
 
                     $workTable = $table; // __ берем стол из объекта времени, он там определяеся
 
@@ -123,23 +126,24 @@ final class CuttingService
                     }
 
                     $panelTaskLine = CuttingTaskLine::query()->create([
-                        'cutting_task_id' => $createdTask->id,
-                        'order_line_id'   => $line->id,
-                        'amount'          => $data['amount'],
-                        'position'        => $position++,
-                        'time'            => $data['time'],
-                        'table'           => $workTable,
+                        'cutting_task_id'  => $createdTask->id,
+                        'order_line_id'    => $line->id,
+                        'amount'           => $data['amount'],
+                        'position'         => $position++,
+                        'time'             => $data['time'],
+                        'table'            => $workTable,
                         //'table'           => $targetTable,
 
                         // __ Задаем детальки
-                        'is_panel'        => true,
-                        'has_panel'       => $hasPanel,
-                        'is_side'         => false,
-                        'has_side'        => $hasSide,
+                        'is_panel'         => true,
+                        'has_panel'        => $hasPanel,
+                        'is_side'          => false,
+                        'has_side'         => $hasSide,
+                        'fabric_construct' => $panelFabrics,
 
                         // __ Задаем подмену свойств
-                        'phantom'         => $table,
-                        'phantom_json'    => [$table => true],
+                        'phantom'          => $table,
+                        'phantom_json'     => [$table => true],
                     ]);
 
                     //if ($table === CuttingTaskLine::FIELD_TABLE_3) {
@@ -156,26 +160,27 @@ final class CuttingService
                     try {
                         // __ Создаем Боковину
                         $baseTaskLine = CuttingTaskLine::query()->create([
-                            'cutting_task_id' => $createdTask->id,
-                            'order_line_id'   => $line->id,
-                            'parent_id'       => $panelTaskLine->id,
+                            'cutting_task_id'  => $createdTask->id,
+                            'order_line_id'    => $line->id,
+                            'parent_id'        => $panelTaskLine->id,
                             // __ Указываем родительскую панельку
-                            'amount'          => $data['amount'],
-                            'position'        => $position++,
-                            'time'            => $data['time'],
-                            'table'           => $table === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
+                            'amount'           => $data['amount'],
+                            'position'         => $position++,
+                            'time'             => $data['time'],
+                            'table'            => $table === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
                             //'table'           => $targetTable === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
                             // __ Все детальки отправляем на Стол 3
 
                             // __ Задаем детальки
-                            'is_panel'        => false,
-                            'has_panel'       => false,
-                            'is_side'         => true,
-                            'has_side'        => false,
+                            'is_panel'         => false,
+                            'has_panel'        => false,
+                            'is_side'          => true,
+                            'has_side'         => false,
+                            'fabric_construct' => $sideFabrics,
 
                             // __ Задаем подмену свойств
-                            'phantom'         => $table,
-                            'phantom_json'    => [$table => true],
+                            'phantom'          => $table,
+                            'phantom_json'     => [$table => true],
                         ]);
 
                         //$b = $baseTaskLine->toArray();
@@ -185,7 +190,6 @@ final class CuttingService
                         $err = $e->getMessage();
                         continue;
                     }
-
                 }
             }
 
@@ -657,10 +661,13 @@ final class CuttingService
     /**
      * ___ Проверяем, есть ли Крышка у Модели в Спецификации
      * @param Model|string $model
+     * @param array $fabricList
      * @return bool
      */
-    public static function hasPanel(Model|string $model): bool
+    public static function hasPanel(Model|string $model, array &$fabricList = []): bool
     {
+        $fabricList = [];
+
         $findModel = ModelsService::getModel($model);
         if (!$findModel) {
             return false;
@@ -675,9 +682,11 @@ final class CuttingService
                 $items = $cover->constructs[0]->constructItems;
                 foreach ($items as $item) {
                     if (!is_null($item->detail) && mb_strtolower($item->detail) === 'крышка') {
-                        return true;
+                        $fabricList[] = $item->material_name;
                     }
                 }
+
+                return count($fabricList) !== 0;
             }
         }
 
@@ -689,9 +698,10 @@ final class CuttingService
      * @param Model|string $model
      * @return bool
      */
-    public static function hasSide(Model|string $model): bool
+    public static function hasSide(Model|string $model, array &$fabricList = []): bool
     {
-        $findModel = ModelsService::getModel($model);
+        $fabricList = [];
+        $findModel  = ModelsService::getModel($model);
         if (!$findModel) {
             return false;
         }
@@ -705,9 +715,11 @@ final class CuttingService
                 $items = $cover->constructs[0]->constructItems;
                 foreach ($items as $item) {
                     if (!is_null($item->detail) && mb_strtolower($item->detail) === 'боковина') {
-                        return true;
+                        $fabricList[] = $item->material_name;
                     }
                 }
+
+                return count($fabricList) !== 0;
             }
         }
 
@@ -717,16 +729,12 @@ final class CuttingService
 
     public static function test()
     {
-        $model = ModelsService::getModel('000000137');
+        $model   = ModelsService::getModel('000000137');
         $hasSide = self::hasSide($model);
-        $table = self::getTableByModel($model);
+        $table   = self::getTableByModel($model);
 
         //$model = ModelsService::getModel('000002853');
         $modelArray = $model->toArray();
-
-
-
-
 
 
         $a = 0;

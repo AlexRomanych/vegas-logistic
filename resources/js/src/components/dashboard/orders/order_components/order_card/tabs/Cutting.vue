@@ -6,27 +6,27 @@
             <AppLabelTS
                 :text="actionText"
                 :type="actionType"
-                width="w-[400px]"
+                align="center"
                 height="h-[50px]"
                 rounded="4"
-                align="center"
+                width="w-[400px]"
                 @click="actionTask"
             />
         </div>
 
         <!-- __ Шапка СЗ -->
         <ExecuteTaskHeader
-            :fields-width="sewingTaskFieldsWidth"
             :client-show="false"
+            :fields-width="cuttingTaskFieldsWidth"
             :order-info="false"
         />
 
         <!-- __ Сами СЗ -->
-        <div v-for="sewingTask of sewingTasks" :key="sewingTask.id" class="bg-green-100">
+        <div v-for="cuttingTask of cuttingTasks" :key="cuttingTask.id" class="bg-green-100">
             <ExecuteTask
-                :fields-width="sewingTaskFieldsWidth"
-                :sewing-task="sewingTask"
                 :client-show="false"
+                :cutting-task="cuttingTask"
+                :fields-width="cuttingTaskFieldsWidth"
                 :order-info="false"
             />
         </div>
@@ -43,20 +43,20 @@
 
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { onMounted, ref, computed } from 'vue'
 
-import type { IColorTypes, IRenderOrder, ISewingTask } from '@/types'
+import type { IColorTypes, IRenderOrder, ICuttingTask } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { useLoading } from 'vue-loading-overlay'
 
 import ExecuteTaskHeader
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskHeader.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskHeader.vue'
 import ExecuteTask
-    from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTask.vue'
+    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTask.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
@@ -68,34 +68,34 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
-const sewingStore = useSewingStore()
+const cuttingStore = useCuttingStore()
 
 const DEBUG     = true
 const isLoading = ref(false)
 
 
 // __ Объявляем переменные
-const sewingTasks = ref<ISewingTask[]>([])
+const cuttingTasks = ref<ICuttingTask[]>([])
 
 // __ Вычисляемые свойства
-const actionText = computed(() => sewingTasks.value.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
-const actionType = computed(() => sewingTasks.value.length !== 0 ? 'danger' : 'success')
+const actionText = computed(() => cuttingTasks.value.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
+const actionType = computed(() => cuttingTasks.value.length !== 0 ? 'danger' : 'success')
 
 
 // __ Ширина полей для вывода СЗ
 const COLLAPSED_WIDTH = 'w-[30px]'
 const PROGRESS_WIDTH  = 'w-[266px]'
 
-const sewingTaskFieldsWidth = {
-    collapsed:     COLLAPSED_WIDTH,
-    id:            'w-[30px]',
-    position:      'w-[30px]',
-    client:        'w-[190px]',
-    order_no:      'w-[50px]',
-    status:        'w-[140px]',
+const cuttingTaskFieldsWidth = {
+    collapsed    : COLLAPSED_WIDTH,
+    id           : 'w-[30px]',
+    position     : 'w-[30px]',
+    client       : 'w-[190px]',
+    order_no     : 'w-[50px]',
+    status       : 'w-[140px]',
     progressTotal: PROGRESS_WIDTH,
-    load_at:       'w-[163px]',
-    comment:       'w-[793px]',
+    load_at      : 'w-[163px]',
+    comment      : 'w-[1307px]',
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -127,8 +127,8 @@ async function showError(error: string | string[] | null = null) {
 
 // __ Получаем СЗ с сервера
 const getTasks = async () => {
-    const tasks: ISewingTask[] = await sewingStore.getSewingTasksByOrderId(props.id)
-    sewingTasks.value          = tasks
+    const tasks: ICuttingTask[] = await cuttingStore.getCuttingTasksByOrderId(props.id)
+    cuttingTasks.value          = tasks
         .map(task => ({ ...task, collapsed: true }))
 }
 
@@ -136,7 +136,7 @@ const getTasks = async () => {
 const actionTask = async () => {
 
     let result
-    if (sewingTasks.value.length !== 0) {
+    if (cuttingTasks.value.length !== 0) {
 
         // __ Удаляем СЗ
         modalInfoType.value = 'danger'
@@ -151,9 +151,9 @@ const actionTask = async () => {
             return
         }
 
-        result = await sewingStore.deleteSewingTasksByOrderId(props.id)
+        result = await cuttingStore.deleteCuttingTasksByOrderId(props.id)
 
-        sewingTasks.value = []
+        cuttingTasks.value = []
 
     } else {
 
@@ -170,7 +170,7 @@ const actionTask = async () => {
             return
         }
 
-        result = await sewingStore.addSewingTasksByOrderId(props.id)
+        result = await cuttingStore.addCuttingTasksByOrderId(props.id)
         await getTasks()
 
     }
@@ -195,7 +195,7 @@ onMounted(async () => {
         async () => {
 
             await getTasks()
-            if (DEBUG) console.log('sewingTasks: ', sewingTasks.value)
+            if (DEBUG) console.log('cuttingTasks: ', cuttingTasks.value)
         },
         undefined,
         // false,

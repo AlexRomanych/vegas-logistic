@@ -261,7 +261,7 @@
         :type="modalType"
     />
 
-    <!-- __ Карточка СЗ -->
+    <!-- __ Смена Стола -->
     <ManageTaskTables
         ref="manageTaskTables"
         :mode="modalMode"

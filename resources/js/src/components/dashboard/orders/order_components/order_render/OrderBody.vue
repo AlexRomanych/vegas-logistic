@@ -53,11 +53,19 @@
             <!-- __ Описание -->
             <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
 
+            <!-- __ Наличие СЗ Раскроя -->
+            <AppLabelTSWrapper :arg="order" :render-object="render.has_cutting_task"/>
+
+            <!-- __ Наличие СЗ Пошива -->
+            <AppLabelTSWrapper :arg="order" :render-object="render.has_sewing_task"/>
+
             <!-- __ Распечатать -->
             <AppLabelTSWrapper :arg="order" :render-object="render.order_print" @click="emits('printOrder', order)"/>
 
             <!-- __ Удалить -->
-            <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="emits('deleteOrder', order)"/>
+            <template v-if="!hasOrderTasks">
+                <AppLabelTSWrapper :arg="order" :render-object="render.order_service" @click="emits('deleteOrder', order)"/>
+            </template>
 
         </div>
 
@@ -80,6 +88,7 @@ import type { IRenderData, IRenderOrder, IRenderOrderLine } from '@/types'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
+import { computed } from 'vue'
 
 interface IProps {
     order: IRenderOrder
@@ -94,9 +103,17 @@ const emits = defineEmits<{
     (e: 'deleteOrderLine', payload: IRenderOrderLine): void,
 }>()
 
+
+const hasOrderTasks = computed(() => {
+    let hasTask = false
+    Object.values(props.order.has_tasks).forEach(val => hasTask ||= val)
+    return hasTask
+})
+
 const deleteOrderLine = (orderLine: IRenderOrderLine) => {
     emits('deleteOrderLine', orderLine)
 }
+
 
 </script>
 
