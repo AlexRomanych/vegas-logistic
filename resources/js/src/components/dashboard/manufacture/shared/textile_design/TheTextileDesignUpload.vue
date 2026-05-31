@@ -1,52 +1,68 @@
 <template>
-    <div class="uploader-container">
-        <div class="card">
-            <div class="card-header">
-                <h2>Загрузка конструкторской документации</h2>
-                <p class="subtitle">Введите номер КД и выберите PDF-файл для привязки</p>
+    <div class="max-w-[750px] mx-auto my-8 flex flex-col gap-6 font-sans">
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="p-6 bg-slate-50 border-b border-slate-200">
+                <h2 class="m-0 text-slate-800 text-xl font-bold">Загрузка конструкторской документации</h2>
+                <p class="m-0 mt-1 text-slate-500 text-sm">Введите номер КД и выберите или перетащите PDF-файл для привязки</p>
             </div>
 
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="kdch-input">Номер документации (КД):</label>
+            <div class="p-6">
+                <div class="mb-5">
+                    <label for="kdch-input" class="block mb-2 font-semibold text-slate-700 text-sm">
+                        Номер документации (КД):
+                    </label>
                     <input
                         id="kdch-input"
                         v-model.trim="kdch"
                         :disabled="isUploading"
-                        class="form-control"
+                        class="w-full压 w-full padding-4 px-4 py-3 text-base rounded-md border border-slate-300 text-slate-800 box-border transition-colors focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 disabled:opacity-60 disabled:cursor-not-allowed"
                         placeholder="Например: 11033"
                         type="text"
                     />
                 </div>
 
-                <div class="form-group">
-                    <label>Файл чертежа (PDF):</label>
+                <div class="mb-5">
+                    <label class="block mb-2 font-semibold text-slate-700 text-sm">Файл чертежа (PDF):</label>
+
                     <div
-                        :class="{ 'has-file': selectedFile, 'disabled': isUploading }"
-                        class="dropzone"
+                        :class="[
+                            isUploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                            selectedFile
+                                ? 'border-solid border-emerald-500 bg-emerald-50/50'
+                                : isDragOver
+                                    ? 'border-solid border-blue-500 bg-blue-50'
+                                    : 'border-dashed border-slate-300 bg-slate-50/50 hover:border-blue-500 hover:bg-blue-50/50'
+                        ]"
+                        class="border-2 rounded-lg p-8 text-center transition-all duration-200 ease-in-out"
                         @click="triggerFileInput"
+                        @dragover.prevent="onDragOver"
+                        @dragenter.prevent="onDragEnter"
+                        @dragleave.prevent="onDragLeave"
+                        @drop.prevent="onFileDrop"
                     >
                         <input
                             ref="fileInputRef"
                             :disabled="isUploading"
                             accept="application/pdf"
-                            class="hidden-file-input"
+                            class="hidden"
                             type="file"
                             @change="onFileSelect"
                         />
 
-                        <div v-if="!selectedFile" class="dropzone-placeholder">
-                            <span class="icon">📂</span>
-                            <p>Нажмите, чтобы выбрать PDF-файл</p>
+                        <div v-if="!selectedFile" class="select-none">
+                            <span class="text-4xl block mb-2">📂</span>
+                            <p class="text-slate-600 font-medium">
+                                {{ isDragOver ? 'Бросайте файл сюда!' : 'Нажмите или перетащите PDF-файл сюда' }}
+                            </p>
                         </div>
 
-                        <div v-else class="dropzone-file-info">
-                            <span class="icon">📄</span>
-                            <p class="file-name">{{ selectedFile.name }}</p>
-                            <p class="file-size">{{ formatBytes(selectedFile.size) }}</p>
+                        <div v-else class="flex flex-col items-center">
+                            <span class="text-4xl block mb-2">📄</span>
+                            <p class="font-semibold text-slate-900 my-1 break-all">{{ selectedFile.name }}</p>
+                            <p class="text-xs text-slate-500 m-0 mb-4">{{ formatBytes(selectedFile.size) }}</p>
                             <button
                                 :disabled="isUploading"
-                                class="btn-reset"
+                                class="bg-red-500 hover:bg-red-600 text-white border-none px-4 py-1.5 rounded text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="button"
                                 @click.stop="resetFile"
                             >
@@ -55,16 +71,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-1">
+
+                <div class="flex gap-3">
                     <button
-                        class="btn-submit"
+                        class="w-full p-3.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-md border-none text-base cursor-pointer transition-colors"
                         @click="$router.push({name: 'manufacture.textile.design.show'})"
                     >
                         <span>К списку КДЧ</span>
                     </button>
                     <button
                         :disabled="!isValid || isUploading"
-                        class="btn-submit"
+                        class="w-full p-3.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md border-none text-base cursor-pointer transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed"
                         @click="uploadDocument"
                     >
                         <span v-if="isUploading">⏳ Загрузка на сервер...</span>
@@ -74,13 +91,13 @@
             </div>
         </div>
 
-        <div v-if="previewUrl" class="card preview-card">
-            <div class="card-header preview-header">
-                <h3>Предпросмотр выбранного файла</h3>
-                <span class="badge">Локальный плеер</span>
+        <div v-if="previewUrl" class="bg-white rounded-xl shadow-md border border-blue-300 overflow-hidden">
+            <div class="p-6 bg-blue-50/50 border-b border-blue-200 flex justify-between items-center">
+                <h3 class="m-0 text-slate-800 text-lg font-bold">Предпросмотр выбранного файла</h3>
+                <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-xs font-semibold">Локальный плеер</span>
             </div>
-            <div class="card-body no-padding">
-                <div class="pdf-viewer-wrapper">
+            <div class="p-0">
+                <div class="bg-[#525659] flex justify-center">
                     <embed
                         :src="previewUrl"
                         height="550px"
@@ -92,7 +109,7 @@
         </div>
     </div>
 
-    <!-- __ Модальное окно для сообщений -->
+    <!-- __ Вывод сообщений -->
     <AppModalAsyncMultilineTS
         ref="appModalAsyncMultilineTS"
         :mode="modalInfoMode"
@@ -106,8 +123,8 @@
 import { ref, computed, onUnmounted } from 'vue'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { useSharedStore } from '@/stores/SharedStore.ts'
-import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 
 const sharedStore = useSharedStore()
 
@@ -116,51 +133,66 @@ const kdch         = ref('')
 const selectedFile = ref<File | null>(null)
 const previewUrl   = ref<string | null>(null)
 const isUploading  = ref(false)
+const isDragOver   = ref(false) // Состояние перетаскивания
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
-// Валидация формы (кнопка активна только если заполнен номер и выбран файл)
 const isValid = computed(() => {
     return kdch.value.length > 0 && selectedFile.value !== null
 })
 
-// Клик по кастомной зоне выбора файла триггерит стандартный скрытый input
 const triggerFileInput = () => {
     if (!isUploading.value && fileInputRef.value) {
         fileInputRef.value.click()
     }
 }
 
-// Обработка выбора файла на компьютере
-const onFileSelect = (event: Event) => {
-    // 1. Проверяем, что target вообще существует
-    if (!event.target) return
-
-    // 2. Принудительно объясняем TypeScript, что этот target — HTML-инпут.
-    // После этого у переменной target ПОЯВИТСЯ свойство files.
-    const target = event.target as HTMLInputElement
-
-    // 3. Безопасно забираем файл из массива через опциональную цепочку
-    const file = target.files?.[0]
+// Универсальный валидатор файла
+const processFile = async (file: File | undefined) => {
     if (!file) return
 
-    // Проверяем тип файла на всякий случай
     if (file.type !== 'application/pdf') {
-        alert('Пожалуйста, выберите файл в формате PDF')
+        await showError(['Пожалуйста, выберите файл в формате PDF'])
         resetFile()
         return
     }
 
     selectedFile.value = file
 
-    // Генерируем локальную blob-ссылку для тега <embed> (файл ещё не улетел на бэкенд)
     if (previewUrl.value) {
-        URL.revokeObjectURL(previewUrl.value) // Чистим старую ссылку, если была
+        URL.revokeObjectURL(previewUrl.value)
     }
     previewUrl.value = URL.createObjectURL(file)
 }
 
-// Сброс выбранного файла
+// Обработка клика на инпут
+const onFileSelect = (event: Event) => {
+    if (!event.target) return
+    const target = event.target as HTMLInputElement
+    processFile(target.files?.[0])
+}
+
+// Логика Drag and Drop событий
+const onDragOver = () => {
+    if (!isUploading.value) isDragOver.value = true
+}
+
+const onDragEnter = () => {
+    if (!isUploading.value) isDragOver.value = true
+}
+
+const onDragLeave = () => {
+    isDragOver.value = false
+}
+
+const onFileDrop = (event: DragEvent) => {
+    isDragOver.value = false
+    if (isUploading.value) return
+
+    const file = event.dataTransfer?.files?.[0]
+    processFile(file)
+}
+
 const resetFile = () => {
     selectedFile.value = null
     if (previewUrl.value) {
@@ -168,11 +200,10 @@ const resetFile = () => {
         previewUrl.value = null
     }
     if (fileInputRef.value) {
-        fileInputRef.value.value = '' // Сбрасываем значение инпута
+        fileInputRef.value.value = ''
     }
 }
 
-// __ Отправка данных на Сервер
 const uploadDocument = async () => {
     if (!isValid.value || isUploading.value) return
 
@@ -193,7 +224,6 @@ const uploadDocument = async () => {
 
     isUploading.value = true
 
-    // Формируем multipart/form-data
     const formData = new FormData()
     formData.append('kdch', kdch.value)
     formData.append('file', selectedFile.value)
@@ -202,11 +232,9 @@ const uploadDocument = async () => {
 
     if (!checkCRUD(result)) {
         await showError()
-
     } else {
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
-
         modalInfoText.value = result.payload
         await appModalAsyncMultilineTS.value!.show()
     }
@@ -214,31 +242,22 @@ const uploadDocument = async () => {
     kdch.value = ''
     resetFile()
     isUploading.value = false
-
 }
 
-// Хелпер для красивого отображения размера файла
 const formatBytes = (bytes: number, decimals = 2) => {
     if (bytes === 0) return '0 Bytes'
-    const k     = 1024
-    const dm    = decimals < 0 ? 0 : decimals
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
     const sizes = ['Bytes', 'KB', 'MB']
-    const i     = Math.floor(Math.log(bytes) / Math.log(k))
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! ---                Ошибки                         !!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// __ Тип для модального окна Сообщений
 const modalInfoType            = ref<IColorTypes>('danger')
 const modalInfoText            = ref<string | string[]>('')
 const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)
 
-// __ Показываем сообщение об ошибке
 async function showError(error: string | string[] | null = null) {
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'inform'
@@ -254,199 +273,9 @@ async function showError(error: string | string[] | null = null) {
     await appModalAsyncMultilineTS.value!.show()
 }
 
-
-// Защита от утечек памяти: удаляем blob-ссылку при уничтожении компонента
 onUnmounted(() => {
     if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value)
     }
 })
 </script>
-
-<style scoped>
-.uploader-container {
-    max-width: 750px;
-    margin: 2rem auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 1.5rem;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.card-header h2, .card-header h3 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 1.35rem;
-}
-
-.subtitle {
-    margin: 0.25rem 0 0 0;
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-.no-padding {
-    padding: 0 !important;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #334155;
-    font-size: 0.95rem;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    color: #1e293b;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Стилизация Дропзоны для файла */
-.dropzone {
-    border: 2px dashed #cbd5e1;
-    border-radius: 8px;
-    padding: 2rem;
-    text-align: center;
-    background: #f8fafc;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.dropzone:hover:not(.disabled) {
-    border-color: #3b82f6;
-    background: #eff6ff;
-}
-
-.dropzone.has-file {
-    border-style: solid;
-    border-color: #10b981;
-    background: #ecfdf5;
-}
-
-.dropzone.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.hidden-file-input {
-    display: none;
-}
-
-.icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.file-name {
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0.25rem 0;
-    word-break: break-all;
-}
-
-.file-size {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin: 0 0 1rem 0;
-}
-
-.btn-reset {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.btn-reset:hover {
-    background: #dc2626;
-}
-
-/* Кнопка отправки */
-.btn-submit {
-    width: 100%;
-    padding: 0.85rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-submit:hover:not(:disabled) {
-    background: #2563eb;
-}
-
-.btn-submit:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-}
-
-/* Блок предпросмотра */
-.preview-card {
-    border-color: #93c5fd;
-}
-
-.preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f0f7ff;
-}
-
-.badge {
-    background: #dbeafe;
-    color: #1e40af;
-    padding: 0.25rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.pdf-viewer-wrapper {
-    background: #525659;
-    display: flex;
-    justify-content: center;
-}
-</style>
