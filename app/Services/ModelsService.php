@@ -119,7 +119,6 @@ final class ModelsService implements VegasDataUpdateContract
     }
 
 
-
     /**
      * ___ Проверка на заполненность кэша моделей
      * @return bool
@@ -135,7 +134,6 @@ final class ModelsService implements VegasDataUpdateContract
      */
     public static function getModels(): array
     {
-
         //\Illuminate\Support\Facades\Log::info('🎯 МЕТОД getModels() ВЫЗВАН! Стек:', [
         //    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5))
         //        ->map(fn($frame) => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? '') . ' в ' . ($frame['file'] ?? 'unknown') . ':' . ($frame['line'] ?? '?'))
@@ -1184,6 +1182,25 @@ final class ModelsService implements VegasDataUpdateContract
         }
 
         return $PREFIX . str_pad($clientId, CODE_1C_LENGTH - mb_strlen($PREFIX), '0', STR_PAD_LEFT);
+    }
+
+
+    /**
+     * ___ Проверяем, есть ли Боковина у Модели в Спецификации
+     * @param Model|string $model
+     * @return int|mixed
+     */
+    public static function getModelCoverHeight(Model|string $model)
+    {
+        $findModel = self::getModel($model);
+        if (!$findModel) {
+            return 0;
+        }
+
+        // __ Используем такую конструкцию, потому что в модели есть поле cover
+        $cover = $findModel->getRelation('cover');
+
+        return is_null($cover) ? $findModel->cover_height : $cover->cover_height;
     }
 
 }

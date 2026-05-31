@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingOperationController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingOperationSchemaController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingStatusController;
 use App\Http\Controllers\Api\V1\CellsGroupController;
+use App\Http\Controllers\Api\V1\Documents\TextileDesignDocumentController;
 use App\Http\Controllers\Api\V1\Materials\MaterialController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructController;
 use App\Http\Controllers\Api\V1\Models\ModelConstructProcedureController;
@@ -125,7 +126,6 @@ Route::prefix('sewing')
     ->middleware('jwt.auth')
     ->middleware('sewing_tasks_check')
     ->group(function () {
-
         // __ СЗ Пошива
         Route::get('tasks', [CellSewingTaskController::class, 'getSewingTasks']);
         Route::get('tasks/order/{id}', [CellSewingTaskController::class, 'getSewingTasksByOrderId']);
@@ -184,7 +184,6 @@ Route::prefix('sewing')
         Route::get('/day/ready/get/{date}/{change}', [CellSewingDayController::class, 'readyGetSewingDay']);
         Route::patch('/day/ready/set', [CellSewingDayController::class, 'readySetSewingDay']);
         Route::patch('/day/ready/unset', [CellSewingDayController::class, 'readyUnsetSewingDay']);
-
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -194,7 +193,6 @@ Route::prefix('cutting')
     ->middleware('jwt.auth')
     ->middleware('cutting_tasks_check')
     ->group(function () {
-
         Route::get('test', [CellCuttingTaskController::class, 'test']);
 
         // __ СЗ Раскроя
@@ -282,8 +280,24 @@ Route::prefix('/plan')
     });
 
 
+//hr--------------------------------------------------------------------------------------------------------------------
 
+// __ Блок Документации
+Route::prefix('documents')
+    ->middleware('jwt.auth')
+    ->group(function () {
 
+        //return ['data' => '123'];
+
+        // __ КДЧ
+        Route::get('kdch', [TextileDesignDocumentController::class, 'getDocuments']);
+        Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
+        Route::get('kdch/kdch/{kdch}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByKdch']);
+        Route::post('kdch', [TextileDesignDocumentController::class, 'uploadDocument']);
+        Route::delete('kdch', [TextileDesignDocumentController::class, 'deleteTextileDesignDocumentById']);
+    });
+
+//hr--------------------------------------------------------------------------------------------------------------------
 
 //// descr: Тут просто точки доступа для разных действий
 //Route::get('fabrics/tasks/team/number/', [CellFabricServiceController::class, 'getFabricTeamNumberByDate'])->middleware('jwt.auth');

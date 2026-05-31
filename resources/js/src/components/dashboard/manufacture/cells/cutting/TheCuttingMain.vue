@@ -28,9 +28,7 @@ interface IMenuItem {
 
 
 const menuItems = ref<IMenuItem[]>([
-    // { name: 'Тест', path: 'manufacture.cell.cutting.test', shown: true, isActive: true },
     { name: 'Управление планом РЦ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
-    // { name: 'Управление СЗ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
     { name: 'Выполнение СЗ', path: 'manufacture.cell.cutting.tasks.execute', shown: true, isActive: true },
     { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },
     { name: 'Учет ПС на раскрое', path: 'manufacture.cell.cutting.fabrics.movement', shown: true, isActive: true, },
@@ -39,14 +37,14 @@ const menuItems = ref<IMenuItem[]>([
     { name: 'Схемы типовых операций', path: 'manufacture.cell.cutting.operation.schemas', shown: true, isActive: true },
     { name: 'Трудозатраты + процедуры раскроя для моделей', path: 'manufacture.cell.cutting.operation.models', shown: true, isActive: true },
     { name: 'Процедуры расчета раскроя', path: 'manufacture.cell.cutting.procedures', shown: true, isActive: true },
-    // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
+    { name: 'Конструкторская документация чехла (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
 ])
 
 if (userStore.hasAdminRole()) {
     menuItems.value.push({
-        name: 'Тест',
-        path: 'manufacture.cell.cutting.test',
-        shown: true,
+        name    : 'Тест',
+        path    : 'manufacture.cell.cutting.test',
+        shown   : true,
         isActive: true,
     })
 }

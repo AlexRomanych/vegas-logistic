@@ -17,6 +17,9 @@ return new class extends Migration {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id();
 
+            // __ Высота чехла (Чтобы не бегать по связям и не искать)
+            $table->decimal('cover_height', 4, 3)->nullable(false)->default(0.000)->comment('Стандартная высота чехла.15 (высота чехла, м)');
+
             // __ Связь с Основным СЗ
             $table->foreignId('cutting_task_id')
                 ->comment('Ссылка на Основное СЗ')

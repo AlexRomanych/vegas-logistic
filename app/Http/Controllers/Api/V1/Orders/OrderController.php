@@ -422,10 +422,10 @@ class OrderController extends Controller
 
                             // __ Распределяем СЗ на Раскрой
                             /** @var Order $forecastOrder */
-                            //$result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
-                            //if (!$result) {
-                            //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
-                            //}
+                            $result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
+                            if (!$result) {
+                                throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
+                            }
 
                             // __ Распределяем СЗ на Сборку
                             // __ ...

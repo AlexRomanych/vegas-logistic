@@ -26,8 +26,6 @@ final class CuttingService
      * @param int $orderId             ID основного Заказа
      * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
      * @return CuttingTask|null
-     * @throws Throwable
-     * @noinspection DuplicatedCode
      */
     public static function createCuttingTaskFromOrderId(
         int $orderId,
@@ -140,6 +138,7 @@ final class CuttingService
                         'is_side'          => false,
                         'has_side'         => $hasSide,
                         'fabric_construct' => $panelFabrics,
+                        'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
 
                         // __ Задаем подмену свойств
                         'phantom'          => $table,
@@ -177,6 +176,7 @@ final class CuttingService
                             'is_side'          => true,
                             'has_side'         => false,
                             'fabric_construct' => $sideFabrics,
+                            'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
 
                             // __ Задаем подмену свойств
                             'phantom'          => $table,
@@ -219,6 +219,10 @@ final class CuttingService
      */
     public static function distributeCuttingTaskFromOrderId(int $orderId): bool
     {
+        // !!! Костыль !!! Доработать процедуру распределения
+        self::createCuttingTaskFromOrderId($orderId);
+        return true;
+
         // __ Получаем саму Заявку
         $order = Order::query()
             ->with(['lines', 'client'])
@@ -696,6 +700,7 @@ final class CuttingService
     /**
      * ___ Проверяем, есть ли Боковина у Модели в Спецификации
      * @param Model|string $model
+     * @param array $fabricList
      * @return bool
      */
     public static function hasSide(Model|string $model, array &$fabricList = []): bool

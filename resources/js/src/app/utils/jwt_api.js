@@ -1,12 +1,12 @@
 import axios from 'axios'
-import { useRouter } from 'vue-router'
-import ErrorClass from '@/app/classes/ErrorClass.js'
+// import { useRouter } from 'vue-router'
+// import ErrorClass from '@/app/classes/ErrorClass.js'
 
 const versionBaseUrl = '/api/v1'
 
-const   jwtAxios = axios.create({
+const jwtAxios = axios.create({
     withCredentials: false,
-    baseURL:         versionBaseUrl,
+    baseURL        : versionBaseUrl,
 })
 
 // Настраиваем конфиг для экземпляра axios
@@ -56,7 +56,7 @@ const onRejected = (error) => {
         // return []    // todo Тут надо подумать еще, что возвращать в случае ошибки или как-то ее обрабатывать, прокидывая Callout
 
         //warning ключ data - обязательный
-        return { data: { name: 'Ошибка загрузки данных', status: 600 } }
+        return {data: {name: 'Ошибка загрузки данных', status: 600}}
     }
 }
 
@@ -78,14 +78,38 @@ export async function jwtGet(url, params = {}) {
     // console.log(params)
 
     try {
-        const res  = await jwtAxios.get(url, { params: params, /*paramsSerializer: {
+        const res  = await jwtAxios.get(url, {
+            params: params, /*paramsSerializer: {
                 indexes: null // Это заставит axios выводить dates[]= вместо ничего
-            }*/ })
+            }*/
+        })
         const data = await res.data
         return data
     } catch (error) {
         // console.log(error.response)
         console.log('jwtGet: ', error.response.data.message)
+        debugger
+    }
+}
+
+
+export async function jwtGet_(url, params = {}, config = {}) {
+    try {
+        // Собираем всё в один объект конфигурации для axios.
+        // Если внутри config придут headers, они аккуратно объединятся.
+        const axiosConfig = {
+            params,
+            ...config
+        }
+
+        const res  = await jwtAxios.get(url, axiosConfig)
+
+        // КРИТИЧЕСКИЙ МОМЕНТ ДЛЯ BLOB:
+        // Если мы запрашивали blob, axios возвращает объект Blob целиком внутри res.data.
+        // Метод res.data НЕ является асинхронным (await перед ним не нужен).
+        return res.data
+    } catch (error) {
+        console.error('jwtGet_ error: ', error?.response?.data?.message || error.message)
         debugger
     }
 }
@@ -126,7 +150,7 @@ export async function jwtPost(url, data = {}, headers = {}) {
 // Формируем свой DELETE
 export async function jwtDelete(url, data = {}) {
     try {
-        const response = await jwtAxios.delete(url, { data: data })
+        const response = await jwtAxios.delete(url, {data: data})
 
         // console.log(response)
 
@@ -142,7 +166,7 @@ export async function jwtDelete(url, data = {}) {
 
 export async function jwtUpdate(url, data = {}) {
     try {
-        const response = await jwtAxios.put(url, { data: data })
+        const response = await jwtAxios.put(url, {data: data})
 
         console.log(response)
 
@@ -199,7 +223,7 @@ export async function jwtPut_(url, data = {}) {
 
 export async function jwtPatch(url, data = {}) {
     try {
-        const response = await jwtAxios.patch(url, { data: data })
+        const response = await jwtAxios.patch(url, {data: data})
 
         console.log(response)
 

@@ -97,7 +97,7 @@
                         @click="render.collapsed.click!(procedure)"
                     />
 
-                    <!-- __ Код из 1С -->
+                    <!-- __ ID -->
                     <AppLabelTSWrapper
                         :arg="procedure"
                         :render-object="render.id"
@@ -171,7 +171,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICuttingOperation, ICuttingProcedure, IRenderData } from '@/types'
+import type { ICuttingProcedure, IRenderData } from '@/types'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'

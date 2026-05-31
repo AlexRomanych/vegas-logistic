@@ -98,6 +98,7 @@ class CellCuttingTaskController extends Controller
                     'order.orderType',
                     'statuses',
                     // Главные строки задания
+                    'cuttingLines.orderLine.model.kdch',
                     'cuttingLines.orderLine.model.cover',
                     'cuttingLines.orderLine.model.base',
                     'cuttingLines.orderLine.model.constructs', // <-- Сюда

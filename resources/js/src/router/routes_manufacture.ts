@@ -4,6 +4,7 @@ import fabrics from '@/router/routes_manufacture_fabrics.js'
 import cutting from '@/router/routes_manufacture_cutting.ts'
 import sewing from '@/router/routes_manufacture_sewing.ts'
 import assembly from '@/router/routes_manufacture_assembly.ts'
+import type { IRouteMeta } from '@/types'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
@@ -19,6 +20,29 @@ const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 // } from '@/app/constants/sewingTypes.js'
 
 const manufactureRaw = [
+
+    {
+        // ___ КДЧ
+        path     : _MAIN_PREFIX + 'textile/design/show',
+        name     : 'manufacture.textile.design.show',
+        component: () => import('@/components/dashboard/manufacture/shared/textile_design/TheTextileDesignShow.vue'),
+        meta     : {
+            title: 'Конструкторская документация чехла (КДЧ)'
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Загрузка КДЧ
+        path     : _MAIN_PREFIX + 'textile/design/upload',
+        name     : 'manufacture.textile.design.upload',
+        component: () => import('@/components/dashboard/manufacture/shared/textile_design/TheTextileDesignUpload.vue'),
+        meta     : {
+            title: 'Загрузка Конструкторской документации чехла (КДЧ)'
+        } as IRouteMeta,
+    },
+
+
+
     //hr----------------------------------------------------------------------------------------------------------------
     // attract: Общая инфа
 

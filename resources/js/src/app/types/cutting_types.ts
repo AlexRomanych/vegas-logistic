@@ -499,3 +499,16 @@ export interface ICuttingProcedure {
 
     collapsed: boolean
 }
+
+
+// --- --------------------------------------------------------------------
+// --- ---------------------- Для рендера КДЧ -----------------------------
+// --- --------------------------------------------------------------------
+
+// __ КДЧ
+export interface ITextileDocument {
+    id: number
+    kdch: string
+    file_path: string | null
+    description: string | null
+}

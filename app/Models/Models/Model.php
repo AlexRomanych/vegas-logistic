@@ -10,6 +10,7 @@ use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperationModelPivot;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperationSchema;
+use App\Models\Manufacture\Documents\DesignDocument;
 use App\Services\ModelsService;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -304,6 +305,14 @@ final class Model extends LaravelModel
     public function cuttingProcedure(): BelongsTo
     {
         return $this->belongsTo(CuttingProcedure::class, 'cutting_procedure_id', 'id');
+    }
+
+
+
+    // Relations: Связь с КДЧ
+    public function kdch()
+    {
+        return $this->hasOne(DesignDocument::class, 'kdch', 'kdch');
     }
 
 
