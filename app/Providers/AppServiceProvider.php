@@ -59,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
         //    });
         //}
 
-        EloquentModel::preventLazyLoading(! app()->isProduction());
+        //EloquentModel::preventLazyLoading(! app()->isProduction());
 
 
 //        JsonResource::withoutWrapping();  // удаляет обертку для OrderResource

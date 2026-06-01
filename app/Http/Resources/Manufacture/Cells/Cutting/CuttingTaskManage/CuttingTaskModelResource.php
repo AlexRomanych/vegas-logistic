@@ -88,6 +88,8 @@ class CuttingTaskModelResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+
         /** @noinspection PhpUndefinedFieldInspection */
         return [
             'code_1c'             => $this->code_1c,
@@ -102,6 +104,8 @@ class CuttingTaskModelResource extends JsonResource
             'kant'                => $this->kant,
             'tkch'                => $this->tkch,
             'kdch'                => $this->kdch,
+            'kdch_doc'            => $this->kdchDoc,
+            //'kdch_doc'            => $this->whenLoaded('kdchDoc'),
             'is_solid'            => $this->is_solid,
             'is_universal'        => $this->is_universal,
             'is_auto'             => $this->is_auto,
@@ -163,7 +167,7 @@ class CuttingTaskModelResource extends JsonResource
             // 'updated_at'                     => $this->updated_at,
             // 'cover_code_1c'                  => $this->cover_code_1c,
 
-             //'_' => parent::toArray($request),
+             '_' => parent::toArray($request),
 
         ];
     }

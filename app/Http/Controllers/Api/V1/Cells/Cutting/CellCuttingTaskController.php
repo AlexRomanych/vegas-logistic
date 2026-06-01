@@ -16,6 +16,7 @@ use App\Services\Manufacture\CuttingService;
 use App\Services\ModelsService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -98,13 +99,13 @@ class CellCuttingTaskController extends Controller
                     'order.orderType',
                     'statuses',
                     // Главные строки задания
-                    'cuttingLines.orderLine.model.kdch',
-                    'cuttingLines.orderLine.model.cover',
-                    'cuttingLines.orderLine.model.base',
+                    'cuttingLines.orderLine.model.kdchDoc',
+                    'cuttingLines.orderLine.model.cover.kdchDoc',
+                    'cuttingLines.orderLine.model.base.kdchDoc',
                     'cuttingLines.orderLine.model.constructs', // <-- Сюда
                     // !! ОПТИМИЗАЦИЯ: Глубокая жадная загрузка для вложенных деталей (боковин)
-                    'cuttingLines.details.orderLine.model.cover',
-                    'cuttingLines.details.orderLine.model.base',
+                    'cuttingLines.details.orderLine.model.cover.kdchDoc',
+                    'cuttingLines.details.orderLine.model.base.kdchDoc',
                     'cuttingLines.details.orderLine.model.constructs', // <-- И сюда
                 ])
 
@@ -356,7 +357,7 @@ class CellCuttingTaskController extends Controller
     /**
      * __ Получаем СЗ на Пошив по статусам до определенной даты
      * @param Request $request
-     * @return AnonymousResourceCollection|string
+     * @return AnonymousResourceCollection|JsonResponse
      */
     public function getCuttingTasksByStatusBeforeDate(Request $request)
     {
@@ -408,7 +409,7 @@ class CellCuttingTaskController extends Controller
     /**
      * __ Получаем СЗ на Пошив по статусам в определенную дату
      * @param Request $request
-     * @return AnonymousResourceCollection|string
+     * @return AnonymousResourceCollection|JsonResponse
      */
     public function getCuttingTasksByStatusOnDate(Request $request)
     {

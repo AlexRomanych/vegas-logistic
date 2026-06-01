@@ -72,7 +72,7 @@ class ModelShowResource extends JsonResource
             'model_type'              => new ModelShowModelTypeResource($this->whenLoaded('modelType')),
             //'model_type_code_1c'          => $this->model_type_code_1c,
 
-
+            //'kdch_doc' => $this->kdchDoc,
             //'zipper'         => $this->zipper,
             //'spacer'         => $this->spacer,
             //'pack_type'      => $this->pack_type,

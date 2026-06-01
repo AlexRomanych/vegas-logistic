@@ -79,6 +79,8 @@ const menuData = () => {
                     {name: 'Справочник спецификаций', path: 'constructs', shown: true, isActive: true,},
 
                     {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
+
+                    { name: 'Конструкторская документация чехла (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
                 ]
         },
         {

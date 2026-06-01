@@ -10,7 +10,7 @@ use App\Models\Manufacture\Cells\Sewing\SewingOperationSchema;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperationModelPivot;
 use App\Models\Manufacture\Cells\Cutting\CuttingOperationSchema;
-use App\Models\Manufacture\Documents\DesignDocument;
+use App\Models\Manufacture\Documents\TextileDesignDocument;
 use App\Services\ModelsService;
 use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -310,9 +310,9 @@ final class Model extends LaravelModel
 
 
     // Relations: Связь с КДЧ
-    public function kdch()
+    public function kdchDoc()
     {
-        return $this->hasOne(DesignDocument::class, 'kdch', 'kdch');
+        return $this->hasOne(TextileDesignDocument::class, 'kdch', 'kdch');
     }
 
 

@@ -517,6 +517,7 @@ class ModelController extends Controller
                 ->where('active', true)
                 ->with([
                     'models',
+                    //'models.kdchDoc',
                     'models.sewingSchema',
                     'models.modelType',
                     'models.manufactureGroup',
