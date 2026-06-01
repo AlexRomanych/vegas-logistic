@@ -30,8 +30,8 @@ final class CuttingService
     public static function createCuttingTaskFromOrderId(
         int $orderId,
         string|null $plannedDate = null
-    ): ?CuttingTask {
-        try {
+    ): ?CuttingTask{
+        //try {
             // __ Проверяем на существование заказа
             $order = Order::query()->with(['lines', 'client'])->find($orderId);
             if (!$order) {
@@ -203,10 +203,10 @@ final class CuttingService
 
             // });
             return $createdTask;
-        } catch (Exception|Throwable $e) {
-            $a = 0;
-            return EndPointStaticRequestAnswer::fail($e);
-        }
+        //} catch (Exception|Throwable $e) {
+        //    $a = 0;
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
     }
 
 
