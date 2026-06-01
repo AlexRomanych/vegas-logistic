@@ -91,7 +91,7 @@
                         align="center"
                         class="cursor-pointer"
                         rounded="4"
-                        text="📄"
+                        text="🔍"
                         text-size="mini"
                         type="indigo"
                         width="w-[30px]"

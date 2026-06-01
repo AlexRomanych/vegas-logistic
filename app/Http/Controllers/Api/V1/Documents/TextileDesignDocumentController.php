@@ -7,15 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Documents\Textile\TextileDesignResource;
 use App\Models\Manufacture\Documents\TextileDesignDocument;
 use Exception;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+//use Illuminate\Http\JsonResponse;
 
 class TextileDesignDocumentController extends Controller
 {
+    private const TEXTILE_DOCUMENT_FOLDER = 'constructor_pdf';
+
     /**
      * ___ Загрузка и привязка файла
      * @param Request $request
@@ -33,7 +35,7 @@ class TextileDesignDocumentController extends Controller
 
             // Сохраняем файл в приватный диск (не public), чтобы защитить чертежи
             $path = $request->file('file')->storeAs(
-                'constructor_pdf',
+                self::TEXTILE_DOCUMENT_FOLDER,
                 "kdch_{$kdch}." . $request->file('file')->getClientOriginalExtension()
             );
 
@@ -54,7 +56,7 @@ class TextileDesignDocumentController extends Controller
     /**
      * ___ Стрим PDF во фронтенд
      * @param string $id
-     * @return BinaryFileResponse|JsonResponse
+     * @return string|BinaryFileResponse
      */
     public function getTextileDesignDocumentByIdBlob(string $id)
     {
@@ -73,7 +75,7 @@ class TextileDesignDocumentController extends Controller
                 //abort(404, 'Файл физически не найден на сервере');
             }
 
-             //Отдаем файл как inline-поток, чтобы браузер открыл его, а не скачивал
+             // __ Отдаем файл как inline-поток, чтобы браузер открыл его, а не скачивал
             return response()->file(Storage::path($doc->file_path), [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="' . $doc->kdch . '.pdf"'
@@ -87,7 +89,7 @@ class TextileDesignDocumentController extends Controller
     /**
      *   ___ Получаем КДЧ по номеру
      * @param string $kdch
-     * @return TextileDesignResource|JsonResponse
+     * @return TextileDesignResource|string
      */
     public function getTextileDesignDocumentByKdch(string $kdch)
     {
@@ -113,7 +115,7 @@ class TextileDesignDocumentController extends Controller
 
     /**
      * ___ Возвращаем список КДЧ
-     * @return AnonymousResourceCollection|JsonResponse
+     * @return AnonymousResourceCollection|string
      */
     public function getDocuments()
     {
@@ -130,7 +132,7 @@ class TextileDesignDocumentController extends Controller
     /**
      * ___ Удаляем файл
      * @param Request $request
-     * @return JsonResponse|string
+     * @return string
      */
     public function deleteTextileDesignDocumentById(Request $request)
     {

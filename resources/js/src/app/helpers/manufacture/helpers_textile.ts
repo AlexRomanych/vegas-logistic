@@ -80,6 +80,30 @@ export function getKDCH(item: ISewingTaskLine | ICuttingTaskLine | ISewingTaskMo
     return ''
 }
 
+// __ Получаем cсылку на файл КДЧ
+export function getDocFileKDCH(item: ISewingTaskLine | ICuttingTaskLine | ISewingTaskModel | ICuttingTaskModel | ICuttingTaskOrderLine | ISewingTaskOrderLine): number | null {
+    let source
+    if (isModel(item)) {
+        return item.kdch_doc ?? null
+    } else if (isTaskLine(item)) {
+        source = item.order_line.model
+    } else if (isTaskOrderLine(item)) {
+        source = item.model
+    } else {
+        return null
+    }
+
+    if (source.cover && source.cover.kdch_doc) {
+        return source.cover.kdch_doc
+    } else if (source.main && source.main.kdch_doc) {
+        return source.main.kdch_doc
+    } else if (source.base && source.base.kdch_doc) {
+        return source.base.kdch_doc
+    }
+
+    return null
+}
+
 
 // __ Функция-помощник: говорит TS, является ли item типом ISewingTaskLine или ICuttingTaskLine
 function isTaskLine(item: unknown): item is (ISewingTaskLine | ICuttingTaskLine) {

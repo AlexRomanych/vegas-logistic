@@ -207,6 +207,7 @@
                             :index="index + 1"
                             :ordering="'index'"
                             @dblclick="showLineInfo(cuttingLine)"
+                            @show-document="showDocument(cuttingLine, $event)"
                         />
 
                         <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -343,6 +344,14 @@
         :type="modalTypeTable"
     />
 
+    <!-- __ Просмотр PDF в модальном режиме -->
+    <TextileDesignDocumentAsync
+        ref="textileDesignDocumentAsync"
+        :doc="doc"
+        ok-word="Понятно"
+        type="primary"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -354,7 +363,7 @@ import type {
     IDividerItem,
     ICuttingTask,
     ICuttingTaskLine,
-    ICuttingTaskOrderLine, ICuttingLineTableSetData
+    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument
     /*ICuttingTaskLinesSubgroup,*/
 } from '@/types'
 
@@ -372,6 +381,7 @@ import {
     // groupTaskLinesForExecuteForUnion,
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ExecuteDayFalseReason from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayFalseReason.vue'
@@ -383,7 +393,8 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/shared/textile_design/TextileDesignDocumentAsync.vue'
+import { getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 
 interface IProps {
@@ -541,7 +552,7 @@ const fieldWidths: Record<string, string> = {
     textile       : 'min-w-[250px] max-w-[250px]',
     tkch          : 'min-w-[70px] max-w-[70px]',
     kant          : 'min-w-[90px] max-w-[90px]',
-    kdch          : 'min-w-[50px] max-w-[50px]',
+    kdch          : 'min-w-[70px] max-w-[70px]',
     composition   : 'min-w-[70px] max-w-[70px]',
     describe_1    : 'min-w-[70px] max-w-[70px]',
     describe_2    : 'min-w-[70px] max-w-[70px]',
@@ -1032,6 +1043,22 @@ const setActiveTabIndex = () => {
             }
         }
     }
+}
+
+
+// __ Показываем КДЧ
+const textileDesignDocumentAsync = ref<InstanceType<typeof TextileDesignDocumentAsync> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const doc                        = ref<ITextileDocument | null>()
+
+const showDocument = async (cuttingLine: ICuttingTaskLine, id: number) => {
+    doc.value = {
+        id,
+        kdch       : getKDCH(cuttingLine),
+        file_path  : null,
+        description: null,
+    }
+    await textileDesignDocumentAsync.value!.show()
+    doc.value = null
 }
 
 

@@ -55,9 +55,10 @@ class CellSewingTaskController extends Controller
                 ->with([
                     'order.client',
                     'order.orderType',
-                    'sewingLines.orderLine.model.cover',
-                    'sewingLines.orderLine.model.base',
                     'statuses',
+                    'sewingLines.orderLine.model.kdchDoc',
+                    'sewingLines.orderLine.model.cover.kdchDoc',
+                    'sewingLines.orderLine.model.base.kdchDoc',
                 ])
                 // ->with(['sewingLines', 'sewingLines.orderLine','sewingLines.orderLine.model','sewingLines.orderLine.model.cover', 'statuses'])
                 ->orderBy('action_at')

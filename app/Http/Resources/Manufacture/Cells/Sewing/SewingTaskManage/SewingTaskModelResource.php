@@ -101,6 +101,7 @@ class SewingTaskModelResource extends JsonResource
             'kant'                => $this->kant,
             'tkch'                => $this->tkch,
             'kdch'                => $this->kdch,
+            'kdch_doc'            => $this->kdchDoc?->id,
             'is_solid'            => $this->is_solid,
             'is_universal'        => $this->setPhantomMachineTypeUniversal(),
             'is_auto'             => $this->setPhantomMachineTypeAuto(),

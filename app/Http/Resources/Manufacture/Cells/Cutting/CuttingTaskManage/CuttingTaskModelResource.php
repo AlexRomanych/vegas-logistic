@@ -104,8 +104,13 @@ class CuttingTaskModelResource extends JsonResource
             'kant'                => $this->kant,
             'tkch'                => $this->tkch,
             'kdch'                => $this->kdch,
-            'kdch_doc'            => $this->kdchDoc,
-            //'kdch_doc'            => $this->whenLoaded('kdchDoc'),
+            'kdch_doc'            => $this->kdchDoc?->id,
+            //'kdch_doc' => $this->whenLoaded('kdchDoc', function ($kdchDoc) {
+            //    return [
+            //        'id'        => $kdchDoc?->id, // Полезно иметь ID на фронте для скачивания
+            //        'file_path' => $kdchDoc?->file_path
+            //    ];
+            //}),
             'is_solid'            => $this->is_solid,
             'is_universal'        => $this->is_universal,
             'is_auto'             => $this->is_auto,

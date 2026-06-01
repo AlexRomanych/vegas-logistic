@@ -225,7 +225,7 @@ const uploadDocument = async () => {
     isUploading.value = true
 
     const formData = new FormData()
-    formData.append('kdch', kdch.value)
+    formData.append('kdch', kdch.value.trim())
     formData.append('file', selectedFile.value)
 
     const result = await sharedStore.uploadTextileDesignDocument(formData)

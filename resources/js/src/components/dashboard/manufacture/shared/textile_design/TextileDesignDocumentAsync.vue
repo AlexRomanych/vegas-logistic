@@ -137,6 +137,10 @@ async function showError(error: string | string[] | null = null) {
     await appModalAsyncMultilineTS.value!.show()
 }
 
+const currentColorIndex = 500
+const borderColor       = computed(() => getColorClassByType(props.type, 'border', currentColorIndex))
+const currentTextColor  = computed(() => getTextColorClassByType(props.type))
+
 // __ Асинхронные состояния
 const pdfUrl       = ref<string | null>(null)
 const isLoading    = ref<boolean>(false)
@@ -215,7 +219,7 @@ defineExpose({
 watch(() => props.doc?.id, async () => {
     console.log(props.doc)
     const docData = props.doc
-    if (!docData || !docData.id || !docData.file_path) {
+    if (!docData || !docData.id /*|| !docData.file_path*/) {
         cleanUpPdfUrl()
         // await showError('КДЧ не привязана к этой строке')
         // hasError.value     = true
@@ -233,9 +237,7 @@ onUnmounted(() => {
     cleanUpPdfUrl()
 })
 
-const currentColorIndex = 500
-const borderColor       = computed(() => getColorClassByType(props.type, 'border', currentColorIndex))
-const currentTextColor  = computed(() => getTextColorClassByType(props.type))
+
 </script>
 
 <style scoped>

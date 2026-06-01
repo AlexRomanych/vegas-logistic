@@ -102,11 +102,11 @@ class CellCuttingTaskController extends Controller
                     'cuttingLines.orderLine.model.kdchDoc',
                     'cuttingLines.orderLine.model.cover.kdchDoc',
                     'cuttingLines.orderLine.model.base.kdchDoc',
-                    'cuttingLines.orderLine.model.constructs', // <-- Сюда
+                    //'cuttingLines.orderLine.model.constructs', // <-- Сюда
                     // !! ОПТИМИЗАЦИЯ: Глубокая жадная загрузка для вложенных деталей (боковин)
                     'cuttingLines.details.orderLine.model.cover.kdchDoc',
                     'cuttingLines.details.orderLine.model.base.kdchDoc',
-                    'cuttingLines.details.orderLine.model.constructs', // <-- И сюда
+                    //'cuttingLines.details.orderLine.model.constructs', // <-- И сюда
                 ])
 
 

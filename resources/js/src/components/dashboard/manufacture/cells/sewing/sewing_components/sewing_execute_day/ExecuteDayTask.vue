@@ -190,6 +190,7 @@
                             :field-widths="fieldWidths"
                             :sewing-line="sewingLine"
                             @dblclick="showLineInfo(sewingLine)"
+                            @show-document="showDocument(sewingLine, $event)"
                         />
 
                         <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -317,6 +318,14 @@
         :type="modalInfoType"
     />
 
+    <!-- __ Просмотр PDF в модальном режиме -->
+    <TextileDesignDocumentAsync
+        ref="textileDesignDocumentAsync"
+        :doc="doc"
+        ok-word="Понятно"
+        type="primary"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -329,7 +338,7 @@ import type {
     ISewingTask,
     ISewingTaskLine,
     /*ISewingTaskLinesSubgroup,*/
-    ISewingTaskOrderLine
+    ISewingTaskOrderLine, ITextileDocument
 } from '@/types'
 
 import { useSewingStore } from '@/stores/SewingStore.ts'
@@ -343,6 +352,7 @@ import {
     getSewingTaskModelCoverName, groupTaskLinesForExecute, groupTaskLinesForExecuteForUnion, isTaskLineReset,
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
+import { getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ExecuteDayFalseReason from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute_day/ExecuteDayFalseReason.vue'
@@ -353,6 +363,7 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/shared/textile_design/TextileDesignDocumentAsync.vue'
 
 
 interface IProps {
@@ -502,7 +513,7 @@ const fieldWidths: Record<string, string> = {
     textile    : 'min-w-[100px] max-w-[100px]',
     tkch       : 'min-w-[70px] max-w-[70px]',
     kant       : 'min-w-[90px] max-w-[90px]',
-    kdch       : 'min-w-[50px] max-w-[50px]',
+    kdch       : 'min-w-[70px] max-w-[70px]',
     composition: 'min-w-[70px] max-w-[70px]',
     describe_1 : 'min-w-[70px] max-w-[70px]',
     describe_2 : 'min-w-[70px] max-w-[70px]',
@@ -949,6 +960,21 @@ const setActiveTabIndex = () => {
     }
 }
 
+
+// __ Показываем КДЧ
+const textileDesignDocumentAsync = ref<InstanceType<typeof TextileDesignDocumentAsync> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const doc                        = ref<ITextileDocument | null>()
+
+const showDocument = async (sewingLine: ISewingTaskLine, id: number) => {
+    doc.value = {
+        id,
+        kdch       : getKDCH(sewingLine),
+        file_path  : null,
+        description: null,
+    }
+    await textileDesignDocumentAsync.value!.show()
+    doc.value = null
+}
 
 watch(
     () => sewingLinesGroups.value,

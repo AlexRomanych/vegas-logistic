@@ -151,6 +151,7 @@ export interface ICuttingTaskModel {
     kant: string | null
     tkch: string | null
     kdch: string | null
+    kdch_doc?: number | null
     base_composition: string | null
     cover_type: string | null
     textile: string | null

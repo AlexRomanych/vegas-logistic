@@ -113,13 +113,15 @@
 
         <!-- __ КДЧ -->
         <AppLabelTS
+            :class="kdchId ? 'cursor-pointer' : ''"
             :height="LINE_HEIGHT"
-            :text="sewingLine.order_line.model.main.kdch ?? ''"
+            :text="kdch"
             :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(sewingLine)"
+            :type="kdchId ? 'indigo' : 'dark'"
             :width="fieldWidths.kdch"
             align="center"
             rounded="4"
+            @click="showDoc"
         />
 
         <!-- __ Состав -->
@@ -218,9 +220,9 @@ import {
     getTimeString
 } from '@/app/helpers/manufacture/helpers_sewing.ts'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
+import { getDocFileKDCH, getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-
 
 
 interface IProps {
@@ -229,6 +231,10 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
+
+const emits = defineEmits<{
+    (e: 'showDocument', payload: number): void
+}>()
 
 const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
@@ -297,6 +303,16 @@ const sewingMachine = computed(() => {
     return '??'
 })
 
+
+const kdchId = computed(() => getDocFileKDCH(props.sewingLine))
+const kdch   = computed(() => getKDCH(props.sewingLine) + (kdchId.value ? '🔍' : ''))
+
+const showDoc = () => {
+    if (!kdchId.value) {
+        return
+    }
+    emits('showDocument', kdchId.value)
+}
 
 </script>
 

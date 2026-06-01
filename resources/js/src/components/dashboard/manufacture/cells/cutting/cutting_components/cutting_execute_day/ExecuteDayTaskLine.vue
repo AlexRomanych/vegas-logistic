@@ -126,13 +126,15 @@
 
         <!-- __ КДЧ -->
         <AppLabelTS
+            :class="kdchId ? 'cursor-pointer' : ''"
             :height="lineHeight"
-            :text="cuttingLine.order_line.model.main.kdch ?? ''"
+            :text="kdch"
             :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
+            :type="kdchId ? 'indigo' : 'dark'"
             :width="fieldWidths.kdch"
             align="center"
             rounded="4"
+            @click="showDoc"
         />
 
         <!-- __ Крой -->
@@ -356,6 +358,7 @@ import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import { getDocFileKDCH, getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 
 interface IProps {
@@ -366,11 +369,14 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    index: 0,
+    index   : 0,
     ordering: 'position'
 })
 
 
+const emits = defineEmits<{
+    (e: 'showDocument', payload: number): void
+}>()
 
 // const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
@@ -446,10 +452,14 @@ const fabric = computed(() => Array.from(new Set(props.cuttingLine.fabric_constr
 // __ Возвращаем высоту строки в зависимости от количества ПС
 const lineHeight = computed(() => {
     switch (fabric.value.length) {
-        case 1: return 'h-[30px]'
-        case 2: return 'h-[30px]'
-        case 3: return 'h-[45px]'
-        default: return 'h-[30px]'
+        case 1:
+            return 'h-[30px]'
+        case 2:
+            return 'h-[30px]'
+        case 3:
+            return 'h-[45px]'
+        default:
+            return 'h-[30px]'
     }
 })
 
@@ -459,8 +469,16 @@ const lineHeightFabric = computed(() => fabric.value.length > 1 ? 'h-[15px]' : '
 // __ Возвращаем размер шрифта для favbic в зависимости от количества ПС для fabric
 const fabricTextSize = computed(() => fabric.value.length > 1 ? 'micro' : LINE_TEXT_SIZE)
 
+const kdchId = computed(() => getDocFileKDCH(props.cuttingLine))
+const kdch   = computed(() => getKDCH(props.cuttingLine) + (kdchId.value ? '🔍' : ''))
 
-// console.log(fabric)
+const showDoc = () => {
+    if (!kdchId.value) {
+        return
+    }
+    emits('showDocument', kdchId.value)
+}
+
 </script>
 
 <style scoped>
