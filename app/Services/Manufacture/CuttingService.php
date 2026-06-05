@@ -486,10 +486,10 @@ final class CuttingService
 
         $date = normalizeToCarbon($date);
 
-        return CuttingTask::query()
-            ->whereDate('action_at', $date)
-            ->count();
-        // return CuttingTask::query()->whereDate('action_at', $date)->max('position');
+        //return CuttingTask::query()
+        //    ->whereDate('action_at', $date)
+        //    ->count();
+         return CuttingTask::query()->whereDate('action_at', $date)->max('position');
     }
 
 
