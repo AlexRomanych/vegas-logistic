@@ -264,10 +264,20 @@
 
                 <!-- __ Количество рулонов в ПС -->
                 <AppLabelMultiLine
-                    :text="['Кол-во', 'рулонов']"
+                    :text="['Кол-во', 'рул.']"
                     align="center"
                     text-size="small"
                     title="Количество рулонов в ПС"
+                    type="primary"
+                    width="w-[60px]"
+                />
+
+                <!-- __ Количество Настилов в раскрое -->
+                <AppLabelMultiLine
+                    :text="['Кол-во', 'наст.']"
+                    align="center"
+                    text-size="small"
+                    title="Количество настилов в ПС"
                     type="primary"
                     width="w-[60px]"
                 />
@@ -447,6 +457,14 @@
                         <AppLabel
                             :text="fabric.textile_layers_amount.toString()"
                             :type="fabric.textile_layers_amount === 1 ? 'success' : 'primary'"
+                            align="center"
+                            text-size="mini"
+                            width="w-[60px]"
+                        />
+
+                        <AppLabel
+                            :text="fabric.cutting_layers.toString()"
+                            :type="fabric.cutting_layers === 0 ? 'stone' : 'success'"
                             align="center"
                             text-size="mini"
                             width="w-[60px]"

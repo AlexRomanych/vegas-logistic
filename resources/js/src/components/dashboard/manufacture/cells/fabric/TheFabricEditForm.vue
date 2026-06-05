@@ -45,6 +45,18 @@
                         width="w-[230px]"
                     />
 
+                    <!-- __ Кол-во слоев в раскрое -->
+                    <AppInputNumberSimpleTS
+                        id="cutting-layers-amount"
+                        v-model:inputNumber.number="v$.cuttingLayers.$model as unknown as number"
+                        :errors="v$.cuttingLayers.$errors"
+                        label="Количество слоев в раскрое, шт."
+                        placeholder="Количество слоев..."
+                        step="1"
+                        width="w-[230px]"
+                    />
+
+
                 </div>
 
                 <div class="flex">
@@ -289,9 +301,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, watchEffect, onMounted } from 'vue'
+import { ref, /*reactive, watch,*/ watchEffect, onMounted } from 'vue'
 import type { IFabric } from '@/types'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, /*useRouter*/ } from 'vue-router'
 
 import { useVuelidate } from '@vuelidate/core'
 import {
@@ -312,7 +324,7 @@ import { NEW_FABRIC } from '@/app/constants/fabrics.js'
 
 import { checkApiAnswer } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.js'
-
+import { getPicNameByFabric } from '@/app/helpers/manufacture/helpers_fabric'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppCheckbox from '@/components/ui/checkboxes/AppCheckbox.vue'
@@ -321,7 +333,7 @@ import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppLabelCheckBoxTS from '@/components/ui/labels/AppLabelCheckBoxTS.vue'
-import { getPicNameByFabric } from '@/app/helpers/manufacture/helpers_fabric'
+
 
 // import AppCheckboxLine from '@/components/ui/checkboxes/AppCheckboxLine.vue'
 // import AppInputTextAreaSimple from '@/components/ui/inputs/AppInputTextAreaSimple.vue'
@@ -350,7 +362,7 @@ const fabric = ref<IFabric>(NEW_FABRIC)
 // __ Получаем ПС
 const getFabric = async () => {
     if (editMode) {
-        fabric.value = await fabricStore.getFabricById(route.params.id)
+        fabric.value             = await fabricStore.getFabricById(route.params.id)
         fabric.value.hand_length = fabric.value.hand_length === 0 ? fabric.value.buffer.average_length : fabric.value.hand_length
     }
 }
@@ -366,38 +378,41 @@ const getBufferRolls = () => {
 
 
 // __ Формируем переменные реактивности
-const code1C = ref(fabric.value.code_1C)
-const name = ref(fabric.value.name)
-const averageLength = ref(fabric.value.buffer.average_length)
-const bufferAmount = ref(round(fabric.value.buffer.amount, 2))
-const minRolls = ref(fabric.value.buffer.min_rolls)
-const maxRolls = ref(fabric.value.buffer.max_rolls)
-const optimalParty = ref(fabric.value.buffer.optimal_party)
-const translateRate = ref(fabric.value.buffer.rate)
-const productivity = ref(fabric.value.buffer.productivity)
-const statistic = ref(fabric.value.statistic)
-const description = ref(fabric.value.text.description ?? '')
-const bufferRolls = ref(getBufferRolls())
+const code1C                        = ref(fabric.value.code_1C)
+const name                          = ref(fabric.value.name)
+const averageLength                 = ref(fabric.value.buffer.average_length)
+const bufferAmount                  = ref(round(fabric.value.buffer.amount, 2))
+const minRolls                      = ref(fabric.value.buffer.min_rolls)
+const maxRolls                      = ref(fabric.value.buffer.max_rolls)
+const optimalParty                  = ref(fabric.value.buffer.optimal_party)
+const translateRate                 = ref(fabric.value.buffer.rate)
+const productivity                  = ref(fabric.value.buffer.productivity)
+const statistic                     = ref(fabric.value.statistic)
+const description                   = ref(fabric.value.text.description ?? '')
+const bufferRolls                   = ref(getBufferRolls())
 const averageTextileLengthStatistic = ref(0)
-const averageTextileLengthHand = ref(0)
-const textileLayersAmount = ref(fabric.value.textile_layers_amount)
+const averageTextileLengthHand      = ref(0)
+const textileLayersAmount           = ref(fabric.value.textile_layers_amount)
+const cuttingLayers                 = ref(fabric.value.cutting_layers)
 
 
 // __ Определяем константы правил валидации
-const REQUIRED_MESSAGE = 'Поле обязательно'
-const INTEGER_MESSAGE = 'Целое число'
-const MIN_NAME_LENGTH = 25
-const MIN_CODE_1C_LENGTH = 9
+const REQUIRED_MESSAGE           = 'Поле обязательно'
+const INTEGER_MESSAGE            = 'Целое число'
+const MIN_NAME_LENGTH            = 25
+const MIN_CODE_1C_LENGTH         = 9
 const MIN_TEXTILE_AVERAGE_LENGTH = 10
 const MAX_TEXTILE_AVERAGE_LENGTH = 200
-const MIN_BUFFER_AMOUNT = 0
-const MAX_BUFFER_AMOUNT = 1
-const MIN_ROLLS_AMOUNT = 1
-const MAX_ROLLS_AMOUNT = 1
-const OPTIMAL_PARTY_MIN_AMOUNT = 10
-const RATE_MIN_AMOUNT = 1
-const RATE_MAX_AMOUNT = 3
-const PRODUCTIVITY_MIN_AMOUNT = 10
+const MIN_BUFFER_AMOUNT          = 0
+// const MAX_BUFFER_AMOUNT          = 1
+const MIN_ROLLS_AMOUNT           = 1
+const MAX_ROLLS_AMOUNT           = 1
+const OPTIMAL_PARTY_MIN_AMOUNT   = 10
+const RATE_MIN_AMOUNT            = 1
+const RATE_MAX_AMOUNT            = 3
+const PRODUCTIVITY_MIN_AMOUNT    = 10
+const MIN_CUTTING_LAYERS_AMOUNT  = 1
+const MAX_CUTTING_LAYERS_AMOUNT  = 10
 
 // __ Определяем объект валидации
 const verify = {
@@ -412,18 +427,19 @@ const verify = {
     productivity,
     description,
     bufferRolls,
+    cuttingLayers,
 }
 
 // Определяем правила валидации
 const rules = {
-    code1C: {
-        required: helpers.withMessage(REQUIRED_MESSAGE, required),
+    code1C                  : {
+        required : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength: helpers.withMessage(`Мин. - ${MIN_CODE_1C_LENGTH} символов`, minLength(MIN_CODE_1C_LENGTH)),
     },
-    name: {
+    name                    : {
         // $autoDirty: true,
         // $lazy: true,
-        required: helpers.withMessage(REQUIRED_MESSAGE, required),
+        required : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength: helpers.withMessage(`Минимальная длина названия ПС - ${MIN_NAME_LENGTH} символов`, minLength(MIN_NAME_LENGTH)),
     },
     averageTextileLengthHand: {
@@ -431,34 +447,40 @@ const rules = {
         minValue: helpers.withMessage(`Мин. значение - ${MIN_TEXTILE_AVERAGE_LENGTH} м.п.`, minValue(MIN_TEXTILE_AVERAGE_LENGTH)),
         maxValue: helpers.withMessage(`Макс. значение - ${MAX_TEXTILE_AVERAGE_LENGTH} м.п.`, maxValue(MAX_TEXTILE_AVERAGE_LENGTH)),
     },
-    bufferAmount: {
+    bufferAmount            : {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
         minValue: helpers.withMessage(`Мин. значение - ${MIN_BUFFER_AMOUNT} м.п.`, minValue(MIN_BUFFER_AMOUNT)),
         // required: helpers.withMessage(REQUIRED_MESSAGE, required),
         // maxValue: helpers.withMessage(`Макс. значение - ${MAX_BUFFER_AMOUNT} м.п.`, maxValue(MAX_BUFFER_AMOUNT)),
     },
-    minRolls: {
+    minRolls                : {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        integer: helpers.withMessage(INTEGER_MESSAGE, integer),
+        integer : helpers.withMessage(INTEGER_MESSAGE, integer),
         minValue: helpers.withMessage(`Мин. значение - ${MIN_ROLLS_AMOUNT} шт.`, minValue(MIN_ROLLS_AMOUNT)),
     },
-    maxRolls: {
+    maxRolls                : {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        integer: helpers.withMessage(INTEGER_MESSAGE, integer),
-        minValue: helpers.withMessage(`Мин. значение - ${MAX_ROLLS_AMOUNT} шт.`, minValue(MAX_ROLLS_AMOUNT)),
+        integer : helpers.withMessage(INTEGER_MESSAGE, integer),
+        maxValue: helpers.withMessage(`Макс. значение - ${MAX_ROLLS_AMOUNT} шт.`, maxValue(MAX_ROLLS_AMOUNT)),
     },
-    bufferRolls: {},
-    optimalParty: {
+    bufferRolls             : {},
+    optimalParty            : {
         minValue: helpers.withMessage(`Мин. значение - ${OPTIMAL_PARTY_MIN_AMOUNT} м.п.`, minValue(OPTIMAL_PARTY_MIN_AMOUNT)),
     },
-    translateRate: {
+    translateRate           : {
         required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        between: helpers.withMessage(`Значение в диапазоне от ${RATE_MIN_AMOUNT} до ${RATE_MAX_AMOUNT}`, between(RATE_MIN_AMOUNT, RATE_MAX_AMOUNT)),
+        between : helpers.withMessage(`Значение в диапазоне от ${RATE_MIN_AMOUNT} до ${RATE_MAX_AMOUNT}`, between(RATE_MIN_AMOUNT, RATE_MAX_AMOUNT)),
     },
-    productivity: {
+    productivity            : {
         minValue: helpers.withMessage(`Мин. значение - ${PRODUCTIVITY_MIN_AMOUNT} м.п./ч.`, minValue(PRODUCTIVITY_MIN_AMOUNT)),
     },
-    description: {},
+    description             : {},
+    cuttingLayers           : {
+        required: helpers.withMessage(REQUIRED_MESSAGE, required),
+        integer : helpers.withMessage(INTEGER_MESSAGE, integer),
+        minValue: helpers.withMessage(`Мин. значение - ${MIN_CUTTING_LAYERS_AMOUNT} шт.`, minValue(MIN_CUTTING_LAYERS_AMOUNT)),
+        maxValue: helpers.withMessage(`Макс. значение - ${MAX_CUTTING_LAYERS_AMOUNT} шт.`, maxValue(MAX_CUTTING_LAYERS_AMOUNT)),
+    },
     // comment: {},
     // note: {},
 }
@@ -471,8 +493,8 @@ const v$ = useVuelidate(rules, verify)
 const checkboxDataStatus = {
     name: 'status',
     data: [
-        {id: 1, name: 'Активный', checked: fabric.value.active},
-        {id: 2, name: 'Архив', checked: !fabric.value.active},
+        { id: 1, name: 'Активный', checked: fabric.value.active },
+        { id: 2, name: 'Архив', checked: !fabric.value.active },
     ]
 }
 
@@ -480,8 +502,8 @@ const checkboxDataStatus = {
 const checkboxDataRarity = {
     name: 'rarity',
     data: [
-        {id: 1, name: 'Регулярный', checked: fabric.value.rare},
-        {id: 2, name: 'Редкий', checked: !fabric.value.rare},
+        { id: 1, name: 'Регулярный', checked: fabric.value.rare },
+        { id: 2, name: 'Редкий', checked: !fabric.value.rare },
     ]
 }
 
@@ -499,9 +521,9 @@ const checkedHandlerRarity = (obj: { id: number }) => {
 
 
 // __ Callout для вывода ошибок и предупреждений
-const calloutType = ref('danger')
-const calloutText = ref('')
-const calloutShow = ref(false)
+const calloutType  = ref('danger')
+const calloutText  = ref('')
+const calloutShow  = ref(false)
 const calloutClose = (delay = 5000) => setTimeout(() => calloutShow.value = false, delay) // закрываем callout
 
 
@@ -513,21 +535,22 @@ const statisticHandler = async () => {
 
 // __ Получаем данные для отображения, выносим в отдельный метод, потому что вызывается после монтирования
 const setVariables = async () => {
-    code1C.value = fabric.value.code_1C
-    name.value = fabric.value.name
-    bufferAmount.value = round(fabric.value.buffer.amount, 2)
-    minRolls.value = fabric.value.buffer.min_rolls
-    maxRolls.value = fabric.value.buffer.max_rolls
-    optimalParty.value = fabric.value.buffer.optimal_party
-    translateRate.value = fabric.value.buffer.rate
-    productivity.value = fabric.value.buffer.productivity
-    statistic.value = fabric.value.statistic
-    description.value = fabric.value.text.description ?? ''
-    bufferRolls.value = getBufferRolls()
-    averageLength.value = fabric.value.buffer.average_length
+    code1C.value                        = fabric.value.code_1C
+    name.value                          = fabric.value.name
+    bufferAmount.value                  = round(fabric.value.buffer.amount, 2)
+    minRolls.value                      = fabric.value.buffer.min_rolls
+    maxRolls.value                      = fabric.value.buffer.max_rolls
+    optimalParty.value                  = fabric.value.buffer.optimal_party
+    translateRate.value                 = fabric.value.buffer.rate
+    productivity.value                  = fabric.value.buffer.productivity
+    statistic.value                     = fabric.value.statistic
+    description.value                   = fabric.value.text.description ?? ''
+    bufferRolls.value                   = getBufferRolls()
+    averageLength.value                 = fabric.value.buffer.average_length
     averageTextileLengthStatistic.value = 0
-    averageTextileLengthHand.value = fabric.value.hand_length
-    textileLayersAmount.value = fabric.value.textile_layers_amount
+    averageTextileLengthHand.value      = fabric.value.hand_length
+    textileLayersAmount.value           = fabric.value.textile_layers_amount
+    cuttingLayers.value                 = fabric.value.cutting_layers
 }
 
 // __ Получаем среднюю длину ткани из статистики
@@ -554,7 +577,7 @@ const changeTextileLayersAmount = () => {
 const nameHandler = async () => {
     const picName = getPicNameByFabric(name.value) as unknown as string
     if (!picName) return
-    const pic = await fabricStore.getFabricPictureByName(picName)
+    const pic          = await fabricStore.getFabricPictureByName(picName)
     productivity.value = (pic?.productivity) ? pic.productivity : 0
 }
 
@@ -567,22 +590,22 @@ const formSubmit = async () => {
     if (!isFormCorrect) return                          // это показатель ошибки
 
     // attract: Формируем массив для сохранения
-    fabric.value.code_1C = code1C.value
-    fabric.value.name = name.value
-    fabric.value.buffer.amount = bufferAmount.value
-    fabric.value.buffer.min_rolls = minRolls.value
-    fabric.value.buffer.max_rolls = maxRolls.value
-    fabric.value.buffer.optimal_party = optimalParty.value
-    fabric.value.buffer.rate = translateRate.value
-    fabric.value.buffer.productivity = productivity.value
+    fabric.value.code_1C                    = code1C.value
+    fabric.value.name                       = name.value
+    fabric.value.buffer.amount              = bufferAmount.value
+    fabric.value.buffer.min_rolls           = minRolls.value
+    fabric.value.buffer.max_rolls           = maxRolls.value
+    fabric.value.buffer.optimal_party       = optimalParty.value
+    fabric.value.buffer.rate                = translateRate.value
+    fabric.value.buffer.productivity        = productivity.value
     fabric.value.buffer.fabric_productivity = productivity.value
-    fabric.value.statistic = statistic.value
-    fabric.value.text.description = description.value
+    fabric.value.statistic                  = statistic.value
+    fabric.value.text.description           = description.value
     // fabric.value.buffer.average_length = averageLength.value
-    fabric.value.statistic_length = averageTextileLengthStatistic.value
-    fabric.value.hand_length = averageTextileLengthHand.value
-    fabric.value.textile_layers_amount = textileLayersAmount.value
-
+    fabric.value.statistic_length           = averageTextileLengthStatistic.value
+    fabric.value.hand_length                = averageTextileLengthHand.value
+    fabric.value.textile_layers_amount      = textileLayersAmount.value
+    fabric.value.cutting_layers             = cuttingLayers.value
 
     console.log('fabric: ', fabric.value)
 

@@ -3,11 +3,10 @@
 namespace App\Models\Manufacture\Cells\Fabric;
 
 use App\Classes\FabricInstance;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+//use Illuminate\Database\Eloquent\Casts\Attribute;
 //use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Fabric extends Model
@@ -17,15 +16,16 @@ class Fabric extends Model
     protected $guarded = false;
 
     protected $casts = [
-        'average_roll_length' => 'float',
-        'average_roll_length_hand' => 'float',
+        'average_roll_length'           => 'float',
+        'average_roll_length_hand'      => 'float',
         'average_roll_length_statistic' => 'float',
-        'productivity' => 'float',
-        'buffer_amount' => 'float',
-        'buffer_max' => 'int',
-        'buffer_min' => 'int',
-        'translate_rate' => 'float',
-        'optimal_party' => 'int',
+        'productivity'                  => 'float',
+        'buffer_amount'                 => 'float',
+        'buffer_max'                    => 'int',
+        'buffer_min'                    => 'int',
+        'translate_rate'                => 'float',
+        'optimal_party'                 => 'int',
+        'cutting_layers'                => 'int',
     ];
 
     // Добавляем новые атрибуты
@@ -93,9 +93,8 @@ class Fabric extends Model
     // attract: 3. Коэффициент перевода
     public function getFabricCorrectAttribute(): bool
     {
-
-        $length = (float)$this->average_roll_length === 0.0;
-        $translate = (float)$this->translate_rate === 0.0;
+        $length       = (float)$this->average_roll_length === 0.0;
+        $translate    = (float)$this->translate_rate === 0.0;
         $productivity = (float)$this->fabricPicture->productivity === 0.0 && (float)$this->productivity === 0.0;
         // $productivity = (float)$this->productivity === 0.0;
 
@@ -108,9 +107,6 @@ class Fabric extends Model
         //            ];
         //        return (float)$this->average_roll_length !== 0.0 && (float)$this->productivity !== 0.0 && (float)$this->translate_rate !== 0.0;
     }
-
-
-
 
 
     // Relations: FabricPicture

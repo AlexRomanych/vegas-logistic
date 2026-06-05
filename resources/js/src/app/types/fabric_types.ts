@@ -207,8 +207,8 @@ export interface IFabric {
         description: string | null,
         comment: string | null,
         note: string | null
-    }
-
+    },
+    cutting_layers: number
 }
 
 // line --------------------------------------------------------------

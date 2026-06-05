@@ -188,6 +188,7 @@ class CellFabricController extends Controller
             $fabric->active = $fabricPayload['active'];
             $fabric->textile_layers_amount = $fabricPayload['textile_layers_amount'];
             $fabric->fabric_picture_id = $picture->id;
+            $fabric->cutting_layers = $fabricPayload['cutting_layers'];
 
             $fabric->average_roll_length_hand = $fabricPayload['hand_length'];          // Записываем ручную длину в любом случае
 
@@ -263,6 +264,7 @@ class CellFabricController extends Controller
                 'productivity' => $fabricPayload['buffer']['productivity'],
                 'description' => $fabricPayload['text']['description'],
                 'active' => $fabricPayload['active'],
+                'cutting_layers' => $fabricPayload['cutting_layers'],
                 'fabric_picture_id' => $picture->id,
 
             ]);

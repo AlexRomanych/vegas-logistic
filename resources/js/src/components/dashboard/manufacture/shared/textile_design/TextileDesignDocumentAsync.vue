@@ -248,4 +248,17 @@ onUnmounted(() => {
 .modal-container {
     @apply bg-slate-800 rounded-xl flex flex-col justify-between border-l-8;
 }
+
+/* Состояние появления и исчезновения */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.2s ease;
+}
+
+/* Стартовое состояние при появлении / Финальное при исчезновении */
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
+}
 </style>
