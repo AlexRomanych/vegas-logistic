@@ -514,10 +514,3 @@ export interface ITextileDocument {
     description: string | null
 }
 
-// __ КД<
-export interface IBlockDocument {
-    id: number
-    kdb: string
-    file_path: string | null
-    description: string | null
-}

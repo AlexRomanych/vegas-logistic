@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Documents\Blocks;
 
@@ -14,6 +14,16 @@ class BlockDesignResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id'          => $this->id,
+            'kdb'         => $this->kdb,
+            'name'        => $this->kdb,
+            'file_path'   => $this->file_path,
+            'description' => $this->description,
+            //'created_at'  => $this->created_at,
+            //'updated_at'  => $this->updated_at,
+
+            //'_' => parent::toArray($request),
+        ];
     }
 }

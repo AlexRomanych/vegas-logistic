@@ -28,7 +28,7 @@ const blocks = [
         name     : 'manufacture.cell.blocks.collections.show',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/show/TheBlockCollectionsShow.vue'),
         meta     : {
-            title: 'Справочник Коллекций пружинных блоков'
+            title: 'Справочник Групп пружинных блоков'
         } as IRouteMeta,
     },
 
@@ -38,7 +38,7 @@ const blocks = [
         name     : 'manufacture.cell.blocks.collections.edit',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/show/TheBlockCollectionsEdit.vue'),
         meta     : {
-            title: 'Редактирование Коллекции блоков',
+            title: 'Редактирование Группы пружинных блоков',
             mode : ROUTER_PAGE_MODE.EDIT,
         } as IRouteMeta,
     },

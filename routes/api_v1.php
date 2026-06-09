@@ -318,11 +318,7 @@ Route::prefix('blocks')
     ->middleware('jwt.auth')
     ->group(function () {
 
-        //return ['data' => '123'];
-
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
-        //Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
-        //Route::get('kdch/kdch/{kdch}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByKdch']);
-        //Route::post('kdch', [TextileDesignDocumentController::class, 'uploadDocument']);
-        //Route::delete('kdch', [TextileDesignDocumentController::class, 'deleteTextileDesignDocumentById']);
+        Route::get('collections/{id}', [BlockCollectionController::class, 'getBlockCollectionById']);
+
     });

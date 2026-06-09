@@ -46,10 +46,47 @@
                         <AppInputTextTSWrapper v-model="priorityFilter" :render-object="render.priority"/>
                     </div>
 
+                    <!-- __ Длина блоков -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.length"/>
+                        <AppInputTextTSWrapper v-model="lengthFilter" :render-object="render.length"/>
+                    </div>
+
                     <!-- __ Высота блоков -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.height"/>
                         <AppInputTextTSWrapper v-model="heightFilter" :render-object="render.height"/>
+                    </div>
+
+                    <!-- __ Производительность -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.productivity"/>
+                        <AppInputTextTSWrapper v-model="productivityFilter" :render-object="render.productivity"/>
+                    </div>
+
+                    <!-- __ Own - Собственное производство -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.own"/>
+
+                        <!-- __ Фильтр: Active -->
+                        <AppSelectSimpleTS
+                            v-if="render.own.show"
+                            id="own"
+                            :select-data="ownSelect"
+                            :text-size="render.own.headerTextSize"
+                            :type="
+                                ownFilter === 0
+                                ? 'primary'
+                                : ownFilter === 1
+                                    ? 'success'
+                                    : 'danger'
+                            "
+                            :width="render.own.width"
+                            align="center"
+                            class="mt-[8px]"
+                            height="h-[30px]"
+                            @change="filterByOwn"
+                        />
                     </div>
 
                     <!-- __ Active -->
@@ -135,7 +172,12 @@
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.unit"/>
 
                 <!-- __ КДБ -->
-                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.kdb"/>
+                <AppLabelTSWrapper
+                    :arg="blockCollection"
+                    :render-object="render.kdb"
+                    :class="blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? 'cursor-pointer' : ''"
+                    @dblclick="showDocument(blockCollection)"
+                />
 
                 <!-- __ Линия -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line"/>
@@ -143,8 +185,17 @@
                 <!-- __ Приоритет изготовления -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority"/>
 
+                <!-- __ Длина -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.length"/>
+
                 <!-- __ Высота -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.height"/>
+
+                <!-- __ Производительность -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.productivity"/>
+
+                <!-- __ Own - Собственное про-во -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.own"/>
 
                 <!-- __ Active -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.active"/>
@@ -182,16 +233,27 @@
         </div>
     </div>
 
+    <!-- __ Просмотр PDF в модальном режиме -->
+    <BlockDesignDocumentAsync
+        ref="blockDesignDocumentAsync"
+        :doc="doc"
+        ok-word="Понятно"
+        type="primary"
+    />
+
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import type {
-    IRenderData, ISelectData, ISelectDataItem, IBlockCollection,
+    IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
+
+import { DEBUG } from '@/app/constants/common.ts'
+import { LINE_0 } from '@/app/constants/blocks.ts'
 
 import AppLabelMultilineTSWrapper
     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -200,12 +262,12 @@ import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/comp
 import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/block_design/BlockDesignDocumentAsync.vue'
 // import AppRGBPickerModalTS from '@/components/ui/pickers/AppRGBPickerModalTS.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { DEBUG } from '@/app/constants/common.ts'
 
 
 const isLoading = ref(false)
@@ -238,7 +300,7 @@ const DATA_ALIGN         = 'left'
 // const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    id         : {
+    id          : {
         id            : () => 'id-search',
         header        : ['ID', ''],
         width         : 'w-[50px]',
@@ -254,7 +316,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍id...',
         data          : (blockCollection: IBlockCollection) => blockCollection.id.toString()
     },
-    name       : {
+    name        : {
         id            : () => 'name-search',
         header        : ['Название', 'группы блоков'],
         width         : 'w-[300px]',
@@ -270,7 +332,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Название...',
         data          : (blockCollection: IBlockCollection) => blockCollection.name
     },
-    code_1c    : {
+    code_1c     : {
         id            : () => 'code-1c-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -286,7 +348,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (blockCollection: IBlockCollection) => blockCollection.code_1c
     },
-    unit       : {
+    unit        : {
         id            : () => 'unit-search',
         header        : ['Ед.', 'изм.'],
         width         : 'w-[70px]',
@@ -302,7 +364,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Ед...',
         data          : (blockCollection: IBlockCollection) => blockCollection.unit ?? ''
     },
-    kdb        : {
+    kdb         : {
         id            : () => 'kdb-search',
         header        : ['КДБ', ''],
         width         : 'w-[80px]',
@@ -310,15 +372,15 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection?.kdb_id && blockCollection?.kdb_id !== 0 ? 'indigo' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍КДБ...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.kdb ?? ''
+        data          : (blockCollection: IBlockCollection) => blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? `${blockCollection.kdb} 🔍` : '',
     },
-    line       : {
+    line        : {
         id            : () => 'line-search',
         header        : ['Ли-', 'ния'],
         width         : 'w-[60px]',
@@ -326,7 +388,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.line !== 0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => blockCollection?.line !== LINE_0 ? DEFAULT_TYPE : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -334,7 +396,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Л...',
         data          : (blockCollection: IBlockCollection) => blockCollection.line.toString()
     },
-    priority   : {
+    priority    : {
         id            : () => 'priority-search',
         header        : ['Приор-', 'тет'],
         width         : 'w-[60px]',
@@ -350,9 +412,9 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority.toString()
     },
-    height     : {
+    height      : {
         id            : () => 'height-search',
-        header        : ['h', 'см'],
+        header        : ['H', 'см'],
         width         : 'w-[60px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -363,10 +425,42 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
-        placeholder   : '🔍h...',
+        placeholder   : '🔍H...',
         data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-    active     : {
+    length      : {
+        id            : () => 'length-search',
+        header        : ['L', 'см'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection?.length !== 0 ? DEFAULT_TYPE : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍L...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
+    },
+    productivity: {
+        id            : () => 'productivity-search',
+        header        : ['Произ-сть', 'мп/ч'],
+        width         : 'w-[100px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection?.productivity !== 0 ? DEFAULT_TYPE : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Произ-сть...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.productivity.toFixed(3)
+    },
+    active      : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -382,7 +476,23 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Active...',
         data          : (blockCollection: IBlockCollection) => blockCollection.active ? '✓' : '✗'
     },
-    description: {
+    own         : {
+        id            : () => 'own-search',
+        header        : ['Собств.', 'пр-во'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection.own ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.own ? '✓' : '✗'
+    },
+    description : {
         id            : () => 'description-search',
         header        : ['Описание', ''],
         width         : 'w-[450px]',
@@ -401,21 +511,33 @@ const render: IRenderData = reactive({
 })
 
 // __ Фильтры
-const idFilter          = ref('')
-const nameFilter        = ref('')
-const code_1cFilter     = ref('')
-const unitFilter        = ref('')
-const kdbFilter         = ref('')
-const lineFilter        = ref('')
-const priorityFilter    = ref('')
-const heightFilter      = ref('')
-const descriptionFilter = ref('')
-const activeFilter      = ref(0)
+const idFilter           = ref('')
+const nameFilter         = ref('')
+const code_1cFilter      = ref('')
+const unitFilter         = ref('')
+const kdbFilter          = ref('')
+const lineFilter         = ref('')
+const priorityFilter     = ref('')
+const lengthFilter       = ref('')
+const heightFilter       = ref('')
+const productivityFilter = ref('')
+const descriptionFilter  = ref('')
+const activeFilter       = ref(0)
+const ownFilter          = ref(0)
 
 
 // __ Подготавливаем селекты
 const activeSelect: ISelectData = {
-    name: 'order-active',
+    name: 'active',
+    data: [
+        { id: 0, name: 'Все', selected: true, disabled: false },
+        { id: 1, name: '✓', selected: false, disabled: false },
+        { id: 2, name: '✗', selected: false, disabled: false },
+    ],
+}
+
+const ownSelect: ISelectData = {
+    name: 'own',
     data: [
         { id: 0, name: 'Все', selected: true, disabled: false },
         { id: 1, name: '✓', selected: false, disabled: false },
@@ -427,6 +549,10 @@ const activeSelect: ISelectData = {
 const filterByActive = (value: ISelectDataItem) => {
     activeFilter.value = value.id
 }
+const filterByOwn    = (value: ISelectDataItem) => {
+    ownFilter.value = value.id
+}
+
 
 // __ Обнуляем фильтры
 const resetFilters = () => {
@@ -438,8 +564,31 @@ const resetFilters = () => {
     lineFilter.value        = ''
     priorityFilter.value    = ''
     heightFilter.value      = ''
+    lengthFilter.value      = ''
     descriptionFilter.value = ''
     activeFilter.value      = 0
+    ownFilter.value         = 0
+}
+
+
+// __ Показываем КДБ
+const blockDesignDocumentAsync = ref<InstanceType<typeof BlockDesignDocumentAsync> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const doc                      = ref<IBlockDocument | null>()
+
+const showDocument = async (blockCollection: IBlockCollection) => {
+    if (!blockCollection.kdb_id) {
+        return
+    }
+    doc.value = {
+        id         : blockCollection.kdb_id,
+        kdb        : blockCollection.kdb ?? '',
+        name       : blockCollection.kdb ?? '',
+        file_path  : null,
+        description: null,
+    }
+    await blockDesignDocumentAsync.value!.show()
+    doc.value = null
+    return
 }
 
 
@@ -485,6 +634,7 @@ watchEffect(() => {
     const lineFilterSearch        = lineFilter.value.toLowerCase()
     const priorityFilterSearch    = priorityFilter.value.toLowerCase()
     const heightFilterSearch      = heightFilter.value.toLowerCase()
+    const lengthFilterSearch      = lengthFilter.value.toLowerCase()
     const descriptionFilterSearch = descriptionFilter.value.toLowerCase()
 
     blockCollectionsRender.value = blockCollections.value
@@ -496,11 +646,17 @@ watchEffect(() => {
         .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
         .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
         .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
+        .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))
         .filter(blockCollection => blockCollection.description!.toString().toLowerCase().includes(descriptionFilterSearch))
         .filter(collection => {
             if (activeFilter.value === 0) return true
             else if (activeFilter.value === 1) return collection.active
             else if (activeFilter.value === 2) return !collection.active
+        })
+        .filter(collection => {
+            if (ownFilter.value === 0) return true
+            else if (ownFilter.value === 1) return collection.own
+            else if (ownFilter.value === 2) return !collection.own
         })
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии

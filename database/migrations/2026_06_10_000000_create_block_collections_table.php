@@ -17,11 +17,14 @@ return new class extends Migration {
             $table->id()->from(1);
             $table->string(CODE_1C, CODE_1C_LENGTH)->nullable(false)->unique()->comment('Код из 1С');
             $table->string('name')->nullable(false)->unique()->comment('Название группы');
+            $table->boolean('own')->nullable(false)->default(false)->comment('Собственное производство или нет');
             $table->string('unit')->nullable()->comment('Единица измерения');
+            $table->integer('length')->nullable(false)->default(0)->comment('Длина блока коллекции, см');
             $table->integer('height')->nullable(false)->default(0)->comment('Высота блока коллекции, см');
             $table->string('kdb')->nullable()->comment('Конструкторская документация блоков (КДБ)');
             $table->integer('line')->nullable(false)->default(0)->comment('Линия производства блоков');
             $table->integer('priority')->nullable(false)->default(0)->comment('Приоритет выполнения на линии');
+            $table->float('productivity')->nullable(false)->default(0.0)->comment('Производительность, мп/ч');
         });
 
         $this->addCommonColumns(self::TABLE);
@@ -32,7 +35,7 @@ return new class extends Migration {
             [CODE_1C => '000033065', 'name' => '(V) TFK R1000 180 Z (H3)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000034580', 'name' => '(V) TPS Mini R1000 100 (1,7)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000033796', 'name' => '(V) TPS Mini R1000 80 (1,7)', 'line' => 0, 'unit' => 'шт.',],
-            [CODE_1C => '000040243', 'name' => 'БП (V) Pocket Spring Sample R1000 160 (1,7)', 'line' => 0, 'unit' => 'мп.',],
+            [CODE_1C => '000040243', 'name' => 'БП (V) Pocket Spring Sample R1000 160 (1,7)', 'line' => 0, 'unit' => 'м.п.',],
             [CODE_1C => '000029994', 'name' => 'БП (V) Smartpocket R1000 110 B (1,7)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000029995', 'name' => 'БП (V) Smartpocket R1000 140 B (1,7)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000045023', 'name' => 'БП (V) TPS R1000 120 (1,7)', 'line' => 0, 'unit' => 'шт.',],
@@ -46,7 +49,7 @@ return new class extends Migration {
             [CODE_1C => '000001890', 'name' => 'БП Medizone X3000 140 Z (H3)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000044551', 'name' => 'БП Multipocket R2000 Mini 80 (1,3)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000046812', 'name' => 'БП Multipocket X2200 Mini 80 (1,3)', 'line' => 0, 'unit' => 'шт.',],
-            [CODE_1C => '000041405', 'name' => 'БП NanoPocket 25 (1,2)', 'line' => 0, 'unit' => 'мп',],
+            [CODE_1C => '000041405', 'name' => 'БП NanoPocket 25 (1,2)', 'line' => 0, 'unit' => 'м.п.',],
             [CODE_1C => '000040250', 'name' => 'БП Pocket R1000 160 (1,7)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000044350', 'name' => 'БП Pocket R1000 160 (1,7) А БК', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000046752', 'name' => 'БП Pocket R1000 160 (1,7) АтД БК', 'line' => 0, 'unit' => 'шт.',],

@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->integer('length')->nullable(false)->default(0)->comment('Длина блока, см');
             $table->integer('height')->nullable(false)->default(0)->comment('Высота блока, см');
 
+
             $table->string('collection', CODE_1C_LENGTH)->nullable()->comment('Код коллекции группы');
         });
 

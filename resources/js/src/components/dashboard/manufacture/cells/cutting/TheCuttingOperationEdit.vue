@@ -39,7 +39,7 @@
 
                 <!-- __ Стол -->
                 <AppInputTextTS
-                    id="machine"
+                    id="id"
                     v-model:textValue.trim="v$.table.$model as unknown as string"
                     :errors="v$.table.$errors"
                     label="Стол"
@@ -49,7 +49,7 @@
 
                 <!-- __ Тип чехла -->
                 <AppInputTextTS
-                    id="machine"
+                    id="cover-type"
                     v-model:textValue.trim="v$.coverType.$model as unknown as string"
                     :errors="v$.coverType.$errors"
                     label="Тип чехла"
@@ -86,7 +86,7 @@
                 <!-- __ Тип детали -->
                 <div class="mt-5"></div>
                 <AppCheckboxTS
-                    id="calc-mode"
+                    id="detail-type"
                     :checkboxData="detailTypeCheckboxData"
                     dir="horizontal"
                     inputType="radio"
@@ -227,7 +227,7 @@ const active      = ref(true)
 const calcMode    = ref<ICalcMode>('dynamic')
 const time        = ref(0)
 const description = ref('')
-const detail      = ref<ICuttingOperationDetailTypes>('cover')
+const detail      = ref<ICuttingOperationDetailTypes>(DETAIL_PANEL)
 const table       = ref('')
 const coverType   = ref('')
 

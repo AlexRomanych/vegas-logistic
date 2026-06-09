@@ -14,11 +14,19 @@ const URL_BLOCKS_TEST        = '/blocks/test'                        // URL дл
 
 export const useBlocksStore = defineStore('blocks', () => {
 
-    // __ Получение Типовых операций
+    // __ Получение Коллекции Блоков
     const getBlockCollections = async () => {
         const response = await jwtGet(URL_BLOCKS_COLLECTIONS)
         const result   = await response
         if (DEBUG) console.log('BlocksStore: getBlockCollections: ', result)
+        return result.data
+    }
+
+    // __ Получение Коллекции блоков по id
+    const getBlockCollectionById = async (id: number) => {
+        const response = await jwtGet(URL_BLOCKS_COLLECTIONS + '/' + id)
+        const result   = await response
+        if (DEBUG) console.log('CuttingStore: getBlockCollectionById: ', result)
         return result.data
     }
 
@@ -33,7 +41,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 
     return {
         getBlockCollections,
-
+        getBlockCollectionById,
 
 
         test,
