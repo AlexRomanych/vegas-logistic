@@ -81,7 +81,8 @@ const menuData = () => {
 
                     {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
 
-                    { name: 'Конструкторская документация чехла (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
+                    { name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
+                    { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.block.design.show', shown: true, isActive: true },
                 ]
         },
         {

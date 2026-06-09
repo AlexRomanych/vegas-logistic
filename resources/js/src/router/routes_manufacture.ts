@@ -22,13 +22,17 @@ const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
 const manufactureRaw = [
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---             Конструкторская документация              !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     {
         // ___ КДЧ
         path     : _MAIN_PREFIX + 'textile/design/show',
         name     : 'manufacture.textile.design.show',
         component: () => import('@/components/dashboard/manufacture/shared/textile_design/TheTextileDesignShow.vue'),
         meta     : {
-            title: 'Конструкторская документация чехла (КДЧ)'
+            title: 'Конструкторская документация Чехлов (КДЧ)'
         } as IRouteMeta,
     },
 
@@ -38,11 +42,29 @@ const manufactureRaw = [
         name     : 'manufacture.textile.design.upload',
         component: () => import('@/components/dashboard/manufacture/shared/textile_design/TheTextileDesignUpload.vue'),
         meta     : {
-            title: 'Загрузка Конструкторской документации чехла (КДЧ)'
+            title: 'Загрузка Конструкторской документации Чехлов (КДЧ)'
         } as IRouteMeta,
     },
 
+    {
+        // ___ КДБ
+        path     : _MAIN_PREFIX + 'block/design/show',
+        name     : 'manufacture.block.design.show',
+        component: () => import('@/components/dashboard/manufacture/shared/block_design/TheBlockDesignShow.vue'),
+        meta     : {
+            title: 'Конструкторская документация Блоков (КДБ)'
+        } as IRouteMeta,
+    },
 
+    {
+        // ___ Загрузка КДБ
+        path     : _MAIN_PREFIX + 'block/design/upload',
+        name     : 'manufacture.block.design.upload',
+        component: () => import('@/components/dashboard/manufacture/shared/block_design/TheBlockDesignUpload.vue'),
+        meta     : {
+            title: 'Загрузка Конструкторской документации Блоков (КДБ)'
+        } as IRouteMeta,
+    },
 
     //hr----------------------------------------------------------------------------------------------------------------
     // attract: Общая инфа

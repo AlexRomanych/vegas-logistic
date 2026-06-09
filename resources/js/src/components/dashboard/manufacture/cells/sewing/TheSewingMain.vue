@@ -34,7 +34,7 @@ const menuItems: IMenuItem[] = [
     { name: 'Типовые операции', path: 'manufacture.cell.sewing.operations', shown: true, isActive: true },
     { name: 'Схемы типовых операций', path: 'manufacture.cell.sewing.operation.schemas', shown: true, isActive: true },
     { name: 'Трудозатраты моделей', path: 'manufacture.cell.sewing.operation.models', shown: true, isActive: true },
-    { name: 'Конструкторская документация чехла (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
+    { name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
 ]
 
 
