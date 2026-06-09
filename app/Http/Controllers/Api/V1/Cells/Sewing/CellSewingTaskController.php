@@ -142,14 +142,68 @@ class CellSewingTaskController extends Controller
                 'id' => 'required|exists:orders,id'
             ]);
 
-            SewingTask::query()
-                ->where('order_id', $validated['id'])
-                ->delete();
+            DB::transaction(function () use ($validated) {
+
+                // __ Меняем позиции СЗ в днях, где удаляем
+                $deletedTasks = SewingTask::query()
+                    ->select(['id', 'action_at'])
+                    ->where('order_id', $validated['id'])
+                    ->get();
+
+                // __ Удаляем здесь
+                SewingTask::query()
+                    ->where('order_id', $validated['id'])
+                    ->delete();
+
+                //$deletedTasksArray = $deletedTasks->toArray();
+                //$a = 0;
+
+                // $tasksToUpdate[] = [
+                //     'id'        => taskId,
+                //     'action_at' => new_action_at ?? null,
+                //     'position'  => new_position ?? null,
+                // ];
+
+                foreach ($deletedTasks as $deletedTask) {
+                    $tasksToUpdate = [];
+                    $pos = 1;
+                    $existTasks = SewingTask::query()
+                        ->select(['id', 'action_at', 'position'])
+                        ->where('action_at', '>=', $deletedTask->action_at->startOfDay())
+                        ->where('action_at', '<=', $deletedTask->action_at->endOfDay())
+                        ->orderBy('position')
+                        ->get();
+
+                    foreach ($existTasks as $existTask) {
+                        $tasksToUpdate[] = [
+                            'id'        => $existTask->id,
+                            'action_at' => null,
+                            'position'  => $pos++,
+                        ];
+                    }
+
+                    SewingService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
         } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
+
+        //try {
+        //    $validated = $request->validate([
+        //        'id' => 'required|exists:orders,id'
+        //    ]);
+        //
+        //    SewingTask::query()
+        //        ->where('order_id', $validated['id'])
+        //        ->delete();
+        //
+        //    return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        //} catch (Exception|Throwable $e) {
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
     }
 
 
@@ -580,7 +634,7 @@ class CellSewingTaskController extends Controller
                 // __ Смотрим, если еще прилетел статус, который нужно установить для СЗ,
                 // __ то устанавливаем его
                 foreach ($diffs as $diff) {
-                    if (!is_null($diff['taskChanges']) && !is_null($diff['taskChanges']['status'])) {
+                    if (isset($diff['taskChanges']) && /*!is_null($diff['taskChanges']) &&*/ !is_null($diff['taskChanges']['status'])) {
 
                         // __ Пропускаем тот случай, кагда с фронта прилетает создание нового СЗ (ADDED)
                         // __ Это обрабатываем выше

@@ -29,7 +29,7 @@ use Throwable;
 class CellCuttingTaskController extends Controller
 {
 
-    // ___ Получаем СЗ на Пошив
+    // ___ Получаем СЗ на Раскрой
     public function getCuttingTasks(Request $request)
     {
         try {
@@ -168,7 +168,7 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    // ___ Получаем СЗ на Пошив
+    // ___ Получаем СЗ на Раскрой
     public function getCuttingTasksByOrderId(string $orderId)
     {
         try {
@@ -206,7 +206,7 @@ class CellCuttingTaskController extends Controller
         }
     }
 
-    // ___ Добавляем СЗ на Пошив
+    // ___ Добавляем СЗ на Раскрой
     public function addCuttingTasksByOrderId(Request $request)
     {
         try {
@@ -223,7 +223,7 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    // ___ Удаляем СЗ на Пошив
+    // ___ Удаляем СЗ на Раскрой
     public function deleteCuttingTasksByOrderId(Request $request)
     {
         try {
@@ -231,9 +231,49 @@ class CellCuttingTaskController extends Controller
                 'id' => 'required|exists:orders,id'
             ]);
 
-            CuttingTask::query()
-                ->where('order_id', $validated['id'])
-                ->delete();
+            DB::transaction(function () use ($validated) {
+
+                // __ Меняем позиции СЗ в днях, где удаляем
+                $deletedTasks = CuttingTask::query()
+                    ->select(['id', 'action_at'])
+                    ->where('order_id', $validated['id'])
+                    ->get();
+
+                // __ Удаляем здесь
+                CuttingTask::query()
+                    ->where('order_id', $validated['id'])
+                    ->delete();
+
+                //$deletedTasksArray = $deletedTasks->toArray();
+                //$a = 0;
+
+                // $tasksToUpdate[] = [
+                //     'id'        => taskId,
+                //     'action_at' => new_action_at ?? null,
+                //     'position'  => new_position ?? null,
+                // ];
+
+                foreach ($deletedTasks as $deletedTask) {
+                    $tasksToUpdate = [];
+                    $pos = 1;
+                    $existTasks = CuttingTask::query()
+                        ->select(['id', 'action_at', 'position'])
+                        ->where('action_at', '>=', $deletedTask->action_at->startOfDay())
+                        ->where('action_at', '<=', $deletedTask->action_at->endOfDay())
+                        ->orderBy('position')
+                        ->get();
+
+                    foreach ($existTasks as $existTask) {
+                         $tasksToUpdate[] = [
+                             'id'        => $existTask->id,
+                             'action_at' => null,
+                             'position'  => $pos++,
+                         ];
+                    }
+
+                    CuttingService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
         } catch (Exception|Throwable $e) {
@@ -243,7 +283,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * ___ Получаем СЗ на Пошив по статусам
+     * ___ Получаем СЗ на Раскрой по статусам
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -292,7 +332,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * ___ Получаем СЗ на Пошив по статусам и периоду
+     * ___ Получаем СЗ на Раскрой по статусам и периоду
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -355,7 +395,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * __ Получаем СЗ на Пошив по статусам до определенной даты
+     * __ Получаем СЗ на Раскрой по статусам до определенной даты
      * @param Request $request
      * @return AnonymousResourceCollection|JsonResponse
      */
@@ -407,7 +447,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * __ Получаем СЗ на Пошив по статусам в определенную дату
+     * __ Получаем СЗ на Раскрой по статусам в определенную дату
      * @param Request $request
      * @return AnonymousResourceCollection|JsonResponse
      */
@@ -459,7 +499,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * __ Проверяем наличие СЗ на Пошив по статусам в определенную дату
+     * __ Проверяем наличие СЗ на Раскрой по статусам в определенную дату
      * @param Request $request
      * @return bool[]|string
      */
@@ -500,7 +540,7 @@ class CellCuttingTaskController extends Controller
     // TODO: Union into Textile!!!
 
     /**
-     * ___ Обновляем СЗ на Пошив
+     * ___ Обновляем СЗ на Раскрой
      * @param SyncCuttingTasksRequest $request
      * @return mixed|string
      */
@@ -670,7 +710,7 @@ class CellCuttingTaskController extends Controller
                 // __ Смотрим, если еще прилетел статус, который нужно установить для СЗ,
                 // __ то устанавливаем его
                 foreach ($diffs as $diff) {
-                    if (!is_null($diff['taskChanges']) && !is_null($diff['taskChanges']['status'])) {
+                    if (isset($diff['taskChanges']) && /*!is_null($diff['taskChanges']) &&*/ !is_null($diff['taskChanges']['status'])) {
                         // __ Пропускаем тот случай, кагда с фронта прилетает создание нового СЗ (ADDED)
                         // __ Это обрабатываем выше
                         if ($diff['taskId'] !== 0) {

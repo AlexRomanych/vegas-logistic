@@ -23,6 +23,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -205,7 +206,7 @@ class OrderController extends Controller
                     throw new Exception('Client with id = ' . $order['client_id'] . ' not found');
                 }
 
-                // DB::transaction(function () use ($order, $client) {
+                DB::transaction(function () use ($order, $client) {
 
                 // __ Если нужно добавить заявку или обновить, то добавляем или обновляем
                 if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD ||
@@ -462,7 +463,7 @@ class OrderController extends Controller
                         }
                     }
                 }
-                // }); // transaction
+                });
             }
 
 

@@ -4,12 +4,13 @@ import fabrics from '@/router/routes_manufacture_fabrics.js'
 import cutting from '@/router/routes_manufacture_cutting.ts'
 import sewing from '@/router/routes_manufacture_sewing.ts'
 import assembly from '@/router/routes_manufacture_assembly.ts'
+import blocks from '@/router/routes_manufacture_blocks.ts'
 import type { IRouteMeta } from '@/types'
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
 const _CELL_PREFIX = '/cell/'
-const _TASK_PREFIX = '/task'
+// const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
 
 // import {
@@ -92,6 +93,9 @@ const manufactureRaw = [
 
     // __ Сборка _------------------------------------------------------------------------------------------------
     ...assembly,
+
+    // __ Блоки _------------------------------------------------------------------------------------------------
+    ...blocks,
 
 
 

@@ -1,7 +1,5 @@
 // Info Участок раскороя
 
-// Info Участок швейки
-
 import type { IRouteMeta } from '@/types'
 import { ROUTER_PAGE_MODE } from '@/app/constants/common.ts'
 

@@ -17,6 +17,7 @@ export * from './model_types.ts'                    // Все типы для М
 export * from './textile_types.ts'                  // Общие типы для Пошива и Раскроя
 export * from './sewing_types.ts'                   // Все типы для Пошива
 export * from './cutting_types.ts'                  // Все типы для Раскроя
+export * from './blocks_types.ts'                   // Все типы для Блоков
 
 
 export type { IFontsType } from '@/app/constants/fontSizes.ts'   // Все типы для шрифтов

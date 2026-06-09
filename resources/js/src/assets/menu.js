@@ -12,6 +12,7 @@ const menuData = () => {
                     {name: 'Раскрой', path: 'manufacture.cell.cutting', shown: true, isActive: true,},
                     {name: 'Пошив', path: 'manufacture.cell.sewing', shown: true, isActive: true,},
                     {name: 'Сборка', path: 'manufacture.cell.assembly', shown: true, isActive: true,},
+                    {name: 'Блоки', path: 'manufacture.cell.blocks', shown: true, isActive: true,},
                     {name: 'Бизнес-процессы', path: 'business.processes', shown: true, isActive: true,},
 
                     // {name: 'Сменные задания', path: 'manufacture.cells.tasks', shown: true, isActive: true,},

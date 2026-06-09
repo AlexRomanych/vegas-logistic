@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
+use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
@@ -306,3 +307,16 @@ Route::prefix('documents')
 
 //hr--------------------------------------------------------------------------------------------------------------------
 
+// __ Блок Блоков
+Route::prefix('blocks')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        //return ['data' => '123'];
+
+        Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
+        //Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
+        //Route::get('kdch/kdch/{kdch}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByKdch']);
+        //Route::post('kdch', [TextileDesignDocumentController::class, 'uploadDocument']);
+        //Route::delete('kdch', [TextileDesignDocumentController::class, 'deleteTextileDesignDocumentById']);
+    });
