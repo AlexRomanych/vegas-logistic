@@ -462,7 +462,10 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.height !== 0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || blockCollection.height !== 0) return DEFAULT_TYPE
+            return 'danger'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -478,7 +481,10 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.length !== 0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || blockCollection.length !== 0) return DEFAULT_TYPE
+            return 'danger'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -494,7 +500,10 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.productivity !== 0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || blockCollection.productivity !== 0) return DEFAULT_TYPE
+            return 'danger'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,

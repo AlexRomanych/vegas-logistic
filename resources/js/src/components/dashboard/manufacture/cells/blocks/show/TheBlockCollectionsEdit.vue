@@ -95,7 +95,7 @@
 
                 <!-- __ Актуальность -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="active"
                     :checkboxData="activeCheckboxData"
                     :width="FIELD_WIDTH_CHECK_BOX"
@@ -121,7 +121,7 @@
 
                 <!-- __ Линия производства -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="line"
                     :checkboxData="lineCheckboxData"
                     :width="FIELD_WIDTH_CHECK_BOX"
@@ -134,7 +134,7 @@
 
                 <!-- __ Альтернативная Линия производства -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="line-alt"
                     :checkboxData="lineAltCheckboxData"
                     :width="FIELD_WIDTH_CHECK_BOX"
@@ -147,7 +147,7 @@
 
                 <!-- __ Единица измерения -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="calc-mode"
                     :checkboxData="unitCheckboxData"
                     :width="FIELD_WIDTH_CHECK_BOX"
@@ -254,13 +254,14 @@ import { BLOCK_COLLECTION_DRAFT, LINE_1, LINE_2, UNIT_PICS, UNIT_METERS, LINE_0 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
-import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncSelectTS from '@/components/ui/modals/AppModalAsyncSelectTS.vue'
+import AppCheckboxTSReactive from '@/components/ui/checkboxes/AppCheckboxTSReactive.vue'
+// import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 
 
 type ISelectableItem = IBlockDocument & { id: number; name: string };
@@ -552,9 +553,9 @@ const lineAltCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) =>
         lineAlt.value = blockCollection.value.line_alt
 
         // __ Сбрасываем в default альтернативную линию
-        if (blockCollection.value.line === blockCollection.value.line_alt) {
+        if (line.value === lineAlt.value) {
             blockCollection.value.line_alt = LINE_0
-            lineAlt.value = blockCollection.value.line_alt
+            lineAlt.value = LINE_0
         }
     }
 }
