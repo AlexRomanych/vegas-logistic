@@ -28,21 +28,34 @@
                     placeholder="Укажите название процедуры..."
                 />
 
-                <!-- __ Object_name -->
-                <AppInputTextTS
-                    id="object-name"
-                    v-model:textValue.trim="v$.objectName.$model as unknown as string"
-                    :errors="v$.objectName.$errors"
+                <!--&lt;!&ndash; __ Object_name &ndash;&gt;-->
+                <!--<AppInputTextTS-->
+                <!--    id="object-name"-->
+                <!--    v-model:textValue.trim="v$.objectName.$model as unknown as string"-->
+                <!--    :errors="v$.objectName.$errors"-->
+                <!--    :width="DEFAULT_WIDTH"-->
+                <!--    disabled-->
+                <!--    label="Объект Процедуры"-->
+                <!--    mode="text"-->
+                <!--    placeholder="Укажите объект процедуры..."-->
+                <!--/>-->
+
+                <!-- __ Объект процедуры -->
+                <div class="mt-5"></div>
+                <AppCheckboxTSReactive
+                    id="active"
+                    :checkboxData="objectCheckboxData"
                     :width="DEFAULT_WIDTH"
-                    disabled
-                    label="Объект Процедуры"
-                    mode="text"
-                    placeholder="Укажите объект процедуры..."
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Объект процедуры Раскроя"
+                    type="secondary"
+                    @checked="objectCheckedHandler"
                 />
 
                 <!-- __ Актуальность -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="active"
                     :checkboxData="activeCheckboxData"
                     :width="DEFAULT_WIDTH"
@@ -78,6 +91,7 @@
                     mode="text"
                     placeholder="Текст процедуры..."
                     text-size="normal"
+                    class="font-mono"
                 />
 
                 <!--&lt;!&ndash; __ Время операции &ndash;&gt;-->
@@ -137,9 +151,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICheckboxData, ICheckboxDataItem, ICuttingProcedure } from '@/types'
+import type { ICheckboxData, ICheckboxDataItem, ICuttingProcedure, ICuttingProcedureObject } from '@/types'
 
-import { onMounted, ref, watch, } from 'vue'
+import { computed, onMounted, ref, watch, } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -148,15 +162,17 @@ import { required, minLength, helpers, /*minValue,*/ /*integer*/ } from '@vuelid
 
 import { useCuttingStore } from '@/stores/CuttingStore'
 
-import { CUTTING_PROCEDURE_DRAFT, } from '@/app/constants/cutting.ts'
+import { CUTTING_PROCEDURE_DRAFT, DETAIL_PANEL, DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE, } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
-import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 import AppInputTextAreaSimpleTS from '@/components/ui/inputs/AppInputTextAreaSimpleTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppCallout from '@/components/ui/callouts/AppCallout.vue'
+import AppCheckboxTSReactive from '@/components/ui/checkboxes/AppCheckboxTSReactive.vue'
+import { formatDateAndTimeInShortFormat, formatDateTime } from '@/app/helpers/helpers_date'
+// import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 // import AppInputNumberSimpleTS from '@/components/ui/inputs/AppInputNumberSimpleTS.vue'
 
 
@@ -182,7 +198,6 @@ const calloutHandler = () => setInterval(() => (confirmClick.value = false), 500
 
 // __ Подготавливаем переменные
 const procedure = ref<ICuttingProcedure>(CUTTING_PROCEDURE_DRAFT)
-let activeCheckboxData: ICheckboxData         // выбор активности
 
 // __ Подгружаем данные по операции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
@@ -197,7 +212,7 @@ const loadEntity = async (paramId: number) => {
 // __ Определяем объекты валидации
 // const id = ref(-1)
 const name        = ref('')
-const objectName  = ref('')
+const objectName  = ref<ICuttingProcedureObject>(DETAIL_PANEL)
 const active      = ref(true)
 const description = ref('')
 const text        = ref('')
@@ -206,8 +221,9 @@ const text        = ref('')
 // __ Заполняем объекты валидации
 const fillData = () => {
     name.value        = procedure.value.name
-    text.value        = procedure.value.text ?? ''
-    objectName.value  = procedure.value.object_name ?? 'Крышка'
+    objectName.value  = procedure.value.object_name
+    text.value        = getText()
+    // text.value        = getText(procedure.value.text)
     description.value = procedure.value.description ?? ''
 }
 
@@ -221,18 +237,10 @@ const verify = {
     description,
 }
 
-// const verify = {
-//     // id,
-//     name,
-//     text,
-//     objectName,
-//     description,
-// }
-
 // __ Определяем правила валидации
-const MIN_NAME_LENGTH   = 10
-const MIN_OBJECT_LENGTH = 5
-const REQUIRED_MESSAGE  = 'Поле обязательно для заполнения'
+const MIN_NAME_LENGTH  = 10
+// const MIN_OBJECT_LENGTH = 5
+const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
 
 const rules = {
     // id: {
@@ -243,7 +251,7 @@ const rules = {
     //     integer: helpers.withMessage(`Поле должно быть целочисленным`, integer),
     //     required: helpers.withMessage(REQUIRED_MESSAGE, required),
     // },
-    name       : {
+    name: {
         $autoDirty: true,
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength : helpers.withMessage(
@@ -251,14 +259,15 @@ const rules = {
             minLength(MIN_NAME_LENGTH),
         ),
     },
-    objectName : {
-        $autoDirty: true,
-        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
-        minLength : helpers.withMessage(
-            `Минимальная длина названия - ${MIN_OBJECT_LENGTH} символов`,
-            minLength(MIN_OBJECT_LENGTH),
-        ),
-    },
+    // objectName : {
+    //     $autoDirty: true,
+    //     required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+    //     minLength : helpers.withMessage(
+    //         `Минимальная длина названия - ${MIN_OBJECT_LENGTH} символов`,
+    //         minLength(MIN_OBJECT_LENGTH),
+    //     ),
+    // },
+    objectName : {},
     text       : {},
     description: {},
 }
@@ -268,16 +277,21 @@ const rules = {
 const v$ = useVuelidate(rules, verify)
 
 // __ Заполняем селекты данными
-const fillSelects = () => {
-    activeCheckboxData = {
-        name: 'activity',
-        data: [
-            { id: 1, name: 'Активная', checked: active.value },
-            { id: 2, name: 'Архив', checked: !active.value },
-        ],
-    }
+const activeCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'activity',
+    data: [
+        { id: 1, name: 'Активная', checked: active.value },
+        { id: 2, name: 'Архив', checked: !active.value },
+    ],
+}))
 
-}
+const objectCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'object_name',
+    data: [
+        { id: 1, name: DETAIL_PANEL_TITLE, checked: objectName.value === DETAIL_PANEL },
+        { id: 2, name: DETAIL_SIDE_TITLE, checked: objectName.value === DETAIL_SIDE },
+    ],
+}))
 
 
 // __ Обработчик чекбокса на active
@@ -285,6 +299,21 @@ const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => 
     if (!Array.isArray(data)) {
         procedure.value.active = data.id === 1
         active.value           = procedure.value.active
+    }
+}
+
+// __ Обработчик чекбокса на object
+const objectCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        if (data.id === 1) {
+            objectName.value = DETAIL_PANEL
+        } else if (data.id === 2) {
+            objectName.value = DETAIL_SIDE
+        } else {
+            throw new Error('Неверный тип объекта процедуры')
+        }
+        procedure.value.object_name = objectName.value
+        text.value = getText()
     }
 }
 
@@ -347,7 +376,6 @@ onMounted(async () => {
     await loadEntity(paramId)
 
     fillData()
-    fillSelects()
 
     v$.value.$touch()
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму
@@ -355,6 +383,38 @@ onMounted(async () => {
 
     // console.log('editMode.value: ', editMode.value)
 })
+
+
+function getText(): string {
+    // __ Если режим создания и текст пуст
+    if (!editMode.value && !procedure.value.text) {
+        if (objectName.value === DETAIL_PANEL) {
+            return `// Текст процедуры. Дата: ${formatDateAndTimeInShortFormat(formatDateTime())}
+
+Ширина = [Чехол].[Ширина];      // Ширина чехла, cм
+Длина  = [Чехол].[Длина];       // Длина чехла, см
+Высота = [Чехол].[Высота];      // Высота чехла, см
+
+[${DETAIL_PANEL_TITLE}].[Ширина] = Ширина + 0; // Ширина Кроя, см
+[${DETAIL_PANEL_TITLE}].[Длина]  = Длина + 0;  // Длина Кроя, см
+
+[${DETAIL_PANEL_TITLE}] = 1;                   // Количество деталей, шт.`
+        } else if (objectName.value === DETAIL_SIDE) {
+            return `// Текст процедуры. Дата: ${formatDateAndTimeInShortFormat(formatDateTime())}
+
+Ширина = [Чехол].[Ширина];        // Ширина чехла, cм
+Длина  = [Чехол].[Длина];         // Длина чехла, см
+Высота = [Чехол].[Высота];        // Высота чехла, см
+
+[${DETAIL_SIDE_TITLE}].[Ширина] = Ширина + 0; // Ширина Кроя, см
+[${DETAIL_SIDE_TITLE}].[Длина]  = Длина + 0;  // Длина Кроя, см
+
+[${DETAIL_SIDE_TITLE}] = 1;                   // Количество деталей, шт.`
+        }
+    }
+
+    return procedure.value.text ?? ''
+}
 
 </script>
 

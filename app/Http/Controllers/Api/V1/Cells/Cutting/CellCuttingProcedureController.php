@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Cutting;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Cutting\Procedures\CuttingProcedureResource;
+use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Manufacture\Cells\Cutting\CuttingProcedure;
 use Exception;
 use Illuminate\Http\Request;
@@ -61,10 +62,10 @@ class CellCuttingProcedureController extends Controller
             $all = $request->all();
 
             $data = $request->validate([
-                'name'        => 'required|unique:cutting_operations',
+                'name'        => 'required|unique:cutting_procedures,name',
                 'active'      => 'required|boolean',
-                'description' => 'nullable|string',
-                'object_name' => 'required|string',
+                'description' => 'present|nullable|string',
+                'object_name' => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
                 'text'        => 'required|string',
             ]);
 
@@ -99,11 +100,11 @@ class CellCuttingProcedureController extends Controller
             //$all = $request->all();
 
             $data = $request->validate([
-                'id'          => 'required|numeric|exists:cutting_procedures,id',
-                'name'        => 'string',
+                'id'          => 'required|integer|exists:cutting_procedures,id',
+                'name'        => 'required|string',
                 'active'      => 'required|boolean',
-                'description' => 'nullable|string',
-                'object_name' => 'required|string',
+                'description' => 'present|nullable|string',
+                'object_name' => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
                 'text'        => 'required|string',
             ]);
 

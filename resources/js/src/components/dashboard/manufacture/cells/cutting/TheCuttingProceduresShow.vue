@@ -3,7 +3,7 @@
         v-if="!isLoading"
         class="mx-2 mt-2"
     >
-        <div class="sticky top-0 p-1 mb-1 bg-slate-200 border-2 rounded-lg border-slate-300 max-w">
+        <div class="sticky top-0 p-1 mb-1 bg-slate-200 border-2 rounded-lg border-slate-300 max-w-fit">
             <div class="mx-0.5">
                 <div class="flex">
                     <!-- __ Collapsed -->
@@ -35,6 +35,26 @@
                     <!-- __ Active -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.active"/>
+
+                        <!-- __ Фильтр: Active -->
+                        <AppSelectSimpleTS
+                            v-if="render.active.show"
+                            id="active"
+                            :select-data="activeSelect"
+                            :text-size="render.active.headerTextSize"
+                            :type="
+                                activeFilter === 0
+                                ? 'primary'
+                                : activeFilter === 1
+                                    ? 'success'
+                                    : 'danger'
+                            "
+                            :width="render.active.width"
+                            align="center"
+                            class="mt-[8px]"
+                            height="h-[30px]"
+                            @change="filterByActive"
+                        />
                     </div>
 
                     <!-- __ Тип объекта процедуры -->
@@ -43,6 +63,15 @@
                         <AppInputTextTSWrapper
                             v-model="objectNameFilter"
                             :render-object="render.object_name"
+                        />
+                    </div>
+
+                    <!-- __ Описание -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.description"/>
+                        <AppInputTextTSWrapper
+                            v-model="descriptionFilter"
+                            :render-object="render.description"
                         />
                     </div>
 
@@ -126,6 +155,13 @@
                         @click="render.collapsed.click!(procedure)"
                     />
 
+                    <!-- __ Описание -->
+                    <AppLabelTSWrapper
+                        :arg="procedure"
+                        :render-object="render.description"
+                        @click="render.collapsed.click!(procedure)"
+                    />
+
                     <!-- __ Удалить -->
                     <AppLabelTS
                         v-if="CAN_DELETE"
@@ -171,11 +207,12 @@
 </template>
 
 <script lang="ts" setup>
-import type { ICuttingProcedure, IRenderData } from '@/types'
+import type { ICuttingProcedure, IRenderData, ISelectData, ISelectDataItem } from '@/types'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 // import { useUserStore } from '@/stores/UserStore.js'
+import { DETAIL_PANEL, DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE } from '@/app/constants/cutting.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -185,6 +222,7 @@ import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabel
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 
 
 const cuttingStore = useCuttingStore()
@@ -266,7 +304,7 @@ const render: IRenderData = reactive({
         data          : (procedure: ICuttingProcedure) => procedure.name,
         class         : 'cursor-pointer',
     },
-    active       : {
+    active     : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : 'w-[80px]',
@@ -297,16 +335,52 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Тип объекта...',
-        data          : (procedure: ICuttingProcedure) => procedure.object_name ?? '',
+        data          : (procedure: ICuttingProcedure) => {
+            if (procedure.object_name === DETAIL_PANEL) return DETAIL_PANEL_TITLE
+            if (procedure.object_name === DETAIL_SIDE) return DETAIL_SIDE_TITLE
+            return ''
+        },
         class         : 'cursor-pointer',
-        // data          : (material: IMaterial) => (material.properties ? '✓' : '✗'),
+    },
+    description: {
+        id            : () => 'description-search',
+        header        : ['Описание', ''],
+        width         : 'w-[450px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => 'indigo',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Описание...',
+        data          : (procedure: ICuttingProcedure) => procedure.description ?? ''
     },
 })
 
 // __ Фильтры
-const nameFilter       = ref('')
-const idFilter         = ref('')
-const objectNameFilter = ref('')
+const nameFilter        = ref('')
+const idFilter          = ref('')
+const objectNameFilter  = ref('')
+const descriptionFilter = ref('')
+const activeFilter      = ref(0)
+
+// __ Подготавливаем селекты
+const activeSelect: ISelectData = {
+    name: 'active',
+    data: [
+        { id: 0, name: 'Все', selected: true, disabled: false },
+        { id: 1, name: '✓', selected: false, disabled: false },
+        { id: 2, name: '✗', selected: false, disabled: false },
+    ],
+}
+
+// __ Обрабатываем селекты
+const filterByActive = (value: ISelectDataItem) => {
+    activeFilter.value = value.id
+}
 
 // __ Collapse/Expand all
 const toggleCollapsed = () => {
@@ -316,7 +390,7 @@ const toggleCollapsed = () => {
 
 // __ Удаляем процедуру
 const deleteProcedure = async (procedure: ICuttingProcedure) => {
-    return
+    return procedure
 }
 
 // __ Обнуляем фильтры
@@ -326,27 +400,15 @@ const resetFilters = () => {
     objectNameFilter.value = ''
 }
 
-
-watchEffect(() => {
-
-    const nameSearch       = nameFilter.value.toLowerCase()
-    const idSearch         = idFilter.value.toLowerCase()
-    const objectNameSearch = objectNameFilter.value.toLowerCase()
-
-    entitiesRender.value = entities
-        .filter(entity => entity.name.toLowerCase().includes(nameSearch))
-        .filter(entity => entity.id.toString().toLowerCase().includes(idSearch))
-        .filter(entity => entity.object_name!.toLowerCase().includes(objectNameSearch))
-})
-
 // __ Получение данных
 const getEntities = async () => {
     entities = await cuttingStore.getCuttingProcedures()
     entities = entities
         .map(procedure => ({
             ...procedure,
-            object_name: procedure.object_name ?? '',
-            collapsed  : true
+            description: procedure.description ?? '',
+            // object_name: procedure.object_name ?? '',
+            collapsed: true
         }))
         .sort((a, b) => a.name.localeCompare(b.name))
         .filter(procedure => procedure.id !== 0)
@@ -356,6 +418,34 @@ const getEntities = async () => {
 const getEntitiesRender = () => {
     entitiesRender.value = entities
 }
+
+// __ Фильтрация
+watchEffect(() => {
+    const nameSearch        = nameFilter.value.toLowerCase()
+    const idSearch          = idFilter.value.toLowerCase()
+    const descriptionSearch = descriptionFilter.value.toLowerCase()
+    const objectNameSearch  = objectNameFilter.value.toLowerCase()
+
+    entitiesRender.value = entities
+        .filter(entity => entity.name.toLowerCase().includes(nameSearch))
+        .filter(entity => entity.id.toString().toLowerCase().includes(idSearch))
+        .filter(entity => entity.description!.toLowerCase().includes(descriptionSearch))
+        .filter(entity => {
+            if (activeFilter.value === 0) return true
+            else if (activeFilter.value === 1) return entity.active
+            else if (activeFilter.value === 2) return !entity.active
+        })
+        .filter(entity => {
+            let sourceDetail = ''
+            if (entity.object_name === DETAIL_PANEL) {
+                sourceDetail = DETAIL_PANEL_TITLE.toLowerCase()
+            } else if (entity.object_name === DETAIL_SIDE) {
+                sourceDetail = DETAIL_SIDE_TITLE.toLowerCase()
+            }
+
+            return sourceDetail.includes(objectNameSearch)
+        })
+})
 
 onMounted(async () => {
     isLoading.value      = true
@@ -386,7 +476,7 @@ pre {
     bg-white
     font-semibold
     p-3
-    max-w-[800px] min-w-[800px]
+    max-w-[1000px] min-w-[1000px]
     max-h-[600px]
     text-xs;
     /* Ограничиваем ширину контейнера, чтобы он не растягивался бесконечно */

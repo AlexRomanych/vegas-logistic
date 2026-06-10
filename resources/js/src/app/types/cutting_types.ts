@@ -489,12 +489,15 @@ export type ICuttingLineTableSetData = { id: number, table: ICuttingTableKeys }
 // --- ------------ Для рендера Процедур расчета (Show) -------------------
 // --- --------------------------------------------------------------------
 
+// __ Тип объекта процедуры Раскроя
+export type ICuttingProcedureObject = typeof DETAIL_PANEL | typeof DETAIL_SIDE
+
 // __ Процедура расчета Раскроя
 export interface ICuttingProcedure {
     id: number
     active: boolean
     name: string
-    object_name: string | null
+    object_name: ICuttingProcedureObject
     text: string | null
     description: string | null
 

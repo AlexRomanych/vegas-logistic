@@ -19,7 +19,7 @@ import {
     TABLE_1_TITLE, TABLE_1_TITLE_SHORT,
     TABLE_2_TITLE, TABLE_2_TITLE_SHORT,
     TABLE_3_TITLE, TABLE_3_TITLE_SHORT,
-    TABLE_0_TITLE, TABLE_0_TITLE_SHORT, TABLE_0,
+    TABLE_0_TITLE, TABLE_0_TITLE_SHORT,
 } from '@/app/constants/cutting.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'

@@ -38,6 +38,7 @@ export const DETAIL_PANEL            = 'panel'
 export const DETAIL_PANEL_TITLE      = 'Крышка'
 export const DETAIL_SIDE             = 'side'
 export const DETAIL_SIDE_TITLE       = 'Боковина'
+export const DETAIL_SIDE_EXECUTE     = 'Бурлет'
 export const DETAIL_SIDE_TITLE_SHORT = 'Бок-на'
 
 
@@ -209,7 +210,7 @@ export const CUTTING_PROCEDURE_DRAFT: ICuttingProcedure = {
     id         : 0,
     name       : '',
     text       : null,
-    object_name: null,
+    object_name: DETAIL_PANEL,
     collapsed  : true,
     description: null,
     active     : false,
