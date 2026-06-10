@@ -2,15 +2,16 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { jwtGet, jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch } from '@/app/utils/jwt_api'
+import { jwtGet, /*jwtPost, jwtDelete, jwtUpdate, jwtPut, jwtPatch*/ } from '@/app/utils/jwt_api'
 import type { IPeriod } from '@/types'
 
 const DEBUG = true
 
-const URL_PROCESSES = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
-const URL_PROCESS = 'business-processes'                                                        // __ Получение Бизнес-процессов с сервера
-const URL_PROCESS_NODE = 'business-processes/node'                                              // __ Получение узла Бизнес-процесса с сервера = 'business-processes'                                                        // __ Получение Бизнес-процессов с сервера
-const URL_PROCESSES_ADJACENCY_LIST = 'business-processes/adjacency-list'                        // __ Получение Списка смежности Бизнес-процессов с сервера = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
+const URL_PROCESSES                    = 'business-processes'                // __ Получение Бизнес-процессов с сервера
+const URL_PROCESSES_SET_DEFAULT_CLIENT = 'business-processes/defaults/set'   // __ Установка дефолтного клиента
+const URL_PROCESS                      = 'business-processes'                // __ Получение Бизнес-процессов с сервера
+const URL_PROCESS_NODE                 = 'business-processes/node'           // __ Получение узла Бизнес-процесса с сервера = 'business-processes'                                                        // __ Получение Бизнес-процессов с сервера
+const URL_PROCESSES_ADJACENCY_LIST     = 'business-processes/adjacency-list' // __ Получение Списка смежности Бизнес-процессов с сервера = 'business-processes'                                                      // __ Получение Бизнес-процессов с сервера
 
 export const useBusinessProcessesStore = defineStore('business-processes', () => {
 
@@ -21,12 +22,12 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
 
     // __ Получаем с API все Бизнесс-процессы
     const getBusinessProcesses = async (status = null) => {
-        const params = status === true
+        const params                  = status === true
             ? '1'
             : status === false
                 ? '0'
                 : ''
-        const result = await jwtGet(`${URL_PROCESSES}/${params}`)
+        const result                  = await jwtGet(`${URL_PROCESSES}/${params}`)
         businessProcessesGlobal.value = result.data     // кэшируем
         if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcesses: ', result)
         return result.data
@@ -47,13 +48,21 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
     }
 
 
-
     // __ Получаем с API Список Смежности (Adjacency List) Бизнес-процесса
     const getBusinessProcessAdjacencyList = async (id: number) => {
         const result = await jwtGet(`${URL_PROCESSES_ADJACENCY_LIST}/${id.toString()}`)
         if (DEBUG) console.log('useBusinessProcessesStore: getBusinessProcess: ', result)
         return result.data
     }
+
+    // __ Устанавливаем дефолтного клиента
+    const setDefaultClient = async () => {
+        const result = await jwtGet(URL_PROCESSES_SET_DEFAULT_CLIENT)
+        if (DEBUG) console.log('useBusinessProcessesStore: setDefaultClient: ', result)
+        return result.data
+
+    }
+
 
     // // ___ Загрузка Плана загрузок на сервер
     // // fileData - данные файла, отправляем в RAW формате
@@ -98,7 +107,6 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
     // }
 
 
-
     return {
         businessProcessesGlobal,
 
@@ -106,6 +114,8 @@ export const useBusinessProcessesStore = defineStore('business-processes', () =>
         getBusinessProcessById,
         getBusinessProcessNodeById,
         getBusinessProcessAdjacencyList,
+
+        setDefaultClient,
     }
 
 })

@@ -5,28 +5,35 @@ const PREFIX = '/business-processes'
 
 const processes = [
     {
-        path: PREFIX,                         // __ Стартовая
-        name: 'business.processes',
+        path     : PREFIX,                         // __ Стартовая
+        name     : 'business.processes',
         component: () => import('@/components/dashboard/processes/TheProcessesCommon.vue'),
-        meta: {title: 'Бизнес-процессы'} as IRouteMeta,
+        meta     : { title: 'Бизнес-процессы' } as IRouteMeta,
     },
     {
-        path: `${PREFIX}/list`,              // __ Список Бизнес-процессов
-        name: 'business.processes.list',
+        path     : `${PREFIX}/list`,              // __ Список Бизнес-процессов
+        name     : 'business.processes.list',
         component: () => import('@/components/dashboard/processes/TheProcessesList.vue'),
-        meta: {title: 'Список Бизнес-процессов'} as IRouteMeta,
+        meta     : { title: 'Список Бизнес-процессов' } as IRouteMeta,
     },
     {
-        path: '/business-process/:id',        // __ Бизнес процесс
-        name: 'business.process',
+        path     : '/business-process/:id',        // __ Бизнес процесс
+        name     : 'business.process',
         component: () => import('@/components/dashboard/processes/TheProcess.vue'),
-        meta: {title: 'Бизнес-процесс'} as IRouteMeta,
+        meta     : { title: 'Бизнес-процесс' } as IRouteMeta,
     },
     {
-        path: '/business-process/customization/order-moving',  // __ Кастомизация Бизнес-процесса движения заявки
-        name: 'business.process.customization.order-moving',
+        path     : '/business-process/customization/order-moving',  // __ Кастомизация Бизнес-процесса движения заявки
+        name     : 'business.process.customization.order-moving',
         component: () => import('@/components/dashboard/processes/customization/TheOrderMovingCustomization.vue'),
-        meta: {title: 'Настройка БП Движение заявки'} as IRouteMeta,
+        meta     : { title: 'Настройка БП Движение заявки' } as IRouteMeta,
+    },
+    {
+        // __ Установка дефолтного клиента
+        path     : '/business-process/default/set',
+        name     : 'business.processes.default.set',
+        component: () => import('@/components/dashboard/processes/TheProcessDefaultAdd.vue'),
+        meta     : { title: 'Установка умолчаний' } as IRouteMeta,
     },
 
     // {

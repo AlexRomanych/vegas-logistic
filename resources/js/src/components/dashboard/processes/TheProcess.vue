@@ -106,13 +106,14 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useBusinessProcessesStore } from '@/stores/BusinessProcessesStore'
 
+import { BUSINESS_PROCECC_DRAFT } from '@/app/constants/business_processes.ts'
+import { formatDayString } from '@/app/helpers/helpers_date'
+
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
-import { BUSINESS_PROCECC_DRAFT } from '@/app/constants/business_processes.ts'
-
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { formatDayString } from '@/app/helpers/helpers_date'
+
 // import AppArrowDownTS from '@/components/ui/arrows/AppArrowDownTS.vue'
 
 const DEBUG = true
@@ -145,6 +146,12 @@ const getBusinessProcessAdjacencyList = async (id: number) => {
 const getProcessDefaultSettingTitle = (process: IBusinessProcessRender) => {
     const defaultIdx = 0
     let title: string = ''
+
+    console.log('process: ', process)
+
+    if (!process) {
+        return title
+    }
 
     if (!process.node.defaults) {
         return title
@@ -197,8 +204,9 @@ onMounted(async () => {
                 paramId = route.params.id as unknown as number
             })
 
-            await getBusinessProcessAdjacencyList(paramId)
-            await getBusinessProcesses(paramId)
+            await Promise.all([getBusinessProcessAdjacencyList(paramId), getBusinessProcesses(paramId)])
+            // await getBusinessProcessAdjacencyList(paramId)
+            // await getBusinessProcesses(paramId)
 
             counter = 1 // __ Счетчик для сквозной нумерации процессов
 

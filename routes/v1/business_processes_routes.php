@@ -15,5 +15,7 @@ Route::prefix('/business-processes')
         Route::get('/{id}', [BusinessProcessController::class, 'getBusinessProcessById']);
         Route::get('/adjacency-list/{id}', [BusinessProcessController::class, 'getBusinessProcessAdjacencyList']);
 
+        Route::get('/defaults/set', [BusinessProcessController::class, 'setBusinessProcessDefaults']);
+
     });
 

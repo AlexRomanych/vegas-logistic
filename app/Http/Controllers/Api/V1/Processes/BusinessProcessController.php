@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BusinessProcess\BusinessProcessForListResource;
 use App\Models\BusinessProcesses\BusinessProcess;
+use App\Models\BusinessProcesses\Defaults\ClientOrderMovingProcessDefault;
 use App\Services\BusinessProcessesService;
 use Exception;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -74,7 +75,6 @@ class BusinessProcessController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-
     }
 
 
@@ -86,10 +86,9 @@ class BusinessProcessController extends Controller
     public function getBusinessProcessAdjacencyList(string $id)
     {
         try {
-
             $validator = Validator::make(
                 ['id' => $id],
-                ['id' => 'required|numeric|exists:business_processes,id']
+                ['id' => 'required|integer|exists:business_processes,id']
             );
 
             if ($validator->fails()) {
@@ -100,7 +99,134 @@ class BusinessProcessController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
+    }
 
+
+
+    /**
+     * ___ Установка значений по умолчанию
+     * @return string
+     */
+    public function setBusinessProcessDefaults()
+    {
+        try {
+            $data = [
+                [
+                    'id'                       => 1,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 1,
+                    'process_node_ref_id'      => 12,
+                    'offset'                   => -5,
+                    'day_offset_operation'     => false,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 2,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 2,
+                    'process_node_ref_id'      => 1,
+                    'offset'                   => 0,
+                    'day_offset_operation'     => null,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 3,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 6,
+                    'process_node_ref_id'      => 2,
+                    'offset'                   => 1,
+                    'day_offset_operation'     => true,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 4,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 7,
+                    'process_node_ref_id'      => 12,
+                    'offset'                   => -3,
+                    'day_offset_operation'     => false,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 5,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 8,
+                    'process_node_ref_id'      => 7,
+                    'offset'                   => 1,
+                    'day_offset_operation'     => true,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 6,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 9,
+                    'process_node_ref_id' => 8,
+                    'offset'                   => 1,
+                    'day_offset_operation'     => true,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 7,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 10,
+                    'process_node_ref_id'      => 9,
+                    'offset'                   => 0,
+                    'day_offset_operation'     => null,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 8,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 11,
+                    'process_node_ref_id'      => 9,
+                    'offset'                   => 0,
+                    'day_offset_operation'     => null,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+                [
+                    'id'                       => 9,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 12,
+                    'process_node_ref_id'      => 12,
+                    'offset'                   => 0,
+                    'day_offset_operation'     => null,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
+            ];
+
+            // Вставляем данные. Существующие строки (по индексу ID или уникальному ключу) будут проигнорированы.
+            $insertedCount = ClientOrderMovingProcessDefault::query()->insertOrIgnore($data);
+            return EndPointStaticRequestAnswer::ok('Добавлено успешно');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 

@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\BusinessProcess;
 
@@ -17,15 +18,14 @@ class DefaultsForAdjacencyListResource extends JsonResource
         return [
             // '__'            => parent::toArray($request),
 
-            'client' => [
-                'id' => $this->id,
-                'name' => $this->name,
+            'client'              => [
+                'id'         => $this->id,
+                'name'       => $this->name,
                 'short_name' => $this->short_name,
             ],
-            'offset' => $this->pivot->offset,
-            'process_node_ref_id'=> $this->pivot->process_node_ref_id,
+            'offset'              => $this->pivot->offset,
+            'process_node_ref_id' => $this->pivot->process_node_ref_id,
 
         ];
-
     }
 }
