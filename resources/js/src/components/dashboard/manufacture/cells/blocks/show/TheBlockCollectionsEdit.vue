@@ -108,7 +108,7 @@
 
                 <!-- __ Own - Собственное производство -->
                 <div class="mt-5"></div>
-                <AppCheckboxTS
+                <AppCheckboxTSReactive
                     id="own"
                     :checkboxData="ownCheckboxData"
                     :width="FIELD_WIDTH_CHECK_BOX"
@@ -630,6 +630,7 @@ const formSubmit = async () => {
         calloutMessage.value = result.payload
         calloutType.value    = 'success'
     } else {
+        // await showError()
         calloutMessage.value = result.error
         calloutType.value    = 'danger'
     }

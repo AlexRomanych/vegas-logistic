@@ -37,13 +37,55 @@
                     <!-- __ Линия -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.line"/>
-                        <AppInputTextTSWrapper v-model="lineFilter" :render-object="render.line"/>
+                        <!--<AppInputTextTSWrapper v-model="lineFilter" :render-object="render.line"/>-->
+
+                        <!-- __ Фильтр: Линия -->
+                        <AppSelectSimpleTS
+                            v-if="render.line.show"
+                            id="line"
+                            :select-data="lineSelect"
+                            :text-size="render.line.headerTextSize"
+                            :type="
+                                lineFilter === 0
+                                ? 'primary'
+                                : lineFilter === 1
+                                    ? 'indigo'
+                                    : 'orange'
+                            "
+                            :width="render.line.width"
+                            align="center"
+                            class="mt-[8px]"
+                            height="h-[30px]"
+                            @change="filterByLine"
+                        />
+
                     </div>
 
                     <!-- __ Альтернативная Линия -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.line_alt"/>
-                        <AppInputTextTSWrapper v-model="lineAltFilter" :render-object="render.line_alt"/>
+                        <!--<AppInputTextTSWrapper v-model="lineAltFilter" :render-object="render.line_alt"/>-->
+                        <!-- __ Фильтр: Альтернативная Линия -->
+                        <AppSelectSimpleTS
+                            v-if="render.line_alt.show"
+                            id="line-alt"
+                            :select-data="lineAltSelect"
+                            :text-size="render.line_alt.headerTextSize"
+                            :type="
+                                lineAltFilter === 0
+                                ? 'primary'
+                                : lineAltFilter === 1
+                                    ? 'indigo'
+                                    : 'orange'
+                            "
+                            :width="render.line_alt.width"
+                            align="center"
+                            class="mt-[8px]"
+                            height="h-[30px]"
+                            @change="filterByLineAlt"
+                        />
+
+
                     </div>
 
                     <!-- __ Приоритет изготовления -->
@@ -74,7 +116,7 @@
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.own"/>
 
-                        <!-- __ Фильтр: Active -->
+                        <!-- __ Фильтр: Own -->
                         <AppSelectSimpleTS
                             v-if="render.own.show"
                             id="own"
@@ -262,7 +304,7 @@ import type {
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import { DEBUG } from '@/app/constants/common.ts'
-import { LINE_0, LINE_2, UNIT_METERS } from '@/app/constants/blocks.ts'
+import { LINE_0, LINE_1, LINE_2, UNIT_METERS } from '@/app/constants/blocks.ts'
 
 import AppLabelMultilineTSWrapper
     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -397,7 +439,7 @@ const render: IRenderData = reactive({
     line        : {
         id            : () => 'line-search',
         header        : ['Линия', ''],
-        width         : 'w-[60px]',
+        width         : 'w-[70px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -406,19 +448,19 @@ const render: IRenderData = reactive({
             if (!blockCollection || !blockCollection.own) return DEFAULT_TYPE
             if (!blockCollection.line) return 'danger'
             if (blockCollection.line === LINE_2) return 'orange'
-            return 'primary'
+            return 'indigo'
         },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Л...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.line.toString()
+        data          : (blockCollection: IBlockCollection) => blockCollection.line.toString(),
     },
     line_alt    : {
         id            : () => 'line-alt-search',
         header        : ['Альт.', 'линия'],
-        width         : 'w-[60px]',
+        width         : 'w-[70px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -426,7 +468,7 @@ const render: IRenderData = reactive({
         type          : (blockCollection: IBlockCollection) => {
             if (!blockCollection || !blockCollection.own || !blockCollection.line_alt) return DEFAULT_TYPE
             if (blockCollection.line_alt === LINE_2) return 'orange'
-            return 'primary'
+            return 'indigo'
         },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
@@ -567,13 +609,13 @@ const nameFilter         = ref('')
 const code_1cFilter      = ref('')
 const unitFilter         = ref('')
 const kdbFilter          = ref('')
-const lineFilter         = ref('')
-const lineAltFilter      = ref('')
 const priorityFilter     = ref('')
 const lengthFilter       = ref('')
 const heightFilter       = ref('')
 const productivityFilter = ref('')
 const descriptionFilter  = ref('')
+const lineFilter         = ref(0)
+const lineAltFilter      = ref(0)
 const activeFilter       = ref(0)
 const ownFilter          = ref(0)
 
@@ -597,12 +639,37 @@ const ownSelect: ISelectData = {
     ],
 }
 
+const lineSelect: ISelectData = {
+    name: 'line',
+    data: [
+        { id: 0, name: 'Все', selected: true, disabled: false },
+        { id: 1, name: 'Линия 1', selected: false, disabled: false },
+        { id: 2, name: 'Линия 2', selected: false, disabled: false },
+    ],
+}
+
+const lineAltSelect: ISelectData = {
+    name: 'line_alt',
+    data: [
+        { id: 0, name: 'Все', selected: true, disabled: false },
+        { id: 1, name: 'Линия 1', selected: false, disabled: false },
+        { id: 2, name: 'Линия 2', selected: false, disabled: false },
+    ],
+}
+
+
 // __ Обрабатываем селекты
 const filterByActive = (value: ISelectDataItem) => {
     activeFilter.value = value.id
 }
 const filterByOwn    = (value: ISelectDataItem) => {
     ownFilter.value = value.id
+}
+const filterByLine    = (value: ISelectDataItem) => {
+    lineFilter.value = value.id
+}
+const filterByLineAlt    = (value: ISelectDataItem) => {
+    lineAltFilter.value = value.id
 }
 
 
@@ -613,12 +680,12 @@ const resetFilters = () => {
     code_1cFilter.value     = ''
     unitFilter.value        = ''
     kdbFilter.value         = ''
-    lineFilter.value        = ''
-    lineAltFilter.value     = ''
     priorityFilter.value    = ''
     heightFilter.value      = ''
     lengthFilter.value      = ''
     descriptionFilter.value = ''
+    lineFilter.value        = 0
+    lineAltFilter.value     = 0
     activeFilter.value      = 0
     ownFilter.value         = 0
 }
@@ -660,6 +727,7 @@ const getBlockCollections = async () => {
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии
         .sort((a, b) => a.line - b.line) // по линии пр-ва
+        .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
 
 
     return blockCollections
@@ -685,12 +753,12 @@ watchEffect(() => {
     const code_1cFilterSearch     = code_1cFilter.value.toLowerCase()
     const unitFilterSearch        = unitFilter.value.toLowerCase()
     const kdbFilterSearch         = kdbFilter.value.toLowerCase()
-    const lineFilterSearch        = lineFilter.value.toLowerCase()
-    const lineAltFilterSearch     = lineAltFilter.value.toLowerCase()
     const priorityFilterSearch    = priorityFilter.value.toLowerCase()
     const heightFilterSearch      = heightFilter.value.toLowerCase()
     const lengthFilterSearch      = lengthFilter.value.toLowerCase()
     const descriptionFilterSearch = descriptionFilter.value.toLowerCase()
+    // const lineFilterSearch        = lineFilter.value.toLowerCase()
+    // const lineAltFilterSearch     = lineAltFilter.value.toLowerCase()
 
     blockCollectionsRender.value = blockCollections.value
         .filter(blockCollection => blockCollection.id.toString().toLowerCase().includes(idFilterSearch))
@@ -698,8 +766,8 @@ watchEffect(() => {
         .filter(blockCollection => blockCollection.code_1c.toLowerCase().includes(code_1cFilterSearch))
         .filter(blockCollection => blockCollection.unit!.toLowerCase().includes(unitFilterSearch))
         .filter(blockCollection => blockCollection.kdb!.toLowerCase().includes(kdbFilterSearch))
-        .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
-        .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
+        // .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
+        // .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
         .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
         .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
         .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))
@@ -714,9 +782,20 @@ watchEffect(() => {
             else if (ownFilter.value === 1) return collection.own
             else if (ownFilter.value === 2) return !collection.own
         })
+        .filter(collection => {
+            if (lineFilter.value === 0) return true
+            else if (lineFilter.value === 1) return collection.line === LINE_1
+            else if (lineFilter.value === 2) return collection.line === LINE_2
+        })
+        .filter(collection => {
+            if (lineAltFilter.value === 0) return true
+            else if (lineAltFilter.value === 1) return collection.line_alt === LINE_1
+            else if (lineAltFilter.value === 2) return collection.line_alt === LINE_2
+        })
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии
         .sort((a, b) => a.line - b.line) // по линии пр-ва
+        .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
     return
 })
 
