@@ -34,7 +34,7 @@ export interface IBlock {
     length: number
     active: boolean
     description: string | null
-
+    collection: string
     can_edit?: boolean
 }
 

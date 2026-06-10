@@ -71,10 +71,10 @@ class BlockCollectionController extends Controller
             //$all = $request->all();
 
             $data = $request->validate([
-                'name'         => 'required|unique:cutting_operations',
+                'name'         => 'required|unique:block_collections,name',
                 'description'  => 'present|nullable|string',
                 'active'       => 'required|boolean',
-                'code_1c'      => 'required|string|size:9',
+                'code_1c'      => 'required|string|size:9|unique:block_collections,code_1c',
                 //'code_1c'      => 'required|digits:9',
                 'unit'         => 'required|string|in:' . BlockCollection::UNIT_PIC . ',' . BlockCollection::UNIT_METERS,
                 'kdb'          => 'present|nullable|string',
@@ -104,7 +104,7 @@ class BlockCollectionController extends Controller
             ]);
 
             if (!$blockCollection) {
-                throw new Exception('Error creating cutting operation');
+                throw new Exception('Error creating block collection');
             }
 
             return EndPointStaticRequestAnswer::ok('Сохранено');
@@ -125,7 +125,7 @@ class BlockCollectionController extends Controller
 
             $data = $request->validate([
                 'id'           => 'required|numeric|exists:block_collections,id',
-                'name'         => 'required|unique:cutting_operations',
+                'name'         => 'required|string',
                 'description'  => 'present|nullable|string',
                 'active'       => 'required|boolean',
                 'code_1c'      => 'required|string|size:9',

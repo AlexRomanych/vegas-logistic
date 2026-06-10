@@ -28,9 +28,10 @@ interface IMenuItem {
 
 
 const menuItems = ref<IMenuItem[]>([
-    { name: 'Справочник коллекций блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
-    { name: 'Справочник пружинных блоков', path: 'manufacture.cell.blocks.show', shown: true, isActive: true },
+    { name: 'Справочник Пружинных блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
     { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.block.design.show', shown: true, isActive: true },
+    // { name: 'Справочник Групп блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
+    // { name: 'Справочник пружинных блоков', path: 'manufacture.cell.blocks.show', shown: true, isActive: true },
     // { name: 'Управление планом ПБ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
     // { name: 'Выполнение СЗ', path: 'manufacture.cell.cutting.tasks.execute', shown: true, isActive: true },
     // { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },

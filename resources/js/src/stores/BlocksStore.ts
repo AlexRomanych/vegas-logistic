@@ -3,17 +3,22 @@
 import { defineStore } from 'pinia'
 
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
-import type { IBlockCollection, } from '@/types'
+import type { IBlock, IBlockCollection, } from '@/types'
 
 
 const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_BLOCKS_COLLECTIONS = '/blocks/collections'                       // URL для получения Коллекций Блоков
-const URL_BLOCKS_TEST        = '/blocks/test'                        // URL для тестирования
+const URL_BLOCKS_COLLECTIONS = '/blocks/collections'                        // URL для получения Коллекций Блоков
+const URL_BLOCKS             = '/blocks'                                    // URL для получения Блоков
+const URL_BLOCKS_TEST        = '/blocks/test'                               // URL для тестирования
 
 export const useBlocksStore = defineStore('blocks', () => {
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---        Коллекции (Группы) Блоков            !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // __ Получение Коллекции Блоков
     const getBlockCollections = async () => {
@@ -45,6 +50,35 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result
     }
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---                 Блоки                       !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // __ Получение Блока по id
+    const getBlockById = async (id: number) => {
+        const response = await jwtGet(URL_BLOCKS + '/' + id)
+        const result   = await response
+        if (DEBUG) console.log('BlocksStore: getBlockById: ', result)
+        return result.data
+    }
+
+    // __ Создаем Блок
+    const createBlock = async (block: IBlock) => {
+        const result = await jwtPost(URL_BLOCKS, block)
+        if (DEBUG) console.log('BlocksStore: createBlock: ', result)
+        return result
+    }
+
+    // __ Обновляем Блок
+    const updateBlock = async (block: IBlock) => {
+        const result = await jwtPut_(URL_BLOCKS, block)
+        if (DEBUG) console.log('BlocksStore: updateBlock: ', result)
+        return result
+    }
+
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---                 Тесты                       !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     const test = async () => {
         const response = await jwtGet(URL_BLOCKS_TEST)
@@ -59,6 +93,11 @@ export const useBlocksStore = defineStore('blocks', () => {
         getBlockCollectionById,
         createBlockCollection,
         updateBlockCollection,
+
+        getBlockById,
+        createBlock,
+        updateBlock,
+
 
         test,
     }

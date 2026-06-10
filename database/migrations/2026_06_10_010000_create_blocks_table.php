@@ -20,8 +20,8 @@ return new class extends Migration {
             $table->integer('width')->nullable(false)->default(0)->comment('Ширина блока, см');
             $table->integer('length')->nullable(false)->default(0)->comment('Длина блока, см');
             $table->integer('height')->nullable(false)->default(0)->comment('Высота блока, см');
-
-
+            $table->double('weight')->nullable(false)->default(0.0)->comment('Масса блока, кг');
+            $table->boolean('own')->nullable(false)->default(false)->comment('Собственное производство или нет');
             $table->string('collection', CODE_1C_LENGTH)->nullable()->comment('Код коллекции группы');
         });
 

@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Manufacture\Cells\Blocks;
 
@@ -23,6 +24,7 @@ class BlockResource extends JsonResource
             'length'      => $this->length,
             'active'      => $this->active,
             'description' => $this->description,
+            'collection'  => $this->collection,
             //'status'      => $this->status,
             //'comment'     => $this->comment,
             //'note'        => $this->note,

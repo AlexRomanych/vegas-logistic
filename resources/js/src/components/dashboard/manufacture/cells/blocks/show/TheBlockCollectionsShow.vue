@@ -4,6 +4,11 @@
             <div>
                 <div class="flex ml-0.5">
 
+                    <!-- __ collapsed -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.collapsed"/>
+                    </div>
+
                     <!-- __ id -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.id"/>
@@ -85,13 +90,18 @@
                             @change="filterByLineAlt"
                         />
 
-
                     </div>
 
                     <!-- __ Приоритет изготовления -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.priority"/>
                         <AppInputTextTSWrapper v-model="priorityFilter" :render-object="render.priority"/>
+                    </div>
+
+                    <!-- __ Ширина блоков -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.width"/>
+                        <!--<AppInputTextTSWrapper v-model="widthFilter" :render-object="render.width"/>-->
                     </div>
 
                     <!-- __ Длина блоков -->
@@ -169,31 +179,45 @@
                     </div>
 
                     <div>
-                        <!-- __ + Коллекция блоков -->
-                        <router-link :to="{ name: 'manufacture.cell.blocks.collections.create' }">
-                            <AppLabelMultiLineTS
-                                :text="['➕', '']"
-                                align="center"
-                                class="cursor-pointer"
-                                rounded="4"
-                                text-size="large"
-                                type="warning"
-                                width="w-[64px]"
-                            />
-                        </router-link>
+                        <div class="flex">
+                            <!-- __ + Коллекция блоков -->
+                            <router-link :to="{ name: 'manufacture.cell.blocks.collections.create' }">
+                                <AppLabelMultiLineTS
+                                    :text="['➕', 'Группа']"
+                                    align="center"
+                                    class="cursor-pointer"
+                                    rounded="4"
+                                    text-size="mini"
+                                    type="warning"
+                                    width="w-[64px]"
+                                />
+                            </router-link>
 
+                            <!-- __ + Блок -->
+                            <router-link :to="{ name: 'manufacture.cell.blocks.create' }">
+                                <AppLabelMultiLineTS
+                                    :text="['➕', 'Блок']"
+                                    align="center"
+                                    class="cursor-pointer"
+                                    rounded="4"
+                                    text-size="mini"
+                                    type="warning"
+                                    width="w-[64px]"
+                                />
+                            </router-link>
+                        </div>
                         <!-- __ Сброс фильтров -->
-                        <div class=" mt-[8px]">
+                        <div class="mt-[6px]">
                             <AppLabelTS
                                 id="filters-reset"
                                 align="center"
                                 class="cursor-pointer"
                                 height="h-[29px]"
                                 rounded="4"
-                                text="Очистить"
+                                text="Очистить фильтр"
                                 text-size="mini"
                                 type="orange"
-                                width="w-[64px]"
+                                width="w-[132px]"
                                 @click="resetFilters"
                             />
                         </div>
@@ -206,6 +230,19 @@
         <!-- __ Данные -->
         <div v-for="blockCollection of blockCollectionsRender" :key="blockCollection.id" class="ml-2 max-w-fit">
             <div class="flex ">
+
+                <!-- __ collapsed -->
+                <template v-if="blockCollection.blocks.length">
+                    <AppLabelTSWrapper
+                        :arg="blockCollection"
+                        :render-object="render.collapsed"
+                        @click="render.collapsed.click!(blockCollection)"
+                    />
+                </template>
+                <template v-else>
+                    <AppLabelTSWrapper :arg="blockCollection" :render-object="render.plug"/>
+                </template>
+
 
                 <!-- __ id -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.id"/>
@@ -235,6 +272,9 @@
 
                 <!-- __ Приоритет изготовления -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority"/>
+
+                <!-- __ Ширина -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.width"/>
 
                 <!-- __ Длина -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.length"/>
@@ -281,6 +321,94 @@
                 </router-link>
 
             </div>
+
+            <!-- __ Сами Блоки -->
+            <div v-if="!blockCollection.collapsed" class="ml-[34px] mt-0.5 mb-2 bg-green-200">
+
+                <div v-for="block of blockCollection.blocks" :key="block.id">
+                    <div class="flex">
+
+                        <!-- __ Код из 1С -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.code_1c_block" c="italic"/>
+
+                        <!-- __ Название -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.name_block" c="italic"/>
+
+                        <!-- __ Единица измерения -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.unit" c="italic"/>
+
+                        <!-- __ КДБ -->
+                        <AppLabelTSWrapper
+                            :arg="blockCollection"
+                            :class="blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? 'cursor-pointer' : ''"
+                            :render-object="render.kdb"
+                            c="italic"
+                            @dblclick="showDocument(blockCollection)"
+                        />
+
+                        <!-- __ Линия -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line" c="italic"/>
+
+                        <!-- __ Альтернативная Линия -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line_alt" c="italic"/>
+
+                        <!-- __ Приоритет изготовления -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority" c="italic"/>
+
+                        <!-- __ Ширина -->
+                        <AppLabelTSWrapper :arg="[blockCollection, block]" :render-object="render.width_block" c="italic"/>
+
+                        <!-- __ Длина -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.length" c="italic"/>
+
+                        <!-- __ Высота -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.height" c="italic"/>
+
+                        <!-- __ Производительность -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.productivity" c="italic"/>
+
+                        <!-- __ Own - Собственное про-во -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.own"/>
+
+                        <!-- __ Active -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.active"/>
+
+                        <!-- __ Описание -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.description_block" c="italic"/>
+
+                        <!-- __ Удалить -->
+                        <AppLabelTS
+                            v-if="CAN_DELETE"
+                            align="center"
+                            rounded="4"
+                            text="🗑️"
+                            text-size="mini"
+                            type="danger"
+                            width="w-[30px]"
+                            @click="deleteBlock(block)"
+                        />
+
+                        <!-- __ Редактировать -->
+                        <router-link
+                            :to="{ name: 'manufacture.cell.blocks.edit', params: { id: block.id } }">
+                            <AppLabelTS
+                                v-if="CAN_EDIT"
+                                align="center"
+                                rounded="4"
+                                text="✏️"
+                                text-size="mini"
+                                type="warning"
+                                width="w-[30px]"
+                            />
+                        </router-link>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
     </div>
 
@@ -298,13 +426,13 @@
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
 import type {
-    IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument,
+    IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument, IBlock,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import { DEBUG } from '@/app/constants/common.ts'
-import { LINE_0, LINE_1, LINE_2, UNIT_METERS } from '@/app/constants/blocks.ts'
+import { LINE_0, LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME, UNIT_METERS } from '@/app/constants/blocks.ts'
 
 import AppLabelMultilineTSWrapper
     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -336,22 +464,54 @@ const blockCollections       = ref<IBlockCollection[]>([])
 const blockCollectionsRender = ref<IBlockCollection[]>([])
 
 // __ Объект отображения данных
-const DEFAULT_WIDTH_BOOL = 'w-[70px]'
-const DEFAULT_HEIGHT     = 'h-[30px]'
-const HEADER_TYPE        = 'primary'
-const DATA_TYPE          = 'primary'
-const DEFAULT_TYPE       = 'dark'
-const HEADER_TEXT_SIZE   = 'mini'
-const DATA_TEXT_SIZE     = 'mini'
-const HEADER_ALIGN       = 'center'
-const DATA_ALIGN         = 'left'
+const DEFAULT_WIDTH_BOOL   = 'w-[70px]'
+const DEFAULT_HEIGHT       = 'h-[30px]'
+const HEADER_TYPE          = 'primary'
+const DATA_TYPE            = 'primary'
+const DEFAULT_TYPE         = 'dark'
+const DEFAULT_TYPE_BLOCK   = 'stone'
+const HEADER_TEXT_SIZE     = 'mini'
+const DATA_TEXT_SIZE       = 'mini'
+const DATA_TEXT_SIZE_BLOCK = 'micro'
+const HEADER_ALIGN         = 'center'
+const DATA_ALIGN           = 'left'
 // const DEFAULT_WIDTH = 'w-[100px]'
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 // const DEFAULT_WIDTH_DATE = 'w-[100px]'
 // const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    id          : {
+    collapsed        : {
+        header        : ['▲', '▼'],
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'warning',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (blockCollection: IBlockCollection) => (blockCollection.collapsed ? '▲' : '▼'),
+        click         : (blockCollection: IBlockCollection) => (blockCollection.collapsed = !blockCollection.collapsed),
+        class         : 'cursor-pointer',
+    },
+    plug             : {
+        header        : ['', ''],
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'light',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : () => '',
+    },
+    id               : {
         id            : () => 'id-search',
         header        : ['ID', ''],
         width         : 'w-[50px]',
@@ -367,23 +527,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍id...',
         data          : (blockCollection: IBlockCollection) => blockCollection.id.toString()
     },
-    name        : {
-        id            : () => 'name-search',
-        header        : ['Название', 'группы блоков'],
-        width         : 'w-[300px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => HEADER_TYPE,
-        dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : DATA_ALIGN,
-        placeholder   : '🔍Название...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.name
-    },
-    code_1c     : {
+    code_1c          : {
         id            : () => 'code-1c-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -399,7 +543,55 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (blockCollection: IBlockCollection) => blockCollection.code_1c
     },
-    unit        : {
+    code_1c_block    : {
+        id            : () => 'code-1c-block-search',
+        header        : ['Код', 'из 1С'],
+        width         : 'w-[100px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE_BLOCK,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE_BLOCK,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Код...',
+        data          : (block: IBlock) => block.code_1c
+    },
+    name             : {
+        id            : () => 'name-search',
+        header        : ['Название', 'группы блоков'],
+        width         : 'w-[300px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Название...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.name
+    },
+    name_block       : {
+        id            : () => 'name-block-search',
+        header        : ['Название', 'блоков'],
+        width         : 'w-[300px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE_BLOCK,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE_BLOCK,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Название...',
+        data          : (block: IBlock) => block.name
+    },
+    unit             : {
         id            : () => 'unit-search',
         header        : ['Ед.', 'изм.'],
         width         : 'w-[70px]',
@@ -420,7 +612,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Ед...',
         data          : (blockCollection: IBlockCollection) => blockCollection.unit ?? ''
     },
-    kdb         : {
+    kdb              : {
         id            : () => 'kdb-search',
         header        : ['КДБ', ''],
         width         : 'w-[80px]',
@@ -436,7 +628,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍КДБ...',
         data          : (blockCollection: IBlockCollection) => blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? `${blockCollection.kdb} 🔍` : '',
     },
-    line        : {
+    line             : {
         id            : () => 'line-search',
         header        : ['Линия', ''],
         width         : 'w-[70px]',
@@ -455,9 +647,13 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Л...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.line.toString(),
+        data          : (blockCollection: IBlockCollection) => {
+            if (blockCollection.line === LINE_1) return LINE_1_NAME
+            if (blockCollection.line === LINE_2) return LINE_2_NAME
+            return ''
+        },
     },
-    line_alt    : {
+    line_alt         : {
         id            : () => 'line-alt-search',
         header        : ['Альт.', 'линия'],
         width         : 'w-[70px]',
@@ -475,9 +671,13 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍АЛ...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.line_alt ? blockCollection.line_alt.toString() : '',
+        data          : (blockCollection: IBlockCollection) => {
+            if (blockCollection.line_alt === LINE_1) return LINE_1_NAME
+            if (blockCollection.line_alt === LINE_2) return LINE_2_NAME
+            return ''
+        },
     },
-    priority    : {
+    priority         : {
         id            : () => 'priority-search',
         header        : ['Приор-', 'тет'],
         width         : 'w-[60px]',
@@ -496,7 +696,44 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority.toString()
     },
-    height      : {
+    width            : {
+        id            : () => 'width-search',
+        header        : ['W', 'см'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍H...',
+        data          : (/*blockCollection: IBlockCollection*/) => ''
+        // data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
+    },
+    width_block      : {
+        id            : () => 'width-block-search',
+        header        : ['W', 'см'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : ([blockCollection, block]) => {
+            if (!blockCollection || !block) return DEFAULT_TYPE_BLOCK
+            if (blockCollection.own && block.width === 0) return 'danger'
+            return DEFAULT_TYPE_BLOCK
+        },
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍H...',
+        data          : ([, block]) => block.width.toString()
+    },
+    height           : {
         id            : () => 'height-search',
         header        : ['H', 'см'],
         width         : 'w-[60px]',
@@ -515,7 +752,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-    length      : {
+    length           : {
         id            : () => 'length-search',
         header        : ['L', 'см'],
         width         : 'w-[60px]',
@@ -534,7 +771,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍L...',
         data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
     },
-    productivity: {
+    productivity     : {
         id            : () => 'productivity-search',
         header        : ['Произ-сть', 'мп/ч'],
         width         : 'w-[100px]',
@@ -553,7 +790,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Произ-сть...',
         data          : (blockCollection: IBlockCollection) => blockCollection.productivity.toFixed(3)
     },
-    active      : {
+    active           : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -569,7 +806,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Active...',
         data          : (blockCollection: IBlockCollection) => blockCollection.active ? '✓' : '✗'
     },
-    own         : {
+    own              : {
         id            : () => 'own-search',
         header        : ['Собств.', 'пр-во'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -585,7 +822,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍...',
         data          : (blockCollection: IBlockCollection) => blockCollection.own ? '✓' : '✗'
     },
-    description : {
+    description      : {
         id            : () => 'description-search',
         header        : ['Описание', ''],
         width         : 'w-[450px]',
@@ -601,6 +838,22 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Описание...',
         data          : (blockCollection: IBlockCollection) => blockCollection.description ?? ''
     },
+    description_block: {
+        id            : () => 'description-block-search',
+        header        : ['Описание', ''],
+        width         : 'w-[450px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE_BLOCK,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Описание...',
+        data          : (block: IBlock) => block.description ?? ''
+    },
 })
 
 // __ Фильтры
@@ -610,6 +863,7 @@ const code_1cFilter      = ref('')
 const unitFilter         = ref('')
 const kdbFilter          = ref('')
 const priorityFilter     = ref('')
+const widthFilter        = ref('')
 const lengthFilter       = ref('')
 const heightFilter       = ref('')
 const productivityFilter = ref('')
@@ -659,16 +913,16 @@ const lineAltSelect: ISelectData = {
 
 
 // __ Обрабатываем селекты
-const filterByActive = (value: ISelectDataItem) => {
+const filterByActive  = (value: ISelectDataItem) => {
     activeFilter.value = value.id
 }
-const filterByOwn    = (value: ISelectDataItem) => {
+const filterByOwn     = (value: ISelectDataItem) => {
     ownFilter.value = value.id
 }
 const filterByLine    = (value: ISelectDataItem) => {
     lineFilter.value = value.id
 }
-const filterByLineAlt    = (value: ISelectDataItem) => {
+const filterByLineAlt = (value: ISelectDataItem) => {
     lineAltFilter.value = value.id
 }
 
@@ -682,6 +936,7 @@ const resetFilters = () => {
     kdbFilter.value         = ''
     priorityFilter.value    = ''
     heightFilter.value      = ''
+    widthFilter.value       = ''
     lengthFilter.value      = ''
     descriptionFilter.value = ''
     lineFilter.value        = 0
@@ -722,7 +977,8 @@ const getBlockCollections = async () => {
             unit       : blockCollection.unit ?? '',
             description: blockCollection.description ?? '',
             line_alt   : blockCollection.line_alt ?? LINE_0,
-            can_edit   : true
+            can_edit   : true,
+            collapsed  : true,
         }))
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии
@@ -743,6 +999,11 @@ const getBlockCollectionsRender = () => {
 // __ Удаляем Коллекцию блоков
 const deleteBlockCollection = async (blockCollection: IBlockCollection) => {
     return blockCollection
+}
+
+// __ Удаляем блок
+const deleteBlock = async (block: IBlock) => {
+    return block
 }
 
 

@@ -64,6 +64,29 @@ const blocks = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Редактирование блоков
+        path     : _MAIN_PREFIX + 'edit/:id',
+        name     : 'manufacture.cell.blocks.edit',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/show/TheBlocksEdit.vue'),
+        meta     : {
+            title: 'Редактирование Пружинного блока',
+            mode : ROUTER_PAGE_MODE.EDIT,
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Создание блоков
+        path     : _MAIN_PREFIX + 'create',
+        name     : 'manufacture.cell.blocks.create',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/show/TheBlocksEdit.vue'),
+        meta     : {
+            title: 'Создание Пружинного блока',
+            mode : ROUTER_PAGE_MODE.CREATE,
+        } as IRouteMeta,
+    },
+
+
     // {
     //     // ___ Управление планом Швейного цеха
     //     path     : _MAIN_PREFIX + 'plan/manage',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
+use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
@@ -288,7 +289,6 @@ Route::prefix('/plan')
 Route::prefix('documents')
     ->middleware('jwt.auth')
     ->group(function () {
-
         // __ КДЧ
         Route::get('kdch', [TextileDesignDocumentController::class, 'getDocuments']);
         Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
@@ -317,10 +317,14 @@ Route::prefix('documents')
 Route::prefix('blocks')
     ->middleware('jwt.auth')
     ->group(function () {
-
+        // __ Коллекция Блоков
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
         Route::get('collections/{id}', [BlockCollectionController::class, 'getBlockCollectionById']);
         Route::post('collections', [BlockCollectionController::class, 'createBlockCollection']);
         Route::put('collections', [BlockCollectionController::class, 'updateBlockCollection']);
 
+        // __ Блоки
+        Route::get('/{id}', [BlockController::class, 'getBlockById']);
+        Route::post('/', [BlockController::class, 'createBlock']);
+        Route::put('/', [BlockController::class, 'updateBlock']);
     });

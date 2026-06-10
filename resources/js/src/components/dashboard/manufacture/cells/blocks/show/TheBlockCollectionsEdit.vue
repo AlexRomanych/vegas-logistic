@@ -158,13 +158,13 @@
                     @checked="unitCheckedHandler"
                 />
 
-                <!-- __ Описание операции -->
+                <!-- __ Описание Коллекции блоков -->
                 <AppInputTextAreaSimpleTS
                     id="description"
                     v-model:text-value.trim="v$.description.$model as unknown as string"
                     :value="v$.description.$model"
                     :width="FIELD_WIDTH_CHECK_BOX"
-                    label="Описание операции"
+                    label="Описание Группы блоков"
                     placeholder="Заполните описание..."
                 />
 
