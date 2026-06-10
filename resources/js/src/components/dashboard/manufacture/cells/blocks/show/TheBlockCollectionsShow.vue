@@ -40,6 +40,12 @@
                         <AppInputTextTSWrapper v-model="lineFilter" :render-object="render.line"/>
                     </div>
 
+                    <!-- __ Альтернативная Линия -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.line_alt"/>
+                        <AppInputTextTSWrapper v-model="lineAltFilter" :render-object="render.line_alt"/>
+                    </div>
+
                     <!-- __ Приоритет изготовления -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.priority"/>
@@ -174,13 +180,16 @@
                 <!-- __ КДБ -->
                 <AppLabelTSWrapper
                     :arg="blockCollection"
-                    :render-object="render.kdb"
                     :class="blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? 'cursor-pointer' : ''"
+                    :render-object="render.kdb"
                     @dblclick="showDocument(blockCollection)"
                 />
 
                 <!-- __ Линия -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line"/>
+
+                <!-- __ Альтернативная Линия -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line_alt"/>
 
                 <!-- __ Приоритет изготовления -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority"/>
@@ -253,7 +262,7 @@ import type {
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import { DEBUG } from '@/app/constants/common.ts'
-import { LINE_0 } from '@/app/constants/blocks.ts'
+import { LINE_0, LINE_2, UNIT_METERS } from '@/app/constants/blocks.ts'
 
 import AppLabelMultilineTSWrapper
     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -356,7 +365,12 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection) return DEFAULT_TYPE
+            if (!blockCollection.unit) return 'danger'
+            if (blockCollection.unit === UNIT_METERS) return 'orange'
+            return 'primary'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -382,19 +396,44 @@ const render: IRenderData = reactive({
     },
     line        : {
         id            : () => 'line-search',
-        header        : ['Ли-', 'ния'],
+        header        : ['Линия', ''],
         width         : 'w-[60px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.line !== LINE_0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own) return DEFAULT_TYPE
+            if (!blockCollection.line) return 'danger'
+            if (blockCollection.line === LINE_2) return 'orange'
+            return 'primary'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Л...',
         data          : (blockCollection: IBlockCollection) => blockCollection.line.toString()
+    },
+    line_alt    : {
+        id            : () => 'line-alt-search',
+        header        : ['Альт.', 'линия'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || !blockCollection.line_alt) return DEFAULT_TYPE
+            if (blockCollection.line_alt === LINE_2) return 'orange'
+            return 'primary'
+        },
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍АЛ...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.line_alt ? blockCollection.line_alt.toString() : '',
     },
     priority    : {
         id            : () => 'priority-search',
@@ -404,7 +443,10 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => blockCollection?.priority !== 0 ? DEFAULT_TYPE : 'danger',
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || blockCollection.priority !== 0) return DEFAULT_TYPE
+            return 'danger'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
@@ -517,6 +559,7 @@ const code_1cFilter      = ref('')
 const unitFilter         = ref('')
 const kdbFilter          = ref('')
 const lineFilter         = ref('')
+const lineAltFilter      = ref('')
 const priorityFilter     = ref('')
 const lengthFilter       = ref('')
 const heightFilter       = ref('')
@@ -562,6 +605,7 @@ const resetFilters = () => {
     unitFilter.value        = ''
     kdbFilter.value         = ''
     lineFilter.value        = ''
+    lineAltFilter.value     = ''
     priorityFilter.value    = ''
     heightFilter.value      = ''
     lengthFilter.value      = ''
@@ -601,6 +645,7 @@ const getBlockCollections = async () => {
             kdb        : blockCollection.kdb ?? '',
             unit       : blockCollection.unit ?? '',
             description: blockCollection.description ?? '',
+            line_alt   : blockCollection.line_alt ?? LINE_0,
             can_edit   : true
         }))
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
@@ -632,6 +677,7 @@ watchEffect(() => {
     const unitFilterSearch        = unitFilter.value.toLowerCase()
     const kdbFilterSearch         = kdbFilter.value.toLowerCase()
     const lineFilterSearch        = lineFilter.value.toLowerCase()
+    const lineAltFilterSearch     = lineAltFilter.value.toLowerCase()
     const priorityFilterSearch    = priorityFilter.value.toLowerCase()
     const heightFilterSearch      = heightFilter.value.toLowerCase()
     const lengthFilterSearch      = lengthFilter.value.toLowerCase()
@@ -644,6 +690,7 @@ watchEffect(() => {
         .filter(blockCollection => blockCollection.unit!.toLowerCase().includes(unitFilterSearch))
         .filter(blockCollection => blockCollection.kdb!.toLowerCase().includes(kdbFilterSearch))
         .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
+        .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
         .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
         .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
         .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))

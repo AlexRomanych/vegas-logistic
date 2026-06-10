@@ -2,7 +2,7 @@
 
 import type { IBlockCollection } from '@/types'
 
-export const LINE_0 = 1
+export const LINE_0 = 0
 export const LINE_1 = 1
 export const LINE_2 = 2
 
@@ -18,7 +18,9 @@ export const BLOCK_COLLECTION_DRAFT: IBlockCollection = {
     name        : '',
     unit        : null,
     kdb         : null,
-    line        : LINE_0,
+    kdb_id      : null,
+    line        : LINE_1,
+    line_alt    : LINE_0,
     priority    : 0,
     height      : 0,
     length      : 0,

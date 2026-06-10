@@ -9,6 +9,7 @@ export interface IBlockCollection {
     kdb: string | null
     kdb_id: number | null
     line: IBlockLine
+    line_alt: IBlockLine | null
     priority: number
     height: number
     length: number

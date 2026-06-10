@@ -56,7 +56,7 @@ class CellCuttingOperationController extends Controller
     public function createCuttingOperation(Request $request)
     {
         try {
-            $all = $request->all();
+            //$all = $request->all();
 
             $data = $request->validate([
                 'name'        => 'required|unique:cutting_operations',
@@ -65,7 +65,7 @@ class CellCuttingOperationController extends Controller
                 'time'        => 'required|integer',
                 'active'      => 'required|boolean',
                 'description' => 'required|string',
-                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_COVER . ',' . CuttingOperation::DETAIL_DETAIL,
+                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
                 'table'       => 'required|string',
                 'cover_type'  => 'required|string',
             ]);
@@ -104,7 +104,7 @@ class CellCuttingOperationController extends Controller
     public function updateCuttingOperation(Request $request)
     {
         try {
-            $all = $request->all();
+            //$all = $request->all();
 
             $data = $request->validate([
                 'id'          => 'required|numeric|exists:cutting_operations,id',
@@ -115,7 +115,7 @@ class CellCuttingOperationController extends Controller
                 'time'        => 'integer',
                 'active'      => 'boolean',
                 'description' => 'nullable|string',
-                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_COVER . ',' . CuttingOperation::DETAIL_DETAIL,
+                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
                 'table'       => 'required|string',
                 'cover_type'  => 'required|string',
             ]);

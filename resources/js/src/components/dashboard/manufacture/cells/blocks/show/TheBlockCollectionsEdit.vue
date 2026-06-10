@@ -14,7 +14,7 @@
                         label="Код группы из 1С"
                         mode="text"
                         placeholder="Укажите код..."
-                        width="w-[170px]"
+                        width="w-[180px]"
                     />
 
                     <!-- __ Название Коллекции -->
@@ -25,7 +25,7 @@
                         label="Название группы блоков"
                         mode="text"
                         placeholder="Укажите название группы..."
-                        width="w-[430px]"
+                        width="w-[420px]"
                     />
                 </div>
 
@@ -132,6 +132,19 @@
                     @checked="lineCheckedHandler"
                 />
 
+                <!-- __ Альтернативная Линия производства -->
+                <div class="mt-5"></div>
+                <AppCheckboxTS
+                    id="line-alt"
+                    :checkboxData="lineAltCheckboxData"
+                    :width="FIELD_WIDTH_CHECK_BOX"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Альтернативная линия производства"
+                    type="secondary"
+                    @checked="lineAltCheckedHandler"
+                />
+
                 <!-- __ Единица измерения -->
                 <div class="mt-5"></div>
                 <AppCheckboxTS
@@ -226,7 +239,7 @@ import type {
     IColorTypes,
 } from '@/types'
 
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -236,7 +249,7 @@ import { helpers, minLength, maxLength, minValue, required, numeric, integer } f
 import { useBlocksStore } from '@/stores/BlocksStore'
 import { useSharedStore } from '@/stores/SharedStore.ts'
 
-import { BLOCK_COLLECTION_DRAFT, LINE_1, LINE_2, UNIT, UNIT_PICS, UNIT_METERS } from '@/app/constants/blocks.ts'
+import { BLOCK_COLLECTION_DRAFT, LINE_1, LINE_2, UNIT_PICS, UNIT_METERS, LINE_0 } from '@/app/constants/blocks.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -288,10 +301,11 @@ const appModalAsyncSelectTS = ref<any>(null)
 // __ Подготавливаем переменные
 const blockDocs       = ref<IBlockDocument[]>([])
 const blockCollection = ref<IBlockCollection>(BLOCK_COLLECTION_DRAFT)
-let activeCheckboxData: ICheckboxData  // выбор активности
-let ownCheckboxData: ICheckboxData     // выбор собственного производства
-let lineCheckboxData: ICheckboxData    // выбор линии
-let unitCheckboxData: ICheckboxData    // выбор единицы измерения
+// let activeCheckboxData: ICheckboxData  // выбор активности
+// let ownCheckboxData: ICheckboxData     // выбор собственного производства
+// let lineCheckboxData: ICheckboxData    // выбор линии
+// let lineAltCheckboxData: ICheckboxData // выбор альтернативной линии
+// let unitCheckboxData: ICheckboxData    // выбор единицы измерения
 
 // __ Подгружаем данные по коллекции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
@@ -322,6 +336,7 @@ const name         = ref('')
 const unit         = ref<IBlockUnit>(UNIT_PICS)
 const kdb          = ref('')
 const line         = ref<IBlockLine>(LINE_1)
+const lineAlt      = ref<IBlockLine>(LINE_0)
 const priority     = ref(0)
 const height       = ref(0)
 const length       = ref(0)
@@ -335,9 +350,10 @@ const description  = ref('')
 const fillData = () => {
     code_1c.value      = blockCollection.value.code_1c
     name.value         = blockCollection.value.name
-    unit.value         = blockCollection.value.unit ?? UNIT
+    unit.value         = blockCollection.value.unit ?? UNIT_PICS
     kdb.value          = blockCollection.value.kdb ?? ''
-    line.value         = blockCollection.value.line
+    line.value         = blockCollection.value.line !== LINE_0 ? blockCollection.value.line : LINE_1
+    lineAlt.value      = blockCollection.value.line_alt ?? LINE_0
     priority.value     = blockCollection.value.priority
     height.value       = blockCollection.value.height
     length.value       = blockCollection.value.length
@@ -380,11 +396,11 @@ const rules = {
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength : helpers.withMessage(
             `Длина кода из 1С - ${CODE_1C_LENGTH} символов`,
-            minLength(MIN_NAME_LENGTH),
+            minLength(CODE_1C_LENGTH),
         ),
         maxLength : helpers.withMessage(
             `Длина кода из 1С - ${CODE_1C_LENGTH} символов`,
-            maxLength(MIN_NAME_LENGTH),
+            maxLength(CODE_1C_LENGTH),
         ),
     },
     name        : {
@@ -397,7 +413,7 @@ const rules = {
     },
     productivity: {
         $autoDirty: true,
-        minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0.001)),
+        minValue  : helpers.withMessage(`Поле должно быть больше 0`, minValue(0.001)),
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
         // integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
@@ -435,39 +451,46 @@ const rules = {
 const v$ = useVuelidate(rules, verify)
 
 // __ Заполняем селекты данными
-const fillSelects = () => {
-    activeCheckboxData = {
-        name: 'activity',
-        data: [
-            { id: 1, name: 'Активная', checked: active.value },
-            { id: 2, name: 'Архив', checked: !active.value },
-        ],
-    }
+const activeCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'activity',
+    data: [
+        { id: 1, name: 'Активная', checked: active.value },
+        { id: 2, name: 'Архив', checked: !active.value },
+    ],
+}))
 
-    ownCheckboxData = {
-        name: 'own',
-        data: [
-            { id: 1, name: 'Собственное производство', checked: own.value },
-            { id: 2, name: 'Покупной блок', checked: !own.value },
-        ],
-    }
+const ownCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'own',
+    data: [
+        { id: 1, name: 'Да', checked: own.value },
+        { id: 2, name: 'Нет', checked: !own.value },
+    ],
+}))
 
-    lineCheckboxData = {
-        name: 'line',
-        data: [
-            { id: 1, name: 'Линия 1', checked: line.value === LINE_1 },
-            { id: 2, name: 'Линия 2', checked: line.value === LINE_2 },
-        ]
-    }
+const lineCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'line',
+    data: [
+        { id: 1, name: 'Линия 1', checked: line.value === LINE_1 },
+        { id: 2, name: 'Линия 2', checked: line.value === LINE_2 },
+    ]
+}))
 
-    unitCheckboxData = {
-        name: 'unit',
-        data: [
-            { id: 1, name: UNIT_PICS.toUpperCase(), checked: unit.value === UNIT_PICS },
-            { id: 2, name: UNIT_METERS.toUpperCase(), checked: unit.value === UNIT_METERS },
-        ]
-    }
-}
+const lineAltCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'line_alt',
+    data: [
+        { id: 0, name: 'Нет', checked: lineAlt.value === LINE_0 },
+        { id: 1, name: 'Линия 1', checked: lineAlt.value === LINE_1 },
+        { id: 2, name: 'Линия 2', checked: lineAlt.value === LINE_2 },
+    ]
+}))
+
+const unitCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'unit',
+    data: [
+        { id: 1, name: UNIT_PICS.toUpperCase(), checked: unit.value === UNIT_PICS },
+        { id: 2, name: UNIT_METERS.toUpperCase(), checked: unit.value === UNIT_METERS },
+    ]
+}))
 
 
 // __ Обработчик чекбокса на active
@@ -489,9 +512,50 @@ const ownCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
 // __ Обработчик чекбокса на Линии
 const lineCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
-        blockCollection.value.line = data.id === 1 ? LINE_1 : LINE_2
-        line.value                 = blockCollection.value.line
+        switch (data.id) {
+            case 1:
+                blockCollection.value.line = LINE_1
+                break
+            case 2:
+                blockCollection.value.line = LINE_2
+                break
+            default:
+                blockCollection.value.line = LINE_0
+        }
+    }
+    line.value = blockCollection.value.line
 
+    // __ Сбрасываем в default альтернативную линию
+    if (blockCollection.value.line === blockCollection.value.line_alt) {
+        blockCollection.value.line_alt = LINE_0
+        lineAlt.value = blockCollection.value.line_alt
+    }
+
+}
+
+// __ Обработчик чекбокса на Альтернативной Линии
+const lineAltCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        switch (data.id) {
+            case 0:
+                blockCollection.value.line_alt = LINE_0
+                break
+            case 1:
+                blockCollection.value.line_alt = LINE_1
+                break
+            case 2:
+                blockCollection.value.line_alt = LINE_2
+                break
+            default:
+                blockCollection.value.line_alt = LINE_0
+        }
+        lineAlt.value = blockCollection.value.line_alt
+
+        // __ Сбрасываем в default альтернативную линию
+        if (blockCollection.value.line === blockCollection.value.line_alt) {
+            blockCollection.value.line_alt = LINE_0
+            lineAlt.value = blockCollection.value.line_alt
+        }
     }
 }
 
@@ -542,6 +606,7 @@ const formSubmit = async () => {
     blockCollection.value.unit         = unit.value
     blockCollection.value.kdb          = kdb.value
     blockCollection.value.line         = line.value
+    blockCollection.value.line_alt     = lineAlt.value !== LINE_0 ? lineAlt.value : null
     blockCollection.value.priority     = priority.value
     blockCollection.value.height       = height.value
     blockCollection.value.length       = length.value
@@ -555,9 +620,9 @@ const formSubmit = async () => {
     let result
 
     if (!editMode.value) {
-        // result = await blockStore.createCuttingOperation(operation.value)
+        result = await blockStore.createBlockCollection(blockCollection.value)
     } else {
-        // result = await blockStore.updateCuttingOperation(operation.value)
+        result = await blockStore.updateBlockCollection(blockCollection.value)
     }
 
     if (checkCRUD(result.data)) {
@@ -569,7 +634,7 @@ const formSubmit = async () => {
     }
 
     confirmClick.value = true   // подтверждаем клик
-    calloutShow.value  = true    // показываем callout
+    calloutShow.value  = true   // показываем callout
     calloutHandler()            // запускаем таймер на скрытие callout
 }
 
@@ -602,7 +667,6 @@ onMounted(async () => {
     // await loadEntity(paramId)
 
     fillData()
-    fillSelects()
 
     v$.value.$touch()
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму

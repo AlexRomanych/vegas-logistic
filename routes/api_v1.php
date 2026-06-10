@@ -320,5 +320,7 @@ Route::prefix('blocks')
 
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
         Route::get('collections/{id}', [BlockCollectionController::class, 'getBlockCollectionById']);
+        Route::post('collections', [BlockCollectionController::class, 'createBlockCollection']);
+        Route::put('collections', [BlockCollectionController::class, 'updateBlockCollection']);
 
     });

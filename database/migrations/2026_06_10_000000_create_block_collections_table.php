@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->integer('height')->nullable(false)->default(0)->comment('Высота блока коллекции, см');
             $table->string('kdb')->nullable()->comment('Конструкторская документация блоков (КДБ)');
             $table->integer('line')->nullable(false)->default(0)->comment('Линия производства блоков');
+            $table->integer('line_alt')->nullable()->comment('Альтернативная линия производства блоков');
             $table->integer('priority')->nullable(false)->default(0)->comment('Приоритет выполнения на линии');
             $table->float('productivity')->nullable(false)->default(0.0)->comment('Производительность, мп/ч');
         });
@@ -30,7 +31,7 @@ return new class extends Migration {
         $this->addCommonColumns(self::TABLE);
 
         DB::table(self::TABLE)->insert([
-            [CODE_1C => '000000000', 'name' => 'Без группы', 'line' => 0, 'unit' => 'шт.',],
+            [CODE_1C => '000000000', 'name' => 'Без группы', 'line' => 0, 'unit' => '',],
             [CODE_1C => '000030100', 'name' => '(V) Smartpocket R1000 140 (1,7)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000033065', 'name' => '(V) TFK R1000 180 Z (H3)', 'line' => 0, 'unit' => 'шт.',],
             [CODE_1C => '000034580', 'name' => '(V) TPS Mini R1000 100 (1,7)', 'line' => 0, 'unit' => 'шт.',],
