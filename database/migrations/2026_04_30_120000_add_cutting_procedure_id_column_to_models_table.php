@@ -47,16 +47,19 @@ return new class extends Migration
             // 1. Сначала дропаем внешние ключи (foreign constraints)
             // Laravel по умолчанию называет их по схеме: имяТаблицы_имяКолонки_foreign
             // Передача массива ['column_name'] заставляет Laravel самому вычислить имя индекса.
-            //$table->dropForeign(['cover_up_proc_id']);
-            //$table->dropForeign(['cover_down_proc_id']);
-            //$table->dropForeign(['side_proc_id']);
-            //
-            //// 2. Теперь безопасно удаляем сами колонки
-            //$table->dropColumn([
-            //    'cover_up_proc_id',
-            //    'cover_down_proc_id',
-            //    'side_proc_id',
-            //]);
+            $table->dropForeign(['cover_up_proc_id']);
+            $table->dropForeign(['cover_down_proc_id']);
+            $table->dropForeign(['side_proc_id']);
+
+            $table->dropForeign('models_cutting_procedure_id_foreign');
+
+            // 2. Теперь безопасно удаляем сами колонки
+            $table->dropColumn([
+                'cover_up_proc_id',
+                'cover_down_proc_id',
+                'side_proc_id',
+                'cutting_procedure_id'
+            ]);
         });
     }
 };
