@@ -802,10 +802,10 @@ final class OrdersService
                 };
 
                 // __ Создаем СЗ на Раскрой
-                $cuttingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
-                if (!$cuttingTask) {
-                    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
-                };
+                //$cuttingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+                //if (!$cuttingTask) {
+                //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                //};
             }
         });
     }
