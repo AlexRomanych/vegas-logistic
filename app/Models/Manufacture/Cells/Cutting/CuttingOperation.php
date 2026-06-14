@@ -15,6 +15,9 @@ class CuttingOperation extends Model
     public const DETAIL_PANEL = 'panel';
     public const DETAIL_SIDE = 'side';
 
+    public const DETAIL_COVER_UP_POINTER   = 'up';
+    public const DETAIL_COVER_DOWN_POINTER = 'down';
+    public const DETAIL_SIDE_POINTER       = 'side';
 
     protected $guarded = [];
 

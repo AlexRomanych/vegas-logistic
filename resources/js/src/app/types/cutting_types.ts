@@ -10,8 +10,18 @@ import {
     CUTTING_TASK_STATUS_PENDING,
     CUTTING_TASK_STATUS_RUNNING,
     CUTTING_TASK_STATUS_DONE,
-    DETAIL_PANEL, DETAIL_SIDE,
-    TABLE_1, TABLE_2, TABLE_3, TABLE_UNDEFINED, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE, TABLE_0,
+    DETAIL_PANEL,
+    DETAIL_SIDE,
+    TABLE_1,
+    TABLE_2,
+    TABLE_3,
+    TABLE_UNDEFINED,
+    TABLE_1_TITLE,
+    TABLE_2_TITLE,
+    TABLE_3_TITLE,
+    TABLE_0_TITLE,
+    TABLE_0,
+    DETAIL_SIDE_POINTER, DETAIL_COVER_UP_POINTER, DETAIL_COVER_DOWN_POINTER,
 
 } from '@/app/constants/cutting.ts'
 
@@ -352,7 +362,10 @@ export interface ICuttingOperationModel {
     name: string
     name_report: string
     cutting_schema_id: number
-    cutting_procedure_id: number
+    cut_proc_up_id: number
+    cut_proc_down_id: number
+    cut_proc_side_id: number
+    // cutting_procedure_id: number
     operations: ICuttingOperationItem[]
 }
 
@@ -503,6 +516,11 @@ export interface ICuttingProcedure {
 
     collapsed: boolean
 }
+
+export type ICuttingDetailType =
+    typeof DETAIL_COVER_UP_POINTER |
+    typeof DETAIL_COVER_DOWN_POINTER |
+    typeof DETAIL_SIDE_POINTER
 
 
 // --- --------------------------------------------------------------------

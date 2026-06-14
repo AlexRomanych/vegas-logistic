@@ -45,7 +45,7 @@ const cutting = [
         // ___ Справочник Типовых операций
         path     : _MAIN_PREFIX + 'operations',
         name     : 'manufacture.cell.cutting.operations',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingOperationsShow.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/TheCuttingOperationsShow.vue'),
         meta     : {
             title: 'Типовые операции в Раскройном цеху'
         } as IRouteMeta,
@@ -55,7 +55,7 @@ const cutting = [
         // ___ Редактирование Типовой операции
         path     : _MAIN_PREFIX + 'operations/edit/:id',
         name     : 'manufacture.cell.cutting.operations.edit',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingOperationEdit.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/TheCuttingOperationEdit.vue'),
         meta     : {
             title: 'Редактирование Типовой операции Раскроя',
             mode : ROUTER_PAGE_MODE.EDIT,
@@ -66,7 +66,7 @@ const cutting = [
         // ___ Создание Типовой операции
         path     : _MAIN_PREFIX + 'operations/create',
         name     : 'manufacture.cell.cutting.operations.create',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingOperationEdit.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/TheCuttingOperationEdit.vue'),
         meta     : {
             title: 'Создание Типовой операции Раскроя',
             mode : ROUTER_PAGE_MODE.CREATE,
@@ -77,7 +77,7 @@ const cutting = [
         // ___ Справочник Схем Типовых операций
         path     : _MAIN_PREFIX + 'operation/schemas',
         name     : 'manufacture.cell.cutting.operation.schemas',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingOperationSchemasShow.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/TheCuttingOperationSchemasShow.vue'),
         meta     : {
             title: 'Схемы Типовых операций в Раскройном цеху',
         } as IRouteMeta,
@@ -86,8 +86,8 @@ const cutting = [
     {
         // ___ Справочник Моделей и Типовых операций (Трудозатраты моделей)
         path     : _MAIN_PREFIX + 'operation/models',
-        name     : 'manufacture.cell.cutting.operation.models',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingOperationModelsShow.vue'),
+        name     : 'manufacture.cell.cutting.operations.models',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/TheCuttingOperationModelsShow.vue'),
         meta     : {
             title: 'Трудозатраты моделей для Раскроя',
         } as IRouteMeta,
@@ -137,7 +137,7 @@ const cutting = [
         // ___ Справочник Процедур Раскроя
         path     : _MAIN_PREFIX + 'procedures',
         name     : 'manufacture.cell.cutting.procedures',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingProceduresShow.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/TheCuttingProceduresShow.vue'),
         meta     : {
             title: 'Процедуры расчета для Раскроя',
         } as IRouteMeta,
@@ -165,6 +165,15 @@ const cutting = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Справочник Моделей и Процедур Раскроя
+        path     : _MAIN_PREFIX + 'procedures/models',
+        name     : 'manufacture.cell.cutting.procedures.models',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/TheCuttingProceduresModelsShow.vue'),
+        meta     : {
+            title: 'Процедуры раскроя для моделей',
+        } as IRouteMeta,
+    },
 
 
     //

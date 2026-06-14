@@ -21,7 +21,9 @@ class CuttingModelLaborResource extends JsonResource
             'name'              => $this->name,
             'name_report'       => $this->name_report,
             'cutting_schema_id' => $this->cuttingSchema->id,
-            'cutting_procedure_id' => $this->cuttingProcedure->id,
+            'cut_proc_up_id'    => $this->cuttingProcedureCoverUp->id,
+            'cut_proc_down_id'  => $this->cuttingProcedureCoverDown->id,
+            'cut_proc_side_id'  => $this->cuttingProcedureSide->id,
             'operations'        => CuttingOperationForSchemaResource::collection($this->cuttingOperations),
             // 'operations'       => $this->operations
             // '_' => parent::toArray($request)

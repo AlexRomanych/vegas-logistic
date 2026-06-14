@@ -13,10 +13,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table(self::TABLE, function (Blueprint $table) {
-            $table->foreignIdFor(CuttingProcedure::class)
+
+            // __ Верхняя Крышка
+            $table->foreignId('cover_up_proc_id')
                 ->nullable(false)
                 ->default(0)
-                ->constrained()
+                ->comment('Процедура для верхней Крышки')
+                ->constrained('cutting_procedures', 'id')
+                ->onDelete('set default');
+
+            // __ Нижняя Крышка
+            $table->foreignId('cover_down_proc_id')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Процедура для нижней Крышки')
+                ->constrained('cutting_procedures', 'id')
+                ->onDelete('set default');
+
+            // __ Боковина
+            $table->foreignId('side_proc_id')
+                ->nullable(false)
+                ->default(0)
+                ->comment('Процедура для Боковины')
+                ->constrained('cutting_procedures', 'id')
                 ->onDelete('set default');
         });
     }
@@ -24,12 +43,20 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table(self::TABLE, function (Blueprint $table) {
-            // 1. Удаляем внешний ключ.
-            // Передача массива ['column_name'] заставляет Laravel самому вычислить имя индекса.
-            $table->dropForeign(['cutting_procedure_id']);
 
-            // 2. Удаляем саму колонку
-            $table->dropColumn('cutting_procedure_id');
+            // 1. Сначала дропаем внешние ключи (foreign constraints)
+            // Laravel по умолчанию называет их по схеме: имяТаблицы_имяКолонки_foreign
+            // Передача массива ['column_name'] заставляет Laravel самому вычислить имя индекса.
+            $table->dropForeign(['cover_up_proc_id']);
+            $table->dropForeign(['cover_down_proc_id']);
+            $table->dropForeign(['side_proc_id']);
+
+            // 2. Теперь безопасно удаляем сами колонки
+            $table->dropColumn([
+                'cover_up_proc_id',
+                'cover_down_proc_id',
+                'side_proc_id',
+            ]);
         });
     }
 };

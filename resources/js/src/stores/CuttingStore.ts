@@ -5,9 +5,20 @@ import { ref } from 'vue'
 
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
 import type {
-    IPeriod, IRenderMatrixDiff, ICuttingDayWorker, ICuttingOperation, ICuttingOperationSchema,
-    ICuttingOperationUpdateObject, ICuttingTask,
-    ICuttingTaskLine, ICuttingTaskLinesSubgroup, ICuttingTaskStatusEntity, ICuttingTaskStatusesSet, ICuttingLineTableSetData, ICuttingProcedure,
+    IPeriod,
+    IRenderMatrixDiff,
+    ICuttingDayWorker,
+    ICuttingOperation,
+    ICuttingOperationSchema,
+    ICuttingOperationUpdateObject,
+    ICuttingTask,
+    ICuttingTaskLine,
+    ICuttingTaskLinesSubgroup,
+    ICuttingTaskStatusEntity,
+    ICuttingTaskStatusesSet,
+    ICuttingLineTableSetData,
+    ICuttingProcedure,
+    ICuttingDetailType,
 } from '@/types'
 
 
@@ -971,8 +982,8 @@ export const useCuttingStore = defineStore('cutting', () => {
 
 
     // __ Обновление Процедуры раскроя для модели
-    const updateModelCuttingProcedure = async (code_1c: string, procedure_id: number) => {
-        const response = await jwtPatch(URL_CUTTING_PROCEDURES_MODEL, { code_1c, procedure_id })
+    const updateModelCuttingProcedure = async (code_1c: string, procedure_id: number, detail_type: ICuttingDetailType) => {
+        const response = await jwtPatch(URL_CUTTING_PROCEDURES_MODEL, { code_1c, procedure_id, detail_type })
         const result   = await response
         if (DEBUG) console.log('CuttingStore: updateModelCuttingProcedure: ', result)
         return result.data

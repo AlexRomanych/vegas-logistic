@@ -329,7 +329,11 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : () => 'indigo',
+        type          : (procedure: ICuttingProcedure) => {
+            if (procedure?.object_name === DETAIL_PANEL) return 'indigo'
+            if (procedure?.object_name === DETAIL_SIDE) return 'warning'
+            return 'primary'
+        },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,

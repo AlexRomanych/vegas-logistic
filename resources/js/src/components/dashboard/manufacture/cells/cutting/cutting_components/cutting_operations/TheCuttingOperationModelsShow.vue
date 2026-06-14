@@ -23,15 +23,15 @@
                             />
 
                             <!-- __  Заголовок 'Процедура' -->
-                            <AppLabelTS
-                                :height="'h-[134px]'"
-                                align="center"
-                                rounded="4"
-                                text="Процедура"
-                                text-size="normal"
-                                type="stone"
-                                width="w-[150px]"
-                            />
+                            <!--<AppLabelTS-->
+                            <!--    :height="'h-[134px]'"-->
+                            <!--    align="center"-->
+                            <!--    rounded="4"-->
+                            <!--    text="Процедура"-->
+                            <!--    text-size="normal"-->
+                            <!--    type="stone"-->
+                            <!--    width="w-[150px]"-->
+                            <!--/>-->
 
                             <!-- __  Заголовок 'Схема' -->
                             <AppLabelTS
@@ -94,15 +94,15 @@
                                 type="orange"
                             />
 
-                            <!-- __ Фильтр: Схема Типовых операций -->
-                            <AppInputTextTS
-                                id="procedure-search"
-                                v-model:text-value.trim="procedureFilter"
-                                :width="PROCEDURE_WIDTH"
-                                placeholder="🔍Процедура..."
-                                text-size="mini"
-                                type="stone"
-                            />
+                            <!-- __ Фильтр: Процедура -->
+                            <!--<AppInputTextTS-->
+                            <!--    id="procedure-search"-->
+                            <!--    v-model:text-value.trim="procedureFilter"-->
+                            <!--    :width="PROCEDURE_WIDTH"-->
+                            <!--    placeholder="🔍Процедура..."-->
+                            <!--    text-size="mini"-->
+                            <!--    type="stone"-->
+                            <!--/>-->
 
                             <!-- __ Фильтр: Схема Типовых операций -->
                             <AppInputTextTS
@@ -221,17 +221,17 @@
                                     />
 
                                     <!-- __ Название Процедуры -->
-                                    <AppLabelTS
-                                        :height="CELL_HEIGHT"
-                                        :text="getProcedureName(model)"
-                                        :type="model.cutting_procedure_id ? 'stone' : 'danger'"
-                                        :width="PROCEDURE_WIDTH"
-                                        align="left"
-                                        class="cursor-pointer"
-                                        rounded="4"
-                                        text-size="micro"
-                                        @dblclick="selectProcedure(model)"
-                                    />
+                                    <!--<AppLabelTS-->
+                                    <!--    :height="CELL_HEIGHT"-->
+                                    <!--    :text="getProcedureName(model)"-->
+                                    <!--    :type="model.cut_proc_up_id ? 'stone' : 'danger'"-->
+                                    <!--    :width="PROCEDURE_WIDTH"-->
+                                    <!--    align="left"-->
+                                    <!--    class="cursor-pointer"-->
+                                    <!--    rounded="4"-->
+                                    <!--    text-size="micro"-->
+                                    <!--    @dblclick="selectProcedure(model)"-->
+                                    <!--/>-->
 
                                     <!-- __ Название Схемы -->
                                     <AppLabelTS
@@ -350,17 +350,17 @@ const HEADER_COLUMNS_HEIGHT = 'h-[200px]'
 const HEADER_ROWS_WIDTH     = 'w-[274px]'
 
 const COLLECTION_COLLAPSE_WIDTH = 'w-[40px]'
-const COLLECTION_NAME_WIDTH     = 'w-[538px]'
+const COLLECTION_NAME_WIDTH     = 'w-[386px]'
 
 const MODEL_CODE_1C_WIDTH = 'w-[70px]'
 const MODEL_NAME_WIDTH    = 'w-[180px]'
 const SCHEMA_WIDTH        = 'w-[150px]'
-const PROCEDURE_WIDTH     = 'w-[150px]'
+// const PROCEDURE_WIDTH     = 'w-[150px]'
 
 const CELL_WIDTH  = 'w-[50px]'
 const CELL_HEIGHT = 'h-[30px]'
 
-const COLLAPSE_ALL_WIDTH = 'w-[289px]'
+const COLLAPSE_ALL_WIDTH = 'w-[212px]'
 
 // __ Определяем переменные
 const cuttingOperationSchemas = ref<ICuttingOperationSchema[]>([])
@@ -373,7 +373,7 @@ const modelsRender            = ref<ICuttingOperationModelsCollection[]>([])
 const codeFilter      = ref('')
 const nameFilter      = ref('')
 const schemaFilter    = ref('')
-const procedureFilter = ref('')
+// const procedureFilter = ref('')
 
 // __ Тип для модального окна ячейки
 const modalOperation           = ref<ICuttingOperation | null>(null)
@@ -459,10 +459,10 @@ const getSchemaName = (model: ICuttingOperationModel) => {
     return schema ? schema.name : ''
 }
 
-const getProcedureName = (model: ICuttingOperationModel) => {
-    const procedure = cuttingProcedures.value.find(procedure => procedure.id === model.cutting_procedure_id)
-    return procedure ? procedure.name : ''
-}
+// const getProcedureName = (model: ICuttingOperationModel) => {
+//     const procedure = cuttingProcedures.value.find(procedure => procedure.id === model.cut_proc_up_id)
+//     return procedure ? procedure.name : ''
+// }
 
 // __ Показываем сообщение об ошибке
 const showError = async (error: string | null = null) => {
@@ -587,27 +587,27 @@ const selectSchema = async (model: ICuttingOperationModel) => {
 }
 
 // __ Выбираем Процедуру Раскроя для модели
-const selectProcedure = async (model: ICuttingOperationModel) => {
-    selectedItems.value  = cuttingProcedures.value
-    selectedItemId.value = model.cutting_procedure_id
-    // selectedProcedureId.value = model.cutting_procedure_id
-    const answer         = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
-    if (answer) {
-        const selectedProcedure = appModalAsyncSelectTS.value!.selected
-        if (selectedProcedure.id === model.cutting_procedure_id) {
-            return
-        }
-
-        const result = await cuttingStore.updateModelCuttingProcedure(model.code_1c, selectedProcedure.id)
-
-        if (checkCRUD(result)) {
-            model.cutting_procedure_id = selectedProcedure.id
-        } else {
-            await showError()
-            return
-        }
-    }
-}
+// const selectProcedure = async (model: ICuttingOperationModel) => {
+//     selectedItems.value  = cuttingProcedures.value
+//     selectedItemId.value = model.cut_proc_up_id
+//     // selectedProcedureId.value = model.cutting_procedure_id
+//     const answer         = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
+//     if (answer) {
+//         const selectedProcedure = appModalAsyncSelectTS.value!.selected
+//         if (selectedProcedure.id === model.cut_proc_up_id) {
+//             return
+//         }
+//
+//         const result = await cuttingStore.updateModelCuttingProcedure(model.code_1c, selectedProcedure.id)
+//
+//         if (checkCRUD(result)) {
+//             model.cut_proc_up_id = selectedProcedure.id
+//         } else {
+//             await showError()
+//             return
+//         }
+//     }
+// }
 
 // __ Свернуть все
 const collapseAll = () => {

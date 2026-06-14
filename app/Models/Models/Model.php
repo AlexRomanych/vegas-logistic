@@ -301,14 +301,6 @@ final class Model extends LaravelModel
     }
 
 
-    // Relations: Связь Модели с Процедурами Раскроя
-    public function cuttingProcedure(): BelongsTo
-    {
-        return $this->belongsTo(CuttingProcedure::class, 'cutting_procedure_id', 'id');
-    }
-
-
-
     // Relations: Связь с КДЧ
     public function kdchDoc()
     {
@@ -316,4 +308,22 @@ final class Model extends LaravelModel
     }
 
 
+    // Relations: Связь Модели с Процедурами Раскроя: Крышка Верх
+    public function cuttingProcedureCoverUp(): BelongsTo
+    {
+        return $this->belongsTo(CuttingProcedure::class, 'cover_up_proc_id', 'id');
+    }
+
+
+    // Relations: Связь Модели с Процедурами Раскроя: Крышка Низ
+    public function cuttingProcedureCoverDown(): BelongsTo
+    {
+        return $this->belongsTo(CuttingProcedure::class, 'cover_down_proc_id', 'id');
+    }
+
+    // Relations: Связь Модели с Процедурами Раскроя: Боковина
+    public function cuttingProcedureSide(): BelongsTo
+    {
+        return $this->belongsTo(CuttingProcedure::class, 'side_proc_id', 'id');
+    }
 }

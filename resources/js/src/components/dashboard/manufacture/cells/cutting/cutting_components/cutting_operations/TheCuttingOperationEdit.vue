@@ -170,7 +170,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers, minValue, /*integer*/ } from '@vuelidate/validators'
 
-import { useCuttingStore } from '@/stores/CuttingStore'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { CUTTING_OPERATION_DRAFT, DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
 

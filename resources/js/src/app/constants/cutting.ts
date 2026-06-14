@@ -34,12 +34,15 @@ export const TABLE_UNDEFINED_TITLE = TABLE_0_TITLE
 
 
 // __ Констианты деталей чехда в Операциях Раскроя
-export const DETAIL_PANEL            = 'panel'
-export const DETAIL_PANEL_TITLE      = 'Крышка'
-export const DETAIL_SIDE             = 'side'
-export const DETAIL_SIDE_TITLE       = 'Боковина'
-export const DETAIL_SIDE_EXECUTE     = 'Бурлет'
-export const DETAIL_SIDE_TITLE_SHORT = 'Бок-на'
+export const DETAIL_PANEL              = 'panel'
+export const DETAIL_PANEL_TITLE        = 'Крышка'
+export const DETAIL_SIDE               = 'side'
+export const DETAIL_SIDE_TITLE         = 'Боковина'
+export const DETAIL_SIDE_EXECUTE       = 'Бурлет'
+export const DETAIL_SIDE_TITLE_SHORT   = 'Бок-на'
+export const DETAIL_COVER_UP_POINTER   = 'up'
+export const DETAIL_COVER_DOWN_POINTER = 'down'
+export const DETAIL_SIDE_POINTER       = 'side'
 
 
 // __ Название вкладки с общим СЗ

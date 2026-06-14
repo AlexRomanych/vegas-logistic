@@ -9,6 +9,7 @@ use App\Http\Resources\Model\Labors\Cutting\CuttingCollectionGroupResource;
 use App\Http\Resources\Model\Labors\Sewing\SewingCollectionGroupResource;
 use App\Http\Resources\Model\ModelResource;
 use App\Http\Resources\Model\Show\ModelShowCollectionResource;
+use App\Models\Manufacture\Cells\Cutting\CuttingOperation;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
 use App\Models\Models\ModelManufactureStatus;
@@ -252,7 +253,14 @@ class ModelController extends Controller
         try {
             $models = Model::query()
                 ->basics()      // __ Базовые модели (Швейка)
-                ->with(['collection', 'cuttingSchema', 'cuttingOperations', 'cuttingProcedure'])
+                ->with([
+                    'collection',
+                    'cuttingSchema',
+                    'cuttingOperations',
+                    'cuttingProcedureCoverUp',
+                    'cuttingProcedureCoverDown',
+                    'cuttingProcedureSide',
+                ])
                 ->orderBy('name')
                 ->get();
 
@@ -378,14 +386,32 @@ class ModelController extends Controller
     {
         try {
             $data = $request->validate([
-                'data'           => 'required|array',
-                'data.code_1c'   => 'required|string|exists:models,code_1c',
+                'data'              => 'required|array',
+                'data.code_1c'      => 'required|string|exists:models,code_1c',
                 'data.procedure_id' => 'required|integer|exists:cutting_procedures,id',
+                'data.detail_type'  => 'required|string|in:'
+                    . CuttingOperation::DETAIL_COVER_UP_POINTER . ','
+                    . CuttingOperation::DETAIL_COVER_DOWN_POINTER . ','
+                    . CuttingOperation::DETAIL_SIDE_POINTER,
             ]);
 
-            Model::query()
-                ->where('code_1c', $data['data']['code_1c'])
-                ->update(['cutting_procedure_id' => $data['data']['procedure_id']]);
+            switch ($data['data']['detail_type']):
+                case CuttingOperation::DETAIL_COVER_UP_POINTER:
+                    Model::query()
+                        ->where('code_1c', $data['data']['code_1c'])
+                        ->update(['cover_up_proc_id' => $data['data']['procedure_id']]);
+                    break;
+                case CuttingOperation::DETAIL_COVER_DOWN_POINTER:
+                    Model::query()
+                        ->where('code_1c', $data['data']['code_1c'])
+                        ->update(['cover_down_proc_id' => $data['data']['procedure_id']]);
+                    break;
+                case CuttingOperation::DETAIL_SIDE_POINTER:
+                    Model::query()
+                        ->where('code_1c', $data['data']['code_1c'])
+                        ->update(['side_proc_id' => $data['data']['procedure_id']]);
+                    break;
+            endswitch;
 
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception $e) {
@@ -421,8 +447,6 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
 
 
     /**
@@ -488,16 +512,6 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 
     //
@@ -571,9 +585,6 @@ class ModelController extends Controller
             return response()->json($e->getMessage(), 400);
         }
     }
-
-
-
 
 
 }
