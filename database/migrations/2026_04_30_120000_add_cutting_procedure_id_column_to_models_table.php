@@ -51,14 +51,14 @@ return new class extends Migration
             $table->dropForeign(['cover_down_proc_id']);
             $table->dropForeign(['side_proc_id']);
 
-            $table->dropForeign('models_cutting_procedure_id_foreign');
+            //$table->dropForeign('models_cutting_procedure_id_foreign');
 
             // 2. Теперь безопасно удаляем сами колонки
             $table->dropColumn([
                 'cover_up_proc_id',
                 'cover_down_proc_id',
                 'side_proc_id',
-                'cutting_procedure_id'
+                //'cutting_procedure_id'
             ]);
         });
     }
