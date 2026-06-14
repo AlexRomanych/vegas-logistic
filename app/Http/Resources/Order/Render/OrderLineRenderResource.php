@@ -25,6 +25,7 @@ class OrderLineRenderResource extends JsonResource
             'describe_2'  => $this->describe_2,
             'describe_3'  => $this->describe_3,
             'model'       => new OrderLineModelRenderResource($this->model),
+            'materials'   => $this->whenloaded('materials', OrderLineMaterialRenderResource::collection($this->materials)),
             // 'model_code_1c' => $this->model_code_1c,
             // 'model_name'  => $this->model_name,
 

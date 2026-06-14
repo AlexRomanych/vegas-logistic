@@ -161,6 +161,24 @@ const tabs: ITab[] = [
         width:       TAB_WIDTH,
         color:       DEFAULT_ACTIVE_COLOR,
     },
+    {
+        name:        'Расход',
+        displayName: ['Расход', ''],
+        component:   'Expense',
+        icon:        '💡',
+        active:      false,
+        width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
+    },
+    {
+        name:        'Материалы',
+        displayName: ['Материалы', ''],
+        component:   'Materials',
+        icon:        '💡',
+        active:      false,
+        width:       TAB_WIDTH,
+        color:       DEFAULT_ACTIVE_COLOR,
+    },
 ]
 
 // __ Используем shallowRef для активного компонента.

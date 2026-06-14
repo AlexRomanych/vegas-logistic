@@ -10,16 +10,21 @@ const DEBUG = true
 
 
 // Устанавливаем глобальные переменные
-const API_PREFIX = '/api/v1/'                                                   // Префикс API
-const URL_MATERIALS = 'materials/'                                              // URL для получения списка материалов
-const URL_MATERIAL = 'material/'                                                // URL для получения материала
+// const API_PREFIX = '/api/v1/'                                                   // Префикс API
+// const URL_MATERIALS = 'materials/'                                              // URL для получения списка материалов
+// const URL_MATERIAL = 'material/'                                                // URL для получения материала
 
 const URL_MATERIALS_UPLOAD = 'materials/upload/'                                // URL для загрузки материалов с диска
+const URL_MATERIALS = 'materials'                                // URL для получения материалов по их ids
 
 export const useMaterialsStore = defineStore('materials', () => {
 
     // __ Кэш Материалов
-    const materialsCacshe = ref([])
+    const materialsCache = ref([])
+
+
+
+
 
     // __ Загрузка (Обновление) моделей на сервер
     const uploadMaterials = async (fileData: string) => {
@@ -44,7 +49,7 @@ export const useMaterialsStore = defineStore('materials', () => {
     const getMaterials = async (params: any = null) => {
         const result = await jwtGet(URL_MATERIALS, params)
         if (DEBUG) console.log('MaterialsStore: getMaterials: ', result)
-        materialsCacshe.value = result.data // кэшируем
+        materialsCache.value = result.data // кэшируем
         return result.data // все возвращается через Resource с ключем data
     }
 

@@ -44,20 +44,19 @@ class OrderRenderResource extends JsonResource
             'description'          => $this->description,
             'created_at'           => $this->created_at ? Carbon::parse($this->created_at)->format(RETURN_DATE_TIME_FORMAT) : null,
 
-            'client' => [
+            'client' => $this->whenLoaded('client', fn() => [
                 'id'         => $this->client->id,
                 'short_name' => $this->client->short_name
-            ],
+            ]),
             // 'client_id'     => $this->client_id,
 
-            'order_type' => [
+            'order_type' => $this->whenLoaded('orderType', fn() => [
                 // 'id'           => $this->orderType->id,
                 'color'        => $this->orderType->color,
                 'display_name' => $this->orderType->display_name,
-            ],
-            // 'order_type_id' => $this->order_type_id,
+            ]),
 
-            'lines' => OrderLineRenderResource::collection($this->lines),
+            'lines'     => OrderLineRenderResource::collection($this->lines),
 
             // __ Наличие СЗ
             'has_tasks' => [

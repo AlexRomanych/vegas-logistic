@@ -2,9 +2,12 @@
 
 namespace App\Models\Materials;
 
+use App\Models\Order\OrderLine;
+use App\Models\Order\OrderLineMaterialPivot;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Material extends Model
@@ -104,5 +107,16 @@ class Material extends Model
     //    return $this->categories()->with('childrenCategories');
     //}
 
+
+    // Relations: Связь со сторокой Заказа, для которой просчитан расход
+    public function orderLines(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            OrderLine::class,
+            'order_line_material_pivot',
+            'material_code_1c',
+            'order_line_id'
+        )->using(OrderLineMaterialPivot::class);
+    }
 
 }

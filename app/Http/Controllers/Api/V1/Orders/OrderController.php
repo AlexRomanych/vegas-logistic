@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderTypes\OrderTypeResource;
 use App\Http\Resources\Order\Render\OrderRenderResource;
 use App\Models\Client;
+use App\Models\Materials\Material;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
@@ -25,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class OrderController extends Controller
@@ -42,11 +44,11 @@ class OrderController extends Controller
 
             if (isset($validated['period'])) {
                 $start = Carbon::parse($validated['period']['start']);
-                $end = Carbon::parse($validated['period']['end']);
+                $end   = Carbon::parse($validated['period']['end']);
             } else {
                 $period = DefaultsService::getDefaultPeriodOrdersShow();
-                $start = Carbon::parse($period->getStart());
-                $end = Carbon::parse($period->getEnd());
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
             }
 
 
@@ -147,67 +149,66 @@ class OrderController extends Controller
     public function uploadOrders(Request $request)
     {
         //try {
-            $data = $request->validate(['data' => 'required|json']);
+        $data = $request->validate(['data' => 'required|json']);
 
-            // TODO: Сделать проверку на валидность данных и соответствие шаблону
+        // TODO: Сделать проверку на валидность данных и соответствие шаблону
 
-            $orders = json_decode($data['data'], true);
-            // Дополнительная проверка структуры JSON
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Invalid JSON structure');
+        $orders = json_decode($data['data'], true);
+        // Дополнительная проверка структуры JSON
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON structure');
+        }
+
+        // DB::table('orders')->truncate();
+
+        // $orderDubs      = [];            // Дубли заказов
+        // $missingModels  = [];            // Не найденные модели
+        // $missingClients = [];            // Не найденные клиенты
+
+
+        foreach ($orders as $order) {
+            // __ Пропускаем игнорируемые заявки и игнорируемые клиенты
+            if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_IGNORE ||
+                $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_CLIENT_IGNORE) {
+                continue;
             }
 
-            // DB::table('orders')->truncate();
+            // __ Если нужно добавить клиента, то добавляем
+            if ($order['client_id'] === 0 &&
+                $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_CLIENT_ADD) {
+                // __ Устанавливаем последовательность для клиента (это на всякий случай, при миграции в первый раз возникает конфликт)
+                setSequence('clients');
 
-            // $orderDubs      = [];            // Дубли заказов
-            // $missingModels  = [];            // Не найденные модели
-            // $missingClients = [];            // Не найденные клиенты
+                // __ Пробуем найти клиента по коду 1С (Ситуация, когда в списке загружаемых заявок есть несколько
+                // __ заявок с одинаковым клиентом, который отсутствует еще в базе, а мы уже раз внесли его
+                $verifyClient = Client::query()->where(CODE_1C, $order['client_code'])->first();
 
+                if (!$verifyClient) {
+                    $createdClient = Client::query()->create([
+                        'name'       => $order['client_full_name'],
+                        'short_name' => $order['client_full_name'],
+                        CODE_1C      => $order['client_code'],
+                    ]);
 
-            foreach ($orders as $order) {
-                // __ Пропускаем игнорируемые заявки и игнорируемые клиенты
-                if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_IGNORE ||
-                    $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_CLIENT_IGNORE) {
+                    if (!$createdClient) {
+                        throw new Exception('Creating client with 1c code = ' . $order['client_code'] . ' failed');
+                    }
                     continue;
                 }
+            }
 
-                // __ Если нужно добавить клиента, то добавляем
-                if ($order['client_id'] === 0 &&
-                    $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_CLIENT_ADD) {
-                    // __ Устанавливаем последовательность для клиента (это на всякий случай, при миграции в первый раз возникает конфликт)
-                    setSequence('clients');
+            // __ Пробуем найти клиента
+            $client = Client::query()->find($order['client_id']);
+            if (!$client) {
+                $client = Client::query()->where(CODE_1C, $order['client_code'])->first();
+            }
 
-                    // __ Пробуем найти клиента по коду 1С (Ситуация, когда в списке загружаемых заявок есть несколько
-                    // __ заявок с одинаковым клиентом, который отсутствует еще в базе, а мы уже раз внесли его
-                    $verifyClient = Client::query()->where(CODE_1C, $order['client_code'])->first();
+            // __ Если клиент не найден, то ошибка
+            if (!$client) {
+                throw new Exception('Client with id = ' . $order['client_id'] . ' not found');
+            }
 
-                    if (!$verifyClient) {
-                        $createdClient = Client::query()->create([
-                            'name'       => $order['client_full_name'],
-                            'short_name' => $order['client_full_name'],
-                            CODE_1C      => $order['client_code'],
-                        ]);
-
-                        if (!$createdClient) {
-                            throw new Exception('Creating client with 1c code = ' . $order['client_code'] . ' failed');
-                        }
-                        continue;
-                    }
-                }
-
-                // __ Пробуем найти клиента
-                $client = Client::query()->find($order['client_id']);
-                if (!$client) {
-                    $client = Client::query()->where(CODE_1C, $order['client_code'])->first();
-                }
-
-                // __ Если клиент не найден, то ошибка
-                if (!$client) {
-                    throw new Exception('Client with id = ' . $order['client_id'] . ' not found');
-                }
-
-                DB::transaction(function () use ($order, $client) {
-
+            DB::transaction(function () use ($order, $client) {
                 // __ Если нужно добавить заявку или обновить, то добавляем или обновляем
                 if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD ||
                     $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_UPDATE) {
@@ -221,7 +222,7 @@ class OrderController extends Controller
                     $needToDistribute = false;  // __ Нужно ли распределять количество по Сменным заданиям или создавать новые
 
                     // __ Получаем Тип изделий в Заявках
-                    $elementsType = OrdersService::getOrderElementsTypeFromFront($order);
+                    $elementsType    = OrdersService::getOrderElementsTypeFromFront($order);
                     $elementsTypeRef = OrdersService::getOrderElementsTypeReference($elementsType);
 
                     // __ Получаем тип заявки по номеру (гар. рем, серийная и т.д.)
@@ -240,30 +241,30 @@ class OrderController extends Controller
                         }
 
                         // __ Обновляем Прогнозную Заявку раскрытой Заявкой из 1С
-                        $forecastOrder->client_id = $client->id;
+                        $forecastOrder->client_id     = $client->id;
                         $forecastOrder->order_type_id = $orderType->id;    // __ Преобразуем из Прогнозного типа в соответствующий
                         // $forecastOrder->plan_load_id       = 0;                  // TODO: Повесить Observer и создать плановую загрузку, пока не будем управлять сущность;
                         // $forecastOrder->order_no_num       = parseNumericValue($order['order_no']);
-                        $forecastOrder->order_no_str = $order['order_no'];
+                        $forecastOrder->order_no_str    = $order['order_no'];
                         $forecastOrder->order_no_origin = $order['order_no_1c'];
 
                         // $forecastOrder->elements_type      = $elementsType;
                         // $forecastOrder->elements_type_ref  = OrdersService::getOrderElementsTypeReference($elementsType);
-                        $forecastOrder->responsible = $order['responsible'];
-                        $forecastOrder->manager_load_date = $order['load_at_1c'] === '' ? null : Carbon::parse($order['load_at_1c']);
-                        $forecastOrder->manager_start = $order['mg_start'] === '' ? null : Carbon::parse($order['mg_start']);
-                        $forecastOrder->manager_end = $order['mg_end'] === '' ? null : Carbon::parse($order['mg_end']);
-                        $forecastOrder->design_start = $order['kb_start'] === '' ? null : Carbon::parse($order['kb_start']);
-                        $forecastOrder->design_end = $order['kb_end'] === '' ? null : Carbon::parse($order['kb_end']);
-                        $forecastOrder->no_1c = $order['order_no_1c'];
-                        $forecastOrder->code_1c = $order['order_code'];
+                        $forecastOrder->responsible        = $order['responsible'];
+                        $forecastOrder->manager_load_date  = $order['load_at_1c'] === '' ? null : Carbon::parse($order['load_at_1c']);
+                        $forecastOrder->manager_start      = $order['mg_start'] === '' ? null : Carbon::parse($order['mg_start']);
+                        $forecastOrder->manager_end        = $order['mg_end'] === '' ? null : Carbon::parse($order['mg_end']);
+                        $forecastOrder->design_start       = $order['kb_start'] === '' ? null : Carbon::parse($order['kb_start']);
+                        $forecastOrder->design_end         = $order['kb_end'] === '' ? null : Carbon::parse($order['kb_end']);
+                        $forecastOrder->no_1c              = $order['order_no_1c'];
+                        $forecastOrder->code_1c            = $order['order_code'];
                         $forecastOrder->base_order_code_1c = $order['base'];
-                        $forecastOrder->comment_1c = $order['comment'];
-                        $forecastOrder->client_code_1c = $order['client_code'];
-                        $forecastOrder->client_name_1c = $order['client_full_name'];
-                        $forecastOrder->service = $order['service'];
-                        $forecastOrder->unload_at = $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']);
-                        $forecastOrder->is_forecast = false;    // __ Прогнозная заявка раскрывается
+                        $forecastOrder->comment_1c         = $order['comment'];
+                        $forecastOrder->client_code_1c     = $order['client_code'];
+                        $forecastOrder->client_name_1c     = $order['client_full_name'];
+                        $forecastOrder->service            = $order['service'];
+                        $forecastOrder->unload_at          = $order['unload_at'] === '' ? null : Carbon::parse($order['unload_at']);
+                        $forecastOrder->is_forecast        = false;    // __ Прогнозная заявка раскрывается
 
                         // __ Вставляем именно массивом, без преобразования в json. Пока ничего не меняем
                         // $forecastOrder->amounts = [
@@ -371,19 +372,21 @@ class OrderController extends Controller
                         /** @var Order $createdOrder */
                         $createLine = OrderLine::query()->create(
                             [
-                                'order_id'      => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
-                                'size'          => $orderLine['s'],
-                                'width'         => $dims->getWidth(),
-                                'length'        => $dims->getLength(),
-                                'height'        => $dims->getHeight(),
-                                'model_name'    => $orderLine['n'],
-                                'model_code_1c' => $findModel->code_1c,
-                                'amount'        => $orderLine['a'],
-                                'textile'       => $orderLine['t'],
-                                'composition'   => $orderLine['d'],
-                                'describe_1'    => $orderLine['d1'],
-                                'describe_2'    => $orderLine['d2'],
-                                'describe_3'    => $orderLine['d3'],
+                                'order_id'          => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
+                                'size'              => $orderLine['s'],
+                                'width'             => $dims->getWidth(),
+                                'length'            => $dims->getLength(),
+                                'height'            => $dims->getHeight(),
+                                'model_name'        => $orderLine['n'],
+                                'model_code_1c'     => $findModel->code_1c,
+                                'amount'            => $orderLine['a'],
+                                'textile'           => $orderLine['t'],
+                                'composition'       => $orderLine['d'],
+                                'describe_1'        => $orderLine['d1'],
+                                'describe_2'        => $orderLine['d2'],
+                                'describe_3'        => $orderLine['d3'],
+                                'construct_code_1c' => $orderLine['sp'] ?? null,
+
                                 // 'active'        => $orderLine[''],
                                 // 'status'        => $orderLine[''],
                                 // 'description'   => $orderLine[''],
@@ -440,7 +443,6 @@ class OrderController extends Controller
                         // __ Удаляем строки с кодом средней модели и автоматом удаляем их из СЗ
                         $forecastOrder->lines()->where('model_code_1c', $averageModelCode)->delete();
                     } else {
-
                         // __ Если тип элементов в Заявке - не матрасы, то пропускаем
                         // __ Создаем СЗ на Участки только для матрасов
                         if ($targetOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
@@ -463,17 +465,17 @@ class OrderController extends Controller
                         }
                     }
                 }
-                });
-            }
+            });
+        }
 
 
-            // $a = $orderDubs;            // Дубли заказов
-            // $b = $missingModels;        // Не найденные модели
-            // $c = $missingClients;       // Не найденные клиенты
+        // $a = $orderDubs;            // Дубли заказов
+        // $b = $missingModels;        // Не найденные модели
+        // $c = $missingClients;       // Не найденные клиенты
 
-            // return 'done...';
+        // return 'done...';
 
-            return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
+        return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
         //} catch (Exception|Throwable $e) {
         //    return EndPointStaticRequestAnswer::fail($e);
         //}
@@ -623,7 +625,7 @@ class OrderController extends Controller
     public function patchLoadAtDate(Request $request)
     {
         try {
-            $all = $request->all();
+            $all       = $request->all();
             $validated = $request->validate([
                 'id'      => 'required|integer|exists:orders,id',
                 'load_at' => 'required|date|date_format:Y-m-d H:i:s',
@@ -647,7 +649,7 @@ class OrderController extends Controller
     public function patchDescription(Request $request)
     {
         try {
-            $all = $request->all();
+            $all       = $request->all();
             $validated = $request->validate([
                 'id'          => 'required|integer|exists:orders,id',
                 'description' => 'present|nullable|string',
@@ -660,6 +662,228 @@ class OrderController extends Controller
                 ->update(['description' => $description]);
 
             return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Получаем Расход в Иерархии Заявки: Order->OrderLines->Materials
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getOrderWithExpense(Request $request)
+    {
+        try {
+            // 1. Собираем все числовые параметры из GET-запроса в единый массив 'ids'
+            // $request->query() вернет ['0' => '406', '1' => '414']
+            $numericIds = array_filter($request->query(), 'is_numeric', ARRAY_FILTER_USE_KEY);
+
+            // Модифицируем входящие данные, принудительно создавая чистый массив ids => [406, 414]
+            $request->merge([
+                'ids' => array_values($numericIds)
+            ]);
+
+            // 2. Теперь стандартная валидация Laravel отработает идеально
+            $validator = Validator::make($request->all(), [
+                'ids'   => ['required', 'array', 'min:1'],
+                'ids.*' => [
+                    'required',
+                    'integer',
+                    'distinct',
+                    Rule::exists('orders', 'id') // Проверка на существование каждого ID в базе
+                ],
+            ]);
+
+            // 3. Отдаем ошибку, если валидация провалилась
+            if ($validator->fails()) {
+                throw new Exception('Переданы некорректные ID заказов.');
+            }
+
+            // 4. Получаем чистый массив заветных ID
+            $orderIds = $validator->validated()['ids'];
+
+            $loadedOrders = Order::query()
+                ->whereIn('id', $orderIds)
+                ->with(['lines', 'lines.materials', 'lines.model'])
+                ->get();
+
+
+            return OrderRenderResource::collection($loadedOrders);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
+    public function getOrderWithMaterials(Request $request)
+    {
+        try {
+            // 1. Собираем все числовые параметры из GET-запроса в единый массив 'ids'
+            // $request->query() вернет ['0' => '406', '1' => '414']
+            $numericIds = array_filter($request->query(), 'is_numeric', ARRAY_FILTER_USE_KEY);
+
+            // Модифицируем входящие данные, принудительно создавая чистый массив ids => [406, 414]
+            $request->merge([
+                'ids' => array_values($numericIds)
+            ]);
+
+            // 2. Теперь стандартная валидация Laravel отработает идеально
+            $validator = Validator::make($request->all(), [
+                'ids'   => ['required', 'array', 'min:1'],
+                'ids.*' => [
+                    'required',
+                    'integer',
+                    'distinct',
+                    Rule::exists('orders', 'id') // Проверка на существование каждого ID в базе
+                ],
+            ]);
+
+            // 3. Отдаем ошибку, если валидация провалилась
+            if ($validator->fails()) {
+                throw new Exception('Переданы некорректные ID заказов.');
+            }
+
+            // 4. Получаем чистый массив заветных ID
+            $orderIds = $validator->validated()['ids'];
+
+
+            $cleanOrderIds = $orderIds;
+            //$cleanOrderIds = $request->input('ids');
+
+            $materials = Material::query()->select('materials.*')
+                ->addSelect('order_lines.order_id')
+                ->addSelect('order_lines.id as order_line_id')
+                ->addSelect('order_lines.width')
+                ->addSelect('order_lines.length')
+                ->addSelect('order_lines.height')
+                ->addSelect('order_lines.amount as line_amount')
+
+                ->addSelect('models.code_1c as model_code_1c')
+                ->addSelect('models.name as model_name')
+
+                // 1. Считаем ЧИСТЫЙ РАСХОД на всю строку заказа
+                ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) as total_expense'))
+
+                // 2. Считаем ОБЩИЙ ОТХОД на всю строку заказа
+                ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.rest_per_pic) as total_rest'))
+
+                // Связи
+                ->join('order_line_material_pivot', 'order_line_material_pivot.material_code_1c', '=', 'materials.' . CODE_1C)
+                ->join('order_lines', 'order_lines.id', '=', 'order_line_material_pivot.order_line_id')
+                ->join('models', 'models.code_1c', '=', 'order_lines.model_code_1c')
+
+                ->whereIn('order_lines.order_id', $cleanOrderIds)
+                ->with(['category', 'group'])
+
+                // Группировка (добавили rest_per_pic)
+                ->groupBy(
+                    'materials.' . CODE_1C,
+                    'order_lines.order_id',
+                    'order_lines.id',
+                    'order_lines.width',
+                    'order_lines.length',
+                    'order_lines.height',
+                    'order_lines.amount',
+                    'models.code_1c',
+                    'models.name',
+                    'order_line_material_pivot.expense_per_pic',
+                    'order_line_material_pivot.rest_per_pic'
+                )
+                // Отсекаем строки, где и расход, и отход равны нулю
+                ->having(DB::raw('(SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) + SUM(order_lines.amount * order_line_material_pivot.rest_per_pic))'), '>', 0)
+                ->get();
+
+            // Передаем в сборщик дерева
+            $tree = OrdersService::buildDetailedMaterialTree($materials);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $tree
+            ]);
+
+            return OrderRenderResource::collection($loadedOrders);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
+
+    public function getOrderWithMaterials_Old(Request $request)
+    {
+        try {
+            // 1. Собираем все числовые параметры из GET-запроса в единый массив 'ids'
+            // $request->query() вернет ['0' => '406', '1' => '414']
+            $numericIds = array_filter($request->query(), 'is_numeric', ARRAY_FILTER_USE_KEY);
+
+            // Модифицируем входящие данные, принудительно создавая чистый массив ids => [406, 414]
+            $request->merge([
+                'ids' => array_values($numericIds)
+            ]);
+
+            // 2. Теперь стандартная валидация Laravel отработает идеально
+            $validator = Validator::make($request->all(), [
+                'ids'   => ['required', 'array', 'min:1'],
+                'ids.*' => [
+                    'required',
+                    'integer',
+                    'distinct',
+                    Rule::exists('orders', 'id') // Проверка на существование каждого ID в базе
+                ],
+            ]);
+
+            // 3. Отдаем ошибку, если валидация провалилась
+            if ($validator->fails()) {
+                throw new Exception('Переданы некорректные ID заказов.');
+            }
+
+            // 4. Получаем чистый массив заветных ID
+            $orderIds = $validator->validated()['ids'];
+
+
+            $cleanOrderIds = $orderIds;
+            //$cleanOrderIds = $request->input('ids');
+
+            $materials = Material::query()
+                ->select('materials.*')
+                // 1. Вытаскиваем order_id, чтобы знать, чья это строка
+                ->addSelect('order_lines.order_id')
+                // 2. Считаем расход конкретно ВНУТРИ этого заказа
+                ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) as total_expense'))
+                ->join('order_line_material_pivot', 'order_line_material_pivot.material_code_1c', '=', 'materials.' . CODE_1C)
+                ->join('order_lines', 'order_lines.id', '=', 'order_line_material_pivot.order_line_id')
+                ->whereIn('order_lines.order_id', $cleanOrderIds)
+                ->with(['category', 'group'])
+
+                // КРИТИЧНО: добавляем order_id в группировку
+                ->groupBy('materials.' . CODE_1C, 'order_lines.order_id')
+                ->having(DB::raw('SUM(order_lines.amount * order_line_material_pivot.expense_per_pic)'), '>', 0)
+                ->get();
+
+            // Передаем в метод сборки дерева
+            $tree = OrdersService::buildFilteredMaterialTreeWithOrders($materials);
+            //$tree = $this->buildFilteredMaterialTreeWithOrders($materials);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $tree
+            ]);
+
+            return OrderRenderResource::collection($loadedOrders);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

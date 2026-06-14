@@ -15,6 +15,7 @@ use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -960,6 +961,141 @@ final class OrdersService
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+
+    public static function buildFilteredMaterialTreeWithOrders(Collection $materials): array
+    {
+        $tree = [];
+
+        foreach ($materials as $material) {
+            $category = $material->category;
+            $group = $material->group;
+
+            if (!$category || !$group) continue;
+
+            $groupCode = $group->{CODE_1C};
+            $categoryCode = $category->{CODE_1C};
+            $materialCode = $material->{CODE_1C};
+
+            // Инициализация Группы
+            if (!isset($tree[$groupCode])) {
+                $tree[$groupCode] = [
+                    'code_1c' => $groupCode, 'name' => $group->name, 'categories' => []
+                ];
+            }
+
+            // Инициализация Категории
+            if (!isset($tree[$groupCode]['categories'][$categoryCode])) {
+                $tree[$groupCode]['categories'][$categoryCode] = [
+                    'code_1c' => $categoryCode, 'name' => $category->name, 'materials' => []
+                ];
+            }
+
+            // Инициализация Материала (используем code_1c как ключ, чтобы не дублировать ветку)
+            if (!isset($tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode])) {
+                $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode] = [
+                    'code_1c' => $materialCode,
+                    'name'    => $material->name,
+                    'orders'  => [] // Сюда будут складываться расходы по разным заказам
+                ];
+            }
+
+            // Добавляем инфо о расходе конкретного заказа в этот материал
+            $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][] = [
+                'order_id' => (int) $material->order_id,
+                'expense'  => (float) $material->total_expense
+            ];
+        }
+
+        // Сбрасываем ключи для выгрузки чистых массивов [] в JSON
+        return array_values(array_map(function ($group) {
+            $group['categories'] = array_values(array_map(function ($category) {
+                $category['materials'] = array_values($category['materials']);
+                return $category;
+            }, $group['categories']));
+            return $group;
+        }, $tree));
+    }
+
+
+
+    public static function buildDetailedMaterialTree(Collection $materials): array
+    {
+        $tree = [];
+
+        foreach ($materials as $material) {
+            $category = $material->category;
+            $group = $material->group;
+
+            if (!$category || !$group) continue;
+
+            $groupCode = $group->{CODE_1C};
+            $categoryCode = $category->{CODE_1C};
+            $materialCode = $material->{CODE_1C};
+            $orderId = (int) $material->order_id;
+            $lineId = (int) $material->order_line_id;
+
+            // 1. Инициализация Группы
+            if (!isset($tree[$groupCode])) {
+                $tree[$groupCode] = [
+                    'code_1c' => $groupCode, 'name' => $group->name, 'categories' => []
+                ];
+            }
+
+            // 2. Инициализация Категории
+            if (!isset($tree[$groupCode]['categories'][$categoryCode])) {
+                $tree[$groupCode]['categories'][$categoryCode] = [
+                    'code_1c' => $categoryCode, 'name' => $category->name, 'materials' => []
+                ];
+            }
+
+            // 3. Инициализация Материала
+            if (!isset($tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode])) {
+                $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode] = [
+                    'code_1c' => $materialCode,
+                    'name'    => $material->name,
+                    'orders'  => []
+                ];
+            }
+
+            // 4. Инициализация Заказа внутри Материала
+            if (!isset($tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId])) {
+                $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId] = [
+                    'order_id'    => $orderId,
+                    'order_lines' => [] // Сюда складываем строки этого заказа
+                ];
+            }
+
+            // 5. Добавляем детальную информацию по строке заказа
+            $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId]['order_lines'][] = [
+                'line_id'        => $lineId,
+                'amount'         => (int) $material->line_amount,
+                'size'           => [
+                    'width'  => (int) $material->width,
+                    'length' => (int) $material->length,
+                    'height' => (int) $material->height,
+                ],
+                'model_code_1c'  => $material->model_code_1c,
+                'model_name'     => $material->model_name,
+                'expense'        => (float) $material->total_expense
+            ];
+        }
+
+        // 6. Сбрасываем строковые ключи во всех вложенных уровнях (группы, категории, материалы, заказы)
+        return array_values(array_map(function ($group) {
+            $group['categories'] = array_values(array_map(function ($category) {
+                $category['materials'] = array_values(array_map(function ($material) {
+                    // Превращаем ассоциативный массив orders (где ключами были order_id) в обычный список []
+                    $material['orders'] = array_values($material['orders']);
+                    return $material;
+                }, $category['materials']));
+                return $category;
+            }, $group['categories']));
+            return $group;
+        }, $tree));
+    }
+
 
 }
 

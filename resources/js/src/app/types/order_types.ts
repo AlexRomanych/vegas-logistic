@@ -54,6 +54,8 @@ export interface IRenderOrder {
         cutting_task: boolean,
         sewing_task: boolean,
     }
+
+
 }
 
 export interface IRenderOrderClient {
@@ -87,6 +89,9 @@ export interface IRenderOrderLine {
     describe_3: string
     id: number
     model: IRenderOrderLineModel
+    materials?: IRenderOrderLineMaterial[]
+
+    collapsed_materials?: boolean
 }
 
 export interface IRenderOrderLineModel {
@@ -102,6 +107,14 @@ export interface IRenderOrderLineModel {
     model_type: string
     name_report: string
     tkch: string | null
+}
+
+export interface IRenderOrderLineMaterial {
+    code_1c: string
+    name: string
+    expense_per_pic: number
+    rest_per_pic: number
+    unit: string
 }
 
 

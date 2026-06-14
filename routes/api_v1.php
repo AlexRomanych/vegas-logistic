@@ -102,7 +102,10 @@ Route::prefix('/orders')
         Route::get('/types', [OrderController::class, 'getOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
 
         Route::get('/', [OrderController::class, 'getOrders']);
+        Route::get('/expense', [OrderController::class, 'getOrderWithExpense']);
+        Route::get('/materials', [OrderController::class, 'getOrderWithMaterials']);
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
+
         Route::post('/upload', [OrderController::class, 'uploadOrders']);
         Route::post('/validate', [OrderController::class, 'validateOrders']);
         Route::post('/add/average', [OrderController::class, 'addOrdersAverage']);
@@ -113,8 +116,9 @@ Route::prefix('/orders')
         Route::patch('/patch/load-at', [OrderController::class, 'patchLoadAtDate']);
         Route::patch('/patch/description', [OrderController::class, 'patchDescription']);
 
-
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
+
+
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 

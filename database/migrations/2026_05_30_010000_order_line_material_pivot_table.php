@@ -11,7 +11,6 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
-
             $table->id();
 
             // Relations: Связь с Записью в Заявке
@@ -24,6 +23,7 @@ return new class extends Migration {
 
             // Relations: Связь с Материалами (Тот, что получаем на выходе процедуры)
             $table->string('material_code_1c', CODE_1C_LENGTH)
+                ->index()
                 ->nullable()
                 ->comment('Материал');
             $table->foreign('material_code_1c')
@@ -65,7 +65,6 @@ return new class extends Migration {
             //    ->references(CODE_1C)
             //    ->on('model_construct_procedures')
             //    ->nullOnDelete();
-
 
 
             $table->timestamps();

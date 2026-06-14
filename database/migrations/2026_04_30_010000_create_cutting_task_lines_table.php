@@ -22,6 +22,7 @@ return new class extends Migration {
 
             // __ Связь с Основным СЗ
             $table->foreignId('cutting_task_id')
+                ->index()
                 ->comment('Ссылка на Основное СЗ')
                 ->nullable(false)
                 ->constrained('cutting_tasks')
@@ -29,6 +30,7 @@ return new class extends Migration {
 
             // __ Связь с Содержимым Основной Заявки (OrderLine)
             $table->foreignId('order_line_id')
+                ->index()
                 ->comment('Ссылка на записи Заявки')
                 ->nullable(false)
                 ->constrained('order_lines')
@@ -45,7 +47,7 @@ return new class extends Migration {
             $table->unsignedInteger('amount')
                 ->nullable(false)
                 ->default(0)
-                ->comment('Количество одной части при разбиении записи Заявки на части или все количество в Заявке');
+                ->comment('Количество Деталей для данной строки в Заявке');
 
             // __ Фантом (призрак, фейк, фиктивный)
             // __ Поле, которое показывает, на что подменять свойства той или иной модели в записи
@@ -121,10 +123,12 @@ return new class extends Migration {
             $table->boolean('has_side')->nullable()->comment('Признак того, что у записи есть Боковина>');
 
             // __ Ткань из спецификации
-            $table->jsonb('fabric_construct')->nullable(false)->default('[]')->comment('Крой');
+            $table->jsonb('fabric_construct')->nullable(false)->default('[]')->comment('Ткань из Спецификации');
 
             // __ Крой (деталька типа 159x199)
             $table->string('cut')->nullable()->comment('Крой');
+            $table->string('cut_length')->nullable(false)->default(0)->comment('Длина кроя');
+            $table->string('cut_width')->nullable(false)->default(0)->comment('Ширина кроя');
 
             // __ Угол
             $table->string('angle')->nullable()->comment('Угол');
@@ -136,6 +140,10 @@ return new class extends Migration {
                 ->nullable(false)
                 ->default(0)
                 ->comment('Трудозатраты');
+
+            // __ Трудозатраты на момент создания записи. Для Моделей, например 314.314
+            $table->json('time_json')->nullable()->comment('Трудозатраты на момент создания записи');
+
         });
 
         $this->addCommonColumns(self::TABLE_NAME);
