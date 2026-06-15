@@ -119,10 +119,11 @@
         </div>
 
         <!-- __ Расходы материалов -->
-        <div v-if="!orderLine.collapsed_materials" class="ml-[74px]">
-            <OrderLineMaterials :line="orderLine"/>
-        </div>
-
+        <template v-if="showMaterials">
+            <div v-if="!orderLine.collapsed_materials" class="ml-[74px]">
+                <OrderLineMaterials :line="orderLine"/>
+            </div>
+        </template>
 
     </div>
 
@@ -223,8 +224,7 @@ const render: IRenderData = reactive({
         data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_materials ? '▲' : '▼',
         click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_materials = !orderLine.collapsed_materials
     },
-
-    modelType   : {
+    modelType          : {
         header        : 'Тип изделия',
         width         : 'w-[110px]',
         height        : DEFAULT_HEIGHT,
@@ -238,7 +238,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.model.model_type,
     },
-    modelSize   : {
+    modelSize          : {
         header        : 'Размер',
         width         : 'w-[80px]',
         height        : DEFAULT_HEIGHT,
@@ -252,7 +252,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.size,
     },
-    modelName   : {
+    modelName          : {
         header        : 'Модель',
         width         : 'w-[200px]',
         height        : DEFAULT_HEIGHT,
@@ -266,7 +266,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.model.name_report,
     },
-    modelAmount : {
+    modelAmount        : {
         header        : 'Кол-во',
         width         : 'w-[50px]',
         height        : DEFAULT_HEIGHT,
@@ -280,7 +280,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.amount.toString(),
     },
-    composition : {
+    composition        : {
         header        : 'Комментарий',
         width         : 'w-[248px]',
         height        : DEFAULT_HEIGHT,
@@ -294,7 +294,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.composition,
     },
-    describe_1  : {
+    describe_1         : {
         header        : 'Примечание 1',
         width         : 'w-[174px]',
         height        : DEFAULT_HEIGHT,
@@ -308,7 +308,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_1,
     },
-    describe_2  : {
+    describe_2         : {
         header        : 'Примечание 2',
         width         : 'w-[175px]',
         height        : DEFAULT_HEIGHT,
@@ -322,7 +322,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_2,
     },
-    describe_3  : {
+    describe_3         : {
         header        : 'Примечание 3',
         width         : 'w-[175px]',
         height        : DEFAULT_HEIGHT,
@@ -336,7 +336,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_3,
     },
-    deleteButton: {
+    deleteButton       : {
         header        : '🗑️',
         width         : 'w-[40px]',
         height        : DEFAULT_HEIGHT,

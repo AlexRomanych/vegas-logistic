@@ -60,10 +60,10 @@ final class OrdersService
         // __ Проходим по всем Заявкам
         foreach ($orders as &$order) {
             // __ Получаем Тип изделий в Заявках
-            $elementsTypeData = [];
+            $elementsTypeData        = [];
             $elementsTypeDataPercent = [];
-            $elementsType = self::getOrderElementsTypeFromFront($order, $elementsTypeData, $elementsTypeDataPercent);
-            $elementsTypeRef = self::getOrderElementsTypeReference($elementsType);
+            $elementsType            = self::getOrderElementsTypeFromFront($order, $elementsTypeData, $elementsTypeDataPercent);
+            $elementsTypeRef         = self::getOrderElementsTypeReference($elementsType);
 
             // __ Проверяем на то, что все изделия в Заявке - чехлы (то есть, !!! 100% - это чехлы)
             // __ Считаем общее количество изделий в Заявке
@@ -87,16 +87,16 @@ final class OrdersService
                 // __ Действие зависит от того, какого типа заявка
                 if (self::isOrderUndefinedType($elementsTypeRef)) {
                     if (self::isOrderCoversType($elementsType)) {  // Если референсный тип Не определен, но есть Чехлы - предлагаем добавить клиента
-                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе, но Тип изделий в заявке - Чехлы.';
                         $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
                         $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                     } else {
-                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе и Тип изделий в заявке не определен.';
                         $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_IGNORE;
                         $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Пропустить Заявку. Возможно это не матрасы или аксессуары.';
                     }
                 } else {
-                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Клиент отсутствует в базе.';
+                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Клиент отсутствует в базе.';
                     $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_CLIENT_ADD;
                     $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить клиента здесь или через Справочник Клиентов и заново загрузить Заявки. Код клиента = ' . $order['client_code'];
                 }
@@ -106,10 +106,10 @@ final class OrdersService
             } else { // __ Если нашли клиента
 
                 $order['client_full_name'] = $client->short_name;          // Перезаписываем имя клиента из БД
-                $order['client_id'] = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
+                $order['client_id']        = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
 
                 if (self::isOrderCoversType($elementsType)) {
-                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Изделия в Заявке - Чехлы.';
+                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Изделия в Заявке - Чехлы.';
                     $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                     $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Загружать эту заявку не нужно. СЗ с Чехлами будут созданы автоматически';
                 } else {
@@ -137,11 +137,11 @@ final class OrdersService
 
                         // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
                         if (self::isOrderAverageType($existOrder, $elementsType)) {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Прогнозная Заявка с таким номером уже есть в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Прогнозная Заявка с таким номером уже есть в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_UPDATE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
                         } else {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером уже есть в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером уже есть в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
                         }
@@ -152,11 +152,11 @@ final class OrdersService
 
                         if (self::isOrderMattressesType($elementsType)
                             || self::isOrderAccessoriesType($elementsType)) {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_ADD;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить заявку в базу.';
                         } else {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
+                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
                             $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                             $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
                         }
@@ -169,12 +169,12 @@ final class OrdersService
             foreach ($order['items'] as &$orderLine) {
                 $model = ModelsService::getModelByCode1C($orderLine['c']);
                 if (!$model) {
-                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Модель не найдена в базе.';
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Модель не найдена в базе.';
                     $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_MODEL_IGNORE;
                     $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново. Код Модели из 1С = ' . $orderLine['c'];
-                    $isAllModelsExist = false;
+                    $isAllModelsExist                                    = false;
                 } else {
-                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD] = self::CHECK_PASS;
+                    $orderLine[self::VALIDATE_FIELD][self::CHECK_FIELD]  = self::CHECK_PASS;
                     $orderLine[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_NONE;
                     $orderLine[self::VALIDATE_FIELD][self::ADVICE_FIELD] = '';
                 }
@@ -182,7 +182,7 @@ final class OrdersService
 
             // __ Если не все модели найдены
             if (!$isAllModelsExist && $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] !== 'Пропустить Заявку. Возможно это не матрасы или аксессуары.') {
-                $order[self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Есть неизвестные модели.';
+                $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Есть неизвестные модели.';
                 $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                 $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить модель в базу через обновление Моделей и загрузить Заявки заново.';
             }
@@ -202,7 +202,7 @@ final class OrdersService
             $key = $dubOrder['client_id'] . '_' . $dubOrder['order_no'] . '_' . $elementsType;
 
             // __ Сохраняем не только объект, но и его положение в исходном массиве
-            $acc[$key]['count'] = ($acc[$key]['count'] ?? 0) + 1;
+            $acc[$key]['count']     = ($acc[$key]['count'] ?? 0) + 1;
             $acc[$key]['indices'][] = $index;
         }
 
@@ -210,7 +210,7 @@ final class OrdersService
         foreach ($acc as $item) {
             if ($item['count'] > 1) {
                 foreach ($item['indices'] as $index) {
-                    $orders[$index][self::VALIDATE_FIELD][self::CHECK_FIELD] = 'Дубликат Заявки.';
+                    $orders[$index][self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Дубликат Заявки.';
                     $orders[$index][self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
                     $orders[$index][self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Пропустить Заявку. Нужно проверить нумерацию Заявок в 1С.';
                 }
@@ -299,7 +299,7 @@ final class OrdersService
             // echo "Ключ: {$type->name}, Значение: {$type->value}" . PHP_EOL;
         }
 
-        $data = $result;
+        $data        = $result;
         $dataPercent = array_map(function ($item) use ($totals) {
             return $totals > 0 ? ($item / $totals * 100) : 0;
         }, $result);
@@ -344,9 +344,9 @@ final class OrdersService
     public static function getOrderElementsTypeReference(string $orderType): string
     {
         return match (true) {
-            self::isOrderMattressesType($orderType) => ElementTypes::MATTRESSES->value,
+            self::isOrderMattressesType($orderType)  => ElementTypes::MATTRESSES->value,
             self::isOrderAccessoriesType($orderType) => ElementTypes::ACCESSORIES->value,
-            default => ElementTypes::UNDEFINED->value,
+            default                                  => ElementTypes::UNDEFINED->value,
         };
     }
 
@@ -545,7 +545,7 @@ final class OrdersService
     public static function normalizeToCarbon(string|Carbon|Order $entity): Carbon
     {
         return match (true) {
-            is_string($entity) => (function () use ($entity) {
+            is_string($entity)        => (function () use ($entity) {
                 try {
                     return Carbon::parse($entity);
                 } catch (\Exception $e) {
@@ -553,8 +553,8 @@ final class OrdersService
                 }
             })(),
             $entity instanceof Carbon => $entity,
-            $entity instanceof Order => Carbon::parse($entity->load_at),
-            default => Carbon::now(),
+            $entity instanceof Order  => Carbon::parse($entity->load_at),
+            default                   => Carbon::now(),
             // default => throw new \InvalidArgumentException(
             //     'Ожидается строка, Carbon или PlanLoad, получен: ' . get_debug_type($entity)
             // )
@@ -569,7 +569,7 @@ final class OrdersService
      */
     public static function getElementsTypeRender(string $value): string
     {
-        $search = [
+        $search  = [
             ElementTypes::UNDEFINED->value,
             ElementTypes::MATTRESSES->value,
             ElementTypes::COVERS->value,
@@ -749,7 +749,7 @@ final class OrdersService
             // __ Вставляем содержимое Прогнозной Заявки
             // __ Получаем размеры
             $AVERAGE_SIZE_STR = '0x0x0';
-            $dims = SizeService::getDimensions($AVERAGE_SIZE_STR);
+            $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
 
             $createLine = OrderLine::query()->create(
                 [
@@ -963,32 +963,37 @@ final class OrdersService
     }
 
 
-
     public static function buildFilteredMaterialTreeWithOrders(Collection $materials): array
     {
         $tree = [];
 
         foreach ($materials as $material) {
             $category = $material->category;
-            $group = $material->group;
+            $group    = $material->group;
 
-            if (!$category || !$group) continue;
+            if (!$category || !$group) {
+                continue;
+            }
 
-            $groupCode = $group->{CODE_1C};
+            $groupCode    = $group->{CODE_1C};
             $categoryCode = $category->{CODE_1C};
             $materialCode = $material->{CODE_1C};
 
             // Инициализация Группы
             if (!isset($tree[$groupCode])) {
                 $tree[$groupCode] = [
-                    'code_1c' => $groupCode, 'name' => $group->name, 'categories' => []
+                    'code_1c'    => $groupCode,
+                    'name'       => $group->name,
+                    'categories' => []
                 ];
             }
 
             // Инициализация Категории
             if (!isset($tree[$groupCode]['categories'][$categoryCode])) {
                 $tree[$groupCode]['categories'][$categoryCode] = [
-                    'code_1c' => $categoryCode, 'name' => $category->name, 'materials' => []
+                    'code_1c'   => $categoryCode,
+                    'name'      => $category->name,
+                    'materials' => []
                 ];
             }
 
@@ -1003,8 +1008,8 @@ final class OrdersService
 
             // Добавляем инфо о расходе конкретного заказа в этот материал
             $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][] = [
-                'order_id' => (int) $material->order_id,
-                'expense'  => (float) $material->total_expense
+                'order_id' => (int)$material->order_id,
+                'expense'  => (float)$material->total_expense
             ];
         }
 
@@ -1019,74 +1024,72 @@ final class OrdersService
     }
 
 
-
+    // ___ Дерево Материалов
     public static function buildDetailedMaterialTree(Collection $materials): array
     {
         $tree = [];
 
         foreach ($materials as $material) {
             $category = $material->category;
-            $group = $material->group;
+            $group    = $material->group;
 
-            if (!$category || !$group) continue;
+            if (!$category || !$group) {
+                continue;
+            }
 
-            $groupCode = $group->{CODE_1C};
+            $groupCode    = $group->{CODE_1C};
             $categoryCode = $category->{CODE_1C};
             $materialCode = $material->{CODE_1C};
-            $orderId = (int) $material->order_id;
-            $lineId = (int) $material->order_line_id;
+            $orderId      = (int)$material->order_id;
+            $lineId       = (int)$material->order_line_id;
 
-            // 1. Инициализация Группы
+            // Инициализация Группы, Категории и Материала
             if (!isset($tree[$groupCode])) {
-                $tree[$groupCode] = [
-                    'code_1c' => $groupCode, 'name' => $group->name, 'categories' => []
-                ];
+                $tree[$groupCode] = ['code_1c' => $groupCode, 'name' => $group->name, 'categories' => []];
             }
-
-            // 2. Инициализация Категории
             if (!isset($tree[$groupCode]['categories'][$categoryCode])) {
-                $tree[$groupCode]['categories'][$categoryCode] = [
-                    'code_1c' => $categoryCode, 'name' => $category->name, 'materials' => []
-                ];
+                $tree[$groupCode]['categories'][$categoryCode] = ['code_1c' => $categoryCode, 'name' => $category->name, 'materials' => []];
             }
-
-            // 3. Инициализация Материала
             if (!isset($tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode])) {
                 $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode] = [
                     'code_1c' => $materialCode,
                     'name'    => $material->name,
+                    'unit'    => $material->material_unit ?? '', // Твоя единица измерения (с фолбэком)
                     'orders'  => []
                 ];
             }
 
-            // 4. Инициализация Заказа внутри Материала
+            // Инициализация Заказа внутри Материала — СЮДА добавляем номер и клиента
             if (!isset($tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId])) {
                 $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId] = [
                     'order_id'    => $orderId,
-                    'order_lines' => [] // Сюда складываем строки этого заказа
+                    'order_no'    => $material->order_no_num,    // Поле из таблицы orders
+                    'client_name' => $material->client_name,    // Поле из таблицы clients
+                    'order_lines' => []
                 ];
             }
 
-            // 5. Добавляем детальную информацию по строке заказа
+            // Наполняем спецификацию по строкам
             $tree[$groupCode]['categories'][$categoryCode]['materials'][$materialCode]['orders'][$orderId]['order_lines'][] = [
-                'line_id'        => $lineId,
-                'amount'         => (int) $material->line_amount,
-                'size'           => [
-                    'width'  => (int) $material->width,
-                    'length' => (int) $material->length,
-                    'height' => (int) $material->height,
+                'line_id'       => $lineId,
+                'amount'        => (int)$material->line_amount,
+                'size'          => [
+                    'width'  => (int)$material->width,
+                    'length' => (int)$material->length,
+                    'height' => (int)$material->height,
                 ],
-                'model_code_1c'  => $material->model_code_1c,
-                'model_name'     => $material->model_name,
-                'expense'        => (float) $material->total_expense
+                'model_code_1c' => $material->model_code_1c,
+                'model_name'    => $material->model_name,
+                'expense'       => (float)$material->total_expense,
+                'rest'          => (float)$material->total_rest,
+                'total'         => (float)($material->total_expense + $material->total_rest)
             ];
         }
 
-        // 6. Сбрасываем строковые ключи во всех вложенных уровнях (группы, категории, материалы, заказы)
+        // Сбрасываем ключи для выгрузки Array объектов во фронтенд
         return array_values(array_map(function ($group) {
             $group['categories'] = array_values(array_map(function ($category) {
                 $category['materials'] = array_values(array_map(function ($material) {
-                    // Превращаем ассоциативный массив orders (где ключами были order_id) в обычный список []
                     $material['orders'] = array_values($material['orders']);
                     return $material;
                 }, $category['materials']));

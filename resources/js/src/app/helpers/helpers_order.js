@@ -15,7 +15,7 @@ export function getPrettyOrderNumber(noNum) {
         } else {
             let orderNoFloatNumber = +orderNoFloat
 
-            while (orderNoFloatNumber % 10 == 0) orderNoFloatNumber /= 10
+            while (orderNoFloatNumber % 10 === 0) orderNoFloatNumber /= 10
 
             orderNo = orderNoDec + '.' + orderNoFloatNumber.toString()
         }

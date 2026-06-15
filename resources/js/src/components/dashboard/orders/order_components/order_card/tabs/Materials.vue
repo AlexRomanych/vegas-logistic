@@ -3,14 +3,13 @@
         <div class="m-2 h-[calc(100vh-200px)] flex flex-col overflow-hidden">
             <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
 
-                <OrderLines
-                    :order-lines="orderRender ? orderRender.lines : []"
-                    :show-collapsed="false"
-                    :show-materials="true"
+                <MaterialsOrdersShow
+                    :material-groups="groups"
                 />
 
             </div>
         </div>
+
     </div>
 
     <!-- __ Модальное окно для сообщений -->
@@ -27,17 +26,19 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed } from 'vue'
 
-import type { IColorTypes, IRenderOrder, ISewingTask } from '@/types'
+import type { IColorTypes, IMaterialRenderGroup, IRenderOrder, ISewingTask } from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { useLoading } from 'vue-loading-overlay'
 
+import { sortMaterialsOrdersData } from '@/app/helpers/helpers_materials.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
+import MaterialsOrdersShow from '@/components/dashboard/materials/materials_components/materials_order/MaterialsOrdersShow.vue'
+
 
 // import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
@@ -56,7 +57,8 @@ const isLoading = ref(false)
 
 // __ Объявляем переменные
 const sewingTasks = ref<ISewingTask[]>([])
-const orderRender = ref<IRenderOrder | null>(null)
+const groups      = ref<IMaterialRenderGroup[]>([])
+// const orderRender = ref<IMaterialRenderGroup | null>(null)
 
 // __ Вычисляемые свойства
 const actionText = computed(() => sewingTasks.value.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
@@ -96,27 +98,15 @@ async function showError(error: string | string[] | null = null) {
 
 // __ Получаем СЗ с сервера
 const getOrdersWithMaterials = async () => {
-    const loadedOrders = await ordersStore.getOrdersWithMaterials([406, 414])
-    // const loadedOrders = await ordersStore.getOrdersWithMaterials([props.id])
-    orderRender.value  = loadedOrders[0] ?? []
-    if (orderRender.value) {
-        orderRender.value.lines = orderRender.value.lines.map(line => {
-            return {
-                ...line,
-                collapsed_materials: true,
-                materials: line.materials?.toSorted((a, b) => a.name.localeCompare(b.name))
-            }
-        })
-    }
+    const loadedOrders = await ordersStore.getOrdersWithMaterials([props.id])
+    // const loadedOrders = await ordersStore.getOrdersWithMaterials([447, 455])
+    groups.value       = sortMaterialsOrdersData(loadedOrders)
 
+    // let loadedOrders  = await ordersStore.getOrdersWithMaterials([props.id])
+    // loadedOrders      = loadedOrders || []
+    // loadedOrders      = sortMaterialsOrdersData(loadedOrders)
+    // orderRender.value = loadedOrders[0] ?? []
 }
-
-// const getTasks = async () => {
-//     return
-//     const tasks: ISewingTask[] = await sewingStore.getSewingTasksByOrderId(props.id)
-//     sewingTasks.value          = tasks
-//         .map(task => ({ ...task, collapsed: true }))
-// }
 
 
 // __ Удаляем/добавляем СЗ
@@ -181,11 +171,9 @@ onMounted(async () => {
         loadingService,
         async () => {
 
-            // await getTasks()
-            // if (DEBUG) console.log('sewingTasks: ', sewingTasks.value)
-
             await getOrdersWithMaterials()
-            if (DEBUG) console.log('orderRender: ', orderRender.value)
+            if (DEBUG) console.log('groups: ', groups.value)
+            // if (DEBUG) console.log('orderRender: ', orderRender.value)
         },
         undefined,
         // false,

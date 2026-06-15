@@ -758,35 +758,49 @@ class OrderController extends Controller
             $cleanOrderIds = $orderIds;
             //$cleanOrderIds = $request->input('ids');
 
-            $materials = Material::query()->select('materials.*')
+            $materials = Material::query()
+                ->select('materials.*')
+
+                // 0. Единица измерения
+                ->addSelect('materials.unit as material_unit')
+
+                // 1. Данные самого Заказа и Клиента (уровень повыше)
                 ->addSelect('order_lines.order_id')
+                ->addSelect('orders.order_no_num')
+                ->addSelect('clients.short_name as client_name')
+
+                // 2. Данные конкретной Строки заказа
                 ->addSelect('order_lines.id as order_line_id')
                 ->addSelect('order_lines.width')
                 ->addSelect('order_lines.length')
                 ->addSelect('order_lines.height')
                 ->addSelect('order_lines.amount as line_amount')
 
+                // 3. Данные Модели
                 ->addSelect('models.code_1c as model_code_1c')
                 ->addSelect('models.name as model_name')
 
-                // 1. Считаем ЧИСТЫЙ РАСХОД на всю строку заказа
+                // 4. Агрегаты Расхода и Отхода
                 ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) as total_expense'))
-
-                // 2. Считаем ОБЩИЙ ОТХОД на всю строку заказа
                 ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.rest_per_pic) as total_rest'))
 
-                // Связи
+                // Цепочка джоинов: Материал -> Пивот -> Строка -> Заказ -> Клиент (и параллельно Строка -> Модель)
                 ->join('order_line_material_pivot', 'order_line_material_pivot.material_code_1c', '=', 'materials.' . CODE_1C)
                 ->join('order_lines', 'order_lines.id', '=', 'order_line_material_pivot.order_line_id')
+                ->join('orders', 'orders.id', '=', 'order_lines.order_id')
+                ->join('clients', 'clients.id', '=', 'orders.client_id')
                 ->join('models', 'models.code_1c', '=', 'order_lines.model_code_1c')
 
                 ->whereIn('order_lines.order_id', $cleanOrderIds)
                 ->with(['category', 'group'])
 
-                // Группировка (добавили rest_per_pic)
+                // Все неагрегированные поля добавляем в GROUP BY
                 ->groupBy(
                     'materials.' . CODE_1C,
+                    'materials.unit',
                     'order_lines.order_id',
+                    'orders.order_no_num',
+                    'clients.short_name',
                     'order_lines.id',
                     'order_lines.width',
                     'order_lines.length',
@@ -797,9 +811,54 @@ class OrderController extends Controller
                     'order_line_material_pivot.expense_per_pic',
                     'order_line_material_pivot.rest_per_pic'
                 )
+
                 // Отсекаем строки, где и расход, и отход равны нулю
                 ->having(DB::raw('(SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) + SUM(order_lines.amount * order_line_material_pivot.rest_per_pic))'), '>', 0)
                 ->get();
+
+
+            //$materials = Material::query()->select('materials.*')
+            //    ->addSelect('order_lines.order_id')
+            //    ->addSelect('order_lines.id as order_line_id')
+            //    ->addSelect('order_lines.width')
+            //    ->addSelect('order_lines.length')
+            //    ->addSelect('order_lines.height')
+            //    ->addSelect('order_lines.amount as line_amount')
+            //
+            //    ->addSelect('models.code_1c as model_code_1c')
+            //    ->addSelect('models.name as model_name')
+            //
+            //    // 1. Считаем ЧИСТЫЙ РАСХОД на всю строку заказа
+            //    ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) as total_expense'))
+            //
+            //    // 2. Считаем ОБЩИЙ ОТХОД на всю строку заказа
+            //    ->addSelect(DB::raw('SUM(order_lines.amount * order_line_material_pivot.rest_per_pic) as total_rest'))
+            //
+            //    // Связи
+            //    ->join('order_line_material_pivot', 'order_line_material_pivot.material_code_1c', '=', 'materials.' . CODE_1C)
+            //    ->join('order_lines', 'order_lines.id', '=', 'order_line_material_pivot.order_line_id')
+            //    ->join('models', 'models.code_1c', '=', 'order_lines.model_code_1c')
+            //
+            //    ->whereIn('order_lines.order_id', $cleanOrderIds)
+            //    ->with(['category', 'group'])
+            //
+            //    // Группировка (добавили rest_per_pic)
+            //    ->groupBy(
+            //        'materials.' . CODE_1C,
+            //        'order_lines.order_id',
+            //        'order_lines.id',
+            //        'order_lines.width',
+            //        'order_lines.length',
+            //        'order_lines.height',
+            //        'order_lines.amount',
+            //        'models.code_1c',
+            //        'models.name',
+            //        'order_line_material_pivot.expense_per_pic',
+            //        'order_line_material_pivot.rest_per_pic'
+            //    )
+            //    // Отсекаем строки, где и расход, и отход равны нулю
+            //    ->having(DB::raw('(SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) + SUM(order_lines.amount * order_line_material_pivot.rest_per_pic))'), '>', 0)
+            //    ->get();
 
             // Передаем в сборщик дерева
             $tree = OrdersService::buildDetailedMaterialTree($materials);
