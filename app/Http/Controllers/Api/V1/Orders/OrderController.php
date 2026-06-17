@@ -134,6 +134,8 @@ class OrderController extends Controller
      */
     public function uploadOrders(Request $request)
     {
+        return OrderControllerLogic::uploadOrders($request);
+
         //try {
         $data = $request->validate(['data' => 'required|json']);
 
