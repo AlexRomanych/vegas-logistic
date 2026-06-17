@@ -40,6 +40,9 @@
             <!-- __ Количество -->
             <AppLabelTSWrapper :render-object="render.modelAmount" header/>
 
+            <!-- __ Ткань -->
+            <AppLabelTSWrapper :render-object="render.textile" header/>
+
             <!-- __ Состава изделия -->
             <AppLabelTSWrapper :render-object="render.composition" header/>
 
@@ -51,6 +54,9 @@
 
             <!-- __ Примечание 3 -->
             <AppLabelTSWrapper :render-object="render.describe_3" header/>
+
+            <!-- __ Спецификация -->
+            <AppLabelTSWrapper :render-object="render.specification" header/>
 
             <!-- __ Кнопка удалить -->
             <AppLabelTSWrapper :render-object="render.deleteButton" header/>
@@ -96,6 +102,9 @@
             <!-- __ Количество -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelAmount"/>
 
+            <!-- __ Ткань -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.textile"/>
+
             <!-- __ Состава изделия -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.composition"/>
 
@@ -107,6 +116,9 @@
 
             <!-- __ Примечание 3 -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_3"/>
+
+            <!-- __ Спецификация -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.specification"/>
 
             <!-- __ Кнопка удалить -->
             <AppLabelTSWrapper
@@ -280,6 +292,20 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.amount.toString(),
     },
+    textile            : {
+        header        : 'Ткань',
+        width         : 'w-[100px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : 'center',
+        dataAlign     : 'center',
+        data          : (orderLine: IRenderOrderLine) => orderLine.textile,
+    },
     composition        : {
         header        : 'Комментарий',
         width         : 'w-[248px]',
@@ -335,6 +361,20 @@ const render: IRenderData = reactive({
         headerAlign   : 'center',
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_3,
+    },
+    specification      : {
+        header        : 'Спецификация',
+        width         : 'w-[175px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (orderLine: IRenderOrderLine) => orderLine.specification ? DEFAULT_TYPE : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : 'center',
+        dataAlign     : DATA_ALIGN,
+        data          : (orderLine: IRenderOrderLine) => orderLine.specification ? orderLine.specification.name : '',
     },
     deleteButton       : {
         header        : '🗑️',

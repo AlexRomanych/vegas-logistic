@@ -1,0 +1,36 @@
+<?php /** @noinspection ALL */
+
+namespace App\Http\Resources\Order\Render;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class OrderLineSpecificationRenderResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'code_1c'       => $this->code_1c,
+            'name'          => $this->name,
+            //'model_code_1c' => $this->model_code_1c,
+            //'model_name'    => $this->model_name,
+            //'type'          => $this->type,
+            //'active'        => $this->active,
+            //'status'        => $this->status,
+            //'description'   => $this->description,
+            //'comment'       => $this->comment,
+            //'note'          => $this->note,
+            //'meta'          => $this->meta,
+            //'color'         => $this->color,
+            //'created_at'    => $this->created_at,
+            //'updated_at'    => $this->updated_at,
+
+            //'_' => parent::toArray($request)
+        ];
+    }
+}

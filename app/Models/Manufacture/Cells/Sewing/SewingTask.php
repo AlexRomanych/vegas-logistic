@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class SewingTask extends Model
 {
@@ -90,6 +91,12 @@ class SewingTask extends Model
             ->orderBy('position');
     }
 
+    public function lines(): HasMany
+    {
+        return $this
+            ->hasMany(SewingTaskLine::class, 'sewing_task_id')
+            ->orderBy('position');
+    }
 
     // Relations: Связь со Статусами
     public function statuses(): BelongsToMany
@@ -125,5 +132,32 @@ class SewingTask extends Model
         // ИЛИ, если хочешь по дате создания:
         // return $this->hasOne(TaskStatus::class)->latestOfMany('created_at');
     }
+
+    // Relations: ОДИН актуальный полноценный статус (пробивая пивот насквозь)
+    public function currentStatus(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            SewingTaskStatus::class,       // Конечная модель, которую хотим получить
+            SewingTaskStatusPivot::class,  // Промежуточная таблица (пивот)
+            'sewing_task_id',              // Внешний ключ в промежуточной таблице
+            'id',                          // Внешний ключ в конечной таблице
+            'id',                          // Локальный ключ в текущей таблице (SewingTask)
+            'sewing_task_status_id'        // Локальный ключ в промежуточной таблице
+        )
+            // __ Принудительно выбираем поля статуса + нужные поля из пивота с алиасами
+            ->select([
+                'sewing_task_statuses.*', // Все поля самого статуса (id, name, color...)
+
+                // __ Вытягиваем поля из таблицы пивота (подставь реальное имя таблицы, если оно отличается)
+                'sewing_task_status_pivot.set_at',
+                //'sewing_task_status_pivot.set_at as pivot_set_at',
+                //'sewing_task_status_pivot.id as pivot_id',
+                //'sewing_task_status_pivot.started_at as pivot_started_at',
+                //'sewing_task_status_pivot.finished_at as pivot_finished_at',
+                //'sewing_task_status_pivot.duration as pivot_duration',
+            ])
+            ->latestOfMany('id'); // И берем только самый последний по ID пивота!
+    }
+
 
 }

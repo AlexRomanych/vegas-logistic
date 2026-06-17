@@ -19,9 +19,11 @@ use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
 use App\Services\PlanService;
+use App\Services\RunService;
 use App\Services\SizeService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -65,35 +67,6 @@ class OrderController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
-
-
-        // $orders = PlanLoad::query()
-        //     ->with(['lines.model.modelType', 'client', 'orderType'])
-        //     ->get();
-
-        // $validData = $request->validate([
-        //     'start' => 'required|date|beforeOrEqual:end',
-        //     'end'   => 'required|date|afterOrEqual:start',
-        // ]);
-
-        //        return apiDebug($validData);
-        //        return $validData;
-
-        // $orders = Order::query()
-        //     ->whereBetween('load_date', [$validData['start'], $validData['end']])
-        //     ->get();
-        // //        $orders = Order::all();
-        //
-        //
-        // return new OrderCollection($orders);
-
-        //        return $orders;
-
-        //        return apiDebug($orders);
-        //        return new OrderCollection(
-        //            Order::whereBetween('unload_date', [$validData['start'], $validData['end']])
-        //        );
-
     }
 
 
@@ -113,7 +86,20 @@ class OrderController extends Controller
                 ->validate();
 
             $order = Order::query()
-                ->with(['lines.model.modelType', 'client', 'orderType'])
+                ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
+                ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
+                ->with([
+                    'lines.model.modelType',
+                    'lines.specification',
+                    'client',
+                    'orderType',
+                    'sewingTask.lines',
+                    'sewingTask.lines.orderLine',
+                    'sewingTask.currentStatus',
+                    'cuttingTask.lines',
+                    'cuttingTask.currentStatus',
+                    'cuttingTask.currentStatus.orderLine',
+                ])
                 ->findOrFail($id);
 
             return new OrderRenderResource($order);
@@ -165,6 +151,11 @@ class OrderController extends Controller
         // $missingModels  = [];            // Не найденные модели
         // $missingClients = [];            // Не найденные клиенты
 
+        // __ Сюда собираем id Заказов, для которых нужно рассчитать сырье
+        $ordersIsdForExpense = [];
+
+        // __ Сюда собираем id Заказов, для которых нужно Рассчитать крой в Раскрое
+        $ordersIsdForCuttingCut = [];
 
         foreach ($orders as $order) {
             // __ Пропускаем игнорируемые заявки и игнорируемые клиенты
@@ -208,7 +199,7 @@ class OrderController extends Controller
                 throw new Exception('Client with id = ' . $order['client_id'] . ' not found');
             }
 
-            DB::transaction(function () use ($order, $client) {
+            DB::transaction(function () use ($order, $client, &$ordersIsdForExpense, &$ordersIsdForCuttingCut) {
                 // __ Если нужно добавить заявку или обновить, то добавляем или обновляем
                 if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD ||
                     $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_UPDATE) {
@@ -286,6 +277,14 @@ class OrderController extends Controller
                         $forecastOrder->save();
 
                         $needToDistribute = true;
+
+                        // __ Добавляем для рассчета сырья обновленную прогнозную Заявку
+                        $ordersIsdForExpense[] = $forecastOrder->id;
+                        //$ordersIsdForExpense[] = [
+                        //    'id'                 => $forecastOrder->id,
+                        //    'need_to_distribute' => true,
+                        //    'elements_type'      => $elementsTypeRef,
+                        //];
                     } else {
                         // __ Иначе создаем новую Заявку
                         $createdOrder = Order::query()->create([
@@ -348,6 +347,14 @@ class OrderController extends Controller
                         if (!$createdOrder) {
                             throw new Exception('Creating order with 1c code = ' . $order['order_code'] . ' failed');
                         }
+
+                        // __ Добавляем для рассчета сырья созданную Заявку
+                        $ordersIsdForExpense[] = $createdOrder->id;
+                        //$ordersIsdForExpense[] = [
+                        //    'id'                 => $createdOrder->id,
+                        //    'need_to_distribute' => true,
+                        //    'elements_type'      => $elementsTypeRef,
+                        //];
                     }
 
                     // __ Добавляем контекст Заявки (OrderLines)
@@ -429,6 +436,8 @@ class OrderController extends Controller
                             //$result = CuttingService::distributeCuttingTaskFromOrderId($forecastOrder->id);
                             //if (!$result) {
                             //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $client->id);
+                            //} else {
+                            //  $ordersIsdForCuttingCut[] = $forecastOrder->id;
                             //}
 
                             // __ Распределяем СЗ на Сборку
@@ -458,6 +467,8 @@ class OrderController extends Controller
                             //$sewingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
                             //if (!$sewingTask) {
                             //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+                            //} else {
+                            //  $ordersIsdForCuttingCut[] = $createdOrder->id;
                             //}
 
                             // __ Создаем СЗ на Сборку
@@ -468,12 +479,24 @@ class OrderController extends Controller
             });
         }
 
+        // ___ Парсим Расход
+        try {
+            $result = RunService::runExpenseParser_Rust($ordersIsdForExpense);
+
+            if ((int)$result !== 0) {
+                return EndPointStaticRequestAnswer::failResponse('Ошибка при расчете сырья');
+            }
+            $a = 0;
+            return EndPointStaticRequestAnswer::ok('Расход рассчитан');
+        } catch (\Exception $e) {
+            $a = $e->getMessage();
+            $a = 0;
+            return EndPointStaticRequestAnswer::failResponse($e);
+        }
 
         // $a = $orderDubs;            // Дубли заказов
         // $b = $missingModels;        // Не найденные модели
         // $c = $missingClients;       // Не найденные клиенты
-
-        // return 'done...';
 
         return EndPointStaticRequestAnswer::ok('Заявки успешно загружены');
         //} catch (Exception|Throwable $e) {
@@ -706,9 +729,8 @@ class OrderController extends Controller
 
             $loadedOrders = Order::query()
                 ->whereIn('id', $orderIds)
-                ->with(['lines', 'lines.materials', 'lines.model'])
+                ->with(['lines', 'lines.materials', 'lines.model', 'lines.specification'])
                 ->get();
-
 
             return OrderRenderResource::collection($loadedOrders);
         } catch (Exception $e) {
@@ -717,12 +739,11 @@ class OrderController extends Controller
     }
 
 
-
-
-
-
-
-
+    /**
+     * __ Получаем материалы для картчки заказа
+     * @param Request $request
+     * @return JsonResponse|string
+     */
     public function getOrderWithMaterials(Request $request)
     {
         try {
@@ -790,7 +811,6 @@ class OrderController extends Controller
                 ->join('orders', 'orders.id', '=', 'order_lines.order_id')
                 ->join('clients', 'clients.id', '=', 'orders.client_id')
                 ->join('models', 'models.code_1c', '=', 'order_lines.model_code_1c')
-
                 ->whereIn('order_lines.order_id', $cleanOrderIds)
                 ->with(['category', 'group'])
 
@@ -813,7 +833,13 @@ class OrderController extends Controller
                 )
 
                 // Отсекаем строки, где и расход, и отход равны нулю
-                ->having(DB::raw('(SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) + SUM(order_lines.amount * order_line_material_pivot.rest_per_pic))'), '>', 0)
+                ->having(
+                    DB::raw(
+                        '(SUM(order_lines.amount * order_line_material_pivot.expense_per_pic) + SUM(order_lines.amount * order_line_material_pivot.rest_per_pic))'
+                    ),
+                    '>',
+                    0
+                )
                 ->get();
 
 
@@ -867,19 +893,11 @@ class OrderController extends Controller
                 'success' => true,
                 'data'    => $tree
             ]);
-
-            return OrderRenderResource::collection($loadedOrders);
+            //return OrderRenderResource::collection($loadedOrders);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
-
-
-
-
-
 
 
     public function getOrderWithMaterials_Old(Request $request)
@@ -941,8 +959,7 @@ class OrderController extends Controller
                 'success' => true,
                 'data'    => $tree
             ]);
-
-            return OrderRenderResource::collection($loadedOrders);
+            //return OrderRenderResource::collection($loadedOrders);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

@@ -14,6 +14,12 @@ class SewingTaskStatusPivot extends Pivot
     public const TABLE = 'sewing_task_status_pivot';
     protected $table = self::TABLE;
 
+
+    protected $casts = [
+        'set_at' => 'datetime',
+    ];
+
+
     // __ Можно добавить хелпер для проверки, является ли запись "открытой"
     public function isOpen(): bool
     {

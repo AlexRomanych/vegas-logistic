@@ -55,7 +55,10 @@ export interface IRenderOrder {
         sewing_task: boolean,
     }
 
-
+    tasks: {
+        sewing_tasks: IRenderTask[],
+        cutting_tasks: IRenderTask[],
+    }
 }
 
 export interface IRenderOrderClient {
@@ -90,6 +93,7 @@ export interface IRenderOrderLine {
     id: number
     model: IRenderOrderLineModel
     materials?: IRenderOrderLineMaterial[]
+    specification?: IRenderOrderLineSpecification
 
     collapsed_materials?: boolean
 }
@@ -117,6 +121,24 @@ export interface IRenderOrderLineMaterial {
     unit: string
 }
 
+export interface IRenderOrderLineSpecification {
+    code_1c: string
+    name: string
+}
+
+export interface IRenderTask {
+    task_id: number
+    action_at: string
+    line_ids: number[]
+    status: IRenderTaskStatus
+
+}
+
+export interface IRenderTaskStatus {
+    status_id: number
+    display_name: string
+    set_at: string | null
+}
 
 // ___ Проверенная Заявка, которая вернулась с сервера
 export interface IValidatedOrder {

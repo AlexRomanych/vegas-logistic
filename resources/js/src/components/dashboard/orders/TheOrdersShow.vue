@@ -994,6 +994,7 @@ const deleteOrderLine = async (orderLine: IRenderOrderLine) => {
     const answer = await appModalAsyncMultiline.value!.show()
 
     if (answer) {
+        // console.log(orderLine)
         // const result = await ordersStore.deleteOrderLine(orderLine.id)
 
         // if (checkCRUD(result)) {

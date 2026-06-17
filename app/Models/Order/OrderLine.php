@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\Materials\Material;
+use App\Models\Models\ModelConstruct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -37,6 +38,12 @@ class OrderLine extends Model
             ->using(OrderLineMaterialPivot::class) // 5. Указываем использовать кастомную пивот-модель
             ->withPivot(['expense_per_pic', 'rest_per_pic']);
             //->withTimestamps();                    // 6. Если в пивот-таблице есть поля created_at/updated_at
+    }
+
+    // Relations: Связь со спецификацией, котрая подгружается из 1С
+    public function specification(): BelongsTo
+    {
+        return $this->belongsTo(ModelConstruct::class, 'construct_code_1c', CODE_1C);
     }
 
 }

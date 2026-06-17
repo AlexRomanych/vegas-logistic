@@ -45,16 +45,18 @@
 </template>
 
 <script setup lang="ts">
+import type { IColorTypes, IRenderOrder, IRenderOrderLine } from '@/types'
 
 import { onMounted, ref, shallowRef, computed, defineAsyncComponent /* provide, watch */ } from 'vue'
-
 import { useRoute, useRouter } from 'vue-router'
-import type { IColorTypes, IRenderOrder, IRenderOrderLine } from '@/types'
+
+import { SEWING_TASK_STATUSES } from '@/app/constants/sewing.ts'
+import { CUTTING_TASK_STATUSES } from '@/app/constants/cutting.ts'
 
 import { useOrdersStore } from '@/stores/OrdersStore'
 // import { useSewingStore } from '@/stores/SewingStore'
 
-import { formatDateTime } from '@/app/helpers/helpers_date'
+import { formatDateInFullFormat, formatDateTime } from '@/app/helpers/helpers_date'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 // import { loadAsyncComponent } from '@/app/composable/loadAsyncComponent.ts'
 // import { OrderKey, IdKey } from './order_components/order_card/injectionKeys'
@@ -279,11 +281,62 @@ const patchDescription = async (newText: string) => {
 
 // __ Удаляем линию контекста в Заявке
 const deleteOrderLine = async (inOrderLine: IRenderOrderLine) => {
-    console.log('orderLine: ', inOrderLine)
+    // console.log('orderLine: ', inOrderLine)
 
     // __ Находим строку
     const orderLine = order.value?.lines.find(line => line.id === inOrderLine.id)
     if (!orderLine) {
+        return
+    }
+
+    // __ Проверка на присутствии строки в СЗ для проверки на статус
+    // __ Нельзя удалить, если Выполено или Выполняется
+
+    // __ Пошив
+    let findTask = null
+    for (const task of (order.value?.tasks.sewing_tasks || [])) {
+        if (task.line_ids.includes(inOrderLine.id)) {
+            findTask = task
+            break
+        }
+    }
+
+    if (findTask && [SEWING_TASK_STATUSES.RUNNING.ID, SEWING_TASK_STATUSES.DONE.ID].includes(findTask.status.status_id)) {
+        modalInfoText.value = [
+            'Строка:',
+            `${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
+            'не может быть удалена.',
+            `Она присутствует в СЗ Пошива от ${formatDateInFullFormat(findTask.action_at)}`,
+            `со статусом ${findTask.status.display_name}`
+        ]
+
+        modalInfoType.value = 'danger'
+        modalInfoMode.value = 'inform'
+        await appModalAsyncMultiline.value!.show()
+        return
+    }
+
+    // __ Раскрой
+    findTask = null
+    for (const task of (order.value?.tasks.cutting_tasks || [])) {
+        if (task.line_ids.includes(inOrderLine.id)) {
+            findTask = task
+            break
+        }
+    }
+
+    if (findTask && [CUTTING_TASK_STATUSES.RUNNING.ID, CUTTING_TASK_STATUSES.DONE.ID].includes(findTask.status.status_id)) {
+        modalInfoText.value = [
+            'Строка:',
+            `${orderLine.size} ${orderLine.model.name_report} ${orderLine.amount}`,
+            'не может быть удалена.',
+            `Она присутствует в СЗ Раскроя от ${formatDateInFullFormat(findTask.action_at)}`,
+            `со статусом ${findTask.status.display_name}`
+        ]
+
+        modalInfoType.value = 'danger'
+        modalInfoMode.value = 'inform'
+        await appModalAsyncMultiline.value!.show()
         return
     }
 
@@ -299,17 +352,20 @@ const deleteOrderLine = async (inOrderLine: IRenderOrderLine) => {
 
     const answer = await appModalAsyncMultiline.value!.show()
     if (answer) {
-        // const result = await ordersStore.deleteOrderLine(orderLineId)
-        order.value!.lines = order.value!.lines.filter(line => line.id !== inOrderLine.id)
 
-        // if (checkCRUD(result)) {
-        //     if (order.value) {
-        //         order.value.lines = order.value.lines.filter(line => line.id !== orderLineId)
-        //     }
-        // } else {
-        //     await showError()
-        //     return
-        // }
+        const result = await ordersStore.deleteOrderLine(inOrderLine.id)
+
+
+        if (checkCRUD(result)) {
+            if (order.value) {
+                order.value.lines = order.value.lines.filter(line => line.id !== inOrderLine.id)
+                //!!! TODO WARNING!!! IMPORTANT!!! Сообщение о пересчете СЗ для Блоков
+
+            }
+        } else {
+            await showError()
+            return
+        }
     }
 
 }
@@ -331,6 +387,7 @@ const dynamicEvents = computed(() => {
     }
 
     if (activeTabName.value === TAB_NAME_CONTEXT) {
+        // console.log('deleteOrderLine: ', deleteOrderLine)
         events['delete-order-line'] = deleteOrderLine
         return events
     }
