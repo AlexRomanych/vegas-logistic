@@ -10,6 +10,7 @@ use App\Models\Logs\EventLog;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
+use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
 use App\Services\OrdersService;
@@ -279,20 +280,23 @@ class OrderControllerLogic
                         /** @var Order $createdOrder */
                         $createLine = OrderLine::query()->create(
                             [
-                                'order_id'          => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
-                                'size'              => $orderLine['s'],
-                                'width'             => $dims->getWidth(),
-                                'length'            => $dims->getLength(),
-                                'height'            => $dims->getHeight(),
-                                'model_name'        => $orderLine['n'],
-                                'model_code_1c'     => $findModel->code_1c,
-                                'amount'            => $orderLine['a'],
-                                'textile'           => $orderLine['t'],
-                                'composition'       => $orderLine['d'],
-                                'describe_1'        => $orderLine['d1'],
-                                'describe_2'        => $orderLine['d2'],
-                                'describe_3'        => $orderLine['d3'],
-                                'construct_code_1c' => $orderLine['sp'] ?? null,
+                                'order_id'              => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
+                                'size'                  => $orderLine['s'],
+                                'width'                 => $dims->getWidth(),
+                                'length'                => $dims->getLength(),
+                                'height'                => $dims->getHeight(),
+                                'model_name'            => $orderLine['n'],
+                                'model_code_1c'         => $findModel->code_1c,
+                                'amount'                => $orderLine['a'],
+                                'textile'               => $orderLine['t'],
+                                'composition'           => $orderLine['d'],
+                                'describe_1'            => $orderLine['d1'],
+                                'describe_2'            => $orderLine['d2'],
+                                'describe_3'            => $orderLine['d3'],
+                                'construct_code_1c'     => $orderLine['sp'] ?? null,
+                                'construct_name'        => $orderLine['spn'] ?? null,
+                                'construct_add_code_1c' => $orderLine['spa'] ?? null,
+                                'construct_add_name'    => $orderLine['span'] ?? null,
 
                                 // 'active'        => $orderLine[''],
                                 // 'status'        => $orderLine[''],
@@ -318,22 +322,24 @@ class OrderControllerLogic
             });
         }
 
+        $a = 0;
 
         // ___ Парсим Расход
         $orderIds = array_column($ordersIsdForExpense, 'id');
-        $result   = RunService::runExpenseParser_Rust($orderIds);
-
-        // __ Пишем в EventLog Ошибку
-        if ((int)$result !== 0) {
-            $eventLog          = new EventLog();
-            $eventLog->level   = EventLog::LEVEL_ERROR;
-            $eventLog->target  = EventLog::TARGET_EXPENSE;
-            $eventLog->message = 'Ошибка при расчете расхода сырья';
-            $eventLog->context = ['Class' => self::class];
-            $eventLog->save();
-        }
+        //$result   = RunService::runExpenseParser_Rust($orderIds);
+        //
+        //// __ Пишем в EventLog Ошибку
+        //if ((int)$result !== 0) {
+        //    $eventLog          = new EventLog();
+        //    $eventLog->level   = EventLog::LEVEL_ERROR;
+        //    $eventLog->target  = EventLog::TARGET_EXPENSE;
+        //    $eventLog->message = 'Ошибка при расчете расхода сырья';
+        //    $eventLog->context = ['Class' => self::class];
+        //    $eventLog->save();
+        //}
 
         DB::transaction(function () use ($ordersIsdForExpense) {
+            $a = 0;
             // __ Этап 2. Создаем сменные задания
             foreach ($ordersIsdForExpense as $orderData) {
                 // __ Тут добавляем или распределяем СЗ на нужные участки
@@ -350,12 +356,12 @@ class OrderControllerLogic
 
                         // __ Распределяем СЗ на Раскрой
                         /** @var Order $forecastOrder */
-                        //$result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id']);
-                        //if (!$result) {
-                        //    throw new Exception('Error while distributing Cutting Task with Client id = ' . $orderData['client_id']);
-                        //} else {
-                        //  $ordersIsdForCuttingCut[] = $orderData['id'];
-                        //}
+                        $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id']);
+                        if (!$result) {
+                            throw new Exception('Error while distributing Cutting Task with Client id = ' . $orderData['client_id']);
+                        } else {
+                            $ordersIsdForCuttingCut[] = $orderData['id'];
+                        }
 
                         // __ Распределяем СЗ на Сборку
                         // __ ...
@@ -385,11 +391,11 @@ class OrderControllerLogic
 
                         // __ Создаем СЗ на Раскрой !!!
                         /** @var Order $createdOrder */
-                        //$sewingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id']);
-                        //if (!$sewingTask) {
+                        //$cuttingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id']);
+                        //if (!$cuttingTask) {
                         //    throw new Exception('Error while creating Cutting Task with Client id = ' . $orderData['client_id']);
                         //} else {
-                        //  $ordersIsdForCuttingCut[] = $orderData['client_id'];
+                        //    $ordersIsdForCuttingCut[] = $orderData['client_id'];
                         //}
 
                         // __ Создаем СЗ на Сборку

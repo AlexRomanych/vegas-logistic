@@ -8,10 +8,12 @@ use App\Enums\ElementTypes;
 use App\Models\Client;
 use App\Models\Models\Model;
 use App\Models\Models\ModelCollection;
+use App\Models\Models\ModelConstruct;
 use App\Models\Models\ModelManufactureGroup;
 use App\Models\Models\ModelManufactureStatus;
 use App\Models\Models\ModelManufactureType;
 use App\Models\Models\ModelType;
+use App\Services\Manufacture\CuttingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -110,7 +112,16 @@ final class ModelsService implements VegasDataUpdateContract
         if (!array_key_exists($code, self::$modelsCacheByCode1C)) {
             // Точечный запрос в базу вместо лавины select *
             self::$modelsCacheByCode1C[$code] = Model::query()
-                ->with(['modelType', 'cover', 'base'])
+                ->with([
+                    'modelType',
+                    'cover',
+                    'base',
+                    'constructs',
+                    'sewingSchema.operations',
+                    'sewingOperations',
+                    'cuttingSchema.operations',
+                    'cuttingOperations',
+                ])
                 ->where('code_1c', $code)
                 ->first();
         }
@@ -1001,6 +1012,67 @@ final class ModelsService implements VegasDataUpdateContract
         };
 
         return str_contains(mb_strtolower($name), 'чехол');
+    }
+
+
+    /**
+     * ___ Пробуем определить по Спецификации ее принадлежность к Чехлу
+     * @param ModelConstruct|array|null $construct
+     * @return bool
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public static function isElementCoverByConstruct(ModelConstruct|array|null $construct): bool
+    {
+        if (is_null($construct)) {
+            return false;
+        }
+
+        $constructArray = $construct->toArray();
+
+        //$constructItems = [];
+        //$checkName      = false;
+        if ($construct instanceof ModelConstruct) {
+            // __ Пробуем найти по названию
+            if (mb_stripos($construct->name, 'чехол ') !== false) {
+                return true;
+            }
+            $constructItems = $construct->constructItems;
+        } elseif (is_array($construct)) {
+            $constructItems = $construct;
+        } else {
+            return false;
+        }
+
+        if (count($constructItems) === 0) {
+            return false;
+        }
+
+        // __ Пробуем найти по Деталькам Раскроя
+        $details = CuttingService::getCuttingDetailsByConstruct($constructItems);
+        if (count($details) !== 0) {
+            return true;
+        }
+
+        // __ Пробуем найти по анализу состава Спецификации
+        $countTextile = 0;
+        foreach ($constructItems as $item) {
+            if (mb_stripos(mb_strtolower($item->procedure_name), mb_strtolower('ПодборЧехлаДляМатраса')) !== false ||
+                mb_stripos(mb_strtolower($item->procedure_name), mb_strtolower('ПодборЧехлаДляНаматрасника')) !== false) {
+                return false;
+            }
+            if (mb_stripos($item->procedure_name, 'ПС ') !== false ||
+                mb_stripos($item->procedure_name, 'Жаккард') !== false ||
+                mb_stripos($item->procedure_name, 'Ткань') !== false ||
+                mb_stripos($item->procedure_name, 'Трикотажное полотно ') !== false) {
+                $countTextile++;
+            }
+        }
+
+        if ($countTextile > 1) {
+            return true;
+        }
+
+        return false;
     }
 
 

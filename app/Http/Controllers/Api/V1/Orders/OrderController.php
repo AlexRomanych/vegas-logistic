@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderTypes\OrderTypeResource;
+use App\Http\Resources\Order\Render\OrderRenderCuttingTaskContextResource;
 use App\Http\Resources\Order\Render\OrderRenderResource;
 use App\Models\Client;
 use App\Models\Materials\Material;
@@ -59,7 +60,13 @@ class OrderController extends Controller
                 ->whereDate('load_at', '<=', $end)      // ->whereBetween() не включает периоды
                 ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('sewingTask') // <-- Добавит boolean-поле sewing_task_exists
-                ->with(['lines.model.modelType', 'client', 'orderType'])
+                ->with([
+                    'lines.model.modelType',
+                    'lines.specification',
+                    'lines.specificationAdd',
+                    'client',
+                    'orderType'
+                ])
                 ->orderBy('load_at')
                 ->get();
 
@@ -91,14 +98,15 @@ class OrderController extends Controller
                 ->with([
                     'lines.model.modelType',
                     'lines.specification',
+                    'lines.specificationAdd',
                     'client',
                     'orderType',
                     'sewingTask.lines',
-                    'sewingTask.lines.orderLine',
                     'sewingTask.currentStatus',
+                    'sewingTask.lines.orderLine',
                     'cuttingTask.lines',
                     'cuttingTask.currentStatus',
-                    'cuttingTask.currentStatus.orderLine',
+                    'cuttingTask.lines.orderLine',
                 ])
                 ->findOrFail($id);
 
@@ -381,20 +389,23 @@ class OrderController extends Controller
                         /** @var Order $createdOrder */
                         $createLine = OrderLine::query()->create(
                             [
-                                'order_id'          => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
-                                'size'              => $orderLine['s'],
-                                'width'             => $dims->getWidth(),
-                                'length'            => $dims->getLength(),
-                                'height'            => $dims->getHeight(),
-                                'model_name'        => $orderLine['n'],
-                                'model_code_1c'     => $findModel->code_1c,
-                                'amount'            => $orderLine['a'],
-                                'textile'           => $orderLine['t'],
-                                'composition'       => $orderLine['d'],
-                                'describe_1'        => $orderLine['d1'],
-                                'describe_2'        => $orderLine['d2'],
-                                'describe_3'        => $orderLine['d3'],
-                                'construct_code_1c' => $orderLine['sp'] ?? null,
+                                'order_id'              => $needToDistribute ? $forecastOrder->id : $createdOrder->id,
+                                'size'                  => $orderLine['s'],
+                                'width'                 => $dims->getWidth(),
+                                'length'                => $dims->getLength(),
+                                'height'                => $dims->getHeight(),
+                                'model_name'            => $orderLine['n'],
+                                'model_code_1c'         => $findModel->code_1c,
+                                'amount'                => $orderLine['a'],
+                                'textile'               => $orderLine['t'],
+                                'composition'           => $orderLine['d'],
+                                'describe_1'            => $orderLine['d1'],
+                                'describe_2'            => $orderLine['d2'],
+                                'describe_3'            => $orderLine['d3'],
+                                'construct_code_1c'     => $orderLine['sp'] ?? null,
+                                'construct_name'        => $orderLine['spn'] ?? null,
+                                'construct_add_code_1c' => $orderLine['spa'] ?? null,
+                                'construct_add_name'    => $orderLine['span'] ?? null,
 
                                 // 'active'        => $orderLine[''],
                                 // 'status'        => $orderLine[''],
@@ -694,7 +705,39 @@ class OrderController extends Controller
 
 
     /**
-     * ___ Получаем Расход в Иерархии Заявки: Order->OrderLines->Materials
+     * ___ Получаем Заявки + Привязка к СЗ Раскроя
+     * @param string $id
+     * @return OrderRenderCuttingTaskContextResource|string
+     */
+    public function getOrdersWithCuttingTaskLines(string $id)
+    {
+        try {
+            $validate = Validator::make([
+                'id' => $id
+            ], [
+                'id' => 'required|numeric|exists:orders,id'
+            ])
+                ->validate();
+
+            $order = Order::query()
+                ->with([
+                    'lines.model',
+                    'lines.model.modelType',
+                    'lines.specification',
+                    'lines.specificationAdd',
+                    'lines.cuttingTaskLine',
+                ])
+                ->findOrFail($id);
+
+            return new OrderRenderCuttingTaskContextResource($order);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Получаем Расход в Иерархии Заявки: Order->OrderLines->Materials для группы Заявок
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -742,7 +785,7 @@ class OrderController extends Controller
 
 
     /**
-     * __ Получаем материалы для картчки заказа
+     * ___ Получаем материалы для карточки заказа для группы Заявок
      * @param Request $request
      * @return JsonResponse|string
      */

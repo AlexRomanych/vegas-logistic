@@ -2,11 +2,13 @@
 
 namespace App\Models\Order;
 
+use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Materials\Material;
 use App\Models\Models\ModelConstruct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderLine extends Model
 {
@@ -40,10 +42,22 @@ class OrderLine extends Model
             //->withTimestamps();                    // 6. Если в пивот-таблице есть поля created_at/updated_at
     }
 
-    // Relations: Связь со спецификацией, котрая подгружается из 1С
+    // Relations: Связь со Спецификацией, котрая подгружается из 1С
     public function specification(): BelongsTo
     {
         return $this->belongsTo(ModelConstruct::class, 'construct_code_1c', CODE_1C);
     }
 
+    // Relations: Связь с дополнительной Спецификацией, котрая подгружается из 1С
+    public function specificationAdd(): BelongsTo
+    {
+        return $this->belongsTo(ModelConstruct::class, 'construct_add_code_1c', CODE_1C);
+    }
+
+
+    // Relations: Связь со Строкой CuttingTaskLines (Обратная связь получения строки Заявки в Заказе)
+    public function cuttingTaskLine(): HasMany
+    {
+        return $this->hasMany(CuttingTaskLine::class, 'order_line_id', 'id');
+    }
 }

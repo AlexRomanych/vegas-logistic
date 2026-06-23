@@ -36,7 +36,7 @@
                         v-model:input-number.number="v$.productivity.$model as unknown as number"
                         :errors="v$.productivity.$errors"
                         :width="FIELD_WIDTH_LABEL"
-                        label="Производительность, мп/ч"
+                        label="Производительность, m2/ч"
                         mode="text"
                         placeholder="Производительность..."
                         step="0.001"

@@ -25,6 +25,9 @@
             <!-- __ Collapsed Materials -->
             <AppLabelTSWrapper :render-object="render.collapsed_materials" header/>
 
+            <!-- __ Collapsed CuttingDetails -->
+            <AppLabelTSWrapper :render-object="render.collapsed_cutting_details" header/>
+
             <!-- __ Collapsed -->
             <!--<AppLabelTSWrapper :render-object="render.collapsed" header @click="toggleCollapsed"/>-->
 
@@ -58,6 +61,9 @@
             <!-- __ Спецификация -->
             <AppLabelTSWrapper :render-object="render.specification" header/>
 
+            <!-- __ Дополнительная Спецификация -->
+            <AppLabelTSWrapper :render-object="render.specification_add" header/>
+
             <!-- __ Кнопка удалить -->
             <AppLabelTSWrapper :render-object="render.deleteButton" header/>
 
@@ -90,6 +96,9 @@
             <!-- __ Collapsed Materials -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_materials" @click="render.collapsed_materials.click!(orderLine)"/>
 
+            <!-- __ Collapsed CuttingDetails -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_cutting_details" @click="render.collapsed_cutting_details.click!(orderLine)"/>
+
             <!-- __ Тип изделия -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelType"/>
 
@@ -120,6 +129,9 @@
             <!-- __ Спецификация -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.specification"/>
 
+            <!-- __ Дополнительная Спецификация -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.specification_add"/>
+
             <!-- __ Кнопка удалить -->
             <AppLabelTSWrapper
                 :arg="orderLine"
@@ -134,6 +146,13 @@
         <template v-if="showMaterials">
             <div v-if="!orderLine.collapsed_materials" class="ml-[74px]">
                 <OrderLineMaterials :line="orderLine"/>
+            </div>
+        </template>
+
+        <!-- __ Детальки СЗ для Раскроя -->
+        <template v-if="showCuttingDetails">
+            <div v-if="!orderLine.collapsed_cutting_details" class="ml-[74px]">
+                <OrderLineCuttingDetail :line="orderLine"/>
             </div>
         </template>
 
@@ -160,18 +179,21 @@ import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabel
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import OrderItemInfo from '@/components/dashboard/orders/order_components/order_common/OrderItemInfo.vue'
 import OrderLineMaterials from '@/components/dashboard/orders/order_components/order_render/OrderLineMaterials.vue'
+import OrderLineCuttingDetail from '@/components/dashboard/orders/order_components/order_render/OrderLineCuttingDetail.vue'
 
 interface IProps {
     orderLines: IRenderOrderLine[]
     showCollapsed?: boolean
     showDelete?: boolean
     showMaterials?: boolean
+    showCuttingDetails?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    showCollapsed: true,
-    showDelete   : false,
-    showMaterials: false,
+    showCollapsed     : true,
+    showDelete        : false,
+    showMaterials     : false,
+    showCuttingDetails: false,
 })
 
 const emits = defineEmits<{
@@ -202,7 +224,7 @@ const DATA_ALIGN       = 'left'
 
 
 const render: IRenderData = reactive({
-    collapsed          : {
+    collapsed                : {
         header        : '▲',
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -221,7 +243,7 @@ const render: IRenderData = reactive({
         // click: (orderLine: IRenderOrderLine) => dotLogistic.collapsed = !dotLogistic.collapsed
         // click: (dotLogistic: IDotLogistic) => console.log(dotLogistic)
     },
-    collapsed_materials: {
+    collapsed_materials      : {
         header        : '▲▼',
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -236,7 +258,22 @@ const render: IRenderData = reactive({
         data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_materials ? '▲' : '▼',
         click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_materials = !orderLine.collapsed_materials
     },
-    modelType          : {
+    collapsed_cutting_details: {
+        header        : '▲▼',
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : props.showCuttingDetails,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'warning',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details ? '▲' : '▼',
+        click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details = !orderLine.collapsed_cutting_details
+    },
+    modelType                : {
         header        : 'Тип изделия',
         width         : 'w-[110px]',
         height        : DEFAULT_HEIGHT,
@@ -250,7 +287,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.model.model_type,
     },
-    modelSize          : {
+    modelSize                : {
         header        : 'Размер',
         width         : 'w-[80px]',
         height        : DEFAULT_HEIGHT,
@@ -264,7 +301,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.size,
     },
-    modelName          : {
+    modelName                : {
         header        : 'Модель',
         width         : 'w-[200px]',
         height        : DEFAULT_HEIGHT,
@@ -278,7 +315,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.model.name_report,
     },
-    modelAmount        : {
+    modelAmount              : {
         header        : 'Кол-во',
         width         : 'w-[50px]',
         height        : DEFAULT_HEIGHT,
@@ -292,7 +329,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.amount.toString(),
     },
-    textile            : {
+    textile                  : {
         header        : 'Ткань',
         width         : 'w-[100px]',
         height        : DEFAULT_HEIGHT,
@@ -306,7 +343,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.textile,
     },
-    composition        : {
+    composition              : {
         header        : 'Комментарий',
         width         : 'w-[248px]',
         height        : DEFAULT_HEIGHT,
@@ -320,7 +357,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.composition,
     },
-    describe_1         : {
+    describe_1               : {
         header        : 'Примечание 1',
         width         : 'w-[174px]',
         height        : DEFAULT_HEIGHT,
@@ -334,7 +371,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_1,
     },
-    describe_2         : {
+    describe_2               : {
         header        : 'Примечание 2',
         width         : 'w-[175px]',
         height        : DEFAULT_HEIGHT,
@@ -348,7 +385,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_2,
     },
-    describe_3         : {
+    describe_3               : {
         header        : 'Примечание 3',
         width         : 'w-[175px]',
         height        : DEFAULT_HEIGHT,
@@ -362,21 +399,37 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (orderLine: IRenderOrderLine) => orderLine.describe_3,
     },
-    specification      : {
+    specification            : {
         header        : 'Спецификация',
         width         : 'w-[175px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (orderLine: IRenderOrderLine) => orderLine.specification ? DEFAULT_TYPE : 'danger',
+        type          : (orderLine: IRenderOrderLine) => orderLine.specification ?  'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : 'center',
         dataAlign     : DATA_ALIGN,
-        data          : (orderLine: IRenderOrderLine) => orderLine.specification ? orderLine.specification.name : '',
+        data          : (orderLine: IRenderOrderLine) => orderLine.spec_name ?? '',
+        // data          : (orderLine: IRenderOrderLine) => orderLine.specification ? orderLine.specification.name : '',
     },
-    deleteButton       : {
+    specification_add        : {
+        header        : 'Доп. спецификация',
+        width         : 'w-[175px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (orderLine: IRenderOrderLine) => orderLine.specification_add ? 'success' : DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : 'center',
+        dataAlign     : DATA_ALIGN,
+        data          : (orderLine: IRenderOrderLine) => orderLine.spec_name_add ?? '',
+        // data          : (orderLine: IRenderOrderLine) => orderLine.specification_add ? orderLine.specification_add.name : '',
+    },
+    deleteButton             : {
         header        : '🗑️',
         width         : 'w-[40px]',
         height        : DEFAULT_HEIGHT,

@@ -104,6 +104,8 @@ Route::prefix('/orders')
         Route::get('/', [OrderController::class, 'getOrders']);
         Route::get('/expense', [OrderController::class, 'getOrderWithExpense']);
         Route::get('/materials', [OrderController::class, 'getOrderWithMaterials']);
+        Route::get('/cutting/task/lines/{id}', [OrderController::class, 'getOrdersWithCuttingTaskLines']);
+
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
 
         Route::post('/upload', [OrderController::class, 'uploadOrders']);
@@ -268,6 +270,7 @@ Route::prefix('cutting')
         Route::post('/procedures', [CellCuttingProcedureController::class, 'createCuttingProcedure']);
         Route::put('/procedures', [CellCuttingProcedureController::class, 'updateCuttingProcedure']);
         Route::patch('/models/procedures', [ModelController::class, 'updateModelCuttingProcedure']);
+        Route::patch('/models/angle', [ModelController::class, 'setCuttingAngle']);
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 

@@ -634,7 +634,9 @@ final class CuttingTimeLabor
             }
             $timePerPic += $time * $ratio;
         }
-        return [$timePerPic, $timePerPicPanel, $timePerPicSide];
+
+        // !!! __ Делим на 2 крышки, потому что в Схеме указана производительность на Чехол: 2 Крышки + Боковина
+        return [$timePerPic, $timePerPicPanel / 2, $timePerPicSide];
     }
 
 }

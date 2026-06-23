@@ -260,6 +260,7 @@ class ModelController extends Controller
                     'cuttingProcedureCoverUp',
                     'cuttingProcedureCoverDown',
                     'cuttingProcedureSide',
+                    'kdchDoc',
                 ])
                 ->orderBy('name')
                 ->get();
@@ -563,6 +564,37 @@ class ModelController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+    /**
+     * ___ Устанавливаем Угол для Раскроя
+     * @param Request $request
+     * @return string
+     */
+    public function setCuttingAngle(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'data'         => 'required|array',
+                'data.code_1c' => 'required|string|exists:models,code_1c',
+                'data.angle'   => 'present|nullable|string',
+            ]);
+
+            $angle = null;
+            if (isset($data['data']['angle']) && mb_strlen(trim($data['data']['angle'])) !== 0) {
+                $angle = trim($data['data']['angle']);
+            }
+
+            Model::query()
+                ->where('code_1c', $data['data']['code_1c'])
+                ->update(['angle' => $angle]);
+
+            return EndPointStaticRequestAnswer::ok('Успешно сохранено');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
     public function show(string $id)
     {

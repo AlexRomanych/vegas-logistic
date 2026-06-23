@@ -28,4 +28,13 @@ class ModelConstructItem extends Model
         return $this->belongsTo(Material::class, 'material_code_1c', CODE_1C);
     }
 
+    // Relations: Тут пытаемся сделать интересное отношение
+    // Relations: В спецификации может встречаться материал "Чехол ..." и процедура "ПодборЧелаДля..."
+    // Relations: Пытаемся по имени Материала вытащить Спецификацию чехла
+    // Relations: Возможно будет срабатывать и с полуфабрикатами
+    public function semiproductConstruct(): BelongsTo
+    {
+        return $this->belongsTo(ModelConstruct::class, 'material_name', 'name');
+    }
+
 }

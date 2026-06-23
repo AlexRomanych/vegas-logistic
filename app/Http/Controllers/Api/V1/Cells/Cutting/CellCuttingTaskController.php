@@ -104,8 +104,11 @@ class CellCuttingTaskController extends Controller
                     'cuttingLines.orderLine.model.base.kdchDoc',
                     //'cuttingLines.orderLine.model.constructs', // <-- Сюда
                     // !! ОПТИМИЗАЦИЯ: Глубокая жадная загрузка для вложенных деталей (боковин)
+
+                    // !!! Убираем эту привязку. Изначально все разбиваем на детали
                     'cuttingLines.details.orderLine.model.cover.kdchDoc',
                     'cuttingLines.details.orderLine.model.base.kdchDoc',
+
                     //'cuttingLines.details.orderLine.model.constructs', // <-- И сюда
                 ])
 
@@ -155,8 +158,6 @@ class CellCuttingTaskController extends Controller
                 ->values()
                 ->toArray();
 
-            // Прогреваем
-            ModelsService::warmUpCacheByCodes($allCodes);
 
             // 4. Прогреваем статический кэш сервиса перед передачей в ресурс
             ModelsService::warmUpCacheByCodes($allCodes);
@@ -169,6 +170,8 @@ class CellCuttingTaskController extends Controller
 
 
     // ___ Получаем СЗ на Раскрой
+
+    /** @noinspection DuplicatedCode */
     public function getCuttingTasksByOrderId(string $orderId)
     {
         try {
@@ -184,6 +187,9 @@ class CellCuttingTaskController extends Controller
                 ->with([
                     // 'order.client',
                     // 'order.orderType',
+                    'cuttingLines.orderLine.model',
+                    'cuttingLines.orderLine.model.kdchDoc',
+                    'cuttingLines.orderLine.model.modelType',
                     'cuttingLines.orderLine.model.cover',
                     'cuttingLines.orderLine.model.base',
                     'statuses',
@@ -192,6 +198,22 @@ class CellCuttingTaskController extends Controller
                 ->orderBy('action_at')
                 ->get();
 
+
+            // 2. Красиво собираем коды через pluck() в одну строку без лишних вложенных циклов
+            $allCodes = $cuttingTasks->pluck('cuttingLines.*.orderLine.model_code_1c')
+                ->flatten()
+                ->map(fn($code) => trim((string)$code))
+                ->filter() // Автоматически уберет null, false и пустые строки
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // 3. Прогреваем кэш сервиса только по основным кодам
+            ModelsService::warmUpCacheByCodes($allCodes);
+
+
+            // 4. Прогреваем статический кэш сервиса перед передачей в ресурс
+            ModelsService::warmUpCacheByCodes($allCodes);
 
             // !!!!!!!!!!!!!!!!!!!!!
             // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
@@ -232,7 +254,6 @@ class CellCuttingTaskController extends Controller
             ]);
 
             DB::transaction(function () use ($validated) {
-
                 // __ Меняем позиции СЗ в днях, где удаляем
                 $deletedTasks = CuttingTask::query()
                     ->select(['id', 'action_at'])
@@ -255,8 +276,8 @@ class CellCuttingTaskController extends Controller
 
                 foreach ($deletedTasks as $deletedTask) {
                     $tasksToUpdate = [];
-                    $pos = 1;
-                    $existTasks = CuttingTask::query()
+                    $pos           = 1;
+                    $existTasks    = CuttingTask::query()
                         ->select(['id', 'action_at', 'position'])
                         ->where('action_at', '>=', $deletedTask->action_at->startOfDay())
                         ->where('action_at', '<=', $deletedTask->action_at->endOfDay())
@@ -264,11 +285,11 @@ class CellCuttingTaskController extends Controller
                         ->get();
 
                     foreach ($existTasks as $existTask) {
-                         $tasksToUpdate[] = [
-                             'id'        => $existTask->id,
-                             'action_at' => null,
-                             'position'  => $pos++,
-                         ];
+                        $tasksToUpdate[] = [
+                            'id'        => $existTask->id,
+                            'action_at' => null,
+                            'position'  => $pos++,
+                        ];
                     }
 
                     CuttingService::bulkUpdateTasks($tasksToUpdate);

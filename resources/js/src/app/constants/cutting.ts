@@ -45,6 +45,25 @@ export const DETAIL_COVER_DOWN_POINTER = 'down'
 export const DETAIL_SIDE_POINTER       = 'side'
 
 
+export const DETAILS = {
+    PANEL: {    // __ Верхняя и нижняя крышки одинаковы
+        NAME: 'panel',
+        TITLE: 'Крышка',
+    },
+    PANEL_UP: {
+        NAME: 'panel_up',
+        TITLE: 'Крышка верх',
+    },
+    PANEL_DOWN: {
+        NAME: 'panel_down',
+        TITLE: 'Крышка низ',
+    },
+    SIDE: {
+        NAME: 'side',
+        TITLE: 'Бурлет',
+    },
+}
+
 // __ Название вкладки с общим СЗ
 export const CUTTING_UNION_TASK_NAME = 'Объединение СЗ'
 

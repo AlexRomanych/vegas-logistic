@@ -18,6 +18,7 @@ class CuttingTaskLine extends Model
     public const FIELD_AVERAGE = 'average';
     public const FIELD_UNDEFINED = 'undefined';
 
+
     protected $guarded = false;
 
     protected $casts = [
@@ -25,6 +26,9 @@ class CuttingTaskLine extends Model
         'phantom_json'     => 'array',
         'false_history'    => 'array',
         'fabric_construct' => 'array',
+        'expense'          => 'float',
+        'cut_width'        => 'float',
+        'cut_length'       => 'float',
     ];
 
     // Relations: Связь с Контекстом Заявки (OrderLine)

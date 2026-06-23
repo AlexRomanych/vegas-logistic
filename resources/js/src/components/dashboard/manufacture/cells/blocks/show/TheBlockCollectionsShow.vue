@@ -773,7 +773,7 @@ const render: IRenderData = reactive({
     },
     productivity     : {
         id            : () => 'productivity-search',
-        header        : ['Произ-сть', 'мп/ч'],
+        header        : ['Произ-сть', 'm2/ч'],
         width         : 'w-[100px]',
         height        : DEFAULT_HEIGHT,
         show          : true,

@@ -22,6 +22,38 @@
                                 type="primary"
                             />
 
+                            <!-- __  Заголовок 'ШМ' -->
+                            <AppLabelTS
+                                :height="'h-[134px]'"
+                                :width="FIELD_WIDTH"
+                                align="center"
+                                rounded="4"
+                                text="ШМ"
+                                text-size="normal"
+                                type="success"
+                            />
+
+                            <!-- __  Заголовок 'ТКЧ' -->
+                            <AppLabelTS
+                                :height="'h-[134px]'"
+                                :width="FIELD_WIDTH"
+                                align="center"
+                                rounded="4"
+                                text="КДЧ"
+                                text-size="normal"
+                                type="orange"
+                            />
+                            <!-- __  Заголовок 'Угол' -->
+                            <AppLabelTS
+                                :height="'h-[134px]'"
+                                :width="FIELD_WIDTH"
+                                align="center"
+                                rounded="4"
+                                text="Угол"
+                                text-size="normal"
+                                type="info"
+                            />
+
                             <!-- __  Заголовок 'Процедура для Верхней крышки' -->
                             <AppLabelTS
                                 :height="'h-[134px]'"
@@ -116,6 +148,36 @@
                                 placeholder="🔍Название..."
                                 text-size="mini"
                                 type="orange"
+                            />
+
+                            <!-- __ Фильтр: ШМ -->
+                            <AppInputTextTS
+                                id="name-search"
+                                v-model:text-value.trim="machineFilter"
+                                :width="FIELD_WIDTH"
+                                placeholder="🔍ШМ..."
+                                text-size="mini"
+                                type="success"
+                            />
+
+                            <!-- __ Фильтр: КДЧ -->
+                            <AppInputTextTS
+                                id="name-search"
+                                v-model:text-value.trim="kdchFilter"
+                                :width="FIELD_WIDTH"
+                                placeholder="🔍КДЧ..."
+                                text-size="mini"
+                                type="orange"
+                            />
+
+                            <!-- __ Фильтр: Угол -->
+                            <AppInputTextTS
+                                id="name-search"
+                                v-model:text-value.trim="angleFilter"
+                                :width="FIELD_WIDTH"
+                                placeholder="🔍Угол..."
+                                text-size="mini"
+                                type="info"
                             />
 
                             <!-- __ Фильтр: Процедура для верхней крышки -->
@@ -243,7 +305,7 @@
                             <!-- __ Шапка строки -->
                             <div class="sticky-col">
                                 <div class="flex ml-[20px]">
-                                    <!-- __ Код по 1С -->
+                                    <!-- __ Код из 1С -->
                                     <AppLabelTS
                                         :height="CELL_HEIGHT"
                                         :text="model.code_1c"
@@ -252,7 +314,9 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
+                                        title="Double Click - Показать Спецификацию"
                                         type="dark"
+                                        @dblclick="showSpecification(model)"
                                     />
 
                                     <!-- __ Название модели -->
@@ -264,7 +328,48 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
+                                        title="Double Click - Показать Спецификацию"
                                         type="dark"
+                                        @dblclick="showSpecification(model)"
+                                    />
+
+                                    <!-- __ Название ШМ -->
+                                    <AppLabelTS
+                                        :height="CELL_HEIGHT"
+                                        :text="getMachineName(model.machine)"
+                                        :type="model.machine === 'undefined' ? 'dark' : 'success'"
+                                        :width="FIELD_WIDTH"
+                                        align="center"
+                                        rounded="4"
+                                        text-size="micro"
+                                    />
+
+                                    <!-- __ КДЧ -->
+                                    <AppLabelTS
+                                        :class="model.kdch_doc ? 'cursor-pointer' : ''"
+                                        :height="CELL_HEIGHT"
+                                        :text="model.kdch_doc ? `🔍 ${model.kdch_doc.kdch}` : model.kdch ?? ''"
+                                        :title="model.kdch_doc ? 'Double Click - Показать КДЧ' : ''"
+                                        :type="model.kdch_doc ? 'orange' : model.kdch ? 'stone' : 'dark'"
+                                        :width="FIELD_WIDTH"
+                                        align="center"
+                                        rounded="4"
+                                        text-size="micro"
+                                        @dblclick="showDocument(model.kdch_doc)"
+                                    />
+
+                                    <!-- __ Угол -->
+                                    <AppLabelTS
+                                        :height="CELL_HEIGHT"
+                                        :text="model.angle ?? ''"
+                                        :type="model.angle ? 'info' : 'danger'"
+                                        :width="FIELD_WIDTH"
+                                        align="center"
+                                        class="cursor-pointer"
+                                        rounded="4"
+                                        text-size="micro"
+                                        title="Double Click - Добавить/Редактировать Угол"
+                                        @dblclick="angleAction(model)"
                                     />
 
                                     <!-- __ Название Процедуры Верхней Крышки -->
@@ -277,7 +382,9 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        @dblclick="selectProcedure(model, DETAIL_COVER_UP_POINTER)"
+                                        title="Double Click - Выбрать процедуру, Ctrl+Click - Показать процедуру"
+                                        @dblclick.exact="selectProcedure(model, DETAIL_COVER_UP_POINTER)"
+                                        @click.ctrl="showProcedure(model.cut_proc_up_id)"
                                     />
 
                                     <!-- __ Название Процедуры Боковины -->
@@ -290,7 +397,9 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        @dblclick="selectProcedure(model, DETAIL_SIDE_POINTER)"
+                                        title="Double Click - Выбрать процедуру, Ctrl+Click - Показать процедуру"
+                                        @dblclick.exact="selectProcedure(model, DETAIL_SIDE_POINTER)"
+                                        @click.ctrl="showProcedure(model.cut_proc_side_id)"
                                     />
 
                                     <!-- __ Название Процедуры Нижней Крышки -->
@@ -303,7 +412,9 @@
                                         class="cursor-pointer"
                                         rounded="4"
                                         text-size="micro"
-                                        @dblclick="selectProcedure(model, DETAIL_COVER_DOWN_POINTER)"
+                                        title="Double Click - Выбрать процедуру, Ctrl+Click - Показать процедуру"
+                                        @dblclick.exact="selectProcedure(model, DETAIL_COVER_DOWN_POINTER)"
+                                        @click.ctrl="showProcedure(model.cut_proc_down_id)"
                                     />
 
                                     <!-- __ Название Схемы -->
@@ -356,11 +467,12 @@
     />
 
     <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        ok-word="Понятно"
     />
 
     <!-- __ Модальное окно для редактирования данных Схемы-->
@@ -377,6 +489,35 @@
         title="Выберите данные"
         width="w-[600px]"
     />
+
+    <!-- __ Просмотр PDF в модальном режиме -->
+    <TextileDesignDocumentAsync
+        ref="textileDesignDocumentAsync"
+        :doc="doc"
+        ok-word="Понятно"
+        type="primary"
+    />
+
+    <!-- __ Карточка Спецификации -->
+    <CardSpecification
+        ref="cardSpecification"
+        :construct="modelConstruct"
+    />
+
+    <!-- __ Карточка Процедуры расчета -->
+    <CardProcedure
+        ref="cardProcedure"
+        :is-admin="false"
+        :procedure="procedure"
+    />
+
+    <!-- __ Модальное окно для изменения/добавления Угла -->
+    <AngleEdit
+        ref="angleEdit"
+        :angle="angle"
+        label="Угол для Раскроя"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -389,29 +530,38 @@ import type {
     ICuttingOperationSchema,
     ICuttingOperationItem,
     ICuttingOperationUpdateObject,
-    ICuttingOperationModel, ICuttingProcedure, ICuttingDetailType,
+    ICuttingOperationModel, ICuttingProcedure, ICuttingDetailType, ITextileDocument, IModelConstruct, IModelProcedure,
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
+import { useModelsStore } from '@/stores/ModelsStore.ts'
 
+import { DETAIL_COVER_DOWN_POINTER, DETAIL_COVER_UP_POINTER, DETAIL_PANEL, DETAIL_SIDE, DETAIL_SIDE_POINTER } from '@/app/constants/cutting.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { getMachineName } from '@/app/helpers/helpers_model.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import CuttingOperationItemEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationItemEdit.vue'
 import CuttingOperationSchemaDataEdit
     from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_operations/CuttingOperationSchemaDataEdit.vue'
 import AppModalAsyncSelectTS from '@/components/ui/modals/AppModalAsyncSelectTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
+import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/shared/textile_design/TextileDesignDocumentAsync.vue'
+import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import CardProcedure from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CardProcedure.vue'
+import AngleEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_procedures/AngleEdit.vue'
+// import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { DETAIL_COVER_DOWN_POINTER, DETAIL_COVER_UP_POINTER, DETAIL_PANEL, DETAIL_SIDE, DETAIL_SIDE_POINTER } from '@/app/constants/cutting.ts'
+
 
 type ISelectableItem = (ICuttingOperationSchema | ICuttingProcedure) & { id: number; name: string };
 
 const cuttingStore = useCuttingStore()
+const modelsStore  = useModelsStore()
 
 const isLoading = ref(false)
 
@@ -436,11 +586,12 @@ const MODEL_CODE_1C_WIDTH = 'w-[70px]'
 const MODEL_NAME_WIDTH    = 'w-[180px]'
 const SCHEMA_WIDTH        = 'w-[150px]'
 const PROCEDURE_WIDTH     = PROCEDURES_TITLE_WIDTH
+const FIELD_WIDTH         = 'w-[70px]'
 
 const CELL_WIDTH  = 'w-[50px]'
 const CELL_HEIGHT = 'h-[30px]'
 
-const COLLAPSE_ALL_WIDTH = SHOW_SCHEMAS_OPERATIONS ? 'w-[593px]' : 'w-[591px]'
+const COLLAPSE_ALL_WIDTH = SHOW_SCHEMAS_OPERATIONS ? 'w-[593px]' : 'w-[702px]'
 
 // __ Определяем переменные
 const cuttingOperationSchemas = ref<ICuttingOperationSchema[]>([])
@@ -452,6 +603,9 @@ const modelsRender            = ref<ICuttingOperationModelsCollection[]>([])
 // __ Фильтр
 const codeFilter               = ref('')
 const nameFilter               = ref('')
+const machineFilter            = ref('')
+const angleFilter              = ref('')
+const kdchFilter               = ref('')
 const schemaFilter             = ref('')
 const procedureUpCoverFilter   = ref('')
 const procedureSideFilter      = ref('')
@@ -464,10 +618,10 @@ const modalSchema              = ref<ICuttingOperationSchema | null>(null)
 const cuttingOperationItemEdit = ref<InstanceType<typeof CuttingOperationItemEdit> | null>(null)
 
 // __ Тип для модального окна Сообщений
-const modalInfoType          = ref<IColorTypes>('danger')
-const modalInfoText          = ref<string | string[]>('')
-const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)
 
 // __ Тип для модального окна изменения данных Схемы
 const cuttingOperationSchemaDataEdit = ref<InstanceType<typeof CuttingOperationSchemaDataEdit> | null>(null)
@@ -563,7 +717,7 @@ const showError = async (error: string | null = null) => {
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'inform'
     modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
-    await appModalAsyncMultiline.value!.show()
+    await appModalAsyncMultilineTS.value!.show()
 }
 
 // __ Редактируем операцию или удаляем или переключаем
@@ -686,12 +840,15 @@ const selectProcedure = async (model: ICuttingOperationModel, detailType: ICutti
 
     switch (detailType) {
         case DETAIL_COVER_UP_POINTER:
+            selectedItems.value  = cuttingProcedures.value.filter(procedure => procedure.object_name === DETAIL_PANEL)
             selectedItemId.value = model.cut_proc_up_id
             break
         case DETAIL_COVER_DOWN_POINTER:
+            selectedItems.value  = cuttingProcedures.value.filter(procedure => procedure.object_name === DETAIL_PANEL)
             selectedItemId.value = model.cut_proc_down_id
             break
         case DETAIL_SIDE_POINTER:
+            selectedItems.value  = cuttingProcedures.value.filter(procedure => procedure.object_name === DETAIL_SIDE)
             selectedItemId.value = model.cut_proc_side_id
     }
 
@@ -738,6 +895,81 @@ const selectProcedure = async (model: ICuttingOperationModel, detailType: ICutti
     }
 }
 
+// __ Показываем КДЧ
+const textileDesignDocumentAsync = ref<InstanceType<typeof TextileDesignDocumentAsync> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const doc                        = ref<ITextileDocument | null>()
+
+const showDocument = async (textileDocument: ITextileDocument | null) => {
+    if (!textileDocument) return
+
+    doc.value = textileDocument
+    await textileDesignDocumentAsync.value!.show()
+    doc.value = null
+    return
+}
+
+// __ Карточка Спецификаций
+const cardSpecification = ref<InstanceType<typeof CardSpecification> | null>(null)
+const modelConstruct    = ref<IModelConstruct | null>(null)
+
+// __ Показываем спецификацию
+const showSpecification = async (model: ICuttingOperationModel | null) => {
+    if (!model) {
+        return
+    }
+
+    const construct = await modelsStore.getConstructByModelCode1c(model.code_1c)
+    if (!construct) {
+        modalInfoType.value = 'danger'
+        modalInfoText.value = [
+            `Спецификация для модели: ${model.name}`,
+            'не найдена!'
+        ]
+        await appModalAsyncMultilineTS.value?.show()
+        return
+    }
+
+    modelConstruct.value = construct
+    await cardSpecification.value?.show()
+}
+
+// __ Карточка Процедуры расчета
+const cardProcedure = ref<InstanceType<typeof CardProcedure> | null>(null)
+const procedure     = ref<IModelProcedure | null>(null)
+
+// __ Показываем процедуру
+const showProcedure = async (id: number | null = null) => {
+    if (!id || id === 0) {
+        return
+    }
+    // console.log(procedure)
+    procedure.value = await cuttingStore.getCuttingProcedure(id)
+    await cardProcedure.value?.show()
+}
+
+// __ Тип для модального окна изменения Комментария
+const angle     = ref('')
+const angleEdit = ref<InstanceType<typeof AngleEdit> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Добавляем/Редактируем Угол
+const angleAction = async (model: ICuttingOperationModel | null = null) => {
+    if (!model) {
+        return
+    }
+    angle.value  = model.angle ?? '' // __ Устанавливаем Угол
+    const answer = await angleEdit.value!.show()
+    if (answer) {
+        const newAngle = angleEdit.value!.angle.trim()
+        const result   = await cuttingStore.setCuttingAngle(model.code_1c, newAngle)
+        if (!checkCRUD(result)) {
+            await showError()
+            return
+        } else {
+            model.angle = newAngle
+        }
+    }
+}
+
 // __ Свернуть все
 const collapseAll = () => {
     modelsRender.value.forEach(collection => collection.collapsed = true)
@@ -778,7 +1010,14 @@ const getData = async () => {
         .sort((a, b) => a.id - b.id)
 
 
-    models.value = models.value.map((collection) => ({ ...collection, collapsed: true }))
+    models.value = models.value.map(collection => {
+        return {
+            ...collection,
+            items    : collection.items.map(item => ({ ...item, kdch: item.kdch ?? '', angle: item.angle ?? '' })),
+            collapsed: true,
+        }
+    })
+    // models.value = models.value.map((collection) => ({ ...collection, collapsed: true }))
 }
 
 // __ Формируем отображение Коллекций -> Моделей
@@ -799,9 +1038,25 @@ watchEffect(() => {
     for (let i = 0; i < models.value.length; i++) {
         const newItems = []
         for (let j = 0; j < models.value[i].items.length; j++) {
+
+            const machineName = getMachineName(models.value[i].items[j].machine)
+            const hasMachine  = machineName.toLowerCase().includes(machineFilter.value.toLowerCase())
+
+            const procedureUp    = cuttingProcedures.value.find(proc => proc.id === models.value[i].items[j].cut_proc_up_id)
+            const hasProcedureUp = procedureUp && procedureUp.name.toLowerCase().includes(procedureUpCoverFilter.value.toLocaleLowerCase())
+
+            const procedureDown    = cuttingProcedures.value.find(proc => proc.id === models.value[i].items[j].cut_proc_down_id)
+            const hasProcedureDown = procedureDown && procedureDown.name.toLowerCase().includes(procedureDownCoverFilter.value.toLocaleLowerCase())
+
+            const procedureSide    = cuttingProcedures.value.find(proc => proc.id === models.value[i].items[j].cut_proc_side_id)
+            const hasProcedureSide = procedureSide && procedureSide.name.toLowerCase().includes(procedureSideFilter.value.toLocaleLowerCase())
+
             if (
                 models.value[i].items[j].name_report.toLowerCase().includes(nameFilter.value.toLowerCase()) &&
                 models.value[i].items[j].code_1c.toLowerCase().includes(codeFilter.value.toLowerCase()) &&
+                models.value[i].items[j].angle?.toLowerCase().includes(angleFilter.value.toLowerCase()) &&
+                models.value[i].items[j].kdch?.toLowerCase().includes(kdchFilter.value.toLowerCase()) &&
+                hasMachine && hasProcedureUp && hasProcedureDown && hasProcedureSide &&
                 schemasIds.includes(models.value[i].items[j].cutting_schema_id)
             ) {
                 newItems.push(models.value[i].items[j])

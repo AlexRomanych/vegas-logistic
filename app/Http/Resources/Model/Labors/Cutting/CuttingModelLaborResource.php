@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Http\Resources\Model\Labors\Cutting;
 
@@ -20,6 +21,10 @@ class CuttingModelLaborResource extends JsonResource
             'code_1c'           => $this->code_1c,
             'name'              => $this->name,
             'name_report'       => $this->name_report,
+            'angle'             => $this->angle,
+            'kdch'              => $this->kdch,
+            'machine'           => $this->machine_type_name,
+            'kdch_doc'          => $this->whenLoaded('kdchDoc', fn() => $this->kdchDoc),
             'cutting_schema_id' => $this->cuttingSchema->id,
             'cut_proc_up_id'    => $this->cuttingProcedureCoverUp->id,
             'cut_proc_down_id'  => $this->cuttingProcedureCoverDown->id,

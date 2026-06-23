@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
 
         FabricTaskRoll::observe(FabricTaskRollObserver::class);
 
+        // __ Пишет Запросы SQL в Лог
         //if ($this->app->environment('local')) {
         //    DB::listen(function ($query) {
         //        // Ищем в истории вызовов первый файл, который находится в нашей папке app/

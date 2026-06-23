@@ -16,17 +16,22 @@ class OrderLineRenderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'            => $this->id,
-            'size'          => $this->size,
-            'amount'        => $this->amount,
-            'textile'       => $this->textile,
-            'composition'   => $this->composition,
-            'describe_1'    => $this->describe_1,
-            'describe_2'    => $this->describe_2,
-            'describe_3'    => $this->describe_3,
-            'model'         => new OrderLineModelRenderResource($this->model),
-            'materials'     => $this->whenloaded('materials', fn() => OrderLineMaterialRenderResource::collection($this->materials)),
-            'specification' => $this->whenloaded('specification', fn() => new OrderLineSpecificationRenderResource($this->specification)),
+            'id'                => $this->id,
+            'size'              => $this->size,
+            'amount'            => $this->amount,
+            'textile'           => $this->textile,
+            'composition'       => $this->composition,
+            'describe_1'        => $this->describe_1,
+            'describe_2'        => $this->describe_2,
+            'describe_3'        => $this->describe_3,
+            'model'             => new OrderLineModelRenderResource($this->model),
+            'materials'         => $this->whenloaded('materials', fn() => OrderLineMaterialRenderResource::collection($this->materials)),
+            'specification'     => $this->whenloaded('specification', fn() => new OrderLineSpecificationRenderResource($this->specification)),
+            'specification_add' => $this->whenloaded('specificationAdd', fn() => new OrderLineSpecificationRenderResource($this->specificationAdd)),
+            'cutting_lines'     => $this->whenloaded('cuttingTaskLine', fn() => OrderRenderCuttingTaskLinesResource::collection($this->cuttingTaskLine)),
+            'spec_name'         => $this->construct_name,
+            'spec_name_add'     => $this->construct_add_name,
+
             // 'model_code_1c' => $this->model_code_1c,
             // 'model_name'  => $this->model_name,
 

@@ -1039,16 +1039,6 @@ const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineT
 const cardSpecification = ref<InstanceType<typeof CardSpecification> | null>(null)
 const modelConstruct    = ref<IModelConstruct | null>(null)
 
-// __ Collapse/Expand all
-const toggleCollapsed = () => {
-    collapseAll.value = !collapseAll.value
-    entitiesRender.value.forEach(entity => {
-        entity.collapsed = collapseAll.value
-
-    })
-}
-
-
 // __ Показываем спецификацию
 const showSpecification = async (model: IModel | null) => {
     if (!model) {
@@ -1070,6 +1060,17 @@ const showSpecification = async (model: IModel | null) => {
     modelConstruct.value = construct
     await cardSpecification.value?.show()
 }
+
+
+// __ Collapse/Expand all
+const toggleCollapsed = () => {
+    collapseAll.value = !collapseAll.value
+    entitiesRender.value.forEach(entity => {
+        entity.collapsed = collapseAll.value
+
+    })
+}
+
 
 
 // __ Получение данных

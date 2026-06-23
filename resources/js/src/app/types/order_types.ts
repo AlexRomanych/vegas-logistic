@@ -2,6 +2,7 @@
 
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { ACCESSORIES_TYPE, MATTRESSES_TYPE } from '@/app/constants/orders.ts'
+import type { ICuttingTableKeys, ICuttingTaskLineDetail } from '@/types/cutting_types.ts'
 
 // __ Тип изделий
 export type IElementTypeUnion = typeof ACCESSORIES_TYPE | typeof MATTRESSES_TYPE
@@ -61,6 +62,14 @@ export interface IRenderOrder {
     }
 }
 
+
+export interface IRenderOrderCuttingTask {
+    id: number
+    lines: IRenderOrderLine[]
+    order_no_origin : string | null
+    collapsed: boolean
+}
+
 export interface IRenderOrderClient {
     id: number
     short_name: string
@@ -94,9 +103,34 @@ export interface IRenderOrderLine {
     model: IRenderOrderLineModel
     materials?: IRenderOrderLineMaterial[]
     specification?: IRenderOrderLineSpecification
-
+    specification_add?: IRenderOrderLineSpecification
+    cutting_lines?: IRenderOrderLineCuttingLine[]
     collapsed_materials?: boolean
+    collapsed_cutting_details?: boolean
+
+    spec_name: string|null
+    spec_name_add: string|null
 }
+
+
+export interface IRenderOrderLineCuttingLine {
+    id: number
+    amount: number
+    table: ICuttingTableKeys
+    fabric_construct: string[]
+    cut_length: number
+    cut_width: number
+    angle?: string
+    is_panel: boolean
+    is_side: boolean
+    time: number
+    detail: ICuttingTaskLineDetail
+    expense: number
+    cut: string|null
+    finished_at: string|null
+    false_at: string|null
+}
+
 
 export interface IRenderOrderLineModel {
     base_composition: string

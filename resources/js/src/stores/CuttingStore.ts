@@ -82,6 +82,7 @@ const URL_CUTTING_DAY_READY_SET              = '/cutting/day/ready/set'         
 const URL_CUTTING_DAY_READY_UNSET            = '/cutting/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
 const URL_CUTTING_PROCEDURES                 = '/cutting/procedures'                  // URL для получения процедур расчета Раскроя
 const URL_CUTTING_PROCEDURES_MODEL           = '/cutting/models/procedures'           // URL для обновления процедуры раскроя для модели
+const URL_CUTTING_ANGLE_MODEL                = '/cutting/models/angle'                // URL для обновления Угла Раскроя для Модели
 const URL_CUTTING_TEST                       = '/cutting/test'                        // URL для тестирования
 
 export const useCuttingStore = defineStore('cutting', () => {
@@ -933,7 +934,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
-    // __ Устаноавливаем новые Раскройные столы
+    // __ Устанавливаем новые Раскройные столы
     const taskLinesTableSet = async (data: ICuttingLineTableSetData[]) => {
         const response = await jwtPost(URL_CUTTING_TASK_LINES_TABLE_SET, { data })
         const result   = await response
@@ -990,6 +991,17 @@ export const useCuttingStore = defineStore('cutting', () => {
     }
 
     // --- ----------------------------------------------------------
+
+    // __ Устанавливаем Угол для Раскроя
+    const setCuttingAngle = async (code_1c: string | null = null, angle: string | null) => {
+        if (!code_1c || !angle) {
+            return
+        }
+        const result = await jwtPatch(URL_CUTTING_ANGLE_MODEL, {code_1c, angle})
+        if (DEBUG) console.log('CuttingStore: setCuttingAngle: ', result)
+        return result
+    }
+
 
     // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
     // watch(() => globalCuttingTasks.value, () => {
@@ -1089,6 +1101,8 @@ export const useCuttingStore = defineStore('cutting', () => {
         updateCuttingProcedure,
         createCuttingProcedure,
         updateModelCuttingProcedure,
+
+        setCuttingAngle,
 
         test,
     }

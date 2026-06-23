@@ -21,7 +21,7 @@ import {
     TABLE_3_TITLE,
     TABLE_0_TITLE,
     TABLE_0,
-    DETAIL_SIDE_POINTER, DETAIL_COVER_UP_POINTER, DETAIL_COVER_DOWN_POINTER,
+    DETAIL_SIDE_POINTER, DETAIL_COVER_UP_POINTER, DETAIL_COVER_DOWN_POINTER, DETAILS,
 
 } from '@/app/constants/cutting.ts'
 
@@ -75,10 +75,23 @@ export interface ICuttingTaskLine {
     has_side: boolean
 
     fabric_construct: string[]
+    detail: ICuttingTaskLineDetail
+    expense: number
+    cut: string | null
+    cut_length: number
+    cut_width: number
+    angle: string
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
 }
+
+
+export type ICuttingTaskLineDetail =
+    typeof DETAILS.PANEL.NAME |
+    typeof DETAILS.PANEL_UP.NAME |
+    typeof DETAILS.PANEL_DOWN.NAME |
+    typeof DETAILS.SIDE.NAME
 
 // __ Статус Движения (выполнения) Заявки
 export interface ICuttingTaskStatus {
@@ -367,6 +380,15 @@ export interface ICuttingOperationModel {
     cut_proc_side_id: number
     // cutting_procedure_id: number
     operations: ICuttingOperationItem[]
+    kdch: string | null
+    kdch_doc: {
+        id: number,
+        kdch: string
+        file_path: string
+        description: string|null
+    } | null
+    angle: string | null
+    machine: string
 }
 
 // --- ------------------------------------------------------------

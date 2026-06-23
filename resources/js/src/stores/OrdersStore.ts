@@ -13,8 +13,9 @@ import axios from 'axios'
 // __ Устанавливаем глобальные переменные
 const API_PREFIX                    = '/api/v1/'                    // Префикс API
 const URL_ORDERS                    = 'orders'                      // URL для получения списка заказов
-const URL_ORDERS_EXPENSE            = 'orders/expense'              // URL для получения списка заказов с Расходом
-const URL_ORDERS_MATERIALS          = 'orders/materials'            // URL для получения списка заказов с деревом Материалов
+const URL_ORDERS_EXPENSE            = 'orders/expense'              // URL для получения Заказа с Расходом
+const URL_ORDERS_MATERIALS          = 'orders/materials'            // URL для получения Заказа с деревом Материалов
+const URL_ORDERS_CUTTING_TASK_LINES = 'orders/cutting/task/lines'   // URL для получения Заказа с Содержимым СЗ РАскроя
 const URL_ORDER                     = 'order'                       // URL для получения заказа
 const URL_ORDERS_TYPES              = 'orders/types'                // URL для получения типа заказов
 const URL_ORDERS_TYPES_COLOR_UPDATE = 'orders/types/color/patch'    // URL для обновления цвета типа заказов
@@ -63,6 +64,13 @@ export const useOrdersStore = defineStore('orders', () => {
     const getOrdersWithMaterials = async (ids: number[]) => {
         const result = await jwtGet(URL_ORDERS_MATERIALS, ids);
         if (DEBUG) console.log('OrdersStore: getOrderWithMaterials: ', result)
+        return result.data
+    }
+
+    // __ Получаем с API список Заказов + Привязка Деталек Раскроя
+    const getOrdersWithCuttingTaskLines = async (id: number) => {
+        const result = await jwtGet(`${URL_ORDERS_CUTTING_TASK_LINES}/${id}`);
+        if (DEBUG) console.log('OrdersStore: getOrdersWithCuttingTaskLines: ', result)
         return result.data
     }
 
@@ -218,7 +226,7 @@ export const useOrdersStore = defineStore('orders', () => {
         ordersShow,
         ordersShowIsChanged,
 
-        getOrders, getOrderWithExpense, getOrdersWithMaterials,
+        getOrders, getOrderWithExpense, getOrdersWithMaterials, getOrdersWithCuttingTaskLines,
         getOrderById,
         uploadOrders,
         validateOrders,

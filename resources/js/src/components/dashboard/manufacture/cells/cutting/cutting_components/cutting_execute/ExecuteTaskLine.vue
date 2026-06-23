@@ -23,9 +23,6 @@
         <!-- __ Трудозатраты -->
         <AppLabelTSWrapper :render-object="render.time"/>
 
-        <!-- __ Деталька -->
-        <AppLabelTSWrapper :render-object="render.detail"/>
-
         <!-- __ Стол 1 -->
         <AppLabelTSWrapper :render-object="render.table_1"/>
 
@@ -37,6 +34,9 @@
 
         <!-- __ Стол ?? -->
         <AppLabelTSWrapper :render-object="render.table_0"/>
+
+        <!-- __ Деталька -->
+        <AppLabelTSWrapper :render-object="render.detail"/>
 
         <!-- __ ШМ -->
         <AppLabelTSWrapper :render-object="render.machine"/>

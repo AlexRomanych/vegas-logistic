@@ -3,6 +3,7 @@
     <div :class="[!cuttingTask.collapsed ? 'mt-1' : '']" class="flex">
 
         <!-- __ Collapsed -->
+        <!--eslint-disable vue/no-mutating-props-->
         <AppLabelTSWrapper
             :render-object="render.collapsed"
             @click="cuttingTask.collapsed = !cuttingTask.collapsed"
@@ -129,6 +130,7 @@ const props = withDefaults(defineProps<IProps>(), {
     orderInfo : true,
 })
 
+// console.log('task: ', props.cuttingTask)
 
 // __ Тип для модального окна информации о записи в Заявке
 const orderLine     = ref<ICuttingTaskOrderLine | null>(null)
@@ -368,7 +370,7 @@ const cuttingLineFieldsWidth = {
 const calculateTotals = computed(() => getCuttingTaskAmountAndTime(props.cuttingTask.cutting_lines))
 
 // __ Цвет от статуса СЗ
-const color = computed<string>(() => props.cuttingTask.current_status.color)
+const color = computed<string>(() => props.cuttingTask?.current_status?.color)
 
 // __ Объект статистики
 const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
