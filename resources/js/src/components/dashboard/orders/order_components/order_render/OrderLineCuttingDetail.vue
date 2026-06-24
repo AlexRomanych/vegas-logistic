@@ -71,6 +71,7 @@ const DATA_ALIGN       = 'left'
 // __ Получаем тип
 const getType = (cuttingLine: IRenderOrderLineCuttingLine) => {
     if (!cuttingLine) return DEFAULT_TYPE
+    if (cuttingLine.table === 'undefined') return 'danger'
     switch (cuttingLine.detail) {
         case DETAILS.PANEL.NAME: return 'info'
         case DETAILS.PANEL_UP.NAME: return 'indigo'

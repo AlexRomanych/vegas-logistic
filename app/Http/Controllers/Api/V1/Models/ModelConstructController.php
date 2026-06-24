@@ -89,6 +89,40 @@ class ModelConstructController extends Controller
 
 
     /**
+     * ___ Получаем спецификацию модели по коду 1с Модели
+     * @param string $code1c
+     * @return ModelConstructResource|false|string
+     */
+    public function getConstructByCode1c(string $code1c)
+    {
+        try {
+            $validated = Validator::make([
+                'code1c' => $code1c
+            ], [
+                'code1c' => 'required|string'
+            ])->validated();
+
+            $construct = ModelConstruct::query()
+                ->with([
+                    'constructItems',
+                    'constructItems.procedure',
+                    'constructItems.material',
+                ])
+                ->find($validated['code1c']);
+
+            if (!$construct) {
+                return json_encode(['data' => null]);
+            }
+
+            return new ModelConstructResource($construct);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+    /**
      * ___ Обновляем спецификации моделей
      * @param Request $request
      * @return string

@@ -141,34 +141,34 @@
         <AppLabelTS
             :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
+            :type="cuttingLine.cut_width * cuttingLine.cut_length === 0 ? 'danger' : getCheckType(cuttingLine)"
             :width="fieldWidths.cut"
             align="center"
             rounded="4"
-            text="159x199"
+            :text="cuttingLine.cut_width * cuttingLine.cut_length !== 0 ? `${cuttingLine.cut_width}x${cuttingLine.cut_length}` : '??'"
         />
 
         <!-- __ Угол -->
         <AppLabelTS
             :height="lineHeight"
             :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
+            :type="cuttingLine.angle ? getCheckType(cuttingLine) : 'danger'"
             :width="fieldWidths.angle"
             align="center"
             rounded="4"
-            text="Угол"
+            :text="cuttingLine.angle ?? '??'"
         />
 
-        <!-- __ Настил -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.layers"
-            align="center"
-            rounded="4"
-            text="Настил"
-        />
+        <!--&lt;!&ndash; __ Настил &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.layers"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text="Настил"-->
+        <!--/>-->
 
         <!-- __ Расход -->
         <AppLabelTS
@@ -178,52 +178,52 @@
             :width="fieldWidths.expense"
             align="center"
             rounded="4"
-            text="100.0"
+            :text="cuttingLine.expense.toFixed(3)"
         />
 
-        <!-- __ Рулон -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.fabric_roll"
-            align="center"
-            rounded="4"
-            text="15000"
-        />
+        <!--&lt;!&ndash; __ Рулон &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.fabric_roll"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text="15000"-->
+        <!--/>-->
 
-        <!-- __ Отметка Рулона -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.fabric_roll_at"
-            align="center"
-            rounded="4"
-            text="10ч. 45м. 59с."
-        />
+        <!--&lt;!&ndash; __ Отметка Рулона &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.fabric_roll_at"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text="10ч. 45м. 59с."-->
+        <!--/>-->
 
-        <!-- __ Брак -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.defects"
-            align="center"
-            rounded="4"
-            text="Брак"
-        />
+        <!--&lt;!&ndash; __ Брак &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.defects"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text="Брак"-->
+        <!--/>-->
 
-        <!-- __ Причина брака -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.defects_reason"
-            align="center"
-            rounded="4"
-            text="Причина брака"
-        />
+        <!--&lt;!&ndash; __ Причина брака &ndash;&gt;-->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(cuttingLine)"-->
+        <!--    :width="fieldWidths.defects_reason"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text="Причина брака"-->
+        <!--/>-->
 
         <!--&lt;!&ndash; __ ТКЧ &ndash;&gt;-->
         <!--<AppLabelTS-->

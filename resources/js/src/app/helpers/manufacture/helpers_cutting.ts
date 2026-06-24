@@ -5,21 +5,21 @@ import type {
     ICuttingMachineKeys,
     ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
     ICuttingTaskLine, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskModel, ICuttingTaskOrder,
-    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys, IColorTypes,
+    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys, IColorTypes, ICuttingTaskLinesSubgroup, ICuttingTaskLinesUnderGroup,
 } from '@/types'
 
 import {
     CUTTING_MACHINES,
     CUTTING_TABLES,
     CUTTING_TASK_DRAFT,
-    CUTTING_TASK_GROUP_RULES,
+    // CUTTING_TASK_GROUP_RULES,
     CUTTING_TASK_STATUSES,
     DETAIL_PANEL,
     DETAIL_PANEL_TITLE, DETAIL_SIDE, DETAIL_SIDE_TITLE,
     TABLE_1_TITLE, TABLE_1_TITLE_SHORT,
     TABLE_2_TITLE, TABLE_2_TITLE_SHORT,
     TABLE_3_TITLE, TABLE_3_TITLE_SHORT,
-    TABLE_0_TITLE, TABLE_0_TITLE_SHORT,
+    TABLE_0_TITLE, TABLE_0_TITLE_SHORT, DETAILS, TABLE_1, TABLE_2, TABLE_3,
 } from '@/app/constants/cutting.ts'
 
 import { formatTimeWithLeadingZeros, getDaysDifference, splitDate } from '@/app/helpers/helpers_date'
@@ -27,15 +27,21 @@ import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 // __ Получаем название детальки
-export function getDetailTitle(item: ICuttingTaskLine, short: boolean  = false) {
-    let title: string = ''
-    if (item.is_side) {
-        title = DETAIL_SIDE_TITLE
-    } else if (item.is_panel) {
-        title = DETAIL_PANEL_TITLE
+export function getDetailTitle(item: ICuttingTaskLine, short: boolean = true) {
+    const detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+    if (detail) {
+        return short ? detail.TITLE_COMPACT : detail.TITLE
     }
 
-    return short ? title.charAt(0) : title
+    return ''
+    // let title: string = ''
+    // if (item.is_side) {
+    //     title = DETAIL_SIDE_TITLE
+    // } else if (item.is_panel) {
+    //     title = DETAIL_PANEL_TITLE
+    // }
+    //
+    // return short ? title.charAt(0) : title
 }
 
 
@@ -124,10 +130,14 @@ export function getTableTitle(item: ICuttingTableKeys | ICuttingTaskLine, short:
     }
 
     switch (table) {
-        case CUTTING_TABLES.TABLE_1: return short ? TABLE_1_TITLE_SHORT : TABLE_1_TITLE
-        case CUTTING_TABLES.TABLE_2: return short ? TABLE_2_TITLE_SHORT : TABLE_2_TITLE
-        case CUTTING_TABLES.TABLE_3: return short ? TABLE_3_TITLE_SHORT : TABLE_3_TITLE
-        case CUTTING_TABLES.TABLE_0: return short ? TABLE_0_TITLE_SHORT : TABLE_0_TITLE
+        case CUTTING_TABLES.TABLE_1:
+            return short ? TABLE_1_TITLE_SHORT : TABLE_1_TITLE
+        case CUTTING_TABLES.TABLE_2:
+            return short ? TABLE_2_TITLE_SHORT : TABLE_2_TITLE
+        case CUTTING_TABLES.TABLE_3:
+            return short ? TABLE_3_TITLE_SHORT : TABLE_3_TITLE
+        case CUTTING_TABLES.TABLE_0:
+            return short ? TABLE_0_TITLE_SHORT : TABLE_0_TITLE
     }
     return ''
 }
@@ -278,11 +288,23 @@ export function getCuttingTaskModelCover(
 
 // __ Возвращаем имя Чехла модели.
 export function getCuttingTaskModelCoverName(
-    item: ICuttingTaskLine | ICuttingTaskOrderLine | ICuttingTaskOrderLine['model']) {
+    item: ICuttingTaskLine | ICuttingTaskOrderLine | ICuttingTaskOrderLine['model'], short: boolean = true) {
     const modelCover = getCuttingTaskModelCover(item)
 
     if (modelCover) {
-        return isAverage(modelCover) ? 'Чехол для Планового матраса' : modelCover.name_report
+        if (isAverage(modelCover)) return 'Чехол для Планового матраса'
+
+        // __ Смотрим на присутствие Детальки в Строке СЗ
+        if (isCuttingTaskLine(item)) {
+            const detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+            if (!detail) {
+                return modelCover.name_report
+            }
+
+            return !short ? `${detail.TITLE} ${modelCover.name_report}` : `${detail.TITLE_SHORT} ${modelCover.name_report}`
+        }
+
+        return modelCover.name_report
     }
     return ''
 }
@@ -411,7 +433,7 @@ export function sortCuttingTaskLinesForExecute(
     const textileAmountsMap = new Map<string, number>()
 
     for (const line of sourceArray) {
-        const textile = line.order_line.textile || ''
+        const textile    = line.order_line.textile || ''
         const currentSum = textileAmountsMap.get(textile) || 0
         textileAmountsMap.set(textile, currentSum + line.amount)
     }
@@ -1544,258 +1566,380 @@ export function getCoverTKCH(line: ICuttingTaskLine) {
 
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
 export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: string | null = null): ICuttingTaskLinesGroupData[] {
+    const X_LAT = 'x'
 
-    // __ Собираем все ТКЧ в один сет для проверки, что в исходных данных ничего криво не написано и не добавлено
-    const ALL_TABLES = new Set<string>()
-    CUTTING_TASK_GROUP_RULES.forEach(rule => {
-        rule.SUBGROUPS.forEach(subgroup => {
-            subgroup.SUBGROUP_TABLE.forEach(tkch => {
-                ALL_TABLES.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
-            })
-        })
-    })
+    const groupedTables                                    = Object.groupBy(lines, line => line.table)
+    const groupedTablesArray: ICuttingTaskLinesGroupData[] = []
+    for (const [keyTable, valueTable] of Object.entries(groupedTables)) {
 
-    // console.log(ALL_TKCH)
+        const groupedFabrics                                   = Object.groupBy(valueTable, line => line.fabric_construct?.[0])
+        const groupedFabricsArray: ICuttingTaskLinesSubgroup[] = []
+        for (const [keyFabric, valueFabric] of Object.entries(groupedFabrics)) {
 
-    const result: ICuttingTaskLinesGroupData[] = []
+            if (valueFabric) {
 
-    // __ Группируем по группам согласно правилам в CUTTING_TASK_GROUP_RULES
-    for (let i = 0; i < CUTTING_TASK_GROUP_RULES.length; i++) {
+                const groupedCuts                                     = Object.groupBy(valueFabric, line => `${line.cut_width}${X_LAT}${line.cut_length}`)
+                const groupedCutsArray: ICuttingTaskLinesUnderGroup[] = []
+                for (const [keyCut, valueCut] of Object.entries(groupedCuts)) {
 
-        let hasDataGroup = false
-
-        let timeGroupTotal      = 0
-        let timeGroupDone       = 0
-        let timeGroupIncomplete = 0
-
-        let amountGroupTotal      = 0
-        let amountGroupDone       = 0
-        let amountGroupIncomplete = 0
-
-        result[i] = {
-            groupName: CUTTING_TASK_GROUP_RULES[i].GROUP_NAME,
-            groupType: CUTTING_TASK_GROUP_RULES[i].GROUP_TYPE,
-            subgroups: [],
-            hasData  : hasDataGroup,
-            time     : {
-                total     : timeGroupTotal,
-                done      : timeGroupDone,
-                incomplete: timeGroupIncomplete,
-            },
-            amount   : {
-                total     : amountGroupTotal,
-                done      : amountGroupDone,
-                incomplete: amountGroupIncomplete,
-            },
-        }
-
-        for (let j = 0; j < CUTTING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
-
-            // const TEMP_TKCH = new Set<string>(CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.map(tkch => tkch.trim().toUpperCase().replaceAll(' ', '')))
-
-            const TEMP_TABLE = new Set<string>()
-            CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TABLE.forEach(tkch => {
-                TEMP_TABLE.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
-            })
-
-            let hasDataSubgroup = false
-
-            let timeSubgroupTotal      = 0
-            let timeSubgroupDone       = 0
-            let timeSubgroupIncomplete = 0
-
-            let amountSubgroupTotal      = 0
-            let amountSubgroupDone       = 0
-            let amountSubgroupIncomplete = 0
-
-            result[i].subgroups[j] = {
-                subgroupName      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
-                subgroupType      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
-                lines             : [],
-                hasData           : hasDataSubgroup,
-                time              : {
-                    total     : timeSubgroupTotal,
-                    done      : timeSubgroupDone,
-                    incomplete: timeSubgroupIncomplete,
-                },
-                amount            : {
-                    total     : amountSubgroupTotal,
-                    done      : amountSubgroupDone,
-                    incomplete: amountSubgroupIncomplete,
-                },
-                subgroupOrderTitle: orderTitle,
-            }
-
-            for (let k = 0; k < lines.length; k++) {
-                const table = lines[k].table.trim().toUpperCase().replaceAll(' ', '')
-                if (table && ALL_TABLES.has(table)) {
-                    if (TEMP_TABLE.has(table)) {
-                        result[i].subgroups[j].lines.push(lines[k])
-                        hasDataSubgroup = true
-
-                        if (isTaskLineDone(lines[k])) {
-                            timeSubgroupDone += getCuttingTaskLineTime(lines[k])
-                            amountSubgroupDone += lines[k].amount
-                        } else {
-                            timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
-                            amountSubgroupIncomplete += lines[k].amount
-                        }
-
-                        timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
-                        amountSubgroupTotal += lines[k].amount
-                    }
-                } else {
-                    if (result[i].groupName === TABLE_0_TITLE) {
-                        result[i].subgroups[j].lines.push(lines[k])
-                        hasDataSubgroup = true
-
-                        if (isTaskLineDone(lines[k])) {
-                            timeSubgroupDone += getCuttingTaskLineTime(lines[k])
-                            amountSubgroupDone += lines[k].amount
-                        } else {
-                            timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
-                            amountSubgroupIncomplete += lines[k].amount
-                        }
-
-                        timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
-                        amountSubgroupTotal += lines[k].amount
-                    }
+                    groupedCutsArray.push({
+                        undergroupName      : keyCut,
+                        lines               : (valueCut ?? []).toSorted((a, b) => b.amount - a.amount),
+                        undergroupOrderTitle: orderTitle,
+                        undergroupType      : 'dark',
+                        hasData             : true,
+                        amount              : {
+                            total     : (valueCut || []).reduce((acc, line) => acc + line.amount, 0),
+                            done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount : acc, 0),
+                            incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount : acc, 0),
+                        },
+                        time                : {
+                            total     : (valueCut || []).reduce((acc, line) => acc + getCuttingTaskLineTime(line), 0),
+                            done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
+                            incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
+                        },
+                        cutWidth            : parseInt(keyCut.split(X_LAT)[0]) || 0,
+                        cutLength           : parseInt(keyCut.split(X_LAT)[1]) || 0,
+                        cutLengthTotal      : (valueCut || []).reduce((acc, line) => acc + line.expense /** line.amount*/, 0)
+                    })
                 }
-            }
 
-            result[i].subgroups[j].hasData = hasDataSubgroup
-
-            result[i].subgroups[j].time.total      = timeSubgroupTotal
-            result[i].subgroups[j].time.done       = timeSubgroupDone
-            result[i].subgroups[j].time.incomplete = timeSubgroupIncomplete
-
-            result[i].subgroups[j].amount.total      = amountSubgroupTotal
-            result[i].subgroups[j].amount.done       = amountSubgroupDone
-            result[i].subgroups[j].amount.incomplete = amountSubgroupIncomplete
-
-            hasDataGroup ||= hasDataSubgroup
-
-            timeGroupTotal += timeSubgroupTotal
-            timeGroupDone += timeSubgroupDone
-            timeGroupIncomplete += timeSubgroupIncomplete
-
-            amountGroupTotal += amountSubgroupTotal
-            amountGroupDone += amountSubgroupDone
-            amountGroupIncomplete += amountSubgroupIncomplete
-        }
-
-        result[i].hasData = hasDataGroup
-
-        result[i].time.total      = timeGroupTotal
-        result[i].time.done       = timeGroupDone
-        result[i].time.incomplete = timeGroupIncomplete
-
-        result[i].amount.total      = amountGroupTotal
-        result[i].amount.done       = amountGroupDone
-        result[i].amount.incomplete = amountGroupIncomplete
-    }
-
-    // __ Сортируем массивы внутри групп
-    result.forEach(group => {
-        group.subgroups.forEach(subgroup => {
-            subgroup.lines = sortCuttingTaskLinesForExecute(subgroup.lines, group.groupName, 'cover')
-
-            // const sortedLines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
-            // subgroup.lines    = sortedLines                 // __ по размерам по убыванию
-
-            //         const sortedLines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
-            //         subgroup.lines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
-            //         // subgroup.lines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
-            //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
-            //
-        })
-    })
-
-    return result
-}
-
-// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ для Объединенного СЗ
-export function groupTaskLinesForExecuteForUnion(taskLines: ICuttingTaskLine[]): ICuttingTaskLinesGroupData[] {
-
-    let workResult: ICuttingTaskLinesGroupData[] = []
-
-    const linesGroupedBy_Map = Map.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
-    // const linesGroupedBy_Object = Object.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
-
-    // console.log('linesGroupedBy_Object: ', linesGroupedBy_Object)
-    // console.log('linesGroupedBy_Map: ', linesGroupedBy_Map)
-
-    workResult = Array.from(linesGroupedBy_Map.values()).flatMap(lines => groupTaskLinesForExecute(lines))
-    // for (const [_, lines] of linesGroupedBy_Map) {
-    //     workResult = [...workResult, ...groupTaskLinesForExecute(lines)]
-    // }
-
-    const resultGrouped_Object: Partial<Record<ICuttingTaskLinesGroupNames, ICuttingTaskLinesGroupData[]>> = Object.groupBy(workResult, item => item.groupName)//.values()
-    // const resultGrouped_Map = Map.groupBy(workResult, item => item.groupName)//.values()
-    // console.log('result_grouped: ', resultGrouped_Object)
-
-    const result: ICuttingTaskLinesGroupData[] = []
-    for (const [groupName, groupsArr] of Object.entries(resultGrouped_Object)) {
-
-        const workGroup: ICuttingTaskLinesGroupData = {
-            groupName: groupName as ICuttingTaskLinesGroupNames,
-            groupType: 'dark',
-            subgroups: [],
-            hasData  : false,
-            time     : {
-                total     : 0,
-                done      : 0,
-                incomplete: 0,
-            },
-            amount   : {
-                total     : 0,
-                done      : 0,
-                incomplete: 0,
-            },
-        }
-
-        for (const groupItem of groupsArr) {
-            workGroup.groupType = groupItem.groupType
-            if (groupItem.hasData) {
-
-                workGroup.hasData = true
-
-                workGroup.time.total += groupItem.time.total
-                workGroup.time.done += groupItem.time.done
-                workGroup.time.incomplete += groupItem.time.incomplete
-
-                workGroup.amount.total += groupItem.amount.total
-                workGroup.amount.done += groupItem.amount.done
-                workGroup.amount.incomplete += groupItem.amount.incomplete
-
-                groupItem.subgroups.forEach(subgroup => {
-                    let orderTitle = ''
-                    for (let i = 0; i < subgroup.lines.length; i++) {
-                        if (subgroup.lines[i].groupAttr) {
-                            orderTitle = subgroup.lines[i].groupAttr || ''
-                            break
-                        }
+                // __ Сначала сравниваем cutWidth. Если они не равны, сортируем по нему.
+                // __ Если они равны (вычитание даст 0), то сортируем по cutLength.
+                groupedCutsArray.sort((a, b) => {
+                    if (a.cutWidth !== b.cutWidth) {
+                        return b.cutWidth - a.cutWidth;
                     }
+                    return b.cutLength - a.cutLength;
 
-                    workGroup.subgroups = [
-                        ...workGroup.subgroups,
-                        {
-                            ...subgroup,
-                            subgroupOrderTitle: orderTitle,
-                            lines             : sortCuttingTaskLinesForExecute(subgroup.lines, groupName as ICuttingTaskLinesGroupNames, 'cover')
-                        }
-                    ]
                 })
 
+                groupedFabricsArray.push({
+                    subgroupName      : keyFabric,
+                    subgroupOrderTitle: orderTitle,
+                    undergroups       : groupedCutsArray,
+                    collapsed         : true,
+                    subgroupType      : 'dark',
+                    hasData           : true,
+                    amount              : {
+                        total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.total, 0),
+                        done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.done, 0),
+                        incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.incomplete, 0),
+                    },
+                    time            : {
+                        total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.total, 0),
+                        done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.done, 0),
+                        incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.incomplete, 0),
+                    },
+                    cutLengthTotal: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.cutLengthTotal, 0),
+                })
             }
         }
 
-        result.push(workGroup)
+        // __ Сортируем по названию ПС по Возрастанию
+        groupedFabricsArray.sort((a, b) => a.subgroupName.localeCompare(b.subgroupName))
+
+        // __ Получаем название и раскраску стола
+        let tableName: ICuttingTaskLinesGroupNames = TABLE_0_TITLE
+        let tableType: IColorTypes                 = 'danger'
+
+        switch (keyTable) {
+            case TABLE_1:
+                tableName = TABLE_1_TITLE
+                tableType = 'orange'
+                break
+            case TABLE_2:
+                tableName = TABLE_2_TITLE
+                tableType = 'warning'
+                break
+            case TABLE_3:
+                tableName = TABLE_3_TITLE
+                tableType = 'success'
+        }
+
+        groupedTablesArray.push({
+            groupName: tableName,
+            groupType: tableType,
+            subgroups: groupedFabricsArray,
+            hasData  : true,
+            collapsed: true,
+            amount              : {
+                total     : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.total, 0),
+                done      : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.done, 0),
+                incomplete: groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.incomplete, 0),
+            },
+            time            : {
+                total     : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.total, 0),
+                done      : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
+                incomplete: groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
+            },
+        })
     }
 
-    console.log('result: ', result)
-    return result
+    // __ Сортируем по названию Столов по Возрастанию
+    groupedTablesArray.sort((a, b) => a.groupName.localeCompare(b.groupName))
+
+    // console.log('groupedTablesArray: ', groupedTablesArray)
+
+    return groupedTablesArray
 }
+
+
+// // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
+// export function groupTaskLinesForExecute_OLD(lines: ICuttingTaskLine[], orderTitle: string | null = null): ICuttingTaskLinesGroupData[] {
+//
+//     // __ Собираем все ТКЧ в один сет для проверки, что в исходных данных ничего криво не написано и не добавлено
+//     const ALL_TABLES = new Set<string>()
+//     CUTTING_TASK_GROUP_RULES.forEach(rule => {
+//         rule.SUBGROUPS.forEach(subgroup => {
+//             subgroup.SUBGROUP_TABLE.forEach(tkch => {
+//                 ALL_TABLES.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+//             })
+//         })
+//     })
+//
+//     // console.log(ALL_TKCH)
+//
+//     const result: ICuttingTaskLinesGroupData[] = []
+//
+//     // __ Группируем по группам согласно правилам в CUTTING_TASK_GROUP_RULES
+//     for (let i = 0; i < CUTTING_TASK_GROUP_RULES.length; i++) {
+//
+//         let hasDataGroup = false
+//
+//         let timeGroupTotal      = 0
+//         let timeGroupDone       = 0
+//         let timeGroupIncomplete = 0
+//
+//         let amountGroupTotal      = 0
+//         let amountGroupDone       = 0
+//         let amountGroupIncomplete = 0
+//
+//         result[i] = {
+//             groupName: CUTTING_TASK_GROUP_RULES[i].GROUP_NAME,
+//             groupType: CUTTING_TASK_GROUP_RULES[i].GROUP_TYPE,
+//             subgroups: [],
+//             hasData  : hasDataGroup,
+//             time     : {
+//                 total     : timeGroupTotal,
+//                 done      : timeGroupDone,
+//                 incomplete: timeGroupIncomplete,
+//             },
+//             amount   : {
+//                 total     : amountGroupTotal,
+//                 done      : amountGroupDone,
+//                 incomplete: amountGroupIncomplete,
+//             },
+//         }
+//
+//         for (let j = 0; j < CUTTING_TASK_GROUP_RULES[i].SUBGROUPS.length; j++) {
+//
+//             // const TEMP_TKCH = new Set<string>(CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TCHK.map(tkch => tkch.trim().toUpperCase().replaceAll(' ', '')))
+//
+//             const TEMP_TABLE = new Set<string>()
+//             CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TABLE.forEach(tkch => {
+//                 TEMP_TABLE.add(tkch.trim().toUpperCase().replaceAll(' ', ''))
+//             })
+//
+//             let hasDataSubgroup = false
+//
+//             let timeSubgroupTotal      = 0
+//             let timeSubgroupDone       = 0
+//             let timeSubgroupIncomplete = 0
+//
+//             let amountSubgroupTotal      = 0
+//             let amountSubgroupDone       = 0
+//             let amountSubgroupIncomplete = 0
+//
+//             result[i].subgroups[j] = {
+//                 subgroupName      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_NAME,
+//                 subgroupType      : CUTTING_TASK_GROUP_RULES[i].SUBGROUPS[j].SUBGROUP_TYPE,
+//                 lines             : [],
+//                 hasData           : hasDataSubgroup,
+//                 time              : {
+//                     total     : timeSubgroupTotal,
+//                     done      : timeSubgroupDone,
+//                     incomplete: timeSubgroupIncomplete,
+//                 },
+//                 amount            : {
+//                     total     : amountSubgroupTotal,
+//                     done      : amountSubgroupDone,
+//                     incomplete: amountSubgroupIncomplete,
+//                 },
+//                 subgroupOrderTitle: orderTitle,
+//             }
+//
+//             for (let k = 0; k < lines.length; k++) {
+//                 const table = lines[k].table.trim().toUpperCase().replaceAll(' ', '')
+//                 if (table && ALL_TABLES.has(table)) {
+//                     if (TEMP_TABLE.has(table)) {
+//                         result[i].subgroups[j].lines.push(lines[k])
+//                         hasDataSubgroup = true
+//
+//                         if (isTaskLineDone(lines[k])) {
+//                             timeSubgroupDone += getCuttingTaskLineTime(lines[k])
+//                             amountSubgroupDone += lines[k].amount
+//                         } else {
+//                             timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
+//                             amountSubgroupIncomplete += lines[k].amount
+//                         }
+//
+//                         timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
+//                         amountSubgroupTotal += lines[k].amount
+//                     }
+//                 } else {
+//                     if (result[i].groupName === TABLE_0_TITLE) {
+//                         result[i].subgroups[j].lines.push(lines[k])
+//                         hasDataSubgroup = true
+//
+//                         if (isTaskLineDone(lines[k])) {
+//                             timeSubgroupDone += getCuttingTaskLineTime(lines[k])
+//                             amountSubgroupDone += lines[k].amount
+//                         } else {
+//                             timeSubgroupIncomplete += getCuttingTaskLineTime(lines[k])
+//                             amountSubgroupIncomplete += lines[k].amount
+//                         }
+//
+//                         timeSubgroupTotal += getCuttingTaskLineTime(lines[k])
+//                         amountSubgroupTotal += lines[k].amount
+//                     }
+//                 }
+//             }
+//
+//             result[i].subgroups[j].hasData = hasDataSubgroup
+//
+//             result[i].subgroups[j].time.total      = timeSubgroupTotal
+//             result[i].subgroups[j].time.done       = timeSubgroupDone
+//             result[i].subgroups[j].time.incomplete = timeSubgroupIncomplete
+//
+//             result[i].subgroups[j].amount.total      = amountSubgroupTotal
+//             result[i].subgroups[j].amount.done       = amountSubgroupDone
+//             result[i].subgroups[j].amount.incomplete = amountSubgroupIncomplete
+//
+//             hasDataGroup ||= hasDataSubgroup
+//
+//             timeGroupTotal += timeSubgroupTotal
+//             timeGroupDone += timeSubgroupDone
+//             timeGroupIncomplete += timeSubgroupIncomplete
+//
+//             amountGroupTotal += amountSubgroupTotal
+//             amountGroupDone += amountSubgroupDone
+//             amountGroupIncomplete += amountSubgroupIncomplete
+//         }
+//
+//         result[i].hasData = hasDataGroup
+//
+//         result[i].time.total      = timeGroupTotal
+//         result[i].time.done       = timeGroupDone
+//         result[i].time.incomplete = timeGroupIncomplete
+//
+//         result[i].amount.total      = amountGroupTotal
+//         result[i].amount.done       = amountGroupDone
+//         result[i].amount.incomplete = amountGroupIncomplete
+//     }
+//
+//     // __ Сортируем массивы внутри групп
+//     result.forEach(group => {
+//         group.subgroups.forEach(subgroup => {
+//             subgroup.lines = sortCuttingTaskLinesForExecute(subgroup.lines, group.groupName, 'cover')
+//
+//             // const sortedLines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'desc', 'cover')                 // __ по размерам по убыванию
+//             // subgroup.lines    = sortedLines                 // __ по размерам по убыванию
+//
+//             //         const sortedLines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'base') // __ по количеству по убыванию
+//             //         subgroup.lines = sortCuttingTaskLinesBySizeAndAmount(subgroup.lines, 'asc', 'cover')                 // __ по размерам по убыванию
+//             //         // subgroup.lines = sortCuttingTaskLinesByAmountStableSize(subgroup.lines, 'desc', 'cover')     // __ по количеству по убыванию
+//             //         // subgroup.lines = subgroup.lines.sort((a, b) => b.amount - a.amount)             // __ по количеству по убыванию
+//             //
+//         })
+//     })
+//
+//     return result
+// }
+
+
+// // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ для Объединенного СЗ
+// export function groupTaskLinesForExecuteForUnion(taskLines: ICuttingTaskLine[]): ICuttingTaskLinesGroupData[] {
+//
+//     let workResult: ICuttingTaskLinesGroupData[] = []
+//
+//     const linesGroupedBy_Map = Map.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+//     // const linesGroupedBy_Object = Object.groupBy(taskLines, taskLine => taskLine.groupAttr || '')
+//
+//     // console.log('linesGroupedBy_Object: ', linesGroupedBy_Object)
+//     // console.log('linesGroupedBy_Map: ', linesGroupedBy_Map)
+//
+//     workResult = Array.from(linesGroupedBy_Map.values()).flatMap(lines => groupTaskLinesForExecute(lines))
+//     // for (const [_, lines] of linesGroupedBy_Map) {
+//     //     workResult = [...workResult, ...groupTaskLinesForExecute(lines)]
+//     // }
+//
+//     const resultGrouped_Object: Partial<Record<ICuttingTaskLinesGroupNames, ICuttingTaskLinesGroupData[]>> = Object.groupBy(workResult, item => item.groupName)//.values()
+//     // const resultGrouped_Map = Map.groupBy(workResult, item => item.groupName)//.values()
+//     // console.log('result_grouped: ', resultGrouped_Object)
+//
+//     const result: ICuttingTaskLinesGroupData[] = []
+//     for (const [groupName, groupsArr] of Object.entries(resultGrouped_Object)) {
+//
+//         const workGroup: ICuttingTaskLinesGroupData = {
+//             groupName: groupName as ICuttingTaskLinesGroupNames,
+//             groupType: 'dark',
+//             subgroups: [],
+//             hasData  : false,
+//             time     : {
+//                 total     : 0,
+//                 done      : 0,
+//                 incomplete: 0,
+//             },
+//             amount   : {
+//                 total     : 0,
+//                 done      : 0,
+//                 incomplete: 0,
+//             },
+//         }
+//
+//         for (const groupItem of groupsArr) {
+//             workGroup.groupType = groupItem.groupType
+//             if (groupItem.hasData) {
+//
+//                 workGroup.hasData = true
+//
+//                 workGroup.time.total += groupItem.time.total
+//                 workGroup.time.done += groupItem.time.done
+//                 workGroup.time.incomplete += groupItem.time.incomplete
+//
+//                 workGroup.amount.total += groupItem.amount.total
+//                 workGroup.amount.done += groupItem.amount.done
+//                 workGroup.amount.incomplete += groupItem.amount.incomplete
+//
+//                 groupItem.subgroups.forEach(subgroup => {
+//                     let orderTitle = ''
+//                     for (let i = 0; i < subgroup.lines.length; i++) {
+//                         if (subgroup.lines[i].groupAttr) {
+//                             orderTitle = subgroup.lines[i].groupAttr || ''
+//                             break
+//                         }
+//                     }
+//
+//                     workGroup.subgroups = [
+//                         ...workGroup.subgroups,
+//                         {
+//                             ...subgroup,
+//                             subgroupOrderTitle: orderTitle,
+//                             lines             : sortCuttingTaskLinesForExecute(subgroup.lines, groupName as ICuttingTaskLinesGroupNames, 'cover')
+//                         }
+//                     ]
+//                 })
+//
+//             }
+//         }
+//
+//         result.push(workGroup)
+//     }
+//
+//     console.log('result: ', result)
+//     return result
+// }
 
 
 // __ Получаем заголовок СЗ
@@ -1805,6 +1949,13 @@ export function getCuttingTaskTitle(task: ICuttingTask, includePosition: boolean
     }
     return `${task.order.client.short_name} №${task.order.order_no_num}`
 }
+
+
+// __ Получаем название детальки
+// export function getCuttingDetailName(cuttingLine: ICuttingTaskLine): string {
+//     const detail = Object.values(DETAILS).find(value => value.NAME === cuttingLine.detail)
+//     return detail ? `${detail.TITLE} ${cuttingLine.model.name_report}` : line.model.name_report
+// }
 
 
 // __ Сортируем строки СЗ по количеству, с учетом размера

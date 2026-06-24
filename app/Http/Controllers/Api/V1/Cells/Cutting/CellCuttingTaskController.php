@@ -95,10 +95,13 @@ class CellCuttingTaskController extends Controller
                 //])
 
                 ->with([
+                    'order',
                     'order.client',
                     'order.orderType',
                     'statuses',
                     // Главные строки задания
+                    'cuttingLines.orderLine',
+                    'cuttingLines.orderLine.model',
                     'cuttingLines.orderLine.model.kdchDoc',
                     'cuttingLines.orderLine.model.cover.kdchDoc',
                     'cuttingLines.orderLine.model.base.kdchDoc',
@@ -106,6 +109,7 @@ class CellCuttingTaskController extends Controller
                     // !! ОПТИМИЗАЦИЯ: Глубокая жадная загрузка для вложенных деталей (боковин)
 
                     // !!! Убираем эту привязку. Изначально все разбиваем на детали
+                    'cuttingLines.details.orderLine.model',
                     'cuttingLines.details.orderLine.model.cover.kdchDoc',
                     'cuttingLines.details.orderLine.model.base.kdchDoc',
 

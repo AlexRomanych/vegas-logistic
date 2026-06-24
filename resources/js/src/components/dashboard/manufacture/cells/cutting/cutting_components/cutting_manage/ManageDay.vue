@@ -1139,6 +1139,12 @@ const actionDayMenu = async () => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
             // __ и не является AVERAGE и там нет нераспределенных Столов
+
+            // console.log('task: ', task, '----------------')
+            // console.log('isTaskStatusCreated(task): ', isTaskStatusCreated(task))
+            // console.log('! isTaskAverage(task): ', !isTaskAverage(task))
+            // console.log('! hasTaskUnknownTable(task): ', !hasTaskUnknownTable(task))
+
             if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownTable(task)) {
                 return { task: task.id, status: CUTTING_TASK_STATUSES.PENDING.ID }
             } else {
@@ -1148,9 +1154,12 @@ const actionDayMenu = async () => {
             return []
         })
 
+        console.log('setStatusesData:', setStatusesData)
+
         if (clearDay.length !== setStatusesData.length) {
             await showError([
-                'В дне присутствуют расчетные СЗ или',
+                'В дне все СЗ уже отправлены на выполнение или',
+                'присутствуют расчетные СЗ или',
                 'СЗ с неопределенным раскройным столом!',
             ])
         }

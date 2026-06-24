@@ -2,8 +2,8 @@
     <AppLabelTS
         v-if="renderObject.show"
         :align="header ? renderObject.headerAlign : renderObject.dataAlign"
+        :class="computedClass"
         :color="color"
-        :class="renderObject.class || ''"
         :text="header ? (renderObject.header as string): renderObject.data!(arg)"
         :text-size="header ? renderObject.headerTextSize : renderObject.dataTextSize"
         :title="title"
@@ -31,8 +31,8 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     headerType: 'primary',
-    arg: undefined,
-    header: false,
+    arg       : undefined,
+    header    : false,
 })
 
 
@@ -55,6 +55,16 @@ const title = computed(() => {
     return typeof props.renderObject.title === 'function'
         ? props.renderObject.title(props.arg)
         : props.renderObject.title
+})
+
+const computedClass = computed(() => {
+    if (typeof props.renderObject?.class === 'function') {
+        return props.renderObject.class(props.arg)
+    } else if (typeof props.renderObject?.class === 'string') {
+        return props.renderObject.class
+    }
+
+    return ''
 })
 
 const handleClick = () => props.renderObject.click && props.renderObject.click(props.arg)

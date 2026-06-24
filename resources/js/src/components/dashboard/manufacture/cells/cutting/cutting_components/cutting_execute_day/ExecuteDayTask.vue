@@ -32,18 +32,31 @@
                     </template>
                 </template>
 
-                <!-- __ Видимость заголовков -->
+                <!-- __ Слои -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
-                    :text="showSubgroupNames ? '🔓' : '🔒'"
                     align="center"
                     class="menu-button"
                     rounded="4"
+                    text="📐"
                     text-size="huge"
                     type="dark"
                     width="w-[50px]"
-                    @click="showSubgroupNames = !showSubgroupNames"
+                    @click="console.log('layers')"
                 />
+
+                <!--&lt;!&ndash; __ Видимость заголовков &ndash;&gt;-->
+                <!--<AppLabelTS-->
+                <!--    :height="MENU_HEIGHT"-->
+                <!--    :text="showSubgroupNames ? '🔓' : '🔒'"-->
+                <!--    align="center"-->
+                <!--    class="menu-button"-->
+                <!--    rounded="4"-->
+                <!--    text-size="huge"-->
+                <!--    type="dark"-->
+                <!--    width="w-[50px]"-->
+                <!--    @click="showSubgroupNames = !showSubgroupNames"-->
+                <!--/>-->
 
                 <!-- __ Печать -->
                 <AppLabelTS
@@ -157,12 +170,28 @@
                         title="Разбить количество элементов"
                         @click="divideElementAmount"
                     />
+
+                    <!-- __ Сброс отметки выделения -->
+                    <AppLabelMultiLineTS
+                        :disabled="selectedIds.size === 0"
+                        :height="MENU_HEIGHT_MULTILINE"
+                        :text="['↺', 'Отменить']"
+                        :type="selectedIds.size === 0 ? 'dark' : 'warning'"
+                        :width="MENU_WIDTH"
+                        align="center"
+                        class="menu-button"
+                        rounded="4"
+                        text-size="small"
+                        title="Отменить выделение"
+                        @click="selectedIds.clear()"
+                    />
+
                 </div>
             </div>
         </div>
 
         <!-- __ Заголовок для Линий -->
-        <div class="ml-[23px]">
+        <div class="ml-[39px]">
             <ExecuteDayTaskLineHeader :field-widths="fieldWidths"/>
         </div>
 
@@ -173,77 +202,82 @@
 
             <div v-for="(subgroup, sgIndex) of cuttingLinesGroup" :key="sgIndex">
 
+
                 <template v-if="subgroup.hasData">
-
-                    <div v-if="showSubgroupNames" class="ml-2 pt-1 font-semibold italic underline">
-                        {{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} - <span
-                        class="text-blue-600">Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }})</span> / <span
-                        class="text-green-600">Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }})</span> / <span
-                        class="text-red-600">Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{
-                            formatTimeWithLeadingZeros(subgroup.time.incomplete)
-                        }})</span>
-                        <!--<span class="font-semibold italic underline">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</span>-->
-                        <!--<span class="font-semibold italic underline">{{ getSubgroupTitle(subgroup) }}</span>-->
-                    </div>
-
-                    <!-- !!! С фиксированной высотой строки СЗ !!! -->
-                    <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
+                    <!-- __ Название ПС -->
                     <div
-                        v-for="(cuttingLine, index) of subgroup.lines"
-                        :key="cuttingLine.id"
-                        :class="[
-                            selectedIds.has(cuttingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
-                            cuttingLine.completed ? '' : '',
-                        ]"
-                        :data-task-id="cuttingLine.id"
-                        class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
-                        @mousedown="startSelectionById(cuttingLine.id, $event)"
-                        @mouseenter="updateSelectionById(cuttingLine.id, $event)"
+                        v-if="showSubgroupNames"
+                        class="ml-2"
+                        :class="[!collapseStates[subgroup.subgroupName] ? 'mt-2' : '']"
                     >
-                        <!-- __ Строка СЗ -->
-                        <ExecuteDayTaskLine
-                            :cutting-line="cuttingLine"
-                            :field-widths="fieldWidths"
-                            :index="index + 1"
-                            :ordering="'index'"
-                            @dblclick="showLineInfo(cuttingLine)"
-                            @show-document="showDocument(cuttingLine, $event)"
+                        <ExecuteDayTaskSubGroup
+                            :collapsed="collapseStates[subgroup.subgroupName]"
+                            :subgroup
+                            @toggle-collapse="toggleCollapse(subgroup.subgroupName)"
                         />
-
-                        <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
-                        <div
-                            v-if="selectedIds.has(cuttingLine.id)"
-                            class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
-                        ></div>
                     </div>
 
+                    <div
+                        v-if="!collapseStates[subgroup.subgroupName]"
+                        :class="[!collapseStates[subgroup.subgroupName] ? 'mb-2' : '']"
+                        class="ml-4"
+                    >
+
+                        <!-- !!! С фиксированной высотой строки СЗ !!! -->
+                        <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
+
+                        <div v-for="undergroup of subgroup.undergroups" :key="undergroup.undergroupName">
+
+                            <!-- __ Название Кроя -->
+                            <div v-if="showSubgroupNames" class="ml-2">
+                                <ExecuteDayTaskUnderGroup
+                                    :collapsed="collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`]"
+                                    :undergroup
+                                    @toggle-collapse="toggleCollapse(`${subgroup.subgroupName}_${undergroup.undergroupName}`)"
+                                />
+                            </div>
+
+                            <div
+                                v-if="!collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`]"
+                                :class="[!collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`] ? 'mb-1' : '']"
+                            >
+
+                                <div
+                                    v-for="(cuttingLine, index) of undergroup.lines"
+                                    :key="cuttingLine.id"
+                                    :class="[
+                                        selectedIds.has(cuttingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
+                                        cuttingLine.completed ? '' : '',
+                                    ]"
+                                    :data-task-id="cuttingLine.id"
+                                    class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
+                                    @mousedown="startSelectionById(cuttingLine.id, $event)"
+                                    @mouseenter="updateSelectionById(cuttingLine.id, $event)"
+                                >
+                                    <!-- __ Строка СЗ -->
+                                    <ExecuteDayTaskLine
+                                        :cutting-line="cuttingLine"
+                                        :field-widths="fieldWidths"
+                                        :index="index + 1"
+                                        :ordering="'index'"
+                                        @dblclick="showLineInfo(cuttingLine)"
+                                        @show-document="showDocument(cuttingLine, $event)"
+                                    />
+
+                                    <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
+                                    <div
+                                        v-if="selectedIds.has(cuttingLine.id)"
+                                        class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
+                                    ></div>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
                 </template>
-
-                <!--<div-->
-                <!--    v-for="(cuttingLine, index) of subgroup.lines"-->
-                <!--    :key="cuttingLine.id"-->
-                <!--    :class="[-->
-                <!--    selectedIds.has(cuttingLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',-->
-                <!--    cuttingLine.completed ? '' : '',-->
-                <!--]"-->
-                <!--    :data-task-id="cuttingLine.id"-->
-                <!--    class="h-[30px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
-                <!--    @mousedown="startSelection(index, $event)"-->
-                <!--    @mouseenter="updateSelection(index, $event)"-->
-                <!--&gt;-->
-                <!--    &lt;!&ndash; __ Строка СЗ &ndash;&gt;-->
-                <!--    <ExecuteDayTaskLine-->
-                <!--        :field-widths="fieldWidths"-->
-                <!--        :cutting-line="cuttingLine"-->
-                <!--        @dblclick="showLineInfo(cuttingLine)"-->
-                <!--    />-->
-
-                <!--    &lt;!&ndash;class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"&ndash;&gt;-->
-                <!--    <div-->
-                <!--        v-if="selectedIds.has(cuttingLine.id)"-->
-                <!--        class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"-->
-                <!--    ></div>-->
-                <!--</div>-->
 
             </div>
         </div>
@@ -355,7 +389,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount, reactive, } from 'vue'
 import { useRouter } from 'vue-router'
 
 import type {
@@ -395,6 +429,8 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
 import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/shared/textile_design/TextileDesignDocumentAsync.vue'
 import { getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
+import ExecuteDayTaskSubGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskSubGroup.vue'
+import ExecuteDayTaskUnderGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskUnderGroup.vue'
 
 
 interface IProps {
@@ -454,12 +490,6 @@ const taskCardTable = ref<ICuttingTask>(CUTTING_TASK_DRAFT)
 
 const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
 
-// --- Инициализация данных ---
-// const tasks = ref(Array.from({ length: 40 }, (_, i) => ({
-//     id:        Date.now() + i,
-//     title:     `Подготовить отчет по модулю ${String.fromCharCode(65 + i % 26)}${i}`,
-//     completed: false
-// })))
 
 // __ Видимость названий подгрупп
 const showSubgroupNames = ref(true)
@@ -481,7 +511,6 @@ const taskTitle = computed(() => {
 // }
 
 // __ Формируем объект выполнения
-// const cuttingLines       = ref<ICuttingTaskLine[]>([])
 const cuttingLinesGroups = computed(() => {
     // if (isUnionTask.value) {
     // if (props.cuttingTask.id === UNION_TASKS_ID) {
@@ -491,13 +520,20 @@ const cuttingLinesGroups = computed(() => {
     return groupTaskLinesForExecute(props.cuttingTask.cutting_lines, title)
 })
 
+// const cuttingLinesGroup = ref(cuttingLinesGroups.value[activeTabIndex.value].subgroups)
 const cuttingLinesGroup = computed(() => cuttingLinesGroups.value[activeTabIndex.value].subgroups)
 const cuttingLines      = computed(() => {
     const result: ICuttingTaskLine[] = []
     cuttingLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
-        subgroup.lines.forEach(line => {
-            result.push(line)
+        subgroup.undergroups.forEach(undergroup => {
+            undergroup.lines.forEach(line => {
+                result.push(line)
+            })
         })
+
+        // subgroup.lines.forEach(line => {
+        //     result.push(line)
+        // })
     })
     return result
 })
@@ -640,8 +676,15 @@ const stopAutoScroll = (): void => {
 
 // --- Методы выделения на id ---
 const flatVisibleIds = computed(() => {
-    return cuttingLinesGroup.value.flatMap(subgroup => subgroup.lines.map(line => line.id))
+    return cuttingLinesGroup.value.flatMap(subgroup =>
+        subgroup.undergroups.flatMap(undergroup =>
+            undergroup.lines.map(line => line.id)
+        )
+    )
 })
+// const flatVisibleIds = computed(() => {
+//     return cuttingLinesGroup.value.flatMap(subgroup => subgroup.lines.map(line => line.id))
+// })
 
 const startSelectionById = (id: number, event: MouseEvent) => {
     if (event.button === 2) return
@@ -1078,16 +1121,39 @@ watch(
     { deep: true, immediate: true }
 )
 
+const toggleCollapse = (key: string) => {
+    if (collapseStates[key] !== undefined) {
+        collapseStates[key] = !collapseStates[key]
+    }
+}
 
-// watch(
-//     () => props.cuttingTask,
-//     () => {
-//         selectedIds.value.clear() // __ Очистка выделения
-//         getCuttingLines()
-//         // console.log('cuttingTask__: ', props.cuttingTask)
-//     },
-//     { deep: true, immediate: true }
-// )
+// --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---
+// Храним пары: [ИмяГруппы]: boolean (true - свернуто, false - развернуто)
+const collapseStates = reactive<Record<string, boolean>>({})
+
+// Следим за изменением активной группы таба и наполняем ключи, если их еще нет
+watch(() => cuttingLinesGroup.value, (newSubgroups) => {
+    if (!newSubgroups) return
+
+    newSubgroups.forEach(subgroup => {
+        // Инициализируем состояние для Подгруппы (Ткани), если её еще нет в памяти
+        if (collapseStates[subgroup.subgroupName] === undefined) {
+            collapseStates[subgroup.subgroupName] = true // по дефолту свернуто
+        }
+
+        // Инициализируем состояние для Субподгруппы (Размеры кроя x)
+        subgroup.undergroups.forEach(undergroup => {
+            // Ключ делаем уникальным (ИмяТкани + ИмяКроя), чтобы размеры не пересекались между тканями
+            const undergroupKey = `${subgroup.subgroupName}_${undergroup.undergroupName}`
+            if (collapseStates[undergroupKey] === undefined) {
+                collapseStates[undergroupKey] = true // по дефолту свернуто
+            }
+        })
+    })
+}, { immediate: true, deep: true })
+
+// Универсальный метод для переключения флага (для вызова из шаблона)
+
 
 // --- Жизненный цикл ---
 onMounted(async () => {

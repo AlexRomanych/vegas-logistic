@@ -449,7 +449,7 @@ final class CuttingService
                     continue;
                 }
 
-                $workTable = CuttingTaskLine::FIELD_TABLE_2;    // __ Стол будет всегда Второй для деталек
+                $workTable = CuttingTaskLine::FIELD_TABLE_3;    // __ Стол будет всегда Третий для деталек
                 foreach ($constructDetails['sides'] as $detail) {
                     $panelTaskLine = CuttingTaskLine::query()->create([
                         'cutting_task_id'  => $createdTask->id,
@@ -1023,11 +1023,15 @@ final class CuttingService
             }
 
             if ($findModel->cover_type === 'м.бок.' || $findModel->cover_type === 'глух.') {
-                if ($hasPanel && !$hasSide) {
+                if ($hasPanel) {
                     return CuttingTaskLine::FIELD_TABLE_2;
-                } elseif ($hasSide) {
-                    return CuttingTaskLine::FIELD_TABLE_3;
                 }
+
+                //if ($hasPanel && !$hasSide) {
+                //    return CuttingTaskLine::FIELD_TABLE_2;
+                //} elseif ($hasSide) {
+                //    return CuttingTaskLine::FIELD_TABLE_3;
+                //}
             } elseif ($findModel->cover_type === 'м.книж.') {
                 if ($hasPanel) {
                     return CuttingTaskLine::FIELD_TABLE_3;
@@ -1277,6 +1281,7 @@ final class CuttingService
 
     public static function test()
     {
+        $cuttingTask = CuttingService::createCuttingTaskFromOrderId(1163);
         $cuttingTask = CuttingService::createCuttingTaskFromOrderId(1172);
 
         //$model   = ModelsService::getModel('000000137');

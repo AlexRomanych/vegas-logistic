@@ -127,10 +127,18 @@
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.describe_3"/>
 
             <!-- __ Спецификация -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.specification"/>
+            <AppLabelTSWrapper
+                :arg="orderLine"
+                :render-object="render.specification"
+                @dblclick.stop="showSpecification(orderLine.specification?.code_1c)"
+            />
 
             <!-- __ Дополнительная Спецификация -->
-            <AppLabelTSWrapper :arg="orderLine" :render-object="render.specification_add"/>
+            <AppLabelTSWrapper
+                :arg="orderLine"
+                :render-object="render.specification_add"
+                @dblclick.stop="showSpecification(orderLine.specification_add?.code_1c)"
+            />
 
             <!-- __ Кнопка удалить -->
             <AppLabelTSWrapper
@@ -164,13 +172,30 @@
         :order-line="orderLine"
     />
 
+    <!-- __ Карточка Спецификации -->
+    <CardSpecification
+        ref="cardSpecification"
+        :construct="modelConstruct"
+    />
+
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        ok-word="Понятно"
+    />
+
 </template>
 
 
 <script lang="ts" setup>
 import { reactive, /*ref,*/ computed, ref } from 'vue'
 
-import type { IRenderData, IRenderOrderLine } from '@/types'
+import type { IColorTypes, IModelConstruct, IRenderData, IRenderOrderLine } from '@/types'
+
+import { useModelsStore } from '@/stores/ModelsStore.ts'
 
 // import { formatDateIntl } from '@/app/helpers/helpers_date.js'
 // import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
@@ -180,6 +205,9 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import OrderItemInfo from '@/components/dashboard/orders/order_components/order_common/OrderItemInfo.vue'
 import OrderLineMaterials from '@/components/dashboard/orders/order_components/order_render/OrderLineMaterials.vue'
 import OrderLineCuttingDetail from '@/components/dashboard/orders/order_components/order_render/OrderLineCuttingDetail.vue'
+import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+
 
 interface IProps {
     orderLines: IRenderOrderLine[]
@@ -199,6 +227,8 @@ const props = withDefaults(defineProps<IProps>(), {
 const emits = defineEmits<{
     (e: 'deleteOrderLine', payload: IRenderOrderLine): void
 }>()
+
+const modelsStore = useModelsStore()
 
 // __ Определяем переменные
 const orderLinesRender = computed<IRenderOrderLine[]>(() => props.orderLines)
@@ -336,7 +366,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
+        type          : (orderLine: IRenderOrderLine) => hasCuttingDetailsUndefinedTable(orderLine) ? 'danger' : DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : 'center',
@@ -406,13 +436,14 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (orderLine: IRenderOrderLine) => orderLine.specification ?  'success' : 'danger',
+        type          : (orderLine: IRenderOrderLine) => orderLine.specification ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : 'center',
         dataAlign     : DATA_ALIGN,
+        title         : 'Двойной клик ЛКМ - Показать Спецификацию',
         data          : (orderLine: IRenderOrderLine) => orderLine.spec_name ?? '',
-        // data          : (orderLine: IRenderOrderLine) => orderLine.specification ? orderLine.specification.name : '',
+        class         : (orderLine: IRenderOrderLine) => orderLine?.specification ? 'cursor-pointer' : '',
     },
     specification_add        : {
         header        : 'Доп. спецификация',
@@ -426,8 +457,9 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : 'center',
         dataAlign     : DATA_ALIGN,
+        title         : 'Двойной клик ЛКМ - Показать Спецификацию',
         data          : (orderLine: IRenderOrderLine) => orderLine.spec_name_add ?? '',
-        // data          : (orderLine: IRenderOrderLine) => orderLine.specification_add ? orderLine.specification_add.name : '',
+        class         : (orderLine: IRenderOrderLine) => orderLine?.specification_add ? 'cursor-pointer' : '',
     },
     deleteButton             : {
         header        : '🗑️',
@@ -449,10 +481,64 @@ const render: IRenderData = reactive({
 const orderLine     = ref<IRenderOrderLine | null>(null)
 const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
+// __ Смотрим, есть ли в СЗ Раскроя неопределенный стол
+const hasCuttingDetailsUndefinedTable = (line: IRenderOrderLine) => {
+    if (!props.showCuttingDetails) {
+        return false
+    }
+    let hasUndefinedTable = false
+    line.cutting_lines?.forEach(cutting_line => {
+        hasUndefinedTable ||= cutting_line.table === 'undefined'
+    })
+
+    return hasUndefinedTable
+}
+
 // __ Показать информацию о записи
 const showLineInfo = async (line: IRenderOrderLine) => {
     orderLine.value = line
     await orderItemInfo.value!.show() // показываем модалку и ждем ответ
+}
+
+// __ Тип для модального окна Сообщений
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)
+
+
+// __ Показываем сообщение об ошибке
+// const showError = async (error: string | null = null) => {
+//     modalInfoType.value = 'danger'
+//     modalInfoMode.value = 'inform'
+//     modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+//     await appModalAsyncMultilineTS.value!.show()
+// }
+
+
+// __ Карточка Спецификаций
+const cardSpecification = ref<InstanceType<typeof CardSpecification> | null>(null)
+const modelConstruct    = ref<IModelConstruct | null>(null)
+
+// __ Показываем спецификацию
+const showSpecification = async (code_1c: string | null | undefined) => {
+    if (!code_1c) {
+        return
+    }
+
+    const construct = await modelsStore.getConstructByCode1c(code_1c)
+    if (!construct) {
+        modalInfoType.value = 'danger'
+        modalInfoText.value = [
+            `Спецификация с кодом: ${code_1c}`,
+            'не найдена!'
+        ]
+        await appModalAsyncMultilineTS.value?.show()
+        return
+    }
+
+    modelConstruct.value = construct
+    await cardSpecification.value?.show()
 }
 
 </script>

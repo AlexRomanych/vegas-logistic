@@ -49,18 +49,26 @@ export const DETAILS = {
     PANEL: {    // __ Верхняя и нижняя крышки одинаковы
         NAME: 'panel',
         TITLE: 'Крышка',
+        TITLE_SHORT: 'Крышка',
+        TITLE_COMPACT: 'К',
     },
     PANEL_UP: {
         NAME: 'panel_up',
         TITLE: 'Крышка верх',
+        TITLE_SHORT: 'Крышка',
+        TITLE_COMPACT: 'В',
     },
     PANEL_DOWN: {
         NAME: 'panel_down',
         TITLE: 'Крышка низ',
+        TITLE_SHORT: 'Крышка',
+        TITLE_COMPACT: 'Н',
     },
     SIDE: {
         NAME: 'side',
         TITLE: 'Бурлет',
+        TITLE_SHORT: 'Бурлет',
+        TITLE_COMPACT: 'Б',
     },
 }
 

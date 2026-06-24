@@ -10,7 +10,8 @@
                 align="center"
                 @click="setActiveTab(tab)"
                 rounded="4"
-                class="shadow cursor-pointer"
+                class="shadow cursor-pointer uppercase"
+                text-size="mini"
             />
         </div>
 
@@ -174,7 +175,7 @@ const tabs: ITab[] = [
     },
     {
         name:        'Материалы',
-        displayName: ['Материалы', ''],
+        displayName: ['Материалы', '(СВПМ)'],
         component:   'Materials',
         icon:        '💡',
         active:      false,

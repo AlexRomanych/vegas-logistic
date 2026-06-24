@@ -385,7 +385,7 @@ export interface ICuttingOperationModel {
         id: number,
         kdch: string
         file_path: string
-        description: string|null
+        description: string | null
     } | null
     angle: string | null
     machine: string
@@ -487,19 +487,12 @@ export interface ICuttingTaskLinesGroupData {
         incomplete: number
     }
     subgroups: ICuttingTaskLinesSubgroup[]
-    // subgroups: {
-    //     subgroupName:ICuttingTaskLinesSubGroupNames
-    //     subgroupOrderTitle: string | null,  // Название заявки (для отображения), к которой относится СЗ
-    //     subgroupType: IColorTypes
-    //     hasData: boolean,
-    //     lines: ICuttingTaskLine[]
-    // }[]
     collapsed?: boolean
 }
 
 
 export interface ICuttingTaskLinesSubgroup {
-    subgroupName: ICuttingTaskLinesSubGroupNames
+    subgroupName: string
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean
@@ -513,8 +506,33 @@ export interface ICuttingTaskLinesSubgroup {
         done: number
         incomplete: number
     }
-    lines: ICuttingTaskLine[]
+    undergroups: ICuttingTaskLinesUnderGroup[]
+    collapsed?: boolean
+
+    cutLengthTotal: number
 }
+
+export interface ICuttingTaskLinesUnderGroup {
+    undergroupName: string
+    undergroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
+    undergroupType: IColorTypes
+    hasData: boolean
+    time: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    amount: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    lines: ICuttingTaskLine[]
+    cutWidth: number
+    cutLength: number
+    cutLengthTotal: number
+}
+
 
 // __ Тип для сохранения (изменения) стола для записи СЗ Раскроя
 export type ICuttingLineTableSetData = { id: number, table: ICuttingTableKeys }

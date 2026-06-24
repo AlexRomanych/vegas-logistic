@@ -151,7 +151,7 @@ const setTabs = () => {
 
 // __ Ширина полей для вывода СЗ
 const COLLAPSED_WIDTH = 'w-[30px]'
-const PROGRESS_WIDTH  = 'w-[266px]'
+const PROGRESS_WIDTH  = 'w-[264px]'
 
 const cuttingTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
@@ -161,8 +161,8 @@ const cuttingTaskFieldsWidth = {
     order_no     : 'w-[50px]',
     status       : 'w-[140px]',
     progressTotal: PROGRESS_WIDTH,
-    load_at      : 'w-[163px]',
-    comment      : 'w-[1307px]',
+    load_at      : 'w-[228px]',
+    comment      : 'w-[1059px]',
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
