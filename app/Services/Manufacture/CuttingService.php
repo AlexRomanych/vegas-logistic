@@ -15,6 +15,7 @@ use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
+use App\Services\RunService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -35,7 +36,7 @@ final class CuttingService
     public static function createCuttingTaskFromOrderId(
         int $orderId,
         string|null $plannedDate = null,
-        bool $calculateCut = false,
+        bool $calculateCut = true,
     ): ?CuttingTask {
         //try {
 
@@ -212,10 +213,10 @@ final class CuttingService
                 }
             }
 
-            $targetConstructArray = $targetConstruct->toArray();
-            if ($line->id === 27802) {
-                $a = 0;
-            }
+            //$targetConstructArray = $targetConstruct->toArray();
+            //if ($line->id === 27802) {
+            //    $a = 0;
+            //}
 
             //if (isset($line->specification->model->cover->constructs) &&
             //    !is_null($line->specification->model->cover->constructs) &&
@@ -263,8 +264,8 @@ final class CuttingService
                 //     $position = 0;
                 // }
 
-                $debugLine            = $line->toArray();
-                $targetConstructDebug = $targetConstruct?->toArray();
+                //$debugLine            = $line->toArray();
+                //$targetConstructDebug = $targetConstruct?->toArray();
 
                 $constructDetails = self::getCuttingDetailsByConstruct($targetConstruct);
 
@@ -348,6 +349,13 @@ final class CuttingService
                                 $expensePanels[0]->expense += $expensePanels[1]->expense;
                                 $expensePanels[0]->rest    += $expensePanels[1]->rest;
                                 unset($expensePanels[1]);
+
+                                // __ Переиндексируем массив, чтобы убрать дыры в ключах
+                                $expensePanels = array_values($expensePanels);
+
+                                // или
+                                // Удаляет 1 элемент, начиная с индекса 1, и сам схлопывает массив
+                                //array_splice($expensePanels, 1, 1);
                             }
                         }
 
@@ -355,9 +363,17 @@ final class CuttingService
                         // __ которые пришли из определения количества Деталек Раскроя и Деталек из Расхода
                         // __ Должны совпадать
                         if (isset($constructDetails['panels'])) {
+
+                            // !!!
+                            try {
+
                             $minPanelCount = min(count($expensePanels), count($constructDetails['panels']));
                             for ($i = 0; $i < $minPanelCount; $i++) {
                                 $constructDetails['panels'][$i]['total'] = $expensePanels[$i]->expense + $expensePanels[$i]->rest;
+                            }
+
+                            } catch (\Exception $e) {
+                                $a = 0;
                             }
                         }
 
@@ -575,6 +591,23 @@ final class CuttingService
             ]
         ]);
 
+
+        // ___ Создаем Детальки Кроя
+        if ($calculateCut) {
+            $result   = RunService::runCuttingTaskCreator_Rust([$orderId]);
+
+            // __ Пишем в EventLog Ошибку
+            if ((int)$result !== 0) {
+                $eventLog          = new EventLog();
+                $eventLog->level   = EventLog::LEVEL_ERROR;
+                $eventLog->target  = EventLog::TARGET_CUTTING_TASK_CUT;
+                $eventLog->message = 'Ошибка при расчете деталей Кроя';
+                $eventLog->context = ['Class' => self::class];
+                $eventLog->save();
+            }
+        }
+
+
         // });
         return $createdTask;
         //} catch (Exception|Throwable $e) {
@@ -591,10 +624,10 @@ final class CuttingService
      * @return bool
      * @throws Throwable
      */
-    public static function distributeCuttingTaskFromOrderId(int $orderId): bool
+    public static function distributeCuttingTaskFromOrderId(int $orderId, bool $calculateCut = true): bool
     {
         // !!! Костыль !!! Доработать процедуру распределения
-        self::createCuttingTaskFromOrderId($orderId);
+        self::createCuttingTaskFromOrderId($orderId, $calculateCut);
         return true;
 
         // __ Получаем саму Заявку

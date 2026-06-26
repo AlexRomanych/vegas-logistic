@@ -39,6 +39,7 @@ const menuItems = ref<IMenuItem[]>([
     { name: 'Процедуры раскроя для моделей', path: 'manufacture.cell.cutting.procedures.models', shown: true, isActive: true },
     { name: 'Процедуры расчета раскроя', path: 'manufacture.cell.cutting.procedures', shown: true, isActive: true },
     { name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
+    { name: 'Ткань Настилов', path: 'manufacture.textile.design.show', shown: true, isActive: true },
 ])
 
 if (userStore.hasAdminRole()) {

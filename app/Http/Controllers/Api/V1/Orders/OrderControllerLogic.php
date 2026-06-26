@@ -24,7 +24,9 @@ use Illuminate\Support\Facades\DB;
 
 class OrderControllerLogic
 {
-    /** @noinspection DuplicatedCode */
+    /** @noinspection DuplicatedCode
+     * @noinspection PhpUndefinedFieldInspection
+     */
     public static function uploadOrders(Request $request)
     {
         //try {
@@ -98,7 +100,7 @@ class OrderControllerLogic
                 throw new Exception('Client with id = ' . $order['client_id'] . ' not found');
             }
 
-            DB::transaction(function () use ($order, $client, &$ordersIsdForExpense, &$ordersIsdForCuttingCut) {
+            DB::transaction(function () use ($order, $client, &$ordersIsdForExpense) {
                 // __ Если нужно добавить заявку или обновить, то добавляем или обновляем
                 if ($order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_ADD ||
                     $order[OrdersService::VALIDATE_FIELD][OrdersService::ACTION_FIELD] === OrdersService::ACTION_ORDER_UPDATE) {
@@ -326,19 +328,19 @@ class OrderControllerLogic
 
         // ___ Парсим Расход
         $orderIds = array_column($ordersIsdForExpense, 'id');
-        //$result   = RunService::runExpenseParser_Rust($orderIds);
-        //
-        //// __ Пишем в EventLog Ошибку
-        //if ((int)$result !== 0) {
-        //    $eventLog          = new EventLog();
-        //    $eventLog->level   = EventLog::LEVEL_ERROR;
-        //    $eventLog->target  = EventLog::TARGET_EXPENSE;
-        //    $eventLog->message = 'Ошибка при расчете расхода сырья';
-        //    $eventLog->context = ['Class' => self::class];
-        //    $eventLog->save();
-        //}
+        $result   = RunService::runExpenseParser_Rust($orderIds);
 
-        DB::transaction(function () use ($ordersIsdForExpense) {
+        // __ Пишем в EventLog Ошибку
+        if ((int)$result !== 0) {
+            $eventLog          = new EventLog();
+            $eventLog->level   = EventLog::LEVEL_ERROR;
+            $eventLog->target  = EventLog::TARGET_EXPENSE;
+            $eventLog->message = 'Ошибка при расчете расхода сырья';
+            $eventLog->context = ['Class' => self::class];
+            $eventLog->save();
+        }
+
+        DB::transaction(function () use ($ordersIsdForExpense, &$ordersIsdForCuttingCut) {
             $a = 0;
             // __ Этап 2. Создаем сменные задания
             foreach ($ordersIsdForExpense as $orderData) {
@@ -356,7 +358,7 @@ class OrderControllerLogic
 
                         // __ Распределяем СЗ на Раскрой
                         /** @var Order $forecastOrder */
-                        $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id']);
+                        $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
                         if (!$result) {
                             throw new Exception('Error while distributing Cutting Task with Client id = ' . $orderData['client_id']);
                         } else {
@@ -391,19 +393,38 @@ class OrderControllerLogic
 
                         // __ Создаем СЗ на Раскрой !!!
                         /** @var Order $createdOrder */
-                        //$cuttingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id']);
-                        //if (!$cuttingTask) {
-                        //    throw new Exception('Error while creating Cutting Task with Client id = ' . $orderData['client_id']);
-                        //} else {
-                        //    $ordersIsdForCuttingCut[] = $orderData['client_id'];
-                        //}
+                        $cuttingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
+                        if (!$cuttingTask) {
+                            throw new Exception('Error while creating Cutting Task with Client id = ' . $orderData['client_id']);
+                        } else {
+                            $ordersIsdForCuttingCut[] = $orderData['id'];
+                        }
 
                         // __ Создаем СЗ на Сборку
                         // __ ...
                     }
                 }
             }
+
+
+
         });
+
+        $a = 0;
+
+
+        // ___ Создаем Детальки Кроя !!! Убираем из транзакции
+        $result = RunService::runCuttingTaskCreator_Rust($ordersIsdForCuttingCut);
+
+        // __ Пишем в EventLog Ошибку
+        if ((int)$result !== 0) {
+            $eventLog          = new EventLog();
+            $eventLog->level   = EventLog::LEVEL_ERROR;
+            $eventLog->target  = EventLog::TARGET_CUTTING_TASK_CUT;
+            $eventLog->message = 'Ошибка при расчете деталей Кроя';
+            $eventLog->context = ['Class' => self::class];
+            $eventLog->save();
+        }
         // $a = $orderDubs;            // Дубли заказов
         // $b = $missingModels;        // Не найденные модели
         // $c = $missingClients;       // Не найденные клиенты

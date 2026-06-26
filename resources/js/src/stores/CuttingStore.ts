@@ -37,6 +37,7 @@ const DEBUG = true
 // const API_PREFIX                           = '/api/v1/' // Префикс API
 const URL_CUTTING_TASKS                      = '/cutting/tasks'                       // URL для получения Сменных заданий
 const URL_CUTTING_TASKS_ADD_BY_ORDER_ID      = '/cutting/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+const URL_CUTTING_TASKS_CALC_BY_ORDER_ID     = '/cutting/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
 const URL_CUTTING_TASKS_DELETE_BY_ORDER_ID   = '/cutting/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 const URL_CUTTING_TASKS_ORDER_ID             = '/cutting/tasks/order'                 // URL для получения Сменных заданий по id Заявки
 const URL_CUTTING_TASKS_STATUS               = '/cutting/tasks/status'                // URL для получения Сменных заданий по статусу
@@ -88,38 +89,38 @@ const URL_CUTTING_TEST                       = '/cutting/test'                  
 export const useCuttingStore = defineStore('cutting', () => {
 
     // --- ------------------------------------------------------------------------------------------
-    // --- -- Этот функционал (Пошива) будем полностью реализовывать через Store API
+    // --- -- Этот функционал (Раскроя) будем полностью реализовывать через Store API
     // --- ------------------------------------------------------------------------------------------
 
     // --- ------------------------------------------------------------------------------------------
     // --- -- Глобальные переменные
     // --- ------------------------------------------------------------------------------------------
 
-    // __ Массив СЗ Пошива
+    // __ Массив СЗ Раскроя
     const globalCuttingTasks = ref<ICuttingTask[]>([])
 
-    // __ Копия массива СЗ Пошива для отслеживания изменений
+    // __ Копия массива СЗ Раскроя для отслеживания изменений
     let globalCuttingTasksCopy: ICuttingTask[] = []
 
     // __ Массив СЗ, готовых к выполнению
     const globalCuttingTasksPending = ref<ICuttingTask[]>([])
 
-    // __ Копия массива СЗ Пошива для отслеживания изменений
+    // __ Копия массива СЗ Раскроя для отслеживания изменений
     let globalCuttingTasksPendingCopy: ICuttingTask[] = []
 
     // __ Период рендеринга календаря
     const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
 
-    // __ Показывать ли Трудозатраты в календаре СЗ Пошива
+    // __ Показывать ли Трудозатраты в календаре СЗ Раскроя
     const globalCuttingTaskTimesShow = ref(true)
 
-    // __ Показывать ли Раскрытый день или нет в календаре СЗ Пошива
+    // __ Показывать ли Раскрытый день или нет в календаре СЗ Раскроя
     const globalCuttingTaskFullDaysShow = ref(true)
 
     // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
     const globalCuttingTaskOrderTypeColor = ref(false)
 
-    // __ Текущая Запись (CuttingLine) в карточке СЗ в календаре СЗ Пошива
+    // __ Текущая Запись (CuttingLine) в карточке СЗ в календаре СЗ Раскроя
     const globalManageTaskCardActiveCuttingLine = ref<ICuttingTaskLine | null>(null)
 
     // __ Текущее Заявка, на которое ссылается кликнутое СЗ (для календаря для подсветки СЗ, которые ссылаются на одну заявку)
@@ -369,7 +370,7 @@ export const useCuttingStore = defineStore('cutting', () => {
     // --- ------------------- Сменные задания ----------------------
     // --- ----------------------------------------------------------
 
-    // __ Получение СЗ Пошива с сервера за период
+    // __ Получение СЗ Раскроя с сервера за период
     const getCuttingTasks = async (period: IPeriod | null = null) => {
         let response
         if (period) {
@@ -387,7 +388,7 @@ export const useCuttingStore = defineStore('cutting', () => {
     }
 
 
-    // __ Получение СЗ Пошива по ID Заявки
+    // __ Получение СЗ Раскроя по ID Заявки
     const getCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
@@ -399,7 +400,7 @@ export const useCuttingStore = defineStore('cutting', () => {
     }
 
 
-    // __ Удаление СЗ Пошива по ID Заявки
+    // __ Удаление СЗ Раскроя по ID Заявки
     const deleteCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
@@ -410,7 +411,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result
     }
 
-    // __ Добавление СЗ Пошива по ID Заявки
+    // __ Добавление СЗ Раскроя по ID Заявки
     const addCuttingTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
@@ -421,7 +422,18 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result
     }
 
-    // __ Получение СЗ Пошива по статусу или массиву статусов до определенной даты
+    // __ Пересчет СЗ Раскроя по ID Заявки
+    const calcCuttingTasksCutByOrderId = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+        const response = await jwtPost(URL_CUTTING_TASKS_CALC_BY_ORDER_ID, { id })
+        const result   = await response
+        if (DEBUG) console.log('CuttingStore: calcCuttingTasksCutByOrderId: ', result)
+        return result
+    }
+
+    // __ Получение СЗ Раскроя по статусу или массиву статусов до определенной даты
     const getCuttingTasksByStatusBeforeDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
@@ -440,7 +452,7 @@ export const useCuttingStore = defineStore('cutting', () => {
     }
 
 
-    // __ Получение СЗ Пошива по статусу или массиву статусов в определенную дату
+    // __ Получение СЗ Раскроя по статусу или массиву статусов в определенную дату
     const getCuttingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
@@ -458,7 +470,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
-    // __ Проверка на наличие СЗ Пошива по статусу или массиву статусов в определенную дату
+    // __ Проверка на наличие СЗ Раскроя по статусу или массиву статусов в определенную дату
     const checkCuttingTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
         let response
         if (status) {
@@ -511,7 +523,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         // return saveChanges(globalCuttingTasksPending.value, globalCuttingTasksPendingCopy)
     }
 
-    // __ Получение СЗ Пошива по статусу или массиву статусов
+    // __ Получение СЗ Раскроя по статусу или массиву статусов
     const getCuttingTasksByStatus = async (status: number[] | number | null = null) => {
         let response
         if (status) {
@@ -534,7 +546,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         return result.data
     }
 
-    // __ Получение СЗ Пошива за период
+    // __ Получение СЗ Раскроя за период
     const getCuttingTasksByStatusAndPeriod = async (period: IPeriod | null = null, statuses: number[] | number | null = null) => {
         let response
 
@@ -1046,6 +1058,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         checkCuttingTasksByStatusOnDate,
         deleteCuttingTasksByOrderId,
         addCuttingTasksByOrderId,
+        calcCuttingTasksCutByOrderId,
         setCuttingTaskComment,
         setCuttingTaskActionAt,
         getCuttingTaskStatuses,

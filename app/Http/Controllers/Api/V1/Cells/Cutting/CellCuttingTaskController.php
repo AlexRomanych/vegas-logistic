@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Cutting\Sync\SyncCuttingTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Cutting\CuttingTaskExecute\CuttingTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Cutting\CuttingTaskManage\CuttingTaskResource;
+use App\Models\Logs\EventLog;
 use App\Models\Manufacture\Cells\Cutting\CuttingDay;
 use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
@@ -14,6 +15,7 @@ use App\Models\Manufacture\Cells\Cutting\CuttingTaskStatus;
 use App\Services\DefaultsService;
 use App\Services\Manufacture\CuttingService;
 use App\Services\ModelsService;
+use App\Services\RunService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -301,6 +303,40 @@ class CellCuttingTaskController extends Controller
             });
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Пересчитываем Крой Деталей СЗ на Раскрой
+     * @param Request $request
+     * @return string
+     * @noinspection PhpUndefinedFieldInspection
+     */
+    public function calcCuttingTasksCutByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            $result = RunService::runCuttingTaskCreator_Rust([$validated['id']]);
+
+            // __ Пишем в EventLog Ошибку
+            if ((int)$result !== 0) {
+                $eventLog          = new EventLog();
+                $eventLog->level   = EventLog::LEVEL_ERROR;
+                $eventLog->target  = EventLog::TARGET_CUTTING_TASK_CUT;
+                $eventLog->message = 'Ошибка при расчете деталей Кроя';
+                $eventLog->context = ['Class' => self::class];
+                $eventLog->save();
+
+                throw new Exception('Ошибка при пересчете Кроя');
+            }
+
+            return EndPointStaticRequestAnswer::ok('Детали успешно пересчитаны');
         } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

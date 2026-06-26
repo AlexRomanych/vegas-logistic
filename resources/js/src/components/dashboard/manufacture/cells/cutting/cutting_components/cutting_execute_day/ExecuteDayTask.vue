@@ -202,7 +202,6 @@
 
             <div v-for="(subgroup, sgIndex) of cuttingLinesGroup" :key="sgIndex">
 
-
                 <template v-if="subgroup.hasData">
                     <!-- __ Название ПС -->
                     <div
@@ -272,7 +271,6 @@
                                 </div>
 
                             </div>
-
 
                         </div>
 

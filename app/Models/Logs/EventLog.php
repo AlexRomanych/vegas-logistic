@@ -11,6 +11,7 @@ class EventLog extends Model
     public const LEVEL_WARNING = 'WARNING';
     public const TARGET_EXPENSE = 'Expense';
     public const TARGET_CUTTING_TASK = 'CuttingTask';
+    public const TARGET_CUTTING_TASK_CUT = 'CuttingTaskCreator';
 
 
     protected $guarded = false;

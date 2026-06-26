@@ -175,4 +175,78 @@ final class RunService
     }
 
 
+
+
+
+    /**
+     * ___ Запуск Rust-парсера для расчета расхода материалов по массиву заказов
+     *
+     * @param array<int> $ids Массив ID заказов (order_ids)
+     * @return string Вывод из stdout Rust-скрипта
+     * @throws Exception
+     */
+    public static function runCuttingTaskCreator_Rust(array $ids): string
+    {
+        if (empty($ids) || count($ids) === 0) { return "0";}
+
+        // __ Превращаем массив ID в компактную JSON строку: "[447,455,480]"
+        $jsonArgs = json_encode($ids);
+
+        if ($jsonArgs === false) {
+            throw new Exception("Ошибка кодирования order_ids в JSON");
+        }
+
+        $os = PHP_OS_FAMILY;
+
+        if ($os === 'Windows') {
+            $binaryName = 'cutting_tasks_creator.exe';
+            $env        = [
+                'SYSTEMROOT'  => getenv('SYSTEMROOT'), // Обычно C:\Windows
+                'PATH'        => getenv('PATH'),
+                'SystemDrive' => getenv('SystemDrive'),
+                // Если используешь SSL/TLS, может понадобиться:
+                // 'USERPROFILE' => getenv('USERPROFILE'),
+            ];
+        } else {
+            $binaryName = 'cutting_tasks_creator';
+            $env        = []; // В Linux обычно доп. переменные не нужны
+        }
+
+        $binaryPath   = base_path("bin/{$binaryName}");
+        $binDirectory = base_path('bin'); // Директория, где лежит бинарник и .env
+
+        // Нам нужно пробросить системные переменные Windows, чтобы заработал Winsock (сеть)
+
+        // 1. Указываем путь к бинарнику
+        // 2. Вторым аргументом конструктора Process передаем рабочую директорию ($binDirectory)
+        // 3. Третьим аргументом можно передать массив переменных окружения, если нужно
+
+
+        // __ Добавляем $jsonArgs вторым аргументом в массив команды.
+        // __ Symfony Process сам правильно экранирует кавычки и передаст JSON как единую строку.
+        // __ Передаем массив $env третьим аргументом
+        $process = new Process([$binaryPath, $jsonArgs], $binDirectory, $env);
+
+        // __ Увеличиваем таймаут
+        $process->setTimeout(60);
+
+        // __ Запускаем процесс
+        $process->run();
+
+        // Если процесс завершился неудачно
+        if (!$process->isSuccessful()) {
+            $errorOutput = $process->getErrorOutput(); // Получаем то, что Rust выдал в stderr
+
+            // Rust (через anyhow) обычно пишет "Error: Название ошибки"
+            // Чистим строку от технических префиксов anyhow
+            $cleanError = str_replace(["Error: ", "\n", "\r"], ["", " ", ""], $errorOutput);
+
+            // Убираем лишние пробелы и берем только первую часть до "Caused by"
+            $cleanError = explode('Caused by:', $cleanError)[0];
+
+            throw new Exception(trim($cleanError));
+        }
+
+        return $process->getOutput();
+    }
 }

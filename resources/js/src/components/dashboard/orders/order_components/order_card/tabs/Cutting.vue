@@ -16,10 +16,23 @@
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    width="w-[250px]"
+                    :width="BUTTON_WIDTH"
                     @click="activeTabPosition = tab.position"
                 />
             </div>
+
+            <!-- __ Пересчет Раскроя -->
+            <AppLabelTS
+                v-if="hasTask"
+                align="center"
+                height="h-[50px]"
+                rounded="4"
+                text="Пересчет деталей Раскроя"
+                text-size="mini"
+                type="warning"
+                :width="BUTTON_WIDTH"
+                @click="calculateTaskCut"
+            />
 
             <!-- __ Удаление/добавление СЗ -->
             <AppLabelTS
@@ -29,9 +42,10 @@
                 height="h-[50px]"
                 rounded="4"
                 text-size="mini"
-                width="w-[250px]"
+                :width="BUTTON_WIDTH"
                 @click="actionTask"
             />
+
         </div>
 
         <template v-if="activeTabPosition === 1">
@@ -117,12 +131,16 @@ const ordersStore  = useOrdersStore()
 const DEBUG     = true
 const isLoading = ref(false)
 
+// __ Объявляем константы
+const BUTTON_WIDTH = 'w-[200px]'
+
 
 // __ Объявляем переменные
 const cuttingTasks         = ref<ICuttingTask[]>([])
 const orderWithCuttingTask = ref<IRenderOrderCuttingTask | null>(null)
 
 // __ Вычисляемые свойства
+const hasTask    = computed(() => cuttingTasks.value?.length !== 0)
 const actionText = computed(() => cuttingTasks.value?.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
 const actionType = computed(() => cuttingTasks.value?.length !== 0 ? 'danger' : 'success')
 
@@ -202,7 +220,7 @@ const getTasks = async () => {
     // const tasks: ICuttingTask[]                    = await cuttingStore.getCuttingTasksByOrderId(props.id)
     // const orderWithTask: IRenderOrderCuttingTask[] = await cuttingStore.getCuttingTasksByOrderId(props.id)
 
-    cuttingTasks.value = tasks.map(task => ({ ...task, collapsed: true}))
+    cuttingTasks.value = tasks.map(task => ({ ...task, collapsed: true }))
 
     const ORDER_OF_DETAILS = [
         DETAILS.PANEL.NAME,      // 'panel'
@@ -274,6 +292,40 @@ const actionTask = async () => {
         await getTasks()
 
     }
+
+    if (checkCRUD(result)) {
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = [result.payload]
+        await appModalAsyncMultiline.value!.show()
+    } else {
+        await showError()
+    }
+}
+
+
+// __ Пересчет размеров Деталек
+const calculateTaskCut = async () => {
+    if (!hasTask.value) {
+        return
+    }
+
+    // __ Пересчитываем детали Кроя
+    modalInfoType.value = 'primary'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        'Детали Кроя будут пересчитаны.',
+        'Продолжить?',
+    ]
+
+    const answer = await appModalAsyncMultiline.value!.show()
+    if (!answer) {
+        return
+    }
+
+    const result = await cuttingStore.calcCuttingTasksCutByOrderId(props.id)
+    await getTasks()
+
 
     if (checkCRUD(result)) {
         modalInfoType.value = 'success'
