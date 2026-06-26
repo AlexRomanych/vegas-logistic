@@ -575,3 +575,19 @@ export interface ITextileDocument {
     description: string | null
 }
 
+// --- --------------------------------------------------------------------
+// --- ----------------- Для Тканей Настилов (Show) -----------------------
+// --- --------------------------------------------------------------------
+
+// __ Ткань Настила
+export interface ICuttingTextile {
+    name: string
+    code_1c: string
+    active: boolean
+    layers: number
+    width: number
+    width_work: number
+    description?: string | null
+}
+
+

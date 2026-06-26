@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
+use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingTextileController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
@@ -122,8 +123,6 @@ Route::prefix('/orders')
         Route::patch('/patch/description', [OrderController::class, 'patchDescription']);
 
         Route::patch('/types/color/patch', [OrderController::class, 'patchOrderTypeColor']);
-
-
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -275,6 +274,16 @@ Route::prefix('cutting')
         Route::put('/procedures', [CellCuttingProcedureController::class, 'updateCuttingProcedure']);
         Route::patch('/models/procedures', [ModelController::class, 'updateModelCuttingProcedure']);
         Route::patch('/models/angle', [ModelController::class, 'setCuttingAngle']);
+
+        // __ Ткани Раскроя
+        Route::get('/textiles', [CellCuttingTextileController::class, 'getCuttingTextiles']);
+        Route::get('/textiles/{id}', [CellCuttingTextileController::class, 'getCuttingTextile']);
+        Route::delete('/textiles', [CellCuttingTextileController::class, 'deleteCuttingTextile']);
+        Route::post('/textiles', [CellCuttingTextileController::class, 'createCuttingTextile']);
+        Route::put('/textiles', [CellCuttingTextileController::class, 'updateCuttingTextile']);
+
+
+
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 

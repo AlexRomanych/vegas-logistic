@@ -175,6 +175,37 @@ const cutting = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Справочник Тканей Настилов
+        path     : _MAIN_PREFIX + 'textiles',
+        name     : 'manufacture.cell.cutting.textiles',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_textiles/TheCuttingTextilesShow.vue'),
+        meta     : {
+            title: 'Ткани Настилов',
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Редактирование Тканей Настилов
+        path     : _MAIN_PREFIX + 'textiles/edit/:code_1c',
+        name     : 'manufacture.cell.cutting.textiles.edit',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_textiles/TheCuttingTextileEdit.vue'),
+        meta     : {
+            title: 'Редактирование Ткани Настилов',
+            mode : ROUTER_PAGE_MODE.EDIT,
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Создание Тканей Настилов
+        path     : _MAIN_PREFIX + 'textiles/create',
+        name     : 'manufacture.cell.cutting.textiles.create',
+        component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_textiles/TheCuttingTextileEdit.vue'),
+        meta     : {
+            title: 'Создание Ткани Настилов',
+            mode : ROUTER_PAGE_MODE.CREATE,
+        } as IRouteMeta,
+    },
 
     //
     // {

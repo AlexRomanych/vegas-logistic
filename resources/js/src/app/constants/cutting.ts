@@ -46,28 +46,28 @@ export const DETAIL_SIDE_POINTER       = 'side'
 
 
 export const DETAILS = {
-    PANEL: {    // __ Верхняя и нижняя крышки одинаковы
-        NAME: 'panel',
-        TITLE: 'Крышка',
-        TITLE_SHORT: 'Крышка',
+    PANEL     : {    // __ Верхняя и нижняя крышки одинаковы
+        NAME         : 'panel',
+        TITLE        : 'Крышка',
+        TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'К',
     },
-    PANEL_UP: {
-        NAME: 'panel_up',
-        TITLE: 'Крышка верх',
-        TITLE_SHORT: 'Крышка',
+    PANEL_UP  : {
+        NAME         : 'panel_up',
+        TITLE        : 'Крышка верх',
+        TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'В',
     },
     PANEL_DOWN: {
-        NAME: 'panel_down',
-        TITLE: 'Крышка низ',
-        TITLE_SHORT: 'Крышка',
+        NAME         : 'panel_down',
+        TITLE        : 'Крышка низ',
+        TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'Н',
     },
-    SIDE: {
-        NAME: 'side',
-        TITLE: 'Бурлет',
-        TITLE_SHORT: 'Бурлет',
+    SIDE      : {
+        NAME         : 'side',
+        TITLE        : 'Бурлет',
+        TITLE_SHORT  : 'Бурлет',
         TITLE_COMPACT: 'Б',
     },
 }
@@ -89,7 +89,7 @@ import type {
     ICuttingTask,
     ICuttingTaskLinesGroup,
     ICuttingTaskStatusItem,
-    ICuttingTaskStatusKeys
+    ICuttingTaskStatusKeys, ICuttingTextile
 } from '@/types'
 
 
@@ -328,72 +328,13 @@ export const CUTTING_TASK_GROUP_RULES: ICuttingTaskLinesGroup[] = [
     },
 ]
 
-// export const CUTTING_TASK_GROUP_RULES: ICuttingTaskLinesGroup[] = [
-//     {
-//         GROUP_NAME : 'АШМ',
-//         GROUP_TYPE : 'orange',
-//         GROUP_COLOR: '#FF9800',
-//         SUBGROUPS  : [
-//             {
-//                 SUBGROUP_NAME : 'Автоматы',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : ['А 1', 'А 2', 'А 3', 'А 4',],
-//             }
-//         ]
-//     },
-//     {
-//         GROUP_NAME : 'УШМ',
-//         GROUP_TYPE : 'warning',
-//         GROUP_COLOR: '#FF9800',
-//         SUBGROUPS  : [
-//             // {
-//             //     SUBGROUP_NAME : 'Глухие, автоматическое чехление',
-//             //     SUBGROUP_TYPE : 'orange',
-//             //     SUBGROUP_COLOR: '#FF9800',
-//             //     SUBGROUP_TCHK : ['ОБ 2',],
-//             // },
-//             {
-//                 SUBGROUP_NAME : 'Глухие',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : ['ОБ 1', 'ОБ 2', 'ОБ 6', 'ОБ 7',],
-//             },
-//             {
-//                 SUBGROUP_NAME : 'Глухие сложные',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : ['ОБ 3', 'ОБ 4', 'ОБ 5',],
-//             },
-//             {
-//                 SUBGROUP_NAME : 'УШМ + окантователь',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : ['ОК 1', 'ОК 2', 'ОК 3', 'ОК 4'],
-//             },
-//             {
-//                 SUBGROUP_NAME : 'УШМ',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : ['У 1', 'У 2', 'У 3', 'У 4', 'У 5',],
-//             },
-//         ]
-//     },
-//     {
-//         GROUP_NAME : 'Н/Д',
-//         GROUP_TYPE : 'danger',
-//         GROUP_COLOR: '#FF9800',
-//         SUBGROUPS  : [
-//             {
-//                 SUBGROUP_NAME : 'Без ТКЧ',
-//                 SUBGROUP_TYPE : 'orange',
-//                 SUBGROUP_COLOR: '#FF9800',
-//                 SUBGROUP_TCHK : [],
-//             }
-//         ]
-//     },
-// ]
-
-
-
-
+// __ Болванка Ткани Настила
+export const CUTTING_TEXTILE_DRAFT: ICuttingTextile = {
+    name       : '',
+    code_1c    : '',
+    active     : true,
+    layers     : 0,
+    width      : 0,
+    width_work : 0,
+    description: '',
+}

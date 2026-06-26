@@ -11,77 +11,57 @@
                         id="code_1c"
                         v-model:textValue.trim="v$.code_1c.$model as unknown as string"
                         :errors="v$.code_1c.$errors"
-                        label="Код группы из 1С"
+                        label="Код ткани из 1С"
                         mode="text"
                         placeholder="Укажите код..."
                         width="w-[180px]"
                     />
 
-                    <!-- __ Название Блока -->
+                    <!-- __ Название Ткани -->
                     <AppInputTextTS
                         id="name"
                         v-model:textValue.trim="v$.name.$model as unknown as string"
                         :errors="v$.name.$errors"
-                        label="Название блока"
+                        label="Название ткани"
                         mode="text"
-                        placeholder="Укажите название блока..."
+                        placeholder="Укажите название ткани..."
                         width="w-[420px]"
                     />
                 </div>
 
-                <!-- __ Коллекция блоков -->
-                <div class="input-wrapper" @dblclick="selectCollection">
-                    <AppInputTextTS
-                        id="kdb"
-                        v-model:textValue.trim="collectionName"
-                        :errors="v$.collection.$errors"
-                        :width="FIELD_WIDTH_CHECK_BOX"
-                        class="disabled-input"
-                        disabled
-                        label="Группа блоков"
-                        mode="text"
-                        placeholder="Выберите Группу блоков (двойной клик)..."
-                    />
-                </div>
-
-                <!--<div class="input-wrapper" @dblclick="selectCollection">-->
-                <!--    <AppInputTextTS-->
-                <!--        id="kdb"-->
-                <!--        v-model:textValue.trim="v$.collection.$model as unknown as string"-->
-                <!--        :errors="v$.collection.$errors"-->
-                <!--        :width="FIELD_WIDTH_CHECK_BOX"-->
-                <!--        class="disabled-input"-->
-                <!--        disabled-->
-                <!--        label="Группа блоков"-->
-                <!--        mode="text"-->
-                <!--        placeholder="Выберите Группу блоков (двойной клик)..."-->
-                <!--    />-->
-                <!--</div>-->
+                <!-- __ Количество настилов -->
+                <AppInputNumberSimpleTS
+                    id="layers"
+                    v-model:input-number.number="v$.layers.$model as unknown as number"
+                    :errors="v$.layers.$errors"
+                    :width="FIELD_WIDTH_LABEL"
+                    label="Количество настилов"
+                    mode="text"
+                    placeholder="Укажите количество настилов..."
+                />
 
                 <div class="flex">
-                    <!-- __ Ширина блока -->
+                    <!-- __ Ширина ткани -->
                     <AppInputNumberSimpleTS
                         id="width"
                         v-model:input-number.number="v$.width.$model as unknown as number"
                         :errors="v$.width.$errors"
                         :width="FIELD_WIDTH_LABEL"
-                        label="Ширина блока, см"
+                        label="Ширина ткани, см"
                         mode="text"
-                        placeholder="Укажите ширину блока..."
+                        placeholder="Укажите ширину ткани..."
                     />
 
-                    <!--&lt;!&ndash; __ Длина блока &ndash;&gt;-->
-                    <!--<AppInputNumberSimpleTS-->
-                    <!--    id="length"-->
-                    <!--    v-model:input-number.number="v$.length.$model as unknown as number"-->
-                    <!--    :errors="v$.length.$errors"-->
-                    <!--    :width="FIELD_WIDTH_LABEL"-->
-                    <!--    disabled-->
-                    <!--    label="Длина блока, см"-->
-                    <!--    mode="text"-->
-                    <!--    placeholder="Укажите длину блока..."-->
-                    <!--/>-->
-
+                    <!-- __ Рабочая Ширина ткани -->
+                    <AppInputNumberSimpleTS
+                        id="width"
+                        v-model:input-number.number="v$.widthWork.$model as unknown as number"
+                        :errors="v$.widthWork.$errors"
+                        :width="FIELD_WIDTH_LABEL"
+                        label="Рабочая ширина ткани, см"
+                        mode="text"
+                        placeholder="Укажите рабочую ширину ткани..."
+                    />
                 </div>
 
                 <!-- __ Актуальность -->
@@ -97,23 +77,23 @@
                     @checked="activeCheckedHandler"
                 />
 
-                <!-- __ Описание Блока -->
+                <!-- __ Описание Ткани -->
                 <AppInputTextAreaSimpleTS
                     id="description"
                     v-model:text-value.trim="v$.description.$model as unknown as string"
                     :value="v$.description.$model"
                     :width="FIELD_WIDTH_CHECK_BOX"
-                    label="Описание блока"
+                    label="Описание ткани"
                     placeholder="Заполните описание..."
                 />
 
                 <!-- __ К списку -->
                 <div class="m-3 mt-5 flex justify-between">
-                    <router-link :to="{ name: 'manufacture.cell.blocks.collections.show' }">
+                    <router-link :to="{ name: 'manufacture.cell.cutting.textiles' }">
                         <AppInputButton
                             id="returnButton"
                             func="button"
-                            title="К списку групп"
+                            title="К списку тканей"
                             width="w-[230px]"
                         />
                     </router-link>
@@ -170,11 +150,10 @@
 
 <script lang="ts" setup>
 import type {
-    IBlock,
     IBlockCollection,
     ICheckboxData,
     ICheckboxDataItem,
-    IColorTypes,
+    IColorTypes, ICuttingTextile,
 } from '@/types'
 
 import { computed, onMounted, ref, watch } from 'vue'
@@ -184,9 +163,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { helpers, minLength, maxLength, minValue, required, numeric, integer } from '@vuelidate/validators'
 
-import { useBlocksStore } from '@/stores/BlocksStore'
+import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
-import { BLOCK_DRAFT } from '@/app/constants/blocks.ts'
+import { CUTTING_TEXTILE_DRAFT } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -198,12 +177,11 @@ import AppCallout from '@/components/ui/callouts/AppCallout.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppModalAsyncSelectTS from '@/components/ui/modals/AppModalAsyncSelectTS.vue'
 import AppCheckboxTSReactive from '@/components/ui/checkboxes/AppCheckboxTSReactive.vue'
-// import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 
 
 type ISelectableItem = IBlockCollection & { id: number; name: string };
 
-const blockStore = useBlocksStore()
+const cuttingStore = useCuttingStore()
 
 const route  = useRoute()
 const router = useRouter()
@@ -213,10 +191,10 @@ const updateKey = 0
 const FIELD_WIDTH_LABEL     = 'w-[300px]'
 const FIELD_WIDTH_CHECK_BOX = 'w-[610px]'
 
-const isLoading     = ref(false)
-const isFormCorrect = ref(false)
-const editMode      = ref(false)         // определяем режим работы формы (редактирование или создание)
-let paramId: number = -1
+const isLoading         = ref(false)
+const isFormCorrect     = ref(false)
+const editMode          = ref(false)         // определяем режим работы формы (редактирование или создание)
+let paramCode1C: string = ''
 
 const calloutShow    = ref(false)       // состояние окна
 const confirmClick   = ref(false)       // определяем для вывода этого callout
@@ -236,46 +214,37 @@ const selectedItemId        = ref()
 const appModalAsyncSelectTS = ref<any>(null)
 
 // __ Подготавливаем переменные
-const blockCollections = ref<IBlockCollection[]>([])
-const block            = ref<IBlock>(BLOCK_DRAFT)
+const cuttingTextile = ref<ICuttingTextile>(CUTTING_TEXTILE_DRAFT)
 
-
-// __ Подгружаем данные по коллекции, если мы в режиме редактирования
-const loadEntity = async (paramId: number) => {
+// __ Подгружаем данные, если мы в режиме редактирования
+const loadEntity = async (paramCode1C: string) => {
     if (editMode.value) {
-        block.value = await blockStore.getBlockById(paramId) as IBlock // Получаем Операцию
+        cuttingTextile.value = await cuttingStore.getCuttingTextile(paramCode1C) as ICuttingTextile
     } else {
-        block.value = JSON.parse(JSON.stringify(BLOCK_DRAFT))
+        cuttingTextile.value = JSON.parse(JSON.stringify(CUTTING_TEXTILE_DRAFT))
     }
 }
 
-// __ Получаем Коллекции блоков
-const getBlockCollections = async () => {
-    blockCollections.value = await blockStore.getBlockCollections()
-}
 
 // __ Определяем объекты валидации
 // const id = ref(-1)
 const code_1c     = ref('')
 const name        = ref('')
-const collection  = ref('')
+const layers      = ref(0)
 const width       = ref(0)
+const widthWork   = ref(0)
 const active      = ref(true)
 const description = ref('')
 
-const collectionName = computed(() => {
-    const blockCollection = blockCollections.value.find(coll => coll.code_1c === collection.value)
-    return blockCollection?.name ?? 'Не определено'
-})
-
 // __ Заполняем объекты валидации
 const fillData = () => {
-    code_1c.value     = block.value.code_1c
-    name.value        = block.value.name
-    width.value       = block.value.width
-    collection.value  = block.value.collection
-    active.value      = block.value.active
-    description.value = block.value.description ?? ''
+    code_1c.value     = cuttingTextile.value.code_1c
+    name.value        = cuttingTextile.value.name
+    layers.value      = cuttingTextile.value.layers
+    width.value       = cuttingTextile.value.width
+    widthWork.value   = cuttingTextile.value.width_work
+    active.value      = cuttingTextile.value.active
+    description.value = cuttingTextile.value.description ?? ''
 }
 
 
@@ -283,8 +252,9 @@ const fillData = () => {
 const verify = {
     code_1c,
     name,
+    layers,
     width,
-    collection,
+    widthWork,
     description,
 }
 
@@ -323,7 +293,7 @@ const rules = {
             minLength(MIN_NAME_LENGTH),
         ),
     },
-    width      : {
+    layers     : {
         $autoDirty: true,
         minValue  : helpers.withMessage(`Поле должно быть больше или равно 1`, minValue(1)),
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -331,7 +301,22 @@ const rules = {
         integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
         // $lazy: true,
     },
-    collection : {},
+    widthWork  : {
+        $autoDirty: true,
+        minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        // $lazy: true,
+    },
+    width      : {
+        $autoDirty: true,
+        minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        // $lazy: true,
+    },
     description: {},
 }
 
@@ -350,34 +335,19 @@ const activeCheckboxData = computed<ICheckboxData>(() => ({
 // __ Обработчик чекбокса на active
 const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
-        block.value.active = data.id === 1
-        active.value       = block.value.active
+        cuttingTextile.value.active = data.id === 1
+        active.value                = cuttingTextile.value.active
     }
 }
 
 
 // __ Показываем сообщение об ошибке
-const showError = async (error: string | null = null) => {
-    modalInfoType.value = 'danger'
-    modalInfoMode.value = 'inform'
-    modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
-    await appModalAsyncMultiline.value!.show()
-}
-
-
-// __ Выбираем Коллекцию блоков
-const selectCollection = async () => {
-    selectedItems.value  = blockCollections.value
-    const findItem       = blockCollections.value.find(blockCollection => blockCollection.code_1c === collection.value)
-    selectedItemId.value = findItem ? findItem.id : 0
-
-    const answer = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
-    if (answer) {
-        const selectedCollection = appModalAsyncSelectTS.value!.selected
-        collection.value         = selectedCollection.code_1c
-    }
-}
-
+// const showError = async (error: string | null = null) => {
+//     modalInfoType.value = 'danger'
+//     modalInfoMode.value = 'inform'
+//     modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+//     await appModalAsyncMultiline.value!.show()
+// }
 
 // __ Отправка формы
 const formSubmit = async () => {
@@ -385,21 +355,22 @@ const formSubmit = async () => {
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму
     if (!isFormCorrect.value) return // это показатель ошибки
 
-    block.value.code_1c     = code_1c.value
-    block.value.name        = name.value
-    block.value.active      = active.value
-    block.value.description = description.value
-    block.value.width       = width.value
-    block.value.collection  = collection.value
+    cuttingTextile.value.code_1c     = code_1c.value
+    cuttingTextile.value.name        = name.value
+    cuttingTextile.value.active      = active.value
+    cuttingTextile.value.description = description.value
+    cuttingTextile.value.layers      = layers.value
+    cuttingTextile.value.width       = width.value
+    cuttingTextile.value.width_work  = widthWork.value
 
-    console.log('block.value', block.value)
+    console.log('cuttingTextile.value', cuttingTextile.value)
 
     let result
 
     if (!editMode.value) {
-        result = await blockStore.createBlock(block.value)
+        result = await cuttingStore.createCuttingTextile(cuttingTextile.value)
     } else {
-        result = await blockStore.updateBlock(block.value)
+        result = await cuttingStore.updateCuttingTextile(cuttingTextile.value)
     }
 
     if (checkCRUD(result.data)) {
@@ -419,9 +390,10 @@ const formSubmit = async () => {
 watch([
     () => code_1c,
     () => name,
+    () => layers,
     () => width,
+    () => widthWork,
     () => description,
-    () => collection,
 ], async () => {
     isFormCorrect.value = await v$.value.$validate() // валидируем всю форму
 }, { deep: true, immediate: true })
@@ -431,16 +403,14 @@ onMounted(async () => {
     // warn: Порядок важен!
     isLoading.value = true
 
-    block.value = JSON.parse(JSON.stringify(BLOCK_DRAFT))
+    cuttingTextile.value = JSON.parse(JSON.stringify(CUTTING_TEXTILE_DRAFT))
 
     await router.isReady().then(() => {
-        paramId        = route.params.id as unknown as number
+        paramCode1C    = route.params.code_1c as unknown as string
         editMode.value = route.meta.mode === 'edit' // определяем режим работы формы (редактирование или создание)
     })
 
-    await Promise.all([loadEntity(paramId), getBlockCollections()])
-
-    // await loadEntity(paramId)
+    await loadEntity(paramCode1C)
 
     fillData()
 
