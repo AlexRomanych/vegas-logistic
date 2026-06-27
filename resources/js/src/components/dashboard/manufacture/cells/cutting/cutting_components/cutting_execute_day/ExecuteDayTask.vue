@@ -21,6 +21,7 @@
                         <AppLabelMultiLineTS
                             :height="MENU_HEIGHT"
                             :text="cuttingLinesGroup.groupName"
+                            :title="`${cuttingLinesGroup.groupName}`"
                             :type="activeTabIndex === idx ? 'primary' : cuttingLinesGroup.groupType"
                             align="center"
                             class="menu-button"
@@ -40,6 +41,7 @@
                     class="menu-button"
                     rounded="4"
                     text-size="huge"
+                    title="Скрыть/Показать название размеров Кроя"
                     type="dark"
                     width="w-[50px]"
                     @click="toggleUnderGroupTitleVisibility"
@@ -74,6 +76,20 @@
                     @click="toggleUnderGroups"
                 />
 
+                <!-- __ Рулоны -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="🔗"
+                    text-size="huge"
+                    title="Операции с рулонами ткани"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="showSummary"
+                />
+
                 <!-- __ Слои -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -82,6 +98,7 @@
                     rounded="4"
                     text="📐"
                     text-size="huge"
+                    title="Операции с Настилами"
                     type="dark"
                     width="w-[50px]"
                     @click="console.log('layers')"
@@ -95,6 +112,7 @@
                     rounded="4"
                     text="📄"
                     text-size="huge"
+                    title="Печать Сменного Задания"
                     type="dark"
                     width="w-[50px]"
                     @click="printTask"
@@ -109,6 +127,7 @@
                         class="menu-button"
                         rounded="4"
                         text-size="mini"
+                        title="Комментарий к Сменному Заданию"
                         type="indigo"
                         width="min-w-[250px]"
                     />
@@ -415,6 +434,13 @@
         type="primary"
     />
 
+    <!-- __ Просмотр суммарной информации по тканям -->
+    <ExecuteDayCutsSummary
+        ref="executeDayCutsSummary"
+        :order-title="orderTitle"
+        type="primary"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -426,7 +452,7 @@ import type {
     IDividerItem,
     ICuttingTask,
     ICuttingTaskLine,
-    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument, ICuttingTaskLinesUnderGroup, ICuttingTaskLinesSubgroup
+    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument, ICuttingTaskLinesUnderGroup, ICuttingTaskLinesSubgroup, ICuttingTaskLinesGroupData
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -459,6 +485,7 @@ import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/share
 import ExecuteDayTaskSubGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskSubGroup.vue'
 import ExecuteDayTaskUnderGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskUnderGroup.vue'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import ExecuteDayCutsSummary from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayCutsSummary.vue'
 
 
 interface IProps {
@@ -535,8 +562,16 @@ const taskTitle = computed(() => {
 //     return `${subgroup.subgroupOrderTitle}: ${subgroup.subgroupName} - Всего: ${subgroup.amount.total} / Выполнено: ${subgroup.amount.done}`
 // }
 
+
+const orderTitle = computed(() => {
+    if (props.cuttingTask.position === 0) {
+        return 'Объединение СЗ'
+    }
+    return `${props.cuttingTask.position}. ${props.cuttingTask.order.client.short_name} №${props.cuttingTask.order.order_no_num}`
+})
+
 // __ Формируем объект выполнения
-const cuttingLinesGroups = computed(() => {
+const cuttingLinesGroups = computed<ICuttingTaskLinesGroupData[]>(() => {
     // if (isUnionTask.value) {
     // if (props.cuttingTask.id === UNION_TASKS_ID) {
     //     return groupTaskLinesForExecuteForUnion(props.cuttingTask.cutting_lines)
@@ -1216,7 +1251,7 @@ const toggleUnderGroupTitleVisibility = () => {
     showUndergroupNames.value = !showUndergroupNames.value
 }
 
-// __ Добавить в выделение все элементы Кроя
+// __ Добавить в выделение все элементы ПС
 const selectSubgroupItems = async (subgroup: ICuttingTaskLinesSubgroup) => {
     modalInfoType.value = 'primary'
     modalInfoMode.value = 'confirm'
@@ -1245,6 +1280,54 @@ const selectUndergroupItems = async (undergroup: ICuttingTaskLinesUnderGroup) =>
     }
 }
 
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---            Функционал рулонов               !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//  __ Формируем объект рулонов
+const cutsLengthTotal = computed<Record<string, number>>(() => {
+    const sums: Record<string, number> = {}
+
+    cuttingLinesGroups.value.forEach(tab => {
+        tab.subgroups.forEach(subgroup => {
+            const name = subgroup.subgroupName
+
+            if (!sums[name]) {
+                sums[name] = 0
+            }
+
+            sums[name] += subgroup.cutLengthTotal
+        })
+    })
+
+    // __ Сортируем ключи по алфавиту и собираем чистый объект
+    return Object.keys(sums)
+        .sort((a, b) => a.localeCompare(b)) // localeCompare правильно сортирует русский/английский алфавит
+        .reduce<Record<string, number>>((acc, key) => {
+            acc[key] = sums[key]
+            return acc
+        }, {})
+})
+
+// __ Показываем инфу по рулонам
+const executeDayCutsSummary = ref<InstanceType<typeof ExecuteDayCutsSummary> | null>(null)
+const showSummary           = async () => {
+    console.log('cutsLengthTotal: ', cutsLengthTotal.value)
+    if (executeDayCutsSummary.value) {
+        const closed = await executeDayCutsSummary.value.show(cutsLengthTotal.value)
+        if (closed) {
+            console.log('Пользователь закрыл аналитику')
+        }
+    }
+
+
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---            Функционал Настилов              !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 watch(
     () => cuttingLinesGroups.value,
