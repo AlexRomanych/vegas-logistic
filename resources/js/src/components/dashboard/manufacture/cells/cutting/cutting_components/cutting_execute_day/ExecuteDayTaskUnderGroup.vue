@@ -5,21 +5,25 @@
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
             align="center"
+            class="cursor-pointer"
             rounded="4"
             text-size="micro"
             type="warning"
             width="w-[30px]"
-            @click="emits('toggleCollapse')"
+            @click.exact="emits('toggleCollapse')"
         />
 
-        <!-- __ Название SubCategory -->
+        <!-- __ Название UnderGroup (Крой) -->
         <AppLabelTS
             :text="undergroup.undergroupName"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
             rounded="4"
             text-size="mini"
-            :type="DEFAULT_TYPE"
+            title="Ctrl + Click - Выделить все элементы Группы Кроя"
             width="w-[331px]"
-            @click="emits('toggleCollapse')"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectUndergroupItems')"
         />
 
         <!-- __ Длина м.п. -->
@@ -78,14 +82,16 @@ interface IProps {
     collapsed?: boolean
 }
 
-/*const props =*/ defineProps<IProps>()
+/*const props =*/
+defineProps<IProps>()
 
 const emits = defineEmits<{
     (e: 'toggleCollapse'): void
+    (e: 'selectUndergroupItems'): void
 }>()
 
 const FIELDS_AMOUNT_TIME_WIDTH = 'w-[172px]'
-const DEFAULT_TYPE = 'indigo'
+const DEFAULT_TYPE             = 'indigo'
 
 </script>
 

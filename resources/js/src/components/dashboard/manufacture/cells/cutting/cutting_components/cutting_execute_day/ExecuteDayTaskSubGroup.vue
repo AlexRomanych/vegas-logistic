@@ -5,21 +5,25 @@
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
             align="center"
+            class="cursor-pointer"
             rounded="4"
             text-size="micro"
             type="warning"
             width="w-[30px]"
-            @click="emits('toggleCollapse')"
+            @click.exact="emits('toggleCollapse')"
         />
 
         <!-- __ Название SubCategory -->
         <AppLabelTS
             :text="subgroup.subgroupName"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
             rounded="4"
             text-size="mini"
-            :type="DEFAULT_TYPE"
+            title="Ctrl + Click - Выделить все элементы Группы Ткани"
             width="w-[347px]"
-            @click="emits('toggleCollapse')"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
         />
 
         <!-- __ Длина м.п. -->
@@ -89,14 +93,16 @@ interface IProps {
     collapsed?: boolean
 }
 
-/*const props =*/ defineProps<IProps>()
+/*const props =*/
+defineProps<IProps>()
 
 const emits = defineEmits<{
     (e: 'toggleCollapse'): void
+    (e: 'selectSubgroupItems'): void
 }>()
 
 const FIELDS_AMOUNT_TIME_WIDTH = 'w-[172px]'
-const DEFAULT_TYPE = 'primary'
+const DEFAULT_TYPE             = 'primary'
 
 </script>
 

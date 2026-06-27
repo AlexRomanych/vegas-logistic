@@ -18,7 +18,7 @@
 
                     <template v-if="cuttingLinesGroup.hasData">
                         <!-- __ Группа сортировки СЗ по АШМ/УШМ -->
-                        <AppLabelTS
+                        <AppLabelMultiLineTS
                             :height="MENU_HEIGHT"
                             :text="cuttingLinesGroup.groupName"
                             :type="activeTabIndex === idx ? 'primary' : cuttingLinesGroup.groupType"
@@ -32,6 +32,48 @@
                     </template>
                 </template>
 
+                <!-- __ Видимость заголовков -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :text="showUndergroupNames ? '🔓' : '🔒'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="huge"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="toggleUnderGroupTitleVisibility"
+                />
+
+                <!-- __ Свернуть/Развернуть ПС -->
+                <AppLabelMultiLineTS
+                    :height="MENU_HEIGHT_MULTILINE"
+                    :text="collapsedSubGroupsState ? ['Раскрыть', '▼ Ткань'] : ['Свернуть', '▲ Ткань']"
+                    :type="'primary'"
+                    :width="MENU_WIDTH"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="mini"
+                    title="Свернуть/Развернуть группу Ткани"
+                    @click="toggleSubGroups"
+                />
+
+                <!-- __ Свернуть/Развернуть Крой '▲' : '▼' -->
+                <AppLabelMultiLineTS
+                    :disabled="showUndergroupNames"
+                    :height="MENU_HEIGHT_MULTILINE"
+                    :text="collapsedUnderGroupsState ? ['Раскрыть', '▼ Крой'] : ['Свернуть', '▲ Крой']"
+                    :type="!showUndergroupNames ? 'dark' : 'indigo'"
+                    :width="MENU_WIDTH"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="mini"
+                    title="Свернуть/Развернуть группу Кроя"
+                    @click="toggleUnderGroups"
+                />
+
                 <!-- __ Слои -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -44,19 +86,6 @@
                     width="w-[50px]"
                     @click="console.log('layers')"
                 />
-
-                <!--&lt;!&ndash; __ Видимость заголовков &ndash;&gt;-->
-                <!--<AppLabelTS-->
-                <!--    :height="MENU_HEIGHT"-->
-                <!--    :text="showSubgroupNames ? '🔓' : '🔒'"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text-size="huge"-->
-                <!--    type="dark"-->
-                <!--    width="w-[50px]"-->
-                <!--    @click="showSubgroupNames = !showSubgroupNames"-->
-                <!--/>-->
 
                 <!-- __ Печать -->
                 <AppLabelTS
@@ -106,6 +135,7 @@
                         rounded="4"
                         text="⚙️"
                         text-size="huge"
+                        title="Переместить элемент на другой Стол"
                         type="dark"
                         width="w-[50px]"
                         @click="changeTable"
@@ -205,14 +235,14 @@
                 <template v-if="subgroup.hasData">
                     <!-- __ Название ПС -->
                     <div
-                        v-if="showSubgroupNames"
-                        class="ml-2"
                         :class="[!collapseStates[subgroup.subgroupName] ? 'mt-2' : '']"
+                        class="ml-2"
                     >
                         <ExecuteDayTaskSubGroup
                             :collapsed="collapseStates[subgroup.subgroupName]"
                             :subgroup
                             @toggle-collapse="toggleCollapse(subgroup.subgroupName)"
+                            @select-subgroup-items="selectSubgroupItems(subgroup)"
                         />
                     </div>
 
@@ -228,17 +258,18 @@
                         <div v-for="undergroup of subgroup.undergroups" :key="undergroup.undergroupName">
 
                             <!-- __ Название Кроя -->
-                            <div v-if="showSubgroupNames" class="ml-2">
+                            <div v-if="showUndergroupNames" class="ml-2">
                                 <ExecuteDayTaskUnderGroup
-                                    :collapsed="collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`]"
+                                    :collapsed="collapseStates[`${subgroup.subgroupName}${CONCAT_SYMBOLS}${undergroup.undergroupName}`]"
                                     :undergroup
-                                    @toggle-collapse="toggleCollapse(`${subgroup.subgroupName}_${undergroup.undergroupName}`)"
+                                    @toggle-collapse="toggleCollapse(`${subgroup.subgroupName}${CONCAT_SYMBOLS}${undergroup.undergroupName}`)"
+                                    @select-undergroup-items="selectUndergroupItems(undergroup)"
                                 />
                             </div>
 
                             <div
-                                v-if="!collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`]"
-                                :class="[!collapseStates[`${subgroup.subgroupName}_${undergroup.undergroupName}`] ? 'mb-1' : '']"
+                                v-if="!collapseStates[`${subgroup.subgroupName}${CONCAT_SYMBOLS}${undergroup.undergroupName}`]"
+                                :class="[!collapseStates[`${subgroup.subgroupName}${CONCAT_SYMBOLS}${undergroup.undergroupName}`] ? 'mb-1' : '']"
                             >
 
                                 <div
@@ -360,8 +391,8 @@
     />
 
     <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
@@ -387,7 +418,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount, reactive, } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch, computed, onBeforeUnmount, } from 'vue'
 import { useRouter } from 'vue-router'
 
 import type {
@@ -395,8 +426,7 @@ import type {
     IDividerItem,
     ICuttingTask,
     ICuttingTaskLine,
-    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument
-    /*ICuttingTaskLinesSubgroup,*/
+    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument, ICuttingTaskLinesUnderGroup, ICuttingTaskLinesSubgroup
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -414,6 +444,7 @@ import {
 } from '@/app/helpers/manufacture/helpers_cutting.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ExecuteDayFalseReason from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayFalseReason.vue'
@@ -423,12 +454,11 @@ import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/c
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
 import TextileDesignDocumentAsync from '@/components/dashboard/manufacture/shared/textile_design/TextileDesignDocumentAsync.vue'
-import { getKDCH } from '@/app/helpers/manufacture/helpers_textile.ts'
 import ExecuteDayTaskSubGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskSubGroup.vue'
 import ExecuteDayTaskUnderGroup from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTaskUnderGroup.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 
 
 interface IProps {
@@ -472,10 +502,10 @@ const dividerElement       = ref<IDividerItem>({ name: '', amount: 0 })
 const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна Сообщений
-const modalInfoType          = ref<IColorTypes>('danger')
-const modalInfoText          = ref<string | string[]>('')
-const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для Каротчки и Изменения стола
 const modalTypeTable   = ref<IColorTypes>('primary')
@@ -488,9 +518,6 @@ const taskCardTable = ref<ICuttingTask>(CUTTING_TASK_DRAFT)
 
 const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
 
-
-// __ Видимость названий подгрупп
-const showSubgroupNames = ref(true)
 
 // __ Табы Группировки СЗ по АШМ/УШМ
 const activeTabIndex = ref(0)
@@ -849,7 +876,7 @@ async function showError(error: string | string[] | null = null) {
     }
 
     modalInfoText.value = renderError
-    await appModalAsyncMultiline.value!.show()
+    await appModalAsyncMultilineTS.value!.show()
 }
 
 
@@ -1039,7 +1066,7 @@ const changeTable = async () => {
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = 'Данные успешно обновлены'
-        await appModalAsyncMultiline.value!.show()
+        await appModalAsyncMultilineTS.value!.show()
 
     } else {
         await showError()
@@ -1103,6 +1130,122 @@ const showDocument = async (cuttingLine: ICuttingTaskLine, id: number) => {
 }
 
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Collapse                     !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+const collapsedSubGroupsState   = ref(true)
+const collapsedUnderGroupsState = ref(true)
+
+// __ Видимость названий подгрупп
+const showUndergroupNames = ref(true)
+
+// --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---
+// __ Храним пары: [ИмяГруппы]: boolean (true - свернуто, false - развернуто)
+const CONCAT_SYMBOLS = '__'
+
+const collapseStates = ref<Record<string, boolean>>({})
+let collapseStatesMem: Record<string, boolean>
+
+// Следим за изменением активной группы таба и наполняем ключи, если их еще нет
+watch(() => cuttingLinesGroup.value, (newSubgroups) => {
+    if (!newSubgroups) return
+
+    newSubgroups.forEach(subgroup => {
+        // Инициализируем состояние для Подгруппы (Ткани), если её еще нет в памяти
+        if (collapseStates.value[subgroup.subgroupName] === undefined) {
+            collapseStates.value[subgroup.subgroupName] = true // по дефолту свернуто
+        }
+
+        // Инициализируем состояние для Субподгруппы (Размеры кроя x)
+        subgroup.undergroups.forEach(undergroup => {
+            // Ключ делаем уникальным (ИмяТкани + ИмяКроя), чтобы размеры не пересекались между тканями
+            const undergroupKey = `${subgroup.subgroupName}${CONCAT_SYMBOLS}${undergroup.undergroupName}`
+            if (collapseStates.value[undergroupKey] === undefined) {
+                collapseStates.value[undergroupKey] = true // по дефолту свернуто
+            }
+        })
+
+        collapseStatesMem = JSON.parse(JSON.stringify(collapseStates.value))
+    })
+}, { immediate: true, deep: true })
+
+// __ Переключаем Свернутость (Универсальный метод для переключения флага (для вызова из шаблона))
+const toggleCollapse = (key: string) => {
+    if (collapseStates.value[key] !== undefined) {
+        collapseStates.value[key] = !collapseStates.value[key]
+    }
+}
+
+// __ Раскрываем / Сворачиваем ПС
+const toggleSubGroups = () => {
+    collapsedSubGroupsState.value = !collapsedSubGroupsState.value
+    Object.keys(collapseStates.value).forEach(k => {
+        if (!k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = collapsedSubGroupsState.value
+    })
+}
+
+// __ Раскрываем / Сворачиваем Крой
+const toggleUnderGroups = () => {
+    // __ Если скрыты заголовки Кроя, ничего не делаем
+    if (!showUndergroupNames.value) {
+        return
+    }
+    collapsedUnderGroupsState.value = !collapsedUnderGroupsState.value
+    Object.keys(collapseStates.value).forEach(k => {
+        if (k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = collapsedUnderGroupsState.value
+    })
+}
+
+// __ Скрываем размеры Раскроя
+const toggleUnderGroupTitleVisibility = () => {
+    if (showUndergroupNames.value) {
+        // __ Переключение в "Показать". Запоминаем состояние и все дочернее отображаем
+        collapseStatesMem = JSON.parse(JSON.stringify(collapseStates.value))
+        Object.keys(collapseStates.value).forEach(k => {
+            if (k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = false
+        })
+    } else {
+        // __ Переключение в "Показать". Запоминаем состояние и все дочернее восстанавливаем
+        Object.keys(collapseStatesMem).forEach(k => {
+            if (k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = collapseStatesMem[k]
+        })
+        // collapseStates.value = JSON.parse(JSON.stringify(collapseStatesMem))
+    }
+
+    showUndergroupNames.value = !showUndergroupNames.value
+}
+
+// __ Добавить в выделение все элементы Кроя
+const selectSubgroupItems = async (subgroup: ICuttingTaskLinesSubgroup) => {
+    modalInfoType.value = 'primary'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Выделить все элементы в группе Ткани: `,
+        `${subgroup.subgroupName}?`
+    ]
+
+    const answer = await appModalAsyncMultilineTS.value!.show() // показываем модалку и ждем ответ
+    if (answer) {
+        subgroup.undergroups.forEach(undergroup => {
+            undergroup.lines.forEach(l => selectedIds.value.add(l.id))
+        })
+    }
+}
+
+// __ Добавить в выделение все элементы Кроя
+const selectUndergroupItems = async (undergroup: ICuttingTaskLinesUnderGroup) => {
+    modalInfoType.value = 'indigo'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = `Выделить все элементы в группе Кроя с размером: ${undergroup.undergroupName}?`
+
+    const answer = await appModalAsyncMultilineTS.value!.show() // показываем модалку и ждем ответ
+    if (answer) {
+        undergroup.lines.forEach(l => selectedIds.value.add(l.id))
+    }
+}
+
+
 watch(
     () => cuttingLinesGroups.value,
     () => {
@@ -1118,39 +1261,6 @@ watch(
     },
     { deep: true, immediate: true }
 )
-
-const toggleCollapse = (key: string) => {
-    if (collapseStates[key] !== undefined) {
-        collapseStates[key] = !collapseStates[key]
-    }
-}
-
-// --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---
-// Храним пары: [ИмяГруппы]: boolean (true - свернуто, false - развернуто)
-const collapseStates = reactive<Record<string, boolean>>({})
-
-// Следим за изменением активной группы таба и наполняем ключи, если их еще нет
-watch(() => cuttingLinesGroup.value, (newSubgroups) => {
-    if (!newSubgroups) return
-
-    newSubgroups.forEach(subgroup => {
-        // Инициализируем состояние для Подгруппы (Ткани), если её еще нет в памяти
-        if (collapseStates[subgroup.subgroupName] === undefined) {
-            collapseStates[subgroup.subgroupName] = true // по дефолту свернуто
-        }
-
-        // Инициализируем состояние для Субподгруппы (Размеры кроя x)
-        subgroup.undergroups.forEach(undergroup => {
-            // Ключ делаем уникальным (ИмяТкани + ИмяКроя), чтобы размеры не пересекались между тканями
-            const undergroupKey = `${subgroup.subgroupName}_${undergroup.undergroupName}`
-            if (collapseStates[undergroupKey] === undefined) {
-                collapseStates[undergroupKey] = true // по дефолту свернуто
-            }
-        })
-    })
-}, { immediate: true, deep: true })
-
-// Универсальный метод для переключения флага (для вызова из шаблона)
 
 
 // --- Жизненный цикл ---
