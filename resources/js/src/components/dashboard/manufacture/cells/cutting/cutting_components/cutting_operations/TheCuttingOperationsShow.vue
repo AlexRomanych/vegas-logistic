@@ -218,7 +218,7 @@ import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
-import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
+import { getDetailTitle, getDetailType } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 
 const isLoading = ref(false)
@@ -234,24 +234,6 @@ const CAN_DELETE = true
 // __ Определяем переменные
 const cuttingOperations       = ref<ICuttingOperation[]>([])
 const cuttingOperationsRender = ref<ICuttingOperation[]>([])
-
-
-// __ Получаем раскраску операции
-const getOperationType = (operation: ICuttingOperation) => {
-    if (!operation) {
-        return 'dark'
-    }
-    if (!operation.active) {
-        return 'danger'
-    } else if (operation.detail === DETAIL_SIDE) {
-        return 'warning'
-    } else if (operation.detail === DETAIL_PANEL) {
-        return 'indigo'
-    } else {
-        return 'stone'
-    }
-
-}
 
 
 // __ Объект отображения данных
@@ -456,19 +438,19 @@ const render: IRenderData = reactive({
     detail     : {
         id        : () => 'detail-search',
         header    : ['Деталь', ''],
-        width     : 'w-[100px]',
+        width     : 'w-[150px]',
         height    : DEFAULT_HEIGHT,
         show      : true,
         headerType: () => HEADER_TYPE,
         dataType  : () => DATA_TYPE,
-        type      : (cuttingOperation: ICuttingOperation) => getOperationType(cuttingOperation),
+        type      : (cuttingOperation: ICuttingOperation) => getDetailType(cuttingOperation),
         // color:          (cuttingOperation: ICuttingOperation) => cuttingOperation.color,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Деталь...',
-        data          : (cuttingOperation: ICuttingOperation) => getDetailTitle(cuttingOperation),
+        data          : (cuttingOperation: ICuttingOperation) => getDetailTitle(cuttingOperation, false),
         // data          : (cuttingOperation: ICuttingOperation) => cuttingOperation.detail ?? '',
     },
     description: {
@@ -533,20 +515,6 @@ const resetFilters = () => {
     coverTypeFilter.value   = ''
 }
 
-// __ Получаем название детали
-function getDetailTitle(cuttingOperation: ICuttingOperation) {
-    if (!cuttingOperation || !cuttingOperation.detail) {
-        return ''
-    }
-    switch (cuttingOperation.detail) {
-        case DETAIL_PANEL:
-            return 'Крышка'
-        case DETAIL_SIDE:
-            return 'Боковина    '
-        default:
-            return ''
-    }
-}
 
 // __ Получаем данные
 const getCuttingOperations = async () => {
@@ -572,12 +540,12 @@ const getCuttingOperationsRender = () => {
 
 // __ Удаляем типовую операцию
 const deleteOperation = async (cuttingOperation: ICuttingOperation) => {
-    return
+    return cuttingOperation
 }
 
 // __ Сохраняем данные по цвету
 const saveCuttingOperationColor = async (event: string, cuttingOperation: ICuttingOperation) => {
-    return
+    return {event, cuttingOperation}
     // await cuttingStore.patchCuttingOperationColor(cuttingOperation.id, event)
 }
 

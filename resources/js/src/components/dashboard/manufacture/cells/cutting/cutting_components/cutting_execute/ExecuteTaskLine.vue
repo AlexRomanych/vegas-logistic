@@ -266,7 +266,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Элемент...',
-        data          : (/*cuttingLine: ICuttingTaskLine*/) => getDetailTitle(props.cuttingLine, true)
+        data          : (/*cuttingLine: ICuttingTaskLine*/) => getDetailTitle(props.cuttingLine, false, true)
     },
     table_1       : {
         id            : () => 'table-1-search',

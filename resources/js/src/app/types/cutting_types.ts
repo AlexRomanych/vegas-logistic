@@ -326,7 +326,8 @@ export interface ICuttingOperation {
     detail: ICuttingOperationDetailTypes | null
 }
 
-export type ICuttingOperationDetailTypes = typeof DETAIL_PANEL | typeof DETAIL_SIDE
+export type ICuttingOperationDetailTypes = typeof DETAILS[keyof typeof DETAILS]['NAME'];
+// export type ICuttingOperationDetailTypes = typeof DETAIL_PANEL | typeof DETAIL_SIDE
 
 // export type ICalcMode = 'dynamic' | 'static'
 // --- ------------------------------------------------------------

@@ -34,8 +34,15 @@ export const TABLE_UNDEFINED_TITLE = TABLE_0_TITLE
 
 
 // __ Констианты деталей чехда в Операциях Раскроя
-export const DETAIL_PANEL              = 'panel'
-export const DETAIL_PANEL_TITLE        = 'Крышка'
+export const DETAIL_PANEL       = 'panel'
+export const DETAIL_PANEL_TITLE = 'Крышка'
+
+export const DETAIL_PANEL_UP       = 'panel_up'
+export const DETAIL_PANEL_UP_TITLE = 'Крышка Верх'
+
+export const DETAIL_PANEL_DOWN       = 'panel_down'
+export const DETAIL_PANEL_DOWN_TITLE = 'Крышка Низ'
+
 export const DETAIL_SIDE               = 'side'
 export const DETAIL_SIDE_TITLE         = 'Боковина'
 export const DETAIL_SIDE_EXECUTE       = 'Бурлет'
@@ -47,30 +54,46 @@ export const DETAIL_SIDE_POINTER       = 'side'
 
 export const DETAILS = {
     PANEL     : {    // __ Верхняя и нижняя крышки одинаковы
+        ID           : 1,
         NAME         : 'panel',
         TITLE        : 'Крышка',
         TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'К',
+        TYPE         : 'indigo' as IColorTypes,
     },
     PANEL_UP  : {
+        ID           : 2,
         NAME         : 'panel_up',
         TITLE        : 'Крышка верх',
         TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'В',
+        TYPE         : 'indigo' as IColorTypes,
     },
     PANEL_DOWN: {
+        ID           : 3,
         NAME         : 'panel_down',
         TITLE        : 'Крышка низ',
         TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'Н',
+        TYPE         : 'indigo' as IColorTypes,
     },
     SIDE      : {
+        ID           : 4,
         NAME         : 'side',
-        TITLE        : 'Бурлет',
+        TITLE        : 'Боковина',
         TITLE_SHORT  : 'Бурлет',
         TITLE_COMPACT: 'Б',
+        TYPE         : 'warning' as IColorTypes,
     },
-}
+    UNKNOWN   : {
+        ID           : 0,
+        NAME         : 'н/д',
+        TITLE        : 'Н/Д',
+        TITLE_SHORT  : '??',
+        TITLE_COMPACT: '??',
+        TYPE         : 'danger' as IColorTypes,
+    },
+} as const
 
 // __ Название вкладки с общим СЗ
 export const CUTTING_UNION_TASK_NAME = 'Объединение СЗ'
@@ -83,6 +106,7 @@ export const START_SHIFT_TIME = '07:30'
 
 
 import type {
+    IColorTypes,
     ICuttingDay,
     ICuttingMachineKeys,
     ICuttingOperation, ICuttingProcedure, ICuttingTableKeys,

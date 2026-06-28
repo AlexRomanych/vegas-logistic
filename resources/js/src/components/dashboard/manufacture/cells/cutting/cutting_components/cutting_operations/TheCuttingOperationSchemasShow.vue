@@ -40,7 +40,7 @@
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
                             :text="`${operation.name} (${operation.cover_type})`"
-                            :type="getOperationType(operation)"
+                            :type="getDetailType(operation)"
                             :width="CELL_WIDTH"
                             align="center"
                             direction="column"
@@ -164,6 +164,7 @@ import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
+import { getDetailType } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 
 
@@ -221,25 +222,25 @@ const getOperationValue = (schema: ICuttingOperationSchema, operation: ICuttingO
 
 
 // __ Получаем раскраску операции
-const getOperationType = (operation: ICuttingOperation) => {
-    if (!operation.active) {
-        return 'danger'
-    } else if (operation.detail === DETAIL_SIDE) {
-        return 'warning'
-    } else if (operation.detail === DETAIL_PANEL) {
-        return 'indigo'
-    } else {
-        return 'stone'
-    }
-
-    // if (!operation.active) {
-    //     return 'danger'
-    // } else if (operation.type === 'static') {
-    //     return 'warning'
-    // } else {
-    //     return 'stone'
-    // }
-}
+// const getOperationType = (operation: ICuttingOperation) => {
+//     if (!operation.active) {
+//         return 'danger'
+//     } else if (operation.detail === DETAIL_SIDE) {
+//         return 'warning'
+//     } else if (operation.detail === DETAIL_PANEL) {
+//         return 'indigo'
+//     } else {
+//         return 'stone'
+//     }
+//
+//     // if (!operation.active) {
+//     //     return 'danger'
+//     // } else if (operation.type === 'static') {
+//     //     return 'warning'
+//     // } else {
+//     //     return 'stone'
+//     // }
+// }
 
 
 // __ Получаем тип ячейки

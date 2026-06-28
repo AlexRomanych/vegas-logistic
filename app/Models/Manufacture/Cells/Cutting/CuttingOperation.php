@@ -13,6 +13,8 @@ class CuttingOperation extends Model
 
     // __ Константы Детали Операции
     public const DETAIL_PANEL = 'panel';
+    public const DETAIL_PANEL_UP = 'panel_up';
+    public const DETAIL_PANEL_DOWN = 'panel_down';
     public const DETAIL_SIDE = 'side';
 
     public const DETAIL_COVER_UP_POINTER   = 'up';

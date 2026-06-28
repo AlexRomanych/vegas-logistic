@@ -64,8 +64,12 @@ class CellCuttingOperationController extends Controller
                 'type'        => 'required|in:dynamic,static',
                 'time'        => 'required|integer',
                 'active'      => 'required|boolean',
-                'description' => 'required|string',
-                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
+                'description' => 'nullable|string',
+                'detail'      => 'required|string|in:'
+                    . CuttingOperation::DETAIL_PANEL . ','
+                    . CuttingOperation::DETAIL_PANEL_UP . ','
+                    . CuttingOperation::DETAIL_PANEL_DOWN . ','
+                    . CuttingOperation::DETAIL_SIDE,
                 'table'       => 'required|string',
                 'cover_type'  => 'required|string',
             ]);
@@ -115,7 +119,11 @@ class CellCuttingOperationController extends Controller
                 'time'        => 'integer',
                 'active'      => 'boolean',
                 'description' => 'nullable|string',
-                'detail'      => 'required|string|in:' . CuttingOperation::DETAIL_PANEL . ',' . CuttingOperation::DETAIL_SIDE,
+                'detail'      => 'required|string|in:'
+                    . CuttingOperation::DETAIL_PANEL . ','
+                    . CuttingOperation::DETAIL_PANEL_UP . ','
+                    . CuttingOperation::DETAIL_PANEL_DOWN . ','
+                    . CuttingOperation::DETAIL_SIDE,
                 'table'       => 'required|string',
                 'cover_type'  => 'required|string',
             ]);

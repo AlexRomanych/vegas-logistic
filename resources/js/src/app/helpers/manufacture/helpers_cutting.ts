@@ -1,11 +1,30 @@
 // info Тут все, что связано с Раскроем
 
 import type {
-    IAmountAndTime, IDay, IPlanMatrix, IRenderMatrixDiff, IRenderMatrixLineDiffs, ICuttingDay,
+    IAmountAndTime,
+    IDay,
+    IPlanMatrix,
+    IRenderMatrixDiff,
+    IRenderMatrixLineDiffs,
+    ICuttingDay,
     ICuttingMachineKeys,
-    ICuttingTask, ICuttingTaskArrayDiff, ICuttingTaskArrayLineDiffs, ICuttingTaskExecuteStatistics,
-    ICuttingTaskLine, ICuttingTaskLinesGroupData, ICuttingTaskLinesGroupNames, ICuttingTaskModel, ICuttingTaskOrder,
-    ICuttingTaskOrderLine, ICuttingTaskStatus, ICuttingTaskStatusKeys, ICuttingTableKeys, IColorTypes, ICuttingTaskLinesSubgroup, ICuttingTaskLinesUnderGroup,
+    ICuttingTask,
+    ICuttingTaskArrayDiff,
+    ICuttingTaskArrayLineDiffs,
+    ICuttingTaskExecuteStatistics,
+    ICuttingTaskLine,
+    ICuttingTaskLinesGroupData,
+    ICuttingTaskLinesGroupNames,
+    ICuttingTaskModel,
+    ICuttingTaskOrder,
+    ICuttingTaskOrderLine,
+    ICuttingTaskStatus,
+    ICuttingTaskStatusKeys,
+    ICuttingTableKeys,
+    IColorTypes,
+    ICuttingTaskLinesSubgroup,
+    ICuttingTaskLinesUnderGroup,
+    ICuttingOperation,
 } from '@/types'
 
 import {
@@ -27,10 +46,23 @@ import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 // __ Получаем название детальки
-export function getDetailTitle(item: ICuttingTaskLine, short: boolean = true) {
-    const detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+export function getDetailTitle(item: ICuttingTaskLine | ICuttingOperation | string | unknown, short: boolean = true, compact: boolean = false) {
+    let detail: typeof DETAILS[keyof typeof DETAILS] | undefined = DETAILS.UNKNOWN
+    if (isCuttingTaskLine(item)) {
+        detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+    } else if (isCuttingOperation(item)) {
+        detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+    } else if (typeof item === 'string') {
+        detail = Object.values(DETAILS).find(value => value.NAME === item)
+    } else {
+        console.log('getDetailTitle: Неверный тип входящего параметра: ', item)
+    }
+
     if (detail) {
-        return short ? detail.TITLE_COMPACT : detail.TITLE
+        if (compact) {
+            return detail.TITLE_COMPACT
+        }
+        return short ? detail.TITLE_SHORT : detail.TITLE
     }
 
     return ''
@@ -46,12 +78,24 @@ export function getDetailTitle(item: ICuttingTaskLine, short: boolean = true) {
 
 
 // __ Получаем раскраску детальки
-export function getDetailType(item: ICuttingTaskLine): IColorTypes {
-    if (item.is_side) {
-        return 'warning'
-    } else if (item.is_panel) {
-        return 'indigo'
+export function getDetailType(item: ICuttingTaskLine | ICuttingOperation | string | unknown): IColorTypes {
+    // noinspection DuplicatedCode
+    let detail: typeof DETAILS[keyof typeof DETAILS] | undefined = DETAILS.UNKNOWN
+    if (isCuttingTaskLine(item)) {
+        detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+    } else if (isCuttingOperation(item)) {
+        detail = Object.values(DETAILS).find(value => value.NAME === item.detail)
+    } else if (typeof item === 'string') {
+        detail = Object.values(DETAILS).find(value => value.NAME === item)
+    } else {
+        return 'dark'
+        // console.log('getDetailType: Неверный тип входящего параметра: ', item)
     }
+
+    if (detail) {
+        return detail.TYPE
+    }
+
     return 'dark'
 }
 
@@ -1608,9 +1652,9 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
                 // __ Если они равны (вычитание даст 0), то сортируем по cutLength.
                 groupedCutsArray.sort((a, b) => {
                     if (a.cutWidth !== b.cutWidth) {
-                        return b.cutWidth - a.cutWidth;
+                        return b.cutWidth - a.cutWidth
                     }
-                    return b.cutLength - a.cutLength;
+                    return b.cutLength - a.cutLength
 
                 })
 
@@ -1621,17 +1665,17 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
                     collapsed         : true,
                     subgroupType      : 'dark',
                     hasData           : true,
-                    amount              : {
+                    amount            : {
                         total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.total, 0),
                         done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.done, 0),
                         incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.incomplete, 0),
                     },
-                    time            : {
+                    time              : {
                         total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.total, 0),
                         done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.done, 0),
                         incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.incomplete, 0),
                     },
-                    cutLengthTotal: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.cutLengthTotal, 0),
+                    cutLengthTotal    : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.cutLengthTotal, 0),
                 })
             }
         }
@@ -1663,12 +1707,12 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
             subgroups: groupedFabricsArray,
             hasData  : true,
             collapsed: true,
-            amount              : {
+            amount   : {
                 total     : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.total, 0),
                 done      : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.done, 0),
                 incomplete: groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.amount.incomplete, 0),
             },
-            time            : {
+            time     : {
                 total     : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.total, 0),
                 done      : groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
                 incomplete: groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
@@ -2114,4 +2158,9 @@ function isCuttingTaskOrder(item: unknown): item is ICuttingTaskOrder {
 // __ Функция-помощник: говорит TS, является ли item типом ICuttingTaskStatus
 function isCuttingTaskStatus(item: unknown): item is ICuttingTaskStatus {
     return !!item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом ICuttingOperation
+function isCuttingOperation(item: unknown): item is ICuttingOperation {
+    return !!item && typeof item === 'object' && 'detail' in item && 'cover_type' in item && 'table' in item && 'active' in item
 }

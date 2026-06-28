@@ -172,7 +172,7 @@ import { required, minLength, helpers, minValue, /*integer*/ } from '@vuelidate/
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
-import { CUTTING_OPERATION_DRAFT, DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
+import { CUTTING_OPERATION_DRAFT, DETAIL_PANEL, DETAIL_SIDE, DETAILS } from '@/app/constants/cutting.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
@@ -289,14 +289,17 @@ const rules = {
         ),
     },
     machine    : {
-        // $autoDirty: true,
-        // required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        $autoDirty: true,
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         // minLength : helpers.withMessage(
         //     `Минимальная длина названия - ${MIN_MACHINE_LENGTH} символов`,
         //     minLength(MIN_MACHINE_LENGTH),
         // ),
     },
-    coverType  : {},
+    coverType  : {
+        $autoDirty: true,
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+    },
     time       : {
         $autoDirty: true,
         minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
@@ -331,10 +334,20 @@ const fillSelects = () => {
 
     detailTypeCheckboxData = {
         name: 'detail_type',
-        data: [
-            { id: 1, name: 'Панель', checked: detail.value === DETAIL_PANEL },
-            { id: 2, name: 'Деталь', checked: detail.value === DETAIL_SIDE },
-        ]
+        data: Object.values(DETAILS)
+            .filter(item => item.ID !== 0)
+            .map(item => {
+                return {
+                    id     : item.ID,
+                    name   : item.TITLE,
+                    checked: item.NAME === detail.value,
+                }
+            })
+            .toSorted((a, b) => a.id - b.id)
+        // data: [
+        //     { id: 1, name: 'Панель', checked: detail.value === DETAIL_PANEL },
+        //     { id: 2, name: 'Деталь', checked: detail.value === DETAIL_SIDE },
+        // ]
     }
 
 }
@@ -360,8 +373,13 @@ const calcModeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) =
 // __ Обработчик чекбокса на Типе детали
 const detailTypeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
-        operation.value.detail = data.id === 1 ? DETAIL_PANEL : DETAIL_SIDE
-        detail.value           = operation.value.detail
+        const detailItem = Object.values(DETAILS).find(value => value.ID === data.id)
+        if (detailItem) {
+            operation.value.detail = detailItem.NAME
+            detail.value           = operation.value.detail
+        }
+        // operation.value.detail = data.id === 1 ? DETAIL_PANEL : DETAIL_SIDE
+        // detail.value           = operation.value.detail
     }
 }
 

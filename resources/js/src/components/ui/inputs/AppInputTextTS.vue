@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 import { type IColorTypes } from '@/app/constants/colorsClasses.js'
 import { type IFontsType } from '@/app/constants/fontSizes.js'
@@ -94,7 +94,7 @@ const placeholderBgColor = 'bg-white'
 // )
 
 const borderColor = computed(() => 'border' + currentColor.value)
-const backgroundColor = computed(() => 'bg' + currentColor.value)
+// const backgroundColor = computed(() => 'bg' + currentColor.value)
 const focusBorderColor = computed(() => 'focus:ring' + currentColor.value)
 
 const textColor = computed(() => 'text' + currentColor.value)

@@ -445,7 +445,7 @@ const cuttingMachine = computed(() => {
 })
 
 
-const detail = computed(() => getDetailTitle(props.cuttingLine, true))
+const detail = computed(() => getDetailTitle(props.cuttingLine, true, true))
 const table  = computed(() => getTableTitle(props.cuttingLine, true))
 const fabric = computed(() => Array.from(new Set(props.cuttingLine.fabric_construct)))
 
