@@ -69,7 +69,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     type  : 'primary',
-    width : 'min-w-[500px]',
+    width : 'min-w-[600px]',
     height: 'min-h-[300px]',
 })
 

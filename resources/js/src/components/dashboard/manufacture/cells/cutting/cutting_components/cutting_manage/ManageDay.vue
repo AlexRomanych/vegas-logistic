@@ -13,7 +13,9 @@
                 rounded="rounded-[4px]"
                 text-size="small"
                 width="w-full"
-                @click="actionDayMenu"
+                @click.exact="actionDayMenu"
+                @click.ctrl="showMachineAnalytic"
+                class="cursor-pointer"
             />
         </div>
 
@@ -292,6 +294,13 @@
         :comment="comment"
         label="Комментарий к производственному дню"
     />
+
+    <!-- __ Модальное окно для отображения суммарной информации по контексту Заявок (АШМ/УШМ/ГС/ГП) -->
+    <ManageDayTasksContext
+        ref="manageDayTasksContext"
+
+    />
+
 </template>
 
 <!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
@@ -354,6 +363,7 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 
 import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cutting_components/common/CommentEdit.vue'
 import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
+import ManageDayTasksContext from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageDayTasksContext.vue'
 
 // type IDay = ICuttingTask & IPlanMatrixDayItem
 
@@ -481,17 +491,21 @@ const manageTaskTables = ref<InstanceType<typeof ManageTaskTables> | null>(null)
 // __ Тип для модального Меню
 const modalMenuType  = ref<IColorTypes>('primary')
 const modalMenu      = ref<IModalAsyncMenu>({ data: [] })
-const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null)
 
 // __ Тип для модального окна Сообщений
 const modalInfoType          = ref<IColorTypes>('danger')
 const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
 // __ Тип для модального окна изменения Комментария
 const comment     = ref('')
-const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
+
+// __ Модальное окно для отображения суммарной информации по контексту Заявок (АШМ/УШМ/ГС/ГП)
+const tasksContext          = ref<ICuttingTask[]>([])
+const manageDayTasksContext = ref<InstanceType<typeof ManageDayTasksContext> | null>(null)
 
 // __ Установка активного Заказа
 const selectCuttingTask = (cuttingTask: ICuttingTask) => {
@@ -581,9 +595,6 @@ const showCuttingTaskTables = async (cuttingTask: ICuttingTask) => {
     } else {
         await showError()
     }
-
-
-
 
 
     // // __ Если есть правая панель, то это создание нового СЗ
@@ -1119,7 +1130,8 @@ const actionDayMenu = async () => {
             { id: 2, title: 'Вернуть для редактирования' },
             { id: 3, title: 'Объединить СЗ для одной Заявки' },
             { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
-            { id: 5, title: 'Отмена' },
+            { id: 5, title: 'Информация по составу изделий (АШМ/УШМ/ГС/ГП)' },
+            { id: 6, title: 'Отмена' },
         ],
     }
 
@@ -1129,7 +1141,7 @@ const actionDayMenu = async () => {
     const result = await appModalMenuTS.value!.show()
 
     // __ Отмена + terminate
-    if (result.value === false || result.menuItem === 5) {
+    if (result.value === false || result.menuItem === 6) {
         return
     }
 
@@ -1231,8 +1243,28 @@ const actionDayMenu = async () => {
         return
     }
 
+    // __ Инфа по составу изделий
+    if (result.menuItem === 5) {
+        // __ Получаем день
+        tasksContext.value = clearDay
+        await manageDayTasksContext.value!.show(tasksContext.value)
+
+        return
+    }
+
+
     throw new Error('Unknown menu item!')
 }
+
+
+// __ Показываем информацию по составу Заявок по ШМ
+const showMachineAnalytic = async () => {
+    // __ Возвращаем новый массив без пустых элементов
+    tasksContext.value = clearRenderMatrixDay(props.day) as ICuttingTask[]
+    await manageDayTasksContext.value!.show(tasksContext.value)
+}
+
+
 </script>
 
 <style scoped>
