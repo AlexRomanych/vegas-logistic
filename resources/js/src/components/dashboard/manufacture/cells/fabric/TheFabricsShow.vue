@@ -272,15 +272,15 @@
                     width="w-[60px]"
                 />
 
-                <!-- __ Количество Настилов в раскрое -->
-                <AppLabelMultiLine
-                    :text="['Кол-во', 'наст.']"
-                    align="center"
-                    text-size="small"
-                    title="Количество настилов в ПС"
-                    type="primary"
-                    width="w-[60px]"
-                />
+                <!--&lt;!&ndash; __ Количество Настилов в раскрое &ndash;&gt;-->
+                <!--<AppLabelMultiLine-->
+                <!--    :text="['Кол-во', 'наст.']"-->
+                <!--    align="center"-->
+                <!--    text-size="small"-->
+                <!--    title="Количество настилов в ПС"-->
+                <!--    type="primary"-->
+                <!--    width="w-[60px]"-->
+                <!--/>-->
 
                 <!-- attract: Описание -->
                 <AppLabelMultiLine
@@ -462,13 +462,13 @@
                             width="w-[60px]"
                         />
 
-                        <AppLabel
-                            :text="fabric.cutting_layers.toString()"
-                            :type="fabric.cutting_layers === 0 ? 'stone' : 'success'"
-                            align="center"
-                            text-size="mini"
-                            width="w-[60px]"
-                        />
+                        <!--<AppLabel-->
+                        <!--    :text="fabric.cutting_layers.toString()"-->
+                        <!--    :type="fabric.cutting_layers === 0 ? 'stone' : 'success'"-->
+                        <!--    align="center"-->
+                        <!--    text-size="mini"-->
+                        <!--    width="w-[60px]"-->
+                        <!--/>-->
 
                         <AppLabel
                             :text="fabric.text.description ? fabric.text.description : '...'"

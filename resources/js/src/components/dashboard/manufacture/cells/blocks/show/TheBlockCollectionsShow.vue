@@ -107,7 +107,7 @@
                     <!-- __ Длина блоков -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.length"/>
-                        <AppInputTextTSWrapper v-model="lengthFilter" :render-object="render.length"/>
+                        <!--<AppInputTextTSWrapper v-model="lengthFilter" :render-object="render.length"/>-->
                     </div>
 
                     <!-- __ Высота блоков -->
@@ -359,7 +359,7 @@
                         <AppLabelTSWrapper :arg="[blockCollection, block]" :render-object="render.width_block" c="italic"/>
 
                         <!-- __ Длина -->
-                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.length" c="italic"/>
+                        <AppLabelTSWrapper :arg="[blockCollection, block]" :render-object="render.length_block" c="italic"/>
 
                         <!-- __ Высота -->
                         <AppLabelTSWrapper :arg="blockCollection" :render-object="render.height" c="italic"/>
@@ -481,7 +481,7 @@ const DATA_ALIGN           = 'left'
 // const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    collapsed        : {
+    collapsed    : {
         header        : ['▲', '▼'],
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -497,7 +497,7 @@ const render: IRenderData = reactive({
         click         : (blockCollection: IBlockCollection) => (blockCollection.collapsed = !blockCollection.collapsed),
         class         : 'cursor-pointer',
     },
-    plug             : {
+    plug         : {
         header        : ['', ''],
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -511,7 +511,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : () => '',
     },
-    id               : {
+    id           : {
         id            : () => 'id-search',
         header        : ['ID', ''],
         width         : 'w-[50px]',
@@ -527,7 +527,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍id...',
         data          : (blockCollection: IBlockCollection) => blockCollection.id.toString()
     },
-    code_1c          : {
+    code_1c      : {
         id            : () => 'code-1c-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -543,7 +543,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (blockCollection: IBlockCollection) => blockCollection.code_1c
     },
-    code_1c_block    : {
+    code_1c_block: {
         id            : () => 'code-1c-block-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -559,7 +559,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (block: IBlock) => block.code_1c
     },
-    name             : {
+    name         : {
         id            : () => 'name-search',
         header        : ['Название', 'группы блоков'],
         width         : 'w-[300px]',
@@ -575,7 +575,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Название...',
         data          : (blockCollection: IBlockCollection) => blockCollection.name
     },
-    name_block       : {
+    name_block   : {
         id            : () => 'name-block-search',
         header        : ['Название', 'блоков'],
         width         : 'w-[300px]',
@@ -591,7 +591,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Название...',
         data          : (block: IBlock) => block.name
     },
-    unit             : {
+    unit         : {
         id            : () => 'unit-search',
         header        : ['Ед.', 'изм.'],
         width         : 'w-[70px]',
@@ -612,7 +612,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Ед...',
         data          : (blockCollection: IBlockCollection) => blockCollection.unit ?? ''
     },
-    kdb              : {
+    kdb          : {
         id            : () => 'kdb-search',
         header        : ['КДБ', ''],
         width         : 'w-[80px]',
@@ -628,7 +628,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍КДБ...',
         data          : (blockCollection: IBlockCollection) => blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? `${blockCollection.kdb} 🔍` : '',
     },
-    line             : {
+    line         : {
         id            : () => 'line-search',
         header        : ['Линия', ''],
         width         : 'w-[70px]',
@@ -653,7 +653,7 @@ const render: IRenderData = reactive({
             return ''
         },
     },
-    line_alt         : {
+    line_alt     : {
         id            : () => 'line-alt-search',
         header        : ['Альт.', 'линия'],
         width         : 'w-[70px]',
@@ -677,7 +677,7 @@ const render: IRenderData = reactive({
             return ''
         },
     },
-    priority         : {
+    priority     : {
         id            : () => 'priority-search',
         header        : ['Приор-', 'тет'],
         width         : 'w-[60px]',
@@ -696,7 +696,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority.toString()
     },
-    width            : {
+    width        : {
         id            : () => 'width-search',
         header        : ['W', 'см'],
         width         : 'w-[60px]',
@@ -713,7 +713,7 @@ const render: IRenderData = reactive({
         data          : (/*blockCollection: IBlockCollection*/) => ''
         // data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-    width_block      : {
+    width_block  : {
         id            : () => 'width-block-search',
         header        : ['W', 'см'],
         width         : 'w-[60px]',
@@ -733,7 +733,51 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : ([, block]) => block.width.toString()
     },
-    height           : {
+    length : {
+        id        : () => 'length-search',
+        header    : ['L', 'см'],
+        width     : 'w-[60px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
+        headerType: () => HEADER_TYPE,
+        dataType  : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+
+        // type          : (blockCollection: IBlockCollection) => {
+        //     if (!blockCollection || !blockCollection.own || blockCollection.length !== 0) return DEFAULT_TYPE
+        //     return 'danger'
+        // },
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍L...',
+        data          : (/*blockCollection: IBlockCollection*/) => '',
+        // data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
+    },
+    length_block : {
+        id        : () => 'length-block-search',
+        header    : ['L', 'см'],
+        width     : 'w-[60px]',
+        height    : DEFAULT_HEIGHT,
+        show      : true,
+        headerType: () => HEADER_TYPE,
+        dataType  : () => DATA_TYPE,
+        type      : ([blockCollection, block]) => {
+            if (!blockCollection || !block) return DEFAULT_TYPE_BLOCK
+            if (blockCollection.own && block.length === 0) return 'danger'
+            return DEFAULT_TYPE_BLOCK
+        },
+
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍L...',
+        data          : ([, block]) => block.length.toString()
+        // data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
+    },
+    height       : {
         id            : () => 'height-search',
         header        : ['H', 'см'],
         width         : 'w-[60px]',
@@ -752,25 +796,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-    length           : {
-        id            : () => 'length-search',
-        header        : ['L', 'см'],
-        width         : 'w-[60px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => HEADER_TYPE,
-        dataType      : () => DATA_TYPE,
-        type          : (blockCollection: IBlockCollection) => {
-            if (!blockCollection || !blockCollection.own || blockCollection.length !== 0) return DEFAULT_TYPE
-            return 'danger'
-        },
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : 'center',
-        placeholder   : '🔍L...',
-        data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
-    },
+
     productivity     : {
         id            : () => 'productivity-search',
         header        : ['Произ-сть', 'm2/ч'],

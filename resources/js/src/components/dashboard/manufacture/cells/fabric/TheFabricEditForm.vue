@@ -45,16 +45,16 @@
                         width="w-[230px]"
                     />
 
-                    <!-- __ Кол-во слоев в раскрое -->
-                    <AppInputNumberSimpleTS
-                        id="cutting-layers-amount"
-                        v-model:inputNumber.number="v$.cuttingLayers.$model as unknown as number"
-                        :errors="v$.cuttingLayers.$errors"
-                        label="Количество слоев в раскрое, шт."
-                        placeholder="Количество слоев..."
-                        step="1"
-                        width="w-[230px]"
-                    />
+                    <!--&lt;!&ndash; __ Кол-во слоев в раскрое &ndash;&gt;-->
+                    <!--<AppInputNumberSimpleTS-->
+                    <!--    id="cutting-layers-amount"-->
+                    <!--    v-model:inputNumber.number="v$.cuttingLayers.$model as unknown as number"-->
+                    <!--    :errors="v$.cuttingLayers.$errors"-->
+                    <!--    label="Количество слоев в раскрое, шт."-->
+                    <!--    placeholder="Количество слоев..."-->
+                    <!--    step="1"-->
+                    <!--    width="w-[230px]"-->
+                    <!--/>-->
 
 
                 </div>
@@ -393,7 +393,7 @@ const bufferRolls                   = ref(getBufferRolls())
 const averageTextileLengthStatistic = ref(0)
 const averageTextileLengthHand      = ref(0)
 const textileLayersAmount           = ref(fabric.value.textile_layers_amount)
-const cuttingLayers                 = ref(fabric.value.cutting_layers)
+// const cuttingLayers                 = ref(fabric.value.cutting_layers)
 
 
 // __ Определяем константы правил валидации
@@ -411,8 +411,8 @@ const OPTIMAL_PARTY_MIN_AMOUNT   = 10
 const RATE_MIN_AMOUNT            = 1
 const RATE_MAX_AMOUNT            = 3
 const PRODUCTIVITY_MIN_AMOUNT    = 10
-const MIN_CUTTING_LAYERS_AMOUNT  = 1
-const MAX_CUTTING_LAYERS_AMOUNT  = 10
+// const MIN_CUTTING_LAYERS_AMOUNT  = 1
+// const MAX_CUTTING_LAYERS_AMOUNT  = 10
 
 // __ Определяем объект валидации
 const verify = {
@@ -427,7 +427,7 @@ const verify = {
     productivity,
     description,
     bufferRolls,
-    cuttingLayers,
+    // cuttingLayers,
 }
 
 // Определяем правила валидации
@@ -475,12 +475,12 @@ const rules = {
         minValue: helpers.withMessage(`Мин. значение - ${PRODUCTIVITY_MIN_AMOUNT} м.п./ч.`, minValue(PRODUCTIVITY_MIN_AMOUNT)),
     },
     description             : {},
-    cuttingLayers           : {
-        required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        integer : helpers.withMessage(INTEGER_MESSAGE, integer),
-        minValue: helpers.withMessage(`Мин. значение - ${MIN_CUTTING_LAYERS_AMOUNT} шт.`, minValue(MIN_CUTTING_LAYERS_AMOUNT)),
-        maxValue: helpers.withMessage(`Макс. значение - ${MAX_CUTTING_LAYERS_AMOUNT} шт.`, maxValue(MAX_CUTTING_LAYERS_AMOUNT)),
-    },
+    // cuttingLayers           : {
+    //     required: helpers.withMessage(REQUIRED_MESSAGE, required),
+    //     integer : helpers.withMessage(INTEGER_MESSAGE, integer),
+    //     minValue: helpers.withMessage(`Мин. значение - ${MIN_CUTTING_LAYERS_AMOUNT} шт.`, minValue(MIN_CUTTING_LAYERS_AMOUNT)),
+    //     maxValue: helpers.withMessage(`Макс. значение - ${MAX_CUTTING_LAYERS_AMOUNT} шт.`, maxValue(MAX_CUTTING_LAYERS_AMOUNT)),
+    // },
     // comment: {},
     // note: {},
 }
@@ -550,7 +550,7 @@ const setVariables = async () => {
     averageTextileLengthStatistic.value = 0
     averageTextileLengthHand.value      = fabric.value.hand_length
     textileLayersAmount.value           = fabric.value.textile_layers_amount
-    cuttingLayers.value                 = fabric.value.cutting_layers
+    // cuttingLayers.value                 = fabric.value.cutting_layers
 }
 
 // __ Получаем среднюю длину ткани из статистики
@@ -605,7 +605,7 @@ const formSubmit = async () => {
     fabric.value.statistic_length           = averageTextileLengthStatistic.value
     fabric.value.hand_length                = averageTextileLengthHand.value
     fabric.value.textile_layers_amount      = textileLayersAmount.value
-    fabric.value.cutting_layers             = cuttingLayers.value
+    // fabric.value.cutting_layers             = cuttingLayers.value
 
     console.log('fabric: ', fabric.value)
 

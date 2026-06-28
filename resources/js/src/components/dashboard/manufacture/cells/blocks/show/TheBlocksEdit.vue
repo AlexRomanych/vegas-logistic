@@ -70,17 +70,16 @@
                         placeholder="Укажите ширину блока..."
                     />
 
-                    <!--&lt;!&ndash; __ Длина блока &ndash;&gt;-->
-                    <!--<AppInputNumberSimpleTS-->
-                    <!--    id="length"-->
-                    <!--    v-model:input-number.number="v$.length.$model as unknown as number"-->
-                    <!--    :errors="v$.length.$errors"-->
-                    <!--    :width="FIELD_WIDTH_LABEL"-->
-                    <!--    disabled-->
-                    <!--    label="Длина блока, см"-->
-                    <!--    mode="text"-->
-                    <!--    placeholder="Укажите длину блока..."-->
-                    <!--/>-->
+                    <!-- __ Длина блока -->
+                    <AppInputNumberSimpleTS
+                        id="length"
+                        v-model:input-number.number="v$.length.$model as unknown as number"
+                        :errors="v$.length.$errors"
+                        :width="FIELD_WIDTH_LABEL"
+                        label="Длина блока, см"
+                        mode="text"
+                        placeholder="Укажите длину блока..."
+                    />
 
                 </div>
 
@@ -260,6 +259,7 @@ const code_1c     = ref('')
 const name        = ref('')
 const collection  = ref('')
 const width       = ref(0)
+const length      = ref(0)
 const active      = ref(true)
 const description = ref('')
 
@@ -273,6 +273,7 @@ const fillData = () => {
     code_1c.value     = block.value.code_1c
     name.value        = block.value.name
     width.value       = block.value.width
+    length.value      = block.value.length
     collection.value  = block.value.collection
     active.value      = block.value.active
     description.value = block.value.description ?? ''
@@ -284,6 +285,7 @@ const verify = {
     code_1c,
     name,
     width,
+    length,
     collection,
     description,
 }
@@ -331,6 +333,14 @@ const rules = {
         integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
         // $lazy: true,
     },
+    length     : {
+        $autoDirty: true,
+        minValue  : helpers.withMessage(`Поле должно быть больше или равно 1`, minValue(1)),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        // $lazy: true,
+    },
     collection : {},
     description: {},
 }
@@ -357,12 +367,12 @@ const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => 
 
 
 // __ Показываем сообщение об ошибке
-const showError = async (error: string | null = null) => {
-    modalInfoType.value = 'danger'
-    modalInfoMode.value = 'inform'
-    modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
-    await appModalAsyncMultiline.value!.show()
-}
+// const showError = async (error: string | null = null) => {
+//     modalInfoType.value = 'danger'
+//     modalInfoMode.value = 'inform'
+//     modalInfoText.value = error ? [error] : ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+//     await appModalAsyncMultiline.value!.show()
+// }
 
 
 // __ Выбираем Коллекцию блоков
@@ -390,6 +400,7 @@ const formSubmit = async () => {
     block.value.active      = active.value
     block.value.description = description.value
     block.value.width       = width.value
+    block.value.length      = length.value
     block.value.collection  = collection.value
 
     console.log('block.value', block.value)

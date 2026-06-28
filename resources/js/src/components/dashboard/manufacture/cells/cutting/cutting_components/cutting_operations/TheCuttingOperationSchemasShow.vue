@@ -39,7 +39,7 @@
                     <div v-for="operation of cuttingOperations" :key="operation.id" class="sticky-header">
                         <AppLabelTS
                             :height="HEADER_COLUMNS_HEIGHT"
-                            :text="`${operation.name} (${operation.cover_type})`"
+                            :text="`${operation.name} (${operation.cover_type}) / ${getDetailTitle(operation, false)}`"
                             :type="getDetailType(operation)"
                             :width="CELL_WIDTH"
                             align="center"
@@ -163,10 +163,7 @@ import CuttingOperationCheck from '@/components/dashboard/manufacture/cells/cutt
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
-import { DETAIL_PANEL, DETAIL_SIDE } from '@/app/constants/cutting.ts'
-import { getDetailType } from '@/app/helpers/manufacture/helpers_cutting.ts'
-
-
+import { getDetailTitle, getDetailType } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 
 const cuttingStore = useCuttingStore()

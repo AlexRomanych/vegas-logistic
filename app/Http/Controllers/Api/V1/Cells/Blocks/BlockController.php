@@ -56,6 +56,7 @@ class BlockController extends Controller
                 'description' => 'present|nullable|string',
                 'active'      => 'required|boolean',
                 'width'       => 'required|integer',
+                'length'      => 'required|integer',
             ]);
 
             $block = Block::query()->create([
@@ -65,6 +66,7 @@ class BlockController extends Controller
                 'description' => $data['description'],
                 'active'      => $data['active'],
                 'width'       => $data['width'],
+                'length'      => $data['length'],
             ]);
 
             if (!$block) {
@@ -96,6 +98,7 @@ class BlockController extends Controller
                 'description' => 'present|nullable|string',
                 'active'      => 'required|boolean',
                 'width'       => 'required|integer',
+                'length'      => 'required|integer',
             ]);
 
 
@@ -108,6 +111,7 @@ class BlockController extends Controller
                 'description',
                 'active',
                 'width',
+                'length',
             ]);
 
             $block->update($updates);

@@ -59,7 +59,7 @@ export const DETAILS = {
         TITLE        : 'Крышка',
         TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'К',
-        TYPE         : 'indigo' as IColorTypes,
+        TYPE         : 'primary' as IColorTypes,
     },
     PANEL_UP  : {
         ID           : 2,
@@ -75,7 +75,7 @@ export const DETAILS = {
         TITLE        : 'Крышка низ',
         TITLE_SHORT  : 'Крышка',
         TITLE_COMPACT: 'Н',
-        TYPE         : 'indigo' as IColorTypes,
+        TYPE         : 'info' as IColorTypes,
     },
     SIDE      : {
         ID           : 4,
