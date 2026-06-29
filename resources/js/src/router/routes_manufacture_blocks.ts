@@ -241,7 +241,7 @@ const blocks = [
         // ___ Тест
         path     : _MAIN_PREFIX + 'test',
         name     : 'manufacture.cell.cutting.test',
-        component: () => import('@/components/dashboard/manufacture/cells/cutting/Test.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/Test.vue'),
         meta     : {
             title: 'Тестовая страница',
         } as IRouteMeta,

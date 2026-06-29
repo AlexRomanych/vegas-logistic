@@ -6,6 +6,8 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BusinessProcess\BusinessProcessForListResource;
 use App\Models\BusinessProcesses\BusinessProcess;
+use App\Models\BusinessProcesses\BusinessProcessNode;
+use App\Models\BusinessProcesses\BusinessProcessNodesConnection;
 use App\Models\BusinessProcesses\Defaults\ClientOrderMovingProcessDefault;
 use App\Services\BusinessProcessesService;
 use Exception;
@@ -39,8 +41,8 @@ class BusinessProcessController extends Controller
             $with = ['referenceNode', 'startNode', 'finishNode'];
 
             match ($status) {
-                0 => $result = BusinessProcess::query()->where('active', false)->with($with)->get(),
-                1 => $result = BusinessProcess::query()->where('active', true)->with($with)->get(),
+                0       => $result = BusinessProcess::query()->where('active', false)->with($with)->get(),
+                1       => $result = BusinessProcess::query()->where('active', true)->with($with)->get(),
                 default => $result = BusinessProcess::query()->with($with)->get(),
             };
 
@@ -100,7 +102,6 @@ class BusinessProcessController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
     /**
@@ -175,7 +176,7 @@ class BusinessProcessController extends Controller
                     'id'                       => 6,
                     'client_id'                => 0,
                     'business_process_node_id' => 9,
-                    'process_node_ref_id' => 8,
+                    'process_node_ref_id'      => 8,
                     'offset'                   => 1,
                     'day_offset_operation'     => true,
                     'is_interval'              => false,
@@ -219,10 +220,37 @@ class BusinessProcessController extends Controller
                     'created_at'               => '2026-03-25 18:15:06',
                     'updated_at'               => '2026-03-25 18:15:06',
                 ],
+                [
+                    'id'                       => 10,
+                    'client_id'                => 0,
+                    'business_process_node_id' => 14,
+                    'process_node_ref_id'      => 6,
+                    'offset'                   => 1,
+                    'day_offset_operation'     => true,
+                    'is_interval'              => false,
+                    'active'                   => true,
+                    'created_at'               => '2026-03-25 18:15:06',
+                    'updated_at'               => '2026-03-25 18:15:06',
+                ],
             ];
 
             // Вставляем данные. Существующие строки (по индексу ID или уникальному ключу) будут проигнорированы.
             $insertedCount = ClientOrderMovingProcessDefault::query()->insertOrIgnore($data);
+
+
+            $data          = [
+                [
+                    'id'                  => 11,
+                    'business_process_id' => 1,
+                    'previous_node_id'    => 6,
+                    'next_node_id'        => 14,
+                    'order'               => 5,
+                    'active'              => true,
+
+                ],
+            ];
+            $insertedCount = BusinessProcessNodesConnection::query()->insertOrIgnore($data);
+
             return EndPointStaticRequestAnswer::ok('Добавлено успешно');
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);

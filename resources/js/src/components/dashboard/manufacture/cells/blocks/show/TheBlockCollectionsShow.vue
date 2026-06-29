@@ -6,7 +6,11 @@
 
                     <!-- __ collapsed -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.collapsed"/>
+                        <AppLabelMultilineTSWrapper
+                            :render-object="render.collapsed"
+                            @click="toggleCollapsed"
+                        />
+
                     </div>
 
                     <!-- __ id -->
@@ -733,7 +737,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : ([, block]) => block.width.toString()
     },
-    length : {
+    length       : {
         id        : () => 'length-search',
         header    : ['L', 'см'],
         width     : 'w-[60px]',
@@ -741,7 +745,7 @@ const render: IRenderData = reactive({
         show      : true,
         headerType: () => HEADER_TYPE,
         dataType  : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
+        type      : () => DEFAULT_TYPE,
 
         // type          : (blockCollection: IBlockCollection) => {
         //     if (!blockCollection || !blockCollection.own || blockCollection.length !== 0) return DEFAULT_TYPE
@@ -832,7 +836,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Active...',
         data          : (blockCollection: IBlockCollection) => blockCollection.active ? '✓' : '✗'
     },
-    active_block           : {
+    active_block     : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -987,6 +991,10 @@ const resetFilters = () => {
     ownFilter.value         = 0
 }
 
+// __ Сворачиваем/Разворачиваем
+const toggleCollapsed = () => {
+    blockCollections.value.forEach(collection => collection.collapsed = !collection.collapsed)
+}
 
 // __ Показываем КДБ
 const blockDesignDocumentAsync = ref<InstanceType<typeof BlockDesignDocumentAsync> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией

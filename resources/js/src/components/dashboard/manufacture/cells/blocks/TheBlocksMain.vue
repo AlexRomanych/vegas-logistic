@@ -47,7 +47,7 @@ const menuItems = ref<IMenuItem[]>([
 if (userStore.hasAdminRole()) {
     menuItems.value.push({
         name    : 'Тест',
-        path    : 'manufacture.cell.cutting.test',
+        path    : 'manufacture.cell.block.test',
         shown   : true,
         isActive: true,
     })

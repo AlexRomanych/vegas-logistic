@@ -9,7 +9,7 @@ return new class extends Migration {
 
     use AddCommonColumnsInTableTrait;
 
-    private const TABLE_NAME = 'cutting_tasks';
+    private const TABLE_NAME = 'block_tasks';
 
     public function up(): void
     {
@@ -35,7 +35,7 @@ return new class extends Migration {
                 ->nullable(false)
                 ->comment('Дата выполнения СЗ');
 
-            // __ Номер производственной смены. Пока 1 смена, но задел на будущее
+            // __ Номер производственной смены. Пока 1 смена по умолчанию
             $table->unsignedSmallInteger('change')
                 ->nullable(false)
                 ->default(1)

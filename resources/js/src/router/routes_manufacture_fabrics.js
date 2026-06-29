@@ -5,8 +5,8 @@ import {FABRIC_PAGE_MODE} from '@/app/constants/fabrics.js'
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'
 const _CELL_PREFIX = '/cell/'
-const _TASK_PREFIX = '/task'
 const _MAIN_PREFIX = _MANUFACTURE_PREFIX + _CELL_PREFIX
+// const _TASK_PREFIX = '/task'
 
 const fabrics = [
     {
@@ -18,7 +18,6 @@ const fabrics = [
             title: 'Стежка'
         }
     },
-
 
     {
         // ___ Движение СЗ ПС
@@ -61,9 +60,6 @@ const fabrics = [
         }
     },
 
-
-
-
     {
         // ___ Список ПС
         path: _MAIN_PREFIX + 'fabrics/show',
@@ -73,8 +69,6 @@ const fabrics = [
             title: 'Список ПС'
         }
     },
-
-
 
     {
         // ___ Загрузка с диска списка ПС
@@ -212,9 +206,6 @@ const fabrics = [
             mode: FABRIC_PAGE_MODE.EDIT,
         }
     },
-
-
-
 
     {
         // ___: Стегальные машины

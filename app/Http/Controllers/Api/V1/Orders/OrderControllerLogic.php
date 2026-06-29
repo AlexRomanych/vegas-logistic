@@ -10,6 +10,7 @@ use App\Models\Logs\EventLog;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
+use App\Services\Manufacture\BlocksService;
 use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
 use App\Services\ModelsService;
@@ -356,7 +357,7 @@ class OrderControllerLogic
                             throw new Exception('Error while distributing Sewing Task with Client id = ' . $orderData['client_id']);
                         }
 
-                        // __ Распределяем СЗ на Раскрой
+                        // __ Распределяем СЗ на Раскрой !!! TODO Не доделана
                         /** @var Order $forecastOrder */
                         $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
                         if (!$result) {
@@ -401,7 +402,10 @@ class OrderControllerLogic
                         }
 
                         // __ Создаем СЗ на Сборку
-                        // __ ...
+                        $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
+                        if (!$blockTask) {
+                            throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                        }
                     }
                 }
             }

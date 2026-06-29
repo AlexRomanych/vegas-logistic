@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Blocks\BlockResource;
 use App\Models\Manufacture\Cells\Block\Block;
+use App\Services\Manufacture\BlocksService;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -123,4 +124,14 @@ class BlockController extends Controller
     }
 
 
+
+
+
+    public function test()
+    {
+        $result = BlocksService::test();
+
+
+        return $result;
+    }
 }

@@ -32,6 +32,7 @@ final class CuttingService
      * @return CuttingTask|null
      * @noinspection DuplicatedCode
      * @noinspection PhpUndefinedFieldInspection
+     * @throws Exception
      */
     public static function createCuttingTaskFromOrderId(
         int $orderId,

@@ -13,8 +13,14 @@ class ModelConstruct extends LaravelModel
     public const PANEL_DOWN_NAME = 'panel_down';
     public const SIDE_NAME = 'side';
 
+    // __ Для Раскроя
     public const DETAIL_CONSTRUCT_PANEL_NAME = 'Крышка';
     public const DETAIL_CONSTRUCT_SIDE_NAME = 'Боковина';
+
+    // __ Для БП
+    public const DETAIL_CONSTRUCT_BASE_BLOCK = 'Базовый блок';
+
+
 
 
     protected $primaryKey = CODE_1C;

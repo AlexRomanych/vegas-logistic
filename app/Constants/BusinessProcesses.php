@@ -8,6 +8,7 @@ const ORDER_MOVING_BUSINESS_PROCESS_ID = 1;
 // ___ Константы узлов бизнес процесса
 const SEWING_NODE_ID = 8;
 const CUTTING_NODE_ID = 7;
+const BLOCKS_NODE_ID = 14;
 
 /*
 export const BUSINESS_PROCESS_NODES: IBusinessProcessNodesConst = {

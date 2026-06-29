@@ -78,11 +78,13 @@ const menuData = () => {
                     {name: 'Справочник материалов', path: 'materials', shown: true, isActive: true,},
                     {name: 'Справочник процедур расчета', path: 'procedures', shown: true, isActive: true,},
                     {name: 'Справочник спецификаций', path: 'constructs', shown: true, isActive: true,},
+                    {name: 'Справочник Пружинных блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true},
+                    {name: 'Справочник ПС', path: 'manufacture.cell.fabrics.show', shown: true, isActive: true},
 
                     {name: 'Список сотрудников', path: 'workers', shown: true, isActive: true,},
 
-                    { name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true },
-                    { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.block.design.show', shown: true, isActive: true },
+                    {name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true},
+                    {name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.block.design.show', shown: true, isActive: true},
                 ]
         },
         {
@@ -171,8 +173,8 @@ const menuData = () => {
 // Делаем защиту: если path='' то isActive = false
 const menu = menuData().map((item, index) => {
     const {group, items} = item
-    group.id = ++index
-    const newItems = items.map((item, index) => {
+    group.id             = ++index
+    const newItems       = items.map((item, index) => {
         item.isActive = item.path !== ''
         return {...item, 'id': ++index}
     })

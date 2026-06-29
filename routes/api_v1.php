@@ -337,6 +337,8 @@ Route::prefix('documents')
 Route::prefix('blocks')
     ->middleware('jwt.auth')
     ->group(function () {
+        Route::get('test', [BlockController::class, 'test']);
+
         // __ Коллекция Блоков
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
         Route::get('collections/{id}', [BlockCollectionController::class, 'getBlockCollectionById']);
@@ -347,4 +349,9 @@ Route::prefix('blocks')
         Route::get('/{id}', [BlockController::class, 'getBlockById']);
         Route::post('/', [BlockController::class, 'createBlock']);
         Route::put('/', [BlockController::class, 'updateBlock']);
+
+
+
+
+
     });

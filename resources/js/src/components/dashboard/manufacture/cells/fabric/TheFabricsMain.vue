@@ -24,13 +24,13 @@ interface IMenuItem {
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 
-let menuItems: IMenuItem[] = [
+const menuItems: IMenuItem[] = [
     {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
     {name: 'Выполнение СЗ', path: 'manufacture.cell.fabric.tasks.execute', shown: true, isActive: true},
     {name: 'Расход ПС', path: 'manufacture.cell.fabrics.expense', shown: true, isActive: true},
     {name: 'Загрузка расхода ПС', path: 'manufacture.cell.fabrics.expense.upload', shown: true, isActive: true},
     {name: 'Учет ПС на стежке', path: 'manufacture.cell.fabrics.movement', shown: true, isActive: true},
-    {name: 'Список ПС', path: 'manufacture.cell.fabrics.show', shown: true, isActive: true},
+    {name: 'Справочник ПС', path: 'manufacture.cell.fabrics.show', shown: true, isActive: true},
     {name: 'Список рисунков ПС', path: 'manufacture.cell.fabric.pictures.show', shown: true, isActive: true},
     {name: 'Стегальные машины', path: 'manufacture.cell.fabrics.machines', shown: true, isActive: true},
     {name: 'Причины изменения статуса', path: 'reasons', shown: true, isActive: true,},
