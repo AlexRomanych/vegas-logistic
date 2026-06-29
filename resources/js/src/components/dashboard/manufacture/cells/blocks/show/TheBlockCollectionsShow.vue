@@ -371,7 +371,7 @@
                         <AppLabelTSWrapper :arg="blockCollection" :render-object="render.own"/>
 
                         <!-- __ Active -->
-                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.active"/>
+                        <AppLabelTSWrapper :arg="block" :render-object="render.active_block"/>
 
                         <!-- __ Описание -->
                         <AppLabelTSWrapper :arg="block" :render-object="render.description_block" c="italic"/>
@@ -831,6 +831,22 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍Active...',
         data          : (blockCollection: IBlockCollection) => blockCollection.active ? '✓' : '✗'
+    },
+    active_block           : {
+        id            : () => 'active-search',
+        header        : ['Актуаль-', 'ность'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (block: IBlock) => block?.active ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Active...',
+        data          : (block: IBlock) => block.active ? '✓' : '✗'
     },
     own              : {
         id            : () => 'own-search',

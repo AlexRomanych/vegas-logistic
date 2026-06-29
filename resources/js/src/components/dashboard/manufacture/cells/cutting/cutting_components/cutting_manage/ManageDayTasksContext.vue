@@ -112,7 +112,7 @@
                     <!-- Подвал модалки -->
                     <div class="w-full flex justify-between items-center p-4 bg-slate-800/50 rounded-b-xl border-t border-slate-800/30">
                         <span class="pl-4 text-[11px] text-slate-500 font-mono uppercase tracking-wider">
-                            Всего задач в обработке: {{ pivotData.rows.length }}
+                            Всего Сменных Заданий в обработке: {{ pivotData.rows.length }}
                         </span>
 
                         <AppInputButton
