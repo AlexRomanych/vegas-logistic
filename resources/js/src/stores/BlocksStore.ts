@@ -87,9 +87,6 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result
     }
 
-
-
-
     return {
         getBlockCollections,
         getBlockCollectionById,

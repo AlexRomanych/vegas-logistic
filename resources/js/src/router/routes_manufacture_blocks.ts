@@ -240,7 +240,7 @@ const blocks = [
     {
         // ___ Тест
         path     : _MAIN_PREFIX + 'test',
-        name     : 'manufacture.cell.cutting.test',
+        name     : 'manufacture.cell.block.test',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/Test.vue'),
         meta     : {
             title: 'Тестовая страница',
