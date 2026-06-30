@@ -130,6 +130,9 @@ return new class extends Migration {
             // __ Трудозатраты на момент создания записи
             $table->json('productivity_json')->nullable()->comment('Трудозатраты на момент создания записи');
 
+            // __ Ссылка на родитель при разбиении на части
+            $table->unsignedBigInteger('ref_id')->nullable()->comment('Ссылка на родитель при разбиении на части');
+
         });
 
         $this->addCommonColumns(self::TABLE_NAME);

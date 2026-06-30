@@ -393,7 +393,7 @@ const bufferRolls                   = ref(getBufferRolls())
 const averageTextileLengthStatistic = ref(0)
 const averageTextileLengthHand      = ref(0)
 const textileLayersAmount           = ref(fabric.value.textile_layers_amount)
-// const cuttingLayers                 = ref(fabric.value.cutting_layers)
+const cuttingLayers                 = ref(fabric.value.cutting_layers)
 
 
 // __ Определяем константы правил валидации
@@ -550,7 +550,7 @@ const setVariables = async () => {
     averageTextileLengthStatistic.value = 0
     averageTextileLengthHand.value      = fabric.value.hand_length
     textileLayersAmount.value           = fabric.value.textile_layers_amount
-    // cuttingLayers.value                 = fabric.value.cutting_layers
+    cuttingLayers.value                 = fabric.value.cutting_layers
 }
 
 // __ Получаем среднюю длину ткани из статистики
@@ -605,7 +605,7 @@ const formSubmit = async () => {
     fabric.value.statistic_length           = averageTextileLengthStatistic.value
     fabric.value.hand_length                = averageTextileLengthHand.value
     fabric.value.textile_layers_amount      = textileLayersAmount.value
-    // fabric.value.cutting_layers             = cuttingLayers.value
+    fabric.value.cutting_layers             = cuttingLayers.value ?? 0
 
     console.log('fabric: ', fabric.value)
 
