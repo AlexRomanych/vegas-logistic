@@ -1,5 +1,6 @@
 // __ Коллекция блоков
 import { LINE_0, LINE_1, LINE_2, UNIT, UNIT_PICS, UNIT_METERS } from '@/app/constants/blocks.ts'
+import type { ICuttingDayWorkerPivot } from '@/types/cutting_types.ts'
 
 export interface IBlockCollection {
     id: number
@@ -55,4 +56,39 @@ export interface IBlockDocument {
     name: string
     file_path: string | null
     description: string | null
+}
+
+
+// --- --------------------------------------------------------------------
+// --- ---------------------- Для Статусов СЗ -----------------------------
+// --- --------------------------------------------------------------------
+export interface IBlockTaskStatusEntity {
+    id: number
+    name: string
+    color: string
+    position: number
+    description?: string | null
+    active?: boolean
+    status?: number
+    comment?: string | null
+    note?: string | null
+    meta?: string | null
+    created_at?: string | null
+    updated_at?: string | null
+}
+
+// __ Тип для обновления статуса заявки
+export type IBlockTaskStatusesSet = { task: number, status: number }
+
+
+
+// --- --------------------------------------------------------------------
+// --- --------------------- Для Учета персонала  -------------------------
+// --- --------------------------------------------------------------------
+export type IBlockDayWorker = {
+    id: number
+    surname: string
+    name: string
+    patronymic: string
+    pivot?: ICuttingDayWorkerPivot
 }

@@ -86,6 +86,16 @@ const blocks = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Справочник Статусов Движения СЗ
+        path     : _MAIN_PREFIX + 'task/statuses',
+        name     : 'manufacture.cell.block.task.statuses',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/statuses/TheBlockStatusesShow.vue'),
+        meta     : {
+            title: 'Статусы движения Сменного задания производства Блоков'
+        } as IRouteMeta,
+    },
+
 
     // {
     //     // ___ Управление планом Швейного цеха

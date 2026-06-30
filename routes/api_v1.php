@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
+use App\Http\Controllers\Api\V1\Cells\Blocks\BlockStatusController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingTextileController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
@@ -350,8 +351,9 @@ Route::prefix('blocks')
         Route::post('/', [BlockController::class, 'createBlock']);
         Route::put('/', [BlockController::class, 'updateBlock']);
 
-
-
-
+        // __ Статусы СЗ Блоков
+        Route::get('/task/statuses', [BlockStatusController::class, 'getBlockTaskStatuses']);
+        Route::patch('/task/statuses/color/patch', [BlockStatusController::class, 'patchBlockTaskStatusColor']);
+        Route::post('/task/statuses/set', [BlockStatusController::class, 'setBlockTasksStatuses']);
 
     });

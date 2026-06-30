@@ -18,7 +18,7 @@ import type {
     ICuttingTaskStatusesSet,
     ICuttingLineTableSetData,
     ICuttingProcedure,
-    ICuttingDetailType, ICuttingTextile, IBlock,
+    ICuttingDetailType, ICuttingTextile,
 } from '@/types'
 
 
