@@ -905,7 +905,7 @@ final class CuttingService
 
 
     /**
-     * __ Возвращаем следующую производственную смену
+     * ___ Возвращаем следующую производственную смену
      * @param ManufactureDayAndChange|Carbon|string $manufactureEntity
      * @param int|null $change
      * @return ManufactureDayAndChange

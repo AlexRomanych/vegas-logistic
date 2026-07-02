@@ -1376,7 +1376,7 @@ export function isTaskStatusCreated(entity: ICuttingTask | ICuttingTaskStatus | 
 }
 
 // --- ------------------------------------------------------------------------------------
-// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+// __ Проверяем, является ли Статус СЗ "Выполняется"
 export function isTaskStatusRunning(entity: ICuttingTask | ICuttingTaskStatus | number): boolean {
     let item: number
     if (isCuttingTask(entity)) {
@@ -1421,7 +1421,7 @@ export function hasTaskUnknownTable(entity: ICuttingTask | ICuttingTaskLine[]) {
     } else if (Array.isArray(entity)) {
         items = entity
     } else {
-        throw new Error('isTaskAverage: unknown incoming data type')
+        throw new Error('hasTaskUnknownTable: unknown incoming data type')
     }
 
     for (let i = 0; i < items.length; i++) {

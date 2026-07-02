@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\V1\Cells\Blocks;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Manufacture\Cells\Blocks\BlockCollectionResource;
+use App\Http\Resources\Manufacture\Cells\Blocks\References\BlockCollectionResource;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
 
 class BlockCollectionController extends Controller
 {

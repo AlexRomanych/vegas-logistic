@@ -89,23 +89,22 @@ const blocks = [
     {
         // ___ Справочник Статусов Движения СЗ
         path     : _MAIN_PREFIX + 'task/statuses',
-        name     : 'manufacture.cell.block.task.statuses',
+        name     : 'manufacture.cell.blocks.task.statuses',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/statuses/TheBlockStatusesShow.vue'),
         meta     : {
             title: 'Статусы движения Сменного задания производства Блоков'
         } as IRouteMeta,
     },
 
-
-    // {
-    //     // ___ Управление планом Швейного цеха
-    //     path     : _MAIN_PREFIX + 'plan/manage',
-    //     name     : 'manufacture.cell.cutting.plan.manage',
-    //     component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingManage.vue'),
-    //     meta     : {
-    //         title: 'Управление планом Раскройного цеха'
-    //     } as IRouteMeta,
-    // },
+    {
+        // ___ Управление планом Блоков
+        path     : _MAIN_PREFIX + 'plan/manage',
+        name     : 'manufacture.cell.blocks.plan.manage',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_manage/TheBlockManage.vue'),
+        meta     : {
+            title: 'Управление планом Производства Блоков'
+        } as IRouteMeta,
+    },
 
     //
     // {

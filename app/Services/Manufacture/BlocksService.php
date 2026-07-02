@@ -4,11 +4,13 @@
 namespace App\Services\Manufacture;
 
 
+use App\Classes\ManufactureDayAndChange;
 use App\Models\Manufacture\Cells\Block\Block;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
 use App\Models\Manufacture\Cells\Block\BlockTask;
 use App\Models\Manufacture\Cells\Block\BlockTaskLine;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
+use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
@@ -166,6 +168,7 @@ final class BlocksService
             }
 
             // __ Создаем контент (строки) СЗ
+            // !!! Сразу пишем в базу. Можно Создать -> Отсортировать (Приоритет + Размер + Линия) -> Записать
             $position = 1;
             foreach ($groupedPivotRecordsExpense as $code1C => $records) {
                 $block = self::getBlockByCode1c($code1C);
@@ -199,8 +202,8 @@ final class BlocksService
                     'line'               => $collection->line,
                     'position'           => $position++,
                     'productivity'       => $collection->productivity,
-                    'square'             => $block->length * $block->width,
-                    'time'               => $block->length * $block->width * $collection->productivity * (int)$totals,
+                    'square'             => $block->length * $block->width / 100 / 100,
+                    'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totals / $collection->productivity : 0,
                 ]);
             }
 
@@ -237,6 +240,102 @@ final class BlocksService
             ->whereDate('action_at', $date)
             ->count();
     }
+
+    /**
+     * ___ Возвращаем следующую производственную смену
+     * @param ManufactureDayAndChange|Carbon|string $manufactureEntity
+     * @param int|null $change
+     * @return ManufactureDayAndChange
+     */
+    public static function getNextChange(
+        ManufactureDayAndChange|Carbon|string $manufactureEntity,
+        int $change = null
+    ): ManufactureDayAndChange {
+        $manufDateAndChange = null;
+        if ($manufactureEntity instanceof ManufactureDayAndChange) {
+            $manufDateAndChange = new ManufactureDayAndChange($manufactureEntity->getManufactureDay()->addDay(), 1);
+        } else {
+            $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), 1);
+            // $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), $change);
+        }
+
+        return $manufDateAndChange;
+    }
+
+    /**
+     * ___ Массовое обновление СЗ
+     * @param array $rows
+     * @return void
+     * @throws Throwable
+     */
+    public static function bulkUpdateTasks(array $rows): void
+    {
+        // ___ Формат входных данных:
+        // $tasksToUpdate[] = [
+        //     'id'        => taskId,
+        //     'action_at' => new_action_at ?? null,
+        //     'position'  => new_position ?? null,
+        // ];
+
+
+        // __ Получаем имя таблицы
+        $table = (new CuttingTask)->getTable();
+
+        // __ 1. Находим только те ID, у которых действительно меняется позиция (чтобы не уводить в минус лишнее)
+        $idsForMinus = array_column(array_filter($rows, fn($r) => isset($r['position'])), 'id');
+
+        // __ 2. Находим все ID, которые участвуют в обновлении (хоть позиция, хоть amount)
+        $allIds = array_column($rows, 'id');
+
+        DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
+            // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
+            if (!empty($idsForMinus)) {
+                $placeholders = implode(',', array_fill(0, count($idsForMinus), '?'));
+                DB::update("UPDATE {$table} SET position = (id * -1) WHERE id IN ({$placeholders})", $idsForMinus);
+            }
+
+            // __ ШАГ 2: Собираем финальный запрос
+            $casesActionAt  = [];
+            $paramsActionAt = [];
+            $casesPosition  = [];
+            $paramsPosition = [];
+
+            foreach ($rows as $row) {
+                if (isset($row['action_at'])) {
+                    $casesActionAt[] = "WHEN id = ? THEN ?";
+                    array_push($paramsActionAt, $row['id'], $row['action_at']);
+                }
+                if (isset($row['position'])) {
+                    $casesPosition[] = "WHEN id = ? THEN ?";
+                    array_push($paramsPosition, $row['id'], $row['position']);
+                }
+            }
+
+            $setParts    = [];
+            $finalParams = [];
+
+            if (!empty($casesActionAt)) {
+                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
+                $finalParams = array_merge($finalParams, $paramsActionAt);
+            }
+
+            if (!empty($casesPosition)) {
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $finalParams = array_merge($finalParams, $paramsPosition);
+            }
+
+            if (empty($setParts)) {
+                return;
+            }
+
+            $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+
+            // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
+            DB::update($sql, array_merge($finalParams, $allIds));
+        });
+    }
+
 
 
     public static function test()

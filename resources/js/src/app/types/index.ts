@@ -1,4 +1,8 @@
 import { FABRIC_PAGE_MODE } from '@/app/constants/fabrics.js'
+import type { ISewingTask } from '@/types/sewing_types.ts'
+import type { ICuttingTask } from '@/types/cutting_types.ts'
+import type { IBlockTask } from '@/types/blocks_types.ts'
+import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 
 export * from './reasons_types.ts'                  // Причина невыполнения
 export * from './data_render.ts'                    // Элемент вывода датных в шаблон
@@ -48,3 +52,10 @@ export type IDims = {
     length: number
     height: number
 }
+
+
+export type IDay = (ISewingTask  | ICuttingTask | IBlockTask) & IPlanMatrixDayItem
+
+// --- ------------------------------------------------------------
+// __ Типы для разницы для каждой записи в матрице Пошива
+export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'

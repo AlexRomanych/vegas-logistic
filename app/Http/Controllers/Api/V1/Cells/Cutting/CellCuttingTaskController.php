@@ -175,9 +175,12 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    // ___ Получаем СЗ на Раскрой
-
-    /** @noinspection DuplicatedCode */
+    /**
+     * ___ Получаем СЗ на Раскрой
+     * @param string $orderId
+     * @return AnonymousResourceCollection|string
+     * @noinspection DuplicatedCode
+     */
     public function getCuttingTasksByOrderId(string $orderId)
     {
         try {
@@ -1188,7 +1191,11 @@ class CellCuttingTaskController extends Controller
         }
     }
 
-
+    /**
+     * ___ Меняем Раскройный Стол
+     * @param Request $request
+     * @return string
+     */
     public function taskLinesTableSet(Request $request)
     {
         try {

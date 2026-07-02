@@ -1,9 +1,7 @@
 // Info: Тут все общие типы для Пошива и Раскроя
 
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
-import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
-import type { ISewingTask } from '@/types/sewing_types.ts'
-import type { ICuttingTask } from '@/types/cutting_types.ts'
+import type { IDiffsType } from '@/types/index.ts'
 
 // --- ------------------------------------------------------------
 // __ Структура для расчета Трудозатрат и Количества по ШМ для рендеринга в шаблоне
@@ -23,7 +21,8 @@ export const TEXTILE_MACHINES: Record<string, ITextileMachineKeys> = {
 export type IStatItem = {
     time: number
     amount: number
-};
+}
+
 // __ Создаем тип для объекта amount, где ключами будут только ключи из SEWING_MACHINES
 export type IAmountAndTime = Record<keyof typeof TEXTILE_MACHINES, IStatItem>
 // --- ------------------------------------------------------------
@@ -41,12 +40,10 @@ export type ITextileMachineKeys =
 export type ICalcMode = 'dynamic' | 'static'
 
 
-export type IDay = (ISewingTask  | ICuttingTask) & IPlanMatrixDayItem
 
 
-// --- ------------------------------------------------------------
-// __ Типы для разницы для каждой записи в матрице Пошива
-export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
+
+
 // --- ------------------------------------------------------------
 
 // --- ------------------------------------------------------------

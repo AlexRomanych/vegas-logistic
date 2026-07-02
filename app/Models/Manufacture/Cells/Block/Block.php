@@ -12,6 +12,7 @@ class Block extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'line'   => 'integer',
         'width'  => 'integer',
         'length' => 'integer',
         'height' => 'integer',

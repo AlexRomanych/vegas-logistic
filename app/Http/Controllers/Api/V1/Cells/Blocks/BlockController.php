@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\V1\Cells\Blocks;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Manufacture\Cells\Blocks\BlockResource;
+use App\Http\Resources\Manufacture\Cells\Blocks\References\BlockResource;
 use App\Models\Manufacture\Cells\Block\Block;
 use App\Services\Manufacture\BlocksService;
 use Exception;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BlockController extends Controller
 {

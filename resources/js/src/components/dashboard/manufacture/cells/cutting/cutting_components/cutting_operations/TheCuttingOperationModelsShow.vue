@@ -11,13 +11,13 @@
                     <!-- __ Угол -->
                     <div class="sticky-corner">
                         <div class="flex">
-                            <!-- __  Заголовок 'Модели /Процедуры/ Операции' -->
+                            <!-- __  Заголовок 'Модели / Операции' -->
                             <AppLabelTS
                                 :height="'h-[134px]'"
                                 :width="HEADER_ROWS_WIDTH"
                                 align="center"
                                 rounded="4"
-                                text="Модели/Процедуры/Операции"
+                                text="Модели/Операции"
                                 text-size="normal"
                                 type="primary"
                             />

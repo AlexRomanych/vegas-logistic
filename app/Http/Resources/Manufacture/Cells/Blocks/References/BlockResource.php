@@ -1,7 +1,7 @@
 <?php
 /** @noinspection PhpUndefinedFieldInspection */
 
-namespace App\Http\Resources\Manufacture\Cells\Blocks;
+namespace App\Http\Resources\Manufacture\Cells\Blocks\References;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

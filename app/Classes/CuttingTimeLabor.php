@@ -92,7 +92,7 @@ final class CuttingTimeLabor
                 $orderLine = $cuttingTaskLine->orderLine;
             } else {
                 // Связи в памяти нет, идём в базу по старинке
-                $orderLine = OrderLine::find($cuttingTaskLine->order_line_id);
+                $orderLine = OrderLine::query()->find($cuttingTaskLine->order_line_id);
 
                 // Опционально: можно "затолкнуть" её в память модели вручную,
                 // чтобы при следующем вызове она уже считалась загруженной:

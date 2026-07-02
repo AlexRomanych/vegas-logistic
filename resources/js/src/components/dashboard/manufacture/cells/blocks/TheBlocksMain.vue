@@ -28,12 +28,12 @@ interface IMenuItem {
 
 
 const menuItems = ref<IMenuItem[]>([
+    { name: 'Управление планом производства ПБ', path: 'manufacture.cell.blocks.plan.manage', shown: true, isActive: true },
     { name: 'Справочник Пружинных блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
-    { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.block.design.show', shown: true, isActive: true },
-    { name: 'Статусы движения СЗ', path: 'manufacture.cell.block.task.statuses', shown: true, isActive: true },
+    { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.blocks.design.show', shown: true, isActive: true },
+    { name: 'Статусы движения СЗ', path: 'manufacture.cell.blocks.task.statuses', shown: true, isActive: true },
     // { name: 'Справочник Групп блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
     // { name: 'Справочник пружинных блоков', path: 'manufacture.cell.blocks.show', shown: true, isActive: true },
-    // { name: 'Управление планом ПБ', path: 'manufacture.cell.cutting.plan.manage', shown: true, isActive: true },
     // { name: 'Выполнение СЗ', path: 'manufacture.cell.cutting.tasks.execute', shown: true, isActive: true },
     // { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },
     // { name: 'Учет ПС на раскрое', path: 'manufacture.cell.cutting.fabrics.movement', shown: true, isActive: true, },

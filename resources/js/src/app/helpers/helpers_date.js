@@ -46,7 +46,7 @@ export function getPeriod() {
     const periodEndText   =
               periodEnd.getFullYear().toString() + '-' + periodEndText_Month + '-' + periodEndText_Day
 
-    return { periodStart, periodEnd, periodStartText, periodEndText }
+    return {periodStart, periodEnd, periodStartText, periodEndText}
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -323,16 +323,15 @@ export function formatTimeInFullFormat(dateTimeString) {
 export const formatDateTime = (date = new Date()) => {
     const pad = (num) => num.toString().padStart(2, '0');
 
-    const year = date.getFullYear();
-    const month = pad(date.getMonth() + 1);
-    const day = pad(date.getDate());
-    const hours = pad(date.getHours());
+    const year    = date.getFullYear();
+    const month   = pad(date.getMonth() + 1);
+    const day     = pad(date.getDate());
+    const hours   = pad(date.getHours());
     const minutes = pad(date.getMinutes());
     const seconds = pad(date.getSeconds());
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
-
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1162,9 +1161,9 @@ export function formatDateIntl(dateEntity = null, monthLong = false, hasDate = t
     // 2. Используем Intl.DateTimeFormat для локализованного форматирования.
 
     const options = {
-        day:   'numeric',      // 31
+        day  : 'numeric',      // 31
         month: monthLong ? 'long' : 'short',       // декабря
-        year:  'numeric'      // 2025
+        year : 'numeric'      // 2025
     }
 
     if (!hasDate) {
@@ -1189,4 +1188,19 @@ export function formatDateIntl(dateEntity = null, monthLong = false, hasDate = t
     // return formattedDate + 'г.'
 
     return formattedDate.replace(/ г\.$/, 'г.')
+}
+
+
+// --- -------------------------------------------------------------------------------------
+/**
+ * __ Получаем разницу в днях между двумя датами в формате "YYYY-MM-DD HH:mm:ss"
+ *
+ * @param {string} date1 — Первая дата в формате строки
+ * @param {string} date2 — Вторая дата в формате строки
+ * @returns {number} Количество дней разницы
+ */
+export function getDaysDifferenceFromDates(date1, date2) {
+    const d1 = date1.split(' ')[0]
+    const d2 = date2.split(' ')[0]
+    return getDaysDifference(d1, d2, true)
 }

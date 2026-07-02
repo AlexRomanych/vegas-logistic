@@ -3,7 +3,9 @@
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
+use App\Http\Controllers\Api\V1\Cells\Blocks\BlockDayController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockStatusController;
+use App\Http\Controllers\Api\V1\Cells\Blocks\BlockTaskController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingTextileController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
@@ -282,9 +284,6 @@ Route::prefix('cutting')
         Route::delete('/textiles', [CellCuttingTextileController::class, 'deleteCuttingTextile']);
         Route::post('/textiles', [CellCuttingTextileController::class, 'createCuttingTextile']);
         Route::put('/textiles', [CellCuttingTextileController::class, 'updateCuttingTextile']);
-
-
-
     });
 //hr--------------------------------------------------------------------------------------------------------------------
 
@@ -340,6 +339,26 @@ Route::prefix('blocks')
     ->group(function () {
         Route::get('test', [BlockController::class, 'test']);
 
+        // __ СЗ Блоков
+        Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);
+        Route::get('tasks/order/{id}', [BlockTaskController::class, 'getBlockTasksByOrderId']);
+        //Route::get('tasks/status', [CellCuttingTaskController::class, 'getCuttingTasksByStatus']);
+        //Route::get('tasks/status/period', [CellCuttingTaskController::class, 'getCuttingTasksByStatusAndPeriod']);
+        //Route::get('tasks/status/date/before', [CellCuttingTaskController::class, 'getCuttingTasksByStatusBeforeDate']);
+        //Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
+        //Route::get('tasks/status/date/on/check', [CellCuttingTaskController::class, 'checkCuttingTasksByStatusOnDate']);
+        Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);
+        Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
+        //Route::post('tasks/action/set', [CellCuttingTaskController::class, 'setCuttingTaskActionAt']);
+        Route::post('tasks/lines/line/set', [BlockTaskController::class, 'taskLinesManufLineSet']);
+        //Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);
+        //Route::post('tasks/line/false', [CellCuttingTaskController::class, 'setCuttingTaskLinesFalse']);
+        //Route::post('tasks/line/reset', [CellCuttingTaskController::class, 'setCuttingTaskLinesReset']);
+        //Route::post('tasks/add/order', [CellCuttingTaskController::class, 'addCuttingTasksByOrderId']);
+        //Route::delete('tasks/delete/order', [CellCuttingTaskController::class, 'deleteCuttingTasksByOrderId']);
+        //Route::post('tasks/calc/order', [CellCuttingTaskController::class, 'calcCuttingTasksCutByOrderId']);
+
+
         // __ Коллекция Блоков
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
         Route::get('collections/{id}', [BlockCollectionController::class, 'getBlockCollectionById']);
@@ -356,4 +375,18 @@ Route::prefix('blocks')
         Route::patch('/task/statuses/color/patch', [BlockStatusController::class, 'patchBlockTaskStatusColor']);
         Route::post('/task/statuses/set', [BlockStatusController::class, 'setBlockTasksStatuses']);
 
+        // __ Производственный день
+        Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
+        Route::get('/day/dates', [BlockDayController::class, 'getBlockDaysByDates']);
+        Route::post('/day/comment', [BlockDayController::class, 'setBlockDayComment']);
+        Route::post('/day/worker/add', [BlockDayController::class, 'addWorkerToBlockDay']);
+        Route::post('/day/workers/add', [BlockDayController::class, 'addWorkersToBlockDay']);
+        Route::post('/day/worker/remove', [BlockDayController::class, 'removeWorkerFromBlockDay']);
+        Route::patch('/day/responsible/add', [BlockDayController::class, 'addResponsibleToBlockDay']);
+        Route::patch('/day/responsible/remove', [BlockDayController::class, 'removeResponsibleFromBlockDay']);
+        Route::patch('/day/start', [BlockDayController::class, 'startBlockDay']);
+        Route::patch('/day/finish', [BlockDayController::class, 'finishBlockDay']);
+        Route::get('/day/ready/get/{date}/{change}', [BlockDayController::class, 'readyGetBlockDay']);
+        Route::patch('/day/ready/set', [BlockDayController::class, 'readySetBlockDay']);
+        Route::patch('/day/ready/unset', [BlockDayController::class, 'readyUnsetBlockDay']);
     });

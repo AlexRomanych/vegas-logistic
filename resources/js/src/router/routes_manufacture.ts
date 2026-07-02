@@ -49,7 +49,7 @@ const manufactureRaw = [
     {
         // ___ КДБ
         path     : _MAIN_PREFIX + 'block/design/show',
-        name     : 'manufacture.block.design.show',
+        name     : 'manufacture.blocks.design.show',
         component: () => import('@/components/dashboard/manufacture/shared/block_design/TheBlockDesignShow.vue'),
         meta     : {
             title: 'Конструкторская документация Блоков (КДБ)'

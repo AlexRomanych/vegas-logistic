@@ -75,7 +75,7 @@
                 <div class="flex gap-3">
                     <button
                         class="w-full p-3.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-md border-none text-base cursor-pointer transition-colors"
-                        @click="$router.push({name: 'manufacture.block.design.show'})"
+                        @click="$router.push({name: 'manufacture.blocks.design.show'})"
                     >
                         <span>К списку КДБ</span>
                     </button>

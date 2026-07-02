@@ -22,7 +22,8 @@ class BlockCollection extends Model
     protected $casts = [
         'active'       => 'boolean',
         'priority'     => 'integer',
-        'line'         => 'integer',
+        'line'         => 'string',
+        'line_alt'     => 'string',
         'productivity' => 'float',
         'height'       => 'integer',
         'length'       => 'integer',

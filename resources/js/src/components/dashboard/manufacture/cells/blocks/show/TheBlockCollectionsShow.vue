@@ -667,8 +667,9 @@ const render: IRenderData = reactive({
         dataType      : () => DATA_TYPE,
         type          : (blockCollection: IBlockCollection) => {
             if (!blockCollection || !blockCollection.own || !blockCollection.line_alt) return DEFAULT_TYPE
+            if (blockCollection.line_alt === LINE_1) return 'indigo'
             if (blockCollection.line_alt === LINE_2) return 'orange'
-            return 'indigo'
+            return DEFAULT_TYPE
         },
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
