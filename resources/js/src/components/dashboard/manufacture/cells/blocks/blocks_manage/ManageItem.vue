@@ -2,6 +2,20 @@
     <!-- __ Тут именно -1, т.к. id = 0 - это заглушка для добавления нового элемента -->
     <div v-if="item.id > -1" class="flex">
 
+        <!-- __ Смена -->
+        <!--<AppLabelMultiLineTS-->
+        <!--    v-if="render.change.show"-->
+        <!--    :align="render.change.align"-->
+        <!--    :class="animatedClass"-->
+        <!--    :color="color"-->
+        <!--    :height="dataHeight"-->
+        <!--    :text="render.change.data()"-->
+        <!--    :text-size="render.change.textSize"-->
+        <!--    :type="render.change.type"-->
+        <!--    :width="render.change.width"-->
+        <!--    rounded="rounded-[4px]"-->
+        <!--/>-->
+
         <!-- __ Клиент -->
         <AppLabelMultiLineTS
             v-if="render.client.show"
@@ -117,6 +131,7 @@ import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItemDataLabel.vue'
+import { getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 interface IProps {
     amountAndTime: IAmountAndTime
@@ -158,8 +173,19 @@ const { globalBlockTaskTimesShow, globalBlockTaskFullDaysShow, globalBlockTaskOr
 // __ Высота данных
 const dataHeight = computed(() => globalBlockTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
 
+// __ Получаем объект Смены
+const change = computed(() => getChangeByName(props.item))
+
 // __ Подготавливаем рендер
 const render: IRender = reactive({
+    change:  {
+        show:     true,
+        width:    props.columnsWidth.change,
+        type:     change.value ? change.value.TYPE : 'dark',
+        align:    'center',
+        data:     () => change.value ? change.value.TITLE : '',
+        textSize: 'huge',
+    },
     client:  {
         show:     true,
         width:    props.columnsWidth.client,
@@ -216,6 +242,8 @@ const animatedClass = computed(() => {
     }
     return 'plan-item'
 })
+
+
 
 
 </script>

@@ -87,7 +87,6 @@ class BlockTaskController extends Controller
 
             // __ 5. «Прошиваем» OrderLine в память для каждой строки BlockTaskLine
             $allBlockTaskLines->each(function ($line) use ($orderLines) {
-
                 $lineIds = collect($line->order_line_ids ?? [])->pluck('order_line_id');
 
                 $associatedOrderLines = collect($lineIds)
@@ -164,7 +163,6 @@ class BlockTaskController extends Controller
 
             // __ 5. «Прошиваем» OrderLine в память для каждой строки BlockTaskLine
             $allBlockTaskLines->each(function ($line) use ($orderLines) {
-
                 $lineIds = collect($line->order_line_ids ?? [])->pluck('order_line_id');
 
                 $associatedOrderLines = collect($lineIds)
@@ -234,6 +232,12 @@ class BlockTaskController extends Controller
                             $newTask->position *= -1;
                             $newTask->save();
                             $newTask->position = $newTask->id * (-1);
+
+                            // __ Если при создании СЗ сразу передали смену, пишем в реплику
+                            if (isset($diff['taskChanges']['change']['new'])) {
+                                $newTask->change = $diff['taskChanges']['change']['new'];
+                            }
+
                             $newTask->save();
 
                             // __ Создаем запись в Статусе: Создано
@@ -248,6 +252,7 @@ class BlockTaskController extends Controller
                                 'id'        => $newTask->id,
                                 'action_at' => $diff['taskChanges']['action_at']['new'] ?? null,
                                 'position'  => $diff['taskChanges']['position']['new'] ?? null,
+                                'change'    => $diff['taskChanges']['change']['new'] ?? null,
                             ];
 
                             $idMap[$diff['taskId']] = $newTask->id;
@@ -264,6 +269,7 @@ class BlockTaskController extends Controller
                                     'id'        => $diff['taskId'],
                                     'action_at' => $diff['taskChanges']['action_at']['new'] ?? null,
                                     'position'  => $diff['taskChanges']['position']['new'] ?? null,
+                                    'change'    => $diff['taskChanges']['change']['new'] ?? null,
                                 ];
                             }
 
@@ -283,7 +289,9 @@ class BlockTaskController extends Controller
 
                         // __ Сортируем именно в таком порядке, удаляем в самом конце
                         $lineDiffs = $diff['lineChanges'];
-                        usort($diffs, function ($a, $b) {
+
+                        // ⚠️ Внимание: тут в исходном коде была опечатка (usort($diffs вместо $lineDiffs)), исправил
+                        usort($lineDiffs, function ($a, $b) {
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
                                 'ADDED'   => 1,
@@ -326,7 +334,7 @@ class BlockTaskController extends Controller
                                     $idMap[$lineDiff['lineId']] = $newLine->id;
 
                                     // __ Собираем id линий для пересчета трудозатрат
-                                    if (isset( $lineDiff['amount'])) {
+                                    if (isset($lineDiff['amount'])) {
                                         $linesToRecalcTime[] = $newLine->id;
                                     }
 
@@ -342,7 +350,7 @@ class BlockTaskController extends Controller
                                     ];
 
                                     // __ Собираем id линий для пересчета трудозатрат
-                                    if (isset( $lineDiff['amount'])) {
+                                    if (isset($lineDiff['amount'])) {
                                         $linesToRecalcTime[] = $lineDiff['lineId'];
                                     }
 
@@ -462,17 +470,27 @@ class BlockTaskController extends Controller
             // __ ШАГ 2: Собираем финальный запрос
             $casesActionAt  = [];
             $paramsActionAt = [];
+
             $casesPosition  = [];
             $paramsPosition = [];
+
+            $casesChange    = [];
+            $paramsChange   = [];
 
             foreach ($rows as $row) {
                 if (isset($row['action_at'])) {
                     $casesActionAt[] = "WHEN id = ? THEN ?";
                     array_push($paramsActionAt, $row['id'], $row['action_at']);
                 }
+
                 if (isset($row['position'])) {
                     $casesPosition[] = "WHEN id = ? THEN ?";
                     array_push($paramsPosition, $row['id'], $row['position']);
+                }
+
+                if (isset($row['change'])) {
+                    $casesChange[] = "WHEN id = ? THEN ?";
+                    array_push($paramsChange, $row['id'], $row['change']);
                 }
             }
 
@@ -487,6 +505,15 @@ class BlockTaskController extends Controller
             if (!empty($casesPosition)) {
                 $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
                 $finalParams = array_merge($finalParams, $paramsPosition);
+            }
+
+            // __ Интегрируем блок смены в итоговый
+            // __ change обернуто в косые кавычки: `change` = CASE .... Это сделано обязательно, MySQL
+            // __ change обернуто в двойные кавычки: "change" = CASE .... Это сделано обязательно, PostgreSQL
+            // __ так как слово CHANGE является зарезервированной системной командой в SQL
+            if (!empty($casesChange)) {
+                $setParts[]  = '"change" = CASE ' . implode(' ', $casesChange) . ' ELSE "change" END';
+                $finalParams = array_merge($finalParams, $paramsChange);
             }
 
             if (empty($setParts)) {
@@ -614,6 +641,36 @@ class BlockTaskController extends Controller
 
 
     /**
+     * ___ Изменяем смену в сз
+     * @param Request $request
+     * @return string
+     */
+    public function modifyChange(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'     => 'required|integer|exists:block_tasks,id',
+                'change' => 'required|string|in:' .
+                    BlockCollection::LINE_1 . ',' .
+                    BlockCollection::LINE_2,
+            ]);
+
+            $blockTask = BlockTask::query()->find($validated['id']);
+            if (!$blockTask) {
+                throw new Exception('Missing block task with id: ' . $validated['id'] . '.');
+            }
+
+            $blockTask->change = $validated['change'];
+            $blockTask->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Меняем Линию производства Блоков
      * @param Request $request
      * @return string
@@ -625,10 +682,10 @@ class BlockTaskController extends Controller
 
             $validated = $request->validate([
                 // __ Проверяем, что 'data' — это обязательный, не пустой массив
-                'data'         => 'required|array|min:1',
+                'data'        => 'required|array|min:1',
 
                 // __ Проверяем ID внутри каждого элемента массива
-                'data.*.id'    => 'required|integer|exists:block_task_lines,id',
+                'data.*.id'   => 'required|integer|exists:block_task_lines,id',
 
                 // __ Проверяем строку 'table' на соответствие конкретным значениям
                 'data.*.line' => [
@@ -702,5 +759,45 @@ class BlockTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+    /**
+     * __ Проверяем наличие СЗ на Раскрой по статусам в определенную дату
+     * @param Request $request
+     * @return bool[]|string
+     */
+    public function checkBlockTasksByStatusOnDate(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'date' — это дата
+                'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:block_task_statuses,id',
+            ]);
+
+            $data        = $validated['statuses'] ?? null;
+            $action_date = Carbon::parse($validated['date'])->startOfDay();
+
+            $blockTasks = BlockTask::query()
+                ->whereDate('action_at', $action_date)
+                ->byStatus($data)
+                ->get();
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+            return ['data' => !$blockTasks->isEmpty()];
+            //return BlockTaskResource::collection($blockTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
 }

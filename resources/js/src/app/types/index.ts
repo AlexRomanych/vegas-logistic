@@ -54,8 +54,21 @@ export type IDims = {
 }
 
 
-export type IDay = (ISewingTask  | ICuttingTask | IBlockTask) & IPlanMatrixDayItem
+export type IDay = (ISewingTask | ICuttingTask | IBlockTask) & IPlanMatrixDayItem
 
 // --- ------------------------------------------------------------
 // __ Типы для разницы для каждой записи в матрице Пошива
 export type IDiffsType = 'UPDATED' | 'ADDED' | 'DELETED'
+
+
+// __ Чтобы анализатор не ругался
+export interface DraggableHTMLElement extends HTMLElement {
+    item: {
+        _underlying_vm_?: unknown // Вместо any можно указать тип вашей модели, например: User, Task и т.д.
+    },
+    draggedContext: {
+        element?: unknown
+    }
+
+    // _underlying_vm_?: IBlockTaskLine // Вместо any можно указать тип вашей модели, например: User, Task и т.д.
+}

@@ -6,7 +6,7 @@ import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, j
 import type {
     IBlock,
     IBlockCollection,
-    IBlockDayWorker, IBlockLineSetData, IBlockTask, IBlockTaskLine,
+    IBlockDayWorker, IBlockLineSetData, IBlockTask, IBlockTaskChangeKeys, IBlockTaskLine,
     IBlockTaskStatusEntity,
     IBlockTaskStatusesSet,
     ICuttingTask,
@@ -46,6 +46,7 @@ const URL_BLOCKS_TASKS_STATUS_BEFORE_DATE   = '/blocks/tasks/status/date/before'
 const URL_BLOCKS_TASKS_STATUS_ON_DATE       = '/blocks/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
 const URL_BLOCKS_TASKS_STATUS_ON_DATE_CHECK = '/blocks/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
 const URL_BLOCKS_TASKS_COMMENT              = '/blocks/tasks/comment'               // URL для изменения комментария к Сменному заданию
+const URL_BLOCKS_TASKS_CHANGE               = '/blocks/tasks/change'                // URL для изменения смены Сменного задания
 const URL_BLOCKS_TASKS_ACTION_AT_SET        = '/blocks/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 
 const URL_BLOCKS_TASK_LINES_TABLE_SET       = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
@@ -186,12 +187,16 @@ export const useBlocksStore = defineStore('blocks', () => {
         diffs.forEach(diff => {
 
             // __ Если изменилась позиция или дата производства или статус, то меняем ее в глобальном массиве
-            if (diff.isPositionChanged || diff.isMoved || diff.statusId) {
+            if (diff.isPositionChanged || diff.isMoved || diff.statusId || diff.isChangeChanged) {
                 const findTask = globalBlockTasks.value.find((task: IBlockTask) => task.id === diff.taskId)
                 if (findTask) {
 
                     if (diff.newTaskPosition) {
                         findTask.position = diff.newTaskPosition
+                    }
+
+                    if (diff.newChange) {
+                        findTask.change = diff.newChange as IBlockTaskChangeKeys
                     }
 
                     if (diff.isMoved) {
@@ -466,6 +471,16 @@ export const useBlocksStore = defineStore('blocks', () => {
         const response = await jwtPost(URL_BLOCKS_TASKS_COMMENT, { id, comment })
         const result   = await response
         if (DEBUG) console.log('BlocksStore: setBlockTaskComment: ', result)
+        return result.data
+    }
+
+
+    // __ Изменяем смену СЗ
+    // __ Сохранение Комментария к Сменному заданию - СЗ
+    const modifyChange = async (id: number, change: IBlockTaskChangeKeys) => {
+        const response = await jwtPost(URL_BLOCKS_TASKS_CHANGE, { id, change })
+        const result   = await response
+        if (DEBUG) console.log('BlocksStore: modifyChange: ', result)
         return result.data
     }
 
@@ -762,6 +777,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         taskLinesManufLineSet,
         getBlockDayByDateAndChange,
         setBlockDayComment,
+        modifyChange,
         readyGetBlockDay,
 
         getBlockTasks,

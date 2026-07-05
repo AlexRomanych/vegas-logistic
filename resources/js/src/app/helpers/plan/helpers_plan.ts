@@ -31,7 +31,7 @@ export function getRenderArrayForPlan(plan: IPlanMatrixDayItem[]): Date[] {
 
 
 // ___ Возвращает матрицу для рендера плана
-export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod: IPeriod): IPlanMatrix {
+export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod: IPeriod, divideOnChanges: boolean = false): IPlanMatrix {
 
     const daysDifference = getDaysDifference(renderPeriod.start, renderPeriod.end)
     const weeksAmount    = (daysDifference + 1) / 7
@@ -45,7 +45,7 @@ export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod:
         for (let j = 0; j < 7; j++) {
 
             const dayLoads: IPlanMatrixDay = []
-            let loadPosition    = 0
+            // let loadPosition    = 0
 
             plan.forEach(planItem => {
                 if (areDatesEqual(workDate, new Date(splitDate(planItem.action_at)))) {
@@ -53,12 +53,21 @@ export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod:
                     dayLoads.push(planItem)
                 }
             })
-            weekLoads.push(dayLoads)
+
+            // __ Делим на смены (Только Первая и Вторая и только для блоков)
+            if (divideOnChanges) {
+                const changes_1 = dayLoads.filter(item => item.change === '1')
+                const changes_2 = dayLoads.filter(item => item.change === '2')
+                weekLoads.push([changes_1, changes_2])
+            } else {
+                weekLoads.push(dayLoads)
+            }
+
             workDate = additionDays(workDate, 1)
         }
         renderMatrix.push(weekLoads)
     }
-    return renderMatrix
+    return renderMatrix as IPlanMatrix
 }
 
 

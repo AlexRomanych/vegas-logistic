@@ -8,7 +8,7 @@ import {
     UNIT_METERS,
     BLOCK_TASK_STATUS_RUNNING,
     BLOCK_TASK_STATUS_ROLLING,
-    BLOCK_TASK_STATUS_CREATED, BLOCK_TASK_STATUS_PENDING, BLOCK_TASK_STATUS_DONE, LINE_0_NAME, LINE_1_NAME, LINE_2_NAME, BLOCK_MANUF_LINES
+    BLOCK_TASK_STATUS_CREATED, BLOCK_TASK_STATUS_PENDING, BLOCK_TASK_STATUS_DONE, LINE_0_NAME, LINE_1_NAME, LINE_2_NAME, BLOCK_MANUF_LINES, CHANGE_1, CHANGE_2
 } from '@/app/constants/blocks.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
@@ -165,7 +165,7 @@ export interface IBlockTask extends IPlanMatrixDayItem {
     id_ref: number                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
     action_at: string
     active: boolean
-    change: number
+    change: IBlockTaskChangeKeys
     position: number
     comment: string | null,
     order: IBlockTaskOrder
@@ -326,6 +326,7 @@ export interface IBlockTaskStatusItem {
     WORD: string
     TITLE: string
     TYPE: IColorTypes
+    PRIORITY: number
 }
 
 // __ Создаем тип для объекта amount, где ключами будут только ключи из SEWING_MACHINES
@@ -353,6 +354,10 @@ export interface IBlockTaskArrayDiff {
         status?: {
             old: number | null
             new: number
+        } | null
+        change: {
+            old: string | null,
+            new: string
         } | null
     }
     lineChanges?: IBlockTaskArrayLineDiffs[]
@@ -386,4 +391,18 @@ export type IBlockManufLinesPanel = typeof LINE_1 | typeof LINE_2 | typeof LINE_
 // --- ------------------------------------------------------------
 // __ Тип для сортировки в Карточке Заказа в Пошиве
 export type IBlockTaskCardSort = 'none' | 'asc' | 'desc'
+// --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Для смен
+export type IBlockTaskChangeKeys = typeof  CHANGE_1 | typeof CHANGE_2
+export interface IBlockTaskChange {
+    ID: number
+    NAME: IBlockTaskChangeKeys
+    TITLE: string
+    TITLE_ROME: string
+    ICON: string
+    TYPE: IColorTypes
+}
+
 // --- ------------------------------------------------------------

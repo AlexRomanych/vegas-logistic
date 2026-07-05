@@ -346,9 +346,10 @@ Route::prefix('blocks')
         //Route::get('tasks/status/period', [CellCuttingTaskController::class, 'getCuttingTasksByStatusAndPeriod']);
         //Route::get('tasks/status/date/before', [CellCuttingTaskController::class, 'getCuttingTasksByStatusBeforeDate']);
         //Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
-        //Route::get('tasks/status/date/on/check', [CellCuttingTaskController::class, 'checkCuttingTasksByStatusOnDate']);
+        Route::get('tasks/status/date/on/check', [BlockTaskController::class, 'checkBlockTasksByStatusOnDate']);
         Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);
         Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
+        Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
         //Route::post('tasks/action/set', [CellCuttingTaskController::class, 'setCuttingTaskActionAt']);
         Route::post('tasks/lines/line/set', [BlockTaskController::class, 'taskLinesManufLineSet']);
         //Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);

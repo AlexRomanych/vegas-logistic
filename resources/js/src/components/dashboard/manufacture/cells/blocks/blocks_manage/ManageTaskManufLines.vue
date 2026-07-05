@@ -214,7 +214,7 @@ import type {
     IBlockTaskLine,
     IDividerItem,
     IBlockTaskCardSort,
-    IBlockManufLinesPanel, IAmountAndTimeBlock,
+    IBlockManufLinesPanel, IAmountAndTimeBlock, DraggableHTMLElement,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -763,11 +763,12 @@ const startDrag  = (/*evt: any*/) => {
     lineLengthMem_0 = lineDataMem_0.length
 
 }
-const finishDrag = async (evt: any) => {
+const finishDrag = async (evt: DraggableHTMLElement ) => {
     // const element = evt.item._underlying_vm_
     // emits('drag-and-drop')
     // console.log('finishDrag')
-    const element = evt.item._underlying_vm_
+
+    const element = evt.item._underlying_vm_ as IBlockTaskLine
     // console.log('finish element: ', element)
 
     const getToLine = () => {
@@ -822,6 +823,25 @@ const finishDrag = async (evt: any) => {
         lineBlockLines_0.value = lineDataMem_0
         return
     }
+
+    // __ Проверяем, что то, что перетакскиваем соответствует Линии производства
+    if (toLine !== element.block.collection.manuf_line || toLine !== element.block.collection.manuf_line_alt) {
+
+        await showError([
+            'Ошибка!',
+            'Нельзя произвести блок',
+            `${element.block.name}`,
+            'на этой Производственной Линии!',
+        ])
+
+        // __ Возвращаем все в исходное состояние
+        lineBlockLines_1.value = lineDataMem_1
+        lineBlockLines_2.value = lineDataMem_2
+        lineBlockLines_0.value = lineDataMem_0
+        return
+    }
+
+
 
     // __ Предупреждение о том, что детали кроятся на Столе 3
     // if (element.table === LINE_3_PANEL_ID && toLine !== LINE_3_PANEL_ID && element.is_side) {

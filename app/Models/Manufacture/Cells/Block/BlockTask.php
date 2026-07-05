@@ -14,6 +14,10 @@ class BlockTask extends Model
 {
     protected $guarded = false;
 
+    protected $casts = [
+        'change' => 'string',
+    ];
+
 
     // --- -------------------------------
     // --- ---------- Scopes -------------

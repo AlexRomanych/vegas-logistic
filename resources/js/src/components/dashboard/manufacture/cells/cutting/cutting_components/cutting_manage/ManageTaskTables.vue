@@ -40,7 +40,7 @@
                     <!-- __ Панели с записями c возможностью перетаскивания и выбора активной -->
                     <div class="flex h-screen w-full bg-slate-900 p-4 gap-2 overflow-x-auto">
 
-                        <div v-for="panel in [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID, TABLE_UNDEFINED_PANEL_ID]" :key="panel"
+                        <div v-for="panel in panelList" :key="panel"
                              :class="[panel === activePanel ? 'border-[3px] border-blue-700' : 'border border-slate-700']"
                              class="flex flex-col flex-1 bg-slate-800 rounded-lg overflow-hidden max-w-fit"
                              @click="activePanel = panel"
@@ -291,7 +291,15 @@ const cuttingStore = useCuttingStore()
 
 const { globalManageTaskCardActiveCuttingLine } = storeToRefs(cuttingStore)
 
-// __ Данные (объект) правой панели
+
+// __ Данные (объект) панелей
+const panelList = computed(() => {
+    if (tableCuttingLines_0.value.length !== 0) {
+        return [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID, TABLE_0_PANEL_ID]
+    }
+    return [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID]
+})
+
 const tableCuttingLines_1 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_2 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
@@ -600,6 +608,8 @@ const addComment = async () => {
 
         // __ Обновляем комментарий в текущей строке, потому что теряем где-то реактивность
         // __ из-за передачи параметров в SFC по глубокой копии
+        // !!!
+        // eslint-disable-next-line vue/no-mutating-props
         props.task.comment = newComment
     }
 }

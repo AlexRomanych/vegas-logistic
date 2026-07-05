@@ -1,6 +1,15 @@
 // Info Константы для работы с Блоками (Blocks)
 
-import type { IBlockCollection, IBlock, IBlockTask, IBlockManufLine, IBlockTaskStatusKeys, IBlockTaskStatusItem } from '@/types'
+import type {
+    IBlockCollection,
+    IBlock,
+    IBlockTask,
+    IBlockManufLine,
+    IBlockTaskStatusKeys,
+    IBlockTaskStatusItem,
+    IBlockTaskChangeKeys,
+    IBlockTaskChange
+} from '@/types'
 
 export const LINE_0 = '0'
 export const LINE_1 = '1'
@@ -14,7 +23,8 @@ export const UNIT        = ''
 export const UNIT_PICS   = 'шт.'
 export const UNIT_METERS = 'м.п.'
 
-
+export const CHANGE_1 = '1'
+export const CHANGE_2 = '2'
 
 
 // __ Объект Коллекции блоков
@@ -58,7 +68,7 @@ export const BLOCK_TASK_DRAFT: IBlockTask = {
     id_ref        : 0,
     action_at     : '',
     active        : true,
-    change        : 1,
+    change        : CHANGE_1,
     position      : 0,
     comment       : null,
     order         : {
@@ -98,6 +108,28 @@ export const BLOCK_TASK_DRAFT: IBlockTask = {
 }
 
 
+// __ Константы смен
+export const CHANGES = {
+    CHANGE_1: {
+        ID: 1,
+        NAME: CHANGE_1,
+        TITLE: '1',
+        ICON: '①',
+        TITLE_ROME: 'I',
+        TYPE: 'primary',
+    },
+    CHANGE_2: {
+        ID: 2,
+        NAME: CHANGE_2,
+        TITLE: '2',
+        ICON: '②',
+        TITLE_ROME: 'II',
+        TYPE: 'indigo',
+    },
+
+} as const satisfies Record<string, IBlockTaskChange>
+
+
 // __ Константы Производственных Линий Блоков
 export const BLOCK_MANUF_LINES: Record<string, IBlockManufLine> = {
     LINE_0,
@@ -121,29 +153,34 @@ export const BLOCK_TASK_STATUSES: Record<IBlockTaskStatusKeys, IBlockTaskStatusI
         TITLE: 'Создано',
         WORD : 'created',
         TYPE : 'dark',
+        PRIORITY: 1,
     },
     ROLLING: {
         ID   : 2,
         TITLE: 'Создано при закрытии СЗ',
         WORD : 'rolling',
         TYPE : 'orange',
+        PRIORITY: 2,
     },
     PENDING: {
         ID   : 3,
         TITLE: 'Готово к выполнению',
         WORD : 'pending',
         TYPE : 'primary',
+        PRIORITY: 3,
     },
     RUNNING: {
         ID   : 4,
         TITLE: 'Выполняется',
         WORD : 'running',
         TYPE : 'warning',
+        PRIORITY: 4,
     },
     DONE   : {
         ID   : 5,
         TITLE: 'Создано',
         WORD : 'created',
         TYPE : 'success',
+        PRIORITY: 5,
     },
 } as const

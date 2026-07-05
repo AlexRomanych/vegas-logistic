@@ -93,7 +93,7 @@ const correctRenderPeriod = () => {
 }
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalBlockTasks.value, globalRenderPeriod.value))
+const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalBlockTasks.value, globalRenderPeriod.value, true))
 
 // __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
 // __ И отправлять на сервер только измененные данные
@@ -122,6 +122,7 @@ watch(
         console.log(globalRenderPeriod.value)
         correctRenderPeriod()
         getRenderMatrix()
+        console.log('renderMatrix.value: ', renderMatrix.value)
         renderMatrix.value = sortRenderMatrixByTaskPosition(renderMatrix.value)
         copyRenderMatrix()
         renderMatrix.value = correctRenderMatrix(renderMatrix.value)

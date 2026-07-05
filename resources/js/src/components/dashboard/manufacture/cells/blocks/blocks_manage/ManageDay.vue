@@ -20,9 +20,21 @@
 
         <!-- __ Шапка -->
         <div
-            v-if="getTotalAmountDay || getTotalTimeDay"
+            v-if="hasDataChange_1 || hasDataChange_2"
             class="flex"
         >
+            <!--&lt;!&ndash; __ Смена &ndash;&gt;-->
+            <!--<AppLabelTS-->
+            <!--    :height="DEFAULT_HEIGHT"-->
+            <!--    :text-size="DATA_HEADER_TEXT_SIZE"-->
+            <!--    :type="TOTALS_TYPE"-->
+            <!--    :width="columnsWidth.change"-->
+            <!--    align="center"-->
+            <!--    class="uppercase"-->
+            <!--    rounded="rounded-[4px]"-->
+            <!--    text="См"-->
+            <!--/>-->
+
             <!-- __ Клиент -->
             <AppLabelTS
                 :height="DEFAULT_HEIGHT"
@@ -30,8 +42,9 @@
                 :type="TOTALS_TYPE"
                 :width="columnsWidth.client"
                 align="center"
+                class="uppercase"
                 rounded="rounded-[4px]"
-                text="Клиент:"
+                text="Клиент"
             />
 
             <!-- __ Номер заказа -->
@@ -56,7 +69,7 @@
                 text="Σ"
             />
 
-            <!-- __ Стол 1 -->
+            <!-- __ Линия 1 -->
             <AppLabelTS
                 v-if="globalBlockTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
@@ -68,7 +81,7 @@
                 text="1"
             />
 
-            <!-- __ Стол 2 -->
+            <!-- __ Линия 2 -->
             <AppLabelTS
                 v-if="globalBlockTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
@@ -94,138 +107,141 @@
             />
         </div>
 
-        <!-- __ Загрузки -->
-        <!--<div v-for="(load, idx) of day" :key="idx">-->
-        <!--    <PlanItem-->
-        <!--        :columns-width="columnsWidth"-->
-        <!--        :load="load"-->
-        <!--    />-->
-        <!--</div>-->
+        <div v-for="(change, idx) of day" :key="idx">
 
-        <!--<div :class="fabricsStore.globalOrderManageChangeFlag ? 'opacity-50' : ''">-->
-        <!-- __ Сами СЗ с возможностью перетаскивания -->
-        <draggable
-            :="dragOptions"
-            :disabled="!isDragging"
-            :list="day"
-            :move="checkMove"
-            class="min-h-[25px]"
-            item-key="id"
-            tag="div"
-            @end="finishDrag"
-            @start="startDrag"
-        >
-            <template #item="{ element, index }">
-                <div
-                    @click="selectBlockTask(element)"
-                    @dblclick="showBlockTaskMenu(element)"
+            <div :class="change.length ? getChangeClass(idx) : ''">
+
+                <!-- __ Смена -->
+                <AppLabelTS
+                    :height="DEFAULT_HEIGHT"
+                    :text="`Смена: ${idx + 1}`"
+                    :type="idx === 0 ? CHANGE_1_TYPE : CHANGE_2_TYPE"
+                    align="center"
+                    class="uppercase"
+                    rounded="rounded-[4px]"
+                    text-size="mini"
+                    width="calc(w-full - 5px)"
+                />
+
+                <!-- __ Сами СЗ с возможностью перетаскивания -->
+                <draggable
+                    :="dragOptions"
+                    :disabled="!isDragging"
+                    :list="change as unknown as IBlockTask[]"
+                    :move="checkMove"
+                    class="min-h-[25px]"
+                    item-key="id"
+                    tag="div"
+                    @end="finishDrag"
+                    @start="startDrag"
                 >
-                    <ManageItem
-                        :amount-and-time="getBlockTaskAmountAndTime(element)"
-                        :columns-width="columnsWidth"
-                        :index="index"
-                        :item="element"
-                        :order-id="globalBlockTaskActiveOrderId"
+                    <template #item="{ element, index }">
+                        <div
+                            @click="selectBlockTask(element)"
+                            @dblclick="showBlockTaskMenu(element)"
+                        >
+                            <ManageItem
+                                :amount-and-time="getBlockTaskAmountAndTime(element)"
+                                :columns-width="columnsWidth"
+                                :index="index"
+                                :item="element"
+                                :order-id="globalBlockTaskActiveOrderId"
+                            />
+                        </div>
+                    </template>
+
+                </draggable>
+
+                <!-- __ Разделительная линия -->
+                <div
+                    v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
+                    class="flex"
+                >
+                    <TheDividerLine/>
+                </div>
+
+                <!-- __ Итого -->
+                <div
+                    v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
+                    class="flex"
+                >
+                    <!-- __ Всего: -->
+                    <AppLabelTS
+                        :height="heightTotals"
+                        :type="idx === 0 ? CHANGE_1_TYPE : CHANGE_2_TYPE"
+                        :width="columnsWidth.common"
+                        align="center"
+                        rounded="rounded-[4px]"
+                        text="Всего:"
+                        text-size="mini"
+                    />
+
+                    <!-- __ Количество + Трудозатраты Общие -->
+                    <ManageItemDataLabel
+                        :amount="getTotalAmountChange(change as unknown as IBlockTask[])"
+                        :height="heightTotals"
+                        :reference="REFERENCE_TIME * 2"
+                        :time="getTotalTimeChange(change as unknown as IBlockTask[])"
+                        :time-show="globalBlockTaskTimesShow"
+                        :type="TOTALS_TYPE"
+                        :width="columnsWidth.amount"
+                        class="plan-item"
+                    />
+
+                    <!-- __ Количество + Трудозатраты Линия 1 -->
+                    <ManageItemDataLabel
+                        v-if="globalBlockTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].amount"
+                        :height="heightTotals"
+                        :reference="REFERENCE_TIME"
+                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].time"
+                        :time-show="globalBlockTaskTimesShow"
+                        :type="TOTALS_TYPE"
+                        :width="columnsWidth.amount"
+                        class="plan-item"
+                    />
+
+                    <!-- __ Количество + Трудозатраты Линия 2 -->
+                    <ManageItemDataLabel
+                        v-if="globalBlockTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].amount"
+                        :height="heightTotals"
+                        :reference="REFERENCE_TIME"
+                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].time"
+                        :time-show="globalBlockTaskTimesShow"
+                        :type="TOTALS_TYPE"
+                        :width="columnsWidth.amount"
+                        class="plan-item"
+                    />
+
+                    <!-- __ Количество + Трудозатраты Неопознанные -->
+                    <ManageItemDataLabel
+                        v-if="globalBlockTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount"
+                        :color="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
+                        :height="heightTotals"
+                        :reference="null"
+                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].time"
+                        :time-show="globalBlockTaskTimesShow"
+                        :type="TOTALS_TYPE"
+                        :width="columnsWidth.amount"
+                        class="plan-item"
                     />
                 </div>
-            </template>
 
-            <!--<template #header>-->
-            <!--    <div-->
-            <!--        v-if="!day || day.length === 0"-->
-            <!--        class="text-center p-4 text-slate-400 border-dashed border-2 border-slate-300 rounded m-1 cursor-pointer hover:bg-slate-50 transition-colors"-->
-            <!--    >-->
-            <!--        Перетащите сюда-->
-            <!--    </div>-->
-            <!--</template>-->
+                <!-- __ Двойная Разделительная линия -->
+                <template v-for="i of [1, 2]" :key="i">
+                    <div
+                        v-if="(hasDataChange_1 && idx === 0)/* || (hasDataChange_2 && idx === 1)*/"
+                        class="flex bg-stone-200"
+                    >
+                        <TheDividerLine/>
+                    </div>
+                </template>
 
-            <!--<template #footer>-->
-            <!--    <div-->
-            <!--        v-if="day && day.length > 0"-->
-            <!--        class="text-center p-2 text-slate-400 border-dashed border-2 border-slate-300 rounded m-1 cursor-pointer hover:bg-slate-50 transition-colors"-->
-            <!--    >-->
-            <!--        Добавить ещё-->
-            <!--    </div>-->
-            <!--</template>-->
-        </draggable>
-
-        <!--</div>-->
-
-        <!-- __ Разделительная линия -->
-        <div
-            v-if="getTotalAmountDay || getTotalTimeDay"
-            class="flex"
-        >
-            <TheDividerLine/>
+            </div>
         </div>
 
-        <!-- __ Итого -->
-        <div
-            v-if="getTotalAmountDay || getTotalTimeDay"
-            class="flex"
-        >
-            <AppLabelTS
-                :height="heightTotals"
-                :type="TOTALS_TYPE"
-                :width="columnsWidth.common"
-                align="center"
-                rounded="rounded-[4px]"
-                text="Всего:"
-                text-size="mini"
-            />
-
-            <!-- __ Количество + Трудозатраты Общие -->
-            <ManageItemDataLabel
-                :amount="getTotalAmountDay"
-                :height="heightTotals"
-                :reference="REFERENCE_TIME * 2"
-                :time="getTotalTimeDay"
-                :time-show="globalBlockTaskTimesShow"
-                :type="TOTALS_TYPE"
-                :width="columnsWidth.amount"
-                class="plan-item"
-            />
-
-            <!-- __ Количество + Трудозатраты Линия 1 -->
-            <ManageItemDataLabel
-                v-if="globalBlockTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_1].amount"
-                :height="heightTotals"
-                :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_1].time"
-                :time-show="globalBlockTaskTimesShow"
-                :type="TOTALS_TYPE"
-                :width="columnsWidth.amount"
-                class="plan-item"
-            />
-
-            <!-- __ Количество + Трудозатраты Линия 2 -->
-            <ManageItemDataLabel
-                v-if="globalBlockTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_2].amount"
-                :height="heightTotals"
-                :reference="REFERENCE_TIME"
-                :time="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_2].time"
-                :time-show="globalBlockTaskTimesShow"
-                :type="TOTALS_TYPE"
-                :width="columnsWidth.amount"
-                class="plan-item"
-            />
-
-            <!-- __ Количество + Трудозатраты Неопознанные -->
-            <ManageItemDataLabel
-                v-if="globalBlockTaskFullDaysShow"
-                :amount="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_0].amount"
-                :color="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
-                :height="heightTotals"
-                :reference="null"
-                :time="amountAndTimeTotalDay[BLOCK_MANUF_LINES.LINE_0].time"
-                :time-show="globalBlockTaskTimesShow"
-                :type="TOTALS_TYPE"
-                :width="columnsWidth.amount"
-                class="plan-item"
-            />
-        </div>
     </div>
 
     <!-- __ Карточка СЗ -->
@@ -280,10 +296,10 @@ import type {
     IModalAsyncMenu,
     IPlanMatrix, IBlockDay,
     IBlockTask,
-    IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData,
+    IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock,
 } from '@/types'
 
-import { computed, inject, type Ref, ref } from 'vue'
+import { computed, inject, type Ref, ref, } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
@@ -315,12 +331,12 @@ import {
     isTaskStatusCreated, isTaskStatusRunning,
     orderBlockTasksByStatus,
     repositionBlockTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine,
+    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
-import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES } from '@/app/constants/blocks.ts'
+import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGES } from '@/app/constants/blocks.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
@@ -332,7 +348,6 @@ import ManageItem from '@/components/dashboard/manufacture/cells/blocks/blocks_m
 import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItemDataLabel.vue'
 
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
-import ManageDayTasksContext from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageDayTasksContext.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
 
 // type IDay = IBlockTask & IPlanMatrixDayItem
@@ -345,6 +360,18 @@ interface IProps {
 const props = withDefaults(defineProps<IProps>(), {
     day: () => [],
 })
+
+
+// __ Класс для смен
+const getChangeClass = (change: number) => {
+    switch ((change + 1).toString()) {
+        case CHANGES.CHANGE_1.NAME:
+            return 'bg-indigo-200'
+        case CHANGES.CHANGE_2.NAME:
+            return 'bg-orange-200'
+    }
+}
+
 
 // const emits = defineEmits<{
 //     (e: 'drag-and-drop'): void,
@@ -379,6 +406,8 @@ const DEFAULT_HEIGHT = 'h-[25px]'
 
 const TOTALS_TYPE: IColorTypes = 'stone'
 const DATA_HEADER_TEXT_SIZE    = 'mini'
+const CHANGE_1_TYPE            = 'indigo'
+const CHANGE_2_TYPE            = 'orange'
 const REFERENCE_TIME           = 10.5 // часы
 
 // __ Высота под Итого
@@ -403,6 +432,7 @@ const dateType     = computed((): IColorTypes => {
 
 // __ Ширина колонок
 const columnsWidth = {
+    change : 'w-[30px]',
     client : 'w-[90px]',
     orderNo: 'w-[45px]',
     amount : 'w-[35px]',
@@ -427,29 +457,50 @@ const shadowColor = computed(() => {
 })
 
 // __ Общее количество и время в виде Объекта
-const amountAndTimeTotalDay = computed(() => {
+const amountAndTimeTotalsChanges = computed(() => {
     //  __ Создаем сам объект данных с ключами из BLOCK_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-    const amountAndTimeObj = createAmountAndTimeObj()
 
-    props.day.forEach(blockTask => {
-        const amountAndTime = getBlockTaskAmountAndTime(blockTask as IBlockTask)
+    const result: IAmountAndTimeBlock[] = []
+    props.day.forEach(change => {
+        const amountAndTimeObj = createAmountAndTimeObj()
 
-        Object.entries(amountAndTime).forEach(([key, value]) => {
-            amountAndTimeObj[key].amount += value.amount
-            amountAndTimeObj[key].time += value.time
+        change.forEach((blockTask: IBlockTask) => {
+
+            const amountAndTime = getBlockTaskAmountAndTime(blockTask as IBlockTask)
+
+            Object.entries(amountAndTime).forEach(([key, value]) => {
+                amountAndTimeObj[key].amount += value.amount
+                amountAndTimeObj[key].time += value.time
+            })
         })
+
+        result.push(amountAndTimeObj)
     })
 
-    return amountAndTimeObj
+    return result
 })
 
 // __ Общее Количество за день
-const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
-    totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0))
+const getTotalAmountChange = (tasks: IBlockTask[]) => {
+    return tasks.reduce((totalAcc, task) =>
+        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0)
+}
+// const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
+//     totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0))
 
 // __ Общие Трудозатраты за день
-const getTotalTimeDay = computed(() =>
-    props.day.reduce((totalAcc, task) => totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0))
+const getTotalTimeChange = (tasks: IBlockTask[]) => {
+    return tasks.reduce((totalAcc, task) =>
+        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0)
+}
+// const getTotalTimeDay = computed(() =>
+//     props.day.reduce((totalAcc, task) => totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0))
+
+
+// __ Флаг отображения данных
+const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IBlockTask[]))
+const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unknown as IBlockTask[]))
+
 
 // __ Тип для Каротчки и Изменения стола
 const modalType            = ref<IColorTypes>('primary')
@@ -472,10 +523,6 @@ const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> |
 // __ Тип для модального окна изменения Комментария
 const comment     = ref('')
 const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
-
-// __ Модальное окно для отображения суммарной информации по контексту Заявок (АШМ/УШМ/ГС/ГП)
-const tasksContext          = ref<IBlockTask[]>([])
-const manageDayTasksContext = ref<InstanceType<typeof ManageDayTasksContext> | null>(null)
 
 // __ Установка активного Заказа
 const selectBlockTask = (blockTask: IBlockTask) => {
@@ -636,6 +683,77 @@ const addComment = async (task: IBlockTask) => {
     }
 }
 
+// __ Меняем смену
+const modifyChange = async (task: IBlockTask) => {
+
+    // __ Проверяем статус СЗ, если не Создано, то выходим
+    if (!isTaskStatusCreated(task)) {
+        await showError([
+            'Изменить смену можно только у СЗ',
+            'со статусом "Создано" или ',
+            'со статусом "Создано при закрытии СЗ"!',
+        ])
+
+        return
+    }
+
+    const targetChange = task.change === CHANGES.CHANGE_1.NAME ? CHANGES.CHANGE_2 : CHANGES.CHANGE_1
+
+    // __ Показываем предупреждение
+    modalInfoType.value = 'primary'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        'Смена СЗ',
+        getOrderTitle(task),
+        `будет изменена на ${targetChange.TITLE}.`,
+        'Продолжить?'
+    ]
+
+    const answer = await appModalAsyncMultiline.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Устанавливаем реактивно смену
+    task.change = targetChange.NAME
+
+    // __ Выясняем, что перетаскивали и куда перемещали и что устанавливали (смена)
+    let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
+    renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
+    renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
+
+    // console.log('renderMatrixCleared: ', renderMatrixCloned)
+    // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
+
+    // // __ Получаем разницу между матрицами
+    const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
+    console.log('diffs: ', diffs)
+
+    // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
+    if (!diffs.length) {
+        // __ Откатываем изменения
+        renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        return
+    }
+
+    // __ Перемещаем СЗ без вывода дополнительной информации
+    await blockStore.applyChanges(diffs) // __ Применяем изменения
+
+    // const answer = await appModalAsyncMultiline.value!.show()
+    // if (answer) {
+    //
+    //     const result = await blockStore.modifyChange(task.id, targetChange.NAME) // __ Применяем изменения
+    //     if (!checkCRUD(result)) {
+    //         await showError()
+    //         return
+    //     }
+    //
+    //     // __ Устанавливаем реактивно смену
+    //     task.change = targetChange.NAME
+    //     return
+    // }
+}
+
 
 // __ Меню при двойном клике на Заявке (Разделить количество + Изменить стол)
 const showBlockTaskMenu = async (blockTask: IBlockTask) => {
@@ -669,7 +787,7 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
 
     // __ Изменить Смену
     if (result.menuItem === 2 && result.value) {
-        await showBlockTaskManufLines(blockTask)
+        await modifyChange(blockTask)
         return
     }
 
@@ -706,10 +824,10 @@ const dragOptions = computed(() => {
 })
 const isDragging  = ref(true)
 
-const checkMove = (evt: any) => {
+const checkMove = (evt: DraggableHTMLElement) => {
     // return true
     // console.log('checkMove: ', evt)
-    const movedElement = evt.draggedContext.element
+    const movedElement = evt.draggedContext.element as IBlockTask
     // console.log(movedElement)
     // return true
     // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
@@ -742,17 +860,18 @@ const startDrag = (/*evt: any*/) => {
 }
 
 // __ Окончание перетаскивания СЗ
-const finishDrag = async (evt: any) => {
+const finishDrag = async (evt: DraggableHTMLElement) => {
     // const element = evt.item._underlying_vm_
     // console.log('evt: ', evt)
+
 
     // __ Выясняем, что перетаскивали и куда перемещали
     let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
     renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
     renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
 
-    // console.log('renderMatrixCleared: ', renderMatrixCloned)
-    // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
+    console.log('renderMatrixCleared: ', renderMatrixCloned)
+    console.log('renderMatrixCopy: ', renderMatrixCopy.value)
 
     // __ Получаем разницу между матрицами
     const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
@@ -768,12 +887,20 @@ const finishDrag = async (evt: any) => {
     // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
     const isOneDayAction = !diffs.some(diff => diff.isMoved)
 
-    // console.log('isOneDayAction: ', isOneDayAction)
+    // __ Проверяем, переместились ли СЗ в рамках смены
+    const isChangeModify = diffs.some(diff => diff.isChangeChanged)
+
+    // __ Находим целевую смену (куда перемещаем)
+    const targetChange = diffs.find(diff => diff.isChangeChanged)?.newChange
+
+
+    console.log('isOneDayAction: ', isOneDayAction)
+    console.log('isChangeModify: ', isChangeModify)
 
     // __ Получаем сам перемещаемый элемент
-    const movedElement = evt.item._underlying_vm_
+    const movedElement = evt.item._underlying_vm_ as IBlockTask
 
-    if (isOneDayAction) {
+    if (isOneDayAction && !isChangeModify) {
 
         console.log('movedElement: ', movedElement)
 
@@ -818,7 +945,7 @@ const finishDrag = async (evt: any) => {
         }
 
         // __ Находим те изменения, которые относятся к перемещаемой СЗ
-        const diffsForBlockTask = diffs.find(diff => diff.isMoved)
+        const diffsForBlockTask = diffs.find(diff => diff.isMoved || diff.isChangeChanged)
         if (!diffsForBlockTask) {
             // __ Откатываем изменения
             console.error('Не найдено изменений для перемещения СЗ')
@@ -834,6 +961,7 @@ const finishDrag = async (evt: any) => {
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
             return
         }
+
 
         // __ Получаем дату, на которую нужно переместить СЗ
         const targetDate = additionDaysInStrFormat(
@@ -947,7 +1075,7 @@ const finishDrag = async (evt: any) => {
 
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
         // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, true)
+        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || '',true)
 
         // __ Формируем текст для модального окна
         const orderInfo = `${blockTask.order.client.short_name} №${blockTask.order.order_no_str}`
@@ -1150,7 +1278,6 @@ const actionDayMenu = async () => {
             { id: 2, title: 'Вернуть для редактирования' },
             { id: 3, title: 'Объединить СЗ для одной Заявки' },
             { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
-            { id: 5, title: 'Информация по составу изделий (АШМ/УШМ/ГС/ГП)' },
             { id: 6, title: 'Отмена' },
         ],
     }
@@ -1192,7 +1319,7 @@ const actionDayMenu = async () => {
             await showError([
                 'В дне все СЗ уже отправлены на выполнение или',
                 'присутствуют расчетные СЗ или',
-                'СЗ с неопределенным раскройным столом!',
+                'СЗ с неопределенной Линией производства!',
             ])
         }
 
@@ -1259,15 +1386,6 @@ const actionDayMenu = async () => {
                 return
             }
         }
-
-        return
-    }
-
-    // __ Инфа по составу изделий
-    if (result.menuItem === 5) {
-        // __ Получаем день
-        tasksContext.value = clearDay
-        await manageDayTasksContext.value!.show(tasksContext.value)
 
         return
     }

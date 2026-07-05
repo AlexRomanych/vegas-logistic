@@ -67,6 +67,11 @@ export interface IRenderMatrixDiff {
 
     // __ Дополнительно задаем статус, чтобы задать его на бэке
     statusId?: number
+
+    // __ Добавляем отслеживание Смены
+    oldChange?: number // или IBlockTaskChangeKeys, смотря какой у тебя тип в IBlockTask
+    newChange?: string
+    isChangeChanged?: boolean
 }
 
 export interface IRenderMatrixLineDiffs {
