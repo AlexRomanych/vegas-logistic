@@ -166,6 +166,11 @@
                         <AppLabelMultilineTSWrapper :render-object="render.has_sewing_task"/>
                     </div>
 
+                    <!-- __ Наличие СЗ Блоков> -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.has_block_task"/>
+                    </div>
+
                     <div>
                         <div class="flex">
                             <!-- __ Добавить заявку -->
@@ -680,7 +685,7 @@ const render: IRenderData = reactive({
         data          : (/*order: IRenderOrder*/) => '📄',
     },
     has_cutting_task   : {
-        id            : () => 'comment-1c-search',
+        id            : () => 'has-cutting-task-search',
         header        : ['СЗ', 'Раскрой'],
         width         : DEFAULT_WIDTH_TASK,
         height        : DEFAULT_HEIGHT,
@@ -696,7 +701,7 @@ const render: IRenderData = reactive({
         data          : (order: IRenderOrder) => order.has_tasks.cutting_task ? '✓' : '✗',
     },
     has_sewing_task   : {
-        id            : () => 'comment-1c-search',
+        id            : () => 'has-sewing-task-search',
         header        : ['СЗ', 'Пошив'],
         width         : DEFAULT_WIDTH_TASK,
         height        : DEFAULT_HEIGHT,
@@ -710,6 +715,22 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍СЗ Раскроя...',
         data          : (order: IRenderOrder) => order.has_tasks.sewing_task ? '✓' : '✗',
+    },
+    has_block_task   : {
+        id            : () => 'has-blocks-task-search',
+        header        : ['СЗ', 'Блоки'],
+        width         : DEFAULT_WIDTH_TASK,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.has_tasks.block_task ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍СЗ Раскроя...',
+        data          : (order: IRenderOrder) => order.has_tasks.block_task ? '✓' : '✗',
     },
 })
 
@@ -904,6 +925,8 @@ const getGroupByDatesData = () => {
     return groupedDataArrayMapped
 }
 
+
+// __ Устанавливаем Табы
 const setTabs = () => {
     const listTab: ITab     = {
         id        : LIST_TAB_ID,

@@ -56,28 +56,30 @@ class OrderRenderResource extends JsonResource
                 'display_name' => $this->orderType->display_name,
             ]),
 
-            'lines'         => OrderLineRenderResource::collection($this->lines),
+            'lines'     => OrderLineRenderResource::collection($this->lines),
 
             // __ Наличие СЗ
-            'has_tasks'     => [
+            'has_tasks' => [
                 'cutting_task' => $this->cutting_task_exists,
                 'sewing_task'  => $this->sewing_task_exists,
+                'block_task'   => $this->block_task_exists,
             ],
 
             // __ СЗ как поверхностная инфа
-            'tasks' => [
-                'sewing_tasks' =>
+            'tasks'     => [
+                'sewing_tasks'  =>
                     $this->whenLoaded('sewingTask', fn() => OrderRenderTaskStatusResource::collection($this->sewingTask)),
                 'cutting_tasks' =>
                     $this->whenLoaded('cuttingTask', fn() => OrderRenderTaskStatusResource::collection($this->cuttingTask)),
+                'block_tasks'   =>
+                    $this->whenLoaded('blockTask', fn() => OrderRenderTaskStatusResource::collection($this->blockTask)),
             ],
 
             // 'updated_at'             => $this->updated_at,
             // 'load_at_dates_conflict' => $this->load_at_dates_conflict,
             // 'storage_id'             => $this->storage_id,
 
-            // '_
-            //' => parent::toArray($request)
+            //'_' => parent::toArray($request)
             // 'load_position'          => $this->load_position,
             // 'order_no_origin'        => $this->order_no_origin,
             // 'order_no_num'           => $this->order_no_num,

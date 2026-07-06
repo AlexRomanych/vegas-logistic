@@ -61,7 +61,12 @@ class BlockTaskController extends Controller
                     'statuses',
                     'blockLines',
                     'blockLines.block',
-                    'blockLines.block.collection',
+                    'blockLines.block.blockCollection',
+                    'blockLines.block.blockCollection.kdbDoc',
+                    //'blockLines.block.blockCollection' => function ($query) {
+                    //    $query->select('*')->with('kdbDoc');
+                    //},
+
                 ])
                 ->orderBy('action_at')
                 ->get();
@@ -137,7 +142,8 @@ class BlockTaskController extends Controller
                     'statuses',
                     'blockLines',
                     'blockLines.block',
-                    'blockLines.block.collection',
+                    'blockLines.block.blockCollection',
+                    'blockLines.block.blockCollection.kdbDoc',
                 ])
                 ->orderBy('action_at')
                 ->get();
@@ -798,6 +804,82 @@ class BlockTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+
+    /**
+     * ___ Удаляем СЗ для Блоков
+     * @param Request $request
+     * @return string
+     */
+    public function deleteBlockTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            DB::transaction(function () use ($validated) {
+                // __ Меняем позиции СЗ в днях, где удаляем
+                $deletedTasks = BlockTask::query()
+                    ->select(['id', 'action_at'])
+                    ->where('order_id', $validated['id'])
+                    ->get();
+
+                // __ Удаляем здесь
+                BlockTask::query()
+                    ->where('order_id', $validated['id'])
+                    ->delete();
+
+                foreach ($deletedTasks as $deletedTask) {
+                    $tasksToUpdate = [];
+                    $pos           = 1;
+                    $existTasks    = BlockTask::query()
+                        ->select(['id', 'action_at', 'position'])
+                        ->where('action_at', '>=', $deletedTask->action_at->startOfDay())
+                        ->where('action_at', '<=', $deletedTask->action_at->endOfDay())
+                        ->orderBy('position')
+                        ->get();
+
+                    foreach ($existTasks as $existTask) {
+                        $tasksToUpdate[] = [
+                            'id'        => $existTask->id,
+                            'action_at' => null,
+                            'position'  => $pos++,
+                        ];
+                    }
+
+                    BlocksService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Добавляем СЗ для Блоков
+     * @param Request $request
+     * @return string
+     */
+    public function addBlockTasksByOrderId(Request $request)
+    {
+        //try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            BlocksService::createBlockTaskFromOrderId($validated['id']);
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно создано');
+        //} catch (Exception|Throwable $e) {
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
+    }
+
 
 
 }

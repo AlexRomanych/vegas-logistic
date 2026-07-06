@@ -28,6 +28,9 @@
             <!-- __ Collapsed CuttingDetails -->
             <AppLabelTSWrapper :render-object="render.collapsed_cutting_details" header/>
 
+            <!-- __ Collapsed Blocks -->
+            <AppLabelTSWrapper :render-object="render.collapsed_blocks" header/>
+
             <!-- __ Collapsed -->
             <!--<AppLabelTSWrapper :render-object="render.collapsed" header @click="toggleCollapsed"/>-->
 
@@ -72,7 +75,7 @@
 
     <!-- __ Данные -->
     <div v-for="orderLine of orderLinesRender" :key="orderLine.id">
-        <div class="flex" @dblclick="showLineInfo(orderLine)">
+        <div class="flex" @dblclick="!showBlocks ? showLineInfo(orderLine) : () => {}">
 
             <!-- __ Collapsed -->
             <AppLabelTS
@@ -98,6 +101,9 @@
 
             <!-- __ Collapsed CuttingDetails -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_cutting_details" @click="render.collapsed_cutting_details.click!(orderLine)"/>
+
+            <!-- __ Collapsed Blocks -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_blocks" @click="render.collapsed_blocks.click!(orderLine)"/>
 
             <!-- __ Тип изделия -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.modelType"/>
@@ -164,6 +170,13 @@
             </div>
         </template>
 
+        <!-- __ Блоки -->
+        <template v-if="showBlocks">
+            <div v-if="!orderLine.collapsed_blocks" class="ml-[74px]">
+                <OrderLineBlock :line="orderLine"/>
+            </div>
+        </template>
+
     </div>
 
     <!-- __ Модальное окно для информации о записи -->
@@ -205,6 +218,7 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import OrderItemInfo from '@/components/dashboard/orders/order_components/order_common/OrderItemInfo.vue'
 import OrderLineMaterials from '@/components/dashboard/orders/order_components/order_render/OrderLineMaterials.vue'
 import OrderLineCuttingDetail from '@/components/dashboard/orders/order_components/order_render/OrderLineCuttingDetail.vue'
+import OrderLineBlock from '@/components/dashboard/orders/order_components/order_render/OrderLineBlock.vue'
 import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 
@@ -215,6 +229,7 @@ interface IProps {
     showDelete?: boolean
     showMaterials?: boolean
     showCuttingDetails?: boolean
+    showBlocks?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -222,6 +237,7 @@ const props = withDefaults(defineProps<IProps>(), {
     showDelete        : false,
     showMaterials     : false,
     showCuttingDetails: false,
+    showBlocks        : false,
 })
 
 const emits = defineEmits<{
@@ -232,7 +248,7 @@ const modelsStore = useModelsStore()
 
 // __ Определяем переменные
 const orderLinesRender = computed<IRenderOrderLine[]>(() => props.orderLines)
-
+console.log('orderLinesRender: ', orderLinesRender.value)
 
 // __ Возможность редактирования
 // TODO: Реализовать через систему ролей
@@ -302,6 +318,21 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details ? '▲' : '▼',
         click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details = !orderLine.collapsed_cutting_details
+    },
+    collapsed_blocks         : {
+        header        : '▲▼',
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : props.showBlocks,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'warning',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_blocks ? '▲' : '▼',
+        click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_blocks = !orderLine.collapsed_blocks
     },
     modelType                : {
         header        : 'Тип изделия',

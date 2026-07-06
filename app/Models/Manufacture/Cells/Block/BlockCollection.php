@@ -4,7 +4,9 @@ namespace App\Models\Manufacture\Cells\Block;
 
 use App\Models\Manufacture\Documents\BlockDesignDocument;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BlockCollection extends Model
 {
@@ -38,9 +40,10 @@ class BlockCollection extends Model
     }
 
     // Relations: Связь с КДБ
-    public function kdbDoc()
+    public function kdbDoc(): BelongsTo
     {
-        return $this->hasOne(BlockDesignDocument::class, 'kdb', 'kdb');
+        return $this->belongsTo(BlockDesignDocument::class, 'kdb', 'kdb');
+        //return $this->hasOne(BlockDesignDocument::class, 'kdb', 'kdb');
     }
 
 }

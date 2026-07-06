@@ -237,7 +237,12 @@ class CellCuttingTaskController extends Controller
         }
     }
 
-    // ___ Добавляем СЗ на Раскрой
+
+    /**
+     * ___ Добавляем СЗ на Раскрой
+     * @param Request $request
+     * @return string
+     */
     public function addCuttingTasksByOrderId(Request $request)
     {
         try {
@@ -254,7 +259,11 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    // ___ Удаляем СЗ на Раскрой
+    /**
+     * ___ Удаляем СЗ на Раскрой
+     * @param Request $request
+     * @return string
+     */
     public function deleteCuttingTasksByOrderId(Request $request)
     {
         try {

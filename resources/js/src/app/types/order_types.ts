@@ -3,6 +3,7 @@
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { ACCESSORIES_TYPE, MATTRESSES_TYPE } from '@/app/constants/orders.ts'
 import type { ICuttingTableKeys, ICuttingTaskLineDetail } from '@/types/cutting_types.ts'
+import type { IBlockManufLine } from '@/types/blocks_types.ts'
 
 // __ Тип изделий
 export type IElementTypeUnion = typeof ACCESSORIES_TYPE | typeof MATTRESSES_TYPE
@@ -54,6 +55,7 @@ export interface IRenderOrder {
     has_tasks: {
         cutting_task: boolean,
         sewing_task: boolean,
+        block_task: boolean,
     }
 
     tasks: {
@@ -105,8 +107,10 @@ export interface IRenderOrderLine {
     specification?: IRenderOrderLineSpecification
     specification_add?: IRenderOrderLineSpecification
     cutting_lines?: IRenderOrderLineCuttingLine[]
+    block_lines?: IRenderOrderLineBlockLine[]
     collapsed_materials?: boolean
     collapsed_cutting_details?: boolean
+    collapsed_blocks?: boolean
 
     spec_name: string|null
     spec_name_add: string|null
@@ -129,6 +133,15 @@ export interface IRenderOrderLineCuttingLine {
     cut: string|null
     finished_at: string|null
     false_at: string|null
+}
+
+
+
+export interface IRenderOrderLineBlockLine {
+    block_code_1c: string
+    block_name: string
+    amount: number
+    manuf_line: IBlockManufLine
 }
 
 

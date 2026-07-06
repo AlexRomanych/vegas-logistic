@@ -355,8 +355,8 @@ Route::prefix('blocks')
         //Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);
         //Route::post('tasks/line/false', [CellCuttingTaskController::class, 'setCuttingTaskLinesFalse']);
         //Route::post('tasks/line/reset', [CellCuttingTaskController::class, 'setCuttingTaskLinesReset']);
-        //Route::post('tasks/add/order', [CellCuttingTaskController::class, 'addCuttingTasksByOrderId']);
-        //Route::delete('tasks/delete/order', [CellCuttingTaskController::class, 'deleteCuttingTasksByOrderId']);
+        Route::post('tasks/add/order', [BlockTaskController::class, 'addBlockTasksByOrderId']);
+        Route::delete('tasks/delete/order', [BlockTaskController::class, 'deleteBlockTasksByOrderId']);
         //Route::post('tasks/calc/order', [CellCuttingTaskController::class, 'calcCuttingTasksCutByOrderId']);
 
 

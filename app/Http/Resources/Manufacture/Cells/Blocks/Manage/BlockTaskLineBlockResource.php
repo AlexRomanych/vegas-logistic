@@ -24,7 +24,7 @@ class BlockTaskLineBlockResource extends JsonResource
             'length'      => $this->length,
             'active'      => $this->active,
             'description' => $this->description,
-            'collection'  => $this->whenLoaded('collection', fn() => new BlockTaskLineBlockCollectionResource($this->getRelation('collection'))),
+            'collection'  => $this->whenLoaded('blockCollection', fn($blockCollection) => new BlockTaskLineBlockCollectionResource($blockCollection)),
             //'status'      => $this->status,
             //'comment'     => $this->comment,
             //'note'        => $this->note,

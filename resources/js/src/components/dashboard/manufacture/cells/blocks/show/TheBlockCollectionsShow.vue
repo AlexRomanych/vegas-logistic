@@ -1008,7 +1008,6 @@ const showDocument = async (blockCollection: IBlockCollection) => {
     doc.value = {
         id         : blockCollection.kdb_id,
         kdb        : blockCollection.kdb ?? '',
-        name       : blockCollection.kdb ?? '',
         file_path  : null,
         description: null,
     }
@@ -1033,9 +1032,9 @@ const getBlockCollections = async () => {
         }))
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии
-        .sort((a, b) => a.line - b.line) // по линии пр-ва
+        .sort((a, b) => a.line.localeCompare(b.line)) // по линии пр-ва
+        .sort((a, b) => Number(b.active) - Number(a.active)) // по актуальности
         .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
-
 
     return blockCollections
 }
@@ -1106,7 +1105,8 @@ watchEffect(() => {
         })
         .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
         .sort((a, b) => a.priority - b.priority) // по приоритету на линии
-        .sort((a, b) => a.line - b.line) // по линии пр-ва
+        .sort((a, b) => a.line.localeCompare(b.line)) // по линии пр-ва
+        .sort((a, b) => Number(b.active) - Number(a.active)) // по актуальности
         .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
     return
 })

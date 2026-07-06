@@ -12,10 +12,10 @@ class BlockTaskResource extends JsonResource
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
+     * @noinspection PhpUndefinedFieldInspection
      */
     public function toArray(Request $request): array
     {
-
         // __ Получаем последний статус из уже загруженной коллекции (если statuses есть)
         // __ Получаем текущий статус, сортируя по дате в ПИВОТ-таблице
         $currentStatus = $this->whenLoaded('statuses', function () {
@@ -29,7 +29,6 @@ class BlockTaskResource extends JsonResource
             // })->first();
         });
 
-        /** @noinspection PhpUndefinedFieldInspection */
         return [
 
             'id'        => $this->id,
@@ -59,7 +58,7 @@ class BlockTaskResource extends JsonResource
             // 'created_at'  => $this->created_at,
             // 'updated_at'  => $this->updated_at,
 
-             //'_' => parent::toArray($request),
+            //'_' => parent::toArray($request),
         ];
     }
 }

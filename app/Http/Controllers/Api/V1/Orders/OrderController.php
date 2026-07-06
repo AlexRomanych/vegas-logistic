@@ -60,6 +60,7 @@ class OrderController extends Controller
                 ->whereDate('load_at', '<=', $end)      // ->whereBetween() не включает периоды
                 ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('sewingTask') // <-- Добавит boolean-поле sewing_task_exists
+                ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
                 ->with([
                     'lines.model.modelType',
                     'lines.specification',
@@ -95,6 +96,7 @@ class OrderController extends Controller
             $order = Order::query()
                 ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
+                ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
                 ->with([
                     'lines.model.modelType',
                     'lines.specification',

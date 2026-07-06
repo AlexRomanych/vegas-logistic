@@ -43,7 +43,7 @@ final class BlocksService
     {
         try {
             $blocks = Block::query()
-                ->with(['collection'])
+                ->with(['blockCollection'])
                 ->get();
 
             foreach ($blocks as $block) {
@@ -177,7 +177,7 @@ final class BlocksService
                 }
 
                 // __ Получаем так, потому что collection - полк в Block
-                $collection = $block->getRelation('collection');
+                $collection = $block->getRelation('blockCollection');
 
                 // __ Формируем контекст для Блока в СЗ
                 $orderLineContext = [];
@@ -341,9 +341,35 @@ final class BlocksService
     public static function test()
     {
         //return ['data' => 'ok'];
-        $blockTask = self::createBlockTaskFromOrderId(1634);
-        $blockTask = self::createBlockTaskFromOrderId(1635);
+        //$blockTask = self::createBlockTaskFromOrderId(1634);
+        //$blockTask = self::createBlockTaskFromOrderId(1635);
+
+        //$coll = BlockCollection::query()->with('kdbDoc')->get();
+        //$collArray = $coll->toArray();
+
+        $order = Order::query()
+            ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
+            ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
+            ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
+            ->with([
+                'lines.model.modelType',
+                'lines.specification',
+                'lines.specificationAdd',
+                'client',
+                'orderType',
+                'sewingTask.lines',
+                'sewingTask.currentStatus',
+                'sewingTask.lines.orderLine',
+                'cuttingTask.lines',
+                'cuttingTask.currentStatus',
+                'cuttingTask.lines.orderLine',
+            ])
+            ->findOrFail(620);
+        $orderArr = $order->toArray();
 
         $a = 0;
+
+
+
     }
 }

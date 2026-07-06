@@ -3,8 +3,8 @@
 
 import type {
     IAmountAndTimeBlock, IBlockManufLine,
-    IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs,
-    IBlockTaskLine, IBlockTaskOrder, IBlockTaskOrderLine, IBlockTaskStatus,
+    IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs, IBlockTaskExecuteStatistics,
+    IBlockTaskLine, IBlockTaskOrder, IBlockTaskOrderLine, IBlockTaskStatus, IBlockTaskStatusKeys,
     IDay,
     IPlanMatrix,
     IRenderMatrixDiff,
@@ -818,7 +818,7 @@ export function mergeBlockTasks(tasks: IBlockTask[]): IBlockTask[] {
 
         } else {
 
-            // __ Если заказ уже есть, объединяем его cutting_lines
+            // __ Если заказ уже есть, объединяем его block_lines
             const targetTask = acc[orderId]
 
             task.block_lines.forEach((newLine) => {
@@ -1018,6 +1018,90 @@ export function getChangeByName(task: IBlockTask) {
     const changeKey = Object.keys(CHANGES).find(key => CHANGES[key as keyof typeof CHANGES].NAME === task.change)
     return changeKey ? CHANGES[changeKey as keyof typeof CHANGES] : null
 }
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статус СЗ по его ID
+export function getTaskStatusById(id: number) {
+    const statusKey = Object.keys(BLOCK_TASK_STATUSES).find(key => BLOCK_TASK_STATUSES[key as IBlockTaskStatusKeys].ID === id)
+    if (statusKey) {
+        return BLOCK_TASK_STATUSES[statusKey as IBlockTaskStatusKeys]
+    }
+    return null
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статистику по выполнению СЗ
+export function getExecuteTaskStatistics(item: IBlockTask | IBlockTaskLine[]) {
+
+    const statistics: IBlockTaskExecuteStatistics = {
+        amount: {
+            finished  : 0,
+            unfinished: 0,
+            total     : 0,
+        },
+        time  : {
+            finished  : 0,
+            unfinished: 0,
+            total     : 0,
+        },
+    }
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.block_lines
+    }
+
+    // __ Получаем суммарное количество и трудозатраты
+    const totalAmountAndTimeObj = getBlockTaskAmountAndTime(itemArr)
+
+    // __ Общее Количество
+    statistics.amount.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Общее Трудозатраты
+    statistics.time.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Выполненные
+    const finished = itemArr.filter(line => line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для выполненных
+    const finishedAmountAndTimeObj = getBlockTaskAmountAndTime(finished)
+
+    // __ Выполненные Количество
+    statistics.amount.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Выполненные Трудозатраты
+    statistics.time.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    // __ Не Выполненные
+    const unfinished = itemArr.filter(line => !line.finished_at)
+
+    // __ Получаем суммарное количество и трудозатраты для Не выполненных
+    const unfinishedAmountAndTimeObj = getBlockTaskAmountAndTime(unfinished)
+
+    // __ Не Выполненные Количество
+    statistics.amount.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+
+    // __ Не Выполненные Трудозатраты
+    statistics.time.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+
+    return statistics
+}
+
+
+// __ Получаем КДЧ
+// export function getKDB(item: IBlockTaskLine): string {
+//     return ''
+// }
+
+
+
+
+
 
 
 // __ Функция-помощник: говорит TS, является ли item типом IBlockTask

@@ -15,7 +15,8 @@ class BlockTask extends Model
     protected $guarded = false;
 
     protected $casts = [
-        'change' => 'string',
+        'change'    => 'string',
+        'action_at' => 'datetime',
     ];
 
 
@@ -24,7 +25,9 @@ class BlockTask extends Model
     // --- -------------------------------
     public function scopeByStatus($query, array|string|int $statusIds = null)
     {
-        if (empty($statusIds)) return $query;
+        if (empty($statusIds)) {
+            return $query;
+        }
 
         $statusIds = collect($statusIds)->flatten()->map(fn($id) => (int)$id)->toArray();
         // $statusIds = is_string($statusIds) ? [(int) $statusIds] : [$statusIds];
@@ -65,7 +68,6 @@ class BlockTask extends Model
     }
 
 
-
     // Relations: Связь с Основной Заявкой
     public function order(): BelongsTo
     {
@@ -94,9 +96,9 @@ class BlockTask extends Model
     {
         return $this
             ->belongsToMany(
-                BlockTaskStatus::class,         // Класс, с которым связываемся
+                BlockTaskStatus::class,           // Класс, с которым связываемся
                 BlockTaskStatusPivot::TABLE,      // Промежуточная Таблица, связывающая классы
-                'block_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
+                'block_task_id',                  // Ключ в промежуточной таблице, связывающий с текущим классом
                 'block_task_status_id' // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(BlockTaskStatusPivot::class)
@@ -128,9 +130,9 @@ class BlockTask extends Model
     public function currentStatus(): HasOneThrough
     {
         return $this->hasOneThrough(
-            BlockTaskStatus::class,       // Конечная модель, которую хотим получить
-            BlockTaskStatusPivot::class,  // Промежуточная таблица (пивот)
-            'block_task_id',              // Внешний ключ в промежуточной таблице
+            BlockTaskStatus::class,        // Конечная модель, которую хотим получить
+            BlockTaskStatusPivot::class,   // Промежуточная таблица (пивот)
+            'block_task_id',               // Внешний ключ в промежуточной таблице
             'id',                          // Внешний ключ в конечной таблице
             'id',                          // Локальный ключ в текущей таблице (SewingTask)
             'block_task_status_id'        // Локальный ключ в промежуточной таблице

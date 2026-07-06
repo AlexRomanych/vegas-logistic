@@ -59,6 +59,9 @@
             <!-- __ Наличие СЗ Пошива -->
             <AppLabelTSWrapper :arg="order" :render-object="render.has_sewing_task"/>
 
+            <!-- __ Наличие СЗ Блоков -->
+            <AppLabelTSWrapper :arg="order" :render-object="render.has_block_task"/>
+
             <!-- __ Распечатать -->
             <AppLabelTSWrapper :arg="order" :render-object="render.order_print" @click="emits('printOrder', order)"/>
 

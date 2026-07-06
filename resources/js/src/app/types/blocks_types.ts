@@ -67,7 +67,6 @@ export type IBlockUnit = typeof UNIT | typeof UNIT_PICS | typeof UNIT_METERS
 export interface IBlockDocument {
     id: number
     kdb: string
-    name: string
     file_path: string | null
     description: string | null
 }
@@ -406,3 +405,18 @@ export interface IBlockTaskChange {
 }
 
 // --- ------------------------------------------------------------
+
+
+
+// --- ----------- Статистика выполнения СЗ (прогресс) ---------------------------
+// __ Вспомогательный Тип для вычисления статистики по СЗ
+export interface IBlockTaskExecuteStatistics {
+    amount: IBlockTaskExecuteStatisticsItem,
+    time: IBlockTaskExecuteStatisticsItem,
+}
+
+export interface IBlockTaskExecuteStatisticsItem {
+    finished: number
+    unfinished: number
+    total: number
+}

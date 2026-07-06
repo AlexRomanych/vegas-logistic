@@ -7,7 +7,6 @@ import type {
     IBlockManufLine,
     IBlockTaskStatusKeys,
     IBlockTaskStatusItem,
-    IBlockTaskChangeKeys,
     IBlockTaskChange
 } from '@/types'
 
