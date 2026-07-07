@@ -2,7 +2,7 @@
 
 
 import type {
-    IAmountAndTimeBlock, IBlockManufLine,
+    IAmountAndTimeBlock, IBlockDay, IBlockManufLine,
     IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs, IBlockTaskChangeKeys, IBlockTaskExecuteStatistics,
     IBlockTaskLine, IBlockTaskOrder, IBlockTaskOrderLine, IBlockTaskStatus, IBlockTaskStatusKeys,
     IDay,
@@ -12,7 +12,7 @@ import type {
 } from '@/types'
 import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/blocks.ts'
 // import { round } from '@/app/helpers/helpers_lib.ts'
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 
 
 // __ Проблема с draggable
@@ -1058,8 +1058,8 @@ export function mergeBlockLines(lines: IBlockTaskLine[]): IBlockTaskLine[] {
 
 // __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
 // __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
-export function getTimeString(cuttingLine: IBlockTaskLine, twoLines: boolean = false, timeType = 'hour') {
-    const time = cuttingLine.time
+export function getTimeString(blockLine: IBlockTaskLine, twoLines: boolean = false, timeType = 'hour') {
+    const time = blockLine.time
 
     // __ Если больше часа, то выводим часы и минуты (обрезаем секунды)
     if (twoLines) {
@@ -1084,8 +1084,15 @@ export function getOrderTitle(task: IBlockTask) {
 
 
 // __ Возвращает Смену по имени
-export function getChangeByName(task: IBlockTask) {
-    const changeKey = Object.keys(CHANGES).find(key => CHANGES[key as keyof typeof CHANGES].NAME === task.change)
+export function getChangeByName(task: IBlockTask | IBlockTaskChangeKeys) {
+    let compareKey = null
+    if (isBlockTask(task)) {
+        compareKey = task.change
+    } else {
+        compareKey = task
+    }
+
+    const changeKey = Object.keys(CHANGES).find(key => CHANGES[key as keyof typeof CHANGES].NAME === compareKey)
     return changeKey ? CHANGES[changeKey as keyof typeof CHANGES] : null
 }
 
@@ -1160,6 +1167,52 @@ export function getExecuteTaskStatistics(item: IBlockTask | IBlockTaskLine[]) {
     statistics.time.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
 
     return statistics
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем массив дней дат, на которые есть СЗ
+export function getBlockDates(tasks: IBlockTask[]) {
+    if (tasks.length > 0) {
+        const days = tasks.map(item => item.action_at.split(' ')[0])
+        return [...new Set(days)]
+    } else {
+        return []
+    }
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем на вход массив СЗ и массив дат и делаем из них массив дат
+// __ с добавлением туда массива СЗ на соответствующую дату
+// __ добавляем по ссылке + заодно и сортируем
+export function unionDatesWithBlockTasks(days: IBlockDay[], tasks: IBlockTask[]) {
+    days.sort((a, b) => {
+        const timeA = new Date(a.action_at).getTime()
+        const timeB = new Date(b.action_at).getTime()
+
+        if (timeA !== timeB) {
+            return timeA - timeB
+        }
+
+        return a.change.localeCompare(b.change)
+    })
+
+    tasks.sort((a, b) => new Date(a.action_at).getTime() - new Date(b.action_at).getTime())
+
+    tasks.forEach(task => {
+        task.block_lines.sort((a, b) => a.position - b.position)
+    })
+
+    for (const day of days) {
+        day.block_tasks = []
+        for (const task of tasks) {
+            if (splitDate(task.action_at) === splitDate(day.action_at) && task.change === day.change) {
+                day.block_tasks.push(task)
+            }
+        }
+
+        day.block_tasks.sort((a, b) => a.position - b.position)
+    }
 }
 
 

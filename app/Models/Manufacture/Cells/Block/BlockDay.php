@@ -4,17 +4,28 @@ namespace App\Models\Manufacture\Cells\Block;
 
 use App\Models\Worker\Worker;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
 
+
+/**
+ * @method static Builder|BlockDay query()
+ * @method static Builder|BlockDay byDates(mixed $data)
+ * @method static Builder|BlockDay whereDayAt(mixed $data)
+ */
 class BlockDay extends Model
 {
+    public const CHANGE_1 = '1';
+    public const CHANGE_2 = '2';
+    public const CHANGE_0 = '0';        // __ Смена 1 + Смена 2
+
     protected $guarded = false;
 
     protected $casts = [
-        'change'    => 'integer',
+        'change'    => 'string',
         'action_at' => 'datetime',
         'start_at'  => 'datetime',
         'paused_at' => 'datetime',
@@ -36,10 +47,10 @@ class BlockDay extends Model
     /**
      * __ Поиск или создание записи по дате и смене
      * @param $date
-     * @param int $change
+     * @param string $change
      * @return BlockDay|Model
      */
-    public static function findOrCreateByDateAndChange($date, int $change = 1): BlockDay|Model
+    public static function findOrCreateByDateAndChange($date, string $change = BlockDay::CHANGE_1): BlockDay|Model
     {
         return self::query()
             ->with(['workers', 'responsible'])

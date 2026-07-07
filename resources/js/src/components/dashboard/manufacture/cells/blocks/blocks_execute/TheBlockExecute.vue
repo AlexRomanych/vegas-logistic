@@ -24,6 +24,9 @@
                     <!-- __ Дата производства -->
                     <AppLabelMultilineTSWrapper :render-object="render.date"/>
 
+                    <!-- __ Смена производства -->
+                    <AppLabelMultilineTSWrapper :render-object="render.change"/>
+
                     <!-- __ Старт -->
                     <AppLabelMultilineTSWrapper :render-object="render.start_at"/>
 
@@ -44,7 +47,7 @@
 
                     <!-- __ Дополнительное СЗ -->
                     <template v-if="tasksAvailable.length !== 0 && getAddingCondition()">
-                        <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addSewingTaskToCurrentDay"/>
+                        <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addBlockTaskToCurrentDay"/>
                     </template>
 
                 </div>
@@ -53,110 +56,117 @@
 
         <!-- __ Данные -->
         <div
-            v-for="sewingDay of renderSewingDays"
-            :key="sewingDay.id"
+            v-for="blockDay of renderBlockDays"
+            :key="blockDay.id"
             class="ml-2 max-w-fit"
         >
             <TheDividerLineTS
-                v-if="!sewingDay.collapsed"
+                v-if="!blockDay.collapsed"
                 m-bottom="mb-4"
             />
 
             <div class="flex">
                 <!-- __ collapsed -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.collapsed"
-                    @click="sewingDay.collapsed = !sewingDay.collapsed"
+                    @click="blockDay.collapsed = !blockDay.collapsed"
                 />
 
                 <!-- __ id -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.id"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Дата пр-ва -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.date"
-                    @click="goToSewingDay(sewingDay)"
+                    @click="goToBlockDay(blockDay)"
+                />
+
+                <!-- __ Смена пр-ва -->
+                <AppLabelTSWrapper
+                    :arg="blockDay"
+                    :render-object="render.change"
+                    @click="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Старт -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.start_at"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Финиш -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.finish_at"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Продолжительность -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.duration"
-                    @dblclick="goToSewingDay(sewingDay)"
+                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
                     :height="DEFAULT_HEIGHT"
-                    :progress="getProgressDayTotal(sewingDay)"
-                    :text="getProgressDayTotalText(sewingDay)"
+                    :progress="getProgressDayTotal(blockDay)"
+                    :text="getProgressDayTotalText(blockDay)"
                     :width="render.progressTotal.width"
                     text-size="mini"
                 />
 
                 <!-- __ Опережение/Отставание -->
                 <DeviationBar
-                    :deviation="getDeviationDayTotal(sewingDay)"
+                    :deviation="getDeviationDayTotal(blockDay)"
                     :height="DEFAULT_HEIGHT"
-                    :text="getDeviationDayTotalText(sewingDay)"
+                    :text="getDeviationDayTotalText(blockDay)"
                     :width="render.progressTotal.width"
                     text-size="mini"
                 />
 
                 <!-- __ Комментарий -->
                 <AppLabelTSWrapper
-                    :arg="sewingDay"
+                    :arg="blockDay"
                     :render-object="render.comment"
                 />
             </div>
 
             <!-- __ Содержимое СЗ -->
             <div
-                v-if="!sewingDay.collapsed"
+                v-if="!blockDay.collapsed"
                 class="ml-[34px]"
             >
                 <!-- __ Персонал -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
+                        :text="blockDay.personal_collapsed ? 'Персонал ▲' : 'Персонал ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.personal_collapsed = !sewingDay.personal_collapsed"
+                        @click="blockDay.personal_collapsed = !blockDay.personal_collapsed"
                     />
                 </div>
 
                 <!-- __ Персонал -->
-                <template v-if="!sewingDay.personal_collapsed">
+                <template v-if="!blockDay.personal_collapsed">
                     <div class="mt-2 mb-2">
                         <ExecutePersonal
-                            :sewing-day="sewingDay"
-                            @add-worker="addWorker(sewingDay, $event)"
-                            @add-workers="addWorkers(sewingDay, $event)"
-                            @remove-worker="removeWorker(sewingDay, $event)"
-                            @add-responsible="addResponsible(sewingDay, $event)"
+                            :block-day="blockDay"
+                            @add-worker="addWorker(blockDay, $event)"
+                            @add-workers="addWorkers(blockDay, $event)"
+                            @remove-worker="removeWorker(blockDay, $event)"
+                            @add-responsible="addResponsible(blockDay, $event)"
                         />
                     </div>
                 </template>
@@ -164,31 +174,31 @@
                 <!-- __ СЗ -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
+                        :text="blockDay.tasks_collapsed ? 'Список СЗ ▲' : 'Список СЗ ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.tasks_collapsed = !sewingDay.tasks_collapsed"
+                        @click="blockDay.tasks_collapsed = !blockDay.tasks_collapsed"
                     />
                 </div>
 
                 <!-- __ СЗ -->
-                <template v-if="!sewingDay.tasks_collapsed">
+                <template v-if="!blockDay.tasks_collapsed">
                     <div class="my-2">
                         <!-- __ Шапка СЗ -->
-                        <ExecuteTaskHeader :fields-width="sewingTaskFieldsWidth"/>
+                        <ExecuteTaskHeader :fields-width="blockTaskFieldsWidth"/>
 
                         <!-- __ Сами СЗ -->
                         <div
-                            v-for="sewingTask of sewingDay.sewing_tasks"
-                            :key="sewingTask.id"
+                            v-for="blockTask of blockDay.block_tasks"
+                            :key="blockTask.id"
                             class="bg-green-100"
                         >
                             <ExecuteTask
-                                :fields-width="sewingTaskFieldsWidth"
-                                :sewing-task="sewingTask"
+                                :block-task="blockTask"
+                                :fields-width="blockTaskFieldsWidth"
                             />
                         </div>
                     </div>
@@ -197,26 +207,26 @@
                 <!-- __ Общие данные -->
                 <div class="mt-1">
                     <AppLabelTS
-                        :text="sewingDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
+                        :text="blockDay.common_collapsed ? 'Общие данные ▲' : 'Общие данные ▼'"
                         align="center"
                         rounded="4"
                         text-size="mini"
                         type="warning"
                         width="w-[218px]"
-                        @click="sewingDay.common_collapsed = !sewingDay.common_collapsed"
+                        @click="blockDay.common_collapsed = !blockDay.common_collapsed"
                     />
                 </div>
 
                 <!-- __ Общие данные -->
-                <template v-if="!sewingDay.common_collapsed">
+                <template v-if="!blockDay.common_collapsed">
                     <div class="my-2">
-                        <ExecuteTaskCommon :sewing-day="sewingDay"/>
+                        <ExecuteTaskCommon :block-day="blockDay"/>
                     </div>
                 </template>
             </div>
 
             <TheDividerLineTS
-                v-if="!sewingDay.collapsed"
+                v-if="!blockDay.collapsed"
                 m-top="mt-4"
             />
         </div>
@@ -249,13 +259,13 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-import type { IColorTypes, IRenderData, ISewingDay, ISewingDayWorker, ISewingTask, ISewingTaskLine } from '@/types'
+import type { IColorTypes, IRenderData, IBlockDay, IBlockDayWorker, IBlockTask, IBlockTaskLine } from '@/types'
 
-import { useSewingStore } from '@/stores/SewingStore.ts'
+import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
-import { SEWING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/sewing.ts'
+import { BLOCK_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/blocks.ts'
 
-import { getExecuteTaskStatistics, getSewingDates, unionDatesWithSewingTasks } from '@/app/helpers/manufacture/helpers_sewing.ts'
+import { getExecuteTaskStatistics, getBlockDates, unionDatesWithBlockTasks, getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import {
     formatDateInFullFormat,
     formatTimeInFullFormat,
@@ -271,18 +281,21 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
-import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
-import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
-import ExecuteTask from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTask.vue'
-import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskHeader.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
-import ExecutePersonal from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecutePersonal.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/sewing/sewing_components/sewing_execute/ExecuteTaskCommon.vue'
 import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import AppModalAsyncSelectTSFunc from '@/components/ui/modals/AppModalAsyncSelectTSFunc.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+
+
+import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
+import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
+
+import ExecuteTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTask.vue'
+import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskHeader.vue'
+import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
+import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskCommon.vue'
 
 
 interface IEntity {
@@ -296,15 +309,15 @@ interface IEntity {
 const DEBUG     = true
 const isLoading = ref(false)
 
-const sewingStore = useSewingStore()
-const router      = useRouter()
+const blockStore = useBlocksStore()
+const router     = useRouter()
 
 const {
-          globalSewingTasksPending, // __ Все задания (Global State)
-      } = storeToRefs(sewingStore)
+          globalBlockTasksPending, // __ Все задания (Global State)
+      } = storeToRefs(blockStore)
 
 // __ Определяем переменные
-const sewingDays = ref<ISewingDay[]>([])
+const blockDays = ref<IBlockDay[]>([])
 
 // __ Тип для модального окна Сообщений
 const modalInfoType          = ref<IColorTypes>('danger')
@@ -317,8 +330,8 @@ const selectedTaskId        = ref<number | null>(null)
 const appModalAsyncSelectTS = ref<any>(null)
 
 // __ Получаем объект рендера
-const renderSewingDays = computed<ISewingDay[]>(() => {
-    return sewingDays.value
+const renderBlockDays = computed<IBlockDay[]>(() => {
+    return blockDays.value
 })
 
 // __ Получаем список доступных СЗ (Выбираем статус "Готово к выполнению" и дата больше текущей даты)
@@ -327,13 +340,13 @@ const tasksAvailable = computed<IEntity[]>(() => {
     // __ Получаем сегодняшнюю дату в формате Y-m-d
     const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
 
-    return globalSewingTasksPending.value
-        .filter((task: ISewingTask) => task.current_status.id === SEWING_TASK_STATUSES.PENDING.ID)
-        .filter((task: ISewingTask) => {
+    return globalBlockTasksPending.value
+        .filter((task: IBlockTask) => task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID)
+        .filter((task: IBlockTask) => {
             const compare = task.action_at.split(' ')[0]
             return compare > today
         })
-        .map((task: ISewingTask) => {
+        .map((task: IBlockTask) => {
             return {
                 id         : task.id,
                 surname    : task.order.client.short_name,
@@ -429,7 +442,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍collapsed...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.collapsed ? '▲' : '▼'),
+        data          : (blockDay: IBlockDay) => (blockDay.collapsed ? '▲' : '▼'),
         class         : 'cursor-pointer',
     },
     id           : {
@@ -440,30 +453,47 @@ const render: IRenderData = reactive({
         show          : false,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍id...',
-        data          : (sewingDay: ISewingDay) => sewingDay.id.toString(),
+        data          : (blockDay: IBlockDay) => blockDay.id.toString(),
         class         : 'cursor-pointer',
     },
     date         : {
         id            : () => 'date-search',
         header        : ['Дата', 'производства'],
-        width         : 'w-[218px]',
+        width         : 'w-[258px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => formatDateInFullFormat(sewingDay.action_at) + ` (${getDayOfWeek(sewingDay.action_at)})`,
+        data          : (blockDay: IBlockDay) => formatDateInFullFormat(blockDay.action_at) + ` (${getDayOfWeek(blockDay.action_at)})`,
+        class         : 'cursor-pointer',
+    },
+    change       : {
+        id            : () => 'change-search',
+        header        : ['Смена', ''],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockDay: IBlockDay) => dateTypeChange(blockDay),
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Смена...',
+        data          : (blockDay: IBlockDay) => blockDay.change,
         class         : 'cursor-pointer',
     },
     start_at     : {
@@ -474,13 +504,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Старт...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.start_at ? formatTimeInFullFormat(sewingDay.start_at) : ''),
+        data          : (blockDay: IBlockDay) => (blockDay.start_at ? formatTimeInFullFormat(blockDay.start_at) : ''),
         class         : 'cursor-pointer',
     },
     finish_at    : {
@@ -491,13 +521,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Финиш...',
-        data          : (sewingDay: ISewingDay) => (sewingDay.finish_at ? formatTimeInFullFormat(sewingDay.finish_at) : ''),
+        data          : (blockDay: IBlockDay) => (blockDay.finish_at ? formatTimeInFullFormat(blockDay.finish_at) : ''),
         class         : 'cursor-pointer',
     },
     duration     : {
@@ -508,13 +538,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => getDuration(sewingDay),
+        data          : (blockDay: IBlockDay) => getDuration(blockDay),
         class         : 'cursor-pointer',
     },
     progressTotal: {
@@ -531,7 +561,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (blockDay: IBlockDay) => blockDay.comment ?? '',
     },
     progressDelta: {
         id            : () => 'progress-delta-search',
@@ -547,7 +577,7 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (blockDay: IBlockDay) => blockDay.comment ?? '',
     },
     comment      : {
         id            : () => 'comment-search',
@@ -557,13 +587,13 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Комментарий...',
-        data          : (sewingDay: ISewingDay) => sewingDay.comment ?? '',
+        data          : (blockDay: IBlockDay) => blockDay.comment ?? '',
     },
     added_task   : {
         id            : () => 'added-task-search',
@@ -573,33 +603,33 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => 'warning',
         dataType      : () => DATA_TYPE,
-        type          : (sewingDay: ISewingDay) => dateType(sewingDay),
+        type          : (blockDay: IBlockDay) => dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍ДСЗ...',
-        data          : (/*sewingDay: ISewingDay*/) => '',
+        data          : (/*blockDay: IBlockDay*/) => '',
         class         : 'cursor-pointer',
     },
 })
 
 // __ Ширина полей для вывода СЗ
-const sewingTaskFieldsWidth = {
+const blockTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
     id           : 'w-[30px]',
     position     : 'w-[30px]',
-    client       : 'w-[190px]',
+    client       : 'w-[285px]',
     order_no     : 'w-[50px]',
     status       : 'w-[90px]',
     progressTotal: PROGRESS_WIDTH,
     load_at      : 'w-[143px]',
-    comment      : 'w-[578px]',
+    comment      : 'w-[581px]',
 }
 
 // __ Определяем тип календарного дня
-const dateType = (sewingDay: ISewingDay) => {
-    const workDate     = new Date(sewingDay.action_at)
+const dateType = (blockDay: IBlockDay) => {
+    const workDate     = new Date(blockDay.action_at)
     const isHolidayDay = isHoliday(workDate)
     const isTodayDay   = isToday(workDate)
 
@@ -608,19 +638,26 @@ const dateType = (sewingDay: ISewingDay) => {
     return 'primary'
 }
 
-const expandAll   = () => sewingDays.value.forEach(sewingDay => (sewingDay.collapsed = false))
-const collapseAll = () => sewingDays.value.forEach(sewingDay => (sewingDay.collapsed = true))
+// __ Получаем подсветку для Смены
+const dateTypeChange = (blockDay: IBlockDay) => {
+    const change = getChangeByName(blockDay.change)
+    return change ? change.TYPE : dateType(blockDay)
+}
+
+
+const expandAll   = () => blockDays.value.forEach(blockDay => (blockDay.collapsed = false))
+const collapseAll = () => blockDays.value.forEach(blockDay => (blockDay.collapsed = true))
 
 // __ Добавляем свернутость
 const addCollapsed = () => {
-    sewingDays.value = sewingDays.value.map(day => {
+    blockDays.value = blockDays.value.map(day => {
         return {
             ...day,
-            collapsed   : true,
+            collapsed         : true,
             personal_collapsed: true,
-            tasks_collapsed: true,
-            common_collapsed: true,
-            sewing_tasks: day.sewing_tasks.map(task => ({
+            tasks_collapsed   : true,
+            common_collapsed  : true,
+            block_tasks       : day.block_tasks.map(task => ({
                 ...task,
                 collapsed: true,
             })),
@@ -629,83 +666,83 @@ const addCollapsed = () => {
 }
 
 // __ Добавляем работника
-const addWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    const existWorker = sewingDay.workers.find(w => w.id === worker.id)
+const addWorker = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
+    const existWorker = blockDay.workers.find(w => w.id === worker.id)
     if (!existWorker) {
-        sewingDay.workers.push(worker)
+        blockDay.workers.push(worker)
     }
 }
 
 // __ Добавляем группу работников
-const addWorkers = (sewingDay: ISewingDay, workers: ISewingDayWorker[]) => {
+const addWorkers = (blockDay: IBlockDay, workers: IBlockDayWorker[]) => {
     workers.forEach(worker => {
-        const existWorker = sewingDay.workers.find(w => w.id === worker.id)
+        const existWorker = blockDay.workers.find(w => w.id === worker.id)
         if (!existWorker) {
-            sewingDay.workers.push(worker)
+            blockDay.workers.push(worker)
         }
     })
 }
 
 
 // __ Удаляем работника
-const removeWorker = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    const findIndex = sewingDay.workers.findIndex(w => w.id === worker.id)
+const removeWorker = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
+    const findIndex = blockDay.workers.findIndex(w => w.id === worker.id)
     if (findIndex !== -1) {
-        sewingDay.workers.splice(findIndex, 1)
+        blockDay.workers.splice(findIndex, 1)
     }
 }
 
 // __ Добавляем Ответственного
-const addResponsible = (sewingDay: ISewingDay, worker: ISewingDayWorker) => {
-    sewingDay.responsible = worker
+const addResponsible = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
+    blockDay.responsible = worker
 }
 
 // __ Переходим на страницу непосредственного выполнения СЗ
-const goToSewingDay = (sewingDay: ISewingDay) => {
+const goToBlockDay = (blockDay: IBlockDay) => {
     router.push({
-        name  : 'manufacture.cell.sewing.tasks.execute.day',
-        params: { date: sewingDay.action_at.split(' ')[0] }, // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+        name  : 'manufacture.cell.block.tasks.execute.day',
+        params: { date: blockDay.action_at.split(' ')[0] }, // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
     })
 }
 
 // __ Получаем продолжительность СЗ
-const getDuration = (sewingDay: ISewingDay) => {
-    if (!sewingDay.start_at) {
+const getDuration = (blockDay: IBlockDay) => {
+    if (!blockDay.start_at) {
         return ''
     }
 
-    const startSec  = new Date(sewingDay.start_at.replace(' ', 'T')).getTime() / 1000
-    const finishSec = sewingDay.finish_at ? new Date(sewingDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
+    const startSec  = new Date(blockDay.start_at.replace(' ', 'T')).getTime() / 1000
+    const finishSec = blockDay.finish_at ? new Date(blockDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
 
     return formatTimeWithLeadingZeros(round(finishSec - startSec))
 }
 
 // __ Получаем объект статистики для дня
-const getDayStatistics = (sewingDay: ISewingDay) => {
-    const allSewingTasksLines: ISewingTaskLine[] = []
-    sewingDay.sewing_tasks.forEach(task => task.sewing_lines.forEach(line => allSewingTasksLines.push(line)))
-    return getExecuteTaskStatistics(allSewingTasksLines)
+const getDayStatistics = (blockDay: IBlockDay) => {
+    const allBlockTasksLines: IBlockTaskLine[] = []
+    blockDay.block_tasks.forEach(task => task.block_lines.forEach(line => allBlockTasksLines.push(line)))
+    return getExecuteTaskStatistics(allBlockTasksLines)
 }
 
 // __ Получаем прогресс выполнения СЗ по дню
-const getProgressDayTotal = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
+const getProgressDayTotal = (blockDay: IBlockDay) => {
+    const statistics = getDayStatistics(blockDay)
     return (statistics.time.finished / statistics.time.total) * 100
 }
 
 // __ Получаем текст прогресса выполнения СЗ по дню
-const getProgressDayTotalText = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
-    return `${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`
+const getProgressDayTotalText = (blockDay: IBlockDay) => {
+    const statistics = getDayStatistics(blockDay)
+    return `${formatTimeWithLeadingZeros(statistics.time.finished, 'hour')} / ${formatTimeWithLeadingZeros(statistics.time.total, 'hour')}`
 }
 
 // __ Получаем отклонение прогресса выполнения СЗ по дню в секундах
-const getDeviationDay = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
+const getDeviationDay = (blockDay: IBlockDay) => {
+    const statistics = getDayStatistics(blockDay)
 
-    if (sewingDay.start_at && !sewingDay.finish_at) {
+    if (blockDay.start_at && !blockDay.finish_at) {
         // __ Находим время окончания смены
-        const endShiftTime     = new Date(sewingDay.start_at.replace(' ', 'T'))
+        const endShiftTime     = new Date(blockDay.start_at.replace(' ', 'T'))
         const [hours, minutes] = START_SHIFT_TIME.split(':')
         endShiftTime.setHours(Number(hours), Number(minutes) + TOTAL_SHIFT_DURATION * 60, 0, 0)
 
@@ -721,14 +758,14 @@ const getDeviationDay = (sewingDay: ISewingDay) => {
 }
 
 // __ Получаем отклонение прогресса выполнения СЗ по дню в %
-const getDeviationDayTotal = (sewingDay: ISewingDay) => {
-    const statistics = getDayStatistics(sewingDay)
-    return statistics.time.unfinished !== 0 ? (getDeviationDay(sewingDay) / statistics.time.unfinished) * 100 : 0
+const getDeviationDayTotal = (blockDay: IBlockDay) => {
+    const statistics = getDayStatistics(blockDay)
+    return statistics.time.unfinished !== 0 ? (getDeviationDay(blockDay) / statistics.time.unfinished) * 100 : 0
 }
 
 // __ Текст для опережения/отставания
-const getDeviationDayTotalText = (sewingDay: ISewingDay) => {
-    const deviation = getDeviationDay(sewingDay)
+const getDeviationDayTotalText = (blockDay: IBlockDay) => {
+    const deviation = getDeviationDay(blockDay)
     if (deviation === 0) {
         return 'В графике'
     }
@@ -743,9 +780,9 @@ const getAddingCondition = () => {
     // __ Получаем сегодняшнюю дату в формате Y-m-d
     const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
 
-    const filtered = globalSewingTasksPending.value
-        // .filter((task: ISewingTask) => task.current_status.id === SEWING_TASK_STATUSES.RUNNING.ID)
-        .filter((task: ISewingTask) => {
+    const filtered = globalBlockTasksPending.value
+        // .filter((task: IBlockTask) => task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID)
+        .filter((task: IBlockTask) => {
             const compare = task.action_at.split(' ')[0]
             return compare == today
         })
@@ -755,7 +792,7 @@ const getAddingCondition = () => {
 
 
 // __ Добавление СЗ в текущий производственный день
-const addSewingTaskToCurrentDay = async () => {
+const addBlockTaskToCurrentDay = async () => {
 
     if (tasksAvailable.value.length === 0) {
         return
@@ -780,7 +817,7 @@ const addSewingTaskToCurrentDay = async () => {
 
             // __ Получаем сегодняшнюю дату в формате Y-m-d
             const today  = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-            const result = await sewingStore.setSewingTaskActionAt(selectedTask.id, today)
+            const result = await blockStore.setBlockTaskActionAt(selectedTask.id, today)
 
             if (checkCRUD(result)) {
                 modalInfoType.value = 'success'
@@ -802,9 +839,9 @@ const addSewingTaskToCurrentDay = async () => {
 
 
 // __ Получаем производственные дни
-const getSewingDays = async () => {
-    const dates      = getSewingDates(globalSewingTasksPending.value) // __ Получаем даты из СЗ
-    sewingDays.value = await sewingStore.getSewingDaysByDates(dates)  // __ Получаем дни по этим датам
+const getBlockDays = async () => {
+    const dates     = getBlockDates(globalBlockTasksPending.value) // __ Получаем даты из СЗ
+    blockDays.value = await blockStore.getBlockDaysByDates(dates)  // __ Получаем дни по этим датам
 }
 
 onMounted(async () => {
@@ -814,21 +851,21 @@ onMounted(async () => {
     await loaderHandler(
         loadingService,
         async () => {
-            // __ Получаем SewingTasks по статусу и записываем в глобальную переменную в SewingStore
-            await sewingStore.getSewingTasksByStatus([SEWING_TASK_STATUSES.PENDING.ID, SEWING_TASK_STATUSES.RUNNING.ID])
+            // __ Получаем BlockTasks по статусу и записываем в глобальную переменную в BlockStore
+            await blockStore.getBlockTasksByStatus([BLOCK_TASK_STATUSES.PENDING.ID, BLOCK_TASK_STATUSES.RUNNING.ID])
 
             // __ Получаем дни
-            await getSewingDays()
+            await getBlockDays()
 
             // __ Объединяем задания с днями
-            unionDatesWithSewingTasks(sewingDays.value, globalSewingTasksPending.value)
+            unionDatesWithBlockTasks(blockDays.value, globalBlockTasksPending.value)
 
             // __ Добавляем свернутость
             addCollapsed()
 
-            if (DEBUG) console.log('globalSewingTasksPending:', globalSewingTasksPending.value)
-            if (DEBUG) console.log('sewingDays:', sewingDays.value)
-            if (DEBUG) console.log('renderSewingDays:', renderSewingDays.value)
+            if (DEBUG) console.log('globalBlockTasksPending:', globalBlockTasksPending.value)
+            if (DEBUG) console.log('blockDays:', blockDays.value)
+            if (DEBUG) console.log('renderBlockDays:', renderBlockDays.value)
         },
         undefined
         // false,

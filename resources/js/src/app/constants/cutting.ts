@@ -1,6 +1,15 @@
 // Info Константы для работы с Пошивом (Cutting)
 import { UNIVERSAL, AUTO, SOLID_HARD, SOLID_LITE, UNDEFINED, AVERAGE } from '@/app/constants/textile_common.ts'
-
+import type {
+    IColorTypes,
+    ICuttingDay,
+    ICuttingMachineKeys,
+    ICuttingOperation, ICuttingProcedure, ICuttingTableKeys,
+    ICuttingTask,
+    ICuttingTaskLinesGroup,
+    ICuttingTaskStatusItem,
+    ICuttingTaskStatusKeys, ICuttingTextile
+} from '@/types'
 
 // __ Константы столов
 export const TABLE_1         = 'table_1'
@@ -103,18 +112,6 @@ export const TOTAL_SHIFT_DURATION = 12
 
 // __ Время начала смены
 export const START_SHIFT_TIME = '07:30'
-
-
-import type {
-    IColorTypes,
-    ICuttingDay,
-    ICuttingMachineKeys,
-    ICuttingOperation, ICuttingProcedure, ICuttingTableKeys,
-    ICuttingTask,
-    ICuttingTaskLinesGroup,
-    ICuttingTaskStatusItem,
-    ICuttingTaskStatusKeys, ICuttingTextile
-} from '@/types'
 
 
 export const CUTTING_TASK_STATUS_CREATED = 'CREATED'     // __ Создано

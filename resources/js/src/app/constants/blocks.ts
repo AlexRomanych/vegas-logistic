@@ -10,6 +10,13 @@ import type {
     IBlockTaskChange
 } from '@/types'
 
+// __ Продолжительность смены в часах
+export const TOTAL_SHIFT_DURATION = 12
+
+// __ Время начала смены
+export const START_SHIFT_TIME = '07:30'
+
+
 export const LINE_0 = '0'
 export const LINE_1 = '1'
 export const LINE_2 = '2'
@@ -115,7 +122,7 @@ export const CHANGES = {
         TITLE: '1',
         ICON: '①',
         TITLE_ROME: 'I',
-        TYPE: 'primary',
+        TYPE: 'indigo',
     },
     CHANGE_2: {
         ID: 2,
@@ -123,7 +130,7 @@ export const CHANGES = {
         TITLE: '2',
         ICON: '②',
         TITLE_ROME: 'II',
-        TYPE: 'indigo',
+        TYPE: 'orange',
     },
 
 } as const satisfies Record<string, IBlockTaskChange>

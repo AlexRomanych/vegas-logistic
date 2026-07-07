@@ -106,6 +106,29 @@ const blocks = [
         } as IRouteMeta,
     },
 
+    {
+        // ___ Выполнение сменных заданий (Общая)
+        path     : _MAIN_PREFIX + 'tasks/execute',
+        name     : 'manufacture.cell.blocks.tasks.execute',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_execute/TheBlockExecute.vue'),
+        meta     : {
+            title: 'Выполнение сменных заданий участка ПБ',
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Выполнение сменных заданий (Производственный день)
+        path     : _MAIN_PREFIX + 'tasks/execute/day/:date',
+        name     : 'manufacture.cell.blocks.tasks.execute.day',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/TheBlockExecuteDay.vue'),
+        meta     : {
+            title: 'Выполнение сменных заданий участка ПБ: Производственный день',
+        } as IRouteMeta,
+    },
+
+
+
+
     //
     // {
     //     // ___ Справочник Типовых операций
@@ -138,27 +161,7 @@ const blocks = [
     //         title: 'Трудозатраты моделей для Раскроя',
     //     } as IRouteMeta,
     // },
-    //
-    // {
-    //     // ___ Выполнение сменных заданий (Общая)
-    //     path     : _MAIN_PREFIX + 'tasks/execute',
-    //     name     : 'manufacture.cell.cutting.tasks.execute',
-    //     component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingExecute.vue'),
-    //     meta     : {
-    //         title: 'Выполнение сменных заданий Раскроя',
-    //     } as IRouteMeta,
-    // },
-    //
-    // {
-    //     // ___ Выполнение сменных заданий (Производственный день)
-    //     path     : _MAIN_PREFIX + 'tasks/execute/day/:date',
-    //     name     : 'manufacture.cell.cutting.tasks.execute.day',
-    //     component: () => import('@/components/dashboard/manufacture/cells/cutting/TheCuttingExecuteDay.vue'),
-    //     meta     : {
-    //         title: 'Выполнение СЗ Раскроя: Производственный день',
-    //     } as IRouteMeta,
-    // },
-    //
+
     // {
     //     // ___ Архив сменных заданий (Общая)
     //     path     : _MAIN_PREFIX + 'tasks/archive',

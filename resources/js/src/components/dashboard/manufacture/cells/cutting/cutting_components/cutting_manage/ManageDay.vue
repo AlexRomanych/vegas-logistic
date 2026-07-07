@@ -10,12 +10,12 @@
                 :text="renderDate"
                 :type="dateType"
                 align="center"
+                class="cursor-pointer"
                 rounded="rounded-[4px]"
                 text-size="small"
                 width="w-full"
                 @click.exact="actionDayMenu"
                 @click.ctrl="showMachineAnalytic"
-                class="cursor-pointer"
             />
         </div>
 
@@ -311,12 +311,13 @@ import type {
     IModalAsyncMenu,
     IPlanMatrix, ICuttingDay,
     ICuttingTask,
-    ICuttingTaskStatusesSet, ICuttingTaskLine, ICuttingLineTableSetData,
+    ICuttingTaskStatusesSet, ICuttingTaskLine, ICuttingLineTableSetData, DraggableHTMLElement,
 } from '@/types'
 
 import { computed, inject, type Ref, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
+import { useRouter } from 'vue-router'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -365,6 +366,7 @@ import CommentEdit from '@/components/dashboard/manufacture/cells/cutting/cuttin
 import ManageTaskTables from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskTables.vue'
 import ManageDayTasksContext from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageDayTasksContext.vue'
 
+
 // type IDay = ICuttingTask & IPlanMatrixDayItem
 
 interface IProps {
@@ -391,6 +393,7 @@ const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
 // console.log('renderMatrixCopy: ', renderMatrixCopy)
 
 // __ Данные из Хранилища
+const router       = useRouter()
 const cuttingStore = useCuttingStore()
 
 const {
@@ -637,11 +640,14 @@ const showCuttingTaskTables = async (cuttingTask: ICuttingTask) => {
 const showCuttingTaskMenu = async (cuttingTask: ICuttingTask) => {
     // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
     modalMenuType.value = 'indigo'
+
+    const CANCEL_ID = 6
     modalMenu.value     = {
         data: [
             { id: 1, title: 'Разделить количество' },
             { id: 2, title: 'Изменить стол' },
-            { id: 3, title: 'Отмена' },
+            { id: 3, title: 'Перейти в Карточку Заявки' },
+            { id: CANCEL_ID, title: 'Отмена' },
         ],
     }
 
@@ -649,7 +655,7 @@ const showCuttingTaskMenu = async (cuttingTask: ICuttingTask) => {
     // let result = { menuItem: 3, value: true } as IModalResponse
 
     // __ Отмена
-    if (result.menuItem === 3 && result.value) {
+    if (result.menuItem === CANCEL_ID && result.value) {
         return
     }
 
@@ -662,6 +668,12 @@ const showCuttingTaskMenu = async (cuttingTask: ICuttingTask) => {
     // __ Изменить стол
     if (result.menuItem === 2 && result.value) {
         await showCuttingTaskTables(cuttingTask)
+        return
+    }
+
+    // __ Перейти в карточку Заявки
+    if (result.menuItem === 3 && result.value) {
+        await router.push({ name: 'orders.card', params: { id: cuttingTask.order.id } })
         return
     }
 
@@ -686,10 +698,10 @@ const dragOptions = computed(() => {
 })
 const isDragging  = ref(true)
 
-const checkMove = (evt: any) => {
+const checkMove = (evt: DraggableHTMLElement) => {
     // return true
     // console.log('checkMove: ', evt)
-    const movedElement = evt.draggedContext.element
+    const movedElement = evt.draggedContext.element as ICuttingTask
     // console.log(movedElement)
     // return true
     // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
@@ -722,7 +734,7 @@ const startDrag = (/*evt: any*/) => {
 }
 
 // __ Окончание перетаскивания СЗ
-const finishDrag = async (evt: any) => {
+const finishDrag = async (evt: DraggableHTMLElement) => {
     // const element = evt.item._underlying_vm_
     // console.log('evt: ', evt)
 
@@ -751,7 +763,7 @@ const finishDrag = async (evt: any) => {
     // console.log('isOneDayAction: ', isOneDayAction)
 
     // __ Получаем сам перемещаемый элемент
-    const movedElement = evt.item._underlying_vm_
+    const movedElement = evt.item._underlying_vm_ as ICuttingTask
 
     if (isOneDayAction) {
 

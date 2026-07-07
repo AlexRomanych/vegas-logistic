@@ -1,13 +1,13 @@
 <template>
     <div v-for="[key, value] of Object.entries(calculateTotals)" :key="key">
-        <template v-if="!([UNDEFINED] as ICuttingTableKeys[]).includes(key as ICuttingTableKeys)">
+        <template v-if="key !== BLOCK_MANUF_LINES.LINE_0">
 
             <div class="flex">
 
-                <!-- __ Стол -->
+                <!-- __ Линия -->
                 <AppLabelTS
-                    :text="getTableTitle(key) + ':'"
-                    :width="TABLE_WIDTH"
+                    :text="getLineTitle(key) + ':'"
+                    :width="LINE_WIDTH"
                     rounded="4"
                     text-size="mini"
                     type="dark"
@@ -25,7 +25,7 @@
 
                 <!-- __ Трудозатраты -->
                 <AppLabelTS
-                    :text="formatTimeWithLeadingZeros(value.time)"
+                    :text="formatTimeWithLeadingZeros(value.time, 'hour')"
                     :width="TIME_WIDTH"
                     align="center"
                     rounded="4"
@@ -35,7 +35,7 @@
 
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
-                    :progress="getTablePercent(key as ICuttingTableKeys)"
+                    :progress="getLinePercent(key as IBlockManufLine)"
                     :width="PROGRESS_WIDTH"
                 />
             </div>
@@ -48,7 +48,7 @@
     <!--__ Итого-->
     <div class="flex">
         <AppLabelTS
-            :width="TABLE_WIDTH"
+            :width="LINE_WIDTH"
             rounded="4"
             text="Всего:"
             text-size="mini"
@@ -67,7 +67,7 @@
 
         <!-- __ Трудозатраты -->
         <AppLabelTS
-            :text="formatTimeWithLeadingZeros(totalTime)"
+            :text="formatTimeWithLeadingZeros(totalTime, 'hour')"
             :width="TIME_WIDTH"
             align="center"
             rounded="4"
@@ -88,14 +88,13 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { ICuttingDay, ICuttingTableKeys, ICuttingTaskLine } from '@/types'
+import type { IBlockDay, IBlockManufLine, IBlockTaskLine } from '@/types'
 
-import { CUTTING_TABLES, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE, TABLE_0_TITLE } from '@/app/constants/cutting.ts'
-import { UNDEFINED } from '@/app/constants/textile_common.ts'
+import { BLOCK_MANUF_LINES, LINE_0_NAME, LINE_1_NAME, LINE_2_NAME } from '@/app/constants/blocks.ts'
 
 import {
-    getExecuteTaskStatistics, getCuttingTaskAmountAndTime
-} from '@/app/helpers/manufacture/helpers_cutting.ts'
+    getExecuteTaskStatistics, getBlockTaskAmountAndTime
+} from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -103,33 +102,33 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 
 interface IProps {
-    cuttingDay: ICuttingDay
+    blockDay: IBlockDay
 }
 
 const props = defineProps<IProps>()
 
-const TABLE_WIDTH    = 'w-[120px]'
+const LINE_WIDTH     = 'w-[120px]'
 const PICS_WIDTH     = 'w-[120px]'
 const TIME_WIDTH     = 'w-[120px]'
 const PROGRESS_WIDTH = 'w-[300px]'
 
 
 // __ Собираем все Записи в один массив
-const commonCuttingLines = computed(() => {
-    const result: ICuttingTaskLine[] = []
-    props.cuttingDay.cutting_tasks.forEach(task => task.cutting_lines.forEach(line => result.push(line)))
+const commonBlockLines = computed(() => {
+    const result: IBlockTaskLine[] = []
+    props.blockDay.block_tasks.forEach(task => task.block_lines.forEach(line => result.push(line)))
     return result
 })
 
 // __ Пересчитываем Итого
-const calculateTotals = computed(() => getCuttingTaskAmountAndTime(commonCuttingLines.value))
+const calculateTotals = computed(() => getBlockTaskAmountAndTime(commonBlockLines.value))
 
 // __ Получаем процент выполнения по каждой машине
-const getTablePercent = (key: ICuttingTableKeys) => {
-    const cuttingLinesByMachine = commonCuttingLines.value.filter(item => item.table === key)
+const getLinePercent = (key: IBlockManufLine) => {
+    const blockLinesByMachine = commonBlockLines.value.filter(item => item.manuf_line === key)
 
     // __ Получаем объект статистики
-    const statistics = getExecuteTaskStatistics(cuttingLinesByMachine)
+    const statistics = getExecuteTaskStatistics(blockLinesByMachine)
     // console.log('statistics: ', statistics)
     return statistics.time.total !== 0 ? statistics.time.finished / statistics.time.total * 100 : 0
 }
@@ -141,23 +140,20 @@ const totalAmount = computed(() => Object.values(calculateTotals.value).reduce((
 const totalTime = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.time + acc, 0))
 
 // __ Название Стола
-const getTableTitle = (key: string) => {
-    console.log(key)
+const getLineTitle = (key: string) => {
+    // console.log(key)
 
-    if (key === CUTTING_TABLES.TABLE_1) {
-        return TABLE_1_TITLE
+    if (key === BLOCK_MANUF_LINES.LINE_1) {
+        return LINE_1_NAME
     }
-    if (key === CUTTING_TABLES.TABLE_2) {
-        return TABLE_2_TITLE
+    if (key === BLOCK_MANUF_LINES.LINE_2) {
+        return LINE_2_NAME
     }
-    if (key === CUTTING_TABLES.TABLE_3) {
-        return TABLE_3_TITLE
-    }
-    if (key === CUTTING_TABLES.TABLE_0) {
-        return TABLE_0_TITLE
+    if (key === BLOCK_MANUF_LINES.LINE_0) {
+        return LINE_0_NAME
     }
 
-    throw new Error('Неизвестная машина')
+    throw new Error('Неизвестная линия')
 }
 
 </script>

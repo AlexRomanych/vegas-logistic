@@ -403,11 +403,10 @@ class BlockTaskController extends Controller
                     }
                 }
 
-
                 // __ Пересчитываем трудозатраты при разделении количества
                 if (count($linesToRecalcTime) !== 0) {
                     foreach ($linesToRecalcTime as $lineCalcId) {
-                        $blockTaskLine = BlockTaskLine::query()->with('block.collection')->findOrFail($lineCalcId);
+                        $blockTaskLine = BlockTaskLine::query()->with('block.blockCollection')->findOrFail($lineCalcId);
 
                         $block = $blockTaskLine->block;
                         if (!$block) {
@@ -415,7 +414,7 @@ class BlockTaskController extends Controller
                         }
 
                         // __ Получаем так, потому что collection - поле в Block
-                        $collection = $block->getRelation('collection');
+                        $collection = $block->getRelation('blockCollection');
 
                         $blockTaskLine->time = $collection->productivity !== 0.0
                             ? ($block->length * $block->width / 100 / 100) * $blockTaskLine->amount / $collection->productivity
@@ -880,6 +879,59 @@ class BlockTaskController extends Controller
         }
     }
 
+
+    /**
+     * ___ Получаем СЗ на Раскрой по статусам
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getBlockTasksByStatus(Request $request)
+    {
+        try {
+            //$all = $request->all();
+
+            $validated = $request->validate([
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:block_task_statuses,id',
+            ]);
+
+            $data         = $validated['statuses'] ?? null;
+            $blockTasks = BlockTask::query()
+                ->byStatus($data)
+                // ->whereBetween('action_at', [
+                //     $start->startOfDay(),
+                //     $end->endOfDay()
+                // ])
+                // ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
+                // ->whereDate('action_at', '<=', $end)       // ->whereBetween() не включает периоды
+                ->with([
+                    'order',
+                    'order.client',
+                    'order.orderType',
+                    'statuses',
+                    'blockLines',
+                    'blockLines.block',
+                    'blockLines.block.blockCollection',
+                    'blockLines.block.blockCollection.kdbDoc',
+                ])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return BlockTaskResource::collection($blockTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
 
 }

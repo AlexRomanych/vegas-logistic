@@ -1010,7 +1010,7 @@ export const useCuttingStore = defineStore('cutting', () => {
         if (!code_1c || !angle) {
             return
         }
-        const result = await jwtPatch(URL_CUTTING_ANGLE_MODEL, {code_1c, angle})
+        const result = await jwtPatch(URL_CUTTING_ANGLE_MODEL, { code_1c, angle })
         if (DEBUG) console.log('CuttingStore: setCuttingAngle: ', result)
         return result
     }

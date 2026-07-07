@@ -103,7 +103,12 @@
     </Teleport>
 </template>
 
-<script generic="T extends { id: number | string, name?: string, description?: string | null }" lang="ts" setup>
+<script
+    generic="T extends { id: number | string, name?: string, description?: string | null,  }"
+    lang="ts"
+    setup
+>
+// <script generic="T extends { id: number | string, name?: string, description?: string | null }" lang="ts" setup>
 import { ref, watch, computed, nextTick, reactive } from 'vue'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.ts'

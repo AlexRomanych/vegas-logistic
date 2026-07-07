@@ -30,12 +30,21 @@ const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_BLOCKS_COLLECTIONS                = '/blocks/collections'                 // URL для получения Коллекций Блоков
-const URL_BLOCKS                            = '/blocks'                             // URL для получения Блоков
-const URL_BLOCKS_TEST                       = '/blocks/test'                        // URL для тестирования
-const URL_BLOCKS_TASK_STATUSES              = '/blocks/task/statuses'               // URL для получения Статуса Движения СЗ
-const URL_BLOCKS_TASK_STATUSES_SET          = '/blocks/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
-const URL_BLOCKS_TASK_STATUSES_COLOR_PATCH  = '/blocks/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
+const URL_BLOCKS_COLLECTIONS = '/blocks/collections'                 // URL для получения Коллекций Блоков
+const URL_BLOCKS             = '/blocks'                             // URL для получения Блоков
+const URL_BLOCKS_TEST        = '/blocks/test'                        // URL для тестирования
+
+const URL_BLOCK_TASKS_STATUS               = '/blocks/tasks/status'                // URL для получения Сменных заданий по статусу
+const URL_BLOCK_TASKS_STATUS_PERIOD        = '/blocks/tasks/status/period'         // URL для получения Сменных заданий по статусу в периоде
+const URL_BLOCK_TASKS_STATUS_BEFORE_DATE   = '/blocks/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
+const URL_BLOCK_TASKS_STATUS_ON_DATE       = '/blocks/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
+const URL_BLOCK_TASKS_STATUS_ON_DATE_CHECK = '/blocks/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
+
+
+const URL_BLOCKS_TASK_STATUSES             = '/blocks/task/statuses'               // URL для получения Статуса Движения СЗ
+const URL_BLOCKS_TASK_STATUSES_SET         = '/blocks/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
+const URL_BLOCKS_TASK_STATUSES_COLOR_PATCH = '/blocks/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
+
 const URL_BLOCKS_TASKS                      = '/blocks/tasks'                       // URL для получения Сменных заданий
 const URL_BLOCKS_TASKS_UPDATE               = '/blocks/tasks/update'                // URL для обновления Сменных заданий
 const URL_BLOCKS_TASKS_ORDER_ID             = '/blocks/tasks/order'                 // URL для получения Сменных заданий по id Заявки
@@ -49,24 +58,23 @@ const URL_BLOCKS_TASKS_COMMENT              = '/blocks/tasks/comment'           
 const URL_BLOCKS_TASKS_CHANGE               = '/blocks/tasks/change'                // URL для изменения смены Сменного задания
 const URL_BLOCKS_TASKS_ACTION_AT_SET        = '/blocks/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 
-const URL_BLOCKS_TASK_LINES_TABLE_SET       = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+const URL_BLOCKS_TASK_LINES_TABLE_SET = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
 
 
-const URL_BLOCK_DAY                        = '/blocks/day'                         // URL для получения рабочего дня
-const URL_BLOCK_DAY_DATES                  = '/blocks/day/dates'                   // URL для получения рабочих дней по статусу
-const URL_BLOCK_DAY_COMMENT                = '/blocks/day/comment'                 // URL для сохранения комментария к дню
-const URL_BLOCK_DAY_WORKERS_ACTIVE         = '/workers/active'                      // URL для получения активных рабочих
-const URL_BLOCK_DAY_WORKER_ADD             = '/blocks/day/worker/add'              // URL для добавления исполнителя к дню
-const URL_BLOCK_DAY_WORKER_GROUP_ADD       = '/blocks/day/workers/add'             // URL для добавления группы исполнителей к дню
-const URL_BLOCK_DAY_WORKER_REMOVE          = '/blocks/day/worker/remove'           // URL для удаления исполнителя к дню
-const URL_BLOCK_DAY_RESPONSIBLE_ADD        = '/blocks/day/responsible/add'         // URL для добавления ответственного к дню
-const URL_BLOCK_DAY_RESPONSIBLE_REMOVE     = '/blocks/day/responsible/remove'      // URL для удаления ответственного к дню
-const URL_BLOCK_DAY_START                  = '/blocks/day/start'                   // URL для старта дня СЗ
-const URL_BLOCK_DAY_FINISH                 = '/blocks/day/finish'                  // URL для финиш дня СЗ
-const URL_BLOCK_DAY_READY_GET              = '/blocks/day/ready/get'               // URL для получения маячка готовности дня с СЗ к добавлению новых СЗ
-const URL_BLOCK_DAY_READY_SET              = '/blocks/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
-const URL_BLOCK_DAY_READY_UNSET            = '/blocks/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
-
+const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
+const URL_BLOCK_DAY_DATES              = '/blocks/day/dates'                   // URL для получения рабочих дней по статусу
+const URL_BLOCK_DAY_COMMENT            = '/blocks/day/comment'                 // URL для сохранения комментария к дню
+const URL_BLOCK_DAY_WORKERS_ACTIVE     = '/workers/active'                      // URL для получения активных рабочих
+const URL_BLOCK_DAY_WORKER_ADD         = '/blocks/day/worker/add'              // URL для добавления исполнителя к дню
+const URL_BLOCK_DAY_WORKER_GROUP_ADD   = '/blocks/day/workers/add'             // URL для добавления группы исполнителей к дню
+const URL_BLOCK_DAY_WORKER_REMOVE      = '/blocks/day/worker/remove'           // URL для удаления исполнителя к дню
+const URL_BLOCK_DAY_RESPONSIBLE_ADD    = '/blocks/day/responsible/add'         // URL для добавления ответственного к дню
+const URL_BLOCK_DAY_RESPONSIBLE_REMOVE = '/blocks/day/responsible/remove'      // URL для удаления ответственного к дню
+const URL_BLOCK_DAY_START              = '/blocks/day/start'                   // URL для старта дня СЗ
+const URL_BLOCK_DAY_FINISH             = '/blocks/day/finish'                  // URL для финиш дня СЗ
+const URL_BLOCK_DAY_READY_GET          = '/blocks/day/ready/get'               // URL для получения маячка готовности дня с СЗ к добавлению новых СЗ
+const URL_BLOCK_DAY_READY_SET          = '/blocks/day/ready/set'               // URL для установки маяка готовности к добавлению новых СЗ
+const URL_BLOCK_DAY_READY_UNSET        = '/blocks/day/ready/unset'             // URL для снятия маяка готовности к добавлению новых СЗ
 
 
 export const useBlocksStore = defineStore('blocks', () => {
@@ -316,7 +324,7 @@ export const useBlocksStore = defineStore('blocks', () => {
                 for (const line of task.block_lines) {
                     if (item.id === line.id) {
                         line.manuf_line = item.line
-                        isFind     = true
+                        isFind          = true
                         break
                     }
                     if (isFind) {
@@ -332,9 +340,6 @@ export const useBlocksStore = defineStore('blocks', () => {
         // __ Копия для отслеживания изменений
         globalBlockTasksCopy = JSON.parse(JSON.stringify(globalBlockTasks.value))
     }
-
-
-
 
 
     // --- ------------------------------------------------------------------------------------------
@@ -493,6 +498,30 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
 
+    // __ Получение СЗ Раскроя по статусу или массиву статусов
+    const getBlockTasksByStatus = async (status: number[] | number | null = null) => {
+        let response
+        if (status) {
+            if (isNumber(status)) {
+                status = [status]
+            }
+
+            response = await jwtGet(URL_BLOCK_TASKS_STATUS, { statuses: status })
+            // response = await jwtGet(`${URL_BLOCK_TASKS_STATUS}/${status}`)
+        } else {
+            response = await jwtGet(URL_BLOCK_TASKS_STATUS)
+        }
+        const result = await response
+
+        globalBlockTasksPending.value = result.data                                   // __ кэшируем
+        globalBlockTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+
+
+        if (DEBUG) console.log('BlockStore: getBlockTasksByStatus: ', result)
+        return result.data
+    }
+
+
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---        Коллекции (Группы) Блоков            !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -583,8 +612,6 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
 
-
-
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---          Производственный день              !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -604,84 +631,19 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
-    // // __ Получение производственных дней по массиву дат
-    // // __ Тут по хорошему надо прикрутить еще и смену, но оставим на потом
-    // const getCuttingDaysByDates = async (dates: string[]) => {
-    //     if (!dates.length) {
-    //         return []
-    //     }
-    //
-    //     const response = await jwtGet(URL_CUTTING_DAY_DATES, { dates })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: getCuttingDaysByDates: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Получение активных рабочих
-    // const getActiveWorkers = async () => {
-    //     if (globalWorkers.value.length) {
-    //         return globalWorkers
-    //     }
-    //
-    //     const response = await jwtGet(URL_CUTTING_DAY_WORKERS_ACTIVE)
-    //     const result   = await response
-    //
-    //     // __ кэшируем
-    //     globalWorkers.value = result.data
-    //         .filter((w: ICuttingDayWorker) => w.id !== 0)
-    //         .sort((a: ICuttingDayWorker, b: ICuttingDayWorker) => a.surname.localeCompare(b.surname))
-    //
-    //
-    //     if (DEBUG) console.log('CuttingStore: getActiveWorkers: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Добавление Рабочего в Производственный день
-    // const addWorkerToCuttingDay = async (day_id: number | null = null, worker_id: number | null = null) => {
-    //     if (!day_id || !worker_id) {
-    //         return
-    //     }
-    //     const response = await jwtPost(URL_CUTTING_DAY_WORKER_ADD, { day_id, worker_id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: addWorkerToCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Добавление Группы Рабочих в Производственный день
-    // const addWorkersToCuttingDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
-    //     if (!day_id || !worker_ids) {
-    //         return
-    //     }
-    //     const response = await jwtPost(URL_CUTTING_DAY_WORKER_GROUP_ADD, { day_id, worker_ids })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: addWorkersGroupToCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Удаление Рабочего из Производственного дня
-    // const removeWorkerFromCuttingDay = async (day_id: number, worker_id: number) => {
-    //     const response = await jwtPost(URL_CUTTING_DAY_WORKER_REMOVE, { day_id, worker_id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: removeWorkerToCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Добавление Ответственного в Производственный день
-    // const addResponsibleToCuttingDay = async (day_id: number, worker_id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_RESPONSIBLE_ADD, { day_id, worker_id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: addResponsibleToCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Удаление Ответственного из Производственного дня
-    // const removeResponsibleFromCuttingDay = async (day_id: number, worker_id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_RESPONSIBLE_REMOVE, { day_id, worker_id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: removeResponsibleFromCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
+    // __ Получение производственных дней по массиву дат
+    // __ Тут по хорошему надо прикрутить еще и смену, но оставим на потом
+    const getBlockDaysByDates = async (dates: string[]) => {
+        if (!dates.length) {
+            return []
+        }
+
+        const response = await jwtGet(URL_BLOCK_DAY_DATES, { dates })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: getBlockDaysByDates: ', result)
+        return result.data
+    }
+
     // // __ Старт СЗ
     // const startCuttingDay = async (id: number) => {
     //     const response = await jwtPatch_(URL_CUTTING_DAY_START, { id })
@@ -732,6 +694,74 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---             Персонал                        !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Получение активных рабочих
+    const getActiveWorkers = async () => {
+        if (globalWorkers.value.length) {
+            return globalWorkers
+        }
+
+        const response = await jwtGet(URL_BLOCK_DAY_WORKERS_ACTIVE)
+        const result   = await response
+
+        // __ кэшируем
+        globalWorkers.value = result.data
+            .filter((w: IBlockDayWorker) => w.id !== 0)
+            .sort((a: IBlockDayWorker, b: IBlockDayWorker) => a.surname.localeCompare(b.surname))
+
+
+        if (DEBUG) console.log('BlockStore: getActiveWorkers: ', result)
+        return result.data
+    }
+
+    // __ Добавление Рабочего в Производственный день
+    const addWorkerToBlockDay = async (day_id: number | null = null, worker_id: number | null = null) => {
+        if (!day_id || !worker_id) {
+            return
+        }
+        const response = await jwtPost(URL_BLOCK_DAY_WORKER_ADD, { day_id, worker_id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: addWorkerToBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Добавление Группы Рабочих в Производственный день
+    const addWorkersToBlockDay = async (day_id: number | null = null, worker_ids: number[] | null = null) => {
+        if (!day_id || !worker_ids) {
+            return
+        }
+        const response = await jwtPost(URL_BLOCK_DAY_WORKER_GROUP_ADD, { day_id, worker_ids })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: addWorkersGroupToBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Удаление Рабочего из Производственного дня
+    const removeWorkerFromBlockDay = async (day_id: number, worker_id: number) => {
+        const response = await jwtPost(URL_BLOCK_DAY_WORKER_REMOVE, { day_id, worker_id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: removeWorkerToBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Добавление Ответственного в Производственный день
+    const addResponsibleToBlockDay = async (day_id: number, worker_id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_RESPONSIBLE_ADD, { day_id, worker_id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: addResponsibleToBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Удаление Ответственного из Производственного дня
+    const removeResponsibleFromBlockDay = async (day_id: number, worker_id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_RESPONSIBLE_REMOVE, { day_id, worker_id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: removeResponsibleFromBlockDay: ', result)
+        return result.data
+    }
 
 
 
@@ -779,6 +809,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockDayComment,
         modifyChange,
         readyGetBlockDay,
+        getBlockDaysByDates,
 
         getBlockTasks,
         getBlockTasksByOrderId,
@@ -801,9 +832,19 @@ export const useBlocksStore = defineStore('blocks', () => {
         createBlock,
         updateBlock,
 
+        getBlockTasksByStatus,
+
         getBlockTaskStatuses,
         patchBlockTaskStatusColor,
         setBlockTasksStatuses,
+
+        getActiveWorkers,
+        addWorkerToBlockDay,
+        addWorkersToBlockDay,
+        removeWorkerFromBlockDay,
+        addResponsibleToBlockDay,
+        removeResponsibleFromBlockDay,
+
 
         test,
     }

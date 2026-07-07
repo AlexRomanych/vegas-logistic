@@ -154,6 +154,7 @@
                         <ExecutePersonal
                             :cutting-day="cuttingDay"
                             @add-worker="addWorker(cuttingDay, $event)"
+                            @add-workers="addWorkers(cuttingDay, $event)"
                             @remove-worker="removeWorker(cuttingDay, $event)"
                             @add-responsible="addResponsible(cuttingDay, $event)"
                         />
@@ -633,6 +634,16 @@ const addWorker = (cuttingDay: ICuttingDay, worker: ICuttingDayWorker) => {
     if (!existWorker) {
         cuttingDay.workers.push(worker)
     }
+}
+
+// __ Добавляем группу работников
+const addWorkers = (cuttingDay: ICuttingDay, workers: ICuttingDayWorker[]) => {
+    workers.forEach(worker => {
+        const existWorker = cuttingDay.workers.find(w => w.id === worker.id)
+        if (!existWorker) {
+            cuttingDay.workers.push(worker)
+        }
+    })
 }
 
 // __ Удаляем работника

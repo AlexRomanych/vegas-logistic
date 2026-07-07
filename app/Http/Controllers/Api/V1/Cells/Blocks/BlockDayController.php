@@ -20,11 +20,12 @@ use Throwable;
 class BlockDayController extends Controller
 {
 
+
     /**
      * ___ Возвращает производственный день по дате и смене
      * @param string $date
      * @param string $change
-     * @return BlockDayResource|string
+     * @return AnonymousResourceCollection|string
      */
     public function getBlockDayByDateAndChange(string $date, string $change)
     {
@@ -34,7 +35,10 @@ class BlockDayController extends Controller
                 'change' => $change,
             ], [
                 'date'   => 'required|date_format:Y-m-d',
-                'change' => 'required|in:1,2',
+                'change' => 'required|in:'
+                    . BlockDay::CHANGE_0 . ','
+                    . BlockDay::CHANGE_1 . ','
+                    . BlockDay::CHANGE_2
             ]);
 
             if ($validated->fails()) {
@@ -42,22 +46,23 @@ class BlockDayController extends Controller
             }
 
             // __ Создаем производственный день или получаем его, если он уже существует
-            $day = BlockDay::findOrCreateByDateAndChange($date);
+            if ($change !== BlockDay::CHANGE_0) {
+                BlockDay::findOrCreateByDateAndChange($date, $change);
+                $days = BlockDay::query()
+                    ->where('change', $change)
+                    ->byDates($date)
+                    ->with(['workers', 'responsible'])
+                    ->get();
+            } else {
+                BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_1);
+                BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_2);
+                $days = BlockDay::query()
+                    ->byDates($date)
+                    ->with(['workers', 'responsible'])
+                    ->get();
+            }
 
-            $day = BlockDay::query()
-                ->byDates($date)
-                ->with(['workers', 'responsible'])
-                ->first();
-
-            // $day = BlockDay::query()
-            //     ->with(['workers', 'responsible'])
-            //     ->firstOrCreate([
-            //         'action_at'     => Carbon::parse($date)->format(RETURN_DATE_TIME_FORMAT),
-            //         'action_at_str' => $date,
-            //         'change'        => $change,
-            //     ]);
-
-            return new BlockDayResource($day);
+            return BlockDayResource::collection($days);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -113,7 +118,8 @@ class BlockDayController extends Controller
 
             foreach ($validated['dates'] as $date) {
                 // __ Создаем производственный день или получаем его, если он уже существует
-                BlockDay::findOrCreateByDateAndChange($date);
+                BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_1);
+                BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_2);
             }
 
             $days = BlockDay::query()

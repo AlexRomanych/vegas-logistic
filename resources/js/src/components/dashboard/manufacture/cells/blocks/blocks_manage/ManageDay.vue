@@ -115,7 +115,7 @@
                 <AppLabelTS
                     :height="DEFAULT_HEIGHT"
                     :text="`Смена: ${idx + 1}`"
-                    :type="idx === 0 ? CHANGE_1_TYPE : CHANGE_2_TYPE"
+                    :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
                     align="center"
                     class="uppercase"
                     rounded="rounded-[4px]"
@@ -169,7 +169,7 @@
                     <!-- __ Всего: -->
                     <AppLabelTS
                         :height="heightTotals"
-                        :type="idx === 0 ? CHANGE_1_TYPE : CHANGE_2_TYPE"
+                        :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
                         :width="columnsWidth.common"
                         align="center"
                         rounded="rounded-[4px]"
@@ -302,6 +302,7 @@ import type {
 
 import { computed, inject, type Ref, ref, } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
@@ -332,7 +333,7 @@ import {
     isTaskStatusCreated, isTaskStatusRunning,
     orderBlockTasksByStatus,
     repositionBlockTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange,
+    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
@@ -350,6 +351,7 @@ import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/blocks
 
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
+
 
 // type IDay = IBlockTask & IPlanMatrixDayItem
 
@@ -400,6 +402,7 @@ const {
           globalBlockTaskStatuses,
       } = storeToRefs(blockStore)
 
+const router               = useRouter()
 const planStore            = usePlansStore()
 const { planPeriodGlobal } = storeToRefs(planStore)
 
@@ -497,10 +500,15 @@ const getTotalTimeChange = (tasks: IBlockTask[]) => {
 // const getTotalTimeDay = computed(() =>
 //     props.day.reduce((totalAcc, task) => totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0))
 
-
 // __ Флаг отображения данных
 const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IBlockTask[]))
 const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unknown as IBlockTask[]))
+
+// __ Получаем подсветку Смены
+const getChangeType = (change: IBlockTaskChangeKeys) => {
+    const findChange = getChangeByName(change)
+    return findChange ? findChange.TYPE : 'dark'
+}
 
 
 // __ Тип для Каротчки и Изменения стола
@@ -761,13 +769,14 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
     // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
     modalMenuType.value = 'indigo'
 
-    const CANCEL_ID = 5
+    const CANCEL_ID = 6
     modalMenu.value = {
         data: [
             { id: 1, title: 'Разделить количество' },
             { id: 2, title: 'Изменить смену СЗ' },
             { id: 3, title: 'Изменить Производственную линию' },
             { id: 4, title: 'Добавить / Изменить комментарий к СЗ' },
+            { id: 5, title: 'Перейти в Карточку Заявки' },
             { id: CANCEL_ID, title: 'Отмена' },
         ],
     }
@@ -801,6 +810,12 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
     // __ Добавить комментарий к СЗ
     if (result.menuItem === 4 && result.value) {
         await addComment(blockTask)
+        return
+    }
+
+    // __ Перейти в карточку Заявки
+    if (result.menuItem === 5 && result.value) {
+        await router.push({ name: 'orders.card', params: { id: blockTask.order.id } })
         return
     }
 

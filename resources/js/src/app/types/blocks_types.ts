@@ -115,9 +115,9 @@ export interface IBlockTaskStatusPivot {
 // __ Тип для Производственного Дня
 export type IBlockDay = {
     id: number
+    change: IBlockTaskChangeKeys
     action_at: string
     action_at_str: string
-    change: number
     description: string | null
     comment: string | null
     start_at: string | null

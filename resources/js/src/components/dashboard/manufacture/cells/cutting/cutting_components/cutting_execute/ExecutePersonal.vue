@@ -295,9 +295,14 @@ const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> |
 const selectedWorkerId      = ref<number | null>(null)
 const appModalAsyncSelectTS = ref<any>(null)
 
+
 // const selectedWorkerIds      = ref<(number | string)[] | null>([])
 const appModalAsyncSelectTSFuncMultiSelect = ref<any>(null)
-const selectedWorkerIds                    = computed(() => props.cuttingDay.workers.map((worker: IEntity) => worker.id))
+
+const getSelectedWorkerIds = () => props.cuttingDay.workers.map((worker: IEntity) => worker.id)
+const selectedWorkerIds    = ref(getSelectedWorkerIds())
+// const selectedWorkerIds    = computed(() => props.cuttingDay.workers.map((worker: IEntity) => worker.id))
+
 
 // __ Показываем сообщение об ошибке
 const showError = async (error: string | null = null) => {
