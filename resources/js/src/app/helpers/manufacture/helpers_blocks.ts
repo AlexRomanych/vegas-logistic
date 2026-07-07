@@ -3,7 +3,7 @@
 
 import type {
     IAmountAndTimeBlock, IBlockManufLine,
-    IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs, IBlockTaskExecuteStatistics,
+    IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs, IBlockTaskChangeKeys, IBlockTaskExecuteStatistics,
     IBlockTaskLine, IBlockTaskOrder, IBlockTaskOrderLine, IBlockTaskStatus, IBlockTaskStatusKeys,
     IDay,
     IPlanMatrix,
@@ -81,7 +81,37 @@ export function clearRenderMatrix(matrix: IPlanMatrix) {
 
 // __ Очищаем день матрицы рендера от пустых сменных заданий, которые добавляем для рендеринга
 export function clearRenderMatrixDay<T extends IDay>(day: T[]): T[] {
-    return [...day.filter(item => item.id > -1)] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+    const change_1 = day[0]?.filter((item: IBlockTask) => item.id > -1) || []
+    const change_2 = day[1]?.filter((item: IBlockTask) => item.id > -1) || []
+
+    return [change_1, change_2] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+    // return [...day.filter(item => item.id > -1)] // __ id пустых заданий меньше нуля + id = 0 (для добавленного СЗ)
+}
+
+// __ Очищаем смену дня матрицы рендера от пустых сменных заданий, которые добавляем для рендеринга
+export function clearRenderMatrixDayChange<T extends IDay>(day: T[], change: IBlockTaskChangeKeys): T[] {
+    const idx     = getIndexByChange(change)
+    const cleared = day[idx]?.filter((item: IBlockTask) => item.id > -1) || []
+    switch (change) {
+        case CHANGE_1:
+            return [cleared, day[1]]
+        case CHANGE_2:
+            return [day[0], cleared]
+    }
+}
+
+
+// __ Возвращаем индекс по смене
+export function getIndexByChange(change: IBlockTaskChangeKeys): number {
+    switch (change) {
+        case CHANGE_1:
+            return 0
+        case CHANGE_2:
+            return 1
+        default: {
+            throw new Error('Undefined Block Task Change')
+        }
+    }
 }
 
 
@@ -427,9 +457,9 @@ export function getBlockTasksGroupedByOrder(blockTasks: IBlockTask[], applyStatu
 export function getBlockTasksSameOrderInDay(
     entity: IBlockTask | IBlockTaskOrder | number,
     tasksList: IBlockTask[],
-    date: string | null  = null,
-    change: string | null  = null,
-    applyStatus: boolean = false) {
+    date: string | null   = null,
+    change: string | null = null,
+    applyStatus: boolean  = false) {
 
     let item
     if (isBlockTask(entity)) {
@@ -520,44 +550,86 @@ export function isTaskStatusRunning(entity: IBlockTask | IBlockTaskStatus | numb
 // __ 2. Потом статус СЗ   - Running по возрастанию даты
 // __ 3. Потом статус СЗ   - Pending по возрастанию даты
 // __ 4. Потом статус СЗ   - Created по возрастанию даты
-export const orderBlockTasksByStatus = (tasks: IBlockTask[]): IBlockTask[] => {
-    // 1. Описываем веса для статусов.
-    // Чем меньше значение, тем выше (раньше) элемент в массиве.
-    const statusPriority: Record<number, number> = {
-        [BLOCK_TASK_STATUSES.DONE.ID]   : 1,
-        [BLOCK_TASK_STATUSES.RUNNING.ID]: 2,
-        [BLOCK_TASK_STATUSES.PENDING.ID]: 3,
-        [BLOCK_TASK_STATUSES.ROLLING.ID]: 4,
-        [BLOCK_TASK_STATUSES.CREATED.ID]: 5,
-    }
+export const orderBlockTasksByStatus = (day: IDay): IDay => {
 
-    // Создаем копию массива, чтобы не мутировать оригинал (важно для Vue)
-    const result = [...tasks]
-        .sort((a, b) => {
-            const weightA = statusPriority[a.current_status.id] ?? 999
-            const weightB = statusPriority[b.current_status.id] ?? 999
+    // __ Собираем все задачи за день в один плоский массив и проставляем им смены
+    const allDayTasks: IBlockTask[] = []
 
-            // Сначала сравниваем по весу статуса
-            if (weightA !== weightB) {
-                return weightA - weightB
-            }
+    day.forEach((change: IBlockTask[], changeIndex: number) => {
+        const currentChange = changeIndex === 0 ? CHANGE_1 : CHANGE_2
 
-            // Если статусы одинаковые, сравниваем по дате (action_at)
-            // Преобразуем строки даты в числа (timestamp) для вычитания
-            const dateA = new Date(a.action_at).getTime()
-            const dateB = new Date(b.action_at).getTime()
-
-            return dateA - dateB
+        change.forEach((task: IBlockTask) => {
+            allDayTasks.push({
+                ...(task as IBlockTask),
+                change: currentChange // Мутируем или создаем копию в зависимости от архитектуры
+            })
         })
-
-    result.forEach((_, index, array) => {
-        // console.log(_ , index)
-        array[index].position = index + 1
     })
 
-    // console.log(result)
+    // __ Сортируем задачи дня по вашему бизнес-правилу:
+    // __ Сначала Смена 1, затем Смена 2. Внутри смены — по PRIORITY из справочника.
+    allDayTasks.sort((a, b) => {
+        if (a.change !== b.change) {
+            return a.change === CHANGE_1 ? -1 : 1
+        }
 
-    return result
+        // __ Сортируем по убыванию
+        return getTaskPriority(b) - getTaskPriority(a)
+    })
+
+    // __ Проставляем сквозную позицию (index + 1)
+    const processedTasks = allDayTasks.map((task, index) => ({
+        ...task,
+        position: index + 1
+    }))
+
+    // __ Распределяем обратно по сменам, сохраняя сортировку по position
+    // __ Так как массив уже отсортирован, filter вернет элементы в правильном порядке.
+    const changeTasks1 = processedTasks.filter(task => task.change === CHANGE_1)
+    const changeTasks2 = processedTasks.filter(task => task.change === CHANGE_2)
+
+    // __ Записываем обратно в матрицу
+    const resultDay = JSON.parse(JSON.stringify(day))
+    resultDay[0] = changeTasks1
+    resultDay[1] = changeTasks2
+
+    return resultDay
+
+    // __ Старый код
+    // // 1. Описываем веса для статусов.
+    // // Чем меньше значение, тем выше (раньше) элемент в массиве.
+    // const statusPriority: Record<number, number> = {
+    //     [BLOCK_TASK_STATUSES.DONE.ID]   : 1,
+    //     [BLOCK_TASK_STATUSES.RUNNING.ID]: 2,
+    //     [BLOCK_TASK_STATUSES.PENDING.ID]: 3,
+    //     [BLOCK_TASK_STATUSES.ROLLING.ID]: 4,
+    //     [BLOCK_TASK_STATUSES.CREATED.ID]: 5,
+    // }
+    //
+    // // Создаем копию массива, чтобы не мутировать оригинал (важно для Vue)
+    // const result = [...tasks]
+    //     .sort((a, b) => {
+    //         const weightA = statusPriority[a.current_status.id] ?? 999
+    //         const weightB = statusPriority[b.current_status.id] ?? 999
+    //
+    //         // Сначала сравниваем по весу статуса
+    //         if (weightA !== weightB) {
+    //             return weightA - weightB
+    //         }
+    //
+    //         // Если статусы одинаковые, сравниваем по дате (action_at)
+    //         // Преобразуем строки даты в числа (timestamp) для вычитания
+    //         const dateA = new Date(a.action_at).getTime()
+    //         const dateB = new Date(b.action_at).getTime()
+    //
+    //         return dateA - dateB
+    //     })
+    //
+    // result.forEach((_, index, array) => {
+    //     array[index].position = index + 1
+    // })
+    //
+    // return result
 }
 
 
@@ -604,9 +676,9 @@ export function getTaskPriority(task: IBlockTask): number {
     // __ Ищем подходящий статус в вашем справочнике BLOCK_TASK_STATUSES
     const statusConfig = Object.values(BLOCK_TASK_STATUSES).find(
         s => s.ID === statusKeyId
-    );
+    )
 
-    return statusConfig ? statusConfig.PRIORITY : 999; // 999 для неизвестных статусов
+    return statusConfig ? statusConfig.PRIORITY : 999 // 999 для неизвестных статусов
 }
 
 
@@ -616,50 +688,51 @@ export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix): IPlanMatrix 
         week.forEach((day, dayIndex) => {
 
             // __ Собираем все задачи за день в один плоский массив и проставляем им смены
-            const allDayTasks: IBlockTask[] = [];
+            const allDayTasks: IBlockTask[] = []
 
             day.forEach((change, changeIndex) => {
-                const currentChange = changeIndex === 0 ? CHANGE_1 : CHANGE_2;
+                const currentChange = changeIndex === 0 ? CHANGE_1 : CHANGE_2
 
                 change.forEach((task: IBlockTask) => {
                     allDayTasks.push({
                         ...(task as IBlockTask),
                         change: currentChange // Мутируем или создаем копию в зависимости от архитектуры
-                    });
-                });
-            });
+                    })
+                })
+            })
 
             // __ Сортируем задачи дня по вашему бизнес-правилу:
             // __ Сначала Смена 1, затем Смена 2. Внутри смены — по PRIORITY из справочника.
             allDayTasks.sort((a, b) => {
                 if (a.change !== b.change) {
-                    return a.change === CHANGE_1 ? -1 : 1;
+                    return a.change === CHANGE_1 ? -1 : 1
                 }
-                return getTaskPriority(a) - getTaskPriority(b);
-            });
+
+                // __ Сортируем по убыванию
+                return getTaskPriority(b) - getTaskPriority(a)
+            })
 
             // __ Проставляем сквозную позицию (index + 1)
             const processedTasks = allDayTasks.map((task, index) => ({
                 ...task,
                 position: index + 1
-            }));
+            }))
 
             // __ Распределяем обратно по сменам, сохраняя сортировку по position
             // __ Так как массив уже отсортирован, filter вернет элементы в правильном порядке.
-            const changeTasks1 = processedTasks.filter(task => task.change === CHANGE_1);
-            const changeTasks2 = processedTasks.filter(task => task.change === CHANGE_2);
+            const changeTasks1 = processedTasks.filter(task => task.change === CHANGE_1)
+            const changeTasks2 = processedTasks.filter(task => task.change === CHANGE_2)
 
             // __ Записываем обратно в матрицу
             //@ts-expect-error Recently missing
             matrix[weekIndex][dayIndex][0] = changeTasks1
             //@ts-expect-error Recently missing
             matrix[weekIndex][dayIndex][1] = changeTasks2
-        });
-    });
+        })
+    })
 
-    return matrix;
+    return matrix
 }
-
 
 
 export function setTaskPositionInRenderMatrix_old_1(matrix: IPlanMatrix) {
@@ -707,9 +780,6 @@ export function setTaskPositionInRenderMatrix_old_1(matrix: IPlanMatrix) {
                             change1NonCreated.push(task)
                         }
                     }
-
-
-
 
 
                     // if (task.change === CHANGE_1) {
@@ -1097,11 +1167,6 @@ export function getExecuteTaskStatistics(item: IBlockTask | IBlockTaskLine[]) {
 // export function getKDB(item: IBlockTaskLine): string {
 //     return ''
 // }
-
-
-
-
-
 
 
 // __ Функция-помощник: говорит TS, является ли item типом IBlockTask

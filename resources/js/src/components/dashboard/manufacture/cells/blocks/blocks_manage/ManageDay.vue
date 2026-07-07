@@ -14,7 +14,7 @@
                 rounded="rounded-[4px]"
                 text-size="small"
                 width="w-full"
-                @click.exact="actionDayMenu"
+
             />
         </div>
 
@@ -121,6 +121,7 @@
                     rounded="rounded-[4px]"
                     text-size="mini"
                     width="calc(w-full - 5px)"
+                    @click.exact="actionDayMenu(idx === 0 ? CHANGE_1 : CHANGE_2)"
                 />
 
                 <!-- __ Сами СЗ с возможностью перетаскивания -->
@@ -296,7 +297,7 @@ import type {
     IModalAsyncMenu,
     IPlanMatrix, IBlockDay,
     IBlockTask,
-    IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock,
+    IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock, IBlockTaskChangeKeys,
 } from '@/types'
 
 import { computed, inject, type Ref, ref, } from 'vue'
@@ -331,12 +332,12 @@ import {
     isTaskStatusCreated, isTaskStatusRunning,
     orderBlockTasksByStatus,
     repositionBlockTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle,
+    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
-import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGES } from '@/app/constants/blocks.ts'
+import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/blocks.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
@@ -1075,7 +1076,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
         // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || '',true)
+        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || '', true)
 
         // __ Формируем текст для модального окна
         const orderInfo = `${blockTask.order.client.short_name} №${blockTask.order.order_no_str}`
@@ -1260,13 +1261,14 @@ const setStatuses = async (setStatuses: IBlockTaskStatusesSet[]) => {
 }
 
 // __ Вызываем меню для дня
-const actionDayMenu = async () => {
+const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
     console.log('props.day: ', props.day)
 
     const clearDay = clearRenderMatrixDay(props.day) as IBlockTask[]  // __ Возвращаем новый массив без пустых элементов
+    const idx      = getIndexByChange(change)
 
     // __ Проверяем, есть ли СЗ в дне
-    if (!clearDay.length) {
+    if (clearDay[idx].length === 0) {
         return
     }
 
@@ -1294,7 +1296,9 @@ const actionDayMenu = async () => {
 
     // __ Отправка на выполнение
     if (result.menuItem === 1) {
-        const setStatusesData = clearDay.flatMap(task => {
+
+        let isTasksHasUnknownLine = false
+        const setStatusesData     = clearDay[idx].flatMap((task: IBlockTask) => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
             // __ и не является AVERAGE и там нет нераспределенных Столов
@@ -1304,6 +1308,7 @@ const actionDayMenu = async () => {
             // console.log('! isTaskAverage(task): ', !isTaskAverage(task))
             // console.log('! hasTaskUnknownTable(task): ', !hasTaskUnknownTable(task))
 
+            isTasksHasUnknownLine ||= hasTaskUnknownManufLine(task)
             if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownManufLine(task)) {
                 return { task: task.id, status: BLOCK_TASK_STATUSES.PENDING.ID }
             } else {
@@ -1313,25 +1318,37 @@ const actionDayMenu = async () => {
             return []
         })
 
-        console.log('setStatusesData:', setStatusesData)
+        // console.log('setStatusesData:', setStatusesData)
+        // console.log('clearDay[idx]:', clearDay[idx])
 
-        if (clearDay.length !== setStatusesData.length) {
+        if (isTasksHasUnknownLine) {
             await showError([
-                'В дне все СЗ уже отправлены на выполнение или',
-                'присутствуют расчетные СЗ или',
+                'В дне присутствуют расчетные СЗ или',
                 'СЗ с неопределенной Линией производства!',
             ])
+            return
         }
+
+        // if (clearDay[idx].length !== setStatusesData.length) {
+        //     await showError([
+        //         'В дне все СЗ уже отправлены на выполнение или',
+        //         'присутствуют расчетные СЗ или',
+        //         'СЗ с неопределенной Линией производства!',
+        //     ])
+        // }
 
         await setStatuses(setStatusesData)
 
         // __ Отправляем СЗ со статусом Pending вверх списка
         const dayClone = JSON.parse(JSON.stringify(clearDay))
 
-        const newOrders = orderBlockTasksByStatus(dayClone)
-        const diffsTask = getBlockTasksDiff(newOrders, clearDay)
+        const newStatusOrders = orderBlockTasksByStatus(dayClone)
+        const diffsTask       = getBlockTasksDiff(newStatusOrders[idx], clearDay[idx] as unknown as IBlockTask[])
 
-        const result = await blockStore.saveChanges(newOrders, clearDay)
+        // console.log('newStatusOrders: ', newStatusOrders)
+        // console.log('diffsTask: ', diffsTask)
+
+        // const result = await blockStore.saveChanges(newOrders, clearDay)
 
         // __ Меняем реактивно позиции в отображении
         if (checkCRUD(result)) {
@@ -1348,7 +1365,7 @@ const actionDayMenu = async () => {
 
     // __ Возврат для редактирования
     if (result.menuItem === 2) {
-        const setStatusesData = clearDay.flatMap(task => {
+        const setStatusesData = clearDay[idx].flatMap((task: IBlockTask) => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
             if (task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID) {

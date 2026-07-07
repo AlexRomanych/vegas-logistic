@@ -57,7 +57,11 @@ class BlockStatusController extends Controller
     }
 
 
-    // ___ Смена статусов Заявок с удалением старых
+    /**
+     * ___ Смена статусов Заявок с добавлением
+     * @param Request $request
+     * @return string
+     */
     public function setBlockTasksStatuses(Request $request)
     {
         try {
@@ -69,17 +73,18 @@ class BlockStatusController extends Controller
                     continue;
                 }
 
+                /** @var BlockTask $blockTask */
                 $blockTask = BlockTask::query()->find($item['task']);
 
                 if (!$blockTask) {
                     continue;
                 }
-
                 $blockTask->statuses()->attach($item['status'], [
                     'set_at'     => now(),
                     'created_at' => now(),
                     'created_by' => auth()->id(),
                 ]);
+
             }
             return EndPointStaticRequestAnswer::ok();
         } catch (Exception|Throwable $e) {

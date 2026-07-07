@@ -684,7 +684,7 @@ class BlockTaskController extends Controller
     public function taskLinesManufLineSet(Request $request)
     {
         try {
-            $all = $request->all();
+            //$all = $request->all();
 
             $validated = $request->validate([
                 // __ Проверяем, что 'data' — это обязательный, не пустой массив
@@ -768,7 +768,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * __ Проверяем наличие СЗ на Раскрой по статусам в определенную дату
+     * ___ Проверяем наличие СЗ на Раскрой по статусам в определенную дату
      * @param Request $request
      * @return bool[]|string
      */
@@ -867,7 +867,7 @@ class BlockTaskController extends Controller
      */
     public function addBlockTasksByOrderId(Request $request)
     {
-        //try {
+        try {
             $validated = $request->validate([
                 'id' => 'required|exists:orders,id'
             ]);
@@ -875,9 +875,9 @@ class BlockTaskController extends Controller
             BlocksService::createBlockTaskFromOrderId($validated['id']);
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно создано');
-        //} catch (Exception|Throwable $e) {
-        //    return EndPointStaticRequestAnswer::fail($e);
-        //}
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
     }
 
 

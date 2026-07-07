@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @method static Builder|BlockTask query()
+ * @method static Builder|BlockTask byStatus(mixed $data)
+ */
 class BlockTask extends Model
 {
     protected $guarded = false;
