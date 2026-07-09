@@ -114,7 +114,7 @@
                 <!-- __ Смена -->
                 <AppLabelTS
                     :height="DEFAULT_HEIGHT"
-                    :text="`Смена: ${idx + 1}`"
+                    :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
                     :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
                     align="center"
                     class="uppercase"
@@ -508,6 +508,11 @@ const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unkn
 const getChangeType = (change: IBlockTaskChangeKeys) => {
     const findChange = getChangeByName(change)
     return findChange ? findChange.TYPE : 'dark'
+}
+
+// __ Получаем Название
+const getChangeTitle = (change: IBlockTaskChangeKeys) => {
+    return change === CHANGE_1 ? 'Смена: 1 (08:30 - 20:30)' : 'Смена: 2 (20:30 - 08:30)'
 }
 
 

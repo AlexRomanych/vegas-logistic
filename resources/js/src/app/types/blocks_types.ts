@@ -12,7 +12,7 @@ import {
 } from '@/app/constants/blocks.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-import type { IDiffsType } from '@/types/index.ts'
+import type { IDiffsType  } from '@/types/index.ts'
 
 
 // __ Коллекция Блоков
@@ -511,3 +511,19 @@ export interface IBlockTaskLinesSubgroup {
 //     cutLengthTotal: number
 // }
 
+
+// --- -------------------------------------------------------------------
+// --- -------------------- Для времени переналадки ----------------------
+// --- -------------------------------------------------------------------
+
+export interface IBlockCollectionTime {
+    code_1c: string
+    id: number
+    line: IBlockManufLine
+    line_alt: IBlockManufLine
+    name: string
+    priority: string
+    tuning_time?: number
+    collections_to?: IBlockCollectionTime[]
+    db?: boolean                    // __ Для отрисовки в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
+}

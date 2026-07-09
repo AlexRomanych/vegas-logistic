@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api\V1\Cells\Blocks;
 
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manufacture\Blocks\TuningTime\DeleteTuningTimeRequest;
+use App\Http\Requests\Manufacture\Blocks\TuningTime\StoreTuningTimeRequest;
 use App\Http\Resources\Manufacture\Cells\Blocks\References\BlockCollectionResource;
+use App\Http\Resources\Manufacture\Cells\Blocks\Tuning\BlockCollectionTuningTimeResource;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
+use App\Models\Manufacture\Cells\Block\BlockTuningTime;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -166,5 +170,117 @@ class BlockCollectionController extends Controller
         }
     }
 
+
+
+    /**
+     * ___ Получение времени переналадки рисунков между 2 рисунками
+     * @param string $from
+     * @param string $to
+     * @return string
+     */
+    public static function getBlockBetweenTuningTime(string $from, string $to): string
+    {
+        try {
+
+            $tuningTime = BlockTuningTime::query()
+                ->where('picture_from', $from)
+                ->where('picture_to', $to)
+                ->first();
+
+            $returnData = [
+                'data' => [
+                    'from' => (int)$from,
+                    'to' => (int)$to,
+                    'time' => '',
+                ]
+            ];
+
+            if ($tuningTime) {
+                $returnData['data']['time'] = $tuningTime->tuning_time;
+            } else {
+                $returnData['data']['time'] = null;
+            }
+
+            return json_encode($returnData);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+
+
+
+    /**
+     * ___ Получаем время переналадки рисунков
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getBlockCollectionsTuningTime(Request $request)
+    {
+        try {
+
+            $tuningTime = BlockCollection::query()
+                ->actual()
+                ->with([
+                    'collectionsTo',                                               // добавляем рисунки из которых производится тюнинг
+                ])
+                ->get();
+
+            return BlockCollectionTuningTimeResource::collection($tuningTime);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Обновление/создание времени переналадки рисунков
+     * @param StoreTuningTimeRequest $request
+     * @return string
+     */
+    public function setBlockTuningTime(StoreTuningTimeRequest $request)
+    {
+        try {
+            $tuningTime = BlockTuningTime::query()
+                ->updateOrCreate([
+                    'collection_from' => $request->input('from'),
+                    'collection_to'   => $request->input('to'),
+                ], [
+                    'tuning_time' => $request->input('time'),
+                ]);
+
+            if (!$tuningTime) {
+                throw new Exception('Tuning time not found');
+            }
+
+            return EndPointStaticRequestAnswer::ok('Успешно обновлено');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Удаление времени переналадки рисунков
+     * @param DeleteTuningTimeRequest $request
+     * @return string
+     */
+    public function deleteBlockTuningTime(DeleteTuningTimeRequest $request)
+    {
+        try {
+            $tuningTime = BlockTuningTime::query()
+                ->where('collection_from', $request->input('from'))
+                ->where('collection_to', $request->input('to'))
+                ->first();
+
+            if ($tuningTime) {
+                $tuningTime->delete();
+            } /*else {
+                throw new Exception('Tuning time not found');
+            }*/
+
+            return EndPointStaticRequestAnswer::ok('Успешно удалено');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
 
 }

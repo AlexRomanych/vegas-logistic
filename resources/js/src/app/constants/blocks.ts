@@ -7,7 +7,7 @@ import type {
     IBlockManufLine,
     IBlockTaskStatusKeys,
     IBlockTaskStatusItem,
-    IBlockTaskChange
+    IBlockTaskChange, IBlockCollectionTime
 } from '@/types'
 
 // __ Название вкладки с общим СЗ
@@ -21,8 +21,11 @@ export const START_SHIFT_TIME = '07:30'
 
 
 export const LINE_0 = '0'
+export const LINE_0_TYPE = 'danger'
 export const LINE_1 = '1'
+export const LINE_1_TYPE = 'orange'
 export const LINE_2 = '2'
+export const LINE_2_TYPE = 'indigo'
 
 export const LINE_0_NAME = 'Н/Д'
 export const LINE_1_NAME = 'Линия 1'
@@ -67,7 +70,7 @@ export const BLOCK_DRAFT: IBlock = {
     length     : 0,
     active     : true,
     description: null,
-    collection: '000000000' // Без коллекции
+    collection : '000000000' // Без коллекции
 
 }
 
@@ -99,7 +102,7 @@ export const BLOCK_TASK_DRAFT: IBlockTask = {
             color       : '',
         }
     },
-    block_lines : [],
+    block_lines   : [],
     statuses      : [],
     current_status: {
         id   : 0,
@@ -120,20 +123,20 @@ export const BLOCK_TASK_DRAFT: IBlockTask = {
 // __ Константы смен
 export const CHANGES = {
     CHANGE_1: {
-        ID: 1,
-        NAME: CHANGE_1,
-        TITLE: '1',
-        ICON: '①',
+        ID        : 1,
+        NAME      : CHANGE_1,
+        TITLE     : '1',
+        ICON      : '①',
         TITLE_ROME: 'I',
-        TYPE: 'indigo',
+        TYPE      : 'indigo',
     },
     CHANGE_2: {
-        ID: 2,
-        NAME: CHANGE_2,
-        TITLE: '2',
-        ICON: '②',
+        ID        : 2,
+        NAME      : CHANGE_2,
+        TITLE     : '2',
+        ICON      : '②',
         TITLE_ROME: 'II',
-        TYPE: 'orange',
+        TYPE      : 'orange',
     },
 
 } as const satisfies Record<string, IBlockTaskChange>
@@ -147,7 +150,6 @@ export const BLOCK_MANUF_LINES: Record<string, IBlockManufLine> = {
 } as const
 
 
-
 export const BLOCK_TASK_STATUS_CREATED = 'CREATED'     // __ Создано
 export const BLOCK_TASK_STATUS_ROLLING = 'ROLLING'     // __ Переходящий
 export const BLOCK_TASK_STATUS_PENDING = 'PENDING'     // __ Готово к выполнению
@@ -158,38 +160,51 @@ export const BLOCK_TASK_STATUS_DONE    = 'DONE'        // __ Выполнено
 // __ Статусы движения СЗ на Блоках
 export const BLOCK_TASK_STATUSES: Record<IBlockTaskStatusKeys, IBlockTaskStatusItem> = {
     CREATED: {
-        ID   : 1,
-        TITLE: 'Создано',
-        WORD : 'created',
-        TYPE : 'dark',
+        ID      : 1,
+        TITLE   : 'Создано',
+        WORD    : 'created',
+        TYPE    : 'dark',
         PRIORITY: 1,
     },
     ROLLING: {
-        ID   : 2,
-        TITLE: 'Создано при закрытии СЗ',
-        WORD : 'rolling',
-        TYPE : 'orange',
+        ID      : 2,
+        TITLE   : 'Создано при закрытии СЗ',
+        WORD    : 'rolling',
+        TYPE    : 'orange',
         PRIORITY: 2,
     },
     PENDING: {
-        ID   : 3,
-        TITLE: 'Готово к выполнению',
-        WORD : 'pending',
-        TYPE : 'primary',
+        ID      : 3,
+        TITLE   : 'Готово к выполнению',
+        WORD    : 'pending',
+        TYPE    : 'primary',
         PRIORITY: 3,
     },
     RUNNING: {
-        ID   : 4,
-        TITLE: 'Выполняется',
-        WORD : 'running',
-        TYPE : 'warning',
+        ID      : 4,
+        TITLE   : 'Выполняется',
+        WORD    : 'running',
+        TYPE    : 'warning',
         PRIORITY: 4,
     },
     DONE   : {
-        ID   : 5,
-        TITLE: 'Создано',
-        WORD : 'created',
-        TYPE : 'success',
+        ID      : 5,
+        TITLE   : 'Создано',
+        WORD    : 'created',
+        TYPE    : 'success',
         PRIORITY: 5,
     },
 } as const
+
+// __ Пустой объект Коллекции Блоков для времени переналадки
+export const BLOCK_COLLECTION_TIME_DRAFT: IBlockCollectionTime = {
+    code_1c: '',
+    db: false,
+    id: 0,
+    line: LINE_0,
+    line_alt: LINE_0,
+    name: '',
+    priority: '',
+    tuning_time: 0,
+    collections_to: []
+} as const satisfies IBlockCollectionTime

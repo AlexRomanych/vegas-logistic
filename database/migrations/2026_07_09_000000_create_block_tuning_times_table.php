@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->id();
 
             // __ Коллекция Блоков с которой происходит переналадка
-            $table->foreignId('block_from')
+            $table->foreignId('collection_from')
                 ->nullable(false)
                 ->comment('Коллекция Блоков с которой происходит переналадка')
                 ->references('id')
@@ -23,7 +23,7 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             // __ Коллекция Блоков на которую происходит переналадка
-            $table->foreignId('block_to')
+            $table->foreignId('collection_to')
                 ->nullable(false)
                 ->comment('Коллекция Блоков на которую происходит переналадка')
                 ->references('id')
@@ -44,7 +44,7 @@ return new class extends Migration {
             $table->timestamps();
 
             // __ Уникальное сочетание для 'Защиты от дурака'
-            $table->unique(['block_from', 'block_to']);
+            $table->unique(['collection_from', 'collection_to']);
         });
     }
 

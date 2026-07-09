@@ -1,6 +1,6 @@
 // Info Тут все константы, касающиеся участка Стежки
 
-import type { IFabricMachine, ITaskStatus, IRoll, IFabric, ITaskItem, IRollStatus } from '@/types'
+import type { ITaskStatus, IRoll, IFabric, ITaskItem, IRollStatus } from '@/types'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 
 /*
@@ -34,24 +34,24 @@ export const FABRIC_DEFAULT_TUNING_TIME = -1
 // descr: Нижнее количество включается, верхнее - нет
 export const WARNINGS_RANGES = Object.freeze({
     [0]: {
-        LOW_BOUND: 0.00,
+        LOW_BOUND : 0.00,
         HIGH_BOUND: 0.25,
-        TYPE: 'danger',
+        TYPE      : 'danger',
     },
     [1]: {
-        LOW_BOUND: 0.25,
+        LOW_BOUND : 0.25,
         HIGH_BOUND: 0.50,
-        TYPE: 'warning',
+        TYPE      : 'warning',
     },
     [2]: {
-        LOW_BOUND: 0.50,
+        LOW_BOUND : 0.50,
         HIGH_BOUND: 0.75,
-        TYPE: 'info',
+        TYPE      : 'info',
     },
     [3]: {
-        LOW_BOUND: 0.75,
+        LOW_BOUND : 0.75,
         HIGH_BOUND: 1.00,
-        TYPE: 'success',
+        TYPE      : 'success',
     },
 })
 
@@ -61,38 +61,38 @@ export const FABRIC_TASK_STATUS: Record<string, ITaskStatus> = Object.freeze({
 
     // ___ Сменное задание еще не создано (или сохранено)
     UNKNOWN: {
-        WORD: 'unknown',
-        CODE: 0,
+        WORD : 'unknown',
+        CODE : 0,
         TITLE: 'Не создано',
-        TYPE: 'danger',
+        TYPE : 'danger',
     },
     // ___ Сменное задание создано (или сохранено)
     CREATED: {
-        WORD: 'created',
-        CODE: 1,
+        WORD : 'created',
+        CODE : 1,
         TITLE: 'Создано',
-        TYPE: 'dark',
+        TYPE : 'dark',
     },
     // ___ Сменное задание отправлено на выполнение
     PENDING: {
-        WORD: 'pending',
-        CODE: 2,
+        WORD : 'pending',
+        CODE : 2,
         TITLE: 'Готово к стежке',
-        TYPE: 'primary',
+        TYPE : 'primary',
     },
     // ___ Сменное задание взято на выполнение (находится в процессе выполнения)
     RUNNING: {
-        WORD: 'running',
-        CODE: 3,
+        WORD : 'running',
+        CODE : 3,
         TITLE: 'Выполняется',
-        TYPE: 'warning',
+        TYPE : 'warning',
     },
     // ___ Сменное задание выполнено (закрыто)
     DONE: {
-        WORD: 'done',
-        CODE: 4,
+        WORD : 'done',
+        CODE : 4,
         TITLE: 'Выполнено',
-        TYPE: 'success',
+        TYPE : 'success',
     },
 })
 
@@ -102,106 +102,106 @@ export const FABRIC_ROLL_STATUS: Record<string, IRollStatus> = Object.freeze({
 
     // ___ Статус не определен
     UNKNOWN: {
-        WORD: 'unknown',
-        CODE: -1,
+        WORD : 'unknown',
+        CODE : -1,
         TITLE: 'Не определено',
-        TYPE: 'dark',
+        TYPE : 'dark',
     },
 
     // descr: Рулон создан (или сохранен)
     CREATED: {
-        WORD: 'created',
-        CODE: 0,
+        WORD : 'created',
+        CODE : 0,
         TITLE: 'Создано',
-        TYPE: 'dark',
+        TYPE : 'dark',
     },
 
     // descr: Рулон взят на выполнение (находится в процессе выполнения)
     RUNNING: {
-        WORD: 'running',
-        CODE: 1,
+        WORD : 'running',
+        CODE : 1,
         TITLE: 'В процессе',
-        TYPE: 'warning',
+        TYPE : 'warning',
     },
 
     // descr: Рулон был взят на выполнение, но выполнение приостановлено (например, перенос на другую смену)
     PAUSED: {
-        WORD: 'paused',
-        CODE: 2,
+        WORD : 'paused',
+        CODE : 2,
         TITLE: 'Пауза',
-        TYPE: 'light',
+        TYPE : 'light',
     },
 
     // descr: Рулон выполнен (закрыт)
     DONE: {
-        WORD: 'done',
-        CODE: 3,
+        WORD : 'done',
+        CODE : 3,
         TITLE: 'Выполнено',
-        TYPE: 'success',
+        TYPE : 'success',
     },
 
     // descr: Рулон не выполнен (не закрыт)
     FALSE: {
-        WORD: 'false',
-        CODE: 4,
+        WORD : 'false',
+        CODE : 4,
         TITLE: 'Не выполнено',
-        TYPE: 'danger',
+        TYPE : 'danger',
     },
 
     // descr: Рулон переходящий (с одной смены на другую)
     ROLLING: {
-        WORD: 'rolling',
-        CODE: 5,
+        WORD : 'rolling',
+        CODE : 5,
         TITLE: 'Переходящий',
-        TYPE: 'orange',
+        TYPE : 'orange',
     },
 
     // descr: Рулон поставленный на учет в 1С. Не учавствует в движении заявки
     REGISTERED_1C: {
-        WORD: 'registered',
-        CODE: 6,
+        WORD : 'registered',
+        CODE : 6,
         TITLE: 'Учет в 1С',
-        TYPE: 'orange',
+        TYPE : 'orange',
     },
 
     // descr: Рулон перемещенный на участок закроя
     MOVED: {
-        WORD: 'moved',
-        CODE: 7,
+        WORD : 'moved',
+        CODE : 7,
         TITLE: 'Перемещенный',
-        TYPE: 'indigo',
+        TYPE : 'indigo',
     },
 
     // descr: Рулон принятый на закрое
     ACCEPTED: {
-        WORD: 'accepted',
-        CODE: 8,
+        WORD : 'accepted',
+        CODE : 8,
         TITLE: 'Принятый',
-        TYPE: 'success',
+        TYPE : 'success',
     },
 
     // descr: Рулон отменный на закрое
     CANCELLED: {
-        WORD: 'cancelled',
-        CODE: 9,
+        WORD : 'cancelled',
+        CODE : 9,
         TITLE: 'Отменено',
-        TYPE: 'stone',
+        TYPE : 'stone',
     },
 
     // ___ Рулон закрытый (списанный)
     CLOSED: {
-        WORD: 'closed',
-        CODE: 10,
+        WORD : 'closed',
+        CODE : 10,
         TITLE: 'Закрыт',
-        TYPE: 'secondary',
+        TYPE : 'secondary',
     },
 
     // ___ Рулон, без учета в 1С (чисто технический статус). Не учавствует в движении заявки
     UNREGISTERED_1C: {
-        WORD: 'unregistered',
-        CODE: 100,
+        WORD : 'unregistered',
+        CODE : 100,
         TITLE: 'Без учета в 1С',
-        TYPE: 'dark',
+        TYPE : 'dark',
     },
 
 })
@@ -209,29 +209,29 @@ export const FABRIC_ROLL_STATUS: Record<string, IRollStatus> = Object.freeze({
 
 // descr: Массив (псевдомассив - объект) статусов движения рулона
 export const FABRIC_ROLL_STATUS_LIST = {
-    [FABRIC_ROLL_STATUS.CREATED.CODE]: FABRIC_ROLL_STATUS.CREATED,
-    [FABRIC_ROLL_STATUS.RUNNING.CODE]: FABRIC_ROLL_STATUS.RUNNING,
-    [FABRIC_ROLL_STATUS.PAUSED.CODE]: FABRIC_ROLL_STATUS.PAUSED,
-    [FABRIC_ROLL_STATUS.DONE.CODE]: FABRIC_ROLL_STATUS.DONE,
-    [FABRIC_ROLL_STATUS.FALSE.CODE]: FABRIC_ROLL_STATUS.FALSE,
-    [FABRIC_ROLL_STATUS.ROLLING.CODE]: FABRIC_ROLL_STATUS.ROLLING,
+    [FABRIC_ROLL_STATUS.CREATED.CODE]  : FABRIC_ROLL_STATUS.CREATED,
+    [FABRIC_ROLL_STATUS.RUNNING.CODE]  : FABRIC_ROLL_STATUS.RUNNING,
+    [FABRIC_ROLL_STATUS.PAUSED.CODE]   : FABRIC_ROLL_STATUS.PAUSED,
+    [FABRIC_ROLL_STATUS.DONE.CODE]     : FABRIC_ROLL_STATUS.DONE,
+    [FABRIC_ROLL_STATUS.FALSE.CODE]    : FABRIC_ROLL_STATUS.FALSE,
+    [FABRIC_ROLL_STATUS.ROLLING.CODE]  : FABRIC_ROLL_STATUS.ROLLING,
     [FABRIC_ROLL_STATUS.CANCELLED.CODE]: FABRIC_ROLL_STATUS.CANCELLED,
 
-    [FABRIC_ROLL_STATUS.MOVED.CODE]: FABRIC_ROLL_STATUS.MOVED,
-    [FABRIC_ROLL_STATUS.ACCEPTED.CODE]: FABRIC_ROLL_STATUS.ACCEPTED,
+    [FABRIC_ROLL_STATUS.MOVED.CODE]        : FABRIC_ROLL_STATUS.MOVED,
+    [FABRIC_ROLL_STATUS.ACCEPTED.CODE]     : FABRIC_ROLL_STATUS.ACCEPTED,
     [FABRIC_ROLL_STATUS.REGISTERED_1C.CODE]: FABRIC_ROLL_STATUS.REGISTERED_1C,
 }
 
 // descr Константы статусов выполнения СЗ
 export const FABRIC_TASKS_EXECUTE = Object.freeze({
     START: {
-        WORD: 'start',
-        CODE: 1,
+        WORD : 'start',
+        CODE : 1,
         TITLE: 'Начать',
     },
-    STOP: {
-        WORD: 'stop',
-        CODE: 2,
+    STOP : {
+        WORD : 'stop',
+        CODE : 2,
         TITLE: 'Закончить',
     }
 })
@@ -239,8 +239,8 @@ export const FABRIC_TASKS_EXECUTE = Object.freeze({
 
 // ___ Константы режима работы компонента
 export const FABRIC_PAGE_MODE = Object.freeze({
-    CREATE: 'create',
-    EDIT: 'edit',
+    CREATE : 'create',
+    EDIT   : 'edit',
     EXECUTE: 'execute',
 })
 
@@ -257,254 +257,255 @@ export interface IConstFabricMachine {
 export type IMachineKey = 'UNKNOWN' | 'AMERICAN' | 'GERMAN' | 'CHINA' | 'KOREAN'
 
 export const FABRIC_MACHINES: Record<IMachineKey, IConstFabricMachine> = Object.freeze({
-    UNKNOWN: {
-        ID: 0,
-        TITLE: 'unknown',
-        NAME: 'Неизвестно',
-        INDEX: 'unknown',
+    UNKNOWN : {
+        ID    : 0,
+        TITLE : 'unknown',
+        NAME  : 'Неизвестно',
+        INDEX : 'unknown',
         ORIGIN: '',
-        TYPE: 'dark'
+        TYPE  : 'dark'
     },
     AMERICAN: {
-        ID: 1,
-        TITLE: 'american',
-        NAME: 'Американец',
-        INDEX: 'american',
+        ID    : 1,
+        TITLE : 'american',
+        NAME  : 'Американец',
+        INDEX : 'american',
         ORIGIN: 'LEGACY-4',
-        TYPE: 'orange'
+        TYPE  : 'orange'
     },
-    GERMAN: {
-        ID: 2,
-        TITLE: 'german',
-        NAME: 'Немец',
-        INDEX: 'german',
+    GERMAN  : {
+        ID    : 2,
+        TITLE : 'german',
+        NAME  : 'Немец',
+        INDEX : 'german',
         ORIGIN: 'CHAINTRONIC',
-        TYPE: 'success'
+        TYPE  : 'success'
     },
-    CHINA: {
-        ID: 3,
-        TITLE: 'china',
-        NAME: 'Китаец',
-        INDEX: 'china',
+    CHINA   : {
+        ID    : 3,
+        TITLE : 'china',
+        NAME  : 'Китаец',
+        INDEX : 'china',
         ORIGIN: 'HY-W-DGW',
-        TYPE: 'danger'
+        TYPE  : 'danger'
     },
-    KOREAN: {
-        ID: 4,
-        TITLE: 'korean',
-        NAME: 'Кореец',
-        INDEX: 'korean',
+    KOREAN  : {
+        ID    : 4,
+        TITLE : 'korean',
+        NAME  : 'Кореец',
+        INDEX : 'korean',
         ORIGIN: 'МТ-94',
-        TYPE: 'warning'
+        TYPE  : 'warning'
     },
 })
 
 
 // descr Создаем болванку "нулевой" ткани для отображения в сервисе
 export const FABRICS_NULLABLE: IFabric = {
-    'id': 0,
-    'code_1C': '0',
-    'name': 'Нет данных',
-    'display_name': 'Нет данных',
-    'picture':
+    'id'                       : 0,
+    'code_1C'                  : '0',
+    'name'                     : 'Нет данных',
+    'display_name'             : 'Нет данных',
+    'picture'                  :
         {
-            'id': 0,
+            'id'  : 0,
             'name': 'Н/Д'
         },
-    'textile': '',
-    'fillersList': [],
-    'active': true,
-    'rare': false,
-    'machines': [
+    'textile'                  : '',
+    'fillersList'              : [],
+    'active'                   : true,
+    'rare'                     : false,
+    'machines'                 : [
         {
-            'id': 0,
+            'id'        : 0,
             'short_name': 'Нет данных'
         },
         {
-            'id': 0,
+            'id'        : 0,
             'short_name': 'Нет данных'
         },
         {
-            'id': 0,
+            'id'        : 0,
             'short_name': 'Нет данных'
         },
         {
-            'id': 0,
+            'id'        : 0,
             'short_name': 'Нет данных'
         }
     ],
-    'buffer': {
-        'amount': 0,
-        'min': 0,
-        'max': 0,
-        'min_rolls': 0,
-        'max_rolls': 0,
-        'optimal_party': 0,
-        'average_length': 0,
+    'buffer'                   : {
+        'amount'               : 0,
+        'min'                  : 0,
+        'max'                  : 0,
+        'min_rolls'            : 0,
+        'max_rolls'            : 0,
+        'optimal_party'        : 0,
+        'average_length'       : 0,
         'average_fabric_length': 0,
-        'rate': 1,
-        'productivity': 0
+        'rate'                 : 1,
+        'productivity'         : 0
     },
-    'text': {
+    'text'                     : {
         'description': null,
-        'comment': null,
-        'note': null
+        'comment'    : null,
+        'note'       : null
     },
-    textile_layers_amount: 1,
-    statistic: false,
-    statistic_length: 0,
-    hand_length: 0,
-    correct: false,
+    textile_layers_amount      : 1,
+    statistic                  : false,
+    statistic_length           : 0,
+    hand_length                : 0,
+    correct                    : false,
     average_textile_roll_length: 0,
+    cutting_layers             : 0,
 }
 
 
 // ___ Нулевой рулон - болванка рулона для добавления
 export const NEW_ROLL: IRoll =
-    {
-        id: -1,
-        roll_position: 0,
-        average_textile_length: FABRICS_NULLABLE.buffer.average_length,
-        average_fabric_length: FABRICS_NULLABLE.buffer.average_fabric_length,
-        productivity: FABRICS_NULLABLE.buffer.productivity,
-        rate: FABRICS_NULLABLE.buffer.rate,
-        buffer: FABRICS_NULLABLE.buffer.amount,
-        rolls_amount: 0,
-        length_amount: 0,
-        fabric_id: FABRICS_NULLABLE.id,
-        fabric: FABRICS_NULLABLE.name,
-        fabric_rate: 0,
-        fabric_mode: false,
-        descr: '',
-        correct: false,
-        editable: true,
-        rolls_exec: [],
-        note: null,
-        textile_layers_amount: 1,
-        average_textile_roll_length: 0,
-        fabric_name: FABRICS_NULLABLE.name,
-        isTuning: false
-    }
+                 {
+                     id                         : -1,
+                     roll_position              : 0,
+                     average_textile_length     : FABRICS_NULLABLE.buffer.average_length,
+                     average_fabric_length      : FABRICS_NULLABLE.buffer.average_fabric_length,
+                     productivity               : FABRICS_NULLABLE.buffer.productivity,
+                     rate                       : FABRICS_NULLABLE.buffer.rate,
+                     buffer                     : FABRICS_NULLABLE.buffer.amount,
+                     rolls_amount               : 0,
+                     length_amount              : 0,
+                     fabric_id                  : FABRICS_NULLABLE.id,
+                     fabric                     : FABRICS_NULLABLE.name,
+                     fabric_rate                : 0,
+                     fabric_mode                : false,
+                     descr                      : '',
+                     correct                    : false,
+                     editable                   : true,
+                     rolls_exec                 : [],
+                     note                       : null,
+                     textile_layers_amount      : 1,
+                     average_textile_roll_length: 0,
+                     fabric_name                : FABRICS_NULLABLE.name,
+                     isTuning                   : false
+                 }
 
 
 // ___ Создаем болванку ПС
-export const NEW_FABRIC: IFabric =
-    {
-        id: 0,
-        code_1C: '',
-        name: '',
-        correct: false,
-        display_name: '',
-        picture: {
-            id: 0,
-            name: ''
-        },
-        textile: '',
-        fillersList: [],
-        active: true,
-        rare: false,
-        machines: [],
-        buffer: {
-            amount: 0,
-            min: 0,
-            max: 0,
-            min_rolls: 0,
-            max_rolls: 0,
-            optimal_party: 0,
-            average_length: 0,
-            average_fabric_length: 0,
-            rate: 0,
-            productivity: 0,
-        },
-        text: {
-            description: null,
-            comment: null,
-            note: null
-        },
-        textile_layers_amount: 1,
-        statistic: false,
-        statistic_length: 0,
-        hand_length: 0,
-        average_textile_roll_length: 0,
-    }
+export const NEW_FABRIC: IFabric = {
+    id                         : 0,
+    code_1C                    : '',
+    name                       : '',
+    correct                    : false,
+    display_name               : '',
+    picture                    : {
+        id  : 0,
+        name: ''
+    },
+    textile                    : '',
+    fillersList                : [],
+    active                     : true,
+    rare                       : false,
+    machines                   : [],
+    buffer                     : {
+        amount               : 0,
+        min                  : 0,
+        max                  : 0,
+        min_rolls            : 0,
+        max_rolls            : 0,
+        optimal_party        : 0,
+        average_length       : 0,
+        average_fabric_length: 0,
+        rate                 : 0,
+        productivity         : 0,
+    },
+    text                       : {
+        description: null,
+        comment    : null,
+        note       : null
+    },
+    textile_layers_amount      : 1,
+    statistic                  : false,
+    statistic_length           : 0,
+    hand_length                : 0,
+    average_textile_roll_length: 0,
+    cutting_layers             : 0,
+}
 
 
 // __ Болванка рисунка стежки
 export const NEW_FABRIC_PICTURE = {
-    id: 0,
-    active: true,
-    name: '',
-    stitch_length: 0,
-    stitch_speed: 0,
-    moment_speed: 0,
-    productivity: 0,
-    shuttle_amount: 0,
-    description: '',
-    fabricMainMachineId: 0,
-    fabricMainMachineSchemaId: 0,
-    fabricAltMachineId_1: 0,
+    id                        : 0,
+    active                    : true,
+    name                      : '',
+    stitch_length             : 0,
+    stitch_speed              : 0,
+    moment_speed              : 0,
+    productivity              : 0,
+    shuttle_amount            : 0,
+    description               : '',
+    fabricMainMachineId       : 0,
+    fabricMainMachineSchemaId : 0,
+    fabricAltMachineId_1      : 0,
     fabricAltMachineSchemaId_1: 0,
-    fabricAltMachineId_2: 0,
+    fabricAltMachineId_2      : 0,
     fabricAltMachineSchemaId_2: 0,
-    fabricAltMachineId_3: 0,
+    fabricAltMachineId_3      : 0,
     fabricAltMachineSchemaId_3: 0,
 }
 
 
 // __ Скелет объекта сменного задания
 export const TASK_DRAFT: ITaskItem =
-    {
-        id: 0,
-        date: '',
-        common: {
-            id: 0,
-            team: 1,
-            status: FABRIC_TASK_STATUS.UNKNOWN.CODE,
-            description: '',
-            active: false,
-            created_at: '',
-            created_by: '',
-            start_at: null,
-            finish_at: null,
+                 {
+                     id      : 0,
+                     date    : '',
+                     common  : {
+                         id         : 0,
+                         team       : 1,
+                         status     : FABRIC_TASK_STATUS.UNKNOWN.CODE,
+                         description: '',
+                         active     : false,
+                         created_at : '',
+                         created_by : '',
+                         start_at   : null,
+                         finish_at  : null,
 
-        },
-        machines: {
-            american: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-                lastExecRoll: null,
-            },
-            german: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-                lastExecRoll: null,
-            },
-            china: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-                lastExecRoll: null,
-            },
-            korean: {
-                rolls: [],
-                description: '',
-                active: true,
-                finish_at: null,
-                lastExecRoll: null,
-            },
-        },
-        workers: [],
-    }
+                     },
+                     machines: {
+                         american: {
+                             rolls       : [],
+                             description : '',
+                             active      : true,
+                             finish_at   : null,
+                             lastExecRoll: null,
+                         },
+                         german  : {
+                             rolls       : [],
+                             description : '',
+                             active      : true,
+                             finish_at   : null,
+                             lastExecRoll: null,
+                         },
+                         china   : {
+                             rolls       : [],
+                             description : '',
+                             active      : true,
+                             finish_at   : null,
+                             lastExecRoll: null,
+                         },
+                         korean  : {
+                             rolls       : [],
+                             description : '',
+                             active      : true,
+                             finish_at   : null,
+                             lastExecRoll: null,
+                         },
+                     },
+                     workers : [],
+                 }
 
 // __ Константы функционала
-export const FABRIC_MANAGE = 'manage'       // __ Управление СЗ
+export const FABRIC_MANAGE  = 'manage'       // __ Управление СЗ
 export const FABRIC_EXECUTE = 'execute'     // __ Выполнение СЗ
 
 // __ Константы для localStorage
-export const TASK_TAB_PREFIX = 'TASK_TAB'                      // __ Управление СЗ
+export const TASK_TAB_PREFIX         = 'TASK_TAB'                      // __ Управление СЗ
 export const TASK_TAB_PREFIX_EXECUTE = 'TASK_EXECUTE_TAB'      // __ Выполнение СЗ

@@ -367,6 +367,12 @@ Route::prefix('blocks')
         Route::post('collections', [BlockCollectionController::class, 'createBlockCollection']);
         Route::put('collections', [BlockCollectionController::class, 'updateBlockCollection']);
 
+        Route::get('collections/tuning/time', [BlockCollectionController::class, 'getBlockCollectionsTuningTime']);
+        Route::post('collections/tuning/time', [BlockCollectionController::class, 'setBlockTuningTime']);
+        Route::delete('collections/tuning/time', [BlockCollectionController::class, 'deleteBlockTuningTime']);
+
+
+
         // __ Блоки
         Route::get('/{id}', [BlockController::class, 'getBlockById']);
         Route::post('/', [BlockController::class, 'createBlock']);

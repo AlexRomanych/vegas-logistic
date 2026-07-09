@@ -31,9 +31,12 @@ const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_BLOCKS_COLLECTIONS = '/blocks/collections'                 // URL для получения Коллекций Блоков
-const URL_BLOCKS             = '/blocks'                             // URL для получения Блоков
-const URL_BLOCKS_TEST        = '/blocks/test'                        // URL для тестирования
+const URL_BLOCKS_COLLECTIONS                     = '/blocks/collections'                        // URL для получения Коллекций Блоков
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME         = '/blocks/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME_BETWEEN = '/blocks/collections/tuning/time/between'    // URL для получения времени переналадки между двумя Коллекциями Блоков
+
+const URL_BLOCKS      = '/blocks'                             // URL для получения Блоков
+const URL_BLOCKS_TEST = '/blocks/test'                        // URL для тестирования
 
 const URL_BLOCK_TASKS_STATUS               = '/blocks/tasks/status'                // URL для получения Сменных заданий по статусу
 const URL_BLOCK_TASKS_STATUS_PERIOD        = '/blocks/tasks/status/period'         // URL для получения Сменных заданий по статусу в периоде
@@ -63,7 +66,6 @@ const URL_BLOCKS_TASK_LINES_TABLE_SET = '/blocks/tasks/lines/line/set'        //
 const URL_BLOCKS_TASK_LINE_DONE       = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 const URL_BLOCKS_TASK_LINE_FALSE      = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 const URL_BLOCKS_TASK_LINE_RESET      = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
-
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_DATES              = '/blocks/day/dates'                   // URL для получения рабочих дней по статусу
@@ -816,6 +818,56 @@ export const useBlocksStore = defineStore('blocks', () => {
         // return saveChanges(globalBlockTasksPending.value, globalBlockTasksPendingCopy)
     }
 
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---          Время Переналадки                  !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    // __ Получаем время переналадки Блоков
+    const getBlockCollectionsTuningTime = async () => {
+        const result = await jwtGet(URL_BLOCKS_COLLECTIONS_TUNING_TIME)
+        if (DEBUG) console.log('BlockStore: getBlockCollectionsTuningTime: ', result)
+        return result.data
+    }
+
+    // __ Сохраняем время переналадки Блоков
+    const setBlockPicturesTuningTime = async (from: number, to: number, time: number) => {
+        const result = await jwtPost(URL_BLOCKS_COLLECTIONS_TUNING_TIME, { from, to, time })
+        console.log('BlockStore: getBlockCollectionsTuningTime: ', result)
+        return result.data
+    }
+
+    // __ Удаляем время переналадки Блоков
+    const deleteBlockPicturesTuningTime = async (from: number, to: number) => {
+        const result = await jwtDelete(URL_BLOCKS_COLLECTIONS_TUNING_TIME, { from, to })
+        console.log('BlockStore: deleteBlockPicturesTuningTime: ', result)
+        return result.data
+    }
+
+    // // __ Получаем время переналадки Блоков между двумя рисунками
+    // const getBlockPicturesBetweenTuningTime = async (from, to) => {
+    //     const result = await jwtGet(`${URL_FABRIC_PICTURE_TUNING_TIME}/${from}/${to}`)
+    //     console.log('store: getBlocksPicturesBetweenTuningTime: ', result)
+    //     return result.data
+    // }
+    //
+    //
+    // // __ Получаем время переналадки Блоков между двумя ПС
+    // const getBlockBetweenTuningTime = async (from, to) => {
+    //     const result = await jwtGet(`${URL_FABRICS_BETWEEN_TUNING_TIME}/${from}/${to}`)
+    //     console.log('store: getBlocksBetweenTuningTime: ', result)
+    //     return result.data
+    // }
+    //
+    // // __ Получаем последний рисунок с предыдущего СЗ
+    // const getLastRoll = async (taskDate, machineID) => {
+    //     const result = await jwtGet(`${URL_FABRIC_TASKS_EXECUTE_ROLL_LAST}/${taskDate}/${machineID}`)
+    //     console.log('store: getLastRoll: ', result)
+    //     return result.data
+    // }
+
+
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---                 Тесты                       !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -837,7 +889,6 @@ export const useBlocksStore = defineStore('blocks', () => {
         globalBlockTaskActiveOrderId,
         globalBlockTaskOrderTypeColor,
         globalManageTaskCardActiveBlockLine,
-
 
         globalBlockTasksPending,
 
@@ -885,6 +936,10 @@ export const useBlocksStore = defineStore('blocks', () => {
         getBlockCollectionById,
         createBlockCollection,
         updateBlockCollection,
+
+        getBlockCollectionsTuningTime,
+        setBlockPicturesTuningTime,
+        deleteBlockPicturesTuningTime,
 
         getBlockById,
         createBlock,

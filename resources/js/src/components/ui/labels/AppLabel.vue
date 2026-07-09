@@ -15,58 +15,58 @@
 
 <script setup>
 
-import {colorsList} from '@/app/constants/colorsClasses.js'
-import {fontSizesList} from '@/app/constants/fontSizes.js'
-import {getColorClassByType, getTextColorClassByType, getFontSizeClass} from '@/app/helpers/helpers.js'
+import { colorsList } from '@/app/constants/colorsClasses.js'
+import { fontSizesList } from '@/app/constants/fontSizes.js'
+import { getColorClassByType, getTextColorClassByType, getFontSizeClass } from '@/app/helpers/helpers.js'
 
-import {computed, ref, watch, watchEffect} from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 
 const props = defineProps({
-    text: {
-        type: String,
+    text    : {
+        type    : String,
         required: false,
-        default: 'Enter...',
+        default : 'Enter...',
     },
-    type: {
-        type: String,
-        required: false,
-        default: 'dark',
+    type    : {
+        type     : String,
+        required : false,
+        default  : 'dark',
         validator: (type) => colorsList.includes(type)
     },
-    width: {
-        type: String,
+    width   : {
+        type    : String,
         required: false,
-        default: 'w-[200px]',
+        default : 'w-[200px]',
 
     },
-    height: {
-        type: String,
+    height  : {
+        type    : String,
         required: false,
-        default: 'h-[30px]',
+        default : 'h-[30px]',
 
     },
     textSize: {
-        type: String,
-        required: false,
-        default: 'normal',
+        type     : String,
+        required : false,
+        default  : 'normal',
         validator: (size) => fontSizesList.includes(size)
         // validator: (size) => ['micro', 'mini', 'normal', 'small', 'large', 'huge'].includes(size)
     },
-    bold: {
-        type: Boolean,
+    bold    : {
+        type    : Boolean,
         required: false,
-        default: true,
+        default : true,
     },
-    align: {
-        type: String,
-        required: false,
-        default: 'left',
+    align   : {
+        type     : String,
+        required : false,
+        default  : 'left',
         validator: (position) => ['left', 'right', 'center'].includes(position)
     },
-    title: {
-        type: String,
+    title   : {
+        type    : String,
         required: false,
-        default: '',
+        default : '',
     }
 })
 
@@ -79,8 +79,8 @@ const labelClick = (e) => {
 }
 
 
-const textSizeClass = ref(getFontSizeClass(props.textSize))
-const semibold = props.bold ? 'font-semibold' : ''
+const textSizeClass     = ref(getFontSizeClass(props.textSize))
+const semibold          = props.bold ? 'font-semibold' : ''
 const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
 // const currentTextColor = computed(() => getTextColorClassByType(props.type)).value
 // const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex)).value
@@ -89,8 +89,8 @@ const currentColorIndex = 500       // задаем основной индек�
 // const itemType = ref(props.type)
 
 const currentTextColor = ref(getTextColorClassByType(props.type))
-const backgroundColor = ref(getColorClassByType(props.type, 'bg', currentColorIndex))
-const borderColor = ref(getColorClassByType(props.type, 'border', currentColorIndex))
+const backgroundColor  = ref(getColorClassByType(props.type, 'bg', currentColorIndex))
+const borderColor      = ref(getColorClassByType(props.type, 'border', currentColorIndex))
 
 // вычисляем горизонтальное выравнивание
 const getHorizontalAlign = (alignPosition) => {
@@ -115,8 +115,8 @@ const horizontalAlign = ref(getHorizontalAlign(props.align))
 // Без этой функции не перерисовывает стили
 watch(() => props.type, (type) => {
     currentTextColor.value = getTextColorClassByType(props.type)
-    backgroundColor.value = getColorClassByType(props.type, 'bg', currentColorIndex)
-    borderColor.value = getColorClassByType(props.type, 'border', currentColorIndex)
+    backgroundColor.value  = getColorClassByType(props.type, 'bg', currentColorIndex)
+    borderColor.value      = getColorClassByType(props.type, 'border', currentColorIndex)
 })
 
 // делаем реактивным горизонтальное выравнивание
