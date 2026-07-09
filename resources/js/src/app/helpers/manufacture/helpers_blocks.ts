@@ -2,15 +2,36 @@
 
 
 import type {
-    IAmountAndTimeBlock, IBlockDay, IBlockManufLine,
-    IBlockTask, IBlockTaskArrayDiff, IBlockTaskArrayLineDiffs, IBlockTaskChangeKeys, IBlockTaskExecuteStatistics,
-    IBlockTaskLine, IBlockTaskOrder, IBlockTaskOrderLine, IBlockTaskStatus, IBlockTaskStatusKeys,
+    IAmountAndTimeBlock,
+    IBlockDay,
+    IBlockManufLine,
+    IBlockTask,
+    IBlockTaskArrayDiff,
+    IBlockTaskArrayLineDiffs,
+    IBlockTaskChangeKeys,
+    IBlockTaskExecuteStatistics,
+    IBlockTaskLine,
+    IBlockTaskLinesGroupData,
+    IBlockTaskLinesSubgroup,     IBlockTaskOrder,
+    IBlockTaskOrderLine,
+    IBlockTaskStatus,
+    IBlockTaskStatusKeys, IColorTypes,
     IDay,
     IPlanMatrix,
     IRenderMatrixDiff,
     IRenderMatrixLineDiffs
 } from '@/types'
-import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/blocks.ts'
+import {
+    BLOCK_MANUF_LINES,
+    BLOCK_TASK_DRAFT,
+    BLOCK_TASK_STATUSES,
+    CHANGE_1,
+    CHANGE_2,
+    CHANGES,
+    LINE_0_NAME,
+    LINE_1_NAME,
+    LINE_2_NAME
+} from '@/app/constants/blocks.ts'
 // import { round } from '@/app/helpers/helpers_lib.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 
@@ -590,8 +611,8 @@ export const orderBlockTasksByStatus = (day: IDay): IDay => {
 
     // __ Записываем обратно в матрицу
     const resultDay = JSON.parse(JSON.stringify(day))
-    resultDay[0] = changeTasks1
-    resultDay[1] = changeTasks2
+    resultDay[0]    = changeTasks1
+    resultDay[1]    = changeTasks2
 
     return resultDay
 
@@ -1215,11 +1236,136 @@ export function unionDatesWithBlockTasks(days: IBlockDay[], tasks: IBlockTask[])
     }
 }
 
+// __ Получаем заголовок СЗ
+export function getBlockTaskTitle(task: IBlockTask, includePosition: boolean = true) {
+    if (includePosition) {
+        return `${task.position}. ${task.order.client.short_name} №${task.order.order_no_num}`
+    }
+    return `${task.order.client.short_name} №${task.order.order_no_num}`
+}
+
+// __ Возвращаем числовое значение времени по Записи в СЗ (taskLine) для конкретных матрасов (не расчетных),
+// __ где запись из одного поля: time = {auto: 306} или time = {universal: 400}
+export function getBlockTaskLineTime(line: IBlockTaskLine): number {
+    return line.time
+}
+
+// __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
+export function groupTaskLinesForExecute(lines: IBlockTaskLine[], orderTitle: string | null = null): IBlockTaskLinesGroupData[] {
+    // const X_LAT = 'x'
+
+    const getSquarePerPic = (blockTaskLine: IBlockTaskLine) => blockTaskLine.block.width * blockTaskLine.block.length / 100 / 100
+
+    const groupedManufLines = Object.groupBy(lines, line => line.manuf_line)
+
+    // console.log('groupedManufLines: ', groupedManufLines)
+
+    const groupedManufLinesArray: IBlockTaskLinesGroupData[] = []
+    for (const [keyManufLine, valueManufLine] of Object.entries(groupedManufLines)) {
+
+        const groupedBlockCollection = Object.groupBy(valueManufLine, line => line.block.collection.name)
+
+        const groupedBlockCollectionArray: IBlockTaskLinesSubgroup[] = []
+        for (const [keyBlockCollection, valueBlockCollection] of Object.entries(groupedBlockCollection)) {
+
+
+            groupedBlockCollectionArray.push({
+                subgroupName      : keyBlockCollection,
+                subgroupOrderTitle: orderTitle,
+                collapsed         : true,
+                subgroupType      : 'dark',
+                hasData           : true,
+                lines             : (valueBlockCollection ?? []).toSorted((a, b) => getSquarePerPic(b) - getSquarePerPic(a)),
+                square            : {
+                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount * getSquarePerPic(line), 0),
+                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
+                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
+                },
+                amount            : {
+                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount, 0),
+                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount : acc, 0),
+                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount : acc, 0),
+                },
+                time              : {
+                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + getBlockTaskLineTime(line), 0),
+                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + getBlockTaskLineTime(line) : acc, 0),
+                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + getBlockTaskLineTime(line) : acc, 0),
+                },
+                priority          : keyManufLine === BLOCK_MANUF_LINES.LINE_1
+                    ? (valueBlockCollection?.[0].block.collection.priority_1 || 999)
+                    : (valueBlockCollection?.[0].block.collection.priority_2 || 999)
+            })
+        }
+
+        // __ Сортируем по приоритету Коллекцию блоков по Возрастанию в зависимости от Производственной Линии
+        groupedBlockCollectionArray.sort((a, b) => a.priority - b.priority)
+
+        // __ И Получаем название и раскраску Линии
+        const manufName: IBlockManufLine = keyManufLine as IBlockManufLine
+        // let manufName: IBlockTaskLinesGroupNames = LINE_0_NAME
+        let manufType: IColorTypes               = 'danger'
+        switch (keyManufLine) {
+            case BLOCK_MANUF_LINES.LINE_1:
+                // manufName = LINE_1_NAME
+                manufType = 'orange'
+                break
+            case BLOCK_MANUF_LINES.LINE_2:
+                // manufName = LINE_2_NAME
+                manufType = 'indigo'
+                break
+        }
+
+        groupedManufLinesArray.push({
+            groupName: manufName,
+            groupType: manufType,
+            subgroups: groupedBlockCollectionArray,
+            hasData  : true,
+            collapsed: true,
+            square   : {
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.incomplete, 0),
+            },
+            amount   : {
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.incomplete, 0),
+            },
+            time     : {
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
+            },
+        })
+    }
+
+    // __ Сортируем по названию Производственных Линий по Возрастанию
+    groupedManufLinesArray.sort((a, b) => a.groupName.localeCompare(b.groupName))
+    // console.log('groupedManufLinesArray: ', groupedManufLinesArray)
+    return groupedManufLinesArray
+}
+
 
 // __ Получаем КДЧ
 // export function getKDB(item: IBlockTaskLine): string {
 //     return ''
 // }
+
+
+// __ Проверяем, является ли строка СЗ Выполненной
+export function isTaskLineDone(line: IBlockTaskLine) {
+    return !!line.finished_at
+}
+
+// __ Проверяем, является ли строка СЗ Не Выполненной
+export function isTaskLineFalse(line: IBlockTaskLine) {
+    return !!line.false_at
+}
+
+// __ Проверяем, является ли строка СЗ со сброшенным статусом
+export function isTaskLineReset(line: IBlockTaskLine) {
+    return !(isTaskLineDone(line) || isTaskLineFalse(line))
+}
 
 
 // __ Функция-помощник: говорит TS, является ли item типом IBlockTask

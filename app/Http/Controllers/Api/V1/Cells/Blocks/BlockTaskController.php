@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Blocks\Sync\SyncBlockTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskResource;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
+use App\Models\Manufacture\Cells\Block\BlockDay;
 use App\Models\Manufacture\Cells\Block\BlockTask;
 use App\Models\Manufacture\Cells\Block\BlockTaskLine;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
@@ -479,8 +480,8 @@ class BlockTaskController extends Controller
             $casesPosition  = [];
             $paramsPosition = [];
 
-            $casesChange    = [];
-            $paramsChange   = [];
+            $casesChange  = [];
+            $paramsChange = [];
 
             foreach ($rows as $row) {
                 if (isset($row['action_at'])) {
@@ -656,8 +657,8 @@ class BlockTaskController extends Controller
             $validated = $request->validate([
                 'id'     => 'required|integer|exists:block_tasks,id',
                 'change' => 'required|string|in:' .
-                    BlockCollection::LINE_1 . ',' .
-                    BlockCollection::LINE_2,
+                    BlockDay::CHANGE_1 . ',' .
+                    BlockDay::CHANGE_2,
             ]);
 
             $blockTask = BlockTask::query()->find($validated['id']);
@@ -706,8 +707,8 @@ class BlockTaskController extends Controller
             // __ Валидация с кастомными сообщениями
             //$validated = $request->validate([
             //    'data' => 'required|array|min:1',
-            //    'data.*.id' => 'required|integer|exists:cutting_task_lines,id',
-            //    'data.*.table' => ['required', 'string', Rule::in([CuttingTaskLine::FIELD_TABLE_1, CuttingTaskLine::FIELD_TABLE_2, CuttingTaskLine::FIELD_TABLE_3])],
+            //    'data.*.id' => 'required|integer|exists:block_task_lines,id',
+            //    'data.*.table' => ['required', 'string', Rule::in([BlockTaskLine::FIELD_TABLE_1, BlockTaskLine::FIELD_TABLE_2, BlockTaskLine::FIELD_TABLE_3])],
             //], [
             //    'data.required' => 'Массив данных обязателен для заполнения.',
             //    'data.min' => 'Массив данных не должен быть пустым.',
@@ -747,7 +748,7 @@ class BlockTaskController extends Controller
             //// Итоговый SQL-запрос для PostgreSQL
             ///** @noinspection SqlDialectInspection */
             //$query = "
-            //    UPDATE cutting_task_lines AS c
+            //    UPDATE block_task_lines AS c
             //    SET \"table\" = v.new_table
             //    FROM (VALUES {$valuesSql}) AS v(id, new_table)
             //    WHERE c.id = CAST(v.id AS INTEGER)
@@ -803,7 +804,6 @@ class BlockTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
     /**
@@ -897,7 +897,7 @@ class BlockTaskController extends Controller
                 'statuses.*' => 'integer|exists:block_task_statuses,id',
             ]);
 
-            $data         = $validated['statuses'] ?? null;
+            $data       = $validated['statuses'] ?? null;
             $blockTasks = BlockTask::query()
                 ->byStatus($data)
                 // ->whereBetween('action_at', [
@@ -933,5 +933,55 @@ class BlockTaskController extends Controller
         }
     }
 
+
+    //___ Получаем СЗ на Раскрой по статусам до определенной даты
+    public function getBlockTasksByStatusBeforeDate(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // __ Проверяем, что 'date' — это дата
+                'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'   => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*' => 'integer|exists:block_task_statuses,id',
+            ]);
+
+            $data        = $validated['statuses'] ?? null;
+            $action_date = Carbon::parse($validated['date'])->startOfDay();
+
+            $blockTasks = BlockTask::query()
+                ->whereDate('action_at', '<', $action_date)
+                ->byStatus($data)
+                // ->whereBetween('action_at', [
+                //     $start->startOfDay(),
+                //     $end->endOfDay()
+                // ])
+                ->with([
+                    'order',
+                    'order.client',
+                    'order.orderType',
+                    'statuses',
+                    'blockLines',
+                    //'blockLines.block',
+                    //'blockLines.block.blockCollection',
+                    //'blockLines.block.blockCollection.kdbDoc',
+                ])
+                ->orderBy('action_at')
+                ->get();
+
+
+            // !!!!!!!!!!!!!!!!!!!!!
+            // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
+            // !!! __ То автоматом переносить на следующий день
+            // !!! __ Отдельная функция
+            // !!!!!!!!!!!!!!!!!!!!!
+
+
+            return BlockTaskResource::collection($blockTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
 }

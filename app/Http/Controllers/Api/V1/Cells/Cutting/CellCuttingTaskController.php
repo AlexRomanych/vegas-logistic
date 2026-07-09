@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Throwable;
+use Tymon\JWTAuth\Providers\Auth\Illuminate;
 
 class CellCuttingTaskController extends Controller
 {
@@ -438,10 +439,6 @@ class CellCuttingTaskController extends Controller
                 ->byStatus($data)
                 ->whereDate('action_at', '>=', $start)     // Используем такую конструкцию, потому что
                 ->whereDate('action_at', '<=', $end)      // ->whereBetween() не включает периоды
-                                                          // ->whereBetween('action_at', [
-                                                          //     $start->startOfDay(),
-                                                          //     $end->endOfDay()
-                                                          // ])
                 ->with([
                     'order.client',
                     'order.orderType',
@@ -467,11 +464,7 @@ class CellCuttingTaskController extends Controller
     }
 
 
-    /**
-     * __ Получаем СЗ на Раскрой по статусам до определенной даты
-     * @param Request $request
-     * @return AnonymousResourceCollection|JsonResponse
-     */
+    //___ Получаем СЗ на Раскрой по статусам до определенной даты
     public function getCuttingTasksByStatusBeforeDate(Request $request)
     {
         try {
@@ -520,7 +513,7 @@ class CellCuttingTaskController extends Controller
 
 
     /**
-     * __ Получаем СЗ на Раскрой по статусам в определенную дату
+     * ___ Получаем СЗ на Раскрой по статусам в определенную дату
      * @param Request $request
      * @return AnonymousResourceCollection|JsonResponse
      */

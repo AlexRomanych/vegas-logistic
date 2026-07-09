@@ -336,6 +336,7 @@ Route::prefix('documents')
 // __ Блок Блоков
 Route::prefix('blocks')
     ->middleware('jwt.auth')
+    ->middleware('block_tasks_check')
     ->group(function () {
         Route::get('test', [BlockController::class, 'test']);
 
@@ -344,7 +345,7 @@ Route::prefix('blocks')
         Route::get('tasks/order/{id}', [BlockTaskController::class, 'getBlockTasksByOrderId']);
         Route::get('tasks/status', [BlockTaskController::class, 'getBlockTasksByStatus']);
         //Route::get('tasks/status/period', [CellCuttingTaskController::class, 'getCuttingTasksByStatusAndPeriod']);
-        //Route::get('tasks/status/date/before', [CellCuttingTaskController::class, 'getCuttingTasksByStatusBeforeDate']);
+        Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDate']);
         //Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
         Route::get('tasks/status/date/on/check', [BlockTaskController::class, 'checkBlockTasksByStatusOnDate']);
         Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);

@@ -20,25 +20,81 @@
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
-            title="Ctrl + Click - Выделить все элементы Группы Ткани"
-            width="w-[347px]"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[367px]"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
+        />
+
+        <!-- __ Кол-во -->
+        <AppLabelTS
+            :text="subgroup.amount.total.toString()"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
+            rounded="4"
+            text-size="mini"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[40px]"
+            align="center"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
+        />
+
+        <!-- __ Время -->
+        <AppLabelTS
+            :text="formatTimeWithLeadingZeros(subgroup.time.total, 'hour')"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
+            rounded="4"
+            text-size="mini"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[100px]"
+            align="center"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
+        />
+
+        <!-- __ Площадь -->
+        <AppLabelTS
+            :text="subgroup.square.total.toFixed(3)"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
+            rounded="4"
+            text-size="mini"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[70px]"
+            align="center"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
+        />
+
+        <!-- __ Приоритет -->
+        <AppLabelTS
+            :text="subgroup.priority.toString()"
+            :type="DEFAULT_TYPE"
+            class="cursor-pointer"
+            rounded="4"
+            text-size="mini"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[40px]"
+            align="center"
             @click.exact="emits('toggleCollapse')"
             @click.ctrl="emits('selectSubgroupItems')"
         />
 
         <!-- __ Длина м.п. -->
-        <AppLabelTS
-            :text="`${subgroup.cutLengthTotal.toFixed(3)} м.п.`"
-            :type="subgroup.cutLengthTotal === 0 ? 'danger' : DEFAULT_TYPE"
-            align="center"
-            rounded="4"
-            text-size="mini"
-            width="w-[100px]"
-        />
+        <!--<AppLabelTS-->
+        <!--    :text="`${subgroup.cutLengthTotal.toFixed(3)} м.п.`"-->
+        <!--    :type="subgroup.cutLengthTotal === 0 ? 'danger' : DEFAULT_TYPE"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--    text-size="mini"-->
+        <!--    width="w-[100px]"-->
+        <!--/>-->
 
         <!-- __ Всего, шт. -->
         <AppLabelTS
-            :text="`Σ = ${subgroup.amount.total.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.total)})`"
+            :text="`Σ = ${subgroup.amount.total.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.total, 'hour')})`"
             :type="subgroup.amount.total === 0 ? 'danger' : 'stone'"
             :width="FIELDS_AMOUNT_TIME_WIDTH"
             align="center"
@@ -48,7 +104,7 @@
 
         <!-- __ Выполнено, шт. -->
         <AppLabelTS
-            :text="`✓ = ${subgroup.amount.done.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.done)})`"
+            :text="`✓ = ${subgroup.amount.done.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.done, 'hour')})`"
             :width="FIELDS_AMOUNT_TIME_WIDTH"
             align="center"
             rounded="4"
@@ -58,7 +114,7 @@
 
         <!-- __ Не Выполнено, шт. -->
         <AppLabelTS
-            :text="`✗ = ${subgroup.amount.incomplete.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.incomplete)})`"
+            :text="`✗ = ${subgroup.amount.incomplete.toFixed(0)} шт. (${formatTimeWithLeadingZeros(subgroup.time.incomplete, 'hour')})`"
             :width="FIELDS_AMOUNT_TIME_WIDTH"
             align="center"
             rounded="4"
@@ -84,12 +140,12 @@
 
 <script lang="ts" setup>
 
-import type { ICuttingTaskLinesSubgroup } from '@/types'
+import type { IBlockTaskLinesSubgroup, } from '@/types'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 interface IProps {
-    subgroup: ICuttingTaskLinesSubgroup
+    subgroup: IBlockTaskLinesSubgroup
     collapsed?: boolean
 }
 
@@ -101,7 +157,7 @@ const emits = defineEmits<{
     (e: 'selectSubgroupItems'): void
 }>()
 
-const FIELDS_AMOUNT_TIME_WIDTH = 'w-[172px]'
+const FIELDS_AMOUNT_TIME_WIDTH = 'w-[174px]'
 const DEFAULT_TYPE             = 'primary'
 
 </script>

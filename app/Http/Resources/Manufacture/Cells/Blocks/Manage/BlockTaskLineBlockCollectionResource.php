@@ -24,7 +24,8 @@ class BlockTaskLineBlockCollectionResource extends JsonResource
             'length'         => $this->length,
             'manuf_line'     => $this->line,
             'manuf_line_alt' => (string)($this->line_alt ?? BlockCollection::LINE_0),
-            'priority'       => $this->priority,
+            'priority_1'     => $this->priority,
+            'priority_2'     => $this->priority,
             'productivity'   => $this->productivity,
 
             'kdb' => [

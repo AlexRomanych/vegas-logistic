@@ -700,8 +700,12 @@ const addResponsible = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
 // __ Переходим на страницу непосредственного выполнения СЗ
 const goToBlockDay = (blockDay: IBlockDay) => {
     router.push({
-        name  : 'manufacture.cell.block.tasks.execute.day',
-        params: { date: blockDay.action_at.split(' ')[0] }, // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+        name  : 'manufacture.cell.blocks.tasks.execute.day',
+        params: {
+            // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+            date: blockDay.action_at.split(' ')[0],
+            change: blockDay.change
+        },
     })
 }
 

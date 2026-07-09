@@ -33,6 +33,7 @@ const menuItems = ref<IMenuItem[]>([
     { name: 'Справочник Пружинных блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
     { name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.blocks.design.show', shown: true, isActive: true },
     { name: 'Статусы движения СЗ', path: 'manufacture.cell.blocks.task.statuses', shown: true, isActive: true },
+    { name: 'Время переналадки', path: 'manufacture.cell.blocks.tuning.times', shown: true, isActive: true },
     // { name: 'Справочник Групп блоков', path: 'manufacture.cell.blocks.collections.show', shown: true, isActive: true },
     // { name: 'Справочник пружинных блоков', path: 'manufacture.cell.blocks.show', shown: true, isActive: true },
     // { name: 'Архив СЗ', path: 'manufacture.cell.cutting.tasks.archive', shown: true, isActive: true },

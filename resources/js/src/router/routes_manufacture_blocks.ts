@@ -118,7 +118,7 @@ const blocks = [
 
     {
         // ___ Выполнение сменных заданий (Производственный день)
-        path     : _MAIN_PREFIX + 'tasks/execute/day/:date',
+        path     : _MAIN_PREFIX + 'tasks/execute/day/:date/:change',
         name     : 'manufacture.cell.blocks.tasks.execute.day',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/TheBlockExecuteDay.vue'),
         meta     : {
@@ -126,7 +126,16 @@ const blocks = [
         } as IRouteMeta,
     },
 
-
+    {
+        // ___ Печать
+        path     : _MAIN_PREFIX + 'task/print',
+        name     : 'manufacture.cell.blocks.task.print',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_print/BlockTaskPrintForm.vue'),
+        meta     : {
+            title     : 'Страница печати сменного задания участка Блоков',
+            hideNavbar: true,
+        } as IRouteMeta,
+    },
 
 
     //
@@ -237,16 +246,7 @@ const blocks = [
     //     } as IRouteMeta,
     // },
 
-    // {
-    //     // ___ Печать
-    //     path     : _MAIN_PREFIX + 'task/print',
-    //     name     : 'manufacture.cell.cutting.task.print',
-    //     component: () => import('@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_print/CuttingTaskPrintForm.vue'),
-    //     meta     : {
-    //         title     : 'Страница печати сменного задания Раскроя',
-    //         hideNavbar: true,
-    //     } as IRouteMeta,
-    // },
+
 
 
     {

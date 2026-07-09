@@ -10,6 +10,9 @@ import type {
     IBlockTaskChange
 } from '@/types'
 
+// __ Название вкладки с общим СЗ
+export const BLOCK_UNION_TASK_NAME = 'Объединение СЗ'
+
 // __ Продолжительность смены в часах
 export const TOTAL_SHIFT_DURATION = 12
 

@@ -6,10 +6,10 @@ import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, j
 import type {
     IBlock,
     IBlockCollection,
-    IBlockDayWorker, IBlockLineSetData, IBlockTask, IBlockTaskChangeKeys, IBlockTaskLine,
+    IBlockDayWorker, IBlockLineSetData, IBlockTaskChangeKeys, IBlockTaskLine,
     IBlockTaskStatusEntity,
     IBlockTaskStatusesSet,
-    ICuttingTask,
+    IBlockTask,
     IPeriod, IRenderMatrixDiff,
 } from '@/types'
 import { ref } from 'vue'
@@ -24,6 +24,7 @@ import {
     repositionBlockTaskLines,
     isAddItemsInDiffsPresents
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { CHANGES } from '@/app/constants/blocks.ts'
 
 
 const DEBUG = true
@@ -59,6 +60,9 @@ const URL_BLOCKS_TASKS_CHANGE               = '/blocks/tasks/change'            
 const URL_BLOCKS_TASKS_ACTION_AT_SET        = '/blocks/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 
 const URL_BLOCKS_TASK_LINES_TABLE_SET = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+const URL_BLOCKS_TASK_LINE_DONE       = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_FALSE      = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_RESET      = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
@@ -89,7 +93,7 @@ export const useBlocksStore = defineStore('blocks', () => {
     const globalBlockTasksPending = ref<IBlockTask[]>([])
 
     // __ Копия массива СЗ Раскроя для отслеживания изменений
-    let globalBlockTasksPendingCopy: ICuttingTask[] = []
+    let globalBlockTasksPendingCopy: IBlockTask[] = []
 
     // __ Показывать ли Трудозатраты в календаре СЗ Раскроя
     const globalBlockTaskTimesShow = ref(true)
@@ -140,7 +144,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         // console.log('leftPanel: ', leftPanel)
         // debugger
 
-        leftPanel                = repositionBlockTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (CuttingLines[])
+        leftPanel                = repositionBlockTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (BlockLines[])
         oldBlockTask.block_lines = leftPanel              // __ oldBlockTask приходит по ссылке
 
         // __ Если есть правая панель, то добавляем ее в массив СЗ
@@ -317,7 +321,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 
 
     // __ Меняем динамически Столы раскроя в глобальном массиве, чтобы не перезагружать данные с сервера
-    const setGlobalArrayChangeTables = (data: IBlockLineSetData[]) => {
+    const setGlobalArrayChangeManufLines = (data: IBlockLineSetData[]) => {
         for (const item of data) {
             let isFind = false
             for (const task of globalBlockTasks.value) {
@@ -595,8 +599,8 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
     // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
-    const patchBlockTaskStatusColor = async (cuttingTaskStatusId: number, color: string) => {
-        const result = await jwtPatch(URL_BLOCKS_TASK_STATUSES_COLOR_PATCH, { id: cuttingTaskStatusId, color })
+    const patchBlockTaskStatusColor = async (blockTaskStatusId: number, color: string) => {
+        const result = await jwtPatch(URL_BLOCKS_TASK_STATUSES_COLOR_PATCH, { id: blockTaskStatusId, color })
         if (DEBUG) console.log('BlockStore: patchBlockTaskStatusColor', result)
         await getBlockTaskStatuses()   // __ Обновляем статусы, чтобы был актуальный цвет
         return result.data
@@ -616,7 +620,7 @@ export const useBlocksStore = defineStore('blocks', () => {
     // !!! ---          Производственный день              !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // __ Получение производственного дня по дате и смене
-    const getBlockDayByDateAndChange = async (date: string, change: number = 1) => {
+    const getBlockDayByDateAndChange = async (date: string, change: IBlockTaskChangeKeys = CHANGES.CHANGE_1.NAME) => {
         const response = await jwtGet(`${URL_BLOCK_DAY}/${date}/${change}`)
         const result   = await response
         if (DEBUG) console.log('BlockStore: getBlockDayByDateAndChange: ', result)
@@ -644,21 +648,21 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
-    // // __ Старт СЗ
-    // const startCuttingDay = async (id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_START, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: startCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Стоп СЗ
-    // const finishCuttingDay = async (id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_FINISH, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: finishCuttingDay: ', result)
-    //     return result.data
-    // }
+    // __ Старт СЗ
+    const startBlockDay = async (id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_START, { id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: startBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Стоп СЗ
+    const finishBlockDay = async (id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_FINISH, { id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: finishBlockDay: ', result)
+        return result.data
+    }
 
     // __ Получение маячка готовности дня с СЗ к добавлению новых СЗ
     const readyGetBlockDay = async (date: string, change: number = 1) => {
@@ -668,22 +672,22 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
-    // // __ Установки маяка готовности к добавлению новых СЗ
-    // const readySetCuttingDay = async (id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_READY_SET, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: readySetCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Снятие маяка готовности к добавлению новых СЗ
-    // const readyUnsetCuttingDay = async (id: number) => {
-    //     const response = await jwtPatch_(URL_CUTTING_DAY_READY_UNSET, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('CuttingStore: readyUnsetCuttingDay: ', result)
-    //     return result.data
-    // }
-    //
+    // __ Установки маяка готовности к добавлению новых СЗ
+    const readySetBlockDay = async (id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_READY_SET, { id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: readySetBlockDay: ', result)
+        return result.data
+    }
+
+    // __ Снятие маяка готовности к добавлению новых СЗ
+    const readyUnsetBlockDay = async (id: number) => {
+        const response = await jwtPatch_(URL_BLOCK_DAY_READY_UNSET, { id })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: readyUnsetBlockDay: ', result)
+        return result.data
+    }
+
     // __ Устанавливаем новые Производственные Линии
     const taskLinesManufLineSet = async (data: IBlockLineSetData[]) => {
         console.log('data: ', data)
@@ -764,7 +768,53 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---               Block Lines                   !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    const setBlockTaskLinesDone = async (blockTaskLinesIds: number[]) => {
+        if (!blockTaskLinesIds.length) {
+            return []
+        }
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_DONE, { ids: blockTaskLinesIds })
+        if (DEBUG) console.log('BlockStore: setBlockTaskLinesDone: ', result)
+        return result.data
+    }
+
+    // __ Устанавливаем "Не Выполнено" на BlockTaskLines
+    const setBlockTaskLinesFalse = async (blockTaskLinesIds: number[], falseReason: string | null = null) => {
+        if (!blockTaskLinesIds.length && !falseReason) {
+            return []
+        }
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_FALSE, { ids: blockTaskLinesIds, reason: falseReason })
+        if (DEBUG) console.log('BlockStore: setBlockTaskLinesFalse: ', result)
+        return result.data
+    }
+
+    // __ Сбрасываем статусы на BlockTaskLines
+    const setBlockTaskLinesReset = async (blockTaskLinesIds: number[]) => {
+        if (!blockTaskLinesIds.length) {
+            return []
+        }
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_RESET, { ids: blockTaskLinesIds })
+        if (DEBUG) console.log('BlockStore: setBlockTaskLinesReset: ', result)
+        return result.data
+    }
+
+    // __ Разделение линий СЗ при выполнении СЗ
+    const divideLineInBlockTaskPending = async (blockTask: IBlockTask, period: IPeriod | null = null) => {
+
+        const findTask = globalBlockTasks.value.find((task: IBlockTask) => task.id === blockTask.id)
+        if (!findTask) {
+            return
+        }
+        console.log('findTask: ', findTask)
+
+        repositionBlockTaskLines(findTask)
+        // const result = await saveChanges()
+        return await saveChanges(globalBlockTasks.value, globalBlockTasksCopy, period)
+        // return saveChanges(globalBlockTasksPending.value, globalBlockTasksPendingCopy)
+    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---                 Тесты                       !!!
@@ -802,7 +852,12 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockTasksLines,
         applyMergeTasks,
         applyMergeTasksGroups,
-        setGlobalArrayChangeTables,
+        setGlobalArrayChangeManufLines,
+
+        setBlockTaskLinesDone,
+        setBlockTaskLinesFalse,
+        setBlockTaskLinesReset,
+        divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,
         getBlockDayByDateAndChange,
@@ -821,7 +876,10 @@ export const useBlocksStore = defineStore('blocks', () => {
         checkBlockTasksByStatusOnDate,
         setBlockTaskComment,
         setBlockTaskActionAt,
-
+        readySetBlockDay,
+        readyUnsetBlockDay,
+        startBlockDay,
+        finishBlockDay,
 
         getBlockCollections,
         getBlockCollectionById,

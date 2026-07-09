@@ -32,8 +32,8 @@
 
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
-                    v-if="cuttingDay?.start_at"
-                    :text="['🕑Старт:', formatTimeInFullFormat(cuttingDay?.start_at)]"
+                    v-if="blockDay?.start_at"
+                    :text="['🕑Старт:', formatTimeInFullFormat(blockDay?.start_at)]"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group"
@@ -44,8 +44,8 @@
 
                 <!-- __ Окончание выполнения -->
                 <AppLabelMultiLineTS
-                    v-if="cuttingDay?.finish_at"
-                    :text="['🕑Финиш:', formatTimeInFullFormat(cuttingDay?.finish_at)]"
+                    v-if="blockDay?.finish_at"
+                    :text="['🕑Финиш:', formatTimeInFullFormat(blockDay?.finish_at)]"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group"
@@ -56,7 +56,7 @@
 
                 <!-- __ Длительность -->
                 <AppLabelMultiLineTS
-                    v-if="cuttingDay?.start_at"
+                    v-if="blockDay?.start_at"
                     :text="['🕑Длительность:', elapsedTime === -1 ? '' : formatTimeWithLeadingZeros(elapsedTime)]"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
@@ -69,7 +69,7 @@
                 <!-- __ Прогресс общий -->
                 <AppProgressBar
                     :progress="(statistics.time.finished / statistics.time.total) * 100"
-                    :text="`${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`"
+                    :text="`${formatTimeWithLeadingZeros(statistics.time.finished, 'hour')} / ${formatTimeWithLeadingZeros(statistics.time.total, 'hour')}`"
                     height="h-[50px]"
                     text-size="mini"
                     width="w-[200px]"
@@ -87,7 +87,7 @@
 
             <!-- __ Комментарий к дню -->
             <AppLabelTS
-                :text="cuttingDay?.comment ?? ''"
+                :text="blockDay?.comment ?? ''"
                 align="left"
                 class="start-group"
                 height="h-[50px]"
@@ -123,15 +123,15 @@
             <template v-if="activeTabPosition === infoTabPosition">
                 <!-- __ Общая инфа -->
                 <div class="ml-8">
-                    <ExecuteDayInfo :cutting-day="cuttingDay!"/>
+                    <ExecuteDayInfo :block-day="blockDay!"/>
                 </div>
             </template>
             <template v-else-if="activeTabPosition === personalTabPosition">
                 <!-- __ Персонал -->
                 <div class="ml-8">
                     <ExecutePersonal
+                        :block-day="blockDay!"
                         :can-edit="isStartAvailable "
-                        :cutting-day="cuttingDay!"
                         @add-worker="addWorker"
                         @add-workers="addWorkers"
                         @remove-worker="removeWorker"
@@ -143,8 +143,8 @@
                 <!-- __ Сами СЗ -->
                 <div class="">
                     <ExecuteDayTask
-                        :is-running="isCuttingDayStarted  && !isCuttingDayReadyForNewTasks"
-                        :cutting-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
+                        :block-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
+                        :is-running="isBlockDayStarted  && !isBlockDayReadyForNewTasks"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -166,32 +166,33 @@
 </template>
 
 <script lang="ts" setup>
-import type { IColorTypes, ICuttingDay, ICuttingDayWorker, ICuttingTask, ICuttingTaskLine } from '@/types'
+import type { IColorTypes, IBlockDay, IBlockDayWorker, IBlockTask, IBlockTaskLine, IBlockTaskChangeKeys } from '@/types'
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 
-import { CUTTING_TASK_DRAFT, CUTTING_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/cutting.ts'
+import { BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/blocks.ts'
 
-import { useCuttingStore } from '@/stores/CuttingStore.ts'
+import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
-import { getCoverSizeString, getExecuteTaskStatistics, getCuttingTaskModelCoverName, getCuttingTaskTitle } from '@/app/helpers/manufacture/helpers_cutting.ts'
+import { getBlockTaskTitle, getExecuteTaskStatistics, } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 import { formatDateInFullFormat, formatTimeInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
-import ExecutePersonal from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecutePersonal.vue'
-import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayInfo.vue'
-import ExecuteDayTask from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTask.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
+
+import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayInfo.vue'
+import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTask.vue'
+import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
 
 interface ITab {
     show: boolean
@@ -199,14 +200,14 @@ interface ITab {
     position: number
     type: IColorTypes
     typeActive: IColorTypes
-    task: ICuttingTask | null
+    task: IBlockTask | null
 }
 
-const cuttingStore = useCuttingStore()
-const router      = useRouter()
-const route       = useRoute()
+const blockStore = useBlocksStore()
+const router     = useRouter()
+const route      = useRoute()
 
-const { globalCuttingTasks } = storeToRefs(cuttingStore)
+const { globalBlockTasks } = storeToRefs(blockStore)
 
 // __ Константы
 // const DEBUG = true
@@ -215,13 +216,14 @@ const MENU_LABEL_WIDTH = 'w-[160px]'
 const isLoading = ref(false)
 
 let executeDate: string
+let executeChange: IBlockTaskChangeKeys
 
 // __ Переменные
-const cuttingDay                = ref<ICuttingDay | null>(null)
-const tasksBeforeCurrentDay    = ref<ICuttingTask[]>([])
-const allCuttingTasksLinesUnion = ref<ICuttingTask>(CUTTING_TASK_DRAFT) // __ Переменная для объединения всех CuttingTaskLines
+const blockDay                = ref<IBlockDay | null>(null)
+const tasksBeforeCurrentDay   = ref<IBlockTask[]>([])
+const allBlockTasksLinesUnion = ref<IBlockTask>(BLOCK_TASK_DRAFT) // __ Переменная для объединения всех BlockTaskLines
 
-const statistics = computed(() => getExecuteTaskStatistics(allCuttingTasksLinesUnion.value))
+const statistics = computed(() => getExecuteTaskStatistics(allBlockTasksLinesUnion.value))
 
 const now                = ref(0)
 let timer: number | null = null
@@ -236,7 +238,7 @@ const isStartAvailable = computed(() => {
     // __ Проверяем, что дата выполнения меньше текущей
     // const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
     const today   = new Date().toLocaleDateString('en-CA')// ().split('T')[0] // Получится '2026-05-16'
-    const compare = cuttingDay.value ? cuttingDay.value.action_at.split(' ')[0] : today
+    const compare = blockDay.value ? blockDay.value.action_at.split(' ')[0] : today
 
     // console.log('today: ', today)
     // console.log('compare: ', compare)
@@ -246,69 +248,69 @@ const isStartAvailable = computed(() => {
     }
 
 
-    return tasksBeforeCurrentDay.value.length === 0 && cuttingDay.value?.cutting_tasks.length !== 0
+    return tasksBeforeCurrentDay.value.length === 0 && blockDay.value?.block_tasks.length !== 0
 })
-// const everyTaskIsPending = computed(() => cuttingDay.value?.cutting_tasks.every(task => task.current_status.id === CUTTING_TASK_STATUSES.PENDING.ID))
+// const everyTaskIsPending = computed(() => blockDay.value?.block_tasks.every(task => task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID))
 
 
 // __ #############################################
 // __ Маяк запуска СЗ
-const isCuttingDayStarted = computed(() => !!(cuttingDay.value?.start_at && !cuttingDay.value?.finish_at))
+const isBlockDayStarted = computed(() => !!(blockDay.value?.start_at && !blockDay.value?.finish_at))
 
 // __ Кнопка Начать/Закончить выполнение
 const startLabelTitle = computed(() => {
-    // console.log('cuttingDay: ', cuttingDay.value)
+    // console.log('blockDay: ', blockDay.value)
     // console.log('pendingTasksPresents: ', pendingTasksPresents.value)
     // console.log('runningTasksPresents: ', runningTasksPresents.value)
 
     // __ Есть Готовые к выполнению СЗ
     if (pendingTasksPresents.value) {
-        if (!cuttingDay.value?.start_at) {
+        if (!blockDay.value?.start_at) {
             return ['🚀 Начать', 'выполнение']
-        } else if (cuttingDay.value?.start_at && cuttingDay.value?.finish_at) {
+        } else if (blockDay.value?.start_at && blockDay.value?.finish_at) {
             return ['Продолжить', 'выполнение']
         }
     }
     return ['🏁 Закончить', 'выполнение']
 })
 
-const startLabelType = computed(() => (!isCuttingDayStarted.value ? 'warning' : 'orange'))
+const startLabelType = computed(() => (!isBlockDayStarted.value ? 'warning' : 'orange'))
 // __ #############################################
 
 // __ #############################################
 // __ Маяк остановки СЗ для добавления новых СЗ
-const isCuttingDayReadyForNewTasks = computed(() => cuttingDay.value?.ready)
+const isBlockDayReadyForNewTasks = computed(() => blockDay.value?.ready)
 
 // __ Кнопка Остановить для добавления новых СЗ
 const addNewTasksLabelTitle = computed(() => {
-    return !isCuttingDayReadyForNewTasks.value ? ['Остановить для', 'добавления новых СЗ'] : ['Продолжить', 'выполнение']
+    return !isBlockDayReadyForNewTasks.value ? ['Остановить для', 'добавления новых СЗ'] : ['Продолжить', 'выполнение']
 })
 
-const addNewTasksLabelType = computed(() => (!isCuttingDayReadyForNewTasks.value ? 'stone' : 'danger'))
+const addNewTasksLabelType = computed(() => (!isBlockDayReadyForNewTasks.value ? 'stone' : 'danger'))
 // __ #############################################
 
 
 // __ Есть ли СЗ со статусом Готово к выполнению
 const pendingTasksPresents = computed(() =>
-    cuttingDay.value?.cutting_tasks.some(task => task.current_status.id === CUTTING_TASK_STATUSES.PENDING.ID)
+    blockDay.value?.block_tasks.some(task => task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID)
 )
 
 // __ Есть ли СЗ со статусом Выполняется
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const runningTasksPresents = computed(() =>
-    cuttingDay.value?.cutting_tasks.some(task => task.current_status.id === CUTTING_TASK_STATUSES.RUNNING.ID)
+    blockDay.value?.block_tasks.some(task => task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID)
 )
 
 // __ Время выполнения
-const startTime  = computed(() => (cuttingDay.value?.start_at ? new Date(cuttingDay.value.start_at).getTime() / 1000 : null))
-const finishTime = computed(() => (cuttingDay.value?.finish_at ? new Date(cuttingDay.value.finish_at).getTime() / 1000 : null))
+const startTime  = computed(() => (blockDay.value?.start_at ? new Date(blockDay.value.start_at).getTime() / 1000 : null))
+const finishTime = computed(() => (blockDay.value?.finish_at ? new Date(blockDay.value.finish_at).getTime() / 1000 : null))
 
 const startPointTime = computed(() => {
-    console.log(cuttingDay.value)
+    console.log(blockDay.value)
 
-    if (!cuttingDay.value?.start_at) return null
-    if (cuttingDay.value?.resume_at) return new Date(cuttingDay.value.resume_at).getTime() / 1000
-    return new Date(cuttingDay.value.start_at).getTime() / 1000
+    if (!blockDay.value?.start_at) return null
+    if (blockDay.value?.resume_at) return new Date(blockDay.value.resume_at).getTime() / 1000
+    return new Date(blockDay.value.start_at).getTime() / 1000
 })
 
 
@@ -318,7 +320,7 @@ const elapsedTime = computed(() => {
     // console.log(startPointTime.value)
 
     if (!now.value) return -1
-    // if (!cuttingDay.value?.duration) return -1
+    // if (!blockDay.value?.duration) return -1
 
     if (!startPointTime.value) {
         clearTimer()
@@ -326,13 +328,13 @@ const elapsedTime = computed(() => {
     }
 
     if (startPointTime.value && !finishTime.value) {
-        return round(now.value - startPointTime.value) + (cuttingDay.value?.duration ?? 0)
+        return round(now.value - startPointTime.value) + (blockDay.value?.duration ?? 0)
     }
 
     if (startPointTime.value && finishTime.value) {
         clearTimer()
-        return cuttingDay.value?.duration ?? 0
-        // return round(finishTime.value - startPointTime.value) + (cuttingDay.value?.duration ?? 0)
+        return blockDay.value?.duration ?? 0
+        // return round(finishTime.value - startPointTime.value) + (blockDay.value?.duration ?? 0)
     }
 
 
@@ -411,7 +413,7 @@ const setTabs = () => {
         typeActive: 'warning',
         task      : null,
     })
-    cuttingDay.value?.cutting_tasks.forEach(task =>
+    blockDay.value?.block_tasks.forEach(task =>
         tabs.value.push({
             show      : true,
             label     : [
@@ -424,15 +426,15 @@ const setTabs = () => {
             task,
         })
     )
-    // console.log(allCuttingTasksLinesUnion.value)
-    if (allCuttingTasksLinesUnion.value.cutting_lines.length !== 0) {
+    // console.log(allBlockTasksLinesUnion.value)
+    if (allBlockTasksLinesUnion.value.block_lines.length !== 0) {
         tabs.value.push({
             show      : true,
             label     : ['Объединение', 'СЗ'],
             position  : UNION_TASKS_POSITION,
             type      : 'dark',
             typeActive: 'orange',
-            task      : allCuttingTasksLinesUnion.value,
+            task      : allBlockTasksLinesUnion.value,
         })
     }
     tabs.value.sort((a, b) => a.position - b.position)
@@ -471,11 +473,11 @@ async function showError(error: string | string[] | null = null) {
 // !!! ---      Пауза для добавления новых СЗ            !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const handleReadyAction = async () => {
-    if (!isCuttingDayStarted.value) {
+    if (!isBlockDayStarted.value) {
         return
     }
 
-    if (!isCuttingDayReadyForNewTasks.value) {
+    if (!isBlockDayReadyForNewTasks.value) {
         modalInfoText.value = ['Смена будет приостановлена', 'для добавления новых СЗ!']
         modalInfoType.value = 'primary'
         modalInfoMode.value = 'confirm'
@@ -483,9 +485,9 @@ const handleReadyAction = async () => {
 
         if (!answer) return
 
-        const readyDay = await cuttingStore.readySetCuttingDay(cuttingDay.value!.id)
+        const readyDay = await blockStore.readySetBlockDay(blockDay.value!.id)
         if (checkCRUD(readyDay)) {
-            cuttingDay.value!.ready = readyDay.ready
+            blockDay.value!.ready = readyDay.ready
 
         } else {
             await showError()
@@ -497,9 +499,9 @@ const handleReadyAction = async () => {
         modalInfoMode.value = 'inform'
         await appModalAsyncMultiline.value!.show()
 
-        const readyDay = await cuttingStore.readyUnsetCuttingDay(cuttingDay.value!.id)
+        const readyDay = await blockStore.readyUnsetBlockDay(blockDay.value!.id)
         if (checkCRUD(readyDay)) {
-            cuttingDay.value!.ready = readyDay.ready
+            blockDay.value!.ready = readyDay.ready
             window.location.reload()
         } else {
             await showError()
@@ -514,7 +516,7 @@ const handleReadyAction = async () => {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Обработка начала выполнения СЗ
 const handleStartAction = async () => {
-    if (!isCuttingDayStarted.value) {
+    if (!isBlockDayStarted.value) {
         // __ Старт.
 
         // __ 1. Проверка, есть ли не выполненные или выполняемые задания за предыдущий период (до текущего дня)
@@ -522,13 +524,13 @@ const handleStartAction = async () => {
         // __ 2. Если есть, то показываем предупреждение
         // __ 3. Если нет, то запускаем выполнение
 
-        const startedDay = await cuttingStore.startCuttingDay(cuttingDay.value!.id)
+        const startedDay = await blockStore.startBlockDay(blockDay.value!.id)
         // console.log('Start: returnedData: ', startedDay)
 
         if (checkCRUD(startedDay)) {
-            cuttingDay.value!.start_at  = startedDay.start_at
-            cuttingDay.value!.resume_at = startedDay.resume_at
-            cuttingDay.value!.finish_at = null
+            blockDay.value!.start_at  = startedDay.start_at
+            blockDay.value!.resume_at = startedDay.resume_at
+            blockDay.value!.finish_at = null
             // console.log('start')
             startTimer()
         } else {
@@ -544,7 +546,7 @@ const handleStartAction = async () => {
         // __ 3. Проверяем по каждому СЗ, выполнены ли все задания
         // __ 4. Закрываем выполнение
 
-        if (isCuttingDayReadyForNewTasks.value) {
+        if (isBlockDayReadyForNewTasks.value) {
             await showError([
                 'Выполнение СЗ находится в процессе паузы',
                 'для добавления новых СЗ!',
@@ -553,32 +555,32 @@ const handleStartAction = async () => {
             return
         }
 
-        if (cuttingDay.value!.workers.length === 0) {
+        if (blockDay.value!.workers.length === 0) {
             await showError('Необходимо заполнить персонал!')
             return
         }
 
-        if (!cuttingDay.value!.responsible || !cuttingDay.value!.responsible.id) {
+        if (!blockDay.value!.responsible || !blockDay.value!.responsible.id) {
             await showError(['Не выбран ответственный сотрудник', 'за выполнение смены!'])
             return
         }
 
-        for (const task of cuttingDay.value!.cutting_tasks) {
-            for (const line of task.cutting_lines) {
+        for (const task of blockDay.value!.block_tasks) {
+            for (const line of task.block_lines) {
                 if (!line.finished_at && !line.false_at) {
                     console.log('line: ', line)
 
                     await showError([
                         'Нет отметки выполнения!',
                         `СЗ: ${task.order.client.short_name} №${task.order.order_no_num}`,
-                        `Строка: ${getCoverSizeString(line)} ${getCuttingTaskModelCoverName(line)} ${line.amount} шт.`,
+                        `Строка: ${line.block.name} ${line.amount} шт.`,
                     ])
                     return
                 }
             }
         }
 
-        const finishedDay = await cuttingStore.finishCuttingDay(cuttingDay.value!.id)
+        const finishedDay = await blockStore.finishBlockDay(blockDay.value!.id)
         console.log('Finish: returnedData: ', finishedDay)
 
         if (checkCRUD(finishedDay)) {
@@ -592,7 +594,7 @@ const handleStartAction = async () => {
             await appModalAsyncMultiline.value!.show()
 
             // __ Переходим на страницу с выполнением СЗ
-            await router.push({ name: 'manufacture.cell.cutting.tasks.execute' })
+            await router.push({ name: 'manufacture.cell.block.tasks.execute' })
         } else {
             await showError()
         }
@@ -604,53 +606,53 @@ const handleStartAction = async () => {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Добавляем работника
-const addWorker = (worker: ICuttingDayWorker) => {
-    const existWorker = cuttingDay.value!.workers.find(w => w.id === worker.id)
+const addWorker = (worker: IBlockDayWorker) => {
+    const existWorker = blockDay.value!.workers.find(w => w.id === worker.id)
     if (!existWorker) {
-        cuttingDay.value!.workers.push(worker)
+        blockDay.value!.workers.push(worker)
     }
 }
 
 
 // __ Добавляем список работников
-const addWorkers = (workers: ICuttingDayWorker[]) => {
+const addWorkers = (workers: IBlockDayWorker[]) => {
     workers.forEach(worker => {
-        const existWorker = cuttingDay.value!.workers.find(w => w.id === worker.id)
+        const existWorker = blockDay.value!.workers.find(w => w.id === worker.id)
         if (!existWorker) {
             console.log('push: ', worker)
-            cuttingDay.value!.workers.push(worker)
+            blockDay.value!.workers.push(worker)
         }
     })
 }
 
 
 // __ Удаляем работника
-const removeWorker = (worker: ICuttingDayWorker) => {
-    const findIndex = cuttingDay.value!.workers.findIndex(w => w.id === worker.id)
+const removeWorker = (worker: IBlockDayWorker) => {
+    const findIndex = blockDay.value!.workers.findIndex(w => w.id === worker.id)
     if (findIndex !== -1) {
-        cuttingDay.value!.workers.splice(findIndex, 1)
-        if (cuttingDay.value!.responsible && cuttingDay.value!.responsible.id === worker.id) {
-            cuttingDay.value!.responsible = null
+        blockDay.value!.workers.splice(findIndex, 1)
+        if (blockDay.value!.responsible && blockDay.value!.responsible.id === worker.id) {
+            blockDay.value!.responsible = null
         }
     }
 }
 
 // __ Добавляем Ответственного
-const addResponsible = (worker: ICuttingDayWorker) => {
-    cuttingDay.value!.responsible = worker
+const addResponsible = (worker: IBlockDayWorker) => {
+    blockDay.value!.responsible = worker
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---   Функционал для выполнения дня Записи        !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// __ Устанавливаем статус Выполнено CuttingLines
-const setFinishStatus = async (cuttingLinesIds: number[]) => {
-    const result = (await cuttingStore.setCuttingTaskLinesDone(cuttingLinesIds)) as ICuttingTaskLine[]
+// __ Устанавливаем статус Выполнено BlockLines
+const setFinishStatus = async (blockLinesIds: number[]) => {
+    const result = (await blockStore.setBlockTaskLinesDone(blockLinesIds)) as IBlockTaskLine[]
 
     if (checkCRUD(result)) {
         result.forEach(line => {
-            const findLine = allCuttingTasksLinesUnion.value.cutting_lines.find(l => l.id === line.id)
+            const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
             if (findLine) {
                 findLine.finished_at = line.finished_at
             }
@@ -660,13 +662,13 @@ const setFinishStatus = async (cuttingLinesIds: number[]) => {
     }
 }
 
-// __ Устанавливаем статус Не Выполнено CuttingLines
-const setFalseStatus = async (cuttingLinesIds: number[], falseReason: string) => {
-    const result = (await cuttingStore.setCuttingTaskLinesFalse(cuttingLinesIds, falseReason)) as ICuttingTaskLine[]
+// __ Устанавливаем статус Не Выполнено BlockLines
+const setFalseStatus = async (blockLinesIds: number[], falseReason: string) => {
+    const result = (await blockStore.setBlockTaskLinesFalse(blockLinesIds, falseReason)) as IBlockTaskLine[]
 
     if (checkCRUD(result)) {
         result.forEach(line => {
-            const findLine = allCuttingTasksLinesUnion.value.cutting_lines.find(l => l.id === line.id)
+            const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
             if (findLine) {
                 findLine.false_at     = line.false_at
                 findLine.false_reason = line.false_reason
@@ -677,13 +679,13 @@ const setFalseStatus = async (cuttingLinesIds: number[], falseReason: string) =>
     }
 }
 
-// __ Сбрасываем статус CuttingLines
-const resetStatus = async (cuttingLinesIds: number[]) => {
-    const result = (await cuttingStore.setCuttingTaskLinesReset(cuttingLinesIds)) as ICuttingTaskLine[]
+// __ Сбрасываем статус BlockLines
+const resetStatus = async (blockLinesIds: number[]) => {
+    const result = (await blockStore.setBlockTaskLinesReset(blockLinesIds)) as IBlockTaskLine[]
 
     if (checkCRUD(result)) {
         result.forEach(line => {
-            const findLine = allCuttingTasksLinesUnion.value.cutting_lines.find(l => l.id === line.id)
+            const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
             if (findLine) {
                 findLine.finished_at  = line.finished_at
                 findLine.false_at     = line.false_at
@@ -696,16 +698,16 @@ const resetStatus = async (cuttingLinesIds: number[]) => {
 }
 
 // __ Разделяем строку
-const divideLine = async (taskId: number, cuttingLineId: number, range: { take: number; keep: number }) => {
+const divideLine = async (taskId: number, blockLineId: number, range: { take: number; keep: number }) => {
 
     // __ Старый вариант, когда нельзя было разбить в Объединении СЗ
-    // const findTask = cuttingDay.value!.cutting_tasks.find(task => task.id === taskId)
+    // const findTask = blockDay.value!.block_tasks.find(task => task.id === taskId)
 
     // __ Новый вариант, когда можно разбить в Объединении СЗ, в принципе taskId не нужен
-    let findTask: ICuttingTask | undefined = undefined
-    for (const task of cuttingDay.value!.cutting_tasks) {
-        for (const line of task.cutting_lines) {
-            if (line.id === cuttingLineId) {
+    let findTask: IBlockTask | undefined = undefined
+    for (const task of blockDay.value!.block_tasks) {
+        for (const line of task.block_lines) {
+            if (line.id === blockLineId) {
                 findTask = task
                 break
             }
@@ -719,21 +721,21 @@ const divideLine = async (taskId: number, cuttingLineId: number, range: { take: 
         return // страховка
     }
 
-    const dividerElementIndex = findTask.cutting_lines.findIndex(line => line.id === cuttingLineId)
-    const newCuttingLine       = { ...findTask.cutting_lines[dividerElementIndex] } // __ Копируем объект
-    newCuttingLine.id          = 0 // __ Устанавливаем новый ID
-    newCuttingLine.position    = round(newCuttingLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
+    const dividerElementIndex = findTask.block_lines.findIndex(line => line.id === blockLineId)
+    const newBlockLine        = { ...findTask.block_lines[dividerElementIndex] } // __ Копируем объект
+    newBlockLine.id           = 0 // __ Устанавливаем новый ID
+    newBlockLine.position     = round(newBlockLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
-    newCuttingLine.amount                              = range.take
-    findTask.cutting_lines[dividerElementIndex].amount = range.keep
+    newBlockLine.amount                              = range.take
+    findTask.block_lines[dividerElementIndex].amount = range.keep
 
     // __ Вставляем новую строку
-    findTask.cutting_lines.splice(dividerElementIndex + 1, 0, newCuttingLine)
-    findTask.cutting_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
+    findTask.block_lines.splice(dividerElementIndex + 1, 0, newBlockLine)
+    findTask.block_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
 
-    const result = await cuttingStore.divideLineInCuttingTaskPending(findTask, { start: executeDate, end: executeDate })
+    const result = await blockStore.divideLineInBlockTaskPending(findTask, { start: executeDate, end: executeDate })
 
-    // await cuttingStore.getCuttingTasks({ start: executeDate, end: executeDate })
+    // await blockStore.getBlockTasks({ start: executeDate, end: executeDate })
     // await nextTick() // __ Ждем, пока все отрендерится
     // prepareData()
     // setTabs()
@@ -752,27 +754,32 @@ const divideLine = async (taskId: number, cuttingLineId: number, range: { take: 
 
 // __ Подготавливаем данные для отображения
 const prepareData = () => {
-    if (!cuttingDay.value) return
+    if (!blockDay.value) return
 
     // __ Фильтруем задания
-    cuttingDay.value!.cutting_tasks = globalCuttingTasks.value
-        .filter(task => task.current_status.id === CUTTING_TASK_STATUSES.PENDING.ID || task.current_status.id === CUTTING_TASK_STATUSES.RUNNING.ID)
+    blockDay.value!.block_tasks = globalBlockTasks.value
+        .filter(
+            task =>
+                (task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID ||
+                task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID) &&
+                task.change === blockDay.value!.change
+        )
         .sort((a, b) => a.position - b.position)
 
-    // console.log('prepareData: ', cuttingDay.value)
+    // console.log('prepareData: ', blockDay.value)
 
-    // __ Формируем объединение всех CuttingTaskLines и добавляем признак группировки для "Объединения СЗ"
-    allCuttingTasksLinesUnion.value.cutting_lines = []
+    // __ Формируем объединение всех BlockTaskLines и добавляем признак группировки для "Объединения СЗ"
+    allBlockTasksLinesUnion.value.block_lines = []
 
-    // !!! Тут важно, в allCuttingTasksLinesUnion.value кладем ссылку на объект, а не его копию, чтобы сокранять реактивность при Выполнено/Не выполнено/Сброс и тд
-    cuttingDay.value!.cutting_tasks.forEach(task => task.cutting_lines.forEach(line => {
-        line.groupAttr = getCuttingTaskTitle(task)
-        allCuttingTasksLinesUnion.value.cutting_lines.push(line)
+    // !!! Тут важно, в allBlockTasksLinesUnion.value кладем ссылку на объект, а не его копию, чтобы сокранять реактивность при Выполнено/Не выполнено/Сброс и тд
+    blockDay.value!.block_tasks.forEach(task => task.block_lines.forEach(line => {
+        line.groupAttr = getBlockTaskTitle(task)
+        allBlockTasksLinesUnion.value.block_lines.push(line)
     }))
-    // cuttingDay.value!.cutting_tasks.forEach(task => task.cutting_lines.forEach(line => allCuttingTasksLinesUnion.value.cutting_lines.push({ ...line, groupAttr: getCuttingTaskTitle(task) })))
+    // blockDay.value!.block_tasks.forEach(task => task.block_lines.forEach(line => allBlockTasksLinesUnion.value.block_lines.push({ ...line, groupAttr: getBlockTaskTitle(task) })))
 
-    allCuttingTasksLinesUnion.value.position  = UNION_TASKS_POSITION // __ Позиция объединения всех строк
-    allCuttingTasksLinesUnion.value.action_at = cuttingDay.value.action_at
+    allBlockTasksLinesUnion.value.position  = UNION_TASKS_POSITION // __ Позиция объединения всех строк
+    allBlockTasksLinesUnion.value.action_at = blockDay.value.action_at
 }
 
 const startTimer = () => {
@@ -784,9 +791,9 @@ const startTimer = () => {
 }
 
 watch(
-    () => globalCuttingTasks.value,
+    () => globalBlockTasks.value,
     () => {
-        // console.log('globalCuttingTasks updated')
+        // console.log('globalBlockTasks updated')
         prepareData()
         setTabs()
     },
@@ -801,25 +808,26 @@ onMounted(async () => {
         loadingService,
         async () => {
             await router.isReady().then(() => {
-                executeDate = route.params.date as unknown as string
+                executeDate   = route.params.date as unknown as string
+                executeChange = route.params.change as unknown as IBlockTaskChangeKeys
             })
 
             // __ Здесь получаем данные по СЗ, которые есть со статусом "Выполняется" или "Выполнено" до текущего дня
             // __ По идее эта логика избыточна, потому что все незавершенные или выполняющиеся сменные задания должны
             // __ автоматом через middleware переноситься на следующий день
             const [dayData, tasksBefore, /*_*/] = await Promise.all([
-                cuttingStore.getCuttingDayByDateAndChange(executeDate),
-                cuttingStore.getCuttingTasksByStatusBeforeDate(executeDate, [
-                    CUTTING_TASK_STATUSES.PENDING.ID,
-                    CUTTING_TASK_STATUSES.RUNNING.ID,
-                    CUTTING_TASK_STATUSES.CREATED.ID,
-                    CUTTING_TASK_STATUSES.ROLLING.ID,
+                blockStore.getBlockDayByDateAndChange(executeDate, executeChange),
+                blockStore.getBlockTasksByStatusBeforeDate(executeDate, [
+                    BLOCK_TASK_STATUSES.PENDING.ID,
+                    BLOCK_TASK_STATUSES.RUNNING.ID,
+                    BLOCK_TASK_STATUSES.CREATED.ID,
+                    BLOCK_TASK_STATUSES.ROLLING.ID,
                 ]),
-                cuttingStore.getCuttingTasks({ start: executeDate, end: executeDate }),
+                blockStore.getBlockTasks({ start: executeDate, end: executeDate }),
             ])
 
             tasksBeforeCurrentDay.value = tasksBefore
-            cuttingDay.value             = dayData
+            blockDay.value              = dayData[0]
 
             prepareData()
 
@@ -833,28 +841,29 @@ onMounted(async () => {
             setTabs()
 
             console.log('executeDate: ', executeDate)
-            console.log('globalCuttingTasks: ', globalCuttingTasks.value)
-            console.log('cuttingDay: ', cuttingDay.value)
+            console.log('executeChange: ', executeChange)
+            console.log('globalBlockTasks: ', globalBlockTasks.value)
+            console.log('blockDay: ', blockDay.value)
             console.log('tasksBeforeCurrentDay: ', tasksBeforeCurrentDay.value)
 
-            // // __ Получаем CuttingTasks по статусу и записываем в глобальную переменную в CuttingStore
-            // await cuttingStore.getCuttingTasksByStatus([
-            //     CUTTING_TASK_STATUSES.PENDING.ID,
-            //     CUTTING_TASK_STATUSES.RUNNING.ID,
+            // // __ Получаем BlockTasks по статусу и записываем в глобальную переменную в BlockStore
+            // await blockStore.getBlockTasksByStatus([
+            //     BLOCK_TASK_STATUSES.PENDING.ID,
+            //     BLOCK_TASK_STATUSES.RUNNING.ID,
             // ])
             //
             // // __ Получаем дни
-            // await getCuttingDays()
+            // await getBlockDays()
             //
             // // __ Объединяем задания с днями
-            // unionDatesWithCuttingTasks(cuttingDays.value, globalCuttingTasksPending.value)
+            // unionDatesWithBlockTasks(blockDays.value, globalBlockTasksPending.value)
             //
             // // __ Добавляем свернутость
             // addCollapsed()
             //
-            // if (DEBUG) console.log('globalCuttingTasksPending:', globalCuttingTasksPending.value)
-            // if (DEBUG) console.log('cuttingDays:', cuttingDays.value)
-            // if (DEBUG) console.log('renderCuttingDays:', renderCuttingDays.value)
+            // if (DEBUG) console.log('globalBlockTasksPending:', globalBlockTasksPending.value)
+            // if (DEBUG) console.log('blockDays:', blockDays.value)
+            // if (DEBUG) console.log('renderBlockDays:', renderBlockDays.value)
         },
         undefined
         // false,

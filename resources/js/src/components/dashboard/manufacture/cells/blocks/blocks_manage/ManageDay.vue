@@ -410,8 +410,8 @@ const DEFAULT_HEIGHT = 'h-[25px]'
 
 const TOTALS_TYPE: IColorTypes = 'stone'
 const DATA_HEADER_TEXT_SIZE    = 'mini'
-const CHANGE_1_TYPE            = 'indigo'
-const CHANGE_2_TYPE            = 'orange'
+// const CHANGE_1_TYPE            = 'indigo'
+// const CHANGE_2_TYPE            = 'orange'
 const REFERENCE_TIME           = 10.5 // часы
 
 // __ Высота под Итого
@@ -511,7 +511,7 @@ const getChangeType = (change: IBlockTaskChangeKeys) => {
 }
 
 
-// __ Тип для Каротчки и Изменения стола
+// __ Тип для Карточки и Изменения Производственной Линии
 const modalType            = ref<IColorTypes>('primary')
 const modalText            = ref<string>('')
 const modalMode            = ref<'inform' | 'confirm'>('inform')
@@ -589,7 +589,7 @@ const showBlockTaskCard = async (blockTask: IBlockTask) => {
     }
 }
 
-// __ Изменение стола
+// __ Изменение Производственной Линии
 const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
     // __ Копируем объект, чтобы не мутировал оригинал
     taskCard.value = JSON.parse(JSON.stringify(blockTask))
@@ -605,14 +605,14 @@ const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
 
     // __ Получаем ссылки на панели
     const mutations                          = manageTaskManufLines.value!.mutations
-    const setTablesData: IBlockLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
+    const setBlockData: IBlockLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
 
-    console.log('mutations: ', setTablesData)
+    console.log('mutations: ', setBlockData)
 
-    const result = await blockStore.taskLinesManufLineSet(setTablesData)
+    const result = await blockStore.taskLinesManufLineSet(setBlockData)
     if (checkCRUD(result)) {
         // __ Меняем глобальный стейт
-        blockStore.setGlobalArrayChangeTables(setTablesData)
+        blockStore.setGlobalArrayChangeManufLines(setBlockData)
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = 'Данные успешно обновлены'

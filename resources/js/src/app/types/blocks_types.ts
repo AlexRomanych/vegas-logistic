@@ -138,7 +138,6 @@ export type IBlockDay = {
 }
 
 
-
 // --- --------------------------------------------------------------------
 // --- --------------------- Для Учета персонала  -------------------------
 // --- --------------------------------------------------------------------
@@ -209,7 +208,6 @@ export interface IBlockTaskLine {
     id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
     amount: number                                  // __ Общее количество в заявке
     time: number                                    // __ Трудозатраты
-    productivity: number
     square: number                                  // __ Площадь единицы данного блока
     is_average: boolean                             // __ Флаг для расчетной модели
 
@@ -265,7 +263,8 @@ export interface IBlockTaskLineBlockCollection {
     manuf_line: IBlockManufLine
     manuf_line_alt: IBlockManufLine
     name: string
-    priority: number
+    priority_1: number
+    priority_2: number
     productivity: number
     unit: string
 }
@@ -290,7 +289,6 @@ export interface IBlockTaskOrderLine {
 }
 
 
-
 // --- --------------------------------------------------------------
 // --- Типы для работы со статусами СЗ
 // --- --------------------------------------------------------------
@@ -301,8 +299,6 @@ export type IBlockTaskStatusKeys =
     typeof BLOCK_TASK_STATUS_PENDING |
     typeof BLOCK_TASK_STATUS_RUNNING |
     typeof BLOCK_TASK_STATUS_DONE
-
-
 
 
 // --- ------------------------------------------------------------
@@ -394,7 +390,8 @@ export type IBlockTaskCardSort = 'none' | 'asc' | 'desc'
 
 // --- ------------------------------------------------------------
 // __ Для смен
-export type IBlockTaskChangeKeys = typeof  CHANGE_1 | typeof CHANGE_2
+export type IBlockTaskChangeKeys = typeof CHANGE_1 | typeof CHANGE_2
+
 export interface IBlockTaskChange {
     ID: number
     NAME: IBlockTaskChangeKeys
@@ -405,7 +402,6 @@ export interface IBlockTaskChange {
 }
 
 // --- ------------------------------------------------------------
-
 
 
 // --- ----------- Статистика выполнения СЗ (прогресс) ---------------------------
@@ -420,3 +416,98 @@ export interface IBlockTaskExecuteStatisticsItem {
     unfinished: number
     total: number
 }
+
+
+// --- -------------------------------------------------------------------
+// --- --------------- Тип для группировки СЗ по ШМ ----------------------
+// --- -------------------------------------------------------------------
+export type IBlockTaskLinesGroupNames = typeof LINE_1_NAME | typeof LINE_2_NAME | typeof LINE_0_NAME
+export type IBlockTaskLinesSubGroupNames = typeof LINE_1_NAME | typeof LINE_2_NAME | typeof LINE_0_NAME
+
+
+// __ Для набора правил Группировки СЗ по ШМ
+export interface IBlockTaskLinesGroup {
+    GROUP_NAME: IBlockTaskLinesGroupNames
+    GROUP_TYPE: IColorTypes
+    GROUP_COLOR?: string | null,
+    SUBGROUPS: {
+        SUBGROUP_NAME: IBlockTaskLinesSubGroupNames
+        SUBGROUP_TYPE: IColorTypes
+        SUBGROUP_COLOR?: string | null,
+        SUBGROUP_LINE: string[]
+    }[]
+}
+
+// __ Для отображения СЗ по ШМ
+export interface IBlockTaskLinesGroupData {
+    groupName: IBlockManufLine
+    groupType: IColorTypes
+    hasData: boolean
+    subgroups: IBlockTaskLinesSubgroup[]
+    time: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    amount: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    square: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    collapsed?: boolean
+}
+
+
+export interface IBlockTaskLinesSubgroup {
+    subgroupName: string
+    subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
+    subgroupType: IColorTypes
+    hasData: boolean
+    time: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    amount: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    square: {
+        total: number
+        done: number
+        incomplete: number
+    }
+    lines: IBlockTaskLine[]
+    // undergroups: IBlockTaskLinesUnderGroup[]
+    collapsed?: boolean
+    priority: number
+
+}
+
+// export interface IBlockTaskLinesUnderGroup {
+//     undergroupName: string
+//     undergroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
+//     undergroupType: IColorTypes
+//     hasData: boolean
+//     time: {
+//         total: number
+//         done: number
+//         incomplete: number
+//     }
+//     amount: {
+//         total: number
+//         done: number
+//         incomplete: number
+//     }
+//     lines: IBlockTaskLine[]
+//     cutWidth: number
+//     cutLength: number
+//     cutLengthTotal: number
+// }
+
