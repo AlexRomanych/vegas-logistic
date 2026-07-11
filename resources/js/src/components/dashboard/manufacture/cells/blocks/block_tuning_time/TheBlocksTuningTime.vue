@@ -3,7 +3,6 @@
         v-if="!isLoading"
         class="m-2 flex flex-col h-[calc(100vh-120px)] select-none"
     >
-
         <!-- __ Выводим Табы и закрепляем их сверху -->
         <div class="flex-none">
             <div class="flex items-center">
@@ -116,7 +115,6 @@ import { onMounted, reactive, ref } from 'vue'
 
 import type { IBlockCollectionTime, IBlockManufLine, IColorTypes, } from '@/types'
 
-import { useFabricsStore } from '@/stores/FabricsStore.js'
 import { useBlocksStore } from '@/stores/BlocksStore.js'
 
 import {
@@ -127,20 +125,16 @@ import {
 } from '@/app/constants/blocks.ts'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLine from '@/components/dashboard/manufacture/cells/components/TheDividerLine.vue'
+import AppInputNumberSingleTS from '@/components/ui/inputs/AppInputNumberSingleTS.vue'
 
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers.ts'
 
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import AppInputNumberSingleTS from '@/components/ui/inputs/AppInputNumberSingleTS.vue'
-
-
 const isLoading = ref(true)
-
 // __ End Loader
-
 
 interface ITab {
     shown: boolean,
@@ -149,16 +143,12 @@ interface ITab {
     active: boolean
     manufLine: IBlockManufLine
     manufLineTitle: string
-
 }
 
 type ITabKey = 'common' | 'line_1' | 'line_2'
 type ITabs = Record<ITabKey, ITab>
 
-
-const fabricsStore = useFabricsStore()
 const blocksStore  = useBlocksStore()
-
 
 // __ Подготавливаем переменные
 const tuningTimes = ref<IBlockCollectionTime[]>([])

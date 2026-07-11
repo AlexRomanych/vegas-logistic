@@ -36,7 +36,7 @@
                 <!-- __ Видимость заголовков -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
-                    :text="showUndergroupNames ? '🔓' : '🔒'"
+                    :text="showTuningTimes ? '🔓' : '🔒'"
                     align="center"
                     class="menu-button"
                     rounded="4"
@@ -44,7 +44,7 @@
                     title="Скрыть/Показать название размеров Кроя"
                     type="dark"
                     width="w-[50px]"
-                    @click="toggleUnderGroupTitleVisibility"
+                    @click="toggleShowTuningTimesVisibility"
                 />
 
                 <!-- __ Свернуть/Развернуть Блоки -->
@@ -248,63 +248,74 @@
             ref="scrollContainer"
             class="py-2 flex-1 overflow-y-auto border border-slate-200 rounded-xl bg-white select-none custom-scroll relative shadow-sm"
         >
-
             <div v-for="(subgroup, sgIndex) of blockLinesGroup" :key="sgIndex">
 
-                <template v-if="subgroup.hasData">
-                    <!-- __ Название Коллекции Блоков -->
-                    <div
-                        :class="[!collapseStates[subgroup.subgroupName] ? 'mt-2' : '']"
-                        class="ml-2"
-                    >
-                        <ExecuteDayTaskSubGroup
-                            :collapsed="collapseStates[subgroup.subgroupName]"
-                            :subgroup
-                            @toggle-collapse="toggleCollapse(subgroup.subgroupName)"
-                            @select-subgroup-items="selectSubgroupItems(subgroup)"
-                        />
-                    </div>
-
-                    <div
-                        v-if="!collapseStates[subgroup.subgroupName]"
-                        :class="[!collapseStates[subgroup.subgroupName] ? 'mb-2' : '']"
-                        class="ml-4"
-                    >
-
-                        <!-- !!! С фиксированной высотой строки СЗ !!! -->
-                        <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
+                <!-- __ Простые Коллекции Блоков -->
+                <template v-if="!subgroup.isTuning">
+                    <template v-if="subgroup.hasData">
+                        <!-- __ Название Коллекции Блоков -->
+                        <div
+                            :class="[!collapseStates[subgroup.subgroupName] ? 'mt-2' : '']"
+                            class="ml-2"
+                        >
+                            <ExecuteDayTaskSubGroup
+                                :collapsed="collapseStates[subgroup.subgroupName]"
+                                :subgroup
+                                @toggle-collapse="toggleCollapse(subgroup.subgroupName)"
+                                @select-subgroup-items="selectSubgroupItems(subgroup)"
+                            />
+                        </div>
 
                         <div
-                            v-for="(blockLine, index) of subgroup.lines"
-                            :key="blockLine.id"
-                            :class="[
+                            v-if="!collapseStates[subgroup.subgroupName]"
+                            :class="[!collapseStates[subgroup.subgroupName] ? 'mb-2' : '']"
+                            class="ml-4"
+                        >
+
+                            <!-- !!! С фиксированной высотой строки СЗ !!! -->
+                            <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
+
+                            <div
+                                v-for="(blockLine, index) of subgroup.lines"
+                                :key="blockLine.id"
+                                :class="[
                                 selectedIds.has(blockLine.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
                                 blockLine.completed ? '' : '',
                             ]"
-                            :data-task-id="blockLine.id"
-                            class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
-                            @mousedown="startSelectionById(blockLine.id, $event)"
-                            @mouseenter="updateSelectionById(blockLine.id, $event)"
-                        >
-                            <!-- __ Строка СЗ -->
-                            <ExecuteDayTaskLine
-                                :block-line="blockLine"
-                                :field-widths="fieldWidths"
-                                :index="index + 1"
-                                :ordering="'index'"
-                                @show-document="showDocument(blockLine, $event)"
-                            />
+                                :data-task-id="blockLine.id"
+                                class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
+                                @mousedown="startSelectionById(blockLine.id, $event)"
+                                @mouseenter="updateSelectionById(blockLine.id, $event)"
+                            >
+                                <!-- __ Строка СЗ -->
+                                <ExecuteDayTaskLine
+                                    :block-line="blockLine"
+                                    :field-widths="fieldWidths"
+                                    :index="index + 1"
+                                    :ordering="'index'"
+                                    @show-document="showDocument(blockLine, $event)"
+                                />
 
-                            <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
-                            <div
-                                v-if="selectedIds.has(blockLine.id)"
-                                class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
-                            ></div>
+                                <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
+                                <div
+                                    v-if="selectedIds.has(blockLine.id)"
+                                    class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
+                                ></div>
+                            </div>
+
                         </div>
-
-                    </div>
+                    </template>
                 </template>
 
+                <!-- __ Переналадка -->
+                <template v-else>
+                    <!-- __ Название Коллекции Блоков -->
+                    <div v-if="showTuningTimes" class="ml-2">
+                        <ExecuteDayTaskSubGroupTuning
+                            :subgroup
+                        />
+                    </div>
+                </template>
             </div>
         </div>
 
@@ -423,7 +434,7 @@ import type {
     IDividerItem,
     IBlockTask,
     IBlockTaskLine,
-    IBlockTaskOrderLine, IBlockLineSetData, IBlockTaskLinesSubgroup, IBlockTaskLinesGroupData, IBlockDocument
+    IBlockTaskOrderLine, IBlockLineSetData, IBlockTaskLinesSubgroup, IBlockTaskLinesGroupData, IBlockDocument, IBlockCollectionTime
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -453,14 +464,18 @@ import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/b
 import ExecuteDayTaskSubGroup from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskSubGroup.vue'
 import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/block_design/BlockDesignDocumentAsync.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
+import ExecuteDayTaskSubGroupTuning from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskSubGroupTuning.vue'
 
 
 interface IProps {
     blockTask: IBlockTask
     isRunning: boolean | null
+    tuningTimes?: IBlockCollectionTime[]
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    tuningTimes: () => []
+})
 
 const emits = defineEmits<{
     (e: 'setFinishStatus', payload: number[]): void
@@ -525,7 +540,7 @@ const taskTitle = computed(() => {
 // __ Формируем объект выполнения
 const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
     const title = `${props.blockTask.position}. ${props.blockTask.order.client.short_name} №${props.blockTask.order.order_no_num}`
-    return groupTaskLinesForExecute(props.blockTask.block_lines, title)
+    return groupTaskLinesForExecute(props.blockTask.block_lines, title, props.tuningTimes)
 })
 
 const blockLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
@@ -985,18 +1000,17 @@ const showDocument = async (blockLine: IBlockTaskLine, id: number) => {
 // !!! ---                Collapse                     !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-const collapsedSubGroupsState   = ref(true)
-const collapsedUnderGroupsState = ref(true)
+const collapsedSubGroupsState = ref(true)
+// const collapsedUnderGroupsState = ref(true)
 
 // __ Видимость названий подгрупп
-const showUndergroupNames = ref(true)
+const showTuningTimes = ref(true)
 
 // --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---
 // __ Храним пары: [ИмяГруппы]: boolean (true - свернуто, false - развернуто)
 const CONCAT_SYMBOLS = '__'
 
 const collapseStates = ref<Record<string, boolean>>({})
-let collapseStatesMem: Record<string, boolean>
 
 // __ Следим за изменением активной группы таба и наполняем ключи, если их еще нет
 watch(() => blockLinesGroup.value, (newSubgroups) => {
@@ -1007,7 +1021,6 @@ watch(() => blockLinesGroup.value, (newSubgroups) => {
         if (collapseStates.value[subgroup.subgroupName] === undefined) {
             collapseStates.value[subgroup.subgroupName] = true // по дефолту свернуто
         }
-        collapseStatesMem = JSON.parse(JSON.stringify(collapseStates.value))
     })
 }, { immediate: true, deep: true })
 
@@ -1038,23 +1051,9 @@ const toggleSubGroups = () => {
 //     })
 // }
 
-// __ Скрываем размеры Раскроя
-const toggleUnderGroupTitleVisibility = () => {
-    if (showUndergroupNames.value) {
-        // __ Переключение в "Показать". Запоминаем состояние и все дочернее отображаем
-        collapseStatesMem = JSON.parse(JSON.stringify(collapseStates.value))
-        Object.keys(collapseStates.value).forEach(k => {
-            if (k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = false
-        })
-    } else {
-        // __ Переключение в "Показать". Запоминаем состояние и все дочернее восстанавливаем
-        Object.keys(collapseStatesMem).forEach(k => {
-            if (k.includes(CONCAT_SYMBOLS)) collapseStates.value[k] = collapseStatesMem[k]
-        })
-        // collapseStates.value = JSON.parse(JSON.stringify(collapseStatesMem))
-    }
-
-    showUndergroupNames.value = !showUndergroupNames.value
+// __ Скрываем Переналадку
+const toggleShowTuningTimesVisibility = () => {
+    showTuningTimes.value = !showTuningTimes.value
 }
 
 // __ Добавить в выделение все элементы ПС

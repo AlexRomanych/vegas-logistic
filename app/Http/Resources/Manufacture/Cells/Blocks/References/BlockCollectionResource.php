@@ -25,6 +25,7 @@ class BlockCollectionResource extends JsonResource
             'line'         => $this->line,
             'line_alt'     => $this->line_alt,
             'priority'     => $this->priority,
+            'priority_2'   => $this->priority_2,
             'active'       => $this->active,
             'description'  => $this->description,
             'height'       => $this->height,

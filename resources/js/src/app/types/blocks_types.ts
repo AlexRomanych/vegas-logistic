@@ -26,6 +26,7 @@ export interface IBlockCollection {
     line: IBlockManufLine
     line_alt: IBlockManufLine | null
     priority: number
+    priority_2: number
     height: number
     length: number
     productivity: number
@@ -460,11 +461,13 @@ export interface IBlockTaskLinesGroupData {
         incomplete: number
     }
     collapsed?: boolean
+    tuningTimeTotal: number
 }
 
 
 export interface IBlockTaskLinesSubgroup {
     subgroupName: string
+    // subgroupId: number
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean
@@ -487,7 +490,7 @@ export interface IBlockTaskLinesSubgroup {
     // undergroups: IBlockTaskLinesUnderGroup[]
     collapsed?: boolean
     priority: number
-
+    isTuning: boolean
 }
 
 // export interface IBlockTaskLinesUnderGroup {

@@ -42,16 +42,21 @@
                         step="0.001"
                     />
 
-                    <!-- __ Приоритет выполнения -->
-                    <AppInputNumberSimpleTS
-                        id="priority"
-                        v-model:input-number.number="v$.priority.$model as unknown as number"
-                        :errors="v$.priority.$errors"
-                        :width="FIELD_WIDTH_LABEL"
-                        label="Приоритет выполнения"
-                        mode="text"
-                        placeholder="Укажите приоритет..."
-                    />
+                    <!-- __ КДБ -->
+                    <div class="input-wrapper" @dblclick="selectKDB">
+                        <AppInputTextTS
+                            id="kdb"
+                            v-model:textValue.trim="v$.kdb.$model as unknown as string"
+                            :errors="v$.kdb.$errors"
+                            :width="FIELD_WIDTH_LABEL"
+                            class="disabled-input"
+                            disabled
+                            label="КДБ"
+                            mode="text"
+                            placeholder="Выберите КДБ (двойной клик)..."
+                        />
+                    </div>
+
                 </div>
 
                 <div class="flex">
@@ -78,18 +83,27 @@
                     />
                 </div>
 
-                <!-- __ КДБ -->
-                <div class="input-wrapper" @dblclick="selectKDB">
-                    <AppInputTextTS
-                        id="kdb"
-                        v-model:textValue.trim="v$.kdb.$model as unknown as string"
-                        :errors="v$.kdb.$errors"
-                        :width="FIELD_WIDTH_CHECK_BOX"
-                        class="disabled-input"
-                        disabled
-                        label="КДБ"
+                <div class="flex">
+                    <!-- __ Приоритет выполнения -->
+                    <AppInputNumberSimpleTS
+                        id="priority"
+                        v-model:input-number.number="v$.priority.$model as unknown as number"
+                        :errors="v$.priority.$errors"
+                        :width="FIELD_WIDTH_LABEL"
+                        label="Приоритет выполнения для Линии 1"
                         mode="text"
-                        placeholder="Выберите КДБ (двойной клик)..."
+                        placeholder="Укажите приоритет..."
+                    />
+
+                    <!-- __ Приоритет выполнения -->
+                    <AppInputNumberSimpleTS
+                        id="priority-2"
+                        v-model:input-number.number="v$.priority_2.$model as unknown as number"
+                        :errors="v$.priority_2.$errors"
+                        :width="FIELD_WIDTH_LABEL"
+                        label="Приоритет выполнения для Линии 2"
+                        mode="text"
+                        placeholder="Укажите приоритет..."
                     />
                 </div>
 
@@ -231,8 +245,7 @@
 
 <script lang="ts" setup>
 import type {
-    IBlockCollection, IBlockDocument,
-    IBlockLine,
+    IBlockCollection, IBlockDocument, IBlockManufLine,
     IBlockUnit,
     ICheckboxData,
     ICheckboxDataItem,
@@ -323,7 +336,6 @@ const getBlockDocs = async () => {
     blockDocs.value.push({
         id         : 0,
         kdb        : 'Нет КДБ',
-        name       : 'Нет КДБ',
         file_path  : null,
         description: null,
     })
@@ -336,9 +348,10 @@ const code_1c      = ref('')
 const name         = ref('')
 const unit         = ref<IBlockUnit>(UNIT_PICS)
 const kdb          = ref('')
-const line         = ref<IBlockLine>(LINE_1)
-const lineAlt      = ref<IBlockLine>(LINE_0)
+const line         = ref<IBlockManufLine>(LINE_1)
+const lineAlt      = ref<IBlockManufLine>(LINE_0)
 const priority     = ref(0)
+const priority_2   = ref(0)
 const height       = ref(0)
 const length       = ref(0)
 const productivity = ref(0)
@@ -356,6 +369,7 @@ const fillData = () => {
     line.value         = blockCollection.value.line !== LINE_0 ? blockCollection.value.line : LINE_1
     lineAlt.value      = blockCollection.value.line_alt ?? LINE_0
     priority.value     = blockCollection.value.priority
+    priority_2.value   = blockCollection.value.priority_2
     height.value       = blockCollection.value.height
     length.value       = blockCollection.value.length
     productivity.value = blockCollection.value.productivity
@@ -372,6 +386,7 @@ const verify = {
     kdb,
     productivity,
     priority,
+    priority_2,
     height,
     length,
     description,
@@ -421,6 +436,14 @@ const rules = {
         // $lazy: true,
     },
     priority    : {
+        $autoDirty: true,
+        minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        // $lazy: true,
+    },
+    priority_2  : {
         $autoDirty: true,
         minValue  : helpers.withMessage(`Поле должно быть больше или равно 0`, minValue(0)),
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -529,7 +552,7 @@ const lineCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     // __ Сбрасываем в default альтернативную линию
     if (blockCollection.value.line === blockCollection.value.line_alt) {
         blockCollection.value.line_alt = LINE_0
-        lineAlt.value = blockCollection.value.line_alt
+        lineAlt.value                  = blockCollection.value.line_alt
     }
 
 }
@@ -555,7 +578,7 @@ const lineAltCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) =>
         // __ Сбрасываем в default альтернативную линию
         if (line.value === lineAlt.value) {
             blockCollection.value.line_alt = LINE_0
-            lineAlt.value = LINE_0
+            lineAlt.value                  = LINE_0
         }
     }
 }
@@ -580,8 +603,8 @@ const showError = async (error: string | null = null) => {
 
 // __ Выбираем КДБ для Коллекции блоков
 const selectKDB = async () => {
-    selectedItems.value  = blockDocs.value
-    const findItem       = blockDocs.value.find(doc => doc.name === kdb.value)
+    selectedItems.value  = blockDocs.value.map(block => ({ ...block, name: block.kdb }))
+    const findItem       = blockDocs.value.find(doc => doc.kdb === kdb.value)
     selectedItemId.value = findItem ? findItem.id : 0
 
     const answer = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
@@ -609,6 +632,7 @@ const formSubmit = async () => {
     blockCollection.value.line         = line.value
     blockCollection.value.line_alt     = lineAlt.value !== LINE_0 ? lineAlt.value : null
     blockCollection.value.priority     = priority.value
+    blockCollection.value.priority_2   = priority_2.value
     blockCollection.value.height       = height.value
     blockCollection.value.length       = length.value
     blockCollection.value.productivity = productivity.value
@@ -646,6 +670,7 @@ watch([
     () => kdb,
     () => productivity,
     () => priority,
+    () => priority_2,
     () => height,
     () => description,
 ], async () => {

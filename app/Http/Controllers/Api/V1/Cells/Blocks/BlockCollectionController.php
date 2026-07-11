@@ -85,6 +85,7 @@ class BlockCollectionController extends Controller
                 'line'         => 'required|integer|in:' . BlockCollection::LINE_1 . ',' . BlockCollection::LINE_2,
                 'line_alt'     => 'present|nullable|integer|in:' . BlockCollection::LINE_1 . ',' . BlockCollection::LINE_2 . ',' . BlockCollection::LINE_0,
                 'priority'     => 'required|integer',
+                'priority_2'   => 'required|integer',
                 'height'       => 'required|integer',
                 'length'       => 'required|integer',
                 'productivity' => 'required|numeric',
@@ -101,6 +102,7 @@ class BlockCollectionController extends Controller
                 'line'         => $data['line'],
                 'line_alt'     => $data['line_alt'] !== BlockCollection::LINE_0 ? $data['line_alt'] : null,
                 'priority'     => $data['priority'],
+                'priority_2'   => $data['priority_2'],
                 'height'       => $data['height'],
                 'length'       => $data['length'],
                 'productivity' => $data['productivity'],
@@ -139,6 +141,7 @@ class BlockCollectionController extends Controller
                 'line'         => 'required|integer|in:' . BlockCollection::LINE_1 . ',' . BlockCollection::LINE_2,
                 'line_alt'     => 'present|nullable|integer|in:' . BlockCollection::LINE_1 . ',' . BlockCollection::LINE_2 . ',' . BlockCollection::LINE_0,
                 'priority'     => 'required|integer',
+                'priority_2'   => 'required|integer',
                 'height'       => 'required|integer',
                 'length'       => 'required|integer',
                 'productivity' => 'required|numeric',
@@ -156,6 +159,7 @@ class BlockCollectionController extends Controller
                 'line',
                 'line_alt',
                 'priority',
+                'priority_2',
                 'height',
                 'length',
                 'productivity',
@@ -170,8 +174,6 @@ class BlockCollectionController extends Controller
         }
     }
 
-
-
     /**
      * ___ Получение времени переналадки рисунков между 2 рисунками
      * @param string $from
@@ -183,8 +185,8 @@ class BlockCollectionController extends Controller
         try {
 
             $tuningTime = BlockTuningTime::query()
-                ->where('picture_from', $from)
-                ->where('picture_to', $to)
+                ->where('collection_from', $from)
+                ->where('collection_to', $to)
                 ->first();
 
             $returnData = [
@@ -207,22 +209,53 @@ class BlockCollectionController extends Controller
         }
     }
 
-
-
-
     /**
-     * ___ Получаем время переналадки рисунков
+     * ___ Получаем время переналадки Коллекции Блоков
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
     public function getBlockCollectionsTuningTime(Request $request)
     {
         try {
-
             $tuningTime = BlockCollection::query()
                 ->actual()
                 ->with([
-                    'collectionsTo',                                               // добавляем рисунки из которых производится тюнинг
+                    'collectionsTo',
+                ])
+                ->get();
+
+            return BlockCollectionTuningTimeResource::collection($tuningTime);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail(response()->json($e));
+        }
+    }
+
+    /**
+     * ___ Получаем время переналадки Коллекции Блоков
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getBlockCollectionsTuningTimeList(Request $request)
+    {
+        try {
+            $all = $request->all();
+            $validated = $request->validate([
+                // 1. Проверяем, что 'ids' присутствует, это массив и он не пустой
+                'ids' => 'required|array|min:1',
+
+                // 2. Проверяем каждый элемент внутри массива 'ids.*'
+                // Он должен быть целым числом и существовать в таблице 'block_collections' в колонке 'id'
+                'ids.*' => 'integer|exists:block_collections,id',
+            ]);
+
+            // Если валидация прошла, получаем чистый массив проверенных ID
+            $ids = $validated['ids'];
+
+            $tuningTime = BlockCollection::query()
+                ->actual()
+                ->whereIn('id', $ids)
+                ->with([
+                    'collectionsTo',
                 ])
                 ->get();
 

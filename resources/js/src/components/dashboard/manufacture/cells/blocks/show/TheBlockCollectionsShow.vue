@@ -96,10 +96,16 @@
 
                     </div>
 
-                    <!-- __ Приоритет изготовления -->
+                    <!-- __ Приоритет изготовления Линия 1 -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.priority"/>
                         <AppInputTextTSWrapper v-model="priorityFilter" :render-object="render.priority"/>
+                    </div>
+
+                    <!-- __ Приоритет изготовления Линия 2 -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.priority_2"/>
+                        <AppInputTextTSWrapper v-model="priorityFilter_2" :render-object="render.priority_2"/>
                     </div>
 
                     <!-- __ Ширина блоков -->
@@ -274,8 +280,11 @@
                 <!-- __ Альтернативная Линия -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.line_alt"/>
 
-                <!-- __ Приоритет изготовления -->
+                <!-- __ Приоритет изготовления Линия 1 -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority"/>
+
+                <!-- __ Приоритет изготовления Линия 2 -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority_2"/>
 
                 <!-- __ Ширина -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.width"/>
@@ -684,7 +693,7 @@ const render: IRenderData = reactive({
     },
     priority     : {
         id            : () => 'priority-search',
-        header        : ['Приор-', 'тет'],
+        header        : ['Приор-', 'тет Л.1'],
         width         : 'w-[60px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -700,6 +709,25 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority.toString()
+    },
+    priority_2   : {
+        id            : () => 'priority-2-search',
+        header        : ['Приор-', 'тет Л.2'],
+        width         : 'w-[60px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => {
+            if (!blockCollection || !blockCollection.own || blockCollection.priority_2 !== 0) return DEFAULT_TYPE
+            return 'danger'
+        },
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Пр-т...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.priority_2.toString()
     },
     width        : {
         id            : () => 'width-search',
@@ -910,6 +938,7 @@ const code_1cFilter      = ref('')
 const unitFilter         = ref('')
 const kdbFilter          = ref('')
 const priorityFilter     = ref('')
+const priorityFilter_2   = ref('')
 const widthFilter        = ref('')
 const lengthFilter       = ref('')
 const heightFilter       = ref('')
@@ -982,6 +1011,7 @@ const resetFilters = () => {
     unitFilter.value        = ''
     kdbFilter.value         = ''
     priorityFilter.value    = ''
+    priorityFilter_2.value  = ''
     heightFilter.value      = ''
     widthFilter.value       = ''
     lengthFilter.value      = ''
@@ -1065,6 +1095,7 @@ watchEffect(() => {
     const unitFilterSearch        = unitFilter.value.toLowerCase()
     const kdbFilterSearch         = kdbFilter.value.toLowerCase()
     const priorityFilterSearch    = priorityFilter.value.toLowerCase()
+    const priorityFilterSearch_2  = priorityFilter_2.value.toLowerCase()
     const heightFilterSearch      = heightFilter.value.toLowerCase()
     const lengthFilterSearch      = lengthFilter.value.toLowerCase()
     const descriptionFilterSearch = descriptionFilter.value.toLowerCase()
@@ -1080,6 +1111,7 @@ watchEffect(() => {
         // .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
         // .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
         .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
+        .filter(blockCollection => blockCollection.priority_2.toString().toLowerCase().includes(priorityFilterSearch_2))
         .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
         .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))
         .filter(blockCollection => blockCollection.description!.toString().toLowerCase().includes(descriptionFilterSearch))

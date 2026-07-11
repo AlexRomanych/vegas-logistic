@@ -7,7 +7,7 @@ import type {
     IBlockManufLine,
     IBlockTaskStatusKeys,
     IBlockTaskStatusItem,
-    IBlockTaskChange, IBlockCollectionTime
+    IBlockTaskChange, IBlockCollectionTime, IBlockTaskLinesSubgroup
 } from '@/types'
 
 // __ Название вкладки с общим СЗ
@@ -20,11 +20,11 @@ export const TOTAL_SHIFT_DURATION = 12
 export const START_SHIFT_TIME = '07:30'
 
 
-export const LINE_0 = '0'
+export const LINE_0      = '0'
 export const LINE_0_TYPE = 'danger'
-export const LINE_1 = '1'
+export const LINE_1      = '1'
 export const LINE_1_TYPE = 'orange'
-export const LINE_2 = '2'
+export const LINE_2      = '2'
 export const LINE_2_TYPE = 'indigo'
 
 export const LINE_0_NAME = 'Н/Д'
@@ -50,6 +50,7 @@ export const BLOCK_COLLECTION_DRAFT: IBlockCollection = {
     line        : LINE_1,
     line_alt    : LINE_0,
     priority    : 0,
+    priority_2  : 0,
     height      : 0,
     length      : 0,
     productivity: 0,
@@ -198,13 +199,41 @@ export const BLOCK_TASK_STATUSES: Record<IBlockTaskStatusKeys, IBlockTaskStatusI
 
 // __ Пустой объект Коллекции Блоков для времени переналадки
 export const BLOCK_COLLECTION_TIME_DRAFT: IBlockCollectionTime = {
-    code_1c: '',
-    db: false,
-    id: 0,
-    line: LINE_0,
-    line_alt: LINE_0,
-    name: '',
-    priority: '',
-    tuning_time: 0,
+    code_1c       : '',
+    db            : false,
+    id            : 0,
+    line          : LINE_0,
+    line_alt      : LINE_0,
+    name          : '',
+    priority      : '',
+    tuning_time   : 0,
     collections_to: []
 } as const satisfies IBlockCollectionTime
+
+
+// __ Пустой объект Для отображения Группы переналадки
+export const TUNING_TIME_LINES_SUBGROUP_DRAFT: IBlockTaskLinesSubgroup = {
+    subgroupName      : '',
+    subgroupOrderTitle: '',
+    collapsed         : true,
+    subgroupType      : 'stone',
+    hasData           : false,
+    lines             : [],
+    square            : {
+        total     : 0,
+        done      : 0,
+        incomplete: 0,
+    },
+    amount            : {
+        total     : 0,
+        done      : 0,
+        incomplete: 0,
+    },
+    time              : {
+        total     : 0,
+        done      : 0,
+        incomplete: 0,
+    },
+    priority          : 0,
+    isTuning          : true,
+} as const satisfies IBlockTaskLinesSubgroup

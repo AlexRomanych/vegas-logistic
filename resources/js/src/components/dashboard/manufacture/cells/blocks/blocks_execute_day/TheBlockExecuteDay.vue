@@ -145,6 +145,7 @@
                     <ExecuteDayTask
                         :block-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
                         :is-running="isBlockDayStarted  && !isBlockDayReadyForNewTasks"
+                        :tuning-times="tuningTimes"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -166,7 +167,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { IColorTypes, IBlockDay, IBlockDayWorker, IBlockTask, IBlockTaskLine, IBlockTaskChangeKeys } from '@/types'
+import type { IColorTypes, IBlockDay, IBlockDayWorker, IBlockTask, IBlockTaskLine, IBlockTaskChangeKeys, IBlockCollectionTime } from '@/types'
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -222,6 +223,7 @@ let executeChange: IBlockTaskChangeKeys
 const blockDay                = ref<IBlockDay | null>(null)
 const tasksBeforeCurrentDay   = ref<IBlockTask[]>([])
 const allBlockTasksLinesUnion = ref<IBlockTask>(BLOCK_TASK_DRAFT) // __ Переменная для объединения всех BlockTaskLines
+const tuningTimes             = ref<IBlockCollectionTime[]>([])
 
 const statistics = computed(() => getExecuteTaskStatistics(allBlockTasksLinesUnion.value))
 
@@ -752,6 +754,20 @@ const divideLine = async (taskId: number, blockLineId: number, range: { take: nu
     }
 }
 
+// __ Получаем Время переналадки
+const getTuningTimes = async () => {
+
+    // __ Собираем вс id Коллекций Блоков
+    const uniqueBlockCollectionsIds = new Set<number>()
+    globalBlockTasks.value.forEach(task => {
+        task.block_lines.forEach(line => {
+            uniqueBlockCollectionsIds.add(line.block.collection.id)
+        })
+    })
+
+    tuningTimes.value = await blockStore.getBlockCollectionsTuningTimeList(Array.from(uniqueBlockCollectionsIds))
+}
+
 // __ Подготавливаем данные для отображения
 const prepareData = () => {
     if (!blockDay.value) return
@@ -761,7 +777,7 @@ const prepareData = () => {
         .filter(
             task =>
                 (task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID ||
-                task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID) &&
+                    task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID) &&
                 task.change === blockDay.value!.change
         )
         .sort((a, b) => a.position - b.position)
@@ -826,18 +842,13 @@ onMounted(async () => {
                 blockStore.getBlockTasks({ start: executeDate, end: executeDate }),
             ])
 
+            await getTuningTimes()
+
             tasksBeforeCurrentDay.value = tasksBefore
             blockDay.value              = dayData[0]
 
-            prepareData()
-
-            // __ Запускаем счетчик
-            startTimer()
-            // timer = setInterval(() => {
-            //     now.value = new Date().getTime() / 1000
-            //     // console.log(now.value)
-            // }, 1000)
-
+            prepareData()   // __ Собираем все вместе
+            startTimer()    // __ Запускаем счетчик
             setTabs()
 
             console.log('executeDate: ', executeDate)
@@ -845,6 +856,7 @@ onMounted(async () => {
             console.log('globalBlockTasks: ', globalBlockTasks.value)
             console.log('blockDay: ', blockDay.value)
             console.log('tasksBeforeCurrentDay: ', tasksBeforeCurrentDay.value)
+            console.log('tuningTimes: ', tuningTimes.value)
 
             // // __ Получаем BlockTasks по статусу и записываем в глобальную переменную в BlockStore
             // await blockStore.getBlockTasksByStatus([

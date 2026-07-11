@@ -33,6 +33,7 @@ const DEBUG = true
 // const API_PREFIX                           = '/api/v1/' // Префикс API
 const URL_BLOCKS_COLLECTIONS                     = '/blocks/collections'                        // URL для получения Коллекций Блоков
 const URL_BLOCKS_COLLECTIONS_TUNING_TIME         = '/blocks/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME_LIST    = '/blocks/collections/tuning/time/list'       // URL для получения времени переналадки Коллекций Блоков для Группы Коллекций
 const URL_BLOCKS_COLLECTIONS_TUNING_TIME_BETWEEN = '/blocks/collections/tuning/time/between'    // URL для получения времени переналадки между двумя Коллекциями Блоков
 
 const URL_BLOCKS      = '/blocks'                             // URL для получения Блоков
@@ -831,6 +832,17 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Получаем время переналадки Блоков для Группы Коллекции Блоков
+    const getBlockCollectionsTuningTimeList = async (collectionsList: number[] | null = null) => {
+        if (!collectionsList || collectionsList.length === 0) {
+            return []
+        }
+
+        const result = await jwtGet(URL_BLOCKS_COLLECTIONS_TUNING_TIME_LIST, { ids: collectionsList })
+        if (DEBUG) console.log('BlockStore: getBlockCollectionsTuningTimeList: ', result)
+        return result.data
+    }
+
     // __ Сохраняем время переналадки Блоков
     const setBlockPicturesTuningTime = async (from: number, to: number, time: number) => {
         const result = await jwtPost(URL_BLOCKS_COLLECTIONS_TUNING_TIME, { from, to, time })
@@ -938,6 +950,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         updateBlockCollection,
 
         getBlockCollectionsTuningTime,
+        getBlockCollectionsTuningTimeList,
         setBlockPicturesTuningTime,
         deleteBlockPicturesTuningTime,
 
