@@ -16,7 +16,7 @@ import type {
     IBlockTaskOrderLine,
     IBlockTaskStatus,
     IBlockTaskStatusKeys, IColorTypes,
-    IDay,
+    IDay, IOptimizeType,
     IPlanMatrix,
     IRenderMatrixDiff,
     IRenderMatrixLineDiffs
@@ -25,7 +25,7 @@ import {
     BLOCK_MANUF_LINES,
     BLOCK_TASK_DRAFT,
     BLOCK_TASK_STATUSES,
-    CHANGES, CHANGE_1, CHANGE_2, TUNING_TIME_LINES_SUBGROUP_DRAFT,
+    CHANGES, CHANGE_1, CHANGE_2, TUNING_TIME_LINES_SUBGROUP_DRAFT, OPTIMIZE_BY_PRIORITY, OPTIMIZE_BY_TUNING_TIME,
     // LINE_0_NAME, LINE_1_NAME, LINE_2_NAME
 } from '@/app/constants/blocks.ts'
 // import { round } from '@/app/helpers/helpers_lib.ts'
@@ -1250,14 +1250,20 @@ export function getBlockTaskLineTime(line: IBlockTaskLine): number {
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
 export function groupTaskLinesForExecute(
     lines: IBlockTaskLine[],
-    orderTitle: string | null            = null,
-    tuningTimes: IBlockCollectionTime[] = []
+    orderTitle: string | null           = null,
+    tuningTimes: IBlockCollectionTime[] = [],
+    optimizationType: IOptimizeType     = OPTIMIZE_BY_PRIORITY,
+    optimizedData: number[]             = []
 ): IBlockTaskLinesGroupData[] {
 
     // const X_LAT = 'x'
 
     // console.log('tuningTimes: ', tuningTimes)
     const getSquarePerPic = (blockTaskLine: IBlockTaskLine) => blockTaskLine.block.width * blockTaskLine.block.length / 100 / 100
+    const getCollectionId = (collectionName: string) => {
+        const findCollection = tuningTimes.find(collection => collection.name === collectionName)
+        return findCollection ? findCollection.id : 0
+    }
 
     const groupedManufLines = Object.groupBy(lines, line => line.manuf_line)
 
@@ -1273,6 +1279,7 @@ export function groupTaskLinesForExecute(
 
             groupedBlockCollectionArray.push({
                 subgroupName      : keyBlockCollection,
+                subgroupId        : getCollectionId(keyBlockCollection),
                 subgroupOrderTitle: orderTitle,
                 collapsed         : true,
                 subgroupType      : 'dark',
@@ -1296,15 +1303,32 @@ export function groupTaskLinesForExecute(
                 priority          : keyManufLine === BLOCK_MANUF_LINES.LINE_1
                     ? (valueBlockCollection?.[0].block.collection.priority_1 || 999)
                     : (valueBlockCollection?.[0].block.collection.priority_2 || 999),
-                isTuning: false
+                isTuning          : false
             })
         }
 
         // !!!!!!!!! --- Тут Логика Сортировки с добавлением Времени Переналадки
         // !!!!!!!!! --- Сначала сортировка, потом добавление Переналадки
 
-        // __ Сортируем по приоритету Коллекцию блоков по Возрастанию в зависимости от Производственной Линии
-        groupedBlockCollectionArray.sort((a, b) => a.priority - b.priority)
+        // __ Сортируем по Коллекцию блоков:
+        if (optimizationType === OPTIMIZE_BY_PRIORITY) {
+            groupedBlockCollectionArray.sort((a, b) => a.priority - b.priority) // __ по приоритету
+        } else if (optimizationType === OPTIMIZE_BY_TUNING_TIME) {
+            // console.log(optimizedData)
+
+            // 1. Создаем карту, где ключ — id, а значение — его позиция
+            const idPositionMap = new Map(optimizedData.map((id, index) => [id, index]))
+
+            // 2. Сортируем с поиском по карте за O(1)
+            groupedBlockCollectionArray.sort((a, b) => {
+                const posA = idPositionMap.get(a.subgroupId) ?? Infinity;
+                const posB = idPositionMap.get(b.subgroupId) ?? Infinity;
+                return posA - posB;
+            })
+
+        } else {
+            groupedBlockCollectionArray.sort((a, b) => a.subgroupName.localeCompare(b.subgroupName)) // __ по алфавиту
+        }
 
         // __ Добавляем Время переналадки
         const groupedBlockCollectionArrayTimes = []
@@ -1320,20 +1344,20 @@ export function groupTaskLinesForExecute(
                 const findCollectionFrom = tuningTimes.find(collection => collection.name === groupedBlockCollectionArray[i].subgroupName)
                 if (findCollectionFrom) {
 
-                    const findCollectionTo = findCollectionFrom.collections_to?.find(collection => collection.name === groupedBlockCollectionArray[i+1].subgroupName)
+                    const findCollectionTo = findCollectionFrom.collections_to?.find(collection => collection.name === groupedBlockCollectionArray[i + 1].subgroupName)
                     if (findCollectionTo) {
 
                         // __ Не добавляем Нулевое время
                         if (findCollectionTo.tuning_time !== 0) {
                             tuningGroup.subgroupName =
-                            `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i+1].subgroupName}`
-                            tuningGroup.time.total = findCollectionTo.tuning_time
+                                `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName}`
+                            tuningGroup.time.total   = findCollectionTo.tuning_time
                         }
 
                     } else {
 
                         tuningGroup.subgroupName =
-                            `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i+1].subgroupName} ??`
+                            `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName} ??`
                         tuningGroup.subgroupType = 'danger'
                     }
                 } else {
@@ -1348,7 +1372,6 @@ export function groupTaskLinesForExecute(
 
         // console.log('groupedBlockCollectionArrayTimes: ', groupedBlockCollectionArrayTimes)
         // --- ----------
-
 
 
         // __ И Получаем название и раскраску Линии
@@ -1367,22 +1390,22 @@ export function groupTaskLinesForExecute(
         }
 
         groupedManufLinesArray.push({
-            groupName: manufName,
-            groupType: manufType,
-            subgroups: groupedBlockCollectionArrayTimes,
-            hasData  : true,
-            collapsed: true,
-            square   : {
+            groupName      : manufName,
+            groupType      : manufType,
+            subgroups      : groupedBlockCollectionArrayTimes,
+            hasData        : true,
+            collapsed      : true,
+            square         : {
                 total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.total, 0),
                 done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.done, 0),
                 incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.incomplete, 0),
             },
-            amount   : {
+            amount         : {
                 total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.total, 0),
                 done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.done, 0),
                 incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.incomplete, 0),
             },
-            time     : {
+            time           : {
                 total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.total, 0),
                 done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
                 incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
@@ -1390,8 +1413,6 @@ export function groupTaskLinesForExecute(
             tuningTimeTotal: groupedBlockCollectionArrayTimes.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
         })
     }
-
-
 
 
     // __ Сортируем по названию Производственных Линий по Возрастанию

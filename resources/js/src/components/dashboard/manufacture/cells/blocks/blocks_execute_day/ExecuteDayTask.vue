@@ -17,7 +17,7 @@
                 <template v-for="(blockLinesGroup, idx) of blockLinesGroups" :key="idx">
 
                     <template v-if="blockLinesGroup.hasData">
-                        <!-- __ Группа сортировки СЗ по АШМ/УШМ -->
+                        <!-- __ Группа сортировки СЗ по Линия 1 / Линия 2 -->
                         <AppLabelMultiLineTS
                             :height="MENU_HEIGHT"
                             :text="blockLinesGroup.groupName"
@@ -103,6 +103,36 @@
                 <!--    width="w-[50px]"-->
                 <!--    @click="console.log('layers')"-->
                 <!--/>-->
+
+                <!-- __ Оптимизация по Приоритету -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :type="optimizationType === OPTIMIZE_BY_PRIORITY ? 'warning' : 'dark'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="⬇️"
+                    text-size="huge"
+                    title="Оптимизация по Приоритету"
+                    width="w-[50px]"
+                    @click="optimizationType = OPTIMIZE_BY_PRIORITY"
+                />
+
+                <!-- __ Оптимизация по Переналадке -->
+                <template v-if="uniqueIds.length <= MAX_BLOCK_COLLECTIONS_OPTIMIZED">
+                    <AppLabelTS
+                        :height="MENU_HEIGHT"
+                        :type="optimizationType === OPTIMIZE_BY_TUNING_TIME ? 'primary' : 'dark'"
+                        align="center"
+                        class="menu-button"
+                        rounded="4"
+                        text="⌛"
+                        text-size="huge"
+                        title="Оптимизация по Переналадке"
+                        width="w-[50px]"
+                        @click="optimizeByTuningTime"
+                    />
+                </template>
 
                 <!-- __ Печать -->
                 <AppLabelTS
@@ -404,6 +434,7 @@
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        width="w-[800px]"
     />
 
     <!-- __ Смена Производственной линии -->
@@ -434,13 +465,19 @@ import type {
     IDividerItem,
     IBlockTask,
     IBlockTaskLine,
-    IBlockTaskOrderLine, IBlockLineSetData, IBlockTaskLinesSubgroup, IBlockTaskLinesGroupData, IBlockDocument, IBlockCollectionTime
+    IBlockTaskOrderLine, IBlockLineSetData, IBlockTaskLinesSubgroup, IBlockTaskLinesGroupData, IBlockDocument, IBlockCollectionTime, IOptimizeType
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { BLOCK_TASK_DRAFT, BLOCK_UNION_TASK_NAME } from '@/app/constants/blocks.ts'
+import {
+    BLOCK_TASK_DRAFT,
+    BLOCK_UNION_TASK_NAME,
+    MAX_BLOCK_COLLECTIONS_OPTIMIZED,
+    OPTIMIZE_BY_PRIORITY,
+    OPTIMIZE_BY_TUNING_TIME
+} from '@/app/constants/blocks.ts'
 
 import {
     getExecuteTaskStatistics,
@@ -471,10 +508,12 @@ interface IProps {
     blockTask: IBlockTask
     isRunning: boolean | null
     tuningTimes?: IBlockCollectionTime[]
+    startCollectionId?: number
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    tuningTimes: () => []
+    tuningTimes      : () => [],
+    startCollectionId: 0,
 })
 
 const emits = defineEmits<{
@@ -525,6 +564,9 @@ const taskCard = ref<IBlockTask>(BLOCK_TASK_DRAFT)
 // __ Агрегатор
 const statistics = computed(() => getExecuteTaskStatistics(props.blockTask))
 
+// __ Тип оптимизации + Оптимизированный массив
+const optimizationType = ref<IOptimizeType>(OPTIMIZE_BY_PRIORITY)
+const optimizedData    = ref<number[]>([])
 
 // __ Табы Группировки СЗ по АШМ/УШМ
 const activeTabIndex = ref(0)
@@ -540,7 +582,12 @@ const taskTitle = computed(() => {
 // __ Формируем объект выполнения
 const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
     const title = `${props.blockTask.position}. ${props.blockTask.order.client.short_name} №${props.blockTask.order.order_no_num}`
-    return groupTaskLinesForExecute(props.blockTask.block_lines, title, props.tuningTimes)
+    return groupTaskLinesForExecute(
+        props.blockTask.block_lines, title,
+        props.tuningTimes,
+        optimizationType.value,
+        optimizedData.value
+    )
 })
 
 const blockLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
@@ -553,8 +600,70 @@ const blockLines      = computed(() => {
     })
     return result
 })
-
 console.log('blockLinesGroups: ', blockLinesGroups.value)
+
+// __ Находим уникальные ids коллекции блоков, которые нужно оптимизировать
+const uniqueIds = computed<number[]>(() => {
+    const uniqueIdsSet    = new Set<number>()
+    const targetManufLine = blockLinesGroup.value
+    targetManufLine.forEach(subgroup => {
+        if (!subgroup.isTuning)
+            subgroup.lines.forEach(line => uniqueIdsSet.add(line.block.collection.id))
+    })
+    if (props.startCollectionId !== 0) uniqueIdsSet.add(props.startCollectionId)
+
+    // console.log('uniqueIdsSet: ', uniqueIdsSet)
+    return [...uniqueIdsSet]
+})
+
+
+// __ Оптимизируем по Времени переналадки
+const optimizeByTuningTime = async () => {
+    const result = await blockStore.getBlockCollectionsTuningTimeOptimized(uniqueIds.value, props.startCollectionId)
+    console.log('result: ', result)
+
+    if (checkCRUD(result)) {
+
+        const ERRORS_TO_SHOW = 5
+        const errMsg         = ['Отсутствует время переналадки: ']
+
+        if (result.errors.length > (ERRORS_TO_SHOW + 1)) {
+            for (let i = 0; i < ERRORS_TO_SHOW; i++) {
+                errMsg.push(result.errors[i])
+            }
+            errMsg.push(`и еще ${result.errors.length - ERRORS_TO_SHOW}...`)
+        } else {
+            for (let i = 0; i < result.errors.length; i++) {
+                errMsg.push(result.errors[i])
+            }
+        }
+
+        await showError(errMsg)
+
+        // __ Меняем стейт
+        optimizedData.value    = result.permutation
+        optimizationType.value = OPTIMIZE_BY_TUNING_TIME
+
+        console.log('optimizedData: ', optimizedData.value)
+        return
+    } else {
+        // const ERRORS_TO_SHOW = 5
+        // const errMsg         = ['Отсутствует время переналадки: ']
+        // if (result.errors.length < ERRORS_TO_SHOW + 1) {
+        //     for (let i = 0; i < ERRORS_TO_SHOW; i++) {
+        //         errMsg.push(result.errors[i])
+        //     }
+        //     errMsg.push(`и еще ${result.errors.length - ERRORS_TO_SHOW}...`)
+        // } else {
+        //     for (let i = 0; i < result.errors.length; i++) {
+        //         errMsg.push(result.errors[i])
+        //     }
+        // }
+
+        await showError()
+    }
+}
+
 
 // __ Проверка на то, что Заявка - объединенная
 const isUnionTask = computed(() => props.blockTask.id === UNION_TASKS_ID)

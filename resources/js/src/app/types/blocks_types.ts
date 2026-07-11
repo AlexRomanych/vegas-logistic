@@ -8,11 +8,20 @@ import {
     UNIT_METERS,
     BLOCK_TASK_STATUS_RUNNING,
     BLOCK_TASK_STATUS_ROLLING,
-    BLOCK_TASK_STATUS_CREATED, BLOCK_TASK_STATUS_PENDING, BLOCK_TASK_STATUS_DONE, LINE_0_NAME, LINE_1_NAME, LINE_2_NAME, BLOCK_MANUF_LINES, CHANGE_1, CHANGE_2
+    BLOCK_TASK_STATUS_CREATED,
+    BLOCK_TASK_STATUS_PENDING,
+    BLOCK_TASK_STATUS_DONE,
+    LINE_0_NAME,
+    LINE_1_NAME,
+    LINE_2_NAME,
+    BLOCK_MANUF_LINES,
+    CHANGE_1,
+    CHANGE_2,
+    OPTIMIZE_BY_TUNING_TIME, OPTIMIZE_BY_PRIORITY
 } from '@/app/constants/blocks.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-import type { IDiffsType  } from '@/types/index.ts'
+import type { IDiffsType } from '@/types/index.ts'
 
 
 // __ Коллекция Блоков
@@ -467,7 +476,7 @@ export interface IBlockTaskLinesGroupData {
 
 export interface IBlockTaskLinesSubgroup {
     subgroupName: string
-    // subgroupId: number
+    subgroupId: number
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean
@@ -530,3 +539,10 @@ export interface IBlockCollectionTime {
     collections_to?: IBlockCollectionTime[]
     db?: boolean                    // __ Для отрисовки в компоненте (признак, что это время из БД на сервере, а не сгенерировано на фронте)
 }
+
+
+// --- -------------------------------------------------------------------
+// --- -------------------- Оптимизация выполнения -----------------------
+// --- -------------------------------------------------------------------
+
+export type IOptimizeType = typeof OPTIMIZE_BY_TUNING_TIME | typeof OPTIMIZE_BY_PRIORITY

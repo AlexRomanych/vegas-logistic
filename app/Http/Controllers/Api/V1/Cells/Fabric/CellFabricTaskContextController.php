@@ -1,4 +1,5 @@
-<?php /** @noinspection ALL */
+<?php
+/** @noinspection ALL */
 
 namespace App\Http\Controllers\Api\V1\Cells\Fabric;
 
@@ -35,8 +36,9 @@ class CellFabricTaskContextController extends Controller
     public function deleteContext(Request $request)
     {
         try {
-
-            if (!$request->has('id')) return EndPointStaticRequestAnswer::fail();
+            if (!$request->has('id')) {
+                return EndPointStaticRequestAnswer::fail();
+            }
 
             $validData = $request->validate([
                 'id' => 'numeric|required',
@@ -66,7 +68,6 @@ class CellFabricTaskContextController extends Controller
     public function getContextNotDone()
     {
         try {
-
             $taskContexts = FabricTaskContext::query()
                 ->whereHas('fabricTask', function ($query) {
                     $query->whereHas('fabricTasksDate', function ($query) {
@@ -100,11 +101,10 @@ class CellFabricTaskContextController extends Controller
     public function createContextExpense(Request $request)
     {
         try {
-
             $result = $request->validate([
-                'data.data' => 'required|array',
-                'data.data.date' => 'nullable|date_format:Y-m-d',
-                'data.data.fabric_id' => 'required|numeric',
+                'data.data'                => 'required|array',
+                'data.data.date'           => 'nullable|date_format:Y-m-d',
+                'data.data.fabric_id'      => 'required|numeric',
                 'data.data.fabric_expense' => 'required|numeric'
             ]);
 
@@ -122,13 +122,11 @@ class CellFabricTaskContextController extends Controller
 
             // attract: Проверяем существование СЗ
             if ($targetTask) {
-
                 $targetTask->tasks_status = FABRIC_TASK_CREATED_CODE;
                 $targetTask->save();
 
                 // attract: Обновляем статусы СЗ на 'Создано'
                 for ($i = FABRIC_MACHINE_AMERICAN_ID; $i <= FABRIC_MACHINE_KOREAN_ID; $i++) {
-
                     //                // Получаем название машины
                     //                $machineStr = FabricService::getFabricMachineNameById($i);
 
@@ -142,21 +140,18 @@ class CellFabricTaskContextController extends Controller
                         $task->task_status = FABRIC_TASK_CREATED_CODE;
                         $task->save();
                     }
-
                 }
-
             } else {
-
                 // attract: Создаем само СЗ, коль его нет
                 $targetTask = FabricTasksDate::query()->create(
                     [
-                        'tasks_date' => $nextDate,
-                        'tasks_status' => FABRIC_TASK_CREATED_CODE,
-                        'user_id' => Auth::id(),  // Текущий пользователь
+                        'tasks_date'     => $nextDate,
+                        'tasks_status'   => FABRIC_TASK_CREATED_CODE,
+                        'user_id'        => Auth::id(),  // Текущий пользователь
                         'fabric_team_id' => FabricService::getFabricTeamChangeNumberByDate($nextDate),
-                        'active' => true,
-                    ]);
-
+                        'active'         => true,
+                    ]
+                );
             }
 
             // attract: Получаем ПС, для получения основной СМ
@@ -170,44 +165,41 @@ class CellFabricTaskContextController extends Controller
                 ->first();
 
             if ($task) {
-
                 // attract: Если есть - удаляем физические рулоны, если они есть, потому что поменяли статус СЗ
                 foreach ($task->fabricTaskContexts as $context) {
                     FabricTaskRoll::query()
                         ->where('fabric_task_context_id', $context->id)
                         ->delete();
                 }
-
             } else {
-
                 // attract: Создаем Task, коль такого нет
                 $task = FabricTask::query()->create(
                     [
                         'fabric_tasks_date_id' => $targetTask->id,
-                        'fabric_machine_id' => $fabric->fabricPicture->fabric_machine_id,
-                        'fabric_team_id' => $targetTask->fabric_team_id,
-                        'user_id' => $targetTask->user_id,
-                        'task_status' => FABRIC_TASK_CREATED_CODE,
-                        'active' => true,
+                        'fabric_machine_id'    => $fabric->fabricPicture->fabric_machine_id,
+                        'fabric_team_id'       => $targetTask->fabric_team_id,
+                        'user_id'              => $targetTask->user_id,
+                        'task_status'          => FABRIC_TASK_CREATED_CODE,
+                        'active'               => true,
                     ]
                 );
             }
 
             // attract: Определяем кол-во в рулонах: если дельта равна нулю, то один рулон, нет - округление вверх
-            $expense = abs((float)$contextExpenseData['fabric_expense']);
-            $expense = $fabric->translate_rate === 0.0 ? $expense : $expense * $fabric->translate_rate;   // Переводим ПС в ткань
+            $expense     = abs((float)$contextExpenseData['fabric_expense']);
+            $expense     = $fabric->translate_rate === 0.0 ? $expense : $expense * $fabric->translate_rate;   // Переводим ПС в ткань
             $rollsAmount = $expense === 0.0 ? 1 : ceil($expense / $fabric->average_roll_length);
 
             // attract: Создаем контекст для задания
             $taskContext = FabricTaskContext::query()->create([
-                'fabric_task_id' => $task->id,
-                'fabric_id' => $fabric->id,
-                'roll_position' => 1,
+                'fabric_task_id'         => $task->id,
+                'fabric_id'              => $fabric->id,
+                'roll_position'          => 1,
                 'average_textile_length' => $fabric->average_roll_length,
-                'productivity' => $fabric->productivity,
-                'translate_rate' => $fabric->translate_rate,
-                'rolls_amount' => $rollsAmount,
-                'note' => 'Из расхода ПС от ' . (Carbon::parse($contextDate))->format('d.m.Y'),
+                'productivity'           => $fabric->productivity,
+                'translate_rate'         => $fabric->translate_rate,
+                'rolls_amount'           => $rollsAmount,
+                'note'                   => 'Из расхода ПС от ' . (Carbon::parse($contextDate))->format('d.m.Y'),
             ]);
 
             return new FabricTaskContextResource($taskContext);
@@ -224,12 +216,10 @@ class CellFabricTaskContextController extends Controller
      */
     public function changeContextOrder(Request $request)
     {
-
         try {
-
             $payload = $request->validate([
-                'data' => 'required|array',
-                'data.task' => 'required|integer',
+                'data'         => 'required|array',
+                'data.task'    => 'required|integer',
                 'data.machine' => 'required|integer',
                 'data.context' => 'required|array',
             ]);
@@ -250,9 +240,7 @@ class CellFabricTaskContextController extends Controller
             $contextData = FabricService::checkContextOrder($task, $data['context']);
 
             DB::transaction(function () use ($contextData, $task) {
-
                 foreach ($contextData as $context) {
-
                     // __ плановый рулон от ОПП
                     $workContext = FabricTaskContext::query()->find($context['id']);
 
@@ -267,12 +255,9 @@ class CellFabricTaskContextController extends Controller
                         $workContext->save();
                     }
                 }
-
-
             });
 
             return EndPointStaticRequestAnswer::ok();
-
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
@@ -287,7 +272,7 @@ class CellFabricTaskContextController extends Controller
     {
         try {
             $payload = $request->validate([
-                'task' => 'required|integer',           // task_id
+                'task'    => 'required|integer',           // task_id
                 'machine' => 'required|integer',        // machine_id
             ]);
 
@@ -314,21 +299,21 @@ class CellFabricTaskContextController extends Controller
         try {
             $payload = $request->validate([
                 // 'data' => 'required|array',
-                'task' => 'required|integer',
+                'task'    => 'required|integer',
                 'machine' => 'required|integer',
-                'roll' => 'required|array',
+                'roll'    => 'required|array',
 
-                'roll.id' => 'required|integer',
-                'roll.fabric_id' => 'required|integer',
+                'roll.id'                     => 'required|integer',
+                'roll.fabric_id'              => 'required|integer',
                 'roll.average_textile_length' => 'required|numeric',
-                'roll.productivity' => 'required|numeric',
-                'roll.textile_length' => 'required|numeric',
-                'roll.rolls_amount' => 'required|integer|min:1',
-                'roll.fabric_mode' => 'required|boolean',
-                'roll.rate' => 'required|numeric',
-                'roll.editable' => 'required|boolean',
-                'roll.roll_position' => 'required|integer',
-                'roll.descr' => 'nullable|string',
+                'roll.productivity'           => 'required|numeric',
+                'roll.textile_length'         => 'required|numeric',
+                'roll.rolls_amount'           => 'required|integer|min:1',
+                'roll.fabric_mode'            => 'required|boolean',
+                'roll.rate'                   => 'required|numeric',
+                'roll.editable'               => 'required|boolean',
+                'roll.roll_position'          => 'required|integer',
+                'roll.descr'                  => 'nullable|string',
 
             ]);
 
@@ -343,8 +328,8 @@ class CellFabricTaskContextController extends Controller
                 $task = FabricTask::query()->create(
                     [
                         'fabric_tasks_date_id' => $payload['task'],
-                        'fabric_machine_id' => $payload['machine'],
-                        'task_status' => FABRIC_TASK_CREATED_CODE,
+                        'fabric_machine_id'    => $payload['machine'],
+                        'task_status'          => FABRIC_TASK_CREATED_CODE,
                     ]
                 );
             }
@@ -352,19 +337,21 @@ class CellFabricTaskContextController extends Controller
             $rollData = $payload['roll'];
 
             $fabric = Fabric::query()->find($rollData['fabric_id']);
-            if (!$fabric) throw new Exception('Fabric not found');
+            if (!$fabric) {
+                throw new Exception('Fabric not found');
+            }
 
             // __ Задаем загрузку модели
             $payloadData = [
-                'fabric_task_id' => $task->id,                          // привязка к СЗ
-                'fabric_id' => $rollData['fabric_id'],                  // привязка к ПС
-                'rolls_amount' => $rollData['rolls_amount'],
-                'roll_position' => $rollData['roll_position'],          // порядок рулонов
-                'fabric_mode' => $rollData['fabric_mode'],
+                'fabric_task_id'         => $task->id,                          // привязка к СЗ
+                'fabric_id'              => $rollData['fabric_id'],                  // привязка к ПС
+                'rolls_amount'           => $rollData['rolls_amount'],
+                'roll_position'          => $rollData['roll_position'],          // порядок рулонов
+                'fabric_mode'            => $rollData['fabric_mode'],
                 'average_textile_length' => $rollData['textile_length'],
-                'productivity' => $rollData['productivity'],
-                'description' => $rollData['descr'],
-                'translate_rate' => $fabric->translate_rate,            // Берем из ПС
+                'productivity'           => $rollData['productivity'],
+                'description'            => $rollData['descr'],
+                'translate_rate'         => $fabric->translate_rate,            // Берем из ПС
             ];
 
             // __ плановый рулон от ОПП
@@ -374,7 +361,6 @@ class CellFabricTaskContextController extends Controller
                     $payloadData
                 );
             } else {
-
                 $taskRollContext = FabricTaskContext::query()->updateOrCreate(
                     [
                         'id' => $rollData['id'],
@@ -398,16 +384,14 @@ class CellFabricTaskContextController extends Controller
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail(response()->json($e));
         }
-
     }
-
 
 
     /**
      * ___ Оптимизируем контекст СЗ по времени переналадки
      * @param int $task
      * @param int $machine
-     * @param int $statistic    - 0 - без статистики, 1 - возврат статистики выполнения скрипта (время + память)
+     * @param int $statistic - 0 - без статистики, 1 - возврат статистики выполнения скрипта (время + память)
      * @return array
      * @throws Exception
      */
@@ -415,12 +399,12 @@ class CellFabricTaskContextController extends Controller
     {
         // try {
         $validator = validator([
-            'task' => $task,
-            'machine' => $machine,
+            'task'      => $task,
+            'machine'   => $machine,
             'statistic' => $statistic,
         ], [
-            'task' => 'required|integer',           // task_id
-            'machine' => 'required|integer',        // machine_id
+            'task'      => 'required|integer',           // task_id
+            'machine'   => 'required|integer',        // machine_id
             'statistic' => 'nullable|in:0,1',       // statistic 'nullable|boolean'
         ]);
 
@@ -435,7 +419,7 @@ class CellFabricTaskContextController extends Controller
             ->with([
                 'fabricTaskContexts.fabric.fabricPicture',
                 'fabricTaskContexts.fabric.fabricPicture.picturesFrom',
-                // 'fabricTaskContexts.fabric.fabricPicture.picturesFrom.picTo',
+                //'fabricTaskContexts.fabric.fabricPicture.picturesFrom.picTo',
                 // 'picturesFrom.picTo.fabricMainMachine'
             ])
             ->first();
@@ -467,29 +451,35 @@ class CellFabricTaskContextController extends Controller
 
         // __ Добавляем рисунок последнего рулона
         if ($lastRoll) {
-            $fabric = $lastRoll->fabric;
-            $picture = ($fabric->toArray())['fabric_picture'];
-            $uniquePics[$picture['id']] = $picture; // Добавляем в массив
+            $fabric                   = $lastRoll->fabric;
+            $picture                  = $fabric->fabricPicture;
+            $uniquePics[$picture->id] = $picture; // Добавляем в массив
+            //$picture = ($fabric->toArray())['fabric_picture'];
+            //$uniquePics[$picture['id']] = $picture; // Добавляем в массив
         }
 
         foreach ($task->fabricTaskContexts as $context) {
-            $fabricPic = $context->fabric->fabricPicture;
+            $fabricPic                  = $context->fabric->fabricPicture;
             $uniquePics[$fabricPic->id] = $fabricPic;
         }
 
         // __ Формируем матрицу с временем переналадки и ассоциативный массив со временем
-        $tuningTimes = [];
-        $tuningTimesMatrix = [];
-        $minTime = 0;   // Максимальное время переналадки (для сравнения)
-        $errors = [];   // Массив ошибок
+        $tuningTimes         = [];
+        $tuningTimesMatrix   = [];
+        $minTime             = 0;    // Максимальное время переналадки (для сравнения)
+        $errors              = [];   // Массив ошибок
         $MISSING_TUNING_TIME = -1;
+
+        // Debug
+        //$uniquePicsArray = [];
+        //foreach ($uniquePics as $id => $fabricPic) {
+        //    $uniquePicsArray[$fabricPic->id] = $fabricPic->toArray();
+        //}
 
         foreach ($uniquePics as $iH => $picH) {
             foreach ($uniquePics as $iV => $picV) {
-
                 $time = $MISSING_TUNING_TIME;
                 if ($iH !== $iV) {
-
                     $picHArray = $picH->toArray();
 
                     foreach ($picHArray['pictures_from'] as $picItem) {
@@ -509,21 +499,23 @@ class CellFabricTaskContextController extends Controller
 
                 if ($time === $MISSING_TUNING_TIME && $iH !== $iV) {
                     $errors[] = 'Нет времени переналадки с рис. ' . $picH->name . ' на рис. ' . $picV->name;
-                    $time = 0;
+                    $time     = 0;
                 }
 
                 $tuningTimes[getListKey($picH->id, $picV->id)] = $time;
-                $minTime += $time;
+                $minTime                                       += $time;
             }
         }
 
         $outData['data'] = [
-            'minTime' => 0,
+            'minTime'     => 0,
             'permutation' => [],
-            'errors' => $errors,
+            'errors'      => $errors,
         ];
 
-        if (count($errors) > 0) return $outData;    // Если есть ошибки, то выходим
+        if (count($errors) > 0) {
+            return $outData;
+        }    // Если есть ошибки, то выходим
 
         // __ Сами расчеты
         $startTime = microtime(true);
@@ -536,16 +528,18 @@ class CellFabricTaskContextController extends Controller
         // $startPicId = $lastRoll ? $picture['id'] : $picKeys[0]; // Первый рисунок (переходящий рисунок)
 
         // __ Оставляем закомментированными для уменьшения мспользования памяти
-        $permutations = [];     // Все перестановки рисунков
+        $permutations = [];                           // Все перестановки рисунков
         // $permutations = $lastRoll ? [$picture['id']] : [];     // Все перестановки рисунков
-        $minTimes = [];         // Время для каждой перестановки
+        $minTimes = [];                               // Время для каждой перестановки
         // $permutations = LogicalService::getPermutations($picKeys);
 
         $permutationMin = $picKeys;
 
         foreach (LogicalService::getPermutationsGenerator($picKeys) as $permutation) {
             // Для оптимизации нужно убрать эту строку
-            if ($startPicId !==0 && $permutation[0] !== $startPicId) continue;  // Пропускаем перестановку, если задан начальный рисунок
+            if ($startPicId !== 0 && $permutation[0] !== $startPicId) {
+                continue;
+            }  // Пропускаем перестановку, если задан начальный рисунок
 
             $permutationsTime = 0;
 
@@ -555,7 +549,7 @@ class CellFabricTaskContextController extends Controller
 
             // Тут могут быть и несколько перестановок с одинаковым временем
             if ($permutationsTime < $minTime) { // Первая найденная перестановка, $permutationsTime <= $minTime - последняя
-                $minTime = $permutationsTime;
+                $minTime        = $permutationsTime;
                 $permutationMin = $permutation;
             }
 
@@ -591,22 +585,22 @@ class CellFabricTaskContextController extends Controller
         }
 
 
-        $endTime = microtime(true);
+        $endTime       = microtime(true);
         $executionTime = $endTime - $startTime;
 
         $outData['data'] = [
-            'minTime' => $minTime,
+            'minTime'     => $minTime,
             'permutation' => $resultPermutations,
-            'errors' => null,
+            'errors'      => null,
         ];
 
         if ($statistic) {
             $outData['statistic'] = [
-                'uniquePics' => $uniquePics,
-                'keys' => $picKeys,
-                'times' => $tuningTimes,
+                'uniquePics'    => $uniquePics,
+                'keys'          => $picKeys,
+                'times'         => $tuningTimes,
                 'executionTime' => $executionTime . ', sec.',
-                'memory' => memory_get_peak_usage(true) / 1024 / 1024 . ', MB',
+                'memory'        => memory_get_peak_usage(true) / 1024 / 1024 . ', MB',
                 // 'matrix' => $tuningTimesMatrix,
                 // 'minTimes' => $minTimes,            // Оставляем закомментированными для уменьшения использования памяти
                 // 'permutations' => $permutations,    // Оставляем закомментированными для уменьшения использования памяти

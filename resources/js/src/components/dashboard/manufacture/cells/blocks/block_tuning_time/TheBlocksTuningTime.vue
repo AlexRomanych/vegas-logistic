@@ -314,7 +314,7 @@ const handleTime = async (time: IBlockCollectionTime, subTime: IBlockCollectionT
     if (subTime.tuning_time === findSubTime?.tuning_time && subTime.db) return    // Выходим, если время не изменилось
 
     /*const res =*/
-    await blocksStore.setBlockPicturesTuningTime(time.id, subTime.id, subTime.tuning_time) // Обновляем время
+    await blocksStore.setBlockPicturesTuningTime(time.id, subTime.id, subTime.tuning_time!) // Обновляем время
 
     if (findSubTime) {
         findSubTime.tuning_time = subTime.tuning_time   // Обновляем время в исходнике без перезагрузки

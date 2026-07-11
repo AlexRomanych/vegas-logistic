@@ -13,8 +13,10 @@ use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
 use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
+use App\Services\LogicalService;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -22,6 +24,7 @@ final class BlocksService
 {
     private static array $blocksCacheCode1c = [];
     private static array $blockCollectionsCacheCode1c = [];
+    private static array $blockCollectionsCacheId = [];
 
     // ___ Получаем Блок по коду 1С
     public static function getBlockByCode1c(string $code1c): ?Block
@@ -67,6 +70,20 @@ final class BlocksService
         return null;
     }
 
+    // ___ Получаем Коллекцию Блоков по ID
+    public static function getBlockCollectionById(int $id): ?BlockCollection
+    {
+        if (count(self::$blockCollectionsCacheId) === 0) {
+            self::getBlockCollections();
+        }
+
+        if (isset(self::$blockCollectionsCacheId[$id])) {
+            return self::$blockCollectionsCacheId[$id];
+        }
+
+        return null;
+    }
+
     // ___ Кэштруем Коллекцию Блоков
     private static function getBlockCollections(): void
     {
@@ -74,6 +91,7 @@ final class BlocksService
             $blockCollections = BlockCollection::all();
             foreach ($blockCollections as $collection) {
                 self::$blockCollectionsCacheCode1c[$collection->code_1c] = $collection;
+                self::$blockCollectionsCacheId[$collection->id] = $collection;
             }
         } catch (Exception $e) {
             self::$blockCollectionsCacheCode1c = [];

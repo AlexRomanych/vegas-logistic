@@ -10,6 +10,9 @@ import type {
     IBlockTaskChange, IBlockCollectionTime, IBlockTaskLinesSubgroup
 } from '@/types'
 
+// __ Максимальное количество Оптимизируемых Коллекций Блоков
+export const MAX_BLOCK_COLLECTIONS_OPTIMIZED = 10
+
 // __ Название вкладки с общим СЗ
 export const BLOCK_UNION_TASK_NAME = 'Объединение СЗ'
 
@@ -38,6 +41,9 @@ export const UNIT_METERS = 'м.п.'
 export const CHANGE_1 = '1'
 export const CHANGE_2 = '2'
 
+
+export const OPTIMIZE_BY_TUNING_TIME = 'tuning_time'
+export const OPTIMIZE_BY_PRIORITY    = 'priority'
 
 // __ Объект Коллекции блоков
 export const BLOCK_COLLECTION_DRAFT: IBlockCollection = {
@@ -214,6 +220,7 @@ export const BLOCK_COLLECTION_TIME_DRAFT: IBlockCollectionTime = {
 // __ Пустой объект Для отображения Группы переналадки
 export const TUNING_TIME_LINES_SUBGROUP_DRAFT: IBlockTaskLinesSubgroup = {
     subgroupName      : '',
+    subgroupId        : 0,
     subgroupOrderTitle: '',
     collapsed         : true,
     subgroupType      : 'stone',

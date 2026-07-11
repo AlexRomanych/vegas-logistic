@@ -31,10 +31,11 @@ const DEBUG = true
 
 // Устанавливаем глобальные переменные
 // const API_PREFIX                           = '/api/v1/' // Префикс API
-const URL_BLOCKS_COLLECTIONS                     = '/blocks/collections'                        // URL для получения Коллекций Блоков
-const URL_BLOCKS_COLLECTIONS_TUNING_TIME         = '/blocks/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
-const URL_BLOCKS_COLLECTIONS_TUNING_TIME_LIST    = '/blocks/collections/tuning/time/list'       // URL для получения времени переналадки Коллекций Блоков для Группы Коллекций
-const URL_BLOCKS_COLLECTIONS_TUNING_TIME_BETWEEN = '/blocks/collections/tuning/time/between'    // URL для получения времени переналадки между двумя Коллекциями Блоков
+const URL_BLOCKS_COLLECTIONS                       = '/blocks/collections'                        // URL для получения Коллекций Блоков
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME           = '/blocks/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME_LIST      = '/blocks/collections/tuning/time/list'       // URL для получения времени переналадки Коллекций Блоков для Группы Коллекций
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME_OPTIMIZED = '/blocks/collections/tuning/time/optimized'  // URL для получения оптимизированного времени переналадки Коллекций Блоков для Группы Коллекций
+const URL_BLOCKS_COLLECTIONS_TUNING_TIME_BETWEEN   = '/blocks/collections/tuning/time/between'    // URL для получения времени переналадки между двумя Коллекциями Блоков
 
 const URL_BLOCKS      = '/blocks'                             // URL для получения Блоков
 const URL_BLOCKS_TEST = '/blocks/test'                        // URL для тестирования
@@ -857,6 +858,18 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Получаем оптимизированное время переналадки Блоков для Группы Коллекции Блоков
+    const getBlockCollectionsTuningTimeOptimized = async (collectionsList: number[] | null = null, startCollection: number = 0) => {
+        if (!collectionsList || collectionsList.length === 0) {
+            return []
+        }
+
+        const result = await jwtGet(URL_BLOCKS_COLLECTIONS_TUNING_TIME_OPTIMIZED, { ids: collectionsList, start: startCollection })
+        if (DEBUG) console.log('BlockStore: getBlockCollectionsTuningTimeOptimized: ', result)
+        return result.data
+    }
+
+
     // // __ Получаем время переналадки Блоков между двумя рисунками
     // const getBlockPicturesBetweenTuningTime = async (from, to) => {
     //     const result = await jwtGet(`${URL_FABRIC_PICTURE_TUNING_TIME}/${from}/${to}`)
@@ -953,6 +966,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         getBlockCollectionsTuningTimeList,
         setBlockPicturesTuningTime,
         deleteBlockPicturesTuningTime,
+        getBlockCollectionsTuningTimeOptimized,
 
         getBlockById,
         createBlock,

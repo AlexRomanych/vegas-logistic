@@ -528,7 +528,7 @@ final class FabricService
                 ->whereHas('fabricTaskContext.fabricTask.fabricTasksDate', function ($query) use ($tasksDate) {
                     $query->where('id', $tasksDate->id);
                 })
-                ->with('fabric.fabricPicture')
+                ->with('fabric.fabricPicture.picturesFrom')
                 ->orderBy('roll_position')
                 ->get();
 

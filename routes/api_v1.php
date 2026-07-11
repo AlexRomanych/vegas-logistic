@@ -369,6 +369,7 @@ Route::prefix('blocks')
 
         Route::get('collections/tuning/time', [BlockCollectionController::class, 'getBlockCollectionsTuningTime']);
         Route::get('collections/tuning/time/list', [BlockCollectionController::class, 'getBlockCollectionsTuningTimeList']);
+        Route::get('collections/tuning/time/optimized', [BlockCollectionController::class, 'getBlockCollectionsTuningTimeOptimized']);
         Route::post('collections/tuning/time', [BlockCollectionController::class, 'setBlockTuningTime']);
         Route::delete('collections/tuning/time', [BlockCollectionController::class, 'deleteBlockTuningTime']);
 
