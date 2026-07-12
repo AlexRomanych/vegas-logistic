@@ -11,7 +11,7 @@
                 cancelBtnLabel: 'Отмена',
                 nowBtnLabel: 'Текущая',}"
             :disabled="disabled"
-            :formats="{input: 'dd.MM.yyyy г.'}"
+            :formats="timeEnable ? {input: 'dd.MM.yyyy HH:mm'} : {input: 'dd.MM.yyyy г.'}"
             :input-attrs="{
                 clearable: false,
                 /*hideInputIcon: true, убираем крестик*/
@@ -20,7 +20,7 @@
             :locale="ru"
             :max-date="maxDate"
             :min-date="minDate"
-            :time-config="{enableTimePicker: false /*убираем выбор времени*/}"
+            :time-config="{enableTimePicker: timeEnable /*убираем выбор времени - делаем опциональным*/}"
             :timePicker="false"
             class="custom-datepicker"
             dark
@@ -50,16 +50,18 @@ interface IProps {
     width?: string
     minDate?: Date | string | number,
     maxDate?: Date | string | number,
+    timeEnable?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type: 'dark',
+    type      : 'dark',
     modelValue: '',
-    label: '',
-    disabled: false,
-    width: 'w-[150px]',
-    minDate: undefined,
-    maxDate: undefined,
+    label     : '',
+    disabled  : false,
+    width     : 'w-[150px]',
+    minDate   : undefined,
+    maxDate   : undefined,
+    timeEnable: false
 })
 
 const emits = defineEmits<{
@@ -86,14 +88,14 @@ const date = ref<Date>(dateFormatter(props.modelValue))
 const selectDate = () => emits('update:model-value', date.value)
 
 const currentColorIndex = 600 // задаем основной индекс палитры tailwinds
-const currentColor = computed(() => getColorClassByType(props.type)).value + currentColorIndex
+const currentColor      = computed(() => getColorClassByType(props.type)).value + currentColorIndex
 
 // const placeholderColor = computed(() => 'placeholder' + currentColor)
 // const borderColor = computed(() => 'border' + currentColor)
 // const focusBorderColor = computed(() => 'focus:ring' + currentColor)
 
 let textColor = 'text' + currentColor
-textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
+textColor     = textColor.replace(currentColorIndex.toString(), (currentColorIndex + 200).toString())
 
 
 </script>
@@ -111,7 +113,7 @@ textColor = textColor.replace(currentColorIndex.toString(), (currentColorIndex +
 .custom-datepicker {
 
     --dp-background-color: #002B36; /* #62748E - Slate */
-    --dp-border-radius: 9px; /* Немного меньше радиус */
+    --dp-border-radius: 4px; /* Немного меньше радиус */
     --dp-menu-border-radius: 8px;
     --dp-font-family: 'Inter', sans-serif;
     --dp-primary-color: #4f46e5;

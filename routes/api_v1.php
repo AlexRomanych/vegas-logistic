@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Cells\Blocks\BlockStatusController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockTaskController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingProcedureController;
 use App\Http\Controllers\Api\V1\Cells\Cutting\CellCuttingTextileController;
+use App\Http\Controllers\Api\V1\Cells\Events\CellEventController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingTaskController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingDayController;
 use App\Http\Controllers\Api\V1\Cells\Sewing\CellSewingOperationController;
@@ -400,3 +401,33 @@ Route::prefix('blocks')
         Route::patch('/day/ready/set', [BlockDayController::class, 'readySetBlockDay']);
         Route::patch('/day/ready/unset', [BlockDayController::class, 'readyUnsetBlockDay']);
     });
+
+
+
+//hr--------------------------------------------------------------------------------------------------------------------
+
+// __ Журнал Событий
+Route::prefix('cell/events')
+    ->middleware('jwt.auth')
+    ->group(function () {
+
+        Route::get('', [CellEventController::class, 'getEvents']);
+        Route::put('', [CellEventController::class, 'updateEvent']);
+        Route::post('', [CellEventController::class, 'createEvent']);
+        Route::delete('', [CellEventController::class, 'deleteEvent']);
+
+
+        //Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
+        //Route::get('kdch/kdch/{kdch}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByKdch']);
+        //Route::post('kdch', [TextileDesignDocumentController::class, 'uploadDocument']);
+        //Route::delete('kdch', [TextileDesignDocumentController::class, 'deleteTextileDesignDocumentById']);
+        //
+        //// __ КДБ
+        //Route::get('kdb', [BlockDesignDocumentController::class, 'getDocuments']);
+        //Route::get('kdb/blob/{id}', [BlockDesignDocumentController::class, 'getBlockDesignDocumentByIdBlob']);
+        //Route::get('kdb/kdb/{kdb}', [BlockDesignDocumentController::class, 'getBlockDesignDocumentByKdb']);
+        //Route::post('kdb', [BlockDesignDocumentController::class, 'uploadDocument']);
+        //Route::delete('kdb', [BlockDesignDocumentController::class, 'deleteBlockDesignDocumentById']);
+    });
+
+//hr--------------------------------------------------------------------------------------------------------------------

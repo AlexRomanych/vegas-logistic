@@ -76,19 +76,19 @@
                 <!--    @click="toggleUnderGroups"-->
                 <!--/>-->
 
-                <!-- __ Рулоны -->
-                <!--<AppLabelTS-->
-                <!--    :height="MENU_HEIGHT"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text="🔗"-->
-                <!--    text-size="huge"-->
-                <!--    title="Операции с рулонами ткани"-->
-                <!--    type="dark"-->
-                <!--    width="w-[50px]"-->
-                <!--    @click="showSummary"-->
-                <!--/>-->
+                <!-- __ Журнал -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="📖"
+                    text-size="huge"
+                    title="Журнал Событий"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="showEvents"
+                />
 
                 <!-- __ Слои -->
                 <!--<AppLabelTS-->
@@ -128,7 +128,7 @@
                         rounded="4"
                         text="⌛"
                         text-size="huge"
-                        title="Оптимизация по Переналадке"
+                        title="Оптимизация по времени Переналадки"
                         width="w-[50px]"
                         @click="optimizeByTuningTime"
                     />
@@ -454,6 +454,13 @@
         type="primary"
     />
 
+    <!-- __ Журнал Событий -->
+    <ManageEventsAsync
+        ref="manageEventsAsync"
+        :cell="CELL_EVENT_BLOCK"
+        :day-id="dayId"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -502,10 +509,13 @@ import ExecuteDayTaskSubGroup from '@/components/dashboard/manufacture/cells/blo
 import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/block_design/BlockDesignDocumentAsync.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
 import ExecuteDayTaskSubGroupTuning from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskSubGroupTuning.vue'
+import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageEventsAsync.vue'
+import { CELL_EVENT_BLOCK } from '@/app/constants/cell_events.ts'
 
 
 interface IProps {
     blockTask: IBlockTask
+    dayId: number   // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
     isRunning: boolean | null
     tuningTimes?: IBlockCollectionTime[]
     startCollectionId?: number
@@ -557,6 +567,9 @@ const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineT
 
 // __ Тип для Карточки и Изменения Линии
 const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Журнал событий
+const manageEventsAsync = ref<InstanceType<typeof ManageEventsAsync> | null>(null)
 
 // __ Карточка СЗ
 const taskCard = ref<IBlockTask>(BLOCK_TASK_DRAFT)
@@ -647,21 +660,14 @@ const optimizeByTuningTime = async () => {
         console.log('optimizedData: ', optimizedData.value)
         return
     } else {
-        // const ERRORS_TO_SHOW = 5
-        // const errMsg         = ['Отсутствует время переналадки: ']
-        // if (result.errors.length < ERRORS_TO_SHOW + 1) {
-        //     for (let i = 0; i < ERRORS_TO_SHOW; i++) {
-        //         errMsg.push(result.errors[i])
-        //     }
-        //     errMsg.push(`и еще ${result.errors.length - ERRORS_TO_SHOW}...`)
-        // } else {
-        //     for (let i = 0; i < result.errors.length; i++) {
-        //         errMsg.push(result.errors[i])
-        //     }
-        // }
-
         await showError()
     }
+}
+
+
+// __ Показываем Журнал Событий
+const showEvents = async () => {
+    await manageEventsAsync.value!.show()
 }
 
 
