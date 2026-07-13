@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Cells\Blocks;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Blocks\Sync\SyncBlockTasksRequest;
+use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskResource;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
 use App\Models\Manufacture\Cells\Block\BlockDay;
@@ -982,6 +983,204 @@ class BlockTaskController extends Controller
 
             return BlockTaskResource::collection($blockTasks);
         } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Устанавливаем статус Выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function setBlockTaskLinesDone(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:block_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = BlockTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing block task line with id: ' . $id . '.');
+                }
+
+                $line->finished_at = now();
+                $line->save();
+            }
+
+            $lines = BlockTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return BlockTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Устанавливаем статус Не выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     * @noinspection DuplicatedCode
+     */
+    public function setBlockTaskLinesFalse(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'    => 'required|array',
+                'ids.*'  => 'required|integer|exists:block_task_lines,id',
+                'reason' => 'required|string',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = BlockTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing block task line with id: ' . $id . '.');
+                }
+
+                $line->false_at     = now();
+                $line->false_reason = $validated['reason'];
+
+                $history = $line->false_history;
+                if (is_null($history)) {
+                    $history = [];
+                }
+
+                $history[]           = [
+                    'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
+                    'by'     => auth()->id(),
+                    'reason' => $validated['reason'],
+                ];
+                $line->false_history = $history;
+                $line->finished_at   = null;
+                $line->save();
+            }
+
+            $lines = BlockTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return BlockTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Сбрасываем отметку Выполнено/Не выполнено для линии
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function setBlockTaskLinesReset(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:block_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = BlockTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing block task line with id: ' . $id . '.');
+                }
+
+                $line->finished_at  = null;
+                $line->false_at     = null;
+                $line->false_reason = null;
+                $line->save();
+            }
+
+            $lines = BlockTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return BlockTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Устанавливает новую дату (action_at) Сменному Заданию
+     * @param Request $request
+     * @return string
+     */
+    public function setBlockTaskActionAt(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'   => 'required|integer|exists:block_tasks,id',
+                'date' => 'present|nullable|string|date_format:Y-m-d',
+            ]);
+
+            //$targetDate = is_null($validated['date']) ? Carbon::now() : Carbon::parse($validated['date']);
+
+            //$targetDate = is_null($validated['date'])
+            //    ? Carbon::now()->startOfDay()->format(RETURN_DATE_TIME_FORMAT)
+            //    : Carbon::parse($validated['date'])->format(RETURN_DATE_TIME_FORMAT);
+
+            DB::transaction(function () use ($validated) {
+                // __ Получаем само СЗ и его старую дату + применяем изменения
+                $blockTask = BlockTask::query()->find($validated['id']);
+                $oldDate     = $blockTask->action_at;
+                // __ Устанавливаем позицию в отрицательную зону, так как наверняка в день, куда перемещаем уже есть такая позиция
+                $blockTask->position  = -1 * $blockTask->id;
+                $blockTask->action_at = Carbon::parse($validated['date'])->startOfDay()->format(RETURN_DATE_TIME_FORMAT);
+                $blockTask->save();
+
+                // __ Получаем все СЗ за день, из которого убираем СЗ
+                $blockTasksFrom = BlockTask::query()
+                    ->whereDayAt($oldDate)
+                    ->orderBy('position')
+                    ->get();
+
+                // __ Создаем производственный день или получаем его, если он уже существует
+                // __ Идея - создать новый день, если он не существует
+                $day = BlockDay::findOrCreateByDateAndChange($validated['date']);
+
+                // __ Получаем все СЗ за день, в которое добавляем СЗ c уже измененной датой
+                $blockTasksTo = BlockTask::query()
+                    ->whereDayAt($validated['date'])
+                    ->orderBy('position')
+                    ->get();
+
+                // __ Перемещаем СЗ в новый день в конец списка, так благодарая отрицательному position и orderBy он будет в самом начале
+                // __ Проверяем, что коллекция не пустая
+                if ($blockTasksTo->isNotEmpty()) {
+                    // shift() удаляет первый элемент из коллекции и возвращает его
+                    $firstItem = $blockTasksTo->shift();
+                    // push() добавляет этот элемент в самый конец коллекции
+                    $blockTasksTo->push($firstItem);
+                }
+
+                // debug
+                //$blockTasksFromArray = $blockTasksFrom->toArray();
+                //$blockTasksToArray = $blockTasksTo->toArray();
+
+
+                // __ Теперь формируем данные для обновления с учетом position
+
+                // __ Тот день, из которого убираем СЗ
+                for ($i = 0; $i < 2; $i++) {
+                    $blockTasks = $i == 0 ? $blockTasksFrom : $blockTasksTo;
+
+                    $tasksToUpdate = [];
+                    $position      = 1;
+                    foreach ($blockTasks as $task) {
+                        if ($task->position !== $position) {
+                            $tasksToUpdate[] = [
+                                'id'        => $task->id,
+                                'action_at' => null,        // оставляем дату прежней
+                                'position'  => $position,
+                            ];
+                        };
+                        $position++;
+                    }
+
+                    // __ Применяем изменения
+                    BlocksService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }

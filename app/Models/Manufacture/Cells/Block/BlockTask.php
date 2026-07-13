@@ -13,7 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @method static Builder|BlockTask query()
- * @method static Builder|BlockTask byStatus(mixed $data)
+ * @method Builder|BlockTask byStatus(mixed $data)
+ * @method Builder|BlockTask whereDayAt(mixed $data)
  */
 class BlockTask extends Model
 {

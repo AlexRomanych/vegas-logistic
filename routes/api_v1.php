@@ -352,15 +352,13 @@ Route::prefix('blocks')
         Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);
         Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
         Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
-        //Route::post('tasks/action/set', [CellCuttingTaskController::class, 'setCuttingTaskActionAt']);
+        Route::post('tasks/action/set', [BlockTaskController::class, 'setBlockTaskActionAt']);
         Route::post('tasks/lines/line/set', [BlockTaskController::class, 'taskLinesManufLineSet']);
-        //Route::post('tasks/line/done', [CellCuttingTaskController::class, 'setCuttingTaskLinesDone']);
-        //Route::post('tasks/line/false', [CellCuttingTaskController::class, 'setCuttingTaskLinesFalse']);
-        //Route::post('tasks/line/reset', [CellCuttingTaskController::class, 'setCuttingTaskLinesReset']);
+        Route::post('tasks/line/done', [BlockTaskController::class, 'setBlockTaskLinesDone']);
+        Route::post('tasks/line/false', [BlockTaskController::class, 'setBlockTaskLinesFalse']);
+        Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
         Route::post('tasks/add/order', [BlockTaskController::class, 'addBlockTasksByOrderId']);
         Route::delete('tasks/delete/order', [BlockTaskController::class, 'deleteBlockTasksByOrderId']);
-        //Route::post('tasks/calc/order', [CellCuttingTaskController::class, 'calcCuttingTasksCutByOrderId']);
-
 
         // __ Коллекция Блоков
         Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);
@@ -373,7 +371,6 @@ Route::prefix('blocks')
         Route::get('collections/tuning/time/optimized', [BlockCollectionController::class, 'getBlockCollectionsTuningTimeOptimized']);
         Route::post('collections/tuning/time', [BlockCollectionController::class, 'setBlockTuningTime']);
         Route::delete('collections/tuning/time', [BlockCollectionController::class, 'deleteBlockTuningTime']);
-
 
 
         // __ Блоки
@@ -402,7 +399,6 @@ Route::prefix('blocks')
         Route::patch('/day/ready/set', [BlockDayController::class, 'readySetBlockDay']);
         Route::patch('/day/ready/unset', [BlockDayController::class, 'readyUnsetBlockDay']);
     });
-
 
 
 //hr--------------------------------------------------------------------------------------------------------------------

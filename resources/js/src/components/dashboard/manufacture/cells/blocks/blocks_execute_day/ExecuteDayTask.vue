@@ -170,7 +170,7 @@
                     <!-- __ Прогресс -->
                     <AppProgressBar
                         :progress="(statistics.time.finished / statistics.time.total) * 100"
-                        :text="`${formatTimeWithLeadingZeros(statistics.time.finished)} / ${formatTimeWithLeadingZeros(statistics.time.total)}`"
+                        :text="`${formatTimeWithLeadingZeros(statistics.time.finished, 'hour')} / ${formatTimeWithLeadingZeros(statistics.time.total, 'hour')}`"
                         height="h-[50px]"
                         text-size="mini"
                         width="w-[200px]"
@@ -1020,9 +1020,12 @@ const stopGlobalSelection = () => {
 }
 
 // __ Изменение Производственной Линии
-const changeManufLines = async (blockTask: IBlockTask) => {
+const changeManufLines = async (/*blockTask: IBlockTask*/) => {
     // __ Копируем объект, чтобы не мутировал оригинал
-    taskCard.value = JSON.parse(JSON.stringify(blockTask))
+    taskCard.value = JSON.parse(JSON.stringify(props.blockTask))
+
+    console.log('taskCard: ', taskCard.value)
+
     // __ Добавляем метаданные Заявки в каждую строку
     taskCard.value.block_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
 

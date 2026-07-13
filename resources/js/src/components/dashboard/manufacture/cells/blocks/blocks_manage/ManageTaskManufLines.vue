@@ -825,7 +825,10 @@ const finishDrag = async (evt: DraggableHTMLElement ) => {
     }
 
     // __ Проверяем, что то, что перетакскиваем соответствует Линии производства
-    if (toLine !== element.block.collection.manuf_line || toLine !== element.block.collection.manuf_line_alt) {
+    console.log('toLine: ', toLine)
+    console.log('element: ', element)
+
+    if (toLine !== element.block.collection.manuf_line && toLine !== element.block.collection.manuf_line_alt) {
 
         await showError([
             'Ошибка!',
