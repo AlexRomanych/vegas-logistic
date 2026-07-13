@@ -1241,10 +1241,14 @@ export function getBlockTaskTitle(task: IBlockTask, includePosition: boolean = t
     return `${task.order.client.short_name} №${task.order.order_no_num}`
 }
 
-// __ Возвращаем числовое значение времени по Записи в СЗ (taskLine) для конкретных матрасов (не расчетных),
-// __ где запись из одного поля: time = {auto: 306} или time = {universal: 400}
+// __ Возвращаем числовое значение времени по Записи в СЗ (blockLine) для конкретных матрасов (не расчетных),
 export function getBlockTaskLineTime(line: IBlockTaskLine): number {
     return line.time
+}
+
+// __ Возвращаем числовое значение Площади по Записи в СЗ (blockLine) для конкретных матрасов (не расчетных),
+export function getBlockTaskLineSquare(line: IBlockTaskLine): number {
+    return line.amount * line.block.width * line.block.length / 100 / 100
 }
 
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ

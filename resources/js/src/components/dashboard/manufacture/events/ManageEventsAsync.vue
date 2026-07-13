@@ -86,7 +86,7 @@
 
                             <div class="mr-0.5">
                                 <!-- __ Начало -->
-                                <AppInputDateTS
+                                <InputDateTS
                                     id="start"
                                     v-model="cellEvent.start_at"
                                     :color="getColor(cellEvent)"
@@ -99,7 +99,7 @@
 
                             <div class="mr-0.5">
                                 <!-- __ Окончание -->
-                                <AppInputDateTS
+                                <InputDateTS
                                     id="start"
                                     v-model="cellEvent.finish_at"
                                     :color="getColor(cellEvent)"
@@ -205,7 +205,7 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import AppInputDateTS from '@/components/dashboard/manufacture/events/AppInputDateTS.vue'
+import InputDateTS from '@/components/dashboard/manufacture/events/InputDateTS.vue'
 import { CELL_EVENT_BLOCK, CELL_EVENT_DRAFT } from '@/app/constants/cell_events.ts'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
@@ -573,7 +573,7 @@ defineExpose({
 
 <!--                            <div class="mr-0.5">-->
 <!--                                &lt;!&ndash; __ Начало &ndash;&gt;-->
-<!--                                <AppInputDateTS-->
+<!--                                <InputDateTS-->
 <!--                                    id="start"-->
 <!--                                    v-model="cellEvent.start_at"-->
 <!--                                    :color="getColor(cellEvent)"-->
@@ -586,7 +586,7 @@ defineExpose({
 
 <!--                            <div class="mr-0.5">-->
 <!--                                &lt;!&ndash; __ Окончание &ndash;&gt;-->
-<!--                                <AppInputDateTS-->
+<!--                                <InputDateTS-->
 <!--                                    id="start"-->
 <!--                                    v-model="cellEvent.finish_at"-->
 <!--                                    :color="getColor(cellEvent)"-->

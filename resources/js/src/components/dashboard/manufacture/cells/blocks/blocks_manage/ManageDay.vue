@@ -14,7 +14,6 @@
                 rounded="rounded-[4px]"
                 text-size="small"
                 width="w-full"
-
             />
         </div>
 

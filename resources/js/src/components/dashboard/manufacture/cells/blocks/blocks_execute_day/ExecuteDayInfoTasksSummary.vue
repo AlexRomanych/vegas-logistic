@@ -8,14 +8,32 @@
                 <!-- __ Название СЗ -->
                 <AppLabelMultilineTSWrapper :render-object="render.task_title" @click="toggleCollapsed"/>
 
-                <!-- __ Всего -->
-                <AppLabelMultilineTSWrapper :render-object="render.task_total" @click="toggleCollapsed"/>
+                <!-- __ Всего, Площадь -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_square" @click="toggleCollapsed"/>
 
-                <!-- __ Выполнено -->
-                <AppLabelMultilineTSWrapper :render-object="render.task_total_done" @click="toggleCollapsed"/>
+                <!-- __ Всего, Количество -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_pics" @click="toggleCollapsed"/>
 
-                <!-- __ Не Выполнено -->
-                <AppLabelMultilineTSWrapper :render-object="render.task_total_false" @click="toggleCollapsed"/>
+                <!-- __ Всего, Трудозатраты -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_time" @click="toggleCollapsed"/>
+
+                <!-- __ Выполнено, Площадь -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_done_square" @click="toggleCollapsed"/>
+
+                <!-- __ Выполнено, Количество -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_done_pics" @click="toggleCollapsed"/>
+
+                <!-- __ Выполнено, Трудозатраты -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_done_time" @click="toggleCollapsed"/>
+
+                <!-- __ Не Выполнено, Площадь -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_false_square" @click="toggleCollapsed"/>
+
+                <!-- __ Не Выполнено, Количество -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_false_pics" @click="toggleCollapsed"/>
+
+                <!-- __ Не Выполнено, Трудозатраты -->
+                <AppLabelMultilineTSWrapper :render-object="render.task_total_false_time" @click="toggleCollapsed"/>
 
             </div>
 
@@ -44,33 +62,81 @@
                         @click="toggleCollapsedTask(dataObject)"
                     />
 
-                    <!-- __ Всего по СЗ -->
+                    <!-- __ Всего по СЗ, Площадь -->
                     <AppLabelTSWrapper
                         :arg="dataObject"
-                        :render-object="render.task_total"
+                        :render-object="render.task_total_square"
                         class="cursor-pointer"
                         @click="toggleCollapsedTask(dataObject)"
                     />
 
-                    <!-- __ Выполнено -->
+                    <!-- __ Всего по СЗ, Количество -->
                     <AppLabelTSWrapper
                         :arg="dataObject"
-                        :render-object="render.task_total_done"
+                        :render-object="render.task_total_pics"
                         class="cursor-pointer"
                         @click="toggleCollapsedTask(dataObject)"
                     />
 
-                    <!-- __ Не Выполнено -->
+                    <!-- __ Всего по СЗ, Трудозатраты -->
                     <AppLabelTSWrapper
                         :arg="dataObject"
-                        :render-object="render.task_total_false"
+                        :render-object="render.task_total_time"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Выполнено, Площадь -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_done_square"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Выполнено, Количество -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_done_pics"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Выполнено, Трудозатраты -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_done_time"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Не Выполнено, Площадь -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_false_square"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Не Выполнено, Количество -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_false_pics"
+                        class="cursor-pointer"
+                        @click="toggleCollapsedTask(dataObject)"
+                    />
+
+                    <!-- __ Не Выполнено, Трудозатраты -->
+                    <AppLabelTSWrapper
+                        :arg="dataObject"
+                        :render-object="render.task_total_false_time"
                         class="cursor-pointer"
                         @click="toggleCollapsedTask(dataObject)"
                     />
 
                 </div>
 
-                <!-- __ Группы ШМ (АШМ, УШМ и Н/Д) -->
+                <!-- __ Группы Производственных Линий (Линия 1 и Линия 2) -->
                 <template v-if="!dataObject.collapsed">
 
                     <div v-for="(group, index) of dataObject.groups" :key="index" class="ml-[34px]">
@@ -94,62 +160,146 @@
                                     @click="toggleCollapsedGroup(group)"
                                 />
 
-                                <!-- __ Всего по ШМ -->
+                                <!-- __ Всего по Площади -->
                                 <AppLabelTSWrapper
                                     :arg="group"
-                                    :render-object="render.group_total"
+                                    :render-object="render.group_total_square"
                                     class="cursor-pointer"
                                     @click="toggleCollapsedGroup(group)"
                                 />
 
-                                <!-- __ Выполнено по ШМ -->
+                                <!-- __ Всего по Количеству -->
                                 <AppLabelTSWrapper
                                     :arg="group"
-                                    :render-object="render.group_done"
+                                    :render-object="render.group_total_pics"
                                     class="cursor-pointer"
                                     @click="toggleCollapsedGroup(group)"
                                 />
 
-                                <!-- __ Не Выполнено по ШМ -->
+                                <!-- __ Всего по Трудозатратам -->
                                 <AppLabelTSWrapper
                                     :arg="group"
-                                    :render-object="render.group_false"
+                                    :render-object="render.group_total_time"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Выполнено по Площади -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_done_square"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Выполнено по Количеству -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_done_pics"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Выполнено по Трудозатратам -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_done_time"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Не Выполнено по Площади -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_false_square"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Не Выполнено по Количеству -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_false_pics"
+                                    class="cursor-pointer"
+                                    @click="toggleCollapsedGroup(group)"
+                                />
+
+                                <!-- __ Не Выполнено по Трудозатратам -->
+                                <AppLabelTSWrapper
+                                    :arg="group"
+                                    :render-object="render.group_false_time"
                                     class="cursor-pointer"
                                     @click="toggleCollapsedGroup(group)"
                                 />
 
                             </div>
 
-                            <!-- __ Подгруппы (УШМ + окантователь, Глухие ...) -->
+                            <!-- __ Подгруппы (Коллекции Блоков) -->
                             <template v-if="!group.collapsed">
 
-                                <div v-for="(subgroup, idx) of group.subgroups" :key="idx" class="ml-[34px]">
+                                <div v-for="(subgroup, idx) of group.subgroups" :key="idx" class="ml-[19px]">
 
                                     <template v-if="subgroup.hasData">
                                         <div class="flex ml-[15px]">
 
-                                            <!-- __ Название Подгруппы (УШМ + окантователь, Глухие ...) -->
+                                            <!-- __ Название Подгруппы (Коллекции Блоков) -->
                                             <AppLabelTSWrapper
                                                 :arg="subgroup"
                                                 :render-object="render.subgroup_title"
                                             />
 
-                                            <!-- __ Всего по подгруппе -->
+                                            <!-- __ Всего по подгруппе Площадь -->
                                             <AppLabelTSWrapper
                                                 :arg="subgroup"
-                                                :render-object="render.subgroup_total"
+                                                :render-object="render.subgroup_total_square"
                                             />
 
-                                            <!-- __ Выполнено по подгруппе -->
+                                            <!-- __ Всего по подгруппе Количество -->
                                             <AppLabelTSWrapper
                                                 :arg="subgroup"
-                                                :render-object="render.subgroup_done"
+                                                :render-object="render.subgroup_total_pics"
                                             />
 
-                                            <!-- __ Не Выполнено по подгруппе -->
+                                            <!-- __ Всего по подгруппе Трудозатраты -->
                                             <AppLabelTSWrapper
                                                 :arg="subgroup"
-                                                :render-object="render.subgroup_false"
+                                                :render-object="render.subgroup_total_time"
+                                            />
+
+                                            <!-- __ Выполнено по подгруппе Площадь -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_done_square"
+                                            />
+
+                                            <!-- __ Выполнено по подгруппе Количество -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_done_pics"
+                                            />
+
+                                            <!-- __ Выполнено по подгруппе Трудозатраты -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_done_time"
+                                            />
+
+                                            <!-- __ Не Выполнено по подгруппе Площадь -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_false_square"
+                                            />
+
+                                            <!-- __ Не Выполнено по подгруппе Количество -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_false_pics"
+                                            />
+
+                                            <!-- __ Не Выполнено по подгруппе Трудозатраты -->
+                                            <AppLabelTSWrapper
+                                                :arg="subgroup"
+                                                :render-object="render.subgroup_false_time"
                                             />
 
                                         </div>
@@ -173,13 +323,12 @@ import type { IRenderData, IBlockDay, IBlockTaskLine, IBlockTaskLinesGroupData, 
 
 import { BLOCK_UNION_TASK_NAME } from '@/app/constants/blocks.ts'
 
-import { getBlockTaskLineTime, groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { getBlockTaskLineSquare, getBlockTaskLineTime, groupTaskLinesForExecute } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
-// import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/components/AppInputTextTSWrapper.vue'
 
 interface IProps {
     blockDay: IBlockDay | null
@@ -203,7 +352,7 @@ const dataObjects = ref<IDataObject[]>([])
 
 // __ Объект отображения данных
 const DEFAULT_HEIGHT   = 'h-[25px]'
-const DEFAULT_WIDTH    = 'w-[200px]'
+const DEFAULT_WIDTH    = 'w-[100px]'
 const HEADER_TYPE      = 'indigo'
 const DATA_TYPE        = 'success'
 const DEFAULT_TYPE     = 'dark'
@@ -216,7 +365,7 @@ const FALSE_TYPE       = 'danger'
 const TOTAL_TYPE       = 'primary'
 
 const render: IRenderData = reactive({
-    collapsed       : {
+    collapsed              : {
         header        : ['▲', '▼'],
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -233,9 +382,9 @@ const render: IRenderData = reactive({
         // click         : (collection: IModelCollection) => (collection.collapsed = !collection.collapsed),
         class: 'cursor-pointer',
     },
-    task_title      : {
+    task_title             : {
         header        : ['СМЕННОЕ', 'ЗАДАНИЕ'],
-        width         : 'w-[248px]',
+        width         : 'w-[348px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -247,8 +396,8 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (entity: IEntity) => entity?.taskTitle || '',
     },
-    task_total      : {
-        header        : ['ВСЕГО,', 'ШТ. / ТР-ТЫ'],
+    task_total_square      : {
+        header        : ['ВСЕГО S,', 'КВ.М.'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -259,10 +408,38 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSumPics(entity.groups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups), 'hour'),
+        data          : (entity: IEntity) => groupSumSquare(entity.groups).toFixed(3)
     },
-    task_total_done : {
-        header        : ['ВЫПОЛНЕНО,', 'ШТ. / ТР-ТЫ'],
+    task_total_pics        : {
+        header        : ['ВСЕГО,', 'ШТ.'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => groupSumPics(entity.groups).toString()
+    },
+    task_total_time        : {
+        header        : ['ВСЕГО,', 'ТРУД-ТЫ'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => formatTimeWithLeadingZeros(groupSumTime(entity.groups), 'hour'),
+    },
+    task_total_done_square : {
+        header        : ['ВЫП-НО S,', 'КВ.М.'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -273,10 +450,38 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSumPics(entity.groups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups, true), 'hour'),
+        data          : (entity: IEntity) => groupSumSquare(entity.groups, true).toFixed(3),
     },
-    task_total_false: {
-        header        : ['НЕ ВЫПОЛНЕНО,', 'ШТ. / ТР-ТЫ'],
+    task_total_done_pics   : {
+        header        : ['ВЫП-НО', 'ШТ.'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => groupSumPics(entity.groups, true).toString(),
+    },
+    task_total_done_time   : {
+        header        : ['ВЫП-НО', 'ТРУД-ТЫ'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => formatTimeWithLeadingZeros(groupSumTime(entity.groups, true), 'hour'),
+    },
+    task_total_false_square: {
+        header        : ['НЕ ВЫП-НО S,', 'КВ.М.'],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -287,11 +492,39 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IEntity) => groupSumPics(entity.groups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(groupSumTime(entity.groups, false), 'hour'),
+        data          : (entity: IEntity) => groupSumSquare(entity.groups, false).toFixed(3),
     },
-    group_title     : {
+    task_total_false_pics  : {
+        header        : ['НЕ ВЫП-НО', 'ШТ.'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => groupSumPics(entity.groups, false).toString(),
+    },
+    task_total_false_time  : {
+        header        : ['НЕ ВЫП-НО', 'ТРУД-ТЫ'],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IEntity) => formatTimeWithLeadingZeros(groupSumTime(entity.groups, false), 'hour'),
+    },
+    group_title            : {
         header        : ['СМЕННОЕ ЗАДАНИЕ', ''],
-        width         : 'w-[214px]',
+        width         : 'w-[314px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -303,7 +536,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         data          : (entity: IBlockTaskLinesGroupData) => entity.groupName,
     },
-    group_total     : {
+    group_total_square     : {
         header        : ['ВСЕГО', ''],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
@@ -315,9 +548,37 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups), 'hour'),
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumSquare(entity.subgroups).toFixed(3),
     },
-    group_done      : {
+    group_total_pics       : {
+        header        : ['ВСЕГО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups).toString(),
+    },
+    group_total_time       : {
+        header        : ['ВСЕГО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups), 'hour'),
+    },
+    group_done_square      : {
         header        : ['ВЫПОЛНЕНО', ''],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
@@ -329,9 +590,37 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, true), 'hour'),
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumSquare(entity.subgroups, true).toFixed(3),
     },
-    group_false     : {
+    group_done_pics        : {
+        header        : ['ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups, true).toString(),
+    },
+    group_done_time        : {
+        header        : ['ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, true), 'hour'),
+    },
+    group_false_square     : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
@@ -343,39 +632,93 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, false), 'hour'),
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumSquare(entity.subgroups, false).toFixed(3),
     },
-    subgroup_title  : {
-        header    : ['СМЕННОЕ ЗАДАНИЕ', ''],
-        width     : DEFAULT_WIDTH,
-        height    : DEFAULT_HEIGHT,
-        show      : true,
-        headerType: () => HEADER_TYPE,
-        dataType  : () => DATA_TYPE,
-        type      : () => DEFAULT_TYPE,
-        // type          : (entity: IBlockTaskLinesSubgroup) => entity.subgroupType,
+    group_false_pics       : {
+        header        : ['НЕ ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => subgroupSumPics(entity.subgroups, false).toString(),
+    },
+    group_false_time       : {
+        header        : ['НЕ ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesGroupData) => formatTimeWithLeadingZeros(subgroupSumTime(entity.subgroups, false), 'hour'),
+    },
+    subgroup_title         : {
+        header        : ['СМЕННОЕ ЗАДАНИЕ', ''],
+        width         : 'w-[315px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'left',
         data          : (entity: IBlockTaskLinesSubgroup) => entity.subgroupName,
     },
-    subgroup_total  : {
-        header    : ['ВСЕГО', ''],
-        width     : DEFAULT_WIDTH,
-        height    : DEFAULT_HEIGHT,
-        show      : true,
-        headerType: () => HEADER_TYPE,
-        dataType  : () => DATA_TYPE,
-        type      : () => TOTAL_TYPE,
-        // type          : (entity: IBlockTaskLinesSubgroup) => entity.subgroupType,
+    subgroup_total_square  : {
+        header        : ['ВСЕГО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines), 'hour'),
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumSquare(entity.lines).toFixed(3),
     },
-    subgroup_done   : {
+    subgroup_total_pics    : {
+        header        : ['ВСЕГО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines).toString(),
+    },
+    subgroup_total_time    : {
+        header        : ['ВСЕГО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => TOTAL_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => formatTimeWithLeadingZeros(linesSumTime(entity.lines), 'hour'),
+    },
+    subgroup_done_square   : {
         header        : ['ВЫПОЛНЕНО', ''],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
@@ -387,9 +730,37 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines, true).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, true), 'hour'),
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumSquare(entity.lines, true).toFixed(3),
     },
-    subgroup_false  : {
+    subgroup_done_pics     : {
+        header        : ['ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines, true).toString(),
+    },
+    subgroup_done_time     : {
+        header        : ['ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DONE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => formatTimeWithLeadingZeros(linesSumTime(entity.lines, true), 'hour'),
+    },
+    subgroup_false_square  : {
         header        : ['НЕ ВЫПОЛНЕНО', ''],
         width         : DEFAULT_WIDTH,
         height        : DEFAULT_HEIGHT,
@@ -401,11 +772,39 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines, false).toString() + ' шт. / ' + formatTimeWithLeadingZeros(linesSumTime(entity.lines, false), 'hour'),
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumSquare(entity.lines, false).toFixed(3),
+    },
+    subgroup_false_pics    : {
+        header        : ['НЕ ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => linesSumPics(entity.lines, false).toString(),
+    },
+    subgroup_false_time    : {
+        header        : ['НЕ ВЫПОЛНЕНО', ''],
+        width         : DEFAULT_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => FALSE_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        data          : (entity: IBlockTaskLinesSubgroup) => formatTimeWithLeadingZeros(linesSumTime(entity.lines, false), 'hour'),
     },
 })
 
-// __ Сумма по подгруппе (Глухие, УШМ + окантователь, УШМ и т.д.)
+// __ Сумма по подгруппе
 const linesSumPics = (lines: IBlockTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
     if (checkType === null) return accLines + line.amount
     if (checkType) {
@@ -425,14 +824,25 @@ const linesSumTime = (lines: IBlockTaskLine[] = [], checkType: boolean | null = 
     }
 }, 0)
 
+const linesSumSquare = (lines: IBlockTaskLine[] = [], checkType: boolean | null = null) => lines.reduce((accLines, line) => {
+    if (checkType === null) return accLines + getBlockTaskLineSquare(line)
+    if (checkType) {
+        return line.finished_at ? accLines + getBlockTaskLineSquare(line) : accLines
+    } else {
+        return !line.finished_at ? accLines + getBlockTaskLineSquare(line) : accLines
+    }
+}, 0)
 
-// __ Сумма по группе (АШМ, УШМ и Н/Д)
-const subgroupSumPics = (subgroups: IBlockTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumPics(subgroup.lines, checkType), 0)
-const subgroupSumTime = (subgroups: IBlockTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumTime(subgroup.lines, checkType), 0)
+
+// __ Сумма по группе
+const subgroupSumPics   = (subgroups: IBlockTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumPics(subgroup.lines, checkType), 0)
+const subgroupSumTime   = (subgroups: IBlockTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumTime(subgroup.lines, checkType), 0)
+const subgroupSumSquare = (subgroups: IBlockTaskLinesSubgroup[] = [], checkType: boolean | null = null) => subgroups.reduce((accSubgroup, subgroup) => accSubgroup + linesSumSquare(subgroup.lines, checkType), 0)
 
 // __ Сумма по объекту (СЗ)
-const groupSumPics = (groups: IBlockTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumPics(group.subgroups, checkType), 0)
-const groupSumTime = (groups: IBlockTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumTime(group.subgroups, checkType), 0)
+const groupSumPics   = (groups: IBlockTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumPics(group.subgroups, checkType), 0)
+const groupSumTime   = (groups: IBlockTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumTime(group.subgroups, checkType), 0)
+const groupSumSquare = (groups: IBlockTaskLinesGroupData[] = [], checkType: boolean | null = null) => groups.reduce((accGroup, group) => accGroup + subgroupSumSquare(group.subgroups, checkType), 0)
 
 // __ Сумма по всем объектам (СЗ + объединенное)
 // const dataSumPics     = (dataObjectsList: IDataObject[] = dataObjects.value!, checkType: boolean | null = null) => dataObjectsList.reduce((accObject, dataObject) => accObject + groupSumPics(dataObject.groups, checkType), 0)
@@ -480,26 +890,13 @@ const prepareDataObjects = (): IDataObject[] => {
 }
 
 
-// const totalTask = computed(() => {
-//     if (!dataObjects.value) {
-//         return 0
-//     }
-//     return dataObjects.value!.reduce((accObject, dataObject) => {
-//         return accObject + dataObject.groups.reduce((accGroup, group) => {
-//             return accGroup + group.subgroups.reduce((accSubgroup, subgroup) => {
-//                 return accSubgroup + subgroup.lines.reduce((accLines, line) => accLines + line.amount, 0)
-//             }, 0)
-//         }, 0)
-//     }, 0) || 0
-// })
-//
-// console.log('totalTask: ', totalTask.value)
-
-
 let totalCollapsedState = false
 const toggleCollapsed   = () => {
     totalCollapsedState = !totalCollapsedState
-    dataObjects.value!.forEach(dataObject => dataObject.collapsed = totalCollapsedState)
+    dataObjects.value!.forEach(dataObject => {
+        dataObject.collapsed = totalCollapsedState
+        dataObject.groups.forEach(group => group.collapsed = totalCollapsedState)
+    })
 }
 
 //
@@ -507,17 +904,15 @@ const toggleCollapsedTask = (dataObject: IDataObject) => {
     dataObject.collapsed = !dataObject.collapsed
 }
 
-
 const toggleCollapsedGroup = (group: IBlockTaskLinesGroupData) => {
     group.collapsed = !group.collapsed
 }
-
 
 onMounted(() => {
     isLoading.value   = true
     dataObjects.value = prepareDataObjects()
     // console.log('data: ', dataObjects.value)
-    isLoading.value = false
+    isLoading.value   = false
 })
 
 watch(() => props.blockDay, () => {

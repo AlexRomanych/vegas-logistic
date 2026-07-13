@@ -864,6 +864,9 @@ onMounted(async () => {
             // __ Объединяем задания с днями
             unionDatesWithBlockTasks(blockDays.value, globalBlockTasksPending.value)
 
+            // __ Удаляем дни без заданий
+            blockDays.value = blockDays.value.filter((day) => day.block_tasks.length > 0)
+
             // __ Добавляем свернутость
             addCollapsed()
 
