@@ -223,6 +223,30 @@
                         <ExecuteTaskCommon :block-day="blockDay"/>
                     </div>
                 </template>
+
+                <!-- __ События -->
+                <div class="mt-1">
+                    <AppLabelTS
+                        :text="blockDay.cell_events_collapsed ? 'События ▲' : 'События ▼'"
+                        align="center"
+                        rounded="4"
+                        text-size="mini"
+                        type="warning"
+                        width="w-[218px]"
+                        @click="blockDay.cell_events_collapsed = !blockDay.cell_events_collapsed"
+                    />
+                </div>
+
+                <!-- __ События -->
+                <template v-if="!blockDay.cell_events_collapsed">
+                    <div class="mt-2 mb-2">
+                        <ExecuteCellEvents
+                            :block-day="blockDay"
+                        />
+                    </div>
+                </template>
+
+
             </div>
 
             <TheDividerLineTS
@@ -296,6 +320,7 @@ import ExecuteTask from '@/components/dashboard/manufacture/cells/blocks/blocks_
 import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskHeader.vue'
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
 import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskCommon.vue'
+import ExecuteCellEvents from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteCellEvents.vue'
 
 
 interface IEntity {
@@ -653,11 +678,12 @@ const addCollapsed = () => {
     blockDays.value = blockDays.value.map(day => {
         return {
             ...day,
-            collapsed         : true,
-            personal_collapsed: true,
-            tasks_collapsed   : true,
-            common_collapsed  : true,
-            block_tasks       : day.block_tasks.map(task => ({
+            collapsed            : true,
+            personal_collapsed   : true,
+            tasks_collapsed      : true,
+            common_collapsed     : true,
+            cell_events_collapsed: true,
+            block_tasks          : day.block_tasks.map(task => ({
                 ...task,
                 collapsed: true,
             })),
@@ -703,7 +729,7 @@ const goToBlockDay = (blockDay: IBlockDay) => {
         name  : 'manufacture.cell.blocks.tasks.execute.day',
         params: {
             // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
-            date: blockDay.action_at.split(' ')[0],
+            date  : blockDay.action_at.split(' ')[0],
             change: blockDay.change
         },
     })

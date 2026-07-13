@@ -198,7 +198,7 @@ class BlockDayController extends Controller
 
             $days = BlockDay::query()
                 ->byDates($validated['dates'])
-                ->with(['workers', 'responsible'])
+                ->with(['workers', 'responsible', 'cellEvents'])
                 ->get();
 
             return BlockDayResource::collection($days);

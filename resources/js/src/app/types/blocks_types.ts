@@ -21,7 +21,7 @@ import {
 } from '@/app/constants/blocks.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-import type { IDiffsType } from '@/types/index.ts'
+import type { ICellEvent, IDiffsType } from '@/types/index.ts'
 
 
 // __ Коллекция Блоков
@@ -138,6 +138,7 @@ export type IBlockDay = {
     block_tasks: IBlockTask[]
     responsible: IBlockDayWorker | null
     workers: IBlockDayWorker[]
+    cell_events: ICellEvent[]
 
     ready: boolean  // __ Готовность к добавлению новых СЗ
 
@@ -145,6 +146,7 @@ export type IBlockDay = {
     personal_collapsed?: boolean
     tasks_collapsed?: boolean
     common_collapsed?: boolean
+    cell_events_collapsed?: boolean
 }
 
 
