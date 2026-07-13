@@ -7,7 +7,7 @@ const DEBUG = true
 
 const URL_CELL_EVENTS = '/cell/events'                        // URL для получения Журнала Событий
 
-export const useCellEventsStore = defineStore('cellEvents', () => {
+export const useCellEventsStore = defineStore('cellDays', () => {
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---              Журнал Событий                 !!!

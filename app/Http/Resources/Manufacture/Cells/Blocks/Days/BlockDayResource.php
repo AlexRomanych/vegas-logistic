@@ -3,6 +3,8 @@
 namespace App\Http\Resources\Manufacture\Cells\Blocks\Days;
 
 //use Carbon\Carbon;
+use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskResource;
+use App\Http\Resources\Manufacture\Cells\Events\CellEventResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -34,6 +36,13 @@ class BlockDayResource extends JsonResource
 
             // __ Отправляем только активных рабочих
             'workers'       => BlockDayWorkerResource::collection($this->whenLoaded('workers')),
+
+            // __ Произвордственные События
+            'cell_events'   => CellEventResource::collection($this->whenLoaded('cellEvents')),
+
+            // __ Сменные Задания
+            'block_tasks'   => BlockTaskResource::collection($this->whenLoaded('blockTasks')),
+
             // 'workers'       => CuttingDayWorkerResource::collection($this->whenLoaded('activeWorkers')),
 
             // 'workers'       => CuttingDayWorkerResource::collection($this->whenLoaded('workers')),

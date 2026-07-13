@@ -404,7 +404,10 @@ class OrderControllerLogic
                         // __ Создаем СЗ на Сборку
                         $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
                         if (!$blockTask) {
-                            throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                            // !!! TODO !!! Если блоков в СЗ нет, то возвращается null
+                            // !!! TODO !!! Поэтому тут Доделать запись в Events
+
+                            // throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
                         }
                     }
                 }

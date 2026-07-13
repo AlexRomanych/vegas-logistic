@@ -116,7 +116,7 @@
                     :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
                     :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
                     align="center"
-                    class="uppercase"
+                    class="uppercase cursor-pointer"
                     rounded="rounded-[4px]"
                     text-size="mini"
                     width="calc(w-full - 5px)"

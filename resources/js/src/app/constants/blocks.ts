@@ -7,7 +7,7 @@ import type {
     IBlockManufLine,
     IBlockTaskStatusKeys,
     IBlockTaskStatusItem,
-    IBlockTaskChange, IBlockCollectionTime, IBlockTaskLinesSubgroup
+    IBlockTaskChange, IBlockCollectionTime, IBlockTaskLinesSubgroup, IBlockDay, IBlockTaskChangeKeys, IBlockDayWorker
 } from '@/types'
 
 // __ Максимальное количество Оптимизируемых Коллекций Блоков
@@ -244,3 +244,22 @@ export const TUNING_TIME_LINES_SUBGROUP_DRAFT: IBlockTaskLinesSubgroup = {
     priority          : 0,
     isTuning          : true,
 } as const satisfies IBlockTaskLinesSubgroup
+
+// __ Болванка дня производства Блоков
+export const BLOCK_DAY_DRAFT: IBlockDay = {
+    id: 0,
+    change: CHANGE_1,
+    action_at: '',
+    action_at_str: '',
+    description: null,
+    comment: null,
+    start_at:  null,
+    paused_at:  null,
+    resume_at:  null,
+    finish_at:  null,
+    duration: 0,
+    block_tasks: [],
+    responsible:  null,
+    workers: [],
+    ready: false,  // __ Готовность к добавлению новых СЗ
+}

@@ -49,59 +49,61 @@ class BlockTaskController extends Controller
                 $end    = Carbon::parse($period->getEnd());
             }
 
-            // __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
-            $blockTasks = BlockTask::query()
-                ->whereBetween('action_at', [
-                    $start->startOfDay(),
-                    $end->endOfDay()
-                ])
-                ->with([
-                    'order',
-                    'order.client',
-                    'order.orderType',
-                    'statuses',
-                    'blockLines',
-                    'blockLines.block',
-                    'blockLines.block.blockCollection',
-                    'blockLines.block.blockCollection.kdbDoc',
-                    //'blockLines.block.blockCollection' => function ($query) {
-                    //    $query->select('*')->with('kdbDoc');
-                    //},
-
-                ])
-                ->orderBy('action_at')
-                ->get();
-
-            // __ 2. Достаем ВСЕ строки BlockTaskLine изо ВСЕХ задач в один плоский список
-            $allBlockTaskLines = $blockTasks->flatMap(fn($task) => $task->blockLines);
-
-            // __ 3. Собираем уникальные ID из объектов внутри JSON
-            $allOrderLineIds = $allBlockTaskLines->flatMap(function ($line) {
-                // Превращаем массив объектов в коллекцию и достаем только 'order_line_id'
-                return collect($line->order_line_ids ?? [])->pluck('order_line_id');
-            })->unique()->filter()->toArray();
-
-            // __ 4. Загружаем все OrderLine одним запросом
-            if (!empty($allOrderLineIds)) {
-                $orderLines = OrderLine::query()
-                    ->whereIn('id', $allOrderLineIds)
-                    ->get()
-                    ->keyBy('id');
-            } else {
-                $orderLines = collect();
-            }
-
-            // __ 5. «Прошиваем» OrderLine в память для каждой строки BlockTaskLine
-            $allBlockTaskLines->each(function ($line) use ($orderLines) {
-                $lineIds = collect($line->order_line_ids ?? [])->pluck('order_line_id');
-
-                $associatedOrderLines = collect($lineIds)
-                    ->map(fn($id) => $orderLines->get($id))
-                    ->filter(); // Убираем null, если запись удалена
-
-                // __ Заселяем отношение 'orderLines' прямо в памяти
-                $line->setRelation('orderLines', $associatedOrderLines);
-            });
+            $blockTasks = BlocksService::getBlockTasksByDates($start, $end);
+            //
+            //// __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
+            //$blockTasks = BlockTask::query()
+            //    ->whereBetween('action_at', [
+            //        $start->startOfDay(),
+            //        $end->endOfDay()
+            //    ])
+            //    ->with([
+            //        'order',
+            //        'order.client',
+            //        'order.orderType',
+            //        'statuses',
+            //        'blockLines',
+            //        'blockLines.block',
+            //        'blockLines.block.blockCollection',
+            //        'blockLines.block.blockCollection.kdbDoc',
+            //        //'blockLines.block.blockCollection' => function ($query) {
+            //        //    $query->select('*')->with('kdbDoc');
+            //        //},
+            //
+            //    ])
+            //    ->orderBy('action_at')
+            //    ->get();
+            //
+            //// __ 2. Достаем ВСЕ строки BlockTaskLine изо ВСЕХ задач в один плоский список
+            //$allBlockTaskLines = $blockTasks->flatMap(fn($task) => $task->blockLines);
+            //
+            //// __ 3. Собираем уникальные ID из объектов внутри JSON
+            //$allOrderLineIds = $allBlockTaskLines->flatMap(function ($line) {
+            //    // Превращаем массив объектов в коллекцию и достаем только 'order_line_id'
+            //    return collect($line->order_line_ids ?? [])->pluck('order_line_id');
+            //})->unique()->filter()->toArray();
+            //
+            //// __ 4. Загружаем все OrderLine одним запросом
+            //if (!empty($allOrderLineIds)) {
+            //    $orderLines = OrderLine::query()
+            //        ->whereIn('id', $allOrderLineIds)
+            //        ->get()
+            //        ->keyBy('id');
+            //} else {
+            //    $orderLines = collect();
+            //}
+            //
+            //// __ 5. «Прошиваем» OrderLine в память для каждой строки BlockTaskLine
+            //$allBlockTaskLines->each(function ($line) use ($orderLines) {
+            //    $lineIds = collect($line->order_line_ids ?? [])->pluck('order_line_id');
+            //
+            //    $associatedOrderLines = collect($lineIds)
+            //        ->map(fn($id) => $orderLines->get($id))
+            //        ->filter(); // Убираем null, если запись удалена
+            //
+            //    // __ Заселяем отношение 'orderLines' прямо в памяти
+            //    $line->setRelation('orderLines', $associatedOrderLines);
+            //});
 
 
             // !!!!!!!!!!!!!!!!!!!!!

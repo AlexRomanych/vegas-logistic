@@ -5,6 +5,7 @@ namespace App\Services\Manufacture;
 
 
 use App\Classes\ManufactureDayAndChange;
+use App\Models\Logs\EventLog;
 use App\Models\Manufacture\Cells\Block\Block;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
 use App\Models\Manufacture\Cells\Block\BlockTask;
@@ -12,6 +13,7 @@ use App\Models\Manufacture\Cells\Block\BlockTaskLine;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
 use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
+use App\Models\Order\OrderLine;
 use App\Services\BusinessProcessesService;
 use App\Services\LogicalService;
 use Carbon\Carbon;
@@ -91,7 +93,7 @@ final class BlocksService
             $blockCollections = BlockCollection::all();
             foreach ($blockCollections as $collection) {
                 self::$blockCollectionsCacheCode1c[$collection->code_1c] = $collection;
-                self::$blockCollectionsCacheId[$collection->id] = $collection;
+                self::$blockCollectionsCacheId[$collection->id]          = $collection;
             }
         } catch (Exception $e) {
             self::$blockCollectionsCacheCode1c = [];
@@ -160,8 +162,23 @@ final class BlocksService
             ->groupBy('material_code_1c')
             ->toArray();
 
-        $a = 0;
+        // __ Тот момент, когда в СЗ нет Блоков
+        if (count($groupedPivotRecordsExpense) === 0) {
+            // IMPORTANT Пишем ошибку, если в СЗ нет Блоков
+            // __ Пишем в EventLog Ошибку
+            $eventLog          = new EventLog();
+            $eventLog->level   = EventLog::LEVEL_WARNING;
+            $eventLog->target  = EventLog::TARGET_BLOCK_TASK;
+            $eventLog->message = 'В Заявке нет моделей с Пружинными Блоками';
+            $eventLog->context = [
+                'order' => $order->order_no_origin,
+            ];
+            $eventLog->save();
 
+            return null;
+        }
+
+        //$a = 0;
 
         // __ Получаем плановую дату
         if (!(is_null($plannedDate) || $plannedDate === '')) {
@@ -452,6 +469,72 @@ final class BlocksService
     }
 
 
+    /**
+     * ___ Возвращаем Коллекцию СЗ для блоков между двумя датами
+     * @param Carbon $start
+     * @param Carbon $end
+     * @return Collection
+     */
+    public static function getBlockTasksByDates(Carbon $start, Carbon $end): Collection
+    {
+        // __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
+        $blockTasks = BlockTask::query()
+            ->whereBetween('action_at', [
+                $start->startOfDay(),
+                $end->endOfDay()
+            ])
+            ->with([
+                'order',
+                'order.client',
+                'order.orderType',
+                'statuses',
+                'blockLines',
+                'blockLines.block',
+                'blockLines.block.blockCollection',
+                'blockLines.block.blockCollection.kdbDoc',
+                //'blockLines.block.blockCollection' => function ($query) {
+                //    $query->select('*')->with('kdbDoc');
+                //},
+
+            ])
+            ->orderBy('action_at')
+            ->get();
+
+        // __ 2. Достаем ВСЕ строки BlockTaskLine изо ВСЕХ задач в один плоский список
+        $allBlockTaskLines = $blockTasks->flatMap(fn($task) => $task->blockLines);
+
+        // __ 3. Собираем уникальные ID из объектов внутри JSON
+        $allOrderLineIds = $allBlockTaskLines->flatMap(function ($line) {
+            // Превращаем массив объектов в коллекцию и достаем только 'order_line_id'
+            return collect($line->order_line_ids ?? [])->pluck('order_line_id');
+        })->unique()->filter()->toArray();
+
+        // __ 4. Загружаем все OrderLine одним запросом
+        if (!empty($allOrderLineIds)) {
+            $orderLines = OrderLine::query()
+                ->whereIn('id', $allOrderLineIds)
+                ->get()
+                ->keyBy('id');
+        } else {
+            $orderLines = collect();
+        }
+
+        // __ 5. «Прошиваем» OrderLine в память для каждой строки BlockTaskLine
+        $allBlockTaskLines->each(function ($line) use ($orderLines) {
+            $lineIds = collect($line->order_line_ids ?? [])->pluck('order_line_id');
+
+            $associatedOrderLines = collect($lineIds)
+                ->map(fn($id) => $orderLines->get($id))
+                ->filter(); // Убираем null, если запись удалена
+
+            // __ Заселяем отношение 'orderLines' прямо в памяти
+            $line->setRelation('orderLines', $associatedOrderLines);
+        });
+
+        return $blockTasks;
+    }
+
+
 
     public static function test()
     {
@@ -462,7 +545,7 @@ final class BlocksService
         //$coll = BlockCollection::query()->with('kdbDoc')->get();
         //$collArray = $coll->toArray();
 
-        $order = Order::query()
+        $order    = Order::query()
             ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
             ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
             ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
@@ -483,8 +566,5 @@ final class BlocksService
         $orderArr = $order->toArray();
 
         $a = 0;
-
-
-
     }
 }

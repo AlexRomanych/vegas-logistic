@@ -450,6 +450,7 @@ export interface IBlockTaskLinesGroup {
 
 // __ Для отображения СЗ по ШМ
 export interface IBlockTaskLinesGroupData {
+    action_at?: string
     groupName: IBlockManufLine
     groupType: IColorTypes
     hasData: boolean

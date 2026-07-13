@@ -387,6 +387,7 @@ Route::prefix('blocks')
         Route::post('/task/statuses/set', [BlockStatusController::class, 'setBlockTasksStatuses']);
 
         // __ Производственный день
+        Route::get('/days/period', [BlockDayController::class, 'getBlockDays']);
         Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
         Route::get('/day/dates', [BlockDayController::class, 'getBlockDaysByDates']);
         Route::post('/day/comment', [BlockDayController::class, 'setBlockDayComment']);
@@ -406,28 +407,14 @@ Route::prefix('blocks')
 
 //hr--------------------------------------------------------------------------------------------------------------------
 
-// __ Журнал Событий
+// __ Журнал Событий для Производственного Дня
 Route::prefix('cell/events')
     ->middleware('jwt.auth')
     ->group(function () {
-
         Route::get('', [CellEventController::class, 'getEvents']);
         Route::put('', [CellEventController::class, 'updateEvent']);
         Route::post('', [CellEventController::class, 'createEvent']);
         Route::delete('', [CellEventController::class, 'deleteEvent']);
-
-
-        //Route::get('kdch/blob/{id}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByIdBlob']);
-        //Route::get('kdch/kdch/{kdch}', [TextileDesignDocumentController::class, 'getTextileDesignDocumentByKdch']);
-        //Route::post('kdch', [TextileDesignDocumentController::class, 'uploadDocument']);
-        //Route::delete('kdch', [TextileDesignDocumentController::class, 'deleteTextileDesignDocumentById']);
-        //
-        //// __ КДБ
-        //Route::get('kdb', [BlockDesignDocumentController::class, 'getDocuments']);
-        //Route::get('kdb/blob/{id}', [BlockDesignDocumentController::class, 'getBlockDesignDocumentByIdBlob']);
-        //Route::get('kdb/kdb/{kdb}', [BlockDesignDocumentController::class, 'getBlockDesignDocumentByKdb']);
-        //Route::post('kdb', [BlockDesignDocumentController::class, 'uploadDocument']);
-        //Route::delete('kdb', [BlockDesignDocumentController::class, 'deleteBlockDesignDocumentById']);
     });
 
 //hr--------------------------------------------------------------------------------------------------------------------

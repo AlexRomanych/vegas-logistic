@@ -70,6 +70,7 @@ const URL_BLOCKS_TASK_LINE_FALSE      = '/blocks/tasks/line/false'            //
 const URL_BLOCKS_TASK_LINE_RESET      = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
+const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
 const URL_BLOCK_DAY_DATES              = '/blocks/day/dates'                   // URL для получения рабочих дней по статусу
 const URL_BLOCK_DAY_COMMENT            = '/blocks/day/comment'                 // URL для сохранения комментария к дню
 const URL_BLOCK_DAY_WORKERS_ACTIVE     = '/workers/active'                      // URL для получения активных рабочих
@@ -623,6 +624,21 @@ export const useBlocksStore = defineStore('blocks', () => {
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---          Производственный день              !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Получение производственных дней за период
+    const getBlockDayByPeriod = async (period: IPeriod | null = null) => {
+        let response
+        if (period) {
+            response = await jwtGet(URL_BLOCK_DAY_PERIOD, {period})
+        } else {
+            response = await jwtGet(URL_BLOCK_DAY_PERIOD)
+        }
+
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: getBlockDayByPeriod: ', result)
+        return result.data
+    }
+
     // __ Получение производственного дня по дате и смене
     const getBlockDayByDateAndChange = async (date: string, change: IBlockTaskChangeKeys = CHANGES.CHANGE_1.NAME) => {
         const response = await jwtGet(`${URL_BLOCK_DAY}/${date}/${change}`)
@@ -936,6 +952,8 @@ export const useBlocksStore = defineStore('blocks', () => {
         divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,
+
+        getBlockDayByPeriod,
         getBlockDayByDateAndChange,
         setBlockDayComment,
         modifyChange,

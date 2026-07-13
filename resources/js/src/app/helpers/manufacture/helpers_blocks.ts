@@ -30,7 +30,6 @@ import {
 } from '@/app/constants/blocks.ts'
 // import { round } from '@/app/helpers/helpers_lib.ts'
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
-import { log } from '@/app/composable/log.ts'
 
 
 // __ Проблема с draggable
@@ -1257,7 +1256,7 @@ export function groupTaskLinesForExecute(
     orderTitle: string | null           = null,
     tuningTimes: IBlockCollectionTime[] = [],
     optimizationType: IOptimizeType     = OPTIMIZE_BY_PRIORITY,
-    optimizedData: number[]             = []
+    optimizedData: number[]             = []        // Массив оптимизации, полученный с сервера
 ): IBlockTaskLinesGroupData[] {
 
     // const X_LAT = 'x'
@@ -1278,7 +1277,7 @@ export function groupTaskLinesForExecute(
 
         const groupedBlockCollection = Object.groupBy(valueManufLine, line => line.block.collection.name)
 
-        const groupedBlockCollectionArray: IBlockTaskLinesSubgroup[] = []
+        let groupedBlockCollectionArray: IBlockTaskLinesSubgroup[] = []
         for (const [keyBlockCollection, valueBlockCollection] of Object.entries(groupedBlockCollection)) {
 
             groupedBlockCollectionArray.push({
@@ -1325,53 +1324,57 @@ export function groupTaskLinesForExecute(
 
             // 2. Сортируем с поиском по карте за O(1)
             groupedBlockCollectionArray.sort((a, b) => {
-                const posA = idPositionMap.get(a.subgroupId) ?? Infinity;
-                const posB = idPositionMap.get(b.subgroupId) ?? Infinity;
-                return posA - posB;
+                const posA = idPositionMap.get(a.subgroupId) ?? Infinity
+                const posB = idPositionMap.get(b.subgroupId) ?? Infinity
+                return posA - posB
             })
 
         } else {
             groupedBlockCollectionArray.sort((a, b) => a.subgroupName.localeCompare(b.subgroupName)) // __ по алфавиту
         }
 
-        // __ Добавляем Время переналадки
-        const groupedBlockCollectionArrayTimes = []
-        for (let i = 0; i < groupedBlockCollectionArray.length; i++) {
+        // __ Добавляем Время переналадки, если оно передано
+        if (tuningTimes.length > 0) {
+            const groupedBlockCollectionArrayTimes = []
+            for (let i = 0; i < groupedBlockCollectionArray.length; i++) {
 
-            groupedBlockCollectionArrayTimes.push(groupedBlockCollectionArray[i])
+                groupedBlockCollectionArrayTimes.push(groupedBlockCollectionArray[i])
 
-            // __ Пропускаем последний элемент
-            if (i !== groupedBlockCollectionArray.length - 1) {
+                // __ Пропускаем последний элемент
+                if (i !== groupedBlockCollectionArray.length - 1) {
 
-                const tuningGroup = JSON.parse(JSON.stringify(TUNING_TIME_LINES_SUBGROUP_DRAFT))
+                    const tuningGroup = JSON.parse(JSON.stringify(TUNING_TIME_LINES_SUBGROUP_DRAFT))
 
-                const findCollectionFrom = tuningTimes.find(collection => collection.name === groupedBlockCollectionArray[i].subgroupName)
-                if (findCollectionFrom) {
+                    const findCollectionFrom = tuningTimes.find(collection => collection.name === groupedBlockCollectionArray[i].subgroupName)
+                    if (findCollectionFrom) {
 
-                    const findCollectionTo = findCollectionFrom.collections_to?.find(collection => collection.name === groupedBlockCollectionArray[i + 1].subgroupName)
-                    if (findCollectionTo) {
+                        const findCollectionTo = findCollectionFrom.collections_to?.find(collection => collection.name === groupedBlockCollectionArray[i + 1].subgroupName)
+                        if (findCollectionTo) {
 
-                        // __ Не добавляем Нулевое время
-                        if (findCollectionTo.tuning_time !== 0) {
+                            // __ Не добавляем Нулевое время
+                            if (findCollectionTo.tuning_time !== 0) {
+                                tuningGroup.subgroupName =
+                                    `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName}`
+                                tuningGroup.time.total   = findCollectionTo.tuning_time
+                            }
+
+                        } else {
+
                             tuningGroup.subgroupName =
-                                `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName}`
-                            tuningGroup.time.total   = findCollectionTo.tuning_time
+                                `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName} ??`
+                            tuningGroup.subgroupType = 'danger'
                         }
-
                     } else {
 
-                        tuningGroup.subgroupName =
-                            `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName} ??`
+                        tuningGroup.subgroupName = `Данные ${groupedBlockCollectionArray[i].subgroupName} не найдены`
                         tuningGroup.subgroupType = 'danger'
                     }
-                } else {
-
-                    tuningGroup.subgroupName = `Данные ${groupedBlockCollectionArray[i].subgroupName} не найдены`
-                    tuningGroup.subgroupType = 'danger'
+                    groupedBlockCollectionArrayTimes.push(tuningGroup)
                 }
-                groupedBlockCollectionArrayTimes.push(tuningGroup)
+
             }
 
+            groupedBlockCollectionArray = groupedBlockCollectionArrayTimes
         }
 
         // console.log('groupedBlockCollectionArrayTimes: ', groupedBlockCollectionArrayTimes)
@@ -1394,9 +1397,10 @@ export function groupTaskLinesForExecute(
         }
 
         groupedManufLinesArray.push({
-            groupName      : manufName,
-            groupType      : manufType,
-            subgroups      : groupedBlockCollectionArrayTimes,
+            groupName: manufName,
+            groupType: manufType,
+            subgroups: groupedBlockCollectionArray,
+            // subgroups      : groupedBlockCollectionArrayTimes,
             hasData        : true,
             collapsed      : true,
             square         : {
@@ -1414,7 +1418,8 @@ export function groupTaskLinesForExecute(
                 done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
                 incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
             },
-            tuningTimeTotal: groupedBlockCollectionArrayTimes.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
+            tuningTimeTotal: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
+            // tuningTimeTotal: groupedBlockCollectionArrayTimes.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
         })
     }
 

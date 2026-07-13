@@ -256,7 +256,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍Статус...',
         data          : (/*cuttingTask: ICuttingTask*/) => {
-            const status = getTaskStatusById(props.cuttingTask.current_status.id)
+            const status = props.cuttingTask.current_status ? getTaskStatusById(props.cuttingTask.current_status.id) : null
             return status?.TITLE ?? ''
         },
     },

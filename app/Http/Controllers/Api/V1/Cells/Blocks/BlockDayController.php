@@ -8,6 +8,7 @@ use App\Http\Resources\Manufacture\Cells\Blocks\Days\BlockDayResource;
 use App\Models\Manufacture\Cells\Block\BlockDay;
 use App\Models\Manufacture\Cells\Block\BlockTask;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
+use App\Services\DefaultsService;
 use App\Services\Manufacture\BlocksService;
 use Carbon\Carbon;
 use Exception;
@@ -19,6 +20,79 @@ use Throwable;
 
 class BlockDayController extends Controller
 {
+
+    /**
+     * ___ Получаем производственные дни за период
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     * @noinspection PhpUndefinedFieldInspection
+     * @noinspection DuplicatedCode
+     */
+    public function getBlockDays(Request $request)
+    {
+        try {
+            //$all = $request->all();
+
+            $validated = $request->validate([
+                'period'       => 'nullable|array',
+                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date',
+            ]);
+
+            if (isset($validated['period'])) {
+                $start = Carbon::parse($validated['period']['start']);
+                $end   = Carbon::parse($validated['period']['end']);
+            } else {
+                $period = DefaultsService::getDefaultPeriodOrdersShow();
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
+            }
+
+            // __ Получаем СЗ
+            $blockTasks = BlocksService::getBlockTasksByDates($start, $end);
+
+            // __ Получаем Производственные дни
+            $days = BlockDay::query()
+                ->byPeriod($start, $end)
+                ->with(['workers', 'responsible', 'cellEvents'])
+                ->get();
+
+            //$blockTasksArray = $blockTasks->toArray();
+            //$daysArray = $days->toArray();
+
+            // __ Группируем задачи по составному ключу (action_at + change)
+            // __ Приводим дату к строке Y-m-d, чтобы гарантировать точное совпадение дней
+            $groupedTasks = $blockTasks->groupBy(function (BlockTask $task) {
+                $date = $task->action_at instanceof Carbon
+                    ? $task->action_at->format('Y-m-d')
+                    : date('Y-m-d', strtotime($task->action_at));
+
+                return "{$date}_{$task->change}";
+            });
+
+            // __ Руками «прошиваем» отношение blockTasks для каждого дня
+            $days->each(function (BlockDay $day) use ($groupedTasks) {
+                $date = $day->action_at instanceof Carbon
+                    ? $day->action_at->format('Y-m-d')
+                    : date('Y-m-d', strtotime($day->action_at));
+
+                $key = "{$date}_{$day->change}";
+
+                // __ Достаем задачи для этого дня и смены, если их нет — возвращаем пустую коллекцию
+                $associatedTasks = $groupedTasks->get($key, collect());
+
+                // __ Сортируем задачи внутри этого дня по полю 'position'
+                $sortedTasks = $associatedTasks->sortBy('position')->values();
+
+                // __ Заселяем кастомное отношение прямо в память модели BlockDay
+                $day->setRelation('blockTasks', $sortedTasks);
+            });
+
+            return BlockDayResource::collection($days);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
 
 
     /**
@@ -51,14 +125,14 @@ class BlockDayController extends Controller
                 $days = BlockDay::query()
                     ->where('change', $change)
                     ->byDates($date)
-                    ->with(['workers', 'responsible'])
+                    ->with(['workers', 'responsible', 'cellEvents'])
                     ->get();
             } else {
                 BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_1);
                 BlockDay::findOrCreateByDateAndChange($date, BlockDay::CHANGE_2);
                 $days = BlockDay::query()
                     ->byDates($date)
-                    ->with(['workers', 'responsible'])
+                    ->with(['workers', 'responsible', 'cellEvents'])
                     ->get();
             }
 
@@ -253,7 +327,7 @@ class BlockDayController extends Controller
                 'worker_id' => 'required|integer|exists:workers,id',
             ]);
 
-            $blockDay = BlockDay::query()->find($validated['day_id']);
+            $blockDay                 = BlockDay::query()->find($validated['day_id']);
             $blockDay->responsible_id = $validated['worker_id'];
             $blockDay->save();
 
@@ -277,7 +351,7 @@ class BlockDayController extends Controller
                 'worker_id' => 'required|integer|exists:workers,id',
             ]);
 
-            $blockDay = BlockDay::query()->find($validated['day_id']);
+            $blockDay                 = BlockDay::query()->find($validated['day_id']);
             $blockDay->responsible_id = null;
             $blockDay->save();
 
@@ -376,7 +450,7 @@ class BlockDayController extends Controller
                 $blockDay->finish_at = now();
 
                 // __ Добавляем длительность в секундах
-                $startPoint = is_null($blockDay->resume_at) ? $blockDay->start_at : $blockDay->resume_at;
+                $startPoint         = is_null($blockDay->resume_at) ? $blockDay->start_at : $blockDay->resume_at;
                 $blockDay->duration += $startPoint?->diffInSeconds($blockDay->finish_at) ?? 0;
                 $blockDay->save();
 
@@ -402,7 +476,7 @@ class BlockDayController extends Controller
 
                 foreach ($pendingBlockTasks as $task) {
                     // __ Собираем невыполненный контент
-                    $falseBlockLines = [];
+                    $falseBlockLines        = [];
                     $falseBlockLinesAmounts = 0;
                     $totalBlockLinesAmounts = 0;
 
@@ -415,7 +489,7 @@ class BlockDayController extends Controller
 
                         // __ Собираем все невыполненные строчки
                         if (!is_null($line->false_at)) {
-                            $falseBlockLines[] = $line;
+                            $falseBlockLines[]      = $line;
                             $falseBlockLinesAmounts += $line->amount;
                         }
 
@@ -465,7 +539,7 @@ class BlockDayController extends Controller
                     // __ Объединяем в один массив существующие СЗ и перенесенные
                     // __ из предыдущего дня, располагая а начале массива
                     // __ и перенумеровываем заново
-                    $position = 1;
+                    $position      = 1;
                     $tasksToUpdate = [];
 
                     // __ Добавляем перенесенные СЗ
@@ -491,7 +565,7 @@ class BlockDayController extends Controller
 
 
                         // __ Создаем новые СЗ и сохраняем в БД
-                        $newTask = $falseTask['task']->replicate();
+                        $newTask           = $falseTask['task']->replicate();
                         $newTask->position *= -1;
                         $newTask->save();
                         $newTask->position = $newTask->id * (-1);
@@ -520,7 +594,7 @@ class BlockDayController extends Controller
                         $positionLine = 1;
                         foreach ($falseTask['false_lines'] as $line) {
                             $line->block_task_id = $newTask->id;
-                            $line->position = $positionLine++;
+                            $line->position      = $positionLine++;
                             $line->save();
                         }
 
@@ -565,7 +639,7 @@ class BlockDayController extends Controller
                 'id' => 'required|integer|exists:block_days,id',
             ]);
 
-            $blockDay = BlockDay::query()->find($validated['id']);
+            $blockDay        = BlockDay::query()->find($validated['id']);
             $blockDay->ready = true;
 
             $history = $blockDay->history;
@@ -573,7 +647,7 @@ class BlockDayController extends Controller
                 $history = [];
             }
 
-            $history[] = [
+            $history[]         = [
                 'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
                 'by'     => auth()->id(),
                 'action' => 'Set ready for adding new Block Tasks',
@@ -600,7 +674,7 @@ class BlockDayController extends Controller
                 'id' => 'required|integer|exists:block_days,id',
             ]);
 
-            $blockDay = BlockDay::query()->find($validated['id']);
+            $blockDay        = BlockDay::query()->find($validated['id']);
             $blockDay->ready = false;
 
             $history = $blockDay->history;
@@ -608,7 +682,7 @@ class BlockDayController extends Controller
                 $history = [];
             }
 
-            $history[] = [
+            $history[]         = [
                 'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
                 'by'     => auth()->id(),
                 'action' => 'Set unready for adding new Block Tasks',
@@ -646,15 +720,14 @@ class BlockDayController extends Controller
             }
 
             // __ Создаем производственный день или получаем его, если он уже существует
-            $data = $validated->validated();
+            $data       = $validated->validated();
             $parsedDate = Carbon::parse($data['date']);
-            $day = BlockDay::query()
+            $day        = BlockDay::query()
                 ->whereDate('action_at', '>=', $parsedDate->startOfDay())
                 ->whereDate('action_at', '<=', $parsedDate->endOfDay())
                 ->first();
 
             return $day ? ['data' => !!$day->ready] : ['data' => false];
-
             //return new BlockDayResource($day);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);

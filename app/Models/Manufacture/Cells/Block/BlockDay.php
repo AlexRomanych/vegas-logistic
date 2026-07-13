@@ -2,18 +2,21 @@
 
 namespace App\Models\Manufacture\Cells\Block;
 
+use App\Models\Manufacture\Events\CellEvent;
 use App\Models\Worker\Worker;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 
 /**
  * @method static Builder|BlockDay query()
  * @method static Builder|BlockDay byDates(mixed $data)
+ * @method static Builder|BlockDay byPeriod(mixed $data)
  * @method static Builder|BlockDay whereDayAt(mixed $data)
  */
 class BlockDay extends Model
@@ -68,25 +71,58 @@ class BlockDay extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-    // __ Поиск по датам
+    // Scopes Выборка за период
+    public function scopeByPeriod($query, Carbon $start, Carbon $end)
+    {
+        // Обязательно сбрасываем время у старта на начало дня, а у конца — на конец дня,
+        // чтобы захватить весь период целиком, включая крайние дни.
+        return $query
+            ->where('action_at', '>=', $start->copy()->startOfDay())
+            ->where('action_at', '<=', $end->copy()->endOfDay());
+    }
+
+    // Scopes Поиск по конкретным датам
     public function scopeByDates($query, $dates = null)
     {
-        // __ Если массив пустой, возвращаем запрос без изменений
         if (empty($dates)) {
             return $query;
         }
 
-        // __Приводим к массиву на случай, если пришла одна строка
+        // 1. Приводим к массиву, если пришла одиночная строка или один объект Carbon
         $dates = is_array($dates) ? $dates : [$dates];
 
-        // __ Если в базе action_at — это DATE (YYYY-MM-DD), используем whereIn.
-        // __ Если в базе action_at — это DATETIME/TIMESTAMP, используем whereIn
-        // __ с приведением типа через подзапрос или raw, чтобы игнорировать время.
+        // 2. Нормализуем элементы: если Carbon — берем только дату, если строка — оставляем строку
+        $normalizedDates = array_map(function ($date) {
+            if ($date instanceof Carbon) {
+                return $date->format('Y-m-d');
+            }
 
-        return $query->whereIn(DB::raw('DATE(action_at)'), $dates);
+            // На случай, если передали строку с временем, отсекаем его, оставляя Y-m-d
+            return date('Y-m-d', strtotime($date));
+        }, $dates);
+
+        // 3. Теперь в массиве гарантированно лежат чистые строки ['2026-07-13', '2026-07-14']
+        return $query->whereIn(DB::raw('DATE(action_at)'), $normalizedDates);
     }
 
-    // ___ Поиск по дате
+    //public function scopeByDates($query, $dates = null)
+    //{
+    //    // __ Если массив пустой, возвращаем запрос без изменений
+    //    if (empty($dates)) {
+    //        return $query;
+    //    }
+    //
+    //    // __Приводим к массиву на случай, если пришла одна строка
+    //    $dates = is_array($dates) ? $dates : [$dates];
+    //
+    //    // __ Если в базе action_at — это DATE (YYYY-MM-DD), используем whereIn.
+    //    // __ Если в базе action_at — это DATETIME/TIMESTAMP, используем whereIn
+    //    // __ с приведением типа через подзапрос или raw, чтобы игнорировать время.
+    //
+    //    return $query->whereIn(DB::raw('DATE(action_at)'), $dates);
+    //}
+
+    // Scopes Поиск по дате
     public function scopeWhereDayAt($query, string|Carbon $inDate)
     {
         // __ Важный нюанс:
@@ -120,8 +156,8 @@ class BlockDay extends Model
         return $this
             ->belongsToMany(
                 Worker::class,                      // Класс, с которым связываемся
-                BlockDayWorkerPivot::TABLE,       // Промежуточная Таблица, связывающая классы
-                'block_day_id',                   // Ключ в промежуточной таблице, связывающий с текущим классом
+                BlockDayWorkerPivot::TABLE,         // Промежуточная Таблица, связывающая классы
+                'block_day_id',                     // Ключ в промежуточной таблице, связывающий с текущим классом
                 'worker_id'           // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(BlockDayWorkerPivot::class)
@@ -138,6 +174,20 @@ class BlockDay extends Model
 
         // __ Указываем 'workers.active'
         return $this->workers()->where("$workerTable.active", true);
+    }
+
+
+    // Relations: Связь со сменным Заданием
+    public function blockTasks(): HasMany
+    {
+        return $this->hasMany(BlockTask::class, 'action_at', 'action_at');
+    }
+
+    // Relations: Связь с Производственными Событиями
+    public function cellEvents()
+    {
+        return $this->hasMany(CellEvent::class, 'day_id', 'id')
+            ->where('cell', CellEvent::CELL_BLOCKS); // Фильтруем конкретно под эту ячейку
     }
 
 }

@@ -138,15 +138,24 @@ const blocks = [
     },
 
     {
-        // ___ Печать
+        // ___ Время переналадки Блоков
         path     : _MAIN_PREFIX + 'tuning/time',
         name     : 'manufacture.cell.blocks.tuning.times',
-        component: () => import('@/components/dashboard/manufacture/cells/blocks/block_tuning_time/TheBlocksTuningTime.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_tuning_time/TheBlocksTuningTime.vue'),
         meta     : {
             title     : 'Время переналадки оборудования участка Блоков',
         } as IRouteMeta,
     },
 
+    {
+        // ___ Отчеты. Основной Отчет
+        path     : _MAIN_PREFIX + 'reports/basic',
+        name     : 'manufacture.cell.blocks.reports.basic',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_reports/TheBlockReportBasic.vue'),
+        meta     : {
+            title     : 'Отчеты. Основной отчет производства Блоков',
+        } as IRouteMeta,
+    },
 
 
     //

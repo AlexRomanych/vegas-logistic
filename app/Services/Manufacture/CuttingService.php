@@ -104,7 +104,7 @@ final class CuttingService
             return null;
         }
 
-        $orderDebug = $order->toArray();
+        //$orderDebug = $order->toArray();
 
 
         // __ Плучаем Расход
@@ -170,10 +170,10 @@ final class CuttingService
             ];
 
 
-            $lineArray = $line->toArray();
-            if ($line->id === 27802) {
-                $a = 0;
-            }
+            //$lineArray = $line->toArray();
+            //if ($line->id === 27802) {
+            //    $a = 0;
+            //}
 
 
             // IMPORTANT Подумать над логикой определения рабочей Спецификации
@@ -243,6 +243,7 @@ final class CuttingService
 
             // __ Если не находим Спецификацию
             if (!$targetConstruct) {
+                // IMPORTANT Пишем ошибку, если не находим Спецификацию
                 // __ Пишем в EventLog Ошибку
                 $eventLog          = new EventLog();
                 $eventLog->level   = EventLog::LEVEL_WARNING;
@@ -364,15 +365,12 @@ final class CuttingService
                         // __ которые пришли из определения количества Деталек Раскроя и Деталек из Расхода
                         // __ Должны совпадать
                         if (isset($constructDetails['panels'])) {
-
                             // !!!
                             try {
-
-                            $minPanelCount = min(count($expensePanels), count($constructDetails['panels']));
-                            for ($i = 0; $i < $minPanelCount; $i++) {
-                                $constructDetails['panels'][$i]['total'] = $expensePanels[$i]->expense + $expensePanels[$i]->rest;
-                            }
-
+                                $minPanelCount = min(count($expensePanels), count($constructDetails['panels']));
+                                for ($i = 0; $i < $minPanelCount; $i++) {
+                                    $constructDetails['panels'][$i]['total'] = $expensePanels[$i]->expense + $expensePanels[$i]->rest;
+                                }
                             } catch (\Exception $e) {
                                 $a = 0;
                             }
@@ -436,29 +434,36 @@ final class CuttingService
 
                 // !!! Новый код
                 $workTable = $hasError ? CuttingTaskLine::FIELD_UNDEFINED : $table; // __ берем стол из объекта времени, он там определяеся
-                foreach ($constructDetails['panels'] as $detail) {
-                    $panelTaskLine = CuttingTaskLine::query()->create([
-                        'cutting_task_id'  => $createdTask->id,
-                        'order_line_id'    => $line->id,
-                        'amount'           => $data['amount'] * $detail['amount'],
-                        'expense'          => $detail['total'] ?? 0.0,
-                        'position'         => $position++,
-                        'time'             => $data['time'] * $detail['amount'],
-                        'table'            => $workTable,
 
-                        // __ Задаем детальки
-                        'detail'           => $detail['type'],
-                        'is_panel'         => true,
-                        'has_panel'        => true,
-                        'is_side'          => false,
-                        'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
-                        'fabric_construct' => [$detail['name']],
-                        'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
+                //try {
+                if (isset($constructDetails['panels'])) {
+                    foreach ($constructDetails['panels'] as $detail) {
+                        $panelTaskLine = CuttingTaskLine::query()->create([
+                            'cutting_task_id'  => $createdTask->id,
+                            'order_line_id'    => $line->id,
+                            'amount'           => $data['amount'] * $detail['amount'],
+                            'expense'          => $detail['total'] ?? 0.0,
+                            'position'         => $position++,
+                            'time'             => $data['time'] * $detail['amount'],
+                            'table'            => $workTable,
 
-                        // __ Задаем подмену свойств
-                        'phantom'          => $table,
-                        'phantom_json'     => [$table => true],
-                    ]);
+                            // __ Задаем детальки
+                            'detail'           => $detail['type'],
+                            'is_panel'         => true,
+                            'has_panel'        => true,
+                            'is_side'          => false,
+                            'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
+                            'fabric_construct' => [$detail['name']],
+                            'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
+
+                            // __ Задаем подмену свойств
+                            'phantom'          => $table,
+                            'phantom_json'     => [$table => true],
+                        ]);
+                    }
+                    //} catch (Exception $e) {
+                    //    $a = 0;
+                    //}
                 }
 
                 // __ Пропускаем отсутствие Боковины
@@ -595,7 +600,7 @@ final class CuttingService
 
         // ___ Создаем Детальки Кроя
         if ($calculateCut) {
-            $result   = RunService::runCuttingTaskCreator_Rust([$orderId]);
+            $result = RunService::runCuttingTaskCreator_Rust([$orderId]);
 
             // __ Пишем в EventLog Ошибку
             if ((int)$result !== 0) {
