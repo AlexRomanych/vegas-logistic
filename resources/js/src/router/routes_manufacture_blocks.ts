@@ -107,6 +107,16 @@ const blocks = [
     },
 
     {
+        // ___ Архив сменных заданий
+        path     : _MAIN_PREFIX + 'tasks/archive',
+        name     : 'manufacture.cell.blocks.tasks.archive',
+        component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_archive/TheBlockArchive.vue'),
+        meta     : {
+            title: 'Архив сменных заданий участка ПБ',
+        } as IRouteMeta,
+    },
+
+    {
         // ___ Выполнение сменных заданий (Общая)
         path     : _MAIN_PREFIX + 'tasks/execute',
         name     : 'manufacture.cell.blocks.tasks.execute',

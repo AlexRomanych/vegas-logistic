@@ -49,7 +49,7 @@ class BlockDayController extends Controller
             }
 
             // __ Получаем СЗ
-            $blockTasks = BlocksService::getBlockTasksByDates($start, $end);
+            $blockTasks = BlocksService::getBlockTasksByDatesAndStatus($start, $end);
 
             // __ Получаем Производственные дни
             $days = BlockDay::query()

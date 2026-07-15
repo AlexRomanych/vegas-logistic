@@ -45,10 +45,11 @@
                     <!-- __ Комментарий -->
                     <AppLabelMultilineTSWrapper :render-object="render.comment"/>
 
-                    <!-- __ Дополнительное СЗ -->
-                    <template v-if="tasksAvailable.length !== 0 && getAddingCondition()">
-                        <AppLabelMultilineTSWrapper :render-object="render.added_task" @click="addBlockTaskToCurrentDay"/>
-                    </template>
+                    <!-- __ Выбор дат -->
+                    <CellDatesSelectMiniTS
+                        :period="renderPeriod"
+                        @apply="getBlockTasks"
+                    />
 
                 </div>
             </div>
@@ -77,14 +78,12 @@
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.id"
-                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Дата пр-ва -->
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.date"
-                    @click="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Смена пр-ва -->
@@ -98,21 +97,18 @@
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.start_at"
-                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Финиш -->
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.finish_at"
-                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Продолжительность -->
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.duration"
-                    @dblclick="goToBlockDay(blockDay)"
                 />
 
                 <!-- __ Прогресс общий -->
@@ -163,10 +159,7 @@
                     <div class="mt-2 mb-2">
                         <ExecutePersonal
                             :block-day="blockDay"
-                            @add-worker="addWorker(blockDay, $event)"
-                            @add-workers="addWorkers(blockDay, $event)"
-                            @remove-worker="removeWorker(blockDay, $event)"
-                            @add-responsible="addResponsible(blockDay, $event)"
+                            :can-edit="false"
                         />
                     </div>
                 </template>
@@ -254,27 +247,6 @@
             />
         </div>
     </div>
-
-    <!-- __ Выпадающий список для выбора СЗ -->
-    <!--:func="(task: IEntity) => `${task.surname} ${task.name} ${task.patronymic}`"-->
-    <AppModalAsyncSelectTSFunc
-        ref="appModalAsyncSelectTS"
-        v-model="selectedTaskId"
-        :func="(surname, name, patronymic) => `${surname} №${name} ${patronymic}`"
-        :items="tasksAvailable"
-        title="Выберите СЗ для добавления"
-        width="w-[600px]"/>
-
-    <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
-        :mode="modalInfoMode"
-        :text="modalInfoText"
-        :type="modalInfoType"
-        ok-word="Понятно"
-    />
-
-
 </template>
 
 <script lang="ts" setup>
@@ -282,11 +254,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-import type { IColorTypes, IRenderData, IBlockDay, IBlockDayWorker, IBlockTask, IBlockTaskLine } from '@/types'
+import type { IPeriod, IRenderData, IBlockDay, IBlockTaskLine } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
-import { BLOCK_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/blocks.ts'
+import { START_SHIFT_TIME, TOTAL_SHIFT_DURATION, } from '@/app/constants/blocks.ts'
 
 import { getExecuteTaskStatistics, getBlockDates, unionDatesWithBlockTasks, getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import {
@@ -299,7 +271,6 @@ import {
 } from '@/app/helpers/helpers_date'
 
 import { round } from '@/app/helpers/helpers_lib.ts'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -308,9 +279,6 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
-import AppModalAsyncSelectTSFunc from '@/components/ui/modals/AppModalAsyncSelectTSFunc.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -319,83 +287,33 @@ import ExecuteTask from '@/components/dashboard/manufacture/cells/blocks/blocks_
 import ExecuteTaskHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskHeader.vue'
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
 import ExecuteTaskCommon from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskCommon.vue'
+
+import CellDatesSelectMiniTS from '@/components/dashboard/manufacture/components/CellDatesSelectMiniTS.vue'
 import ExecuteCellEvents from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteCellEvents.vue'
-
-
-interface IEntity {
-    id: number
-    name: string
-    surname: string
-    patronymic: string
-    description: string
-}
 
 const DEBUG     = true
 const isLoading = ref(false)
 
 const blockStore = useBlocksStore()
-const router     = useRouter()
+const router = useRouter()
 
 const {
           globalBlockTasksPending, // __ Все задания (Global State)
       } = storeToRefs(blockStore)
 
 // __ Определяем переменные
-const blockDays = ref<IBlockDay[]>([])
-
-// __ Тип для модального окна Сообщений
-const modalInfoType          = ref<IColorTypes>('danger')
-const modalInfoText          = ref<string | string[]>('')
-const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
-
-// __ Тип для модального окна выбора СЗ
-const selectedTaskId        = ref<number | null>(null)
-const appModalAsyncSelectTS = ref<any>(null)
+const blockDays    = ref<IBlockDay[]>([])
+const renderPeriod = ref<IPeriod | null>(null)
 
 // __ Получаем объект рендера
 const renderBlockDays = computed<IBlockDay[]>(() => {
     return blockDays.value
 })
 
-// __ Получаем список доступных СЗ (Выбираем статус "Готово к выполнению" и дата больше текущей даты)
-const tasksAvailable = computed<IEntity[]>(() => {
-
-    // __ Получаем сегодняшнюю дату в формате Y-m-d
-    const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-
-    return globalBlockTasksPending.value
-        .filter((task: IBlockTask) => task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID)
-        .filter((task: IBlockTask) => {
-            const compare = task.action_at.split(' ')[0]
-            return compare > today
-        })
-        .map((task: IBlockTask) => {
-            return {
-                id         : task.id,
-                surname    : task.order.client.short_name,
-                name       : task.order.order_no_str,
-                patronymic : `(${formatDateInFullFormat(task.action_at)})`,
-                description: `${task.order.order_no_origin}/${task.order.comment_1c ?? ''}`,
-
-            }
-        })
-})
-
-// __ Показываем сообщение об ошибке
-async function showError(error: string | string[] | null = null) {
-    modalInfoType.value = 'danger'
-    modalInfoMode.value = 'inform'
-
-    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
-    if (typeof error === 'string' && error.length > 0) {
-        renderError = [error]
-    } else if (Array.isArray(error) && error.length > 0) {
-        renderError = error
-    }
-
-    modalInfoText.value = renderError
-    await appModalAsyncMultiline.value!.show()
+// __ Получаем подсветку для Смены
+const dateTypeChange = (blockDay: IBlockDay) => {
+    const change = getChangeByName(blockDay.change)
+    return change ? change.TYPE : dateType(blockDay)
 }
 
 
@@ -489,7 +407,7 @@ const render: IRenderData = reactive({
     date         : {
         id            : () => 'date-search',
         header        : ['Дата', 'производства'],
-        width         : 'w-[258px]',
+        width         : 'w-[218px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -619,23 +537,6 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Комментарий...',
         data          : (blockDay: IBlockDay) => blockDay.comment ?? '',
     },
-    added_task   : {
-        id            : () => 'added-task-search',
-        header        : ['➕', 'СЗ'],
-        width         : 'w-[100px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => 'warning',
-        dataType      : () => DATA_TYPE,
-        type          : (blockDay: IBlockDay) => dateType(blockDay),
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : DATA_ALIGN,
-        placeholder   : '🔍ДСЗ...',
-        data          : (/*blockDay: IBlockDay*/) => '',
-        class         : 'cursor-pointer',
-    },
 })
 
 // __ Ширина полей для вывода СЗ
@@ -643,12 +544,12 @@ const blockTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
     id           : 'w-[30px]',
     position     : 'w-[30px]',
-    client       : 'w-[285px]',
+    client       : 'w-[190px]',
     order_no     : 'w-[50px]',
     status       : 'w-[90px]',
     progressTotal: PROGRESS_WIDTH,
     load_at      : 'w-[143px]',
-    comment      : 'w-[581px]',
+    comment      : 'w-[1095px]',
 }
 
 // __ Определяем тип календарного дня
@@ -661,13 +562,6 @@ const dateType = (blockDay: IBlockDay) => {
     if (isHolidayDay) return 'danger'
     return 'primary'
 }
-
-// __ Получаем подсветку для Смены
-const dateTypeChange = (blockDay: IBlockDay) => {
-    const change = getChangeByName(blockDay.change)
-    return change ? change.TYPE : dateType(blockDay)
-}
-
 
 const expandAll   = () => blockDays.value.forEach(blockDay => (blockDay.collapsed = false))
 const collapseAll = () => blockDays.value.forEach(blockDay => (blockDay.collapsed = true))
@@ -690,49 +584,6 @@ const addCollapsed = () => {
     })
 }
 
-// __ Добавляем работника
-const addWorker = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
-    const existWorker = blockDay.workers.find(w => w.id === worker.id)
-    if (!existWorker) {
-        blockDay.workers.push(worker)
-    }
-}
-
-// __ Добавляем группу работников
-const addWorkers = (blockDay: IBlockDay, workers: IBlockDayWorker[]) => {
-    workers.forEach(worker => {
-        const existWorker = blockDay.workers.find(w => w.id === worker.id)
-        if (!existWorker) {
-            blockDay.workers.push(worker)
-        }
-    })
-}
-
-
-// __ Удаляем работника
-const removeWorker = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
-    const findIndex = blockDay.workers.findIndex(w => w.id === worker.id)
-    if (findIndex !== -1) {
-        blockDay.workers.splice(findIndex, 1)
-    }
-}
-
-// __ Добавляем Ответственного
-const addResponsible = (blockDay: IBlockDay, worker: IBlockDayWorker) => {
-    blockDay.responsible = worker
-}
-
-// __ Переходим на страницу непосредственного выполнения СЗ
-const goToBlockDay = (blockDay: IBlockDay) => {
-    router.push({
-        name  : 'manufacture.cell.blocks.tasks.execute.day',
-        params: {
-            // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
-            date  : blockDay.action_at.split(' ')[0],
-            change: blockDay.change
-        },
-    })
-}
 
 // __ Получаем продолжительность СЗ
 const getDuration = (blockDay: IBlockDay) => {
@@ -743,7 +594,7 @@ const getDuration = (blockDay: IBlockDay) => {
     const startSec  = new Date(blockDay.start_at.replace(' ', 'T')).getTime() / 1000
     const finishSec = blockDay.finish_at ? new Date(blockDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
 
-    return formatTimeWithLeadingZeros(round(finishSec - startSec), )
+    return formatTimeWithLeadingZeros(round(finishSec - startSec))
 }
 
 // __ Получаем объект статистики для дня
@@ -799,81 +650,32 @@ const getDeviationDayTotalText = (blockDay: IBlockDay) => {
         return 'В графике'
     }
 
-    return deviation > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation))
+    return deviation > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation), 'hour')
 }
-
-// __ Получаем условие для добавления СЗ в текущий производственный день
-// __ Не должно быть СЗ в процессе выполнения или ожидания к выполнению
-const getAddingCondition = () => {
-
-    // __ Получаем сегодняшнюю дату в формате Y-m-d
-    const today = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-
-    const filtered = globalBlockTasksPending.value
-        // .filter((task: IBlockTask) => task.current_status.id === BLOCK_TASK_STATUSES.RUNNING.ID)
-        .filter((task: IBlockTask) => {
-            const compare = task.action_at.split(' ')[0]
-            return compare == today
-        })
-
-    return filtered.length === 0
-}
-
-
-// __ Добавление СЗ в текущий производственный день
-const addBlockTaskToCurrentDay = async () => {
-
-    if (tasksAvailable.value.length === 0) {
-        return
-    }
-
-    const answerSelection = await appModalAsyncSelectTS.value!.show()
-    if (answerSelection) {
-
-        const selectedTask = appModalAsyncSelectTS.value!.selected
-
-        modalInfoType.value = 'danger'
-        modalInfoMode.value = 'confirm'
-        modalInfoText.value = [
-            `СЗ ${selectedTask.surname} №${selectedTask.name} ${selectedTask.patronymic}`,
-            'будет добавлено в текущий производственный день.',
-            'Действие нельзя будет отменить!',
-            'Продолжить?',
-        ]
-
-        const answer = await appModalAsyncMultiline.value!.show()
-        if (answer) {
-
-            // __ Получаем сегодняшнюю дату в формате Y-m-d
-            const today  = new Date().toISOString().split('T')[0] // Получится '2026-05-16'
-            const result = await blockStore.setBlockTaskActionAt(selectedTask.id, today)
-
-            if (checkCRUD(result)) {
-                modalInfoType.value = 'success'
-                modalInfoMode.value = 'inform'
-                modalInfoText.value = [
-                    `СЗ ${selectedTask.surname} №${selectedTask.name} ${selectedTask.patronymic}`,
-                    'добавлено в текущий производственный день.',
-                    'Для актуализации данных, страница будет перезагружена.',
-                ]
-                await appModalAsyncMultiline.value!.show()
-                window.location.reload()
-            } else {
-                await showError()
-                return
-            }
-        }
-    }
-}
-
 
 // __ Получаем производственные дни
 const getBlockDays = async () => {
     const dates     = getBlockDates(globalBlockTasksPending.value) // __ Получаем даты из СЗ
-    blockDays.value = await blockStore.getBlockDaysByDates(dates)  // __ Получаем дни по этим датам
+    blockDays.value = await blockStore.getBlockDaysByDates(dates) // __ Получаем дни по этим датам
 }
 
-onMounted(async () => {
+// __ Переходим на страницу непосредственного выполнения СЗ
+const goToBlockDay = (blockDay: IBlockDay) => {
+    router.push({
+        name  : 'manufacture.cell.blocks.tasks.execute.day',
+        params: {
+            // __ Делаем из 2026-02-09 00:00:00 => YYYY-MM-DD
+            date  : blockDay.action_at.split(' ')[0],
+            change: blockDay.change
+        },
+    })
+}
+
+// __ Получаем BlockTasks
+const getBlockTasks = async (period: IPeriod | null = null) => {
+    renderPeriod.value = period
+
+
     isLoading.value = true
 
     const loadingService = useLoading()
@@ -881,7 +683,7 @@ onMounted(async () => {
         loadingService,
         async () => {
             // __ Получаем BlockTasks по статусу и записываем в глобальную переменную в BlockStore
-            await blockStore.getBlockTasksByStatus([BLOCK_TASK_STATUSES.PENDING.ID, BLOCK_TASK_STATUSES.RUNNING.ID])
+            await blockStore.getBlockTasksByStatusAndPeriod(null, renderPeriod.value)
 
             // __ Получаем дни
             await getBlockDays()
@@ -904,6 +706,11 @@ onMounted(async () => {
     )
 
     isLoading.value = false
+}
+
+
+onMounted(async () => {
+    await getBlockTasks()
 })
 </script>
 

@@ -473,32 +473,35 @@ final class BlocksService
      * ___ Возвращаем Коллекцию СЗ для блоков между двумя датами
      * @param Carbon $start
      * @param Carbon $end
+     * @param int|array|null $status
      * @return Collection
      */
-    public static function getBlockTasksByDates(Carbon $start, Carbon $end): Collection
+    public static function getBlockTasksByDatesAndStatus(Carbon $start, Carbon $end, int|array $status = null): Collection
     {
         // __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
-        $blockTasks = BlockTask::query()
-            ->whereBetween('action_at', [
-                $start->startOfDay(),
-                $end->endOfDay()
-            ])
-            ->with([
-                'order',
-                'order.client',
-                'order.orderType',
-                'statuses',
-                'blockLines',
-                'blockLines.block',
-                'blockLines.block.blockCollection',
-                'blockLines.block.blockCollection.kdbDoc',
-                //'blockLines.block.blockCollection' => function ($query) {
-                //    $query->select('*')->with('kdbDoc');
-                //},
+            $blockTasks = BlockTask::query()
+                ->byStatus($status)
+                ->whereBetween('action_at', [
+                    $start->startOfDay(),
+                    $end->endOfDay()
+                ])
+                ->with([
+                    'order',
+                    'order.client',
+                    'order.orderType',
+                    'statuses',
+                    'blockLines',
+                    'blockLines.block',
+                    'blockLines.block.blockCollection',
+                    'blockLines.block.blockCollection.kdbDoc',
+                    //'blockLines.block.blockCollection' => function ($query) {
+                    //    $query->select('*')->with('kdbDoc');
+                    //},
 
-            ])
-            ->orderBy('action_at')
-            ->get();
+                ])
+                ->orderBy('action_at')
+                ->get();
+
 
         // __ 2. Достаем ВСЕ строки BlockTaskLine изо ВСЕХ задач в один плоский список
         $allBlockTaskLines = $blockTasks->flatMap(fn($task) => $task->blockLines);
@@ -533,7 +536,6 @@ final class BlocksService
 
         return $blockTasks;
     }
-
 
 
     public static function test()

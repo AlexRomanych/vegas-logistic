@@ -50,7 +50,7 @@ class BlockTaskController extends Controller
                 $end    = Carbon::parse($period->getEnd());
             }
 
-            $blockTasks = BlocksService::getBlockTasksByDates($start, $end);
+            $blockTasks = BlocksService::getBlockTasksByDatesAndStatus($start, $end);
             //
             //// __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
             //$blockTasks = BlockTask::query()
@@ -989,6 +989,46 @@ class BlockTaskController extends Controller
 
 
     /**
+     * ___ Получаем СЗ на Блоки по статусам и периоду
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getBlockTasksByStatusAndPeriod(Request $request)
+    {
+        try {
+            //$all = $request->all();
+            $validated = $request->validate([
+                // __ Проверяем, что 'statuses' — это массив
+                'statuses'     => 'nullable|array',
+                // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
+                'statuses.*'   => 'integer|exists:block_task_statuses,id',
+                //'status'       => 'nullable|numeric|in:1,2,3,4,5',
+                'period'       => 'nullable|array',
+                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date',
+            ]);
+
+            if (isset($validated['period'])) {
+                $start = Carbon::parse($validated['period']['start']);
+                $end   = Carbon::parse($validated['period']['end']);
+            } else {
+                $period = DefaultsService::getDefaultPeriodBlockTaskArchive();
+                $start  = Carbon::parse($period->getStart());
+                $end    = Carbon::parse($period->getEnd());
+            }
+
+            $status = $validated['statuses'] ?? null;
+
+            $blockTasks = BlocksService::getBlockTasksByDatesAndStatus($start, $end, $status);
+
+            return BlockTaskResource::collection($blockTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Устанавливаем статус Выполнено для линии
      * @param Request $request
      * @return AnonymousResourceCollection|string
@@ -1119,7 +1159,7 @@ class BlockTaskController extends Controller
             DB::transaction(function () use ($validated) {
                 // __ Получаем само СЗ и его старую дату + применяем изменения
                 $blockTask = BlockTask::query()->find($validated['id']);
-                $oldDate     = $blockTask->action_at;
+                $oldDate   = $blockTask->action_at;
                 // __ Устанавливаем позицию в отрицательную зону, так как наверняка в день, куда перемещаем уже есть такая позиция
                 $blockTask->position  = -1 * $blockTask->id;
                 $blockTask->action_at = Carbon::parse($validated['date'])->startOfDay()->format(RETURN_DATE_TIME_FORMAT);
@@ -1184,5 +1224,6 @@ class BlockTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
 
 }

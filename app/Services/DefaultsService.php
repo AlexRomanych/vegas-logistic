@@ -68,6 +68,17 @@ final class DefaultsService
     }
 
     /**
+     * ___ Возвращает период СЗ Раскроя для отображения в архиве по умолчанию
+     * @return Period
+     */
+    public static function getDefaultPeriodBlockTaskArchive(): Period
+    {
+        // __ Начало текущего месяца + 2 месяца вперед
+        return new Period(Carbon::now()->subDays(7), Carbon::now()->addMonths(2)->endOfMonth());
+    }
+
+
+    /**
      * ___ Возвращает период Заказов для отображения по умолчанию
      * @return Period
      */

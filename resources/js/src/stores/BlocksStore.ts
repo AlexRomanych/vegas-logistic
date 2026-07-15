@@ -507,7 +507,7 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
 
-    // __ Получение СЗ Раскроя по статусу или массиву статусов
+    // __ Получение СЗ Блоков по статусу или массиву статусов
     const getBlockTasksByStatus = async (status: number[] | number | null = null) => {
         let response
         if (status) {
@@ -527,6 +527,37 @@ export const useBlocksStore = defineStore('blocks', () => {
 
 
         if (DEBUG) console.log('BlockStore: getBlockTasksByStatus: ', result)
+        return result.data
+    }
+
+
+    // __ Получение СЗ Блоков по статусу или массиву статусов и Периоду
+    const getBlockTasksByStatusAndPeriod = async (status: number[] | number | null | undefined = null, period: IPeriod | null = null) => {
+        let response
+        if (status) {
+            if (isNumber(status)) {
+                status = [status]
+            }
+
+            if (period) {
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { statuses: status, period })
+            } else {
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { statuses: status })
+            }
+        } else {
+            if (period) {
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { period })
+            } else {
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS)
+            }
+            response = await jwtGet(URL_BLOCK_TASKS_STATUS)
+        }
+        const result = await response
+
+        globalBlockTasksPending.value = result.data                                   // __ кэшируем
+        globalBlockTasksPendingCopy   = JSON.parse(JSON.stringify(result.data))       // __ копия для отслеживания изменений
+
+        if (DEBUG) console.log('BlockStore: getBlockTasksByStatusAndPeriod: ', result)
         return result.data
     }
 
@@ -629,12 +660,12 @@ export const useBlocksStore = defineStore('blocks', () => {
     const getBlockDayByPeriod = async (period: IPeriod | null = null) => {
         let response
         if (period) {
-            response = await jwtGet(URL_BLOCK_DAY_PERIOD, {period})
+            response = await jwtGet(URL_BLOCK_DAY_PERIOD, { period })
         } else {
             response = await jwtGet(URL_BLOCK_DAY_PERIOD)
         }
 
-        const result   = await response
+        const result = await response
         if (DEBUG) console.log('BlockStore: getBlockDayByPeriod: ', result)
         return result.data
     }
@@ -991,6 +1022,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         updateBlock,
 
         getBlockTasksByStatus,
+        getBlockTasksByStatusAndPeriod,
 
         getBlockTaskStatuses,
         patchBlockTaskStatusColor,

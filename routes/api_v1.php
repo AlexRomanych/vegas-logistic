@@ -345,7 +345,7 @@ Route::prefix('blocks')
         Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);
         Route::get('tasks/order/{id}', [BlockTaskController::class, 'getBlockTasksByOrderId']);
         Route::get('tasks/status', [BlockTaskController::class, 'getBlockTasksByStatus']);
-        //Route::get('tasks/status/period', [CellCuttingTaskController::class, 'getCuttingTasksByStatusAndPeriod']);
+        Route::get('tasks/status/period', [BlockTaskController::class, 'getBlockTasksByStatusAndPeriod']);
         Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDate']);
         //Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
         Route::get('tasks/status/date/on/check', [BlockTaskController::class, 'checkBlockTasksByStatusOnDate']);
