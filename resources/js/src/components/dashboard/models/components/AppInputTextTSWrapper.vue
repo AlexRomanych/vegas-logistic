@@ -6,7 +6,7 @@
         :text-size="renderObject.filterTextSize"
         :type="typeof renderObject.type === 'function' ? renderObject.type(arg) : renderObject.type"
         :width="renderObject.width"
-        :placeholder="renderObject.placeholder"
+        :placeholder="renderPlaceholder"
         rounded="4"
     />
 </template>
@@ -49,6 +49,13 @@ const internalValue = computed({
         emit('update:modelValue', trimmedValue)
     }
 })
+
+// __ Делаейм плейсхолдер реактивным
+const renderPlaceholder = computed(() => {
+    const ph = props.renderObject.placeholder
+    return typeof ph === 'function' ? ph() : ph
+})
+
 
 </script>
 

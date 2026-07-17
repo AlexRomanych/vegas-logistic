@@ -26,7 +26,7 @@ const AVERAGE_M_PREFIX = 'AVGM_';               // Универсальный п
 const AVERAGE_A_PREFIX = 'AVGA_';               // Универсальный префикс для средних значений, должен быть 5 символов
 
 // __ Тип: Нестандартная (Тендерная) модель
-const NS_TENDER_CODE = 'NS_TENDER'; // __ No Standart / Tender
+const NS_TENDER_CODE = 'NS_TENDER'; // __ No Standard / Tender
 
 const AVERAGE_TYPE_INDEX = '.#';                // Индекс средних значений для типа заявки
 

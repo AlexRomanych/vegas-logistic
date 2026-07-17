@@ -26,10 +26,53 @@
                     <!-- __ Название -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.name"/>
-                        <AppInputTextTSWrapper
-                            v-model="nameFilter"
-                            :render-object="render.name"
-                        />
+                        <div class="flex justify-start items-center mt-[-2px]">
+                            <AppInputTextTSWrapper
+                                v-model="nameFilter"
+                                :render-object="{...render.name, width: 'w-[332px]'}"
+                            />
+                            <div class="mt-[5px] mb-[-2px] flex">
+
+                                <!-- __ Маяк поиска Модели -->
+                                <AppLabelTS
+                                    :type="searchModel ? 'success' : 'dark'"
+                                    align="center"
+                                    class="cursor-pointer"
+                                    height="h-[28px]"
+                                    rounded="4"
+                                    text="М"
+                                    text-size="micro"
+                                    width="w-[30px]"
+                                    @click="changeSearch(1)"
+                                />
+
+                                <!-- __ Маяк поиска Спецификации -->
+                                <AppLabelTS
+                                    :type="searchSpecification ? 'success' : 'dark'"
+                                    align="center"
+                                    class="cursor-pointer"
+                                    height="h-[28px]"
+                                    rounded="4"
+                                    text="C"
+                                    text-size="micro"
+                                    width="w-[30px]"
+                                    @click="changeSearch(2)"
+                                />
+
+                                <!-- __ Маяк поиска Материала -->
+                                <AppLabelTS
+                                    :type="searchMaterial ? 'success' : 'dark'"
+                                    align="center"
+                                    class="cursor-pointer"
+                                    height="h-[28px]"
+                                    rounded="4"
+                                    text="М-л"
+                                    text-size="micro"
+                                    width="w-[30px]"
+                                    @click="changeSearch(3)"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <!-- __ Единица измерения -->
@@ -210,9 +253,9 @@
                                         <!-- __ Процедура расчета -->
                                         <AppLabelTSWrapper
                                             :arg="item"
+                                            :class="item.procedure && item.procedure.name ? 'cursor-pointer' : ''"
                                             :render-object="render.procedure"
                                             @dblclick="showProcedure(item)"
-                                            :class="item.procedure && item.procedure.name ? 'cursor-pointer' : ''"
                                         />
 
                                         <!-- __ Количество -->
@@ -242,8 +285,8 @@
     <!-- __ Карточка Процедуры расчета -->
     <CardProcedure
         ref="cardProcedure"
-        :procedure="procedure"
         :is-admin="userStore.hasAdminRole()"
+        :procedure="procedure"
     />
 
 </template>
@@ -256,7 +299,7 @@ import type {
     IRenderData
 } from '@/types'
 
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 
 import { useModelsStore } from '@/stores/ModelsStore'
 import { useUserStore } from '@/stores/UserStore.js'
@@ -270,6 +313,7 @@ import AppInputTextTSWrapper from '@/components/dashboard/models/components/AppI
 import AppLabelTSWrapper from '@/components/dashboard/models/components/AppLabelTSWrapper.vue'
 import AppLabelMultilineTSWrapper from '@/components/dashboard/models/components/AppLabelMultilineTSWrapper.vue'
 import CardProcedure from '@/components/dashboard/models/components/CardProcedure.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 const isLoading = ref(false)
 
@@ -281,10 +325,27 @@ const entitiesRender                = ref<IModelSpecification[]>([])
 
 // __ Карточка Процедуры расчета
 const cardProcedure = ref<InstanceType<typeof CardProcedure> | null>(null)
-const procedure = ref<IModelProcedure | null>(null)
+const procedure     = ref<IModelProcedure | null>(null)
 
 // __ Глобальный Collapse
 const collapseAll = ref(true)
+
+// __ Маячок того, что ищем
+const searchModel         = ref(true)
+const searchSpecification = ref(false)
+const searchMaterial      = ref(false)
+
+// __ Плайсхолдер поиска названия
+const searchPlaceholder = computed(() => {
+    return searchModel.value
+        ? '🔍Название модели...'
+        : searchSpecification.value
+            ? '🔍Название спецификации...'
+            : searchMaterial.value
+                ? '🔍Название материала...'
+                : '🔍Название...'
+})
+
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH = 'w-[100px]'
@@ -387,7 +448,7 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
-        placeholder   : '🔍Название...',
+        placeholder   : () => searchPlaceholder.value,
         data          : (entity: IModelSpecification | IModelConstruct | IModelConstructItem) =>
             isModelConstructItem(entity) ? entity.material.name : entity.name,
     },
@@ -533,6 +594,27 @@ const procedureFilter    = ref('')
 const amountFilter       = ref('')
 // const positionFilter     = ref('')
 
+// __ Меняем маяк сущности поиска
+const changeSearch = (mode: number) => {
+    switch (mode) {
+        case 1:
+            searchModel.value         = true
+            searchSpecification.value = false
+            searchMaterial.value      = false
+            break
+        case 2:
+            searchModel.value         = false
+            searchSpecification.value = true
+            searchMaterial.value      = false
+            break
+        case 3:
+            searchModel.value         = false
+            searchSpecification.value = false
+            searchMaterial.value      = true
+            break
+    }
+}
+
 
 // __ Показываем процедуру
 const showProcedure = async (item: IModelConstructItem | null = null) => {
@@ -606,39 +688,65 @@ watchEffect(() => {
     const amountSearch       = amountFilter.value.toLowerCase()
     // const positionSearch     = positionFilter.value.toLowerCase()
 
-    entitiesRender.value = entities.map(model => {
-        // Создаем новый объект группы, чтобы не менять оригинал
+    if (searchModel.value) {
 
-        let isShown = false
-        const constructs = model.constructs
-            .map(construct => {
-                const items = construct.items
-                    .filter(item => item.material.code_1c.toLowerCase().includes(code_1cSearch))
-                    .filter(item => item.material.name.toLowerCase().includes(nameSearch))
-                    .filter(item => item.material.unit!.toLowerCase().includes(unitSearch))
-                    .filter(item => item.detail!.toLowerCase().includes(detailSearch))
-                    .filter(item => item.detail_height!.toFixed(3).includes(detailHeightSearch))
-                    .filter(item => item.procedure!.name!.toLowerCase().includes(procedureSearch))
-                    .filter(item => item.amount.toFixed(3).includes(amountSearch))
+        entitiesRender.value = entities
+            .filter(model => model.code_1c.toLowerCase().includes(code_1cSearch))
+            .filter(model => model.name.toLowerCase().includes(nameSearch))
+            .map(model => ({ ...model, shown: true, collapsed: true }))
 
-                isShown = isShown || items.length > 0
+    } else if (searchSpecification.value) {
+
+        entitiesRender.value = entities
+            .map(model => {
+                const constructs = model.constructs
+                    .filter(construct => construct.code_1c.toLowerCase().includes(code_1cSearch))
+                    .filter(construct => construct.name.toLowerCase().includes(nameSearch))
 
                 return {
-                    ...construct,
-                    items,
-                    collapsed: items.length === 0,
-                    shown: items.length > 0,  // __ Убираем из показа группы, в которых нет элементов
+                    ...model,
+                    constructs,
+                    shown: true,
+                    collapsed: false,
                 }
             })
+            .filter(model => model.constructs.length > 0)
 
-        return {
-            ...model,
-            constructs,
-            collapsed: !isShown,
-            shown: isShown  // __ Убираем из показа группы, в которых нет моделей
-        }
+    } else if (searchMaterial.value) {
 
-    })
+        entitiesRender.value = entities.map(model => {
+            // Создаем новый объект группы, чтобы не менять оригинал
+
+            let isShown      = false
+            const constructs = model.constructs
+                .map(construct => {
+                    const items = construct.items
+                        .filter(item => item.material.code_1c.toLowerCase().includes(code_1cSearch))
+                        .filter(item => item.material.unit!.toLowerCase().includes(unitSearch))
+                        .filter(item => item.detail!.toLowerCase().includes(detailSearch))
+                        .filter(item => item.detail_height!.toFixed(3).includes(detailHeightSearch))
+                        .filter(item => item.procedure!.name!.toLowerCase().includes(procedureSearch))
+                        .filter(item => item.amount.toFixed(3).includes(amountSearch))
+                        .filter(item => item.material.name.toLowerCase().includes(nameSearch))
+
+                    isShown = isShown || items.length > 0
+
+                    return {
+                        ...construct,
+                        items,
+                        collapsed: items.length === 0,
+                        shown    : items.length > 0,  // __ Убираем из показа группы, в которых нет элементов
+                    }
+                })
+
+            return {
+                ...model,
+                constructs,
+                collapsed: !isShown,
+                shown    : isShown  // __ Убираем из показа группы, в которых нет моделей
+            }
+        })
+    }
 
     // console.log('filtered: ', entitiesRender.value)
 })

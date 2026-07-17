@@ -13,7 +13,7 @@ export interface IRenderDataItem {
     type: ((...args: any[]) => IColorTypes) | IColorTypes
     height?: string
     class?: string | ((...args: any[]) => string)
-    placeholder?: string
+    placeholder?: string | ((...args: any[]) => string)
     title?: string | ((...args: any[]) => string)
     headerTextSize?: IFontsType
     dataTextSize?: IFontsType

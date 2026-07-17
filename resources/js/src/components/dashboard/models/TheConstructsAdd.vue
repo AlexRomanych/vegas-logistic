@@ -133,7 +133,7 @@ const startImport = async () => {
         if (response.status === 200) {
 
             modalType.value = 'success'
-            modalText.value = response.data.payload || 'Справочники успешно обновлены'
+            modalText.value = response.data.payload || 'Спецификации успешно добавлены'
             await appModalAsyncTS.value?.show()
 
             // __ Очищаем файлы после успешной загрузки
