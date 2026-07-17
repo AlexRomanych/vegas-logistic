@@ -40,6 +40,7 @@ const menuData = () => {
                     {name: 'Справочник процедур расчета', path: 'procedures', shown: true, isActive: true,},
                     {name: 'Справочник спецификаций', path: 'constructs', shown: true, isActive: true,},
                     {name: 'Обновление справочников', path: 'models.references.update', shown: true, isActive: true,},
+                    {name: 'Добавление нестандартных (тендерных) спецификаций', path: 'constructs.add', shown: true, isActive: true,},
                     // {name: 'Обновление списка моделей', path: 'models.upload', shown: true, isActive: true,},
                     // {name: 'Обновление списка материалов', path: 'materials.upload', shown: true, isActive: true,},
                     // {name: 'Обновление списка процедур расчета', path: 'procedures.upload', shown: true, isActive: true,},

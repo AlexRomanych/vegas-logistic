@@ -326,9 +326,9 @@ class ModelConstructController extends Controller
         //    'specifications' => 'required|file|extensions:xlsx,xls,csv',
         //]);
 
-        $directory = '1c_imports';
+        $directory = Model::DATA_PATH;
 
-        // Проверяем/создаем директорию
+        // __ Проверяем/создаем директорию
         if (!Storage::exists($directory)) {
             Storage::makeDirectory($directory);
         }
@@ -353,8 +353,78 @@ class ModelConstructController extends Controller
             }
 
             return EndPointStaticRequestAnswer::ok('Справочники успешно обновлены');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return EndPointStaticRequestAnswer::failResponse($e);
         }
     }
+
+
+    /**
+     * ___ Добавляем нестандартные (тендерные) Спецификации
+     * @param Request $request
+     * @return JsonResponseAlias|string
+     */
+    public function modelConstructsAdd(Request $request)
+    {
+        $messages = [
+            'specifications.required'   => 'Отсутствует файл со Спецификациями',
+            'specifications.file'       => 'Отсутствует файл со Спецификациями',
+            'specifications.extensions' => 'Для файлов разрешен только формат xlsx',
+
+            // Можно использовать подстановку :values для правил расширений
+            //'extensions'           => 'Файл :attribute должен иметь расширение: :values.',
+        ];
+
+        $request->validate([
+            'specifications' => 'required|file|extensions:xlsx',
+        ], $messages);
+
+
+        //$request->validate([
+        //    'materials'      => 'required|file|extensions:xlsx,xls,csv',
+        //    'models'         => 'required|file|extensions:xlsx,xls,csv',
+        //    'procedures'     => 'required|file|extensions:xlsx,xls,csv',
+        //    'specifications' => 'required|file|extensions:xlsx,xls,csv',
+        //]);
+
+        $directory = Model::DATA_PATH;
+
+        // __ Проверяем/создаем директорию
+        if (!Storage::exists($directory)) {
+            Storage::makeDirectory($directory);
+        }
+
+        $fileMap = [
+            'specifications' => 'specifications_add.xlsx',
+        ];
+
+        try {
+            foreach ($fileMap as $key => $name) {
+                // Используем 'local' диск (storage/app)
+                $request->file($key)->storeAs($directory, $name, 'local');
+            }
+
+            $result = RunService::runModelsUpdateParser_Rust(Model::UPDATE_MODE_ADD);
+
+            if ((int)$result !== 0) {
+                return EndPointStaticRequestAnswer::failResponse('Ошибка при обновлении справочников');
+            }
+
+            return EndPointStaticRequestAnswer::ok('Справочники успешно обновлены');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::failResponse($e);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }

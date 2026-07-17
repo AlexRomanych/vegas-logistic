@@ -26,6 +26,10 @@ final class Model extends LaravelModel
     protected $keyType = 'string';
     public $incrementing = false;
 
+
+    public const DATA_PATH = '1c_imports';  // __ Директория с данными для обновления 1С
+    public const UPDATE_MODE_ADD = 'add';   // __ Режим добавления Тендерных Спецификаций
+
     public const AVERAGE_MODEL_NAME = 'AVERAGE';                                                                           // Название средней (расчетной) модели
 
     //attract Определяем признаки принадлежности модели к оборудованию
@@ -98,13 +102,13 @@ final class Model extends LaravelModel
     public function getMachineTypeNameAttribute(): string
     {
         return match (true) {
-            $this->getIsAutoAttribute() => ModelsService::TYPE_AUTO,
+            $this->getIsAutoAttribute()      => ModelsService::TYPE_AUTO,
             $this->getIsUniversalAttribute() => ModelsService::TYPE_UNIVERSAL,
             $this->getIsSolidHardAttribute() => ModelsService::TYPE_SOLID_HARD,
             $this->getIsSolidLiteAttribute() => ModelsService::TYPE_SOLID_LITE,
-            $this->getIsAverageAttribute() => ModelsService::TYPE_AVERAGE,
+            $this->getIsAverageAttribute()   => ModelsService::TYPE_AVERAGE,
             // $this->getIsUndefinedAttribute() => ModelsService::TYPE_UNDEFINED,
-            default => ModelsService::TYPE_UNDEFINED
+            default                          => ModelsService::TYPE_UNDEFINED
         };
     }
 
@@ -162,7 +166,7 @@ final class Model extends LaravelModel
     //--- -------------------------------------------------------------------------------
     //--- ------------------------------ Scopes -----------------------------------------
     //--- -------------------------------------------------------------------------------
-    public function scopeBasics(Builder $query, array $modelTypes = ['000000001', '000000002', '000000012']): Builder
+    public function scopeBasics(Builder $query, array $modelTypes = ['000000001', '000000002', '000000012', NS_TENDER_CODE]): Builder
     {
         // __ Фильтруем...
         return $query
@@ -177,7 +181,7 @@ final class Model extends LaravelModel
             // __ 6 => Без признака
             // __ 7 => На паузе
             ->whereHas('modelManufactureStatus', function ($q) {
-                $q->whereIn('id', ['0', '3', '4', /*'5', '6', '7'*/]);
+                $q->whereIn('id', ['0', '3', '4', /*'5', '6', '7'*/ '100']);
             });
         // __ ...и сразу подгружаем связь, чтобы не забыть в контроллере
         // ->with([
@@ -269,8 +273,8 @@ final class Model extends LaravelModel
     {
         return $this
             ->belongsToMany(
-                SewingOperation::class,              // Класс, с которым связываемся
-                SewingOperationModelPivot::TABLE,    // Промежуточная Таблица, связывающая классы
+                SewingOperation::class,               // Класс, с которым связываемся
+                SewingOperationModelPivot::TABLE,     // Промежуточная Таблица, связывающая классы
                 'model_code_1c',                      // Ключ в промежуточной таблице, связывающий с текущим классом
                 'sewing_operation_id'      // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )

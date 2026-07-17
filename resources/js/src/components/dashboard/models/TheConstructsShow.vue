@@ -584,8 +584,8 @@ const getEntities = async () => {
 
 // __ Формирование данных для рендера
 const getEntitiesRender = () => {
-    const filter = entities.filter(entity => entity.code_1c.includes('3192'))
-    console.log('filter: ', filter)
+    // const filter = entities.filter(entity => entity.code_1c.includes('3192'))
+    // console.log('filter: ', filter)
 
     entitiesRender.value = entities
 

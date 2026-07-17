@@ -35,7 +35,7 @@ class CheckBlockTasksForDatesMiddleware
         try {
             $nowDate = Carbon::now();
 
-            // __ Выбираем все задачи, с датой выполнения меньше текущей даты
+            // __ Выбираем все задачи, с датой выполнения меньше текущей даты (невыполненные "хвосты")
             $statusOrder = [
                 BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
                 BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
@@ -48,121 +48,82 @@ class CheckBlockTasksForDatesMiddleware
                 ->whereDate('action_at', '<', $nowDate)
                 ->get()
                 ->sort(function ($a, $b) use ($statusOrder) {
-                    // __ 1. Извлекаем ID текущего статуса
                     $statusA = $a->latestTaskStatusByDate->block_task_status_id;
                     $statusB = $b->latestTaskStatusByDate->block_task_status_id;
 
-                    // 1. Извлекаем ID текущего статуса (предполагаем, что связь возвращает коллекцию)
-                    //$statusA = $a->latestTaskStatusByDate->first()?->id;
-                    //$statusB = $b->latestTaskStatusByDate->first()?->id;
-
-                    // __ Определяем позиции в массиве приоритетов
                     $posA = array_search($statusA, $statusOrder);
                     $posB = array_search($statusB, $statusOrder);
 
-                    // __ Обработка случая, если статус не найден в массиве (отправляем в конец)
                     $posA = ($posA === false) ? 999 : $posA;
                     $posB = ($posB === false) ? 999 : $posB;
 
-                    // __ Сравнение по статусу
                     if ($posA !== $posB) {
                         return $posA <=> $posB;
                     }
 
-                    // __ 2. Сравнение по дате (action_at)
                     if ($a->action_at->ne($b->action_at)) {
                         return $a->action_at <=> $b->action_at;
                     }
 
-                    // __ 3. Сравнение по позиции
                     return $a->position <=> $b->position;
                 })
-                ->values(); // Сбрасываем ключи после сортировки
+                ->values();
 
-
-            // __ Почему это работает именно так:
-            // __ FIELD(status_id, 1, 2, 3): Эта функция MySQL возвращает индекс (1, 2, 3...) позиции значения в списке.
-            // __ Таким образом, записи со статусом CREATED_ID получат 1, ROLLING_ID — 2 и так далее.
-            // __ Это и обеспечивает ваш "ручной" порядок.
-
-            // __ Приоритетность: Laravel (и SQL) применяет сортировки строго в том порядке, в котором они написаны в коде.
-            // __ Сначала сгруппирует по статусам, потом внутри каждой группы — по времени, и напоследок — по position.
-
-            // __ Стабильность: Добавление position и action_at в конец цепочки гарантирует, что если у двух задач
-            // __ одинаковый статус, они не будут «прыгать» при каждом обновлении страницы.
-
-            // __ Список статусов, в порядке приоритета
-            //$statusOrder = [
-            //    BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
-            //    BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
-            //    BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
-            //];
-
-            //$blockTasksBefore = BlockTask::query()
-            //    ->byStatus($statusOrder)
-            //    ->with('latestTaskStatus')
-            //    ->whereDate('action_at', '<', $nowDate)
-            //    // 1. Сортировка по весу статуса (в порядке из массива $statusOrder)
-            //    ->orderByRaw('FIELD(status_id, ' . implode(',', $statusOrder) . ')')
-            //    // 2. Сортировка по дате внутри статуса
-            //    ->orderBy('action_at', 'asc')
-            //    // 3. Сортировка по позиции внутри даты
-            //    ->orderBy('position', 'asc')
-            //    ->get();
-
-            // __ debug
-            //$a = $blockTasksBefore->toArray();
-            //$b = 0;
-
-            //$blockTasks = BlockTask::query()
-            //    ->byStatus([
-            //        BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
-            //        BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
-            //        BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
-            //    ])
-            //    ->whereDate('action_at', '<', $nowDate)
-            //    ->get();
-
-            //$blockTasksBeforeArray = $blockTasksBefore->toArray();
-
-            // __ Если что-то нашли, то формируем текущий производственный день
+            // __ Если что-то нашли, определяем целевой день и смену для переноса
             if ($blockTasksBefore->count() > 0) {
-                // __ Получаем задачи на текущий день
-                $blockTasksNow = BlockTask::query()
+
+                // === КЛЮЧЕВОЙ ШАГ: Поиск целевого дня и смены ===
+
+                // __ Находим самую ближайшую будущую или текущую задачу (начиная с сегодняшнего дня)
+                $nearestFutureTask = BlockTask::query()
                     ->whereDate('action_at', '>=', $nowDate->startOfDay())
-                    ->whereDate('action_at', '<=', $nowDate->endOfDay())
-                    ->with('latestTaskStatusByDate') // Грузим связь, чтобы не было N+1
+                    ->orderBy('action_at', 'asc')
+                    ->first();
+
+                if ($nearestFutureTask) {
+                    // __ НАШЛИ: Переносим в день этой найденной задачи
+                    $targetDate = Carbon::parse($nearestFutureTask->action_at);
+
+                    // __ Выбираем все задачи на этот целевой день, чтобы определить смену
+                    $targetDayTasks = BlockTask::query()
+                        ->whereDate('action_at', '>=', $targetDate->copy()->startOfDay())
+                        ->whereDate('action_at', '<=', $targetDate->copy()->endOfDay())
+                        ->get();
+
+                    // __ Определяем смену: если есть хоть одна задача с первой сменой - пишем первую, иначе вторую
+                    $hasFirstChange = $targetDayTasks->contains('change', BlockDay::CHANGE_1);
+                    $targetChange = $hasFirstChange ? BlockDay::CHANGE_1 : BlockDay::CHANGE_2;
+                } else {
+                    // НЕ НАШЛИ: Переносим в текущий день, в первую смену
+                    $targetDate = $nowDate;
+                    $targetChange = BlockDay::CHANGE_1;
+                }
+
+                // === КОНЕЦ КЛЮЧЕВОГО ШАГА ===
+
+                // __ Получаем задачи на целевой день (вместо жесткого $nowDate)
+                $blockTasksNow = BlockTask::query()
+                    ->whereDate('action_at', '>=', $targetDate->copy()->startOfDay())
+                    ->whereDate('action_at', '<=', $targetDate->copy()->endOfDay())
+                    ->with('latestTaskStatusByDate')
                     ->orderBy('position', 'asc')
                     ->get();
 
-
-                // __ Объединяем по следующим правилам:
-                // __ 0. В blockTasksBefore дату action_at заменить на текущую
-                // __ 1. При равных данных приоритет у коллекции blockTasksBefore (элементы будут стоять выше при равных условиях)
-                // __ 2. Потом Отсортировать по статусу в указанном порядке
-                // __ 3. Потом отсортировать по position
-
-                // __ source_priority: Это «костыль» для выполнения условия №1. Так как ты меняешь дату в первой коллекции,
-                // __ они становятся «равными» по времени с текущими. Флаг гарантирует, что старые задачи всегда будут выше новых при прочих равных.
-
-                // __ array_search: Внутри sort мы определяем индекс статуса. Чем меньше индекс, тем выше задача.
-
-                // __ Сцепка (concat): Мы не теряем данные и сохраняем объекты моделей со всеми их методами.
-
-                // __ 1. Подготавливаем коллекцию "До" (меняем дату)
-                $blockTasksBefore->transform(function ($item) use ($nowDate) {
-                    $item->action_at       = $nowDate->startOfDay()->format('Y-m-d H:i:s');
-                    $item->source_priority = 1; // Добавляем виртуальный флаг приоритета для стабильной сортировки
+                // __ 1. Подготавливаем коллекцию "До" (меняем дату на целевую)
+                $blockTasksBefore->transform(function ($item) use ($targetDate) {
+                    // Используем время начала целевого дня для синхронизации
+                    $item->action_at       = $targetDate->copy()->startOfDay()->format('Y-m-d H:i:s');
+                    $item->source_priority = 1; // Добавляем виртуальный флаг приоритета
                     return $item;
                 });
 
-                // __ 2. Помечаем текущую коллекцию
+                // __ 2. Помечаем текущую целевую коллекцию
                 $blockTasksNow->transform(function ($item) {
                     $item->source_priority = 2;
                     return $item;
                 });
 
-                // __ 3. Объединяем и сортируем
+                // __ 3. Объединяем и сортируем по статусам
                 $statusOrder = [
                     BlockTaskStatus::BLOCK_STATUS_DONE_ID,
                     BlockTaskStatus::BLOCK_STATUS_RUNNING_ID,
@@ -173,61 +134,249 @@ class CheckBlockTasksForDatesMiddleware
 
                 $combinedTasks = $blockTasksBefore->concat($blockTasksNow)
                     ->sort(function ($a, $b) use ($statusOrder) {
-                        // __ Условие 2: Сортировка по статусу (в указанном порядке)
                         $posA = array_search($a->latestTaskStatusByDate->block_task_status_id, $statusOrder);
                         $posB = array_search($b->latestTaskStatusByDate->block_task_status_id, $statusOrder);
 
-                        // __ Если статусы разные, сортируем по их позиции в массиве
                         if ($posA !== $posB) {
                             return $posA <=> $posB;
                         }
 
-                        // __ Условие 1: Приоритет у коллекции "Before" (source_priority: 1 < 2)
                         if ($a->source_priority !== $b->source_priority) {
                             return $a->source_priority <=> $b->source_priority;
                         }
 
-                        // __ Условие 3: Сортировка по position
                         return $a->position <=> $b->position;
                     })
-                    ->values(); // Сбрасываем ключи коллекции
+                    ->values();
 
-                // __ 3. Меняем позиции
+                // __ 4. Пересчитываем сквозные позиции в рамках этого целевого дня
                 $position = 1;
                 $combinedTasks->transform(function ($item) use (&$position) {
                     $item->position = $position++;
                     return $item;
                 });
 
-                // ___ Формат входных данных для обновления:
-                // $tasksToUpdate[] = [
-                //     'id'        => taskId,
-                //     'action_at' => new_action_at ?? null,
-                //     'position'  => new_position ?? null,
-                // ];
-
-                $tasksToUpdate = $combinedTasks->map(function ($item) {
+                // __ 5. Формируем массив для bulk update
+                $tasksToUpdate = $combinedTasks->map(function ($item) use ($targetChange) {
                     return [
                         'id'        => $item->id,
                         'action_at' => $item->action_at,
                         'position'  => $item->position,
-                        'change'    => BlockDay::CHANGE_1
+                        'change'    => $targetChange // Записываем вычисленную смену
                     ];
                 })->toArray();
 
-                // __ Обновляем BlockTasks текущего дня
+                // __ Обновляем BlockTasks в базе данных
                 BlocksService::bulkUpdateTasks($tasksToUpdate);
             }
         } catch (Throwable|Exception $e) {
-            //report($e); // Отправит ошибку в лог или Sentry
-            //return $next($request);
-
             Log::critical($e->getMessage());
-            // Выбрасываем ошибку, которую перехватит Handler и покажет красивое сообщение
             abort(500, $e->getMessage());
-            //abort(500, 'Ошибка синхронизации производственного плана. Пожалуйста, обратитесь к администратору.');
         }
 
         return $next($request);
     }
 }
+
+
+//public function handle(Request $request, Closure $next): Response
+//{
+//    try {
+//        $nowDate = Carbon::now();
+//
+//        // __ Выбираем все задачи, с датой выполнения меньше текущей даты
+//        $statusOrder = [
+//            BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
+//            BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
+//            BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
+//        ];
+//
+//        $blockTasksBefore = BlockTask::query()
+//            ->byStatus($statusOrder)
+//            ->with('latestTaskStatusByDate') // Грузим связь, чтобы не было N+1
+//            ->whereDate('action_at', '<', $nowDate)
+//            ->get()
+//            ->sort(function ($a, $b) use ($statusOrder) {
+//                // __ 1. Извлекаем ID текущего статуса
+//                $statusA = $a->latestTaskStatusByDate->block_task_status_id;
+//                $statusB = $b->latestTaskStatusByDate->block_task_status_id;
+//
+//                // 1. Извлекаем ID текущего статуса (предполагаем, что связь возвращает коллекцию)
+//                //$statusA = $a->latestTaskStatusByDate->first()?->id;
+//                //$statusB = $b->latestTaskStatusByDate->first()?->id;
+//
+//                // __ Определяем позиции в массиве приоритетов
+//                $posA = array_search($statusA, $statusOrder);
+//                $posB = array_search($statusB, $statusOrder);
+//
+//                // __ Обработка случая, если статус не найден в массиве (отправляем в конец)
+//                $posA = ($posA === false) ? 999 : $posA;
+//                $posB = ($posB === false) ? 999 : $posB;
+//
+//                // __ Сравнение по статусу
+//                if ($posA !== $posB) {
+//                    return $posA <=> $posB;
+//                }
+//
+//                // __ 2. Сравнение по дате (action_at)
+//                if ($a->action_at->ne($b->action_at)) {
+//                    return $a->action_at <=> $b->action_at;
+//                }
+//
+//                // __ 3. Сравнение по позиции
+//                return $a->position <=> $b->position;
+//            })
+//            ->values(); // Сбрасываем ключи после сортировки
+//
+//
+//        // __ Почему это работает именно так:
+//        // __ FIELD(status_id, 1, 2, 3): Эта функция MySQL возвращает индекс (1, 2, 3...) позиции значения в списке.
+//        // __ Таким образом, записи со статусом CREATED_ID получат 1, ROLLING_ID — 2 и так далее.
+//        // __ Это и обеспечивает ваш "ручной" порядок.
+//
+//        // __ Приоритетность: Laravel (и SQL) применяет сортировки строго в том порядке, в котором они написаны в коде.
+//        // __ Сначала сгруппирует по статусам, потом внутри каждой группы — по времени, и напоследок — по position.
+//
+//        // __ Стабильность: Добавление position и action_at в конец цепочки гарантирует, что если у двух задач
+//        // __ одинаковый статус, они не будут «прыгать» при каждом обновлении страницы.
+//
+//        // __ Список статусов, в порядке приоритета
+//        //$statusOrder = [
+//        //    BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
+//        //    BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
+//        //    BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
+//        //];
+//
+//        //$blockTasksBefore = BlockTask::query()
+//        //    ->byStatus($statusOrder)
+//        //    ->with('latestTaskStatus')
+//        //    ->whereDate('action_at', '<', $nowDate)
+//        //    // 1. Сортировка по весу статуса (в порядке из массива $statusOrder)
+//        //    ->orderByRaw('FIELD(status_id, ' . implode(',', $statusOrder) . ')')
+//        //    // 2. Сортировка по дате внутри статуса
+//        //    ->orderBy('action_at', 'asc')
+//        //    // 3. Сортировка по позиции внутри даты
+//        //    ->orderBy('position', 'asc')
+//        //    ->get();
+//
+//        // __ debug
+//        //$a = $blockTasksBefore->toArray();
+//        //$b = 0;
+//
+//        //$blockTasks = BlockTask::query()
+//        //    ->byStatus([
+//        //        BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
+//        //        BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
+//        //        BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
+//        //    ])
+//        //    ->whereDate('action_at', '<', $nowDate)
+//        //    ->get();
+//
+//        //$blockTasksBeforeArray = $blockTasksBefore->toArray();
+//
+//        // __ Если что-то нашли, то формируем текущий производственный день
+//        if ($blockTasksBefore->count() > 0) {
+//            // __ Получаем задачи на текущий день
+//            $blockTasksNow = BlockTask::query()
+//                ->whereDate('action_at', '>=', $nowDate->startOfDay())
+//                ->whereDate('action_at', '<=', $nowDate->endOfDay())
+//                ->with('latestTaskStatusByDate') // Грузим связь, чтобы не было N+1
+//                ->orderBy('position', 'asc')
+//                ->get();
+//
+//
+//            // __ Объединяем по следующим правилам:
+//            // __ 0. В blockTasksBefore дату action_at заменить на текущую
+//            // __ 1. При равных данных приоритет у коллекции blockTasksBefore (элементы будут стоять выше при равных условиях)
+//            // __ 2. Потом Отсортировать по статусу в указанном порядке
+//            // __ 3. Потом отсортировать по position
+//
+//            // __ source_priority: Это «костыль» для выполнения условия №1. Так как ты меняешь дату в первой коллекции,
+//            // __ они становятся «равными» по времени с текущими. Флаг гарантирует, что старые задачи всегда будут выше новых при прочих равных.
+//
+//            // __ array_search: Внутри sort мы определяем индекс статуса. Чем меньше индекс, тем выше задача.
+//
+//            // __ Сцепка (concat): Мы не теряем данные и сохраняем объекты моделей со всеми их методами.
+//
+//            // __ 1. Подготавливаем коллекцию "До" (меняем дату)
+//            $blockTasksBefore->transform(function ($item) use ($nowDate) {
+//                $item->action_at       = $nowDate->startOfDay()->format('Y-m-d H:i:s');
+//                $item->source_priority = 1; // Добавляем виртуальный флаг приоритета для стабильной сортировки
+//                return $item;
+//            });
+//
+//            // __ 2. Помечаем текущую коллекцию
+//            $blockTasksNow->transform(function ($item) {
+//                $item->source_priority = 2;
+//                return $item;
+//            });
+//
+//            // __ 3. Объединяем и сортируем
+//            $statusOrder = [
+//                BlockTaskStatus::BLOCK_STATUS_DONE_ID,
+//                BlockTaskStatus::BLOCK_STATUS_RUNNING_ID,
+//                BlockTaskStatus::BLOCK_STATUS_PENDING_ID,
+//                BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
+//                BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
+//            ];
+//
+//            $combinedTasks = $blockTasksBefore->concat($blockTasksNow)
+//                ->sort(function ($a, $b) use ($statusOrder) {
+//                    // __ Условие 2: Сортировка по статусу (в указанном порядке)
+//                    $posA = array_search($a->latestTaskStatusByDate->block_task_status_id, $statusOrder);
+//                    $posB = array_search($b->latestTaskStatusByDate->block_task_status_id, $statusOrder);
+//
+//                    // __ Если статусы разные, сортируем по их позиции в массиве
+//                    if ($posA !== $posB) {
+//                        return $posA <=> $posB;
+//                    }
+//
+//                    // __ Условие 1: Приоритет у коллекции "Before" (source_priority: 1 < 2)
+//                    if ($a->source_priority !== $b->source_priority) {
+//                        return $a->source_priority <=> $b->source_priority;
+//                    }
+//
+//                    // __ Условие 3: Сортировка по position
+//                    return $a->position <=> $b->position;
+//                })
+//                ->values(); // Сбрасываем ключи коллекции
+//
+//            // __ 3. Меняем позиции
+//            $position = 1;
+//            $combinedTasks->transform(function ($item) use (&$position) {
+//                $item->position = $position++;
+//                return $item;
+//            });
+//
+//            // ___ Формат входных данных для обновления:
+//            // $tasksToUpdate[] = [
+//            //     'id'        => taskId,
+//            //     'action_at' => new_action_at ?? null,
+//            //     'position'  => new_position ?? null,
+//            // ];
+//
+//            $tasksToUpdate = $combinedTasks->map(function ($item) {
+//                return [
+//                    'id'        => $item->id,
+//                    'action_at' => $item->action_at,
+//                    'position'  => $item->position,
+//                    'change'    => BlockDay::CHANGE_1
+//                ];
+//            })->toArray();
+//
+//            // __ Обновляем BlockTasks текущего дня
+//            BlocksService::bulkUpdateTasks($tasksToUpdate);
+//        }
+//    } catch (Throwable|Exception $e) {
+//        //report($e); // Отправит ошибку в лог или Sentry
+//        //return $next($request);
+//
+//        Log::critical($e->getMessage());
+//        // Выбрасываем ошибку, которую перехватит Handler и покажет красивое сообщение
+//        abort(500, $e->getMessage());
+//        //abort(500, 'Ошибка синхронизации производственного плана. Пожалуйста, обратитесь к администратору.');
+//    }
+//
+//    return $next($request);
+//}
+

@@ -4,11 +4,12 @@ import type { IRouteMeta } from '@/types'
 
 // __ Префикс для всех роутов моделей
 const _MODELS_PREFIX = '/models'
-const _MAIN_PREFIX = _MODELS_PREFIX + '/'
+// const _MAIN_PREFIX = _MODELS_PREFIX + '/'
 
 const models = [
     {
-        path: '/models',                                    // __ Список моделей
+        // __ Список моделей
+        path: '/models',
         name: 'models',
         component: () => import('@/components/dashboard/models/TheModelsShow.vue'),
         meta: {
@@ -17,16 +18,17 @@ const models = [
         } as IRouteMeta,
     },
     {
-        path: '/models/upload',                             // __ Загрузка / обновление списка моделей
+        // __ Загрузка / обновление списка моделей
+        path: '/models/upload',
         name: 'models.upload',
         component: () => import('@/components/dashboard/models/TheModelsUpload.vue'),
         meta: {
             title: 'Обновление списка моделей',
         } as IRouteMeta,
     },
-
     {
-        path: '/models/procedures',                                // __ Список процедур расчета
+        // __ Список процедур расчета
+        path: '/models/procedures',
         name: 'procedures',
         component: () => import('@/components/dashboard/models/TheProceduresShow.vue'),
         meta: {
@@ -34,16 +36,17 @@ const models = [
         } as IRouteMeta,
     },
     {
-        path: '/models/procedures/upload',                  // __ Загрузка / обновление списка процедур расчета
+        // __ Загрузка / обновление списка процедур расчета
+        path: '/models/procedures/upload',
         name: 'procedures.upload',
         component: () => import('@/components/dashboard/models/TheProceduresUpload.vue'),
         meta: {
             title: 'Обновление списка процедур расчета',
         } as IRouteMeta,
     },
-
     {
-        path: '/models/constructs',                                // __ Список спецификаций
+        // __ Список спецификаций
+        path: '/models/constructs',
         name: 'constructs',
         component: () => import('@/components/dashboard/models/TheConstructsShow.vue'),
         meta: {
@@ -51,7 +54,17 @@ const models = [
         } as IRouteMeta,
     },
     {
-        path: '/models/constructs/upload',                  // __ Загрузка / обновление списка процедур расчета
+        // __ Добавление тендерных спецификаций
+        path: '/models/constructs/add',
+        name: 'constructs.add',
+        component: () => import('@/components/dashboard/models/TheConstructsAdd.vue'),
+        meta: {
+            title: 'Добавление нестандартных (тендерных) Спецификаций',
+        } as IRouteMeta,
+    },
+    {
+        // __ Загрузка / обновление списка процедур расчета
+        path: '/models/constructs/upload',
         name: 'constructs.upload',
         component: () => import('@/components/dashboard/models/TheConstructsUpload.vue'),
         meta: {
@@ -59,7 +72,8 @@ const models = [
         } as IRouteMeta,
     },
     {
-        path: '/models/references/update',  // __ Обновление баз: Модели, Процедуры, Спецификации, Материалы
+        // __ Обновление баз: Модели, Процедуры, Спецификации, Материалы
+        path: '/models/references/update',
         name: 'models.references.update',
         component: () => import('@/components/dashboard/models/TheReferencesUpdate.vue'),
         meta: {

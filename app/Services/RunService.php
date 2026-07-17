@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Models\Model;
 use Exception;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
+//use Symfony\Component\Process\Exception\ProcessFailedException;
 
 
 final class RunService
@@ -12,9 +13,12 @@ final class RunService
 
     /**
      * ___ Запускаем парсер файлов Excel в Postgres
+     * @param string|null $mode __ null - Обновляем все, 'add' - добавляем тендерные Спецификации
      * @return string
+     * @throws Exception
+     * @noinspection DuplicatedCode
      */
-    public static function runModelsUpdateParser_Rust(): string
+    public static function runModelsUpdateParser_Rust(string|null $mode = null): string
     {
         $os = PHP_OS_FAMILY;
 
@@ -32,7 +36,7 @@ final class RunService
             $env        = []; // В Linux обычно доп. переменные не нужны
         }
 
-        $binaryPath   = base_path("bin/{$binaryName}");
+        $binaryPath   = base_path("bin/$binaryName");
         $binDirectory = base_path('bin'); // Директория, где лежит бинарник и .env
 
 
@@ -44,7 +48,11 @@ final class RunService
         // 3. Третьим аргументом можно передать массив переменных окружения, если нужно
 
         // Передаем массив $env третьим аргументом
-        $process = new Process([$binaryPath], $binDirectory, $env);
+        if ($mode === Model::UPDATE_MODE_ADD) {
+            $process = new Process([$binaryPath, $mode], $binDirectory, $env);
+        } else {
+            $process = new Process([$binaryPath], $binDirectory, $env);
+        }
         //$process = new Process([$binaryPath], $binDirectory);
 
 
@@ -108,10 +116,13 @@ final class RunService
      * @param array<int> $ids Массив ID заказов (order_ids)
      * @return string Вывод из stdout Rust-скрипта
      * @throws Exception
+     * @noinspection DuplicatedCode
      */
     public static function runExpenseParser_Rust(array $ids): string
     {
-        if (empty($ids) || count($ids) === 0) { return "0";}
+        if (empty($ids) || count($ids) === 0) {
+            return "0";
+        }
 
         // __ Превращаем массив ID в компактную JSON строку: "[447,455,480]"
         $jsonArgs = json_encode($ids);
@@ -136,7 +147,7 @@ final class RunService
             $env        = []; // В Linux обычно доп. переменные не нужны
         }
 
-        $binaryPath   = base_path("bin/{$binaryName}");
+        $binaryPath   = base_path("bin/$binaryName");
         $binDirectory = base_path('bin'); // Директория, где лежит бинарник и .env
 
         // Нам нужно пробросить системные переменные Windows, чтобы заработал Winsock (сеть)
@@ -175,19 +186,19 @@ final class RunService
     }
 
 
-
-
-
     /**
      * ___ Запуск Rust-парсера для расчета расхода материалов по массиву заказов
      *
      * @param array<int> $ids Массив ID заказов (order_ids)
      * @return string Вывод из stdout Rust-скрипта
      * @throws Exception
+     * @noinspection DuplicatedCode
      */
     public static function runCuttingTaskCreator_Rust(array $ids): string
     {
-        if (empty($ids) || count($ids) === 0) { return "0";}
+        if (empty($ids) || count($ids) === 0) {
+            return "0";
+        }
 
         // __ Превращаем массив ID в компактную JSON строку: "[447,455,480]"
         $jsonArgs = json_encode($ids);
@@ -212,7 +223,7 @@ final class RunService
             $env        = []; // В Linux обычно доп. переменные не нужны
         }
 
-        $binaryPath   = base_path("bin/{$binaryName}");
+        $binaryPath   = base_path("bin/$binaryName");
         $binDirectory = base_path('bin'); // Директория, где лежит бинарник и .env
 
         // Нам нужно пробросить системные переменные Windows, чтобы заработал Winsock (сеть)

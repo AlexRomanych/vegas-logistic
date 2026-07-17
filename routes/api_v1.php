@@ -70,6 +70,7 @@ Route::prefix('/models')
         Route::post('/constructs/upload', [ModelConstructController::class, 'modelConstructsUpload']);
 
         Route::post('/update', [ModelConstructController::class, 'modelsUpdate']);
+        Route::post('/constructs/add', [ModelConstructController::class, 'modelConstructsAdd']);
     });
 
 
