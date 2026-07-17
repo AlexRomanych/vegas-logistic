@@ -11,14 +11,13 @@ class ManufactureDayAndChange
 {
 
     private Carbon $manufactureDay;
-    private int $change = 0;
+    private int|string $change;
 
-    public function __construct(Carbon|string $manufactureDay, int $change)
+    public function __construct(Carbon|string $manufactureDay, int|string $change)
     {
         $this->manufactureDay = normalizeToCarbon($manufactureDay);
-        $this->change = $change;
+        $this->change         = $change;
     }
-
 
 
     public function getManufactureDay(): Carbon
@@ -31,7 +30,6 @@ class ManufactureDayAndChange
     {
         return $this->change !== 0 ? $this->change : null;
     }
-
 
 
 }

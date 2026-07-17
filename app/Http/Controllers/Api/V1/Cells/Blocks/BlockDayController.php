@@ -445,7 +445,7 @@ class BlockDayController extends Controller
             $blockDay = BlockDay::query()
                 ->find($validated['id']);
 
-            // __ Сохраняем
+            // __ Сохраняем все в транзакции
             DB::transaction(function () use ($blockDay) {
                 $blockDay->finish_at = now();
 
@@ -454,14 +454,10 @@ class BlockDayController extends Controller
                 $blockDay->duration += $startPoint?->diffInSeconds($blockDay->finish_at) ?? 0;
                 $blockDay->save();
 
-                // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполняется"
+                // __ Находим все СЗ, которые относятся к данному производственному дню и меняем их статус на "Выполнено"
                 $action_date = Carbon::parse($blockDay->start_at)->startOfDay();
 
                 $pendingBlockTasks = BlockTask::query()
-                    // ->whereBetween('action_at', [
-                    //     $action_date->startOfDay(),
-                    //     $action_date->endOfDay()
-                    // ])
                     ->whereDate('action_at', '>=', $action_date->startOfDay())
                     ->whereDate('action_at', '<=', $action_date->endOfDay())
                     ->byStatus(BlockTaskStatus::BLOCK_STATUS_RUNNING_ID)

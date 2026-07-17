@@ -180,7 +180,8 @@ class BlockDay extends Model
     // Relations: Связь со сменным Заданием
     public function blockTasks(): HasMany
     {
-        return $this->hasMany(BlockTask::class, 'action_at', 'action_at');
+        return $this->hasMany(BlockTask::class, 'action_at', 'action_at')
+            ->whereColumn('block_tasks.change', 'block_days.change');
     }
 
     // Relations: Связь с Производственными Событиями

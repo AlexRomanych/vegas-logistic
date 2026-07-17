@@ -8,6 +8,7 @@ use App\Classes\ManufactureDayAndChange;
 use App\Models\Logs\EventLog;
 use App\Models\Manufacture\Cells\Block\Block;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
+use App\Models\Manufacture\Cells\Block\BlockDay;
 use App\Models\Manufacture\Cells\Block\BlockTask;
 use App\Models\Manufacture\Cells\Block\BlockTaskLine;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
@@ -275,25 +276,67 @@ final class BlocksService
             ->count();
     }
 
+
     /**
      * ___ Возвращаем следующую производственную смену
-     * @param ManufactureDayAndChange|Carbon|string $manufactureEntity
-     * @param int|null $change
+     * @param ManufactureDayAndChange|Carbon|string $manufactureEntity - __ референсные день и смена
+     * @param int|string $change
      * @return ManufactureDayAndChange
      */
     public static function getNextChange(
         ManufactureDayAndChange|Carbon|string $manufactureEntity,
-        int $change = null
+        int|string $change = BlockDay::CHANGE_1,
     ): ManufactureDayAndChange {
-        $manufDateAndChange = null;
+        // __ Определяем референсный день
+        $sourceDay = Carbon::now();
         if ($manufactureEntity instanceof ManufactureDayAndChange) {
-            $manufDateAndChange = new ManufactureDayAndChange($manufactureEntity->getManufactureDay()->addDay(), 1);
-        } else {
-            $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), 1);
-            // $manufDateAndChange = new ManufactureDayAndChange(normalizeToCarbon($manufactureEntity)->addDay(), $change);
+            $sourceDay = $manufactureEntity->getManufactureDay();
+        } elseif (is_string($manufactureEntity)) {
+            $sourceDay = Carbon::parse($manufactureEntity);
+        } elseif ($manufactureEntity instanceof Carbon) {
+            $sourceDay = $manufactureEntity;
         }
 
-        return $manufDateAndChange;
+        // __ Определяем референсную смену
+        $sourceChange = (string)$manufactureEntity;
+
+        // __ === КЛЮЧЕВОЙ ШАГ: Поиск целевого дня и смены ===
+
+        // __ Смотрим, есть ли в текущем дне вторая смена
+        if ($sourceChange === BlockDay::CHANGE_1) {
+            $nearestFutureDay = BlockDay::query()
+                ->whereDate('action_at', '>=', $sourceDay->startOfDay())
+                ->whereDate('action_at', '<=', $sourceDay->endOfDay())
+                ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
+                //->with(['blockTasks'])
+                ->where('change_type', BlockDay::CHANGE_2)
+                ->first();
+
+            // __ Если есть - возвращаем
+            if ($nearestFutureDay) {
+                return new ManufactureDayAndChange($sourceDay->copy(), BlockDay::CHANGE_2);
+            }
+        }
+
+        // __ Находим самую ближайшую будущую или текущую дату (начиная с дня + 1)
+        $findDay = $sourceDay->copy()->addDay();
+        $nearestFutureDay = BlockDay::query()
+            ->whereDate('action_at', '>=', $findDay->startOfDay())
+            ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
+            //->with(['blockTasks'])   // __ Оставляем для жадной загрузки
+            ->orderBy('action_at', 'asc')
+            ->orderBy('change', 'asc')
+            ->first();
+
+        if ($nearestFutureDay) {
+            // __ НАШЛИ: Возвращаем
+            return new ManufactureDayAndChange(Carbon::parse($nearestFutureDay->action_at), $nearestFutureDay->change);
+        } else {
+            // __ НЕ НАШЛИ: Смотрим, какая смена и возвращаем в зависимости от нее
+            return $sourceChange === BlockDay::CHANGE_1
+                ? new ManufactureDayAndChange($sourceDay->copy(), BlockDay::CHANGE_2)
+                : new ManufactureDayAndChange($sourceDay->copy()->addDay(), BlockDay::CHANGE_1);
+        }
     }
 
     /**
@@ -479,28 +522,28 @@ final class BlocksService
     public static function getBlockTasksByDatesAndStatus(Carbon $start, Carbon $end, int|array $status = null): Collection
     {
         // __ 1. Получаем BlockTasks с их строками за нужный период (Запросы 1 и 2)
-            $blockTasks = BlockTask::query()
-                ->byStatus($status)
-                ->whereBetween('action_at', [
-                    $start->startOfDay(),
-                    $end->endOfDay()
-                ])
-                ->with([
-                    'order',
-                    'order.client',
-                    'order.orderType',
-                    'statuses',
-                    'blockLines',
-                    'blockLines.block',
-                    'blockLines.block.blockCollection',
-                    'blockLines.block.blockCollection.kdbDoc',
-                    //'blockLines.block.blockCollection' => function ($query) {
-                    //    $query->select('*')->with('kdbDoc');
-                    //},
+        $blockTasks = BlockTask::query()
+            ->byStatus($status)
+            ->whereBetween('action_at', [
+                $start->startOfDay(),
+                $end->endOfDay()
+            ])
+            ->with([
+                'order',
+                'order.client',
+                'order.orderType',
+                'statuses',
+                'blockLines',
+                'blockLines.block',
+                'blockLines.block.blockCollection',
+                'blockLines.block.blockCollection.kdbDoc',
+                //'blockLines.block.blockCollection' => function ($query) {
+                //    $query->select('*')->with('kdbDoc');
+                //},
 
-                ])
-                ->orderBy('action_at')
-                ->get();
+            ])
+            ->orderBy('action_at')
+            ->get();
 
 
         // __ 2. Достаем ВСЕ строки BlockTaskLine изо ВСЕХ задач в один плоский список
