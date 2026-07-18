@@ -4,11 +4,11 @@
         <!-- __ Collapsed -->
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
+            :type="isAllLinesDone ? 'success' : 'warning'"
             align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="micro"
-            type="warning"
             width="w-[30px]"
             @click.exact="emits('toggleCollapse')"
         />
@@ -16,7 +16,7 @@
         <!-- __ Название SubCategory -->
         <AppLabelTS
             :text="subgroup.subgroupName"
-            :type="DEFAULT_TYPE"
+            :type="isAllLinesDone ? 'success' : DEFAULT_TYPE"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
@@ -30,12 +30,12 @@
         <AppLabelTS
             :text="subgroup.amount.total.toString()"
             :type="DEFAULT_TYPE"
+            align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
             title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
             width="w-[40px]"
-            align="center"
             @click.exact="emits('toggleCollapse')"
             @click.ctrl="emits('selectSubgroupItems')"
         />
@@ -44,12 +44,12 @@
         <AppLabelTS
             :text="formatTimeWithLeadingZeros(subgroup.time.total, 'hour')"
             :type="DEFAULT_TYPE"
+            align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
             title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
             width="w-[100px]"
-            align="center"
             @click.exact="emits('toggleCollapse')"
             @click.ctrl="emits('selectSubgroupItems')"
         />
@@ -58,12 +58,12 @@
         <AppLabelTS
             :text="subgroup.square.total.toFixed(3)"
             :type="DEFAULT_TYPE"
+            align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
             title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
             width="w-[70px]"
-            align="center"
             @click.exact="emits('toggleCollapse')"
             @click.ctrl="emits('selectSubgroupItems')"
         />
@@ -72,12 +72,12 @@
         <AppLabelTS
             :text="subgroup.priority.toString()"
             :type="DEFAULT_TYPE"
+            align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
             title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
             width="w-[40px]"
-            align="center"
             @click.exact="emits('toggleCollapse')"
             @click.ctrl="emits('selectSubgroupItems')"
         />
@@ -143,14 +143,15 @@
 import type { IBlockTaskLinesSubgroup, } from '@/types'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { computed } from 'vue'
+import { isTaskLineDone, } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 interface IProps {
     subgroup: IBlockTaskLinesSubgroup
     collapsed?: boolean
 }
 
-/*const props =*/
-defineProps<IProps>()
+const props = defineProps<IProps>()
 
 const emits = defineEmits<{
     (e: 'toggleCollapse'): void
@@ -159,6 +160,9 @@ const emits = defineEmits<{
 
 const FIELDS_AMOUNT_TIME_WIDTH = 'w-[174px]'
 const DEFAULT_TYPE             = 'primary'
+
+// __ Проверяем, все ли Строки выполнены
+const isAllLinesDone = computed(() => props.subgroup.lines.every(line => isTaskLineDone(line)))
 
 </script>
 
