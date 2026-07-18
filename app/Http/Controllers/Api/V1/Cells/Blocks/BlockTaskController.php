@@ -1226,4 +1226,29 @@ class BlockTaskController extends Controller
     }
 
 
+    /**
+     * ___ Обновляем Комментарий Записи
+     * @param Request $request
+     * @return string
+     */
+    public function setBlockTaskLineDescription(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'          => 'required|integer|exists:block_task_lines,id',
+                'description' => 'nullable|string',
+            ]);
+
+            $description = $validated['description'] ?? null;
+            BlockTaskLine::query()
+                ->where('id', $validated['id'])
+                ->update(['description' => $description]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
 }

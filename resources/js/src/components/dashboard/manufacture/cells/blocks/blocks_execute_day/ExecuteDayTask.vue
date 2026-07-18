@@ -324,6 +324,7 @@
                                     :index="index + 1"
                                     :ordering="'index'"
                                     @show-document="showDocument(blockLine, $event)"
+                                    @change-description="changeDescription(blockLine, $event)"
                                 />
 
                                 <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -689,6 +690,7 @@ const fieldWidths: Record<string, string> = {
     manuf_line  : 'min-w-[40px] max-w-[40px]',
     false_reason: 'min-w-[174px] max-w-[174px]',
     order       : 'min-w-[300px] max-w-[300px]',
+    description : 'min-w-[300px] max-w-[300px]',
 }
 
 // --- Состояние выделения ---
@@ -1113,6 +1115,18 @@ const showDocument = async (blockLine: IBlockTaskLine, id: number) => {
     doc.value = null
 }
 
+// __ Меняем Комментарий
+const changeDescription = async (blockLine: IBlockTaskLine, description: string) => {
+
+    const result = await blockStore.setBlockTaskLineDescription(blockLine.id, description)
+    if (checkCRUD(result)) {
+        blockLine.description = description
+        return
+    } else {
+        await showError()
+        return
+    }
+}
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---                Collapse                     !!!

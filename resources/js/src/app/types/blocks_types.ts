@@ -229,6 +229,7 @@ export interface IBlockTaskLine {
     false_at: string | null
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
+    description: string | null
 
     order_meta?: string                             // __ Номер заявки
 

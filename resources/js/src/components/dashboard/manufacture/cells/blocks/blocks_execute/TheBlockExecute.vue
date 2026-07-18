@@ -22,7 +22,10 @@
                     <AppLabelMultilineTSWrapper :render-object="render.id"/>
 
                     <!-- __ Дата производства -->
-                    <AppLabelMultilineTSWrapper :render-object="render.date"/>
+                    <AppLabelMultilineTSWrapper
+                        :render-object="render.date"
+                        @click.ctrl="gotoManage"
+                    />
 
                     <!-- __ Смена производства -->
                     <AppLabelMultilineTSWrapper :render-object="render.change"/>
@@ -502,6 +505,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Дата...',
         data          : (blockDay: IBlockDay) => formatDateInFullFormat(blockDay.action_at) + ` (${getDayOfWeek(blockDay.action_at)})`,
         class         : 'cursor-pointer',
+        title         : 'Click + Ctrl - Управление СЗ',
     },
     change       : {
         id            : () => 'change-search',
@@ -645,9 +649,9 @@ const blockTaskFieldsWidth = {
     position     : 'w-[30px]',
     client       : 'w-[285px]',
     order_no     : 'w-[50px]',
-    status       : 'w-[90px]',
+    status       : 'w-[104px]',
     progressTotal: PROGRESS_WIDTH,
-    load_at      : 'w-[143px]',
+    load_at      : 'w-[155px]',
     comment      : 'w-[581px]',
 }
 
@@ -743,7 +747,7 @@ const getDuration = (blockDay: IBlockDay) => {
     const startSec  = new Date(blockDay.start_at.replace(' ', 'T')).getTime() / 1000
     const finishSec = blockDay.finish_at ? new Date(blockDay.finish_at.replace(' ', 'T')).getTime() / 1000 : new Date().getTime() / 1000
 
-    return formatTimeWithLeadingZeros(round(finishSec - startSec), )
+    return formatTimeWithLeadingZeros(round(finishSec - startSec),)
 }
 
 // __ Получаем объект статистики для дня
@@ -866,11 +870,15 @@ const addBlockTaskToCurrentDay = async () => {
     }
 }
 
-
 // __ Получаем производственные дни
 const getBlockDays = async () => {
     const dates     = getBlockDates(globalBlockTasksPending.value) // __ Получаем даты из СЗ
     blockDays.value = await blockStore.getBlockDaysByDates(dates)  // __ Получаем дни по этим датам
+}
+
+// __ Переход в управление СЗ
+const gotoManage = async () => {
+    await router.push({ name: 'manufacture.cell.blocks.plan.manage' })
 }
 
 onMounted(async () => {

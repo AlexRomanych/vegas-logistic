@@ -64,10 +64,11 @@ const URL_BLOCKS_TASKS_COMMENT              = '/blocks/tasks/comment'           
 const URL_BLOCKS_TASKS_CHANGE               = '/blocks/tasks/change'                // URL для изменения смены Сменного задания
 const URL_BLOCKS_TASKS_ACTION_AT_SET        = '/blocks/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 
-const URL_BLOCKS_TASK_LINES_TABLE_SET = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
-const URL_BLOCKS_TASK_LINE_DONE       = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
-const URL_BLOCKS_TASK_LINE_FALSE      = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
-const URL_BLOCKS_TASK_LINE_RESET      = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
+const URL_BLOCKS_TASK_LINES_TABLE_SET   = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+const URL_BLOCKS_TASK_LINE_DONE         = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_FALSE        = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_RESET        = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
+const URL_BLOCKS_TASK_LINE_DESCRIPTION  = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
@@ -852,6 +853,16 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Устанавливаем комментарий для Строки СЗ
+    const setBlockTaskLineDescription = async (blockTaskLinesId: number, description: string) => {
+        if (!blockTaskLinesId) {
+            return null
+        }
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_DESCRIPTION, { id: blockTaskLinesId, description })
+        if (DEBUG) console.log('BlockStore: setBlockTaskLineDescription: ', result)
+        return result.data
+    }
+
     // __ Разделение линий СЗ при выполнении СЗ
     const divideLineInBlockTaskPending = async (blockTask: IBlockTask, period: IPeriod | null = null) => {
 
@@ -980,6 +991,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockTaskLinesDone,
         setBlockTaskLinesFalse,
         setBlockTaskLinesReset,
+        setBlockTaskLineDescription,
         divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,

@@ -13,7 +13,9 @@
                 class="cursor-pointer"
                 rounded="rounded-[4px]"
                 text-size="small"
+                title="Click + Ctrl - Выполнение СЗ"
                 width="w-full"
+                @click.ctrl="gotoExecute"
             />
         </div>
 
@@ -411,7 +413,7 @@ const TOTALS_TYPE: IColorTypes = 'stone'
 const DATA_HEADER_TEXT_SIZE    = 'mini'
 // const CHANGE_1_TYPE            = 'indigo'
 // const CHANGE_2_TYPE            = 'orange'
-const REFERENCE_TIME           = 10.5 // часы
+const REFERENCE_TIME = 10.5 // часы
 
 // __ Высота под Итого
 const heightTotals = computed(() => (globalBlockTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
@@ -608,7 +610,7 @@ const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
     }
 
     // __ Получаем ссылки на панели
-    const mutations                          = manageTaskManufLines.value!.mutations
+    const mutations                         = manageTaskManufLines.value!.mutations
     const setBlockData: IBlockLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
 
     console.log('mutations: ', setBlockData)
@@ -1428,6 +1430,11 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
 
     throw new Error('Unknown menu item!')
+}
+
+// __ Переход в Выполнение СЗ
+const gotoExecute = async () => {
+    await router.push({ name: 'manufacture.cell.blocks.tasks.execute' })
 }
 
 

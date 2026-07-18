@@ -1,4 +1,5 @@
-<?php /** @noinspection ALL */
+<?php
+/** @noinspection ALL */
 
 namespace App\Http\Resources\Manufacture\Cells\Blocks\Manage;
 
@@ -17,26 +18,26 @@ class BlockTaskLineResource extends JsonResource
     {
         /** @noinspection PhpUndefinedFieldInspection */
         return [
-            'id'           => $this->id,
-            'id_ref'       => $this->id,
-            'amount'       => $this->amount,
-            'position'     => $this->position,
-            'created_at'   => $this->created_at ? Carbon::parse($this->created_at)->format(RETURN_DATE_TIME_FORMAT) : null,
-            'finished_at'  => $this->finished_at ? Carbon::parse($this->finished_at)->format(RETURN_DATE_TIME_FORMAT) : null,
-            'finished_by'  => $this->finished_by,
-            'false_at'     => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
-            'false_reason' => $this->false_reason,
-            'manuf_line'   => $this->line,
-            'time'         => $this->time,
-            'square'       => $this->square,
-            'productivity' => $this->square,
+            'id'             => $this->id,
+            'id_ref'         => $this->id,
+            'amount'         => $this->amount,
+            'position'       => $this->position,
+            'created_at'     => $this->created_at ? Carbon::parse($this->created_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+            'finished_at'    => $this->finished_at ? Carbon::parse($this->finished_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+            'finished_by'    => $this->finished_by,
+            'false_at'       => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
+            'false_reason'   => $this->false_reason,
+            'manuf_line'     => $this->line,
+            'time'           => $this->time,
+            'square'         => $this->square,
+            'productivity'   => $this->square,
             'order_line_ids' => $this->order_line_ids,
-            'order_lines' => BlockTaskOrderLineResource::collection($this->whenLoaded('orderLines')),
+            'description'    => $this->description,
 
-            'block' => $this->whenLoaded('block', fn() => new BlockTaskLineBlockResource($this->block)),
+            'order_lines'    => BlockTaskOrderLineResource::collection($this->whenLoaded('orderLines')),
+            'block'          => $this->whenLoaded('block', fn() => new BlockTaskLineBlockResource($this->block)),
 
             // 'cutting_task_id' => $this->cutting_task_id,
-            // 'description'    => $this->description,
             // 'active'         => $this->active,
             // 'status'         => $this->status,
             // 'comment'        => $this->comment,

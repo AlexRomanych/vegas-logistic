@@ -32,6 +32,9 @@
         <!-- __ КДБ -->
         <AppLabelTSWrapper :render-object="render.kdb"/>
 
+        <!-- __ Описание -->
+        <AppLabelTSWrapper :render-object="render.description"/>
+
         <!-- __ Время выполнения -->
         <AppLabelTSWrapper :render-object="render.finished_at"/>
 
@@ -208,6 +211,22 @@ const render: IRenderData = reactive({
         dataAlign:      'center',
         placeholder:    '🔍Линия ??...',
         data:           (/*blockLine: IBlockTaskLine*/) => '??'
+    },
+    description:     {
+        id:             () => 'description-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.description,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      'center',
+        placeholder:    '🔍Комментарий...',
+        data:           (/*blockLine: IBlockTaskLine*/) => 'Комментарий'
     },
     kdb:     {
         id:             () => 'kdb-search',

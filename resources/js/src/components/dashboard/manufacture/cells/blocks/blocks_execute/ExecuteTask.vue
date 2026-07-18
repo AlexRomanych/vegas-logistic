@@ -58,6 +58,7 @@
                 <ExecuteTaskLine
                     :block-line="blockLine"
                     :fields-width="blockLineFieldsWidth"
+                    @change-description="changeDescription(blockLine, $event)"
                 />
             </div>
 
@@ -76,6 +77,14 @@
 
     </div>
 
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        ok-word="Понятно"
+    />
 
     <!-- __ Модальное окно для информации о записи -->
     <!--<OrderItemInfo-->
@@ -93,9 +102,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, } from 'vue'
+import type { IRenderData, IBlockTask, IBlockTaskLine, IColorTypes, } from '@/types'
 
-import type { IRenderData, IBlockTask, } from '@/types'
+import { computed, reactive, ref, } from 'vue'
+
+import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import {
     getExecuteTaskStatistics, getBlockTaskAmountAndTime, getTaskStatusById,
@@ -111,6 +122,9 @@ import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import ExecuteTaskTotals
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskTotals.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+
 // import OrderItemInfo from '@/components/dashboard/manufacture/cells/block/block_components/common/OrderItemInfo.vue'
 // import CommentEdit from '@/components/dashboard/manufacture/cells/block/block_components/common/CommentEdit.vue'
 // import AppLabelMultilineTSWrapper
@@ -128,6 +142,8 @@ const props = withDefaults(defineProps<IProps>(), {
     clientShow: true,
     orderInfo : true,
 })
+
+const blockStore = useBlocksStore()
 
 // console.log('task: ', props.blockTask)
 
@@ -343,6 +359,7 @@ const blockLineFieldsWidth = {
     time        : 'w-[70px]',
     kdb         : 'w-[68px]',
     false_reason: 'w-[250px]',
+    description : 'w-[266px]',
 }
 
 // __ Пересчитываем Итого
@@ -360,6 +377,46 @@ const statistics = computed(() => getExecuteTaskStatistics(props.blockTask))
 //     await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 // }
 
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Ошибки                         !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Тип для модального окна Сообщений
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultilineTS.value!.show()
+}
+
+
+// __ Меняем Комментарий
+const changeDescription = async (blockLine: IBlockTaskLine, description: string) => {
+
+    const result = await blockStore.setBlockTaskLineDescription(blockLine.id, description)
+    if (checkCRUD(result)) {
+        blockLine.description = description
+        return
+    } else {
+        await showError()
+        return
+    }
+}
 
 </script>
 

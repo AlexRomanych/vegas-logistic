@@ -121,6 +121,20 @@
             rounded="4"
         />
 
+        <!-- __ Описание -->
+        <AppLabelTS
+            :height="lineHeight"
+            :text="blockLine.description ?? ''"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(blockLine)"
+            :width="fieldWidths.description"
+            align="left"
+            class="truncate cursor-pointer"
+            rounded="4"
+            title="Double Click - Изменить Комментарий"
+            @dblclick="changeDescription"
+        />
+
         <!-- __ Заявка -->
         <AppLabelTS
             :height="lineHeight"
@@ -133,10 +147,18 @@
         />
 
     </div>
+
+    <!-- __ Модальное окно для изменения/добавления комментария -->
+    <CommentEdit
+        ref="commentEdit"
+        :comment="comment"
+        label="Комментарий к Блоку"
+    />
+
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { IColorTypes, IBlockTaskLine } from '@/types'
 
@@ -146,6 +168,7 @@ import {
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
 
 interface IProps {
     blockLine: IBlockTaskLine
@@ -162,6 +185,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<{
     (e: 'showDocument', payload: number): void
+    (e: 'changeDescription', payload: string): void
 }>()
 
 // const LINE_HEIGHT    = 'h-[25px]'
@@ -239,6 +263,21 @@ const showDoc = () => {
         return
     }
     emits('showDocument', kdbId.value)
+}
+
+// __ Тип для модального окна изменения Комментария
+const comment     = ref('')
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
+
+// __ Меняем Комментарий
+const changeDescription = async () => {
+    comment.value = props.blockLine.description ?? '' // __ Устанавливаем комментарий
+
+    const answer = await commentEdit.value!.show()
+    if (answer) {
+        const newComment = commentEdit.value!.comment.trim()
+        emits('changeDescription', newComment)
+    }
 }
 
 </script>

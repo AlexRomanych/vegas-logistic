@@ -32,6 +32,12 @@
         <!-- __ КДБ -->
         <AppLabelTSWrapper :render-object="render.kdb"/>
 
+        <!-- __ Описание -->
+        <AppLabelTSWrapper
+            :render-object="render.description"
+            @dblclick="changeDescription"
+        />
+
         <!-- __ Время выполнения -->
         <AppLabelTSWrapper :render-object="render.finished_at"/>
 
@@ -40,10 +46,17 @@
 
     </div>
 
+    <!-- __ Модальное окно для изменения/добавления комментария -->
+    <CommentEdit
+        ref="commentEdit"
+        :comment="comment"
+        label="Комментарий к Блоку"
+    />
+
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 import type { IColorTypes, IRenderData, IBlockTaskLine, IBlockManufLine } from '@/types'
 
@@ -53,6 +66,7 @@ import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import { getTimeString } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
@@ -63,6 +77,10 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
+
+const emits = defineEmits<{
+    (e: 'changeDescription', payload: string): void
+}>()
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'
@@ -78,7 +96,7 @@ const HEADER_ALIGN     = 'center'
 const DATA_ALIGN       = 'left'
 
 const render: IRenderData = reactive({
-    checker       : {
+    checker     : {
         id            : () => 'id-checker',
         header        : ['', ''],
         width         : props.fieldsWidth.checker,
@@ -94,7 +112,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍?...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.finished_at ? '✓' : '✗'
     },
-    id            : {
+    id          : {
         id            : () => 'id-search',
         header        : ['', ''],
         width         : props.fieldsWidth.id,
@@ -110,7 +128,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍id...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.id.toString()
     },
-    position      : {
+    position    : {
         id            : () => 'position-search',
         header        : ['', ''],
         width         : props.fieldsWidth.position,
@@ -126,7 +144,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍№ п/п...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.position.toString(),
     },
-    name         : {
+    name        : {
         id            : () => 'name-search',
         header        : ['', ''],
         width         : props.fieldsWidth.name,
@@ -142,7 +160,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Чехол...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.block.name
     },
-    amount        : {
+    amount      : {
         id            : () => 'amount-search',
         header        : ['', ''],
         width         : props.fieldsWidth.amount,
@@ -158,7 +176,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Кол-во...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.amount.toString()
     },
-    time          : {
+    time        : {
         id            : () => 'time-search',
         header        : ['', ''],
         width         : props.fieldsWidth.time,
@@ -174,7 +192,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Время...',
         data          : (/*blockLine: IBlockTaskLine*/) => getTime.value
     },
-    line_1       : {
+    line_1      : {
         id            : () => 'line-1-search',
         header        : ['', ''],
         width         : props.fieldsWidth.line,
@@ -190,7 +208,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Линия 1...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine?.manuf_line === BLOCK_MANUF_LINES.LINE_1 ? '1' : '',
     },
-    line_2       : {
+    line_2      : {
         id            : () => 'line-2-search',
         header        : ['', ''],
         width         : props.fieldsWidth.line,
@@ -206,7 +224,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Линия 2...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine?.manuf_line === BLOCK_MANUF_LINES.LINE_2 ? '2' : '',
     },
-    line_0       : {
+    line_0      : {
         id            : () => 'line-0-search',
         header        : ['', ''],
         width         : props.fieldsWidth.line,
@@ -222,7 +240,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Линия ??...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine?.manuf_line === BLOCK_MANUF_LINES.LINE_0 ? '??' : '',
     },
-    kdb          : {
+    kdb         : {
         id            : () => 'kdb-search',
         header        : ['', ''],
         width         : props.fieldsWidth.kdb,
@@ -238,7 +256,25 @@ const render: IRenderData = reactive({
         placeholder   : '🔍КДБ...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.block.collection.kdb ? props.blockLine.block.collection.kdb.kdb : ''
     },
-    finished_at   : {
+    description : {
+        id            : () => 'description-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.description,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Примечание...',
+        data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.description ?? '',
+        title         : 'Double Click - Изменить комментарий',
+        class         : 'truncate'
+    },
+    finished_at : {
         id            : () => 'finished-at-search',
         header        : ['', ''],
         width         : props.fieldsWidth.finished_at,
@@ -258,7 +294,7 @@ const render: IRenderData = reactive({
                 props.blockLine.false_at ?
                     formatTimeInFullFormat(props.blockLine.false_at) : '',
     },
-    false_reason  : {
+    false_reason: {
         id            : () => 'false-reason-search',
         header        : ['', ''],
         width         : props.fieldsWidth.false_reason,
@@ -297,7 +333,6 @@ const getTypeForLine = (blockTableTarget: IBlockManufLine) => {
 const getTime = computed(() => getTimeString(props.blockLine, true).replaceAll('.', ''))
 
 
-
 // __ Получаем тип стегальной машины
 const line = computed(() => props.blockLine.manuf_line)
 
@@ -309,6 +344,22 @@ const getType = computed<IColorTypes>(() =>
 
 // __ Тип подсветки для выполненного элемента
 const finishedAtType = computed<IColorTypes>(() => props.blockLine.finished_at ? 'success' : 'danger')
+
+
+// __ Тип для модального окна изменения Комментария
+const comment     = ref('')
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
+
+// __ Меняем Комментарий
+const changeDescription = async () => {
+    comment.value = props.blockLine.description ?? '' // __ Устанавливаем комментарий
+
+    const answer = await commentEdit.value!.show()
+    if (answer) {
+        const newComment = commentEdit.value!.comment.trim()
+        emits('changeDescription', newComment)
+    }
+}
 
 </script>
 

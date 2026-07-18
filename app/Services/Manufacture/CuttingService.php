@@ -29,9 +29,8 @@ final class CuttingService
      * ___ Создать СЗ для Пошива из основного Заказа
      * @param int $orderId             ID основного Заказа
      * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
+     * @param bool $calculateCut
      * @return CuttingTask|null
-     * @noinspection DuplicatedCode
-     * @noinspection PhpUndefinedFieldInspection
      * @throws Exception
      */
     public static function createCuttingTaskFromOrderId(
@@ -1050,16 +1049,25 @@ final class CuttingService
             // __ Ищем крышку и боковину
             $hasPanel = false;
             $hasSide  = false;
-            if (!is_null($cover->constructs[0]) && !is_null($cover->constructs[0]->constructItems)) {
-                $items = $cover->constructs[0]->constructItems;
-                foreach ($items as $item) {
-                    if (!is_null($item->detail) && mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME)) {
-                        $hasPanel = true;
-                    } elseif (!is_null($item->detail) && mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME)) {
-                        $hasSide = true;
+            try {
+                if (isset($cover->constructs[0]->constructItems)) {
+                    $items = $cover->constructs[0]->constructItems;
+                    foreach ($items as $item) {
+                        if (isset($item->detail) && mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME)) {
+                            $hasPanel = true;
+                        } elseif (isset($item->detail) && mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME)) {
+                            $hasSide = true;
+                        }
                     }
                 }
+            } catch (Exception $exception) {
+
+                $coverArr = $cover->toArray();
+                $a = 0;
+
+
             }
+
 
             if ($findModel->cover_type === 'м.бок.' || $findModel->cover_type === 'глух.') {
                 if ($hasPanel) {

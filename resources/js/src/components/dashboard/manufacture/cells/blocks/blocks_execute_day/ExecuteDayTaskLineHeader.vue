@@ -115,6 +115,18 @@
             text="Причина"
         />
 
+        <!-- __ Описание -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.description"
+            class="truncate"
+            rounded="4"
+            text="Комментарий"
+        />
+
         <!-- __ Заявка -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
