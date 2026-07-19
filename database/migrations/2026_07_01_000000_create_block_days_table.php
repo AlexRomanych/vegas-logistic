@@ -5,8 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     use AddCommonColumnsInTableTrait;
 
     const TABLE_NAME = 'block_days';
@@ -76,6 +75,10 @@ return new class extends Migration
             $table->text('history')->nullable()->comment('История изменений');
 
             $table->jsonb('meta_ext')->nullable()->comment('Дополнительные данные');
+
+            // __ Тут заводим поле для текущего Режима Сортировки ('По Приоритету', 'По Оптимизации Трудозатрат', 'По Ручному Порядку')
+            $table->string('sort_mode')->nullable()->comment('Текущий Режим сортировки');
+            $table->jsonb('order_collections')->nullable()->comment('Порядок Коллекций Блоков при Ручной сортировке');
 
             // __ Ограничение на уникальность дата + смена
             $table->unique(['action_at_str', 'change']);
