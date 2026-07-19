@@ -4,11 +4,11 @@
         <!-- __ Collapsed -->
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
+            :type="isAllLinesDone ? 'success' : 'warning'"
             align="center"
             class="cursor-pointer"
             rounded="4"
             text-size="micro"
-            type="warning"
             width="w-[30px]"
             @click.exact="emits('toggleCollapse')"
         />
@@ -16,7 +16,7 @@
         <!-- __ Название UnderGroup (Крой) -->
         <AppLabelTS
             :text="undergroup.undergroupName"
-            :type="DEFAULT_TYPE"
+            :type="isAllLinesDone ? 'success' : DEFAULT_TYPE"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
@@ -72,18 +72,21 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 
 import type { ICuttingTaskLinesUnderGroup } from '@/types'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { isTaskLineDone } from '@/app/helpers/manufacture/helpers_cutting.ts'
+
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface IProps {
     undergroup: ICuttingTaskLinesUnderGroup
     collapsed?: boolean
 }
 
-/*const props =*/
-defineProps<IProps>()
+const props = defineProps<IProps>()
 
 const emits = defineEmits<{
     (e: 'toggleCollapse'): void
@@ -92,6 +95,9 @@ const emits = defineEmits<{
 
 const FIELDS_AMOUNT_TIME_WIDTH = 'w-[172px]'
 const DEFAULT_TYPE             = 'indigo'
+
+// __ Проверяем, все ли Строки выполнены
+const isAllLinesDone = computed(() => props.undergroup.lines.every(line => isTaskLineDone(line)))
 
 </script>
 
