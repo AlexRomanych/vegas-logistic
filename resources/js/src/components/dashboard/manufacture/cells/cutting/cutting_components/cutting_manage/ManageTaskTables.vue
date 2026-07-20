@@ -222,7 +222,7 @@ import type {
     IDividerItem,
     IAmountAndTime,
     ICuttingTaskCardSort,
-    ICuttingTaskOrderLine, ICuttingTablePanel,
+    ICuttingTaskOrderLine, ICuttingTablePanel, DraggableHTMLElement,
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -291,10 +291,19 @@ const cuttingStore = useCuttingStore()
 
 const { globalManageTaskCardActiveCuttingLine } = storeToRefs(cuttingStore)
 
+// __ Копия входящих данных (объект левой панели) для отслеживания изменений
+const taskMem  = computed<ICuttingTask>(() => {
+    const task = JSON.parse(JSON.stringify(props.task))
+    task.cutting_lines     = task.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
+    return task
+})
+// taskMem.cutting_lines     = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
+
 
 // __ Данные (объект) панелей
 const panelList = computed(() => {
-    if (tableCuttingLines_0.value.length !== 0) {
+    if (taskMem.value.cutting_lines.some(line => line.table === TABLE_0_PANEL_ID)) {
+    // if (tableCuttingLines_0.value.length !== 0) {
         return [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID, TABLE_0_PANEL_ID]
     }
     return [TABLE_1_PANEL_ID, TABLE_2_PANEL_ID, TABLE_3_PANEL_ID]
@@ -306,9 +315,6 @@ const tableCuttingLines_3 = ref<ICuttingTaskLine[]>([])
 const tableCuttingLines_0 = ref<ICuttingTaskLine[]>([])
 const mutations           = ref<ICuttingTaskLine[]>([])
 
-// __ Копия входящих данных (объект левой панели) для отслеживания изменений
-let taskMem: ICuttingTask = JSON.parse(JSON.stringify(props.task))
-taskMem.cutting_lines     = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
 
 // __ Маяк изменений (для сохранения состояния при перетаскивании)
 const needForSave = ref(false)
@@ -860,11 +866,11 @@ const startDrag  = (/*evt: any*/) => {
     tableLengthMem_0 = tableDataMem_0.length
 
 }
-const finishDrag = async (evt: any) => {
+const finishDrag = async (evt: DraggableHTMLElement) => {
     // const element = evt.item._underlying_vm_
     // emits('drag-and-drop')
     // console.log('finishDrag')
-    const element = evt.item._underlying_vm_
+    const element = evt.item._underlying_vm_ as ICuttingTaskLine
     // console.log('finish element: ', element)
 
     const getToTable = () => {
@@ -970,8 +976,8 @@ watch(() => props.task, () => {
     globalManageTaskCardActiveCuttingLine.value = props.task?.cutting_lines[0]
 
     // __ Копируем входящие данные для отслеживания изменений
-    taskMem               = JSON.parse(JSON.stringify(props.task))
-    taskMem.cutting_lines = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
+    // taskMem               = JSON.parse(JSON.stringify(props.task))
+    // taskMem.cutting_lines = taskMem.cutting_lines.sort((a: ICuttingTaskLine, b: ICuttingTaskLine) => a.id - b.id)
 
     // __ Обновляем инфу в нижней части
     footTitle.action_at = formatDateInFullFormat(props.task.action_at)
@@ -1015,7 +1021,7 @@ watchEffect(() => {
     ]
     // __ Создаем Map, где ключом будет id, а значением — старое имя стола
     // __ Map в JS работает быстрее, чем поиск через .find() на каждой итерации
-    const beforeTableMap = new Map(taskMem.cutting_lines.map(item => [item.id, item.table]))
+    const beforeTableMap = new Map(taskMem.value.cutting_lines.map(item => [item.id, item.table]))
     mutations.value      = linesActual.filter(line => {
         const oldTable = beforeTableMap.get(line.id)
 
@@ -1023,7 +1029,9 @@ watchEffect(() => {
         return oldTable !== undefined && oldTable !== line.table
     })
 
-    // console.log('mutations: ', mutations)
+    // console.log('beforeTableMap: ', beforeTableMap)
+    // console.log('linesActual: ', linesActual)
+    // console.log('mutations: ', mutations.value)
 
     if (mutations.value.length === 0) {
         needForSave.value = false
