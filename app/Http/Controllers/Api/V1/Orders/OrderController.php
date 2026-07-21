@@ -12,6 +12,7 @@ use App\Models\Client;
 use App\Models\Materials\Material;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
+use App\Models\Order\OrderLineMaterialPivot;
 use App\Models\Order\OrderStatus;
 use App\Models\Order\OrderType;
 use App\Services\DefaultsService;
@@ -61,6 +62,12 @@ class OrderController extends Controller
                 ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('sewingTask') // <-- Добавит boolean-поле sewing_task_exists
                 ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
+                                           // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
+                ->withCount([
+                    'lines as expense_exists' => function ($query) {
+                        $query->whereHas('materials');
+                    }
+                ])
                 ->with([
                     'lines.model.modelType',
                     'lines.specification',
@@ -97,6 +104,12 @@ class OrderController extends Controller
                 ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
                 ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
+                ->withCount([
+                    // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
+                    'lines as expense_exists' => function ($query) {
+                        $query->whereHas('materials');
+                    }
+                ])
                 ->with([
                     'lines.model.modelType',
                     'lines.specification',
@@ -790,6 +803,7 @@ class OrderController extends Controller
      * ___ Получаем материалы для карточки заказа для группы Заявок
      * @param Request $request
      * @return JsonResponse|string
+     * @noinspection DuplicatedCode
      */
     public function getOrderWithMaterials(Request $request)
     {
@@ -1011,5 +1025,103 @@ class OrderController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+    /**
+     * ___ Удаляем расход для группы Заявок (Заказов)
+     * @param Request $request
+     * @return string
+     * @noinspection DuplicatedCode
+     */
+    public function deleteOrdersMaterials(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'data'   => ['required', 'array', 'min:1'],
+                'data.*' => [
+                    'required',
+                    'integer',
+                    'distinct',
+                    Rule::exists('orders', 'id') // Проверка существования каждого id в таблице orders
+                ],
+            ]);
+
+            if ($validator->fails()) {
+                throw new Exception('Переданы некорректные ID заказов.');
+            }
+
+            // __ Получаем чистый массив заветных ID
+            $orderIds = $validator->validated()['data'];
+
+            OrderLineMaterialPivot::query()
+                ->whereIn(
+                    'order_line_id',
+                    OrderLine::query()
+                        ->whereIn('order_id', $orderIds)->select('id')
+                )
+                ->delete();
+
+            return EndPointStaticRequestAnswer::ok('Расход удален');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Создаем расход для группы Заявок (Заказов)
+     * @param Request $request
+     * @return string
+     * @noinspection DuplicatedCode
+     */
+    public function createOrdersMaterials(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'data'   => ['required', 'array', 'min:1'],
+                'data.*' => [
+                    'required',
+                    'integer',
+                    'distinct',
+                    Rule::exists('orders', 'id') // Проверка существования каждого id в таблице orders
+                ],
+            ]);
+
+            if ($validator->fails()) {
+                throw new Exception('Переданы некорректные ID заказов.');
+            }
+
+            // __ Получаем чистый массив заветных ID
+            $orderIds = $validator->validated()['data'];
+
+            // __ Проверяем на наличие расхода и собираем id без расхода
+            $ordersToExpenseIds = [];
+            foreach ($orderIds as $orderId) {
+                $order = Order::query()
+                    ->withCount([
+                        // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
+                        'lines as expense_exists' => function ($query) {
+                            $query->whereHas('materials');
+                        }
+                    ])
+                    ->findOrFail($orderId);
+
+                if ($order->expense_exists === 0) {
+                    $ordersToExpenseIds[] = $orderId;
+                }
+            }
+
+            $result = RunService::runExpenseParser_Rust($ordersToExpenseIds);
+
+            if ((int)$result !== 0) {
+                return EndPointStaticRequestAnswer::failResponse('Ошибка при расчете сырья');
+            }
+
+            return EndPointStaticRequestAnswer::ok('Расход рассчитан');
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 
 }

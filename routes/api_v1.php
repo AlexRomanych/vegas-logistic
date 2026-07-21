@@ -102,7 +102,7 @@ Route::prefix('/materials')
 //         Route::get('/{id}', [OrderController::class, 'getOrderById']);
 //     });
 
-Route::get('/orders/types/fill', [OrderController::class, 'fillOrderTypes']);
+//Route::get('/orders/types/fill', [OrderController::class, 'fillOrderTypes']);
 
 Route::prefix('/orders')
     ->middleware('jwt.auth')
@@ -111,8 +111,13 @@ Route::prefix('/orders')
         Route::get('/types', [OrderController::class, 'getOrderTypes']);    // __ Должен быть первым, чтобы не было конфликта с '/{id}'
 
         Route::get('/', [OrderController::class, 'getOrders']);
+
         Route::get('/expense', [OrderController::class, 'getOrderWithExpense']);
         Route::get('/materials', [OrderController::class, 'getOrderWithMaterials']);
+        Route::post('/materials', [OrderController::class, 'createOrdersMaterials']);
+        Route::delete('/materials', [OrderController::class, 'deleteOrdersMaterials']);
+
+
         Route::get('/cutting/task/lines/{id}', [OrderController::class, 'getOrdersWithCuttingTaskLines']);
 
         Route::get('/{id}', [OrderController::class, 'getOrderById']);

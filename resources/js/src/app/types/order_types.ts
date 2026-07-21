@@ -56,6 +56,7 @@ export interface IRenderOrder {
         cutting_task: boolean,
         sewing_task: boolean,
         block_task: boolean,
+        expense_exists: boolean,
     }
 
     tasks: {

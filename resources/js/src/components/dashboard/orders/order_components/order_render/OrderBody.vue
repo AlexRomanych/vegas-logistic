@@ -53,6 +53,9 @@
             <!-- __ Описание -->
             <AppLabelTSWrapper :arg="order" :render-object="render.description"/>
 
+            <!-- __ Наличие СВПМ -->
+            <AppLabelTSWrapper :arg="order" :render-object="render.has_expense"/>
+
             <!-- __ Наличие СЗ Раскроя -->
             <AppLabelTSWrapper :arg="order" :render-object="render.has_cutting_task"/>
 

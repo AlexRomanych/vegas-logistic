@@ -156,6 +156,11 @@
                         <AppInputTextTSWrapper v-model="descriptionFilter" :render-object="render.description"/>
                     </div>
 
+                    <!-- __ Наличие СВПМ -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.has_expense"/>
+                    </div>
+
                     <!-- __ Наличие СЗ Раскроя -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.has_cutting_task"/>
@@ -683,6 +688,22 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Распечатать заявку...',
         class         : 'cursor-pointer',
         data          : (/*order: IRenderOrder*/) => '📄',
+    },
+    has_expense   : {
+        id            : () => 'has-expense-search',
+        header        : ['СВПМ', '(Расход)'],
+        width         : DEFAULT_WIDTH_TASK,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.has_tasks.expense_exists ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍СВПМ...',
+        data          : (order: IRenderOrder) => order.has_tasks.expense_exists ? '✓' : '✗',
     },
     has_cutting_task   : {
         id            : () => 'has-cutting-task-search',

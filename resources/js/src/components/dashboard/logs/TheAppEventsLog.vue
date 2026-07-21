@@ -241,6 +241,7 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Контекст...',
         data          : (event: IEventLog) => JSON.stringify(event.context),
+        class         : 'cursor-pointer'
     },
 })
 

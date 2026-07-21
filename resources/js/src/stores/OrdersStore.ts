@@ -36,9 +36,9 @@ export const useOrdersStore = defineStore('orders', () => {
 
 
     // Список заказов, которые получили к отображению
-    let ordersShow: ISewingTask[]       = []
+    let ordersShow: ISewingTask[] = []
     // const ordersShowTest = ref('123')
-    const ordersShowIsChanged = ref(false)
+    const ordersShowIsChanged     = ref(false)
 
     // __ Получаем с API список Заказов
     const getOrders = async (period: IPeriod | null = null) => {
@@ -55,21 +55,35 @@ export const useOrdersStore = defineStore('orders', () => {
 
     // __ Получаем с API список Заказов + Материалы
     const getOrderWithExpense = async (ids: number[]) => {
-        const result = await jwtGet(URL_ORDERS_EXPENSE, ids);
+        const result = await jwtGet(URL_ORDERS_EXPENSE, ids)
         if (DEBUG) console.log('OrdersStore: getOrderWithExpense: ', result)
         return result.data
     }
 
     // __ Получаем с API список Заказов + Материалы в виде дерева
     const getOrdersWithMaterials = async (ids: number[]) => {
-        const result = await jwtGet(URL_ORDERS_MATERIALS, ids);
+        const result = await jwtGet(URL_ORDERS_MATERIALS, ids)
         if (DEBUG) console.log('OrdersStore: getOrderWithMaterials: ', result)
+        return result.data
+    }
+
+    // __ Удаляем Расход Материалов (СВПМ)
+    const deleteOrdersMaterials = async (ids: number[]) => {
+        const result = await jwtDelete(URL_ORDERS_MATERIALS, { data: ids })
+        if (DEBUG) console.log('deleteOrdersMaterials: getOrderWithMaterials: ', result)
+        return result.data
+    }
+
+    // __ Создаем Расход Материалов (СВПМ)
+    const createOrdersMaterials = async (ids: number[]) => {
+        const result = await jwtPost(URL_ORDERS_MATERIALS, { data: ids })
+        if (DEBUG) console.log('createOrdersMaterials: getOrderWithMaterials: ', result)
         return result.data
     }
 
     // __ Получаем с API список Заказов + Привязка Деталек Раскроя
     const getOrdersWithCuttingTaskLines = async (id: number) => {
-        const result = await jwtGet(`${URL_ORDERS_CUTTING_TASK_LINES}/${id}`);
+        const result = await jwtGet(`${URL_ORDERS_CUTTING_TASK_LINES}/${id}`)
         if (DEBUG) console.log('OrdersStore: getOrdersWithCuttingTaskLines: ', result)
         return result.data
     }
@@ -226,13 +240,19 @@ export const useOrdersStore = defineStore('orders', () => {
         ordersShow,
         ordersShowIsChanged,
 
-        getOrders, getOrderWithExpense, getOrdersWithMaterials, getOrdersWithCuttingTaskLines,
+        getOrders,
         getOrderById,
         uploadOrders,
         validateOrders,
         deleteOrders,
         deleteOrderLine,
         addOrdersAverage,
+
+        getOrderWithExpense,
+        getOrdersWithMaterials,
+        getOrdersWithCuttingTaskLines,
+        deleteOrdersMaterials,
+        createOrdersMaterials,
 
         patchLoadAtDate,
         patchDescription,
