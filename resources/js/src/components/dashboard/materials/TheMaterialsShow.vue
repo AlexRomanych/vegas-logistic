@@ -474,7 +474,7 @@ const showProperties = async (material: IMaterial) => {
 }
 
 watchEffect(() => {
-    console.log(123)
+    // console.log(123)
 
     const objectNameSearch  = objectNameFilter.value.toLowerCase()
     const nameSearch        = nameFilter.value.toLowerCase()

@@ -4,6 +4,9 @@
 //--- -------------- Физические рулоны (FabricTaskRolls) -------------------
 //--- ----------------------------------------------------------------------
 
+import { LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING } from '@/app/constants/log.ts'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
+
 export interface IFabricTaskRollLog {
     id: number
     log_at: string
@@ -54,10 +57,26 @@ export interface IFabricTaskRollLogUser {
 //--- ----------------------------------------------------------------------
 //--- ----------------------- События приложения ---------------------------
 //--- ----------------------------------------------------------------------
+
+export type IEventLogLevel = typeof LEVEL_INFO | typeof LEVEL_ERROR | typeof LEVEL_WARNING
+export interface IEventLogObj {
+    LEVEL: IEventLogLevel,
+    TITLE: string,
+    TYPE : IColorTypes,
+}
+
+
+
+
 export interface IEventLog {
-    level: string
+    id: number
+    level: IEventLogLevel
     target: string
     message: string
     context: Record<string, string | number>[] | null
     created_at: string
 }
+
+
+
+

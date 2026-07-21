@@ -60,7 +60,7 @@ export const useLogsStore = defineStore('logs', () => {
         let response
 
         if (period) {
-            response = await jwtGet(URL_LOGS_FABRICS_EXECUTE_ROLLS_BY_PERIOD, { period })
+            response = await jwtGet(URL_LOGS_APP_EVENTS, { period })
         } else {
             response = await jwtGet(URL_LOGS_APP_EVENTS)
         }

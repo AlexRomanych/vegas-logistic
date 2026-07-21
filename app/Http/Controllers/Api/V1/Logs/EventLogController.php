@@ -43,7 +43,9 @@ class EventLogController extends Controller
             $eventLogs = EventLog::query()
                 ->whereDate('created_at', '>=', $start)
                 ->whereDate('created_at', '<=', $end)
-                ->orderBy('created_at')
+                ->orderByDesc('id')
+                //->orderByDesc('created_at')
+                //->limit(200)
                 ->get();
 
             return EventLogResource::collection($eventLogs);

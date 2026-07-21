@@ -1052,7 +1052,7 @@ watchEffect(() => {
             const hasProcedureSide = procedureSide && procedureSide.name.toLowerCase().includes(procedureSideFilter.value.toLocaleLowerCase())
 
             if (
-                models.value[i].items[j].name_report.toLowerCase().includes(nameFilter.value.toLowerCase()) &&
+                models.value[i].items[j].name_report?.toLowerCase().includes(nameFilter.value.toLowerCase()) &&
                 models.value[i].items[j].code_1c.toLowerCase().includes(codeFilter.value.toLowerCase()) &&
                 models.value[i].items[j].angle?.toLowerCase().includes(angleFilter.value.toLowerCase()) &&
                 models.value[i].items[j].kdch?.toLowerCase().includes(kdchFilter.value.toLowerCase()) &&

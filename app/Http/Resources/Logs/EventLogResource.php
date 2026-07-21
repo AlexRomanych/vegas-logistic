@@ -16,6 +16,7 @@ class EventLogResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id'         => $this->id,
             'level'      => $this->level,
             'target'     => $this->target,
             'message'    => $this->message,
