@@ -549,9 +549,16 @@ export function getCoverSizeString(item: ICuttingTaskLine | ICuttingTaskOrderLin
         return ''
     }
 
+    let height = workData.model.main.cover_height
+    if (isCuttingTaskLine(item)) {
+        if (item.cover_height !== 0) {
+            height = item.cover_height
+        }
+    }
+
     return round(workData.dims.width).toString() + 'x' +
         round(workData.dims.length).toString() + 'x' +
-        round(workData.model.main.cover_height * 100).toString()
+        round(height * 100).toString()
 }
 
 

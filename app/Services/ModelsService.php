@@ -1262,7 +1262,7 @@ final class ModelsService implements VegasDataUpdateContract
      * @param Model|string $model
      * @return int|mixed
      */
-    public static function getModelCoverHeight(Model|string $model)
+    public static function getModelCoverHeight(Model|string $model): mixed
     {
         $findModel = self::getModel($model);
         if (!$findModel) {

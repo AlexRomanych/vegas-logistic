@@ -5,6 +5,7 @@ namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 use App\Classes\SewingTimeLabor;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
 use App\Services\ModelsService;
+use App\Services\OrdersService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,20 +40,23 @@ class SewingTaskLineResource extends JsonResource
             'false_at'     => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason' => $this->false_reason,
 
-            'amount_avg' => null,
-            'time'       => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
+            'amount_avg'   => null,
+            'time'         => $this->orderLine->model->is_average ? $labor->getTimeByPhantom($this->phantom) : $labor->getTimeArray(),
             // 'time'       => ['time_'.$this->phantom => $this->time],
             // 'time'       => $labor->getTime(),
 
             // 'amount_avg' => $this->orderLine->model->is_average ? $labor->getAveragesAmount() : null,
 
-            'order_line' => (new SewingTaskOrderLineResource($this->whenLoaded('orderLine')))
+            'cover_height' => $this->whenLoaded('orderLine', fn($orderLine) => OrdersService::getCoverHeightByOrderLine($this->orderLine)),
+
+            'order_line'   => (new SewingTaskOrderLineResource($this->whenLoaded('orderLine')))
                 ->additional([
                     'phantom_data' => [
                         'phantom'      => $this->phantom,
                         'phantom_json' => $this->phantom_json,
                     ]
-                ]),        // __ Добавляем подмену свойств в потомке
+                ]),
+            // __ Добавляем подмену свойств в потомке
 
             'element_type' => [
                 'is_average' => $this->orderLine->model->is_average,    // __ Динамическое поле, указывает, что модель расчетная

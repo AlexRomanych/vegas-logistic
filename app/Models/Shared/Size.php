@@ -2,7 +2,11 @@
 
 namespace App\Models\Shared;
 
-
+/**
+ * @property int|null $width
+ * @property int|null $length
+ * @property int|null $height
+ */
 readonly class Size
 {
     public function __construct(

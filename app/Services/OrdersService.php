@@ -6,6 +6,8 @@ namespace App\Services;
 use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Models\Client;
+use App\Models\Logs\EventLog;
+use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
@@ -1100,6 +1102,111 @@ final class OrdersService
     }
 
 
+    /**
+     * ___ Парсим Комментарии к Заявке на наличие Метаданных
+     * ___ Высота Чехла и Стол для Раскроя
+     * @param array $attributes
+     * @return array
+     */
+    public static function getOrderLineMetaData(array $attributes): array
+    {
+        $strings = [
+            $attributes['composition'],
+            $attributes['describe_1'],
+            $attributes['describe_2'],
+            $attributes['describe_3'],
+        ];
+
+        $extractedValues = [];
+
+        foreach ($strings as $text) {
+            // 1. Быстрая проверка: если строка пустая, null или в ней нет '#' — пропускаем
+            if (empty($text) || !str_contains($text, '#')) {
+                continue;
+            }
+
+            // 2. Если решетка есть, безопасно ищем текст внутри
+            if (preg_match('/#(.*?)#/u', $text, $matches)) {
+                $extractedValues[] = $matches[1];
+            }
+        }
+
+        if (empty($extractedValues)) {
+            return [];
+        } elseif (count($extractedValues) > 1) {
+            $eventLog          = new EventLog();
+            $eventLog->level   = EventLog::LEVEL_ERROR;
+            $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
+            $eventLog->message = 'Дублирование метаданных (Высота Чехла, Стол) в комментариях строки Заявки';
+            $eventLog->context = $extractedValues;
+            $eventLog->save();
+        }
+
+        // __ Берем самую первуцю Запись
+        $string = $extractedValues[0];
+
+        // __Регулярное выражение с паттерном поиска ключевых слов без учета регистра (/i)
+        // __ и границей следующего ключевого слова или конца строки (?=ВысЧех|Стол2|Стол3|$)
+        $pattern = '/(ВысЧех|Стол1|Стол2|Стол3).*?(?=ВысЧех|Стол1|Стол2|Стол3|$)/ui';
+
+        preg_match_all($pattern, $string, $matches);
+
+        // __ В $matches[0] окажутся готовые куски:
+        $input = $matches[0];
+
+        // __ Результат в $results будет примерно таким:
+        // __ [0 => "ВысЧех=17см", 1 => "Стол2(крыш)", 2 => "Стол3(бок)"]
+
+        $result = [];
+
+        foreach ($input as $item) {
+
+            // Сделаем надежнее и чище через точечные проверки:
+            if (stripos($item, 'ВысЧех') !== false) {
+                // Ищем знак '=', опциональные пробелы, а затем захватываем только цифры (\d+)
+                if (preg_match('/=\s*(\d+)/u', $item, $m)) {
+                    $result[ModelConstruct::COVER_HEIGHT_NAME] = (int)$m[1]; // Приводим к числу (int)
+                }
+            }
+
+            // __ Проверяем наличие ключевого слова с вариациями "крыш"
+            if (stripos($item, 'крыш') !== false) {
+                // Ищем паттерн вроде "Стол2" или любое слово со словом "Стол" перед этим
+                if (preg_match('/(стол\d+)/ui', $item, $m)) {
+                    // Извлекаем только цифру из найденного слова (например, "Стол2" -> "2")
+                    if (preg_match('/\d+/', $m[1], $num)) {
+                        $result[ModelConstruct::PANEL_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
+                    }
+                }
+            }
+
+            // __ Проверяем наличие ключевого слова с вариациями "бок" или "боковина"
+            if (stripos($item, 'бок') !== false) {
+                if (preg_match('/(стол\d+)/ui', $item, $m)) {
+                    if (preg_match('/\d+/', $m[1], $num)) {
+                        $result[ModelConstruct::SIDE_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * ___ Получаем Высоту Чехла по Комментариям в Строке Заявки
+     * @param OrderLine $orderLine
+     * @return int|null
+     */
+    public static function getCoverHeightByOrderLine(OrderLine $orderLine): int|null
+    {
+        $metaData = $orderLine->meta_data;          // __ Получаем метадату из Комментариев по Столу
+        if (!empty($metaData)) {
+            return $metaData[ModelConstruct::COVER_HEIGHT_NAME] ?? null;
+        }
+        return null;
+    }
 }
 
 

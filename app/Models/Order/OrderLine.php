@@ -2,17 +2,39 @@
 
 namespace App\Models\Order;
 
+use App\Models\Logs\EventLog;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Materials\Material;
 use App\Models\Models\ModelConstruct;
+use App\Services\OrdersService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
+
+/**
+ * @property string $model_code_1c
+ * @property int $width
+ * @property int $length
+ * @property int $height
+ * @property array $meta_data
+ */
 class OrderLine extends Model
 {
     protected $guarded = false;
+
+
+    // __ Attribute. Возвращаем Мета-дату по Высоте Чехла и Столу Раскроя
+    protected function metaData(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                return OrdersService::getOrderLineMetaData($attributes);
+            },
+        );
+    }
 
 
     // Relations: Связь с Заказом
@@ -39,7 +61,7 @@ class OrderLine extends Model
         )
             ->using(OrderLineMaterialPivot::class) // 5. Указываем использовать кастомную пивот-модель
             ->withPivot(['expense_per_pic', 'rest_per_pic']);
-            //->withTimestamps();                    // 6. Если в пивот-таблице есть поля created_at/updated_at
+        //->withTimestamps();                    // 6. Если в пивот-таблице есть поля created_at/updated_at
     }
 
     // Relations: Связь со Спецификацией, котрая подгружается из 1С

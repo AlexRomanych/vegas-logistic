@@ -510,9 +510,16 @@ export function getCoverSizeString(item: ISewingTaskLine | ISewingTaskOrderLine)
         return ''
     }
 
+    let height = workData.model.main.cover_height
+    if (isSewingTaskLine(item)) {
+        if (item.cover_height) {
+            height = item.cover_height
+        }
+    }
+
     return round(workData.dims.width).toString() + 'x' +
         round(workData.dims.length).toString() + 'x' +
-        round(workData.model.main.cover_height * 100).toString()
+        round(height).toString()
 }
 
 

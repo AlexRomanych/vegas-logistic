@@ -13,8 +13,10 @@ use App\Models\Manufacture\Cells\Cutting\CuttingTaskStatus;
 use App\Models\Models\Model;
 use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
+use App\Models\Order\OrderLine;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
+use App\Services\OrdersService;
 use App\Services\RunService;
 use Carbon\Carbon;
 use Exception;
@@ -63,9 +65,23 @@ final class CuttingService
             ->select(['id', 'load_at', 'client_id', 'elements_type', 'order_no_origin'])
             ->with([
 
-                // __ 1. От строк берем только ключи
+                // __ От строк берем только нужные атрибуты
                 'lines'                                                                  => fn($q) => $q->select(
-                    ['id', 'order_id', 'size', 'model_code_1c', 'model_name', 'amount', 'construct_code_1c', 'construct_add_code_1c', 'textile']
+                    [
+                        'id',
+                        'order_id',
+                        'size',
+                        'model_code_1c',
+                        'model_name',
+                        'amount',
+                        'construct_code_1c',
+                        'construct_add_code_1c',
+                        'textile',
+                        'composition',
+                        'describe_1',
+                        'describe_2',
+                        'describe_3',
+                    ]
                 ),
 
                 // __ Это Спецификация, который приходит по коду привязанной спецификации в строке Заказа
@@ -148,6 +164,7 @@ final class CuttingService
             'order_id'  => $order->id,
             'position'  => self::getCuttingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для нового СЗ
         ]);
+
         if (!$createdTask) {
             throw new Exception('Failed to create CuttingTask');
         }
@@ -268,7 +285,10 @@ final class CuttingService
                 //$debugLine            = $line->toArray();
                 //$targetConstructDebug = $targetConstruct?->toArray();
 
+
+                // __ Получаем Детальки из Спецификации
                 $constructDetails = self::getCuttingDetailsByConstruct($targetConstruct);
+
 
                 // __ Нет деталей Чехла вообще
                 if (count($constructDetails) === 0) {
@@ -397,6 +417,7 @@ final class CuttingService
                 model: $line->model_code_1c,
                 size: $line->size,
                 amount: $line->amount,
+                orderLine: $line,
             );
 
             // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
@@ -419,6 +440,12 @@ final class CuttingService
                     'amount' => $cuttingTimeLabor->getAmountUndefined()
                 ],
             ];
+
+            // __ Получаем Высоту Чехла из Комментариев
+            if ($line->id === 16454) {
+                $a = 0;
+            }
+            $coverHeight = OrdersService::getCoverHeightByOrderLine($line);
 
             foreach ($cuttingTables as $table => $data) {
                 if ($data['amount'] < 1) {
@@ -453,7 +480,7 @@ final class CuttingService
                             'is_side'          => false,
                             'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
                             'fabric_construct' => [$detail['name']],
-                            'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
+                            'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
 
                             // __ Задаем подмену свойств
                             'phantom'          => $table,
@@ -470,7 +497,12 @@ final class CuttingService
                     continue;
                 }
 
-                $workTable = CuttingTaskLine::FIELD_TABLE_3;    // __ Стол будет всегда Третий для деталек
+                // __ Получаем Стол для Боковин
+                $workTable = CuttingService::getTableByOrderLine($line, ModelConstruct::SIDE_NAME) ?? CuttingTaskLine::FIELD_TABLE_3;
+                //$workTable = CuttingTaskLine::FIELD_TABLE_3;    // __ Стол будет всегда Третий для деталек
+
+
+
                 foreach ($constructDetails['sides'] as $detail) {
                     $panelTaskLine = CuttingTaskLine::query()->create([
                         'cutting_task_id'  => $createdTask->id,
@@ -488,7 +520,7 @@ final class CuttingService
                         'is_side'          => true,
                         'has_side'         => false,
                         'fabric_construct' => [$detail['name']],
-                        'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
+                        'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
 
                         // __ Задаем подмену свойств
                         'phantom'          => $table,
@@ -1006,6 +1038,22 @@ final class CuttingService
 
 
     /**
+     * ___ Получаем Стол Раскроя по Комментариям в Строке Заявки
+     * @param OrderLine $orderLine
+     * @param string $detailType
+     * @return string|null
+     */
+    public static function getTableByOrderLine(OrderLine $orderLine, string $detailType = ModelConstruct::PANEL_NAME): string|null
+    {
+        $metaData = $orderLine->meta_data;          // __ Получаем метадату из Комментариев по Столу
+        if (!empty($metaData)) {
+            return $metaData[$detailType] ?? null;
+        }
+        return null;
+    }
+
+
+    /**
      * ___ Получаем стол по модели
      * @param Model|string $model
      * @return string
@@ -1061,11 +1109,8 @@ final class CuttingService
                     }
                 }
             } catch (Exception $exception) {
-
                 $coverArr = $cover->toArray();
-                $a = 0;
-
-
+                $a        = 0;
             }
 
 
@@ -1326,10 +1371,27 @@ final class CuttingService
     }
 
 
+    /**
+     * ___ Возвращаем Название стола по Литералу (строка или число)
+     * @param string|int $literal
+     * @return string
+     */
+    public static function getTableConstantByLiteral(string|int $literal): string
+    {
+        $target = is_string($literal) ? trim($literal) : (string)$literal;
+        return match ($target) {
+            '1'     => CuttingTaskLine::FIELD_TABLE_1,
+            '2'     => CuttingTaskLine::FIELD_TABLE_2,
+            '3'     => CuttingTaskLine::FIELD_TABLE_3,
+            default => CuttingTaskLine::FIELD_UNDEFINED,
+        };
+    }
+
+
     public static function test()
     {
-        $cuttingTask = CuttingService::createCuttingTaskFromOrderId(1163);
-        $cuttingTask = CuttingService::createCuttingTaskFromOrderId(1172);
+        //$cuttingTask = CuttingService::createCuttingTaskFromOrderId(1163);
+        //$cuttingTask = CuttingService::createCuttingTaskFromOrderId(1172);
 
         //$model   = ModelsService::getModel('000000137');
         //$hasSide = self::hasSide($model);

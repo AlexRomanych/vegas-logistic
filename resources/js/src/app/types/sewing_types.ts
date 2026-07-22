@@ -52,6 +52,7 @@ export interface ISewingTaskLine {
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
     position: number
     order_line: ISewingTaskOrderLine
+    cover_height: number | null
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
@@ -209,8 +210,6 @@ export interface ISewingTaskStatusEntity {
 }
 
 
-
-
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
 export type ISewingLinesPanel = 'left' | 'right'
@@ -260,7 +259,6 @@ export interface ISewingTaskArrayLineDiffs {
 }
 
 // --- ------------------------------------------------------------
-
 
 
 // --- ------------------------------------------------------------
@@ -440,7 +438,7 @@ export interface ISewingTaskLinesGroupData {
 
 
 export interface ISewingTaskLinesSubgroup {
-    subgroupName:ISewingTaskLinesSubGroupNames
+    subgroupName: ISewingTaskLinesSubGroupNames
     subgroupOrderTitle: string | null  // Название заявки (для отображения), к которой относится СЗ
     subgroupType: IColorTypes
     hasData: boolean

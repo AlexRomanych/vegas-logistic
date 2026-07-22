@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Manufacture\Cells\Sewing\SewingTaskManage;
 
+use App\Services\OrdersService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

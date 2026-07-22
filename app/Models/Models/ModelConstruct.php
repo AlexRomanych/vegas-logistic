@@ -12,6 +12,7 @@ class ModelConstruct extends LaravelModel
     public const PANEL_UP_NAME = 'panel_up';
     public const PANEL_DOWN_NAME = 'panel_down';
     public const SIDE_NAME = 'side';
+    public const COVER_HEIGHT_NAME = 'cover_height';
 
     // __ Для Раскроя
     public const DETAIL_CONSTRUCT_PANEL_NAME = 'Крышка';

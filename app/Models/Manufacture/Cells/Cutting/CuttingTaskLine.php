@@ -29,6 +29,7 @@ class CuttingTaskLine extends Model
         'expense'          => 'float',
         'cut_width'        => 'float',
         'cut_length'       => 'float',
+        'cover_height'     => 'float',
     ];
 
     // Relations: Связь с Контекстом Заявки (OrderLine)

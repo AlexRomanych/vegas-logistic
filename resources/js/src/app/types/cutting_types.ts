@@ -80,6 +80,7 @@ export interface ICuttingTaskLine {
     cut: string | null
     cut_length: number
     cut_width: number
+    cover_height: number
     angle: string
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ

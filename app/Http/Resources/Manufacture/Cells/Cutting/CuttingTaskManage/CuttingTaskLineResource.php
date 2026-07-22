@@ -81,12 +81,13 @@ class CuttingTaskLineResource extends JsonResource
             ],
 
 
-            'details'    => self::collection($this->whenLoaded('details')),
-            'detail'     => $this->detail,
-            'angle'      => $this->angle,
-            'cut_length' => $this->cut_length,
-            'cut_width'  => $this->cut_width,
-            'expense'    => $this->expense,
+            'details'      => self::collection($this->whenLoaded('details')),
+            'detail'       => $this->detail,
+            'angle'        => $this->angle,
+            'cut_length'   => $this->cut_length,
+            'cut_width'    => $this->cut_width,
+            'cover_height' => $this->cover_height,
+            'expense'      => $this->expense,
 
 
             // 'order_line_id' => $this->order_line_id,
