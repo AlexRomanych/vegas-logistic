@@ -4,62 +4,60 @@
         <button class="no-print print-btn" @click="handlePrint">Распечатать сменное задание</button>
 
         <header class="report-header mb-2">
-            <h1>Сменное задание участка <span class="font-semibold">Пошива</span> от <span
-                class="font-semibold">{{ formatDateInFullFormat(metaData.action_at) }}</span></h1>
-            <h1>Сменное задание: <span class="font-semibold">{{ metaData.task_title }}</span></h1>
-            <h1>Группа ШМ: <span class="font-semibold">{{ metaData.cutting_group }}</span></h1>
-            <!--<p>Дата печати: <span class="font-semibold">{{ new Date().toLocaleDateString() }}</span></p>-->
-            <p>Дата печати: <span class="font-semibold">{{ formatDateInFullFormat(new Date().toDateString()) }}</span></p>
+            <div class="flex w-full justify-center gap-3 text-[24px]">
+
+                <h1>Сменное задание Линии №<span class="font-semibold">{{ metaData.block_group }}</span></h1>
+                <h1><span class="font-semibold">{{ `${formatDateInFullFormat(metaData.action_at)} (смена ${metaData.change})` }}</span></h1>
+            </div>
+
+            <!--<h1>Сменное задание: <span class="font-semibold">{{ metaData.task_title }}</span></h1>-->
+            <!--<h1>Группа ШМ: <span class="font-semibold">{{ metaData.cutting_group }}</span></h1>-->
+            <!--&lt;!&ndash;<p>Дата печати: <span class="font-semibold">{{ new Date().toLocaleDateString() }}</span></p>&ndash;&gt;-->
+            <!--<p>Дата печати: <span class="font-semibold">{{ formatDateInFullFormat(new Date().toDateString()) }}</span></p>-->
         </header>
 
         <table class="production-table">
             <thead>
             <tr>
                 <th>#</th>
-                <th>Размер</th>
-                <th>Модель чехла</th>
-                <th>шт.</th>
-                <!--<th>Время</th>-->
-                <th>Ткань</th>
-                <th>ШМ</th>
-                <th>ТКЧ</th>
-                <th>Кант</th>
-                <th>КДЧ</th>
-                <th>Состав</th>
-                <th>Прим. 1</th>
-                <th>Прим. 2</th>
-                <th>Прим. 3</th>
+                <th>Наименование блока</th>
+                <th>Количество, шт.</th>
                 <th>Заявка</th>
-                <!--<th>Отметка</th>-->
+                <th>Готовность</th>
+                <th>Комментарий</th>
+                <!--<th>Время</th>-->
             </tr>
             </thead>
 
             <tbody v-for="(subgroup, idx) of printData" :key="idx" class="group-section">
             <template v-if="subgroup.lines.length !== 0">
-                <tr class="group-header">
-                    <td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} -
-                        Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }}) /
-                        Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }}) /
-                        Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})
-                    </td>
-                    <!--<td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>-->
-                </tr>
-                <tr v-for="(line, index) of subgroup.lines" :key="line.id">
-                    <td class="data-td">{{ index + 1 }}</td>
-                    <td class="data-td">{{ getCoverSizeString(line) }}</td>
-                    <td>{{ getCuttingTaskModelCoverName(line) }}</td>
+                <!--<tr class="group-header">-->
+                <!--    <td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }} - -->
+                <!--        Всего: {{ subgroup.amount.total }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.total) }}) /-->
+                <!--        Выполнено: {{ subgroup.amount.done }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.done) }}) /-->
+                <!--        Не выполнено: {{ subgroup.amount.incomplete }} шт. ({{ formatTimeWithLeadingZeros(subgroup.time.incomplete) }})-->
+                <!--    </td>-->
+                <!--    &lt;!&ndash;<td colspan="14">{{ subgroup.subgroupOrderTitle }}: {{ subgroup.subgroupName }}</td>&ndash;&gt;-->
+                <!--</tr>-->
+                <tr v-for="(line, /*index*/) of subgroup.lines" :key="line.id">
+                    <td class="data-td">{{ counter++ }}</td>
+                    <td>{{ line.block.name }}</td>
                     <td class="data-td">{{ line.amount }}</td>
-                    <!--<td class="time-cell">{{ time(line) }}</td>-->
-                    <td class="data-td">{{ line.order_line.textile ?? '' }}</td>
-                    <td class="data-td">{{ cuttingMachine(line) }}</td>
-                    <td class="data-td">{{ line.order_line.model.main.tkch ?? '' }}</td>
-                    <td class="data-td">{{ line.order_line.model.main.kant ?? '' }}</td>
-                    <td class="data-td">{{ line.order_line.model.main.kdch ?? '' }}</td>
-                    <td>{{ line.order_line.composition ?? '' }}</td>
-                    <td>{{ line.order_line.describe_1 ?? '' }}</td>
-                    <td>{{ line.order_line.describe_2 ?? '' }}</td>
-                    <td>{{ line.order_line.describe_3 ?? '' }}</td>
-                    <td>{{ subgroup.subgroupOrderTitle ?? '' }}</td>
+                    <td class="data-td">{{ line.groupAttr }}</td>
+                    <td class="data-td">{{ formatTimeInFullFormat(line.finished_at) }}</td>
+                    <td>{{ line.description }}</td>
+                    <!--<td>{{ getCuttingTaskModelCoverName(line) }}</td>-->
+                    <!--&lt;!&ndash;<td class="time-cell">{{ time(line) }}</td>&ndash;&gt;-->
+                    <!--<td class="data-td">{{ line.order_line.textile ?? '' }}</td>-->
+                    <!--<td class="data-td">{{ cuttingMachine(line) }}</td>-->
+                    <!--<td class="data-td">{{ line.order_line.model.main.tkch ?? '' }}</td>-->
+                    <!--<td class="data-td">{{ line.order_line.model.main.kant ?? '' }}</td>-->
+                    <!--<td class="data-td">{{ line.order_line.model.main.kdch ?? '' }}</td>-->
+                    <!--<td>{{ line.order_line.composition ?? '' }}</td>-->
+                    <!--<td>{{ line.order_line.describe_1 ?? '' }}</td>-->
+                    <!--<td>{{ line.order_line.describe_2 ?? '' }}</td>-->
+                    <!--<td>{{ line.order_line.describe_3 ?? '' }}</td>-->
+                    <!--<td>{{ subgroup.subgroupOrderTitle ?? '' }}</td>-->
 
                     <!--<td class="empty-cell"></td>-->
                 </tr>
@@ -71,42 +69,27 @@
 
 
 <script lang="ts" setup>
-import type { ICuttingTaskLine, ICuttingTaskLinesSubgroup } from '@/types'
+import type { IBlockTaskLinesSubgroup } from '@/types'
 
 import { onMounted, ref } from 'vue'
 
-import { getCoverSizeString, getCuttingLineMachineType, getCuttingTaskModelCoverName, /*getTimeString*/ } from '@/app/helpers/manufacture/helpers_cutting.ts'
-import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatDateInFullFormat, formatTimeInFullFormat, /*formatTimeWithLeadingZeros*/ } from '@/app/helpers/helpers_date'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { CUTTING_MACHINES } from '@/app/constants/cutting.ts'
 
-const printData = ref<ICuttingTaskLinesSubgroup[]>([]) // массив строк для печати
+const printData = ref<IBlockTaskLinesSubgroup[]>([]) // массив строк для печати
 const metaData  = ref<Record<string, string>>({})
 // const time = (line: ICuttingTaskLine) => getTimeString(line, true).replaceAll('.', '')
 
-const cuttingMachine = (cuttingLine: ICuttingTaskLine) => {
-    const machine = getCuttingLineMachineType(cuttingLine)
-
-    switch (machine) {
-        case CUTTING_MACHINES.UNIVERSAL:
-            return 'У'
-        case CUTTING_MACHINES.AUTO:
-            return 'А'
-        case CUTTING_MACHINES.SOLID_HARD:
-            return 'ГС'
-        case CUTTING_MACHINES.SOLID_LITE:
-            return 'ГП'
-    }
-
-    return '??'
-}
+let counter = 1
 
 const handlePrint = () => {
     window.print()
 }
 
 onMounted(() => {
+    counter = 1
+
     const data = localStorage.getItem(TASK_TO_PRINT_KEY)
     if (data) {
         printData.value = JSON.parse(data)              // Загружаем в Store или локальную переменную
@@ -189,6 +172,7 @@ onMounted(() => {
 
 
 /* МАГИЯ ПЕЧАТИ */
+/* МАГИЯ ПЕЧАТИ */
 @media print {
     .no-print {
         display: none !important;
@@ -196,6 +180,17 @@ onMounted(() => {
 
     .print-container {
         padding: 0;
+    }
+
+    /* Уменьшаем шрифт всей таблицы при печати (например, до 9px или 8.5px) */
+    .production-table {
+        font-size: 9px !important;
+    }
+
+    /* Если нужно уменьшить отступы в ячейках, чтобы строки были компактнее */
+    .production-table th,
+    .production-table td {
+        padding: 2px 4px !important;
     }
 
     .production-table th {
@@ -206,18 +201,16 @@ onMounted(() => {
     .time-cell {
         background: transparent !important;
         color: black !important;
-        border: 2px solid red !important; /* Чтобы выделить время без заливки */
+        border: 2px solid red !important;
     }
 
     tr {
-        page-break-inside: avoid; /* Чтобы строки не разрывались между страницами */
+        page-break-inside: avoid;
     }
 
     @page {
         margin: 1cm;
-        /*size: portrait; !* Альбомная ориентация, так как таблица широкая *!*/
-        size: landscape;
-        /* Альбомная ориентация, так как таблица широкая */
+        size: portrait;
     }
 }
 </style>

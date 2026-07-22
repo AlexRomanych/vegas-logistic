@@ -1071,6 +1071,7 @@ const printTask = () => {
     localStorage.setItem(TASK_TO_PRINT_KEY, JSON.stringify(blockLinesGroup.value))
     localStorage.setItem(TASK_TO_PRINT_META_KEY, JSON.stringify({
         action_at  : props.blockTask.action_at,
+        change     : props.blockTask.change,
         task_title : taskTitle.value,
         block_group: blockLinesGroups.value[activeTabIndex.value].groupName,
     }))
