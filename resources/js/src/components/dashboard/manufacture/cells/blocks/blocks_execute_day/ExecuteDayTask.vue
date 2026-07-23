@@ -390,6 +390,12 @@
                     >
                         <span class="mr-3 text-lg">⛏</span> Разбить
                     </button>
+                    <button
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
+                        @click="handleMenuAction('cancel')"
+                    >
+                        <span class="mr-3 text-lg">↺</span> Отменить
+                    </button>
                 </div>
             </Transition>
         </Teleport>
@@ -842,6 +848,8 @@ const handleMenuAction = (action: string) => {
         resetStatus()
     } else if (action === 'divide') {
         divideElementAmount()
+    } else if (action === 'cancel') {
+        selectedIds.value.clear()
     }
 
     showMenu.value = false

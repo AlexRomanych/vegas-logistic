@@ -35,6 +35,8 @@ class CellCuttingTaskController extends Controller
     // ___ Получаем СЗ на Раскрой
     public function getCuttingTasks(Request $request)
     {
+        ini_set('memory_limit', '512M');
+
         try {
             $validated = $request->validate([
                 'period'       => 'nullable|array',

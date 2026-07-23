@@ -153,7 +153,7 @@ const blocks = [
         name     : 'manufacture.cell.blocks.tuning.times',
         component: () => import('@/components/dashboard/manufacture/cells/blocks/blocks_tuning_time/TheBlocksTuningTime.vue'),
         meta     : {
-            title     : 'Время переналадки оборудования участка Блоков',
+            title     : 'Время переналадки оборудования участка Блоков, мин.',
         } as IRouteMeta,
     },
 

@@ -370,6 +370,23 @@
                     >
                         <span class="mr-3 text-lg">⛏</span> Разбить
                     </button>
+                    <button
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-yellow-500 hover:text-white transition-colors"
+                        @click="handleMenuAction('cancel')"
+                    >
+                        <span class="mr-3 text-lg">↺</span> Отменить
+                    </button>
+
+                    <!-- __ Перемещение на другой стол -->
+                    <button
+                        v-if="[TABLE_2_TITLE as ICuttingTaskLinesGroupNames, TABLE_3_TITLE as ICuttingTaskLinesGroupNames].includes(activeTableName)"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-600 hover:text-white transition-colors"
+                        @click="handleMenuAction('cancel')"
+                    >
+                        <span class="mr-3 text-lg">⚙️</span> Отправить на {{ TABLE_1_TITLE }}
+                    </button>
+
+
                 </div>
             </Transition>
         </Teleport>
@@ -452,13 +469,19 @@ import type {
     IDividerItem,
     ICuttingTask,
     ICuttingTaskLine,
-    ICuttingTaskOrderLine, ICuttingLineTableSetData, ITextileDocument, ICuttingTaskLinesUnderGroup, ICuttingTaskLinesSubgroup, ICuttingTaskLinesGroupData
+    ICuttingTaskOrderLine,
+    ICuttingLineTableSetData,
+    ITextileDocument,
+    ICuttingTaskLinesUnderGroup,
+    ICuttingTaskLinesSubgroup,
+    ICuttingTaskLinesGroupData,
+    ICuttingTaskLinesGroupNames
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { CUTTING_TASK_DRAFT, CUTTING_UNION_TASK_NAME } from '@/app/constants/cutting.ts'
+import { CUTTING_TASK_DRAFT, CUTTING_UNION_TASK_NAME, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE } from '@/app/constants/cutting.ts'
 
 import {
     getCoverSizeString,
@@ -581,6 +604,7 @@ const cuttingLinesGroups = computed<ICuttingTaskLinesGroupData[]>(() => {
 })
 
 // const cuttingLinesGroup = ref(cuttingLinesGroups.value[activeTabIndex.value].subgroups)
+const activeTableName   = computed(() => cuttingLinesGroups.value[activeTabIndex.value].groupName)
 const cuttingLinesGroup = computed(() => cuttingLinesGroups.value[activeTabIndex.value].subgroups)
 const cuttingLines      = computed(() => {
     const result: ICuttingTaskLine[] = []
@@ -892,6 +916,8 @@ const handleMenuAction = (action: string) => {
         resetStatus()
     } else if (action === 'divide') {
         divideElementAmount()
+    } else if (action === 'cancel') {
+        selectedIds.value.clear()
     }
 
     showMenu.value = false

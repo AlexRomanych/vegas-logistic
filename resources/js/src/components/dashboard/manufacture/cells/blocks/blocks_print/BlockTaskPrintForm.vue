@@ -44,7 +44,8 @@
                     <td>{{ line.block.name }}</td>
                     <td class="data-td">{{ line.amount }}</td>
                     <td class="data-td">{{ line.groupAttr }}</td>
-                    <td class="data-td">{{ formatTimeInFullFormat(line.finished_at) }}</td>
+                    <!--<td class="data-td">{{ formatTimeInFullFormat(line.finished_at) }}</td>-->
+                    <td class="data-td"></td>
                     <td>{{ line.description }}</td>
                     <!--<td>{{ getCuttingTaskModelCoverName(line) }}</td>-->
                     <!--&lt;!&ndash;<td class="time-cell">{{ time(line) }}</td>&ndash;&gt;-->
