@@ -4,7 +4,7 @@
         <!-- __ Collapsed -->
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
-            :type="isAllLinesDone ? 'success' : 'warning'"
+            :type="targetColor"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -16,7 +16,7 @@
         <!-- __ Название UnderGroup (Крой) -->
         <AppLabelTS
             :text="undergroup.undergroupName"
-            :type="isAllLinesDone ? 'success' : DEFAULT_TYPE"
+            :type="targetColor"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
@@ -77,7 +77,7 @@ import { computed } from 'vue'
 import type { ICuttingTaskLinesUnderGroup } from '@/types'
 
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
-import { isTaskLineDone } from '@/app/helpers/manufacture/helpers_cutting.ts'
+import { isTaskLineDone, isTaskLineFalse } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
@@ -97,7 +97,17 @@ const FIELDS_AMOUNT_TIME_WIDTH = 'w-[172px]'
 const DEFAULT_TYPE             = 'indigo'
 
 // __ Проверяем, все ли Строки выполнены
-const isAllLinesDone = computed(() => props.undergroup.lines.every(line => isTaskLineDone(line)))
+const isAllLinesDone  = computed(() => props.undergroup.lines.every(line => isTaskLineDone(line)))
+
+// __ Проверяем, все ли Строки Невыполнены
+const isAllLinesFalse = computed(() => props.undergroup.lines.every(line => isTaskLineFalse(line)))
+
+// __ Получаем Раскраску
+const targetColor = computed(() => {
+    if (isAllLinesDone.value) return 'success'
+    if (isAllLinesFalse.value) return 'danger'
+    return DEFAULT_TYPE
+})
 
 </script>
 

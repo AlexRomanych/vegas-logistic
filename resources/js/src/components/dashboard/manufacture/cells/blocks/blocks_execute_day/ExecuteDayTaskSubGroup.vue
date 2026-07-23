@@ -4,7 +4,7 @@
         <!-- __ Collapsed -->
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
-            :type="isAllLinesDone ? 'success' : 'warning'"
+            :type="targetColor"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -16,7 +16,7 @@
         <!-- __ Название SubCategory -->
         <AppLabelTS
             :text="subgroup.subgroupName"
-            :type="isAllLinesDone ? 'success' : DEFAULT_TYPE"
+            :type="targetColor"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
@@ -139,12 +139,14 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 
 import type { IBlockTaskLinesSubgroup, } from '@/types'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
-import { computed } from 'vue'
-import { isTaskLineDone, } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { isTaskLineDone, isTaskLineFalse, } from '@/app/helpers/manufacture/helpers_blocks.ts'
+
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface IProps {
     subgroup: IBlockTaskLinesSubgroup
@@ -163,6 +165,16 @@ const DEFAULT_TYPE             = 'primary'
 
 // __ Проверяем, все ли Строки выполнены
 const isAllLinesDone = computed(() => props.subgroup.lines.every(line => isTaskLineDone(line)))
+
+// __ Проверяем, все ли Строки Невыполнены
+const isAllLinesFalse = computed(() => props.subgroup.lines.every(line => isTaskLineFalse(line)))
+
+// __ Получаем Раскраску
+const targetColor = computed(() => {
+    if (isAllLinesDone.value) return 'success'
+    if (isAllLinesFalse.value) return 'danger'
+    return DEFAULT_TYPE
+})
 
 </script>
 

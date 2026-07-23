@@ -4,7 +4,7 @@
         <!-- __ Collapsed -->
         <AppLabelTS
             :text="collapsed ? '▲' : '▼'"
-            :type="isAllLinesDone ? 'success' : 'warning'"
+            :type="targetColor"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -16,7 +16,7 @@
         <!-- __ Название SubCategory -->
         <AppLabelTS
             :text="subgroup.subgroupName"
-            :type="isAllLinesDone ? 'success' : DEFAULT_TYPE"
+            :type="targetColor"
             class="cursor-pointer"
             rounded="4"
             text-size="mini"
@@ -88,7 +88,7 @@ import { computed } from 'vue'
 import type { ICuttingTaskLinesSubgroup } from '@/types'
 
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
-import { isTaskLineDone } from '@/app/helpers/manufacture/helpers_cutting.ts'
+import { isTaskLineDone, isTaskLineFalse } from '@/app/helpers/manufacture/helpers_cutting.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
@@ -113,6 +113,21 @@ const isAllLinesDone = computed(() => {
         undergroup.lines.every(line => isTaskLineDone(line))
     )
 })
+
+// __ Проверяем, все ли Строки Невыполнены
+const isAllLinesFalse = computed(() => {
+    return props.subgroup.undergroups.every(undergroup =>
+        undergroup.lines.every(line => isTaskLineFalse(line))
+    )
+})
+
+// __ Получаем Раскраску
+const targetColor = computed(() => {
+    if (isAllLinesDone.value) return 'success'
+    if (isAllLinesFalse.value) return 'danger'
+    return DEFAULT_TYPE
+})
+
 // const isAllLinesDone = computed(() => {
 //     let isDone = true
 //     props.subgroup.undergroups.forEach(undergroup => {
