@@ -35,6 +35,7 @@ class CellCuttingTaskController extends Controller
     // ___ Получаем СЗ на Раскрой
     public function getCuttingTasks(Request $request)
     {
+        // __ !!! Увеличиваем Память, Запрос тяжелый
         ini_set('memory_limit', '512M');
 
         try {

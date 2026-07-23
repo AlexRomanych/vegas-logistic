@@ -371,19 +371,37 @@
                         <span class="mr-3 text-lg">⛏</span> Разбить
                     </button>
                     <button
-                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-yellow-500 hover:text-white transition-colors"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-yellow-600 hover:text-white transition-colors"
                         @click="handleMenuAction('cancel')"
                     >
                         <span class="mr-3 text-lg">↺</span> Отменить
                     </button>
 
-                    <!-- __ Перемещение на другой стол -->
+                    <!-- __ Перемещение на другой 1 Стол -->
                     <button
                         v-if="[TABLE_2_TITLE as ICuttingTaskLinesGroupNames, TABLE_3_TITLE as ICuttingTaskLinesGroupNames].includes(activeTableName)"
                         class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-600 hover:text-white transition-colors"
-                        @click="handleMenuAction('cancel')"
+                        @click="handleMenuAction(TABLE_1_TITLE)"
                     >
-                        <span class="mr-3 text-lg">⚙️</span> Отправить на {{ TABLE_1_TITLE }}
+                        <span class="mr-3 text-2xl">①</span> Отправить на {{ TABLE_1_TITLE }}
+                    </button>
+
+                    <!-- __ Перемещение на другой 2 Стол -->
+                    <button
+                        v-if="[TABLE_1_TITLE as ICuttingTaskLinesGroupNames, TABLE_3_TITLE as ICuttingTaskLinesGroupNames].includes(activeTableName)"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-yellow-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(TABLE_2_TITLE)"
+                    >
+                        <span class="mr-3 text-2xl">②</span> Отправить на {{ TABLE_2_TITLE }}
+                    </button>
+
+                    <!-- __ Перемещение на другой 3 Стол -->
+                    <button
+                        v-if="[TABLE_1_TITLE as ICuttingTaskLinesGroupNames, TABLE_2_TITLE as ICuttingTaskLinesGroupNames].includes(activeTableName)"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-green-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(TABLE_3_TITLE)"
+                    >
+                        <span class="mr-3 text-2xl">③</span> Отправить на {{ TABLE_3_TITLE }}
                     </button>
 
 
@@ -432,6 +450,7 @@
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        ok-word="Понятно"
     />
 
     <!-- __ Смена Стола -->
@@ -475,13 +494,23 @@ import type {
     ICuttingTaskLinesUnderGroup,
     ICuttingTaskLinesSubgroup,
     ICuttingTaskLinesGroupData,
-    ICuttingTaskLinesGroupNames
+    ICuttingTaskLinesGroupNames, ICuttingTableKeys
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { CUTTING_TASK_DRAFT, CUTTING_UNION_TASK_NAME, TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE } from '@/app/constants/cutting.ts'
+import {
+    CUTTING_TASK_DRAFT,
+    CUTTING_UNION_TASK_NAME,
+    TABLE_0,
+    TABLE_1,
+    TABLE_1_TITLE,
+    TABLE_2,
+    TABLE_2_TITLE,
+    TABLE_3,
+    TABLE_3_TITLE
+} from '@/app/constants/cutting.ts'
 
 import {
     getCoverSizeString,
@@ -906,18 +935,25 @@ const openContextMenu = async (event: MouseEvent) => {
     menuPosition.value = { x, y }
 }
 
+
+
+
+
+
 // __ Меню
-const handleMenuAction = (action: string) => {
+const handleMenuAction = async (action: string) => {
     if (action === 'done') {
-        completeSelected()
+        await completeSelected()
     } else if (action === 'false') {
-        unCompleteSelected()
+        await unCompleteSelected()
     } else if (action === 'reset') {
-        resetStatus()
+        await resetStatus()
     } else if (action === 'divide') {
-        divideElementAmount()
+        await divideElementAmount()
     } else if (action === 'cancel') {
         selectedIds.value.clear()
+    } else if ([TABLE_1_TITLE, TABLE_2_TITLE, TABLE_3_TITLE].includes(action)) {
+        await changeTableByMenu(action as ICuttingTaskLinesGroupNames)
     }
 
     showMenu.value = false
@@ -1349,6 +1385,44 @@ const showSummary           = async () => {
 
 
 }
+
+// __ Устанавливаем столы по меню ПКМ
+async function changeTableByMenu(targetTable: ICuttingTaskLinesGroupNames) {
+    // __ Получаем ссылки на панели
+    const setTablesData: ICuttingLineTableSetData[] = [...selectedIds.value].map(id => {
+        let table: ICuttingTableKeys = TABLE_0
+
+        switch (targetTable) {
+            case TABLE_1_TITLE:
+                table = TABLE_1
+                break
+            case TABLE_2_TITLE:
+                table = TABLE_2
+                break
+            case TABLE_3_TITLE:
+                table = TABLE_3
+                break
+        }
+
+        return {id, table}
+    })
+
+    console.log('setTablesData: ', setTablesData)
+
+    const result = await cuttingStore.taskLinesTableSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        cuttingStore.setGlobalArrayChangeTables(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = `Стол изменен на ${targetTable}`
+        await appModalAsyncMultilineTS.value!.show()
+
+    } else {
+        await showError()
+    }
+}
+
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
