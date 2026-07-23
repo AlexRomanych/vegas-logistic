@@ -107,14 +107,17 @@
                 <!-- __ Таб: TODO: !!! Доделать крестики и галочки на выполненных задачах !!!   -->
                 <AppLabelMultiLineTS
                     v-if="tab.show"
+                    :line-through="tab.task ? !tab.task.active : false"
                     :text="tab.label"
-                    :type="activeTabPosition === tab.position ? tab.typeActive : tab.type"
+                    :type="getTabType(tab)"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    @click="activeTabPosition = tab.position"
+                    @click.exact="activeTabPosition = tab.position"
+                    @click.ctrl="setTaskInActive(tab)"
+                    :title="tab.position !== UNION_TASKS_POSITION ? 'Ctrl + Click - Добавить/Убрать из Объединения СЗ' : null"
                 />
             </div>
         </div>
@@ -198,6 +201,7 @@ import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blo
 
 interface ITab {
     show: boolean
+    active: boolean
     label: string[]
     position: number
     type: IColorTypes
@@ -407,6 +411,7 @@ const setTabs = () => {
         type      : 'dark',
         typeActive: 'info',
         task      : null,
+        active    : true,
     })
     tabs.value.push({
         show      : true,
@@ -415,6 +420,7 @@ const setTabs = () => {
         type      : 'dark',
         typeActive: 'warning',
         task      : null,
+        active    : true,
     })
     blockDay.value?.block_tasks.forEach(task =>
         tabs.value.push({
@@ -427,6 +433,7 @@ const setTabs = () => {
             type      : 'dark',
             typeActive: 'primary',
             task,
+            active    : true,
         })
     )
     // console.log(allBlockTasksLinesUnion.value)
@@ -438,10 +445,12 @@ const setTabs = () => {
             type      : 'dark',
             typeActive: 'orange',
             task      : allBlockTasksLinesUnion.value,
+            active    : true,
         })
     }
     tabs.value.sort((a, b) => a.position - b.position)
 }
+
 
 // console.log('tabs: ', tabs.value)
 
@@ -789,15 +798,54 @@ const prepareData = () => {
     allBlockTasksLinesUnion.value.block_lines = []
 
     // !!! Тут важно, в allBlockTasksLinesUnion.value кладем ссылку на объект, а не его копию, чтобы сокранять реактивность при Выполнено/Не выполнено/Сброс и тд
-    blockDay.value!.block_tasks.forEach(task => task.block_lines.forEach(line => {
-        line.groupAttr = getBlockTaskTitle(task)
-        allBlockTasksLinesUnion.value.block_lines.push(line)
-    }))
+    blockDay.value!.block_tasks
+        .filter(task => task.active)
+        .forEach(task => task.block_lines.forEach(line => {
+            line.groupAttr = getBlockTaskTitle(task)
+            allBlockTasksLinesUnion.value.block_lines.push(line)
+        }))
     // blockDay.value!.block_tasks.forEach(task => task.block_lines.forEach(line => allBlockTasksLinesUnion.value.block_lines.push({ ...line, groupAttr: getBlockTaskTitle(task) })))
 
     allBlockTasksLinesUnion.value.position  = UNION_TASKS_POSITION // __ Позиция объединения всех строк
     allBlockTasksLinesUnion.value.action_at = blockDay.value.action_at
 }
+
+
+
+// __ Получаем раскраску Таба
+const getTabType = (tab: ITab) => {
+    if (tab.task) {
+        if (!tab.task.active) {
+            return 'danger'
+        }
+    }
+
+    return activeTabPosition.value === tab.position ? tab.typeActive : tab.type
+}
+
+// __ Включаем и выключаем СЗ из Объединенного СЗ
+const setTaskInActive = (tab: ITab) => {
+
+    // __ Если Объединенного СЗ - выходим
+    if (tab.position === UNION_TASKS_POSITION) {
+        return
+    }
+
+    // __ Проверяем, что должен остаться как минимум 1 СЗ (2 =  1 СЗ + Объединении СЗ)
+    // __ чтобы не получить ошибку в Объединении СЗ
+    const count = tabs.value.reduce((acc, tab) => tab.task?.active ? acc + 1 : acc, 0)
+
+    // console.log('count: ', count)
+
+    if (tab && tab.task) {
+        if (count === 2 && tab.task.active) {
+            return
+        }
+        tab.task.active = !tab.task.active
+    }
+    prepareData()
+}
+
 
 const startTimer = () => {
     // __ Запускаем счетчик

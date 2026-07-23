@@ -9,7 +9,9 @@
             textSizeClass,
             semibold,
             horizontalAlign,
+            lineThroughClass,
             roundedCSS,
+
         ]"
         :style="color ? {'background-color': color} : ''"
         class="flex flex-col m-0.5 app-label justify-center select-none transition-colors duration-200 ease-in-out"
@@ -47,6 +49,7 @@ interface IProps {
     align?: IHorizontalAlign
     rounded?: string
     color?: string
+    lineThrough?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -59,6 +62,7 @@ const props = withDefaults(defineProps<IProps>(), {
     align: 'left',
     rounded: 'rounded-lg',
     color: '',
+    lineThrough: false,
 })
 
 const emits = defineEmits<{
@@ -139,6 +143,9 @@ const textArray = computed(() => getTextArray(props.text))
 
 // __ Получаем tailwind класс высоты Label в зависимости от количества строк
 const labelHeight = computed(() => getLabelHeight(textArray.value))
+
+const lineThroughClass = computed(() => props.lineThrough ? 'line-through' : '')
+
 </script>
 
 <style scoped>
