@@ -32,7 +32,12 @@ use Tymon\JWTAuth\Providers\Auth\Illuminate;
 class CellCuttingTaskController extends Controller
 {
 
-    // ___ Получаем СЗ на Раскрой
+    /**
+     * ___ Получаем СЗ на Раскрой
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     * @noinspection DuplicatedCode
+     */
     public function getCuttingTasks(Request $request)
     {
         // __ !!! Увеличиваем Память, Запрос тяжелый

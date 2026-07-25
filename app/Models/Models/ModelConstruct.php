@@ -16,6 +16,8 @@ class ModelConstruct extends LaravelModel
 
     // __ Для Раскроя
     public const DETAIL_CONSTRUCT_PANEL_NAME = 'Крышка';
+    public const DETAIL_CONSTRUCT_PANEL_LAYER = 'КрышкаНастил';
+    public const DETAIL_CONSTRUCT_PANEL_INSIDE = 'КрышкаВнутр';
     public const DETAIL_CONSTRUCT_SIDE_NAME = 'Боковина';
 
     // __ Для БП

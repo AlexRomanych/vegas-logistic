@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property string $target
  * @property string $level
  * @property string $message
  * @property array $context
+ * @property string $target
  */
 class EventLog extends Model
 {

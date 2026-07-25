@@ -28,629 +28,578 @@ final class CuttingService
 {
 
     /**
-     * ___ Создать СЗ для Пошива из основного Заказа
-     * @param int $orderId             ID основного Заказа
-     * @param string|null $plannedDate Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
+     *  ___ Создать СЗ для Пошива из основного Заказа
+     * @param int $orderId             __ ID основного Заказа
+     * @param string|null $plannedDate __ Дата планируемого выполнения СЗ - должна быть либо дата, либо смещение, приоритет - дата
      * @param bool $calculateCut
      * @return CuttingTask|null
-     * @throws Exception
+     * @noinspection DuplicatedCode
+     * @throws Throwable
      */
     public static function createCuttingTaskFromOrderId(
         int $orderId,
         string|null $plannedDate = null,
         bool $calculateCut = true,
     ): ?CuttingTask {
-        //try {
+        try {
+            $getConstruct      = fn($q) => $q->select([CODE_1C, 'name', 'model_code_1c', 'model_name']);
+            $getConstructItems = fn($q) => $q->select([
+                'id',
+                'construct_code_1c',
+                'material_code_1c',
+                'material_code_1c_copy',
+                'material_name',
+                'material_unit',
+                'detail',
+                'detail_height',
+                'procedure_code_1c',
+                'procedure_code_1c_copy',
+                'procedure_name',
+                'amount',
+                'position',
+            ]);
 
-        $getConstruct      = fn($q) => $q->select([CODE_1C, 'name', 'model_code_1c', 'model_name']);
-        $getConstructItems = fn($q) => $q->select([
-            'id',
-            'construct_code_1c',
-            'material_code_1c',
-            'material_code_1c_copy',
-            'material_name',
-            'material_unit',
-            'detail',
-            'detail_height',
-            'procedure_code_1c',
-            'procedure_code_1c_copy',
-            'procedure_name',
-            'amount',
-            'position',
-        ]);
+            // __ Проверяем на существование заказа
+            // __ TODO Доработать выборку данных (убрать не нужные)
+            $order = Order::query()
+                ->select(['id', 'load_at', 'client_id', 'elements_type', 'order_no_origin'])
+                ->with([
 
-        // __ Проверяем на существование заказа
-        // __ TODO Доработать выборку данных (убрать не нужные)
-        $order = Order::query()
-            ->select(['id', 'load_at', 'client_id', 'elements_type', 'order_no_origin'])
-            ->with([
+                    // __ От строк берем только нужные атрибуты
+                    'lines'                                                                  => fn($q) => $q->select(
+                        [
+                            'id',
+                            'order_id',
+                            'size',
+                            'model_code_1c',
+                            'model_name',
+                            'amount',
+                            'construct_code_1c',
+                            'construct_add_code_1c',
+                            'textile',
+                            'composition',
+                            'describe_1',
+                            'describe_2',
+                            'describe_3',
+                        ]
+                    ),
 
-                // __ От строк берем только нужные атрибуты
-                'lines'                                                                  => fn($q) => $q->select(
-                    [
-                        'id',
-                        'order_id',
-                        'size',
-                        'model_code_1c',
-                        'model_name',
-                        'amount',
-                        'construct_code_1c',
-                        'construct_add_code_1c',
-                        'textile',
-                        'composition',
-                        'describe_1',
-                        'describe_2',
-                        'describe_3',
-                    ]
-                ),
+                    // __ Это Спецификация, который приходит по коду привязанной спецификации в строке Заказа
+                    // __ Если Чехол, то прокатит, и берем ее
+                    // __ Жадно загружаем Спецификации по коду привязки Спецификации
+                    'lines.specification'                                                    => $getConstruct,
+                    'lines.specificationAdd'                                                 => $getConstruct,
+                    //'lines.specification' => fn($q) => $q->select([CODE_1C, 'name', 'model_code_1c', 'model_name']), // __ Жадно загружаем Спецификации по коду привязки Спецификации
+                    // __ Жадно загружаем состав Спецификации
+                    'lines.specification.constructItems'                                     => $getConstructItems,
+                    'lines.specificationAdd.constructItems'                                  => $getConstructItems,
 
-                // __ Это Спецификация, который приходит по коду привязанной спецификации в строке Заказа
-                // __ Если Чехол, то прокатит, и берем ее
-                // __ Жадно загружаем Спецификации по коду привязки Спецификации
-                'lines.specification'                                                    => $getConstruct,
-                'lines.specificationAdd'                                                 => $getConstruct,
-                //'lines.specification' => fn($q) => $q->select([CODE_1C, 'name', 'model_code_1c', 'model_name']), // __ Жадно загружаем Спецификации по коду привязки Спецификации
-                // __ Жадно загружаем состав Спецификации
-                'lines.specification.constructItems'                                     => $getConstructItems,
-                'lines.specificationAdd.constructItems'                                  => $getConstructItems,
+                    // __ Если это МЭ, то по найденной Спецификации выходим на модель и подгружаем его Чехол
+                    // __ Если Модель - это Чехол, который был найден выше, то Cover, по идее у него не будет
+                    'lines.specification.model'                                              => fn($q) => $q->select([CODE_1C, 'cover_code_1c']),
+                    'lines.specification.model.cover'                                        => fn($q) => $q->select([CODE_1C, 'cover_code_1c']),
+                    'lines.specification.model.cover.constructs'                             => $getConstruct,
+                    'lines.specification.model.cover.constructs.constructItems'              => $getConstructItems,
 
-                // __ Если это МЭ, то по найденной Спецификации выходим на модель и подгружаем его Чехол
-                // __ Если Модель - это Чехол, который был найден выше, то Cover, по идее у него не будет
-                'lines.specification.model'                                              => fn($q) => $q->select([CODE_1C, 'cover_code_1c']),
-                'lines.specification.model.cover'                                        => fn($q) => $q->select([CODE_1C, 'cover_code_1c']),
-                'lines.specification.model.cover.constructs'                             => $getConstruct,
-                'lines.specification.model.cover.constructs.constructItems'              => $getConstructItems,
+                    // __ Тут ситуация, когда Спецификация в строке Заказа указана на левую, например, тендерную Спецификацию,
+                    // __ у которой нет регулярной модели, причем на МЭ.
+                    // __ Тогда пробуем найти Спецификацию на Чехол по Названию Чехла
+                    'lines.specification.constructItems.semiproductConstruct'                => $getConstruct,
+                    'lines.specification.constructItems.semiproductConstruct.constructItems' => $getConstructItems,
+                    //'lines.specification.model.cover.constructs.constructItems.semiproductConstruct',
+                    //'lines.specification.model.cover.constructs.constructItems.semiproductConstruct.constructItems',
 
-                // __ Тут ситуация, когда Спецификация в строке Заказа указана на левую, например, тендерную Спецификацию,
-                // __ у которой нет регулярной модели, причем на МЭ.
-                // __ Тогда пробуем найти Спецификацию на Чехол по Названию Чехла
-                'lines.specification.constructItems.semiproductConstruct'                => $getConstruct,
-                'lines.specification.constructItems.semiproductConstruct.constructItems' => $getConstructItems,
-                //'lines.specification.model.cover.constructs.constructItems.semiproductConstruct',
-                //'lines.specification.model.cover.constructs.constructItems.semiproductConstruct.constructItems',
-
-                // __ Подгружаем клиента
-                'client'
-            ])
-            ->find($orderId);
-
-
-        if (!$order) {
-            return null;
-        }
-
-        //$orderDebug = $order->toArray();
+                    // __ Подгружаем клиента
+                    'client'
+                ])
+                ->find($orderId);
 
 
-        // __ Плучаем Расход
-
-        $groupedPivotRecordsExpense = DB::table('order_line_material_pivot as pivot')
-            ->join('order_lines as lines', 'lines.id', '=', 'pivot.order_line_id')
-            ->where('lines.order_id', $orderId)
-            ->whereIn('pivot.detail', [ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME, ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME,])
-
-            // Перечисляем только те поля, которые нам реально нужны:
-            ->select([
-                'pivot.order_line_id', // ⚠️ КРИТИЧЕСКИ ВАЖНО для последующего groupBy!
-                'pivot.material_code_1c',
-                'pivot.material_name_expense',
-                'pivot.detail',
-                'pivot.position',
-                'pivot.expense',
-                'pivot.rest',
-                // 'pivot.quantity' — например, какое-то еще твое поле
-            ])
-            ->orderBy('pivot.position', 'asc')
-            ->get()
-            ->groupBy('order_line_id')
-            ->toArray();
-
-
-        // __ Получаем плановую дату
-        if (!(is_null($plannedDate) || $plannedDate === '')) {
-            $plannedDate = normalizeToCarbon($plannedDate);
-        } else {
-            // __ Получаем смещение в днях для Пошива
-            $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
-            $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
-        }
-
-        //$createdTask = null;
-        // DB::transaction(function () use ($order, $plannedDate, &$createdTask) {
-
-        // __ Создаем СЗ
-        $createdTask = CuttingTask::query()->create([
-            'action_at' => $plannedDate,
-            'order_id'  => $order->id,
-            'position'  => self::getCuttingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для нового СЗ
-        ]);
-
-        if (!$createdTask) {
-            throw new Exception('Failed to create CuttingTask');
-        }
-
-        // __ Создаем контент (строки) СЗ
-        $position = 1;
-        foreach ($order->lines as $line) {
-            // __ Определяем дефолтные детальки в случае ошибки
-            $defaultDetails = [
-                'panels' => [
-                    [
-                        'name'     => $line->textile,
-                        'code'     => null,
-                        'type'     => ModelConstruct::PANEL_NAME,
-                        'position' => 0,
-                        'amount'   => 2,
-                    ]
-                ]
-            ];
-
-
-            //$lineArray = $line->toArray();
-            //if ($line->id === 27802) {
-            //    $a = 0;
-            //}
-
-
-            // IMPORTANT Подумать над логикой определения рабочей Спецификации
-            // __ Определяем рабочую спецификацию
-            // __ Основная идея - найти Чехол
-            // __ Пока выбираем, возможно потом будем складывать эти спецификации
-            $targetConstruct = null;
-
-
-            if (isset($line->specificationAdd) && ModelsService::isElementCoverByConstruct($line->specificationAdd)) {
-                // __ Идем сначала в Дополнительную привязанную Спецификацию и стотрим ее на Чехол
-                $targetConstruct = $line->specificationAdd;
-            } elseif (isset($line->specificationAdd) && !ModelsService::isElementCoverByConstruct($line->specificationAdd)) {
-                // __ Логично предполагаем, что это МЭ
-                // __ Пытаемся его вытащить
-                $targetConstruct = self::getModelConstructCover($line->specificationAdd);
+            if (!$order) {
+                return null;
             }
 
-            if (!$targetConstruct) {
-                // __ Если ничего не нашли, проделываем такой же фокус с привязанной Спецификацию
-                if (isset($line->specification) && ModelsService::isElementCoverByConstruct($line->specification)) {
-                    // __ Идем сначала в Дополнительную привязанную Спецификацию и стотрим ее на Чехол
-                    $targetConstruct = $line->specification;
-                } elseif (isset($line->specification) && !ModelsService::isElementCoverByConstruct($line->specification)) {
-                    // __ Логично предполагаем, что это МЭ
-                    // __ Пытаемся его вытащить
-                    $targetConstruct = self::getModelConstructCover($line->specification);
+            //$orderDebug = $order->toArray();
 
-                    // __ Если не находим эту Спецификацию Чехла по Спецификации МЭ,
+
+            // __ Плучаем Расход
+
+            $groupedPivotRecordsExpense = DB::table('order_line_material_pivot as pivot')
+                ->join('order_lines as lines', 'lines.id', '=', 'pivot.order_line_id')
+                ->where('lines.order_id', $orderId)
+                ->whereIn('pivot.detail', [
+                    ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME,
+                    ModelConstruct::DETAIL_CONSTRUCT_PANEL_LAYER,
+                    ModelConstruct::DETAIL_CONSTRUCT_PANEL_INSIDE,
+                    ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME,
+                ])
+
+                // __ Перечисляем только те поля, которые нам реально нужны:
+                ->select([
+                    'pivot.order_line_id', // ⚠️ КРИТИЧЕСКИ ВАЖНО для последующего groupBy!
+                    'pivot.material_code_1c',
+                    'pivot.material_name_expense',
+                    'pivot.detail',
+                    'pivot.position',
+                    'pivot.expense',
+                    'pivot.rest',
+                    // 'pivot.quantity' — например, какое-то еще твое поле
+                ])
+                ->orderBy('pivot.position', 'asc')
+                ->get()
+                ->groupBy('order_line_id')
+                ->toArray();
+
+
+            // __ Получаем плановую дату
+            if (!(is_null($plannedDate) || $plannedDate === '')) {
+                $plannedDate = normalizeToCarbon($plannedDate);
+            } else {
+                // __ Получаем смещение в днях для Пошива
+                $offset      = BusinessProcessesService::getDateOffsetForOrderMovingProcessByNodeIdAndClientId(CUTTING_NODE_ID, $order->client->id);
+                $plannedDate = normalizeToCarbon($order->load_at)->addDays($offset);
+            }
+
+            $createdTask = null;
+            DB::transaction(function () use ($order, $plannedDate, $groupedPivotRecordsExpense, &$createdTask) {
+                // __ Создаем СЗ
+                $createdTask = CuttingTask::query()->create([
+                    'action_at' => $plannedDate,
+                    'order_id'  => $order->id,
+                    'position'  => self::getCuttingTaskLastPositionInDay($plannedDate) + 1, // __ Получаем позицию для нового СЗ
+                ]);
+
+                if (!$createdTask) {
+                    throw new Exception('Failed to create CuttingTask');
+                }
+
+                // __ Создаем контент (строки) СЗ
+                $position = 1;
+                foreach ($order->lines as $line) {
+                    // __ Определяем дефолтные детальки в случае ошибки
+                    $defaultDetails = [
+                        'panels' => [
+                            [
+                                'name'     => $line->textile,
+                                'code'     => null,
+                                'type'     => ModelConstruct::PANEL_NAME,
+                                'position' => 0,
+                                'amount'   => 2,
+                            ]
+                        ]
+                    ];
+
+
+                    //$lineArray = $line->toArray();
+                    //if ($line->id === 27802) {
+                    //    $a = 0;
+                    //}
+
+
+                    // IMPORTANT Подумать над логикой определения рабочей Спецификации
+                    // __ Определяем рабочую спецификацию
+                    // __ Основная идея - найти Чехол
+                    // __ Пока выбираем, возможно потом будем складывать эти спецификации
+                    $targetConstruct = null;
+
+
+                    if (isset($line->specificationAdd) && ModelsService::isElementCoverByConstruct($line->specificationAdd)) {
+                        // __ Идем сначала в Дополнительную привязанную Спецификацию и стотрим ее на Чехол
+                        $targetConstruct = $line->specificationAdd;
+                    } elseif (isset($line->specificationAdd) && !ModelsService::isElementCoverByConstruct($line->specificationAdd)) {
+                        // __ Логично предполагаем, что это МЭ
+                        // __ Пытаемся его вытащить
+                        $targetConstruct = self::getModelConstructCover($line->specificationAdd);
+                    }
+
                     if (!$targetConstruct) {
-                        if (isset($line->specification->model->cover->constructs) &&
-                            !is_null($line->specification->model->cover->constructs) &&
-                            count($line->specification->model->cover->constructs) > 0
-                        ) {
-                            $targetConstruct = $line->specification->model->cover->constructs[0];
+                        // __ Если ничего не нашли, проделываем такой же фокус с привязанной Спецификацию
+                        if (isset($line->specification) && ModelsService::isElementCoverByConstruct($line->specification)) {
+                            // __ Идем сначала в Дополнительную привязанную Спецификацию и стотрим ее на Чехол
+                            $targetConstruct = $line->specification;
+                        } elseif (isset($line->specification) && !ModelsService::isElementCoverByConstruct($line->specification)) {
+                            // __ Логично предполагаем, что это МЭ
+                            // __ Пытаемся его вытащить
+                            $targetConstruct = self::getModelConstructCover($line->specification);
+
+                            // __ Если не находим эту Спецификацию Чехла по Спецификации МЭ,
+                            if (!$targetConstruct) {
+                                if (isset($line->specification->model->cover->constructs) &&
+                                    !is_null($line->specification->model->cover->constructs) &&
+                                    count($line->specification->model->cover->constructs) > 0
+                                ) {
+                                    $targetConstruct = $line->specification->model->cover->constructs[0];
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            //$targetConstructArray = $targetConstruct->toArray();
-            //if ($line->id === 27802) {
-            //    $a = 0;
-            //}
+                    //$targetConstructArray = $targetConstruct->toArray();
+                    //if ($line->id === 27802) {
+                    //    $a = 0;
+                    //}
 
-            //if (isset($line->specification->model->cover->constructs) &&
-            //    !is_null($line->specification->model->cover->constructs) &&
-            //    count($line->specification->model->cover->constructs) > 0
-            //) {
-            //    // __ Если пройдена цепочка от кода спецификации в строке Заказа до Привязанного Чехла
-            //    // __ Значит в Строке указан код Спецификации Матраса, и по цепочке связей находим Чехол
-            //    $targetConstruct = $line->specification->model->cover->constructs[0];
-            //} elseif (isset($line->specification)) {
-            //    // __ Если подгрузилась Спецификация из поля привязки в строке Заказа
-            //    if (CuttingService::hasModelConstructCover($line->specification)) {
-            //        // __ и в ней есть Чехол (например, тендерная Спецификация на МЭ), берем этот Чехол
-            //        $targetConstruct = CuttingService::getModelConstructCover($line->specification);
-            //    } else {
-            //        // __ или берем саму Спецификацию, которая подгрузилась. Вероятно она будет Чехлом
-            //        $targetConstruct = $line->specification;
-            //    }
-            //}
+                    //if (isset($line->specification->model->cover->constructs) &&
+                    //    !is_null($line->specification->model->cover->constructs) &&
+                    //    count($line->specification->model->cover->constructs) > 0
+                    //) {
+                    //    // __ Если пройдена цепочка от кода спецификации в строке Заказа до Привязанного Чехла
+                    //    // __ Значит в Строке указан код Спецификации Матраса, и по цепочке связей находим Чехол
+                    //    $targetConstruct = $line->specification->model->cover->constructs[0];
+                    //} elseif (isset($line->specification)) {
+                    //    // __ Если подгрузилась Спецификация из поля привязки в строке Заказа
+                    //    if (CuttingService::hasModelConstructCover($line->specification)) {
+                    //        // __ и в ней есть Чехол (например, тендерная Спецификация на МЭ), берем этот Чехол
+                    //        $targetConstruct = CuttingService::getModelConstructCover($line->specification);
+                    //    } else {
+                    //        // __ или берем саму Спецификацию, которая подгрузилась. Вероятно она будет Чехлом
+                    //        $targetConstruct = $line->specification;
+                    //    }
+                    //}
 
-            // __ Маяк того, что где-то что-то пошло не так
-            // __ Будем создавать по этому маяку дефолтное поведение
-            $hasError = false;
+                    // __ Маяк того, что где-то что-то пошло не так
+                    // __ Будем создавать по этому маяку дефолтное поведение
+                    $hasError = false;
 
-            // __ Если не находим Спецификацию
-            if (!$targetConstruct) {
-                // IMPORTANT Пишем ошибку, если не находим Спецификацию
-                // __ Пишем в EventLog Ошибку
-                $eventLog          = new EventLog();
-                $eventLog->level   = EventLog::LEVEL_WARNING;
-                $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
-                $eventLog->message = 'Не найдена спецификация';
-                $eventLog->context = [
-                    'spec_code_1c' => $line->construct_code_1c,
-                    'model_name'   => $line->model_name,
-                    'order'        => $order->order_no_origin,
-                ];
-                $eventLog->save();
-
-                $hasError = true;
-                //continue;
-
-                $constructDetails = $defaultDetails;
-            } else {
-                // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
-                // if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
-                //     $position = 0;
-                // }
-
-                //$debugLine            = $line->toArray();
-                //$targetConstructDebug = $targetConstruct?->toArray();
-
-
-                // __ Получаем Детальки из Спецификации
-                $constructDetails = self::getCuttingDetailsByConstruct($targetConstruct);
-
-
-                // __ Нет деталей Чехла вообще
-                if (count($constructDetails) === 0) {
-                    // IMPORTANT Пишем ошибку, если нет деталей Раскроя
-                    // __ Пишем в EventLog Ошибку
-                    $eventLog          = new EventLog();
-                    $eventLog->level   = EventLog::LEVEL_WARNING;
-                    $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
-                    $eventLog->message = 'Не найдены детали раскроя';
-                    $eventLog->context = [
-                        'spec_code_1c' => $line->construct_code_1c,
-                        'model_name'   => $line->model_name,
-                        'order'        => $order->order_no_origin,
-                    ];
-                    $eventLog->save();
-
-                    $hasError         = true;
-                    $constructDetails = $defaultDetails;
-                } else {
-                    // __ Нет деталей Крышки
-                    if (!isset($constructDetails['panels'])) {
-                        // IMPORTANT Пишем ошибку, если нет деталей Крышки
+                    // __ Если не находим Спецификацию
+                    if (!$targetConstruct) {
+                        // IMPORTANT Пишем ошибку, если не находим Спецификацию
                         // __ Пишем в EventLog Ошибку
                         $eventLog          = new EventLog();
                         $eventLog->level   = EventLog::LEVEL_WARNING;
                         $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
-                        $eventLog->message = 'Не найдены Крышки';
+                        $eventLog->message = 'Не найдена спецификация';
                         $eventLog->context = [
                             'spec_code_1c' => $line->construct_code_1c,
                             'model_name'   => $line->model_name,
                             'order'        => $order->order_no_origin,
                         ];
                         $eventLog->save();
-                    }
 
-                    // __ Неверное Количество Крышек
-                    if (isset($constructDetails['panels'])) {
-                        if (!(($constructDetails['panels'][0]['type'] === ModelConstruct::PANEL_NAME && $constructDetails['panels'][0]['amount'] === 2) ||
-                            (count($constructDetails['panels']) === 2))) {
-                            // IMPORTANT Пишем ошибку, если Неверное Количество Крышек
+                        $hasError = true;
+                        //continue;
+
+                        $constructDetails = $defaultDetails;
+                    } else {
+                        // __ Если это расчетная модель (AVERAGE), то ставим позицию 0
+                        // if ($order->lines->count() === 1 && ModelsService::isElementAverage($line->model_code_1c)) {
+                        //     $position = 0;
+                        // }
+
+                        //$debugLine            = $line->toArray();
+                        //$targetConstructDebug = $targetConstruct?->toArray();
+
+
+                        // __ Получаем Детальки из Спецификации
+                        $constructDetails = self::getCuttingDetailsByConstruct($targetConstruct);
+
+
+                        // __ Нет деталей Чехла вообще
+                        if (count($constructDetails) === 0) {
+                            // IMPORTANT Пишем ошибку, если нет деталей Раскроя
                             // __ Пишем в EventLog Ошибку
                             $eventLog          = new EventLog();
                             $eventLog->level   = EventLog::LEVEL_WARNING;
                             $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
-                            $eventLog->message = 'Неверное количество Крышек';
+                            $eventLog->message = 'Не найдены детали раскроя';
                             $eventLog->context = [
                                 'spec_code_1c' => $line->construct_code_1c,
-                                'calc_code_1c' => $targetConstruct->code_1c,
                                 'model_name'   => $line->model_name,
                                 'order'        => $order->order_no_origin,
                             ];
                             $eventLog->save();
-                        }
-                    }
 
-                    //$a = 0;
-
-                    // __ Соединяем Расход и Детальки
-                    if (isset($groupedPivotRecordsExpense[$line->id])) {
-                        $expensePanels = [];
-                        $expenseSides  = [];
-
-                        foreach ($groupedPivotRecordsExpense[$line->id] as $recordExpense) {
-                            if ($recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME) {
-                                $expensePanels[] = $recordExpense;
-                            } elseif ($recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME) {
-                                $expenseSides[] = $recordExpense;
+                            $hasError         = true;
+                            $constructDetails = $defaultDetails;
+                        } else {
+                            // __ Нет деталей Крышки
+                            if (!isset($constructDetails['panels'])) {
+                                // IMPORTANT Пишем ошибку, если нет деталей Крышки
+                                // __ Пишем в EventLog Ошибку
+                                $eventLog          = new EventLog();
+                                $eventLog->level   = EventLog::LEVEL_WARNING;
+                                $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
+                                $eventLog->message = 'Не найдены Крышки';
+                                $eventLog->context = [
+                                    'spec_code_1c' => $line->construct_code_1c,
+                                    'model_name'   => $line->model_name,
+                                    'order'        => $order->order_no_origin,
+                                ];
+                                $eventLog->save();
                             }
-                        }
 
-                        if (count($expensePanels) !== 2) {
-                            // IMPORTANT Пишем ошибку, если Расход больше, чем на 2 Крышки
-                            $a = 0;
-                        }
-
-                        // __ Объединяем Одинаковый расход
-                        if (count($expensePanels) >= 2) {
-                            if ($expensePanels[0]->material_code_1c === $expensePanels[1]->material_code_1c) {
-                                $expensePanels[0]->expense += $expensePanels[1]->expense;
-                                $expensePanels[0]->rest    += $expensePanels[1]->rest;
-                                unset($expensePanels[1]);
-
-                                // __ Переиндексируем массив, чтобы убрать дыры в ключах
-                                $expensePanels = array_values($expensePanels);
-
-                                // или
-                                // Удаляет 1 элемент, начиная с индекса 1, и сам схлопывает массив
-                                //array_splice($expensePanels, 1, 1);
-                            }
-                        }
-
-                        // __ Тут на всякий случай смотрим на соответствие количества Крышек и Боковин
-                        // __ которые пришли из определения количества Деталек Раскроя и Деталек из Расхода
-                        // __ Должны совпадать
-                        if (isset($constructDetails['panels'])) {
-                            // !!!
-                            try {
-                                $minPanelCount = min(count($expensePanels), count($constructDetails['panels']));
-                                for ($i = 0; $i < $minPanelCount; $i++) {
-                                    $constructDetails['panels'][$i]['total'] = $expensePanels[$i]->expense + $expensePanels[$i]->rest;
+                            // __ Неверное Количество Крышек
+                            if (isset($constructDetails['panels'])) {
+                                if (!(($constructDetails['panels'][0]['type'] === ModelConstruct::PANEL_NAME && $constructDetails['panels'][0]['amount'] === 2) ||
+                                    (count($constructDetails['panels']) === 2))) {
+                                    // IMPORTANT Пишем ошибку, если Неверное Количество Крышек
+                                    // __ Пишем в EventLog Ошибку
+                                    $eventLog          = new EventLog();
+                                    $eventLog->level   = EventLog::LEVEL_WARNING;
+                                    $eventLog->target  = EventLog::TARGET_CUTTING_TASK;
+                                    $eventLog->message = 'Неверное количество Крышек';
+                                    $eventLog->context = [
+                                        'spec_code_1c' => $line->construct_code_1c,
+                                        'calc_code_1c' => $targetConstruct->code_1c,
+                                        'model_name'   => $line->model_name,
+                                        'order'        => $order->order_no_origin,
+                                    ];
+                                    $eventLog->save();
                                 }
-                            } catch (\Exception $e) {
-                                $a = 0;
+                            }
+
+                            //$a = 0;
+
+                            // __ Соединяем Расход и Детальки
+                            if (isset($groupedPivotRecordsExpense[$line->id])) {
+                                $expensePanels    = [];
+                                $expenseSides     = [];
+                                $expenseInternals = [];
+
+                                foreach ($groupedPivotRecordsExpense[$line->id] as $recordExpense) {
+                                    if ($recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_PANEL_NAME) {
+                                        $expensePanels[] = $recordExpense;
+                                    } elseif ($recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME) {
+                                        $expenseSides[] = $recordExpense;
+                                    } elseif ($recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_PANEL_LAYER ||
+                                        $recordExpense->detail === ModelConstruct::DETAIL_CONSTRUCT_PANEL_INSIDE) {
+                                        $expenseInternals[] = $recordExpense;
+                                    }
+                                }
+
+                                if (count($expensePanels) !== 2) {
+                                    // IMPORTANT Пишем ошибку, если Расход больше, чем на 2 Крышки
+                                    $a = 0;
+                                }
+
+                                // __ Объединяем Одинаковый расход
+                                if (count($expensePanels) >= 2) {
+                                    if ($expensePanels[0]->material_code_1c === $expensePanels[1]->material_code_1c) {
+                                        $expensePanels[0]->expense += $expensePanels[1]->expense;
+                                        $expensePanels[0]->rest    += $expensePanels[1]->rest;
+                                        unset($expensePanels[1]);
+
+                                        // __ Переиндексируем массив, чтобы убрать дыры в ключах
+                                        $expensePanels = array_values($expensePanels);
+
+                                        // или
+                                        // Удаляет 1 элемент, начиная с индекса 1, и сам схлопывает массив
+                                        //array_splice($expensePanels, 1, 1);
+                                    }
+                                }
+
+                                // __ Тут на всякий случай смотрим на соответствие количества Крышек и Боковин
+                                // __ которые пришли из определения количества Деталек Раскроя и Деталек из Расхода
+                                // __ Должны совпадать
+                                if (isset($constructDetails['panels'])) {
+                                    // !!!
+                                    try {
+                                        $minPanelCount = min(count($expensePanels), count($constructDetails['panels']));
+                                        for ($i = 0; $i < $minPanelCount; $i++) {
+                                            $constructDetails['panels'][$i]['total'] = $expensePanels[$i]->expense + $expensePanels[$i]->rest;
+                                        }
+                                    } catch (\Exception $e) {
+                                        $a = 0;
+                                    }
+                                }
+
+                                if (isset($constructDetails['sides'])) {
+                                    $minSideCount = min(count($expenseSides), count($constructDetails['sides']));
+                                    for ($i = 0; $i < $minSideCount; $i++) {
+                                        $constructDetails['sides'][$i]['total'] = $expenseSides[$i]->expense + $expenseSides[$i]->rest;
+                                    }
+                                }
+
+                                if (isset($constructDetails['internals'])) {
+                                    $minInternalCount = min(count($expenseInternals), count($constructDetails['internals']));
+                                    for ($i = 0; $i < $minInternalCount; $i++) {
+                                        $constructDetails['internals'][$i]['total'] = $expenseInternals[$i]->expense + $expenseInternals[$i]->rest;
+                                    }
+                                }
                             }
                         }
-
-                        if (isset($constructDetails['sides'])) {
-                            $minPanelCount = min(count($expenseSides), count($constructDetails['sides']));
-                            for ($i = 0; $i < $minPanelCount; $i++) {
-                                $constructDetails['sides'][$i]['total'] = $expenseSides[$i]->expense + $expenseSides[$i]->rest;
-                            }
-                        }
+                        //$a = 0;
                     }
-                }
-                //$a = 0;
-            }
 
-            //if ($line->id === 27802) {
-            //    $a = 0;
-            //}
-
-
-            // __ Получаем трудозатраты
-            /** @noinspection DuplicatedCode */
-            $cuttingTimeLabor = new CuttingTimeLabor(
-                model: $line->model_code_1c,
-                size: $line->size,
-                amount: $line->amount,
-                orderLine: $line,
-            );
-
-            // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
-            // __ Для каждой ШМ записываем отдельно
-            $cuttingTables = [
-                CuttingTaskLine::FIELD_TABLE_1   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_1(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_1()
-                ],
-                CuttingTaskLine::FIELD_TABLE_2   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_2(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_2()
-                ],
-                CuttingTaskLine::FIELD_TABLE_3   => [
-                    'time'   => $cuttingTimeLabor->getTimeTable_3(),
-                    'amount' => $cuttingTimeLabor->getAmountTable_3()
-                ],
-                CuttingTaskLine::FIELD_UNDEFINED => [
-                    'time'   => $cuttingTimeLabor->getTimeUndefined(),
-                    'amount' => $cuttingTimeLabor->getAmountUndefined()
-                ],
-            ];
-
-            // __ Получаем Высоту Чехла из Комментариев
-            if ($line->id === 16454) {
-                $a = 0;
-            }
-            $coverHeight = OrdersService::getCoverHeightByOrderLine($line);
-
-            foreach ($cuttingTables as $table => $data) {
-                if ($data['amount'] < 1) {
-                    continue;
-                }
-
-                // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
-                // __ Пока отключаем, потому что может прилететь 314, а там непонятно что
-                //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
-                //    continue;
-                //}
-
-                // !!! Новый код
-                $workTable = $hasError ? CuttingTaskLine::FIELD_UNDEFINED : $table; // __ берем стол из объекта времени, он там определяеся
-
-                //try {
-                if (isset($constructDetails['panels'])) {
-                    foreach ($constructDetails['panels'] as $detail) {
-                        $panelTaskLine = CuttingTaskLine::query()->create([
-                            'cutting_task_id'  => $createdTask->id,
-                            'order_line_id'    => $line->id,
-                            'amount'           => $data['amount'] * $detail['amount'],
-                            'expense'          => $detail['total'] ?? 0.0,
-                            'position'         => $position++,
-                            'time'             => $data['time'] * $detail['amount'],
-                            'table'            => $workTable,
-
-                            // __ Задаем детальки
-                            'detail'           => $detail['type'],
-                            'is_panel'         => true,
-                            'has_panel'        => true,
-                            'is_side'          => false,
-                            'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
-                            'fabric_construct' => [$detail['name']],
-                            'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
-
-                            // __ Задаем подмену свойств
-                            'phantom'          => $table,
-                            'phantom_json'     => [$table => true],
-                        ]);
-                    }
-                    //} catch (Exception $e) {
+                    //if ($line->id === 27802) {
                     //    $a = 0;
                     //}
+
+
+                    // __ Получаем трудозатраты
+                    /** @noinspection DuplicatedCode */
+                    $cuttingTimeLabor = new CuttingTimeLabor(
+                        model: $line->model_code_1c,
+                        size: $line->size,
+                        amount: $line->amount,
+                        orderLine: $line,
+                    );
+
+                    // __ !!! Новая логика, когда в СЗ записываем отдельные трудозатраты в одно поле time для каждой ШМ + добавляем подмену свойств
+                    // __ Для каждой ШМ записываем отдельно
+                    $cuttingTables = [
+                        CuttingTaskLine::FIELD_TABLE_1   => [
+                            'time'   => $cuttingTimeLabor->getTimeTable_1(),
+                            'amount' => $cuttingTimeLabor->getAmountTable_1()
+                        ],
+                        CuttingTaskLine::FIELD_TABLE_2   => [
+                            'time'   => $cuttingTimeLabor->getTimeTable_2(),
+                            'amount' => $cuttingTimeLabor->getAmountTable_2()
+                        ],
+                        CuttingTaskLine::FIELD_TABLE_3   => [
+                            'time'   => $cuttingTimeLabor->getTimeTable_3(),
+                            'amount' => $cuttingTimeLabor->getAmountTable_3()
+                        ],
+                        CuttingTaskLine::FIELD_UNDEFINED => [
+                            'time'   => $cuttingTimeLabor->getTimeUndefined(),
+                            'amount' => $cuttingTimeLabor->getAmountUndefined()
+                        ],
+                    ];
+
+                    // __ Получаем Высоту Чехла из Комментариев
+                    if ($line->id === 16454) {
+                        $a = 0;
+                    }
+                    $coverHeight = OrdersService::getCoverHeightByOrderLine($line);
+
+                    foreach ($cuttingTables as $table => $data) {
+                        if ($data['amount'] < 1) {
+                            continue;
+                        }
+
+                        // __ Проверяем, что это базовая модель и у нее нет чехла, то пропускаем
+                        // __ Пока отключаем, потому что может прилететь 314, а там непонятно что
+                        //if (ModelsService::isElementBase($line->model_code_1c) && !ModelsService::hasElementCover($line->model_code_1c)) {
+                        //    continue;
+                        //}
+
+                        // !!! Новый код
+                        $workTable = $hasError ? CuttingTaskLine::FIELD_UNDEFINED : $table; // __ берем стол из объекта времени, он там определяеся
+
+                        //try {
+                        // __ Добавляем Крышки
+                        if (isset($constructDetails['panels'])) {
+                            foreach ($constructDetails['panels'] as $detail) {
+                                /*$panelTaskLine =*/
+                                CuttingTaskLine::query()->create([
+                                    'cutting_task_id'  => $createdTask->id,
+                                    'order_line_id'    => $line->id,
+                                    'amount'           => $data['amount'] * $detail['amount'],
+                                    'expense'          => $detail['total'] ?? 0.0,
+                                    'position'         => $position++,
+                                    'time'             => $data['time'] * $detail['amount'],
+                                    'table'            => $workTable,
+
+                                    // __ Задаем детальки
+                                    'detail'           => $detail['type'],
+                                    'is_panel'         => true,
+                                    'has_panel'        => true,
+                                    'is_side'          => false,
+                                    'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
+                                    'fabric_construct' => [$detail['name']],
+                                    'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
+
+                                    // __ Задаем подмену свойств
+                                    'phantom'          => $table,
+                                    'phantom_json'     => [$table => true],
+                                ]);
+                            }
+                            //} catch (Exception $e) {
+                            //    $a = 0;
+                            //}
+                        }
+
+                        // __ Добавляем Внутренние Детали Верхней Крышки
+                        if (isset($constructDetails['internals'])) {
+                            foreach ($constructDetails['internals'] as $detail) {
+                                $panelTaskLine = CuttingTaskLine::query()->create([
+                                    'cutting_task_id'  => $createdTask->id,
+                                    'order_line_id'    => $line->id,
+                                    'amount'           => $data['amount'] * $detail['amount'],
+                                    'expense'          => $detail['total'] ?? 0.0,
+                                    'position'         => $position++,
+                                    'time'             => $data['time'] * $detail['amount'],
+                                    'table'            => $workTable,
+
+                                    // __ Задаем детальки
+                                    'detail'           => $detail['type'],
+                                    //'detail'           => ModelConstruct::PANEL_UP_NAME,
+                                    'is_panel'         => true,
+                                    'has_panel'        => true,
+                                    'is_side'          => false,
+                                    'has_side'         => isset($constructDetails['sides']) && count($constructDetails['sides']) !== 0,
+                                    'fabric_construct' => [$detail['name']],
+                                    'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
+
+                                    // __ Задаем подмену свойств
+                                    'phantom'          => $table,
+                                    'phantom_json'     => [$table => true],
+                                ]);
+                            }
+                        }
+
+                        // __ Пишем Боковины
+                        if (isset($constructDetails['sides'])) {
+                            // __ Получаем Стол для Боковин
+                            $workTable = CuttingService::getTableByOrderLine($line, ModelConstruct::SIDE_NAME) ?? CuttingTaskLine::FIELD_TABLE_3;
+                            //$workTable = CuttingTaskLine::FIELD_TABLE_3;    // __ Стол будет всегда Третий для деталек
+
+                            foreach ($constructDetails['sides'] as $detail) {
+                                $panelTaskLine = CuttingTaskLine::query()->create([
+                                    'cutting_task_id'  => $createdTask->id,
+                                    'order_line_id'    => $line->id,
+                                    'amount'           => $data['amount'] * $detail['amount'],
+                                    'expense'          => $detail['total'] ?? 0.0,
+                                    'position'         => $position++,
+                                    'time'             => $data['time'] * $detail['amount'],
+                                    'table'            => $workTable,
+
+                                    // __ Задаем детальки
+                                    'detail'           => $detail['type'],
+                                    'is_panel'         => false,
+                                    'has_panel'        => false,
+                                    'is_side'          => true,
+                                    'has_side'         => false,
+                                    'fabric_construct' => [$detail['name']],
+                                    'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
+
+                                    // __ Задаем подмену свойств
+                                    'phantom'          => $table,
+                                    'phantom_json'     => [$table => true],
+                                ]);
+                            }
+                        }
+                    }
                 }
 
-                // __ Пропускаем отсутствие Боковины
-                if (!isset($constructDetails['sides'])) {
-                    continue;
+                // __ Создаем запись в Статусе: Создано
+                $createdTask->statuses()->attach([
+                    CuttingTaskStatus::CUTTING_STATUS_CREATED_ID => [
+                        'set_at'     => now(),
+                        'created_by' => auth()->id(),
+                    ]
+                ]);
+            });
+
+            // ___ Создаем Детальки Кроя
+            if ($calculateCut) {
+                $result = RunService::runCuttingTaskCreator_Rust([$orderId]);
+
+                // __ Пишем в EventLog Ошибку
+                if ((int)$result !== 0) {
+                    $eventLog          = new EventLog();
+                    $eventLog->level   = EventLog::LEVEL_ERROR;
+                    $eventLog->target  = EventLog::TARGET_CUTTING_TASK_CUT;
+                    $eventLog->message = 'Ошибка при расчете деталей Кроя';
+                    $eventLog->context = ['Class' => self::class];
+                    $eventLog->save();
                 }
-
-                // __ Получаем Стол для Боковин
-                $workTable = CuttingService::getTableByOrderLine($line, ModelConstruct::SIDE_NAME) ?? CuttingTaskLine::FIELD_TABLE_3;
-                //$workTable = CuttingTaskLine::FIELD_TABLE_3;    // __ Стол будет всегда Третий для деталек
-
-
-
-                foreach ($constructDetails['sides'] as $detail) {
-                    $panelTaskLine = CuttingTaskLine::query()->create([
-                        'cutting_task_id'  => $createdTask->id,
-                        'order_line_id'    => $line->id,
-                        'amount'           => $data['amount'] * $detail['amount'],
-                        'expense'          => $detail['total'] ?? 0.0,
-                        'position'         => $position++,
-                        'time'             => $data['time'] * $detail['amount'],
-                        'table'            => $workTable,
-
-                        // __ Задаем детальки
-                        'detail'           => $detail['type'],
-                        'is_panel'         => false,
-                        'has_panel'        => false,
-                        'is_side'          => true,
-                        'has_side'         => false,
-                        'fabric_construct' => [$detail['name']],
-                        'cover_height'     => $coverHeight ? $coverHeight / 100 : ModelsService::getModelCoverHeight($line->model_code_1c),
-
-                        // __ Задаем подмену свойств
-                        'phantom'          => $table,
-                        'phantom_json'     => [$table => true],
-                    ]);
-                }
-
-
-                // !!! __ Старый код
-
-                //// __ Получаем стол + С тканью из Спецификаций
-                ////$targetTable = CuttingService::getTableByModel($line->model_code_1c);
-                //$panelFabrics = [];
-                //$hasPanel     = CuttingService::hasPanel($line->model_code_1c, $panelFabrics);
-                //
-                //$sideFabrics = [];
-                //$hasSide     = CuttingService::hasSide($line->model_code_1c, $sideFabrics);
-                //
-                //$workTable = $table; // __ берем стол из объекта времени, он там определяеся
-                //
-                //
-                ////$constructDetails
-                //
-                //// __ Обрабатываем ситуацию, когда у чехла есть и Крышка и Боковина, но система выдает 3 Стол
-                //// __ Отправляем Крышки на 2 Стол, а Боковины на 3 Стол
-                //if ($workTable === CuttingTaskLine::FIELD_TABLE_3 && $hasSide && $hasPanel) {
-                //    $workTable = CuttingTaskLine::FIELD_TABLE_2;
-                //}
-                //
-                //$panelTaskLine = CuttingTaskLine::query()->create([
-                //    'cutting_task_id'  => $createdTask->id,
-                //    'order_line_id'    => $line->id,
-                //    'amount'           => $data['amount'],
-                //    'position'         => $position++,
-                //    'time'             => $data['time'],
-                //    'table'            => $workTable,
-                //    //'table'           => $targetTable,
-                //
-                //    // __ Задаем детальки
-                //    'is_panel'         => true,
-                //    'has_panel'        => $hasPanel,
-                //    'is_side'          => false,
-                //    'has_side'         => $hasSide,
-                //    'fabric_construct' => $panelFabrics,
-                //    'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
-                //
-                //    // __ Задаем подмену свойств
-                //    'phantom'          => $table,
-                //    'phantom_json'     => [$table => true],
-                //]);
-                //
-                ////if ($table === CuttingTaskLine::FIELD_TABLE_3) {
-                ////    $lineArray = $line->toArray();
-                ////    $panelTaskLineArray = $panelTaskLine->toArray();
-                ////    $a = 0;
-                ////}
-                //
-                //// __ Если нет Боковины у Изделия, то пропускаем
-                //if (!$hasSide) {
-                //    continue;
-                //}
-                //
-                //try {
-                //    // __ Создаем Боковину
-                //    $baseTaskLine = CuttingTaskLine::query()->create([
-                //        'cutting_task_id'  => $createdTask->id,
-                //        'order_line_id'    => $line->id,
-                //        'parent_id'        => $panelTaskLine->id,
-                //        // __ Указываем родительскую панельку
-                //        'amount'           => $data['amount'],
-                //        'position'         => $position++,
-                //        'time'             => $data['time'],
-                //        'table'            => $table === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
-                //        //'table'           => $targetTable === CuttingTaskLine::FIELD_UNDEFINED ? CuttingTaskLine::FIELD_UNDEFINED : CuttingTaskLine::FIELD_TABLE_3,
-                //        // __ Все детальки отправляем на Стол 3
-                //
-                //        // __ Задаем детальки
-                //        'is_panel'         => false,
-                //        'has_panel'        => false,
-                //        'is_side'          => true,
-                //        'has_side'         => false,
-                //        'fabric_construct' => $sideFabrics,
-                //        'cover_height'     => ModelsService::getModelCoverHeight($line->model_code_1c),
-                //
-                //        // __ Задаем подмену свойств
-                //        'phantom'          => $table,
-                //        'phantom_json'     => [$table => true],
-                //    ]);
-                //
-                //    //$b = $baseTaskLine->toArray();
-                //    //$c = 0;
-
-                //} catch (Exception $e) {
-                //    $err = $e->getMessage();
-                //    continue;
-                //}
             }
+            return $createdTask;
+        } catch (Exception|Throwable $e) {
+            throw ($e);
+            //return EndPointStaticRequestAnswer::fail($e);
         }
-
-        // __ Создаем запись в Статусе: Создано
-        $createdTask->statuses()->attach([
-            CuttingTaskStatus::CUTTING_STATUS_CREATED_ID => [
-                'set_at'     => now(),
-                'created_by' => auth()->id(),
-            ]
-        ]);
-
-
-        // ___ Создаем Детальки Кроя
-        if ($calculateCut) {
-            $result = RunService::runCuttingTaskCreator_Rust([$orderId]);
-
-            // __ Пишем в EventLog Ошибку
-            if ((int)$result !== 0) {
-                $eventLog          = new EventLog();
-                $eventLog->level   = EventLog::LEVEL_ERROR;
-                $eventLog->target  = EventLog::TARGET_CUTTING_TASK_CUT;
-                $eventLog->message = 'Ошибка при расчете деталей Кроя';
-                $eventLog->context = ['Class' => self::class];
-                $eventLog->save();
-            }
-        }
-
-
-        // });
-        return $createdTask;
-        //} catch (Exception|Throwable $e) {
-        //    $a = 0;
-        //    return EndPointStaticRequestAnswer::fail($e);
-        //}
     }
 
 
@@ -1277,18 +1226,20 @@ final class CuttingService
      */
     public static function getCuttingDetailsByConstruct(ModelConstruct|Collection|null $construct): array
     {
-        $panels = [];
-        $sides  = [];
-        $result = [];
+        $panels    = [];    // __ Крышки (Крышка / Крышка верх / Крышка низ)
+        $internals = [];    // __ Внутренняя часть Верхней Крышки (КрышкаНастил / КрышкаВнутр)
+        $sides     = [];    // __ Боковины
+        $result    = [];
 
         if (is_null($construct)) {
             return $result;
         }
 
         // __ Ищем крышку и боковину
-        $hasPanel = false;
-        $hasSide  = false;
-        $cover    = ModelConstruct::PANEL_UP_NAME;
+        $hasPanel     = false;
+        $hasSide      = false;
+        $hasInternals = false;
+        $cover        = ModelConstruct::PANEL_UP_NAME;
 
         $constructDebug = $construct->toArray();
 
@@ -1313,6 +1264,21 @@ final class CuttingService
                         'amount'   => 1,
                     ];
                     $cover    = ModelConstruct::PANEL_DOWN_NAME;
+                } elseif (!is_null($item->detail) && (
+                        mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_PANEL_LAYER) ||
+                        mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_PANEL_INSIDE)
+                    )
+                ) {
+                    $hasInternals = true;
+                    $internals[]  = [
+                        'name'     => $item->material_name,
+                        'code'     => $item->material_code_1c,
+                        'item'     => $item,
+                        'type'     => ModelConstruct::PANEL_UP_NAME,
+                        'position' => $item->position,
+                        'amount'   => 1,
+                    ];
+                    $cover        = ModelConstruct::PANEL_DOWN_NAME;
                 } elseif (!is_null($item->detail) && mb_strtolower($item->detail) === mb_strtolower(ModelConstruct::DETAIL_CONSTRUCT_SIDE_NAME)) {
                     $hasSide = true;
                     $sides[] = [
@@ -1356,7 +1322,11 @@ final class CuttingService
             }
         }
 
-        unset($panels[0]['item'], $panels[1]['item'], $panels[2]['item'], $sides[0]['item'], $sides[1]['item'], $sides[2]['item']);
+        unset(
+            $panels[0]['item'], $panels[1]['item'], $panels[2]['item'],
+            $sides[0]['item'], $sides[1]['item'], $sides[2]['item'],
+            $internals[0]['item'], $internals[1]['item'], $internals[2]['item']
+        );
 
         if ($hasPanel) {
             usort($panels, fn($a, $b) => $a['position'] <=> $b['position']);
@@ -1365,6 +1335,10 @@ final class CuttingService
         if ($hasSide) {
             usort($sides, fn($a, $b) => $a['position'] <=> $b['position']);
             $result['sides'] = $sides;
+        }
+        if ($hasInternals) {
+            usort($internals, fn($a, $b) => $a['position'] <=> $b['position']);
+            $result['internals'] = $internals;
         }
 
         return $result;
