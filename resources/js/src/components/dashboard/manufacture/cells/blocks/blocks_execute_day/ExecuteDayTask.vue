@@ -479,7 +479,13 @@ import type {
     IDividerItem,
     IBlockTask,
     IBlockTaskLine,
-    IBlockTaskOrderLine, IBlockLineSetData, IBlockTaskLinesSubgroup, IBlockTaskLinesGroupData, IBlockDocument, IBlockCollectionTime, IOptimizeType
+    IBlockTaskOrderLine,
+    IBlockLineSetData,
+    IBlockTaskLinesSubgroup,
+    IBlockTaskLinesGroupData,
+    IBlockDocument,
+    IBlockCollectionTime,
+    IOptimizeType,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'

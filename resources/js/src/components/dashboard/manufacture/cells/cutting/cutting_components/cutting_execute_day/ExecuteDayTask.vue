@@ -76,6 +76,34 @@
                     @click="toggleUnderGroups"
                 />
 
+                <!-- __ Сортировка по Порядку появления ткани -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="➡️"
+                    text-size="huge"
+                    title="Сортировка по Порядку следования Ткани в Заявках"
+                    :type="sortType === 'by_order' ? 'warning' : 'dark'"
+                    width="w-[50px]"
+                    @click="toggleSortType('by_order')"
+                />
+
+                <!-- __ Сортировка по Убыванию количества Ткани -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="⬇️"
+                    text-size="huge"
+                    title="Сортировка по убыванию количества ткани"
+                    :type="sortType === 'by_amount' ? 'warning' : 'dark'"
+                    width="w-[50px]"
+                    @click="toggleSortType('by_amount')"
+                />
+
                 <!-- __ Рулоны -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -494,7 +522,7 @@ import type {
     ICuttingTaskLinesUnderGroup,
     ICuttingTaskLinesSubgroup,
     ICuttingTaskLinesGroupData,
-    ICuttingTaskLinesGroupNames, ICuttingTableKeys
+    ICuttingTaskLinesGroupNames, ICuttingTableKeys, ICuttingTaskSortType
 } from '@/types'
 
 import { useCuttingStore } from '@/stores/CuttingStore.ts'
@@ -598,6 +626,8 @@ const taskCardTable = ref<ICuttingTask>(CUTTING_TASK_DRAFT)
 const statistics = computed(() => getExecuteTaskStatistics(props.cuttingTask))
 
 
+
+
 // __ Табы Группировки СЗ по АШМ/УШМ
 const activeTabIndex = ref(0)
 
@@ -615,6 +645,17 @@ const taskTitle = computed(() => {
 // }
 
 
+
+
+// __ Управляем сортировкой
+const sortType = ref<ICuttingTaskSortType>('by_amount')
+
+// __ Переключаем сортировку
+const toggleSortType = (toSortType: ICuttingTaskSortType) => {
+    sortType.value = toSortType
+}
+
+
 const orderTitle = computed(() => {
     if (props.cuttingTask.position === 0) {
         return 'Объединение СЗ'
@@ -629,7 +670,7 @@ const cuttingLinesGroups = computed<ICuttingTaskLinesGroupData[]>(() => {
     //     return groupTaskLinesForExecuteForUnion(props.cuttingTask.cutting_lines)
     // }
     const title = `${props.cuttingTask.position}. ${props.cuttingTask.order.client.short_name} №${props.cuttingTask.order.order_no_num}`
-    return groupTaskLinesForExecute(props.cuttingTask.cutting_lines, title)
+    return groupTaskLinesForExecute(props.cuttingTask.cutting_lines, title, sortType.value)
 })
 
 // const cuttingLinesGroup = ref(cuttingLinesGroups.value[activeTabIndex.value].subgroups)
@@ -1225,6 +1266,8 @@ const showDocument = async (cuttingLine: ICuttingTaskLine, id: number) => {
     await textileDesignDocumentAsync.value!.show()
     doc.value = null
 }
+
+
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
