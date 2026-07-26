@@ -1618,7 +1618,6 @@ export function getCoverTKCH(line: ICuttingTaskLine) {
 // __ Возвращаем подготовленный массив групп для отображения в выполнении СЗ
 export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: string | null = null, sortType: ICuttingTaskSortType = 'by_amount'): ICuttingTaskLinesGroupData[] {
 
-
     // __ Собирает все Ткани в массив и разбивает Крой. Вспомогалочка, для исключения дублирования кода.
     const getGroupedFabricsArray = (targetLines: ICuttingTaskLine[] = []): ICuttingTaskLinesSubgroup[] => {
         const groupedFabricsArray: ICuttingTaskLinesSubgroup[] = []
@@ -1691,101 +1690,29 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
         return groupedFabricsArray
     }
 
-
-
     const X_LAT = 'x'
-
 
     const groupedTables                                    = Object.groupBy(lines, line => line.table)
     const groupedTablesArray: ICuttingTaskLinesGroupData[] = []
 
     // console.log('groupedTables: ', JSON.parse(JSON.stringify(groupedTables)))
 
-
+    // __ Проходимся по каждому столу
     for (const [keyTable, valueTable] of Object.entries(groupedTables)) {
 
-
         let groupedFabricsArray: ICuttingTaskLinesSubgroup[] = []
-
 
         if (sortType === 'by_amount') {     // __ Сортируем по Убыванию Количества
 
             groupedFabricsArray = getGroupedFabricsArray(valueTable)
 
-            //
-            // const groupedFabrics = Object.groupBy(valueTable, line => line.fabric_construct?.[0])
-            //
-            // for (const [keyFabric, valueFabric] of Object.entries(groupedFabrics)) {
-            //
-            //     if (valueFabric) {
-            //
-            //         const groupedCuts = Object.groupBy(valueFabric, line => `${line.cut_width}${X_LAT}${line.cut_length}`)
-            //
-            //         const groupedCutsArray: ICuttingTaskLinesUnderGroup[] = []
-            //         for (const [keyCut, valueCut] of Object.entries(groupedCuts)) {
-            //
-            //             groupedCutsArray.push({
-            //                 undergroupName      : keyCut,
-            //                 lines               : (valueCut ?? []).toSorted((a, b) => b.amount - a.amount),
-            //                 undergroupOrderTitle: orderTitle,
-            //                 undergroupType      : 'dark',
-            //                 hasData             : true,
-            //                 amount              : {
-            //                     total     : (valueCut || []).reduce((acc, line) => acc + line.amount, 0),
-            //                     done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount : acc, 0),
-            //                     incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount : acc, 0),
-            //                 },
-            //                 time                : {
-            //                     total     : (valueCut || []).reduce((acc, line) => acc + getCuttingTaskLineTime(line), 0),
-            //                     done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
-            //                     incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
-            //                 },
-            //                 cutWidth            : parseInt(keyCut.split(X_LAT)[0]) || 0,
-            //                 cutLength           : parseInt(keyCut.split(X_LAT)[1]) || 0,
-            //                 cutLengthTotal      : (valueCut || []).reduce((acc, line) => acc + line.expense /** line.amount*/, 0)
-            //             })
-            //         }
-            //
-            //         // __ Сначала сравниваем cutWidth. Если они не равны, сортируем по нему.
-            //         // __ Если они равны (вычитание даст 0), то сортируем по cutLength.
-            //         groupedCutsArray.sort((a, b) => {
-            //             if (a.cutWidth !== b.cutWidth) {
-            //                 return b.cutWidth - a.cutWidth
-            //             }
-            //             return b.cutLength - a.cutLength
-            //
-            //         })
-            //
-            //         groupedFabricsArray.push({
-            //             subgroupName      : keyFabric,
-            //             subgroupOrderTitle: orderTitle,
-            //             undergroups       : groupedCutsArray,
-            //             collapsed         : true,
-            //             subgroupType      : 'dark',
-            //             hasData           : true,
-            //             amount            : {
-            //                 total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.total, 0),
-            //                 done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.done, 0),
-            //                 incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.incomplete, 0),
-            //             },
-            //             time              : {
-            //                 total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.total, 0),
-            //                 done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.done, 0),
-            //                 incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.incomplete, 0),
-            //             },
-            //             cutLengthTotal    : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.cutLengthTotal, 0),
-            //         })
-            //     }
-            // }
+            // __ Сортируем по Количеству Ткани по убыванию
+            groupedFabricsArray.sort((a, b) => b.cutLengthTotal - a.cutLengthTotal)
 
             // __ Сортируем по названию ПС по Возрастанию
             // groupedFabricsArray.sort((a, b) => a.subgroupName.localeCompare(b.subgroupName))
 
-            // __ Сортируем по Количеству Ткани по убыванию
-            groupedFabricsArray.sort((a, b) => b.cutLengthTotal - a.cutLengthTotal)
-
-
-        } else if (sortType === 'by_order') {
+        } else if (sortType === 'by_order') { // __ Сортируем по Порядку Следования
 
             // __ Реализовываем вот это:
             // __ 1. Берем первую Заявку по порядку
@@ -1797,145 +1724,90 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
             // __ 7. Если ее там не было - добавляем в конец списка в порядке Убывания Количества
             // __ 8. Переходим к следующей Заявке
 
-            // __ Проходимся по каждому столу
-            // for (const [keyTable, valueTable] of Object.entries(groupedTables)) {
+            // __ Сортируем по возрастанию
+            const sortedByGroupAttr = valueTable.toSorted((a, b) => (a.groupAttr || '').localeCompare(b.groupAttr || ''))
 
-                // __ Сортируем по возрастанию
-                const sortedByGroupAttr = valueTable.toSorted((a, b) => (a.groupAttr || '').localeCompare(b.groupAttr || ''))
+            // __ Группируем по Заявке
+            const groupedByOrders = Object.groupBy(sortedByGroupAttr, item => item.groupAttr || '')
 
-                // __ Группируем по Заявке
-                const groupedByOrders = Object.groupBy(sortedByGroupAttr, item => item.groupAttr || '')
+            // __ Проходимся по каждой Заявке
+            for (const [/*orderName*/, orderItems] of Object.entries(groupedByOrders)) {
 
-                // __ Проходимся по каждой Заявке
-                for (const [orderName, orderItems] of Object.entries(groupedByOrders)) {
+                // __ 1. Проходимся по каждой Ткани и собираем все в отдельный массив
+                const groupedFabricsArrayOrder: ICuttingTaskLinesSubgroup[] = getGroupedFabricsArray(orderItems)
 
-                    // __ 1. Проходимся по каждой Ткани и собираем все в отдельный массив
-                    const groupedFabricsArrayOrder: ICuttingTaskLinesSubgroup[] = getGroupedFabricsArray(orderItems)
+                // __ 2. Сортируем по Количеству Ткани по убыванию
+                groupedFabricsArrayOrder.sort((a, b) => b.cutLengthTotal - a.cutLengthTotal)
 
-                    // groupedFabricsArray = getGroupedFabricsArray(valueTable)
-                    // const groupedFabricsArrayOrder: ICuttingTaskLinesSubgroup[] = []
+                // __ 3. Ищем в результирующем массиве Ткань и добавляем в порядке Попадания в результирующий массив
+                groupedFabricsArrayOrder.forEach(currentFabric => {
+                    const existingFabric = groupedFabricsArray.find(resultFabric => resultFabric.subgroupName === currentFabric.subgroupName)
 
+                    if (existingFabric) {
+                        // __ Если нашелся
 
-                    //
-                    //
-                    // const groupedFabrics = Object.groupBy(orderItems || [], line => line.fabric_construct?.[0])
-                    //
-                    // // __ 1. Проходимся по каждой Ткани и собираем все в отдельный массив
-                    // for (const [keyFabric, valueFabric] of Object.entries(groupedFabrics)) {
-                    //
-                    //     if (valueFabric) {
-                    //
-                    //         const groupedCuts = Object.groupBy(valueFabric, line => `${line.cut_width}${X_LAT}${line.cut_length}`)
-                    //
-                    //         const groupedCutsArray: ICuttingTaskLinesUnderGroup[] = []
-                    //
-                    //         // __ Разбиваем Крой
-                    //         for (const [keyCut, valueCut] of Object.entries(groupedCuts)) {
-                    //
-                    //             groupedCutsArray.push({
-                    //                 undergroupName      : keyCut,
-                    //                 lines               : (valueCut ?? []).toSorted((a, b) => b.amount - a.amount),
-                    //                 undergroupOrderTitle: orderTitle,
-                    //                 undergroupType      : 'dark',
-                    //                 hasData             : true,
-                    //                 amount              : {
-                    //                     total     : (valueCut || []).reduce((acc, line) => acc + line.amount, 0),
-                    //                     done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount : acc, 0),
-                    //                     incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount : acc, 0),
-                    //                 },
-                    //                 time                : {
-                    //                     total     : (valueCut || []).reduce((acc, line) => acc + getCuttingTaskLineTime(line), 0),
-                    //                     done      : (valueCut || []).reduce((acc, line) => isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
-                    //                     incomplete: (valueCut || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + getCuttingTaskLineTime(line) : acc, 0),
-                    //                 },
-                    //                 cutWidth            : parseInt(keyCut.split(X_LAT)[0]) || 0,
-                    //                 cutLength           : parseInt(keyCut.split(X_LAT)[1]) || 0,
-                    //                 cutLengthTotal      : (valueCut || []).reduce((acc, line) => acc + line.expense /** line.amount*/, 0)
-                    //             })
-                    //         }
-                    //
-                    //         // __ Сначала сравниваем cutWidth. Если они не равны, сортируем по нему.
-                    //         // __ Если они равны (вычитание даст 0), то сортируем по cutLength.
-                    //         groupedCutsArray.sort((a, b) => {
-                    //             if (a.cutWidth !== b.cutWidth) {
-                    //                 return b.cutWidth - a.cutWidth
-                    //             }
-                    //             return b.cutLength - a.cutLength
-                    //
-                    //         })
-                    //
-                    //         groupedFabricsArrayOrder.push({
-                    //             subgroupName      : keyFabric,
-                    //             subgroupOrderTitle: orderTitle,
-                    //             undergroups       : groupedCutsArray,
-                    //             collapsed         : true,
-                    //             subgroupType      : 'dark',
-                    //             hasData           : true,
-                    //             amount            : {
-                    //                 total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.total, 0),
-                    //                 done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.done, 0),
-                    //                 incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.amount.incomplete, 0),
-                    //             },
-                    //             time              : {
-                    //                 total     : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.total, 0),
-                    //                 done      : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.done, 0),
-                    //                 incomplete: groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.time.incomplete, 0),
-                    //             },
-                    //             cutLengthTotal    : groupedCutsArray.reduce((acc, undergroup) => acc + undergroup.cutLengthTotal, 0),
-                    //         })
-                    //     }
-                    // }
+                        // __ 4. Ищем нужный размер Кроя и добавляем туда или Добавляем Новый Крой
+                        currentFabric.undergroups.forEach(currentUnderGroup => {
+                            const existingUndergroup = existingFabric.undergroups.find(ug => ug.undergroupName === currentUnderGroup.undergroupName)
+                            if (existingUndergroup) {
+                                existingUndergroup.cutLengthTotal += currentUnderGroup.cutLengthTotal
 
-                    // __ 2. Сортируем по Количеству Ткани по убыванию
-                    groupedFabricsArrayOrder.sort((a, b) => b.cutLengthTotal - a.cutLengthTotal)
+                                existingUndergroup.amount.total += currentUnderGroup.amount.total
+                                existingUndergroup.amount.done += currentUnderGroup.amount.done
+                                existingUndergroup.amount.incomplete += currentUnderGroup.amount.incomplete
 
-                    // __ 3. Ищем в результирующем массиве Ткань и добавляем в порядке Попадания в результирующий массив
-                    groupedFabricsArrayOrder.forEach(currentFabric => {
-                        const existingFabric = groupedFabricsArray.find(resultFabric => resultFabric.subgroupName === currentFabric.subgroupName)
+                                existingUndergroup.time.total += currentUnderGroup.time.total
+                                existingUndergroup.time.done += currentUnderGroup.time.done
+                                existingUndergroup.time.incomplete += currentUnderGroup.time.incomplete
+
+                                existingUndergroup.lines = [...existingUndergroup.lines, ...currentUnderGroup.lines]
+
+                            } else {
+                                // __ Если такого кроя еще не было в этой ткани, добавляем клон
+                                existingFabric.undergroups.push({ ...currentUnderGroup })
+                            }
+
+                            // __ ВАЖНО: Всегда обновляем суммарные показатели самой ткани (subgroup),
+                            // __ так как в нее добавились новые данные (либо через новый крой, либо через обновление существующего)
+                            existingFabric.cutLengthTotal += currentUnderGroup.cutLengthTotal
+
+                            existingFabric.amount.total += currentUnderGroup.amount.total
+                            existingFabric.amount.done += currentUnderGroup.amount.done
+                            existingFabric.amount.incomplete += currentUnderGroup.amount.incomplete
+
+                            existingFabric.time.total += currentUnderGroup.time.total
+                            existingFabric.time.done += currentUnderGroup.time.done
+                            existingFabric.time.incomplete += currentUnderGroup.time.incomplete
+
+                        })
 
 
-                        if (existingFabric) {
-                            // __ Если нашелся
+                    } else {
+                        groupedFabricsArray.push({ ...currentFabric })
+                    }
 
-                            // __ 4. Ищем нужный размер Кроя и добавляем туда или Добавляем Новый Крой
-                            currentFabric.undergroups.forEach(currentUnderGroup => {
-                                const existingUndergroup = existingFabric.undergroups.find(ug => ug.undergroupName === currentUnderGroup.undergroupName)
-                                if (existingUndergroup) {
-                                    existingUndergroup.cutLengthTotal += currentUnderGroup.cutLengthTotal
+                })
 
-                                    existingUndergroup.amount.total += currentUnderGroup.amount.total
-                                    existingUndergroup.amount.done += currentUnderGroup.amount.done
-                                    existingUndergroup.amount.incomplete += currentUnderGroup.amount.incomplete
+                // console.log(`Стол: ${keyTable}, Заявка: ${orderName}, Ткани: `, groupedFabricsArray)
+            }
 
-                                    existingUndergroup.time.total += currentUnderGroup.time.total
-                                    existingUndergroup.time.done += currentUnderGroup.time.done
-                                    existingUndergroup.time.incomplete += currentUnderGroup.time.incomplete
-
-                                } else {
-                                    existingFabric.undergroups.push(currentUnderGroup)
-                                }
-
-                            })
-
-
-                        } else {
-                            groupedFabricsArray.push(currentFabric)
+            // __ 5. Сортируем Крой по Убыванию после всех Добавлений
+            groupedFabricsArray.forEach(group => {
+                group.undergroups = group.undergroups
+                    .toSorted((a, b) => {
+                        if (a.cutWidth !== b.cutWidth) {
+                            return b.cutWidth - a.cutWidth
                         }
-
+                        return b.cutLength - a.cutLength
                     })
+            })
 
 
-                    // console.log('groupedByOrders: ', valueTable)
-                    // console.log('groupedByOrders: ', groupedByOrders)
+        }
 
-                    console.log(`Стол: ${keyTable}, Заявка: ${orderName}, Ткани: `, groupedFabricsArray)
-
-                }
-
-
-            // }
-
-
+        // __ Размещаем ПС со словом "деталь" после такого же без слова "деталь" для 3 Стола
+        if (keyTable === TABLE_3) {
+            groupedFabricsArray = sortDetailsAfterMain(groupedFabricsArray)
         }
 
         // __ Получаем название и раскраску стола
@@ -1973,19 +1845,66 @@ export function groupTaskLinesForExecute(lines: ICuttingTaskLine[], orderTitle: 
                 incomplete: groupedFabricsArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
             },
         })
-
-
     }
-
 
     // __ Сортируем по названию Столов по Возрастанию
     groupedTablesArray.sort((a, b) => a.groupName.localeCompare(b.groupName))
-
-    console.log('groupedTablesArray: ', groupedTablesArray)
-
+    // console.log('groupedTablesArray: ', groupedTablesArray)
     return groupedTablesArray
-
 }
+
+
+function sortDetailsAfterMain(items: ICuttingTaskLinesSubgroup[]) {
+    const result = [...items]
+
+    // Идем с конца, чтобы индексы не смещались при вставке
+    // Сначала соберем уникальные базовые имена, для которых есть детали
+    for (let i = result.length - 1; i >= 0; i--) {
+        const item = result[i]
+        const subgroupName = item.subgroupName || ''
+
+        if (subgroupName.toLowerCase().includes('деталь')) {
+            const baseName = subgroupName.replace(/деталь/gi, '').trim()
+
+            // Ищем последнюю позицию базовой группы (без слова "деталь") в массиве
+            let baseGroupIndex = -1
+            for (let j = 0; j < result.length; j++) {
+                if (result[j].subgroupName.trim() === baseName) {
+                    baseGroupIndex = j
+                    // Не прерываемся, чтобы найти САМЫЙ КОНЕЦ этой базовой группы
+                }
+            }
+
+            // Если базовая группа нашлась, и текущий элемент стоит ДО нее (или где-то еще)
+            if (baseGroupIndex !== -1) {
+                // Находим конец этой базовой группы
+                let insertIndex = baseGroupIndex
+                while (
+                    insertIndex + 1 < result.length &&
+                    result[insertIndex + 1].subgroupName.trim() === baseName
+                    ) {
+                    insertIndex++
+                }
+
+                // Вырезаем элемент со старого места
+                const [removedItem] = result.splice(i, 1)
+
+                // Если мы удалили элемент ДО точки вставки, индекс сдвинулся влево
+                if (i < insertIndex) {
+                    insertIndex--
+                }
+
+                // Вставляем сразу после базовой группы
+                result.splice(insertIndex + 1, 0, removedItem)
+            }
+            // Если baseGroupIndex === -1, мы просто ничего не делаем,
+            // и элемент со словом "деталь" остается ровно на своем месте.
+        }
+    }
+
+    return result
+}
+
 
 
 // __ Получаем заголовок СЗ

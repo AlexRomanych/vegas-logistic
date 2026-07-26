@@ -645,10 +645,8 @@ const taskTitle = computed(() => {
 // }
 
 
-
-
 // __ Управляем сортировкой
-const sortType = ref<ICuttingTaskSortType>('by_amount')
+const sortType = ref<ICuttingTaskSortType>('by_order')
 
 // __ Переключаем сортировку
 const toggleSortType = (toSortType: ICuttingTaskSortType) => {
