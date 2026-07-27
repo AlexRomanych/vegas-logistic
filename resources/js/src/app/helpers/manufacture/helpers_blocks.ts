@@ -448,8 +448,9 @@ export function getBlockTaskAmountAndTime(item: IBlockTask | IBlockTaskLine[]) {
 // __ Превращаем массив объектов IBlockTask [{}, {}, ...] в массив массивов объектов [[...], [...]]
 // __ которые сгруппированы по одинаковой Заявке с возможностью учитывать статусы Заявок в определенном дне
 export function getBlockTasksGroupedByOrder(blockTasks: IBlockTask[], applyStatus: boolean = true) {
-    const clearDay = clearRenderMatrixDay(blockTasks) // __ Возвращаем новый массив без пустых элементов
-    const grouped  = clearDay.reduce((acc, item) => {
+    // const clearDay = clearRenderMatrixDay(blockTasks) // __ Возвращаем новый массив без пустых элементов
+    // const grouped  = clearDay.reduce((acc, item) => {
+    const grouped  = blockTasks.reduce((acc, item) => {
 
         // __ Создаем уникальный составной ключ
         let key: string

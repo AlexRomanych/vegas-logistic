@@ -839,7 +839,7 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
 
     // __ Перейти в карточку Заявки
     if (result.menuItem === 5 && result.value) {
-        await router.push({ name: 'orders.card', params: { id: blockTask.order.id } })
+        router.push({ name: 'orders.card', params: { id: blockTask.order.id } })
         return
     }
 
@@ -915,7 +915,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
     // __ Получаем разницу между матрицами
     const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
-    console.log('diffs: ', diffs)
+    console.log('matrix diffs: ', diffs)
 
     // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
     if (!diffs.length) {
@@ -984,7 +984,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             return
         }
 
-        // __ Находим те изменения, которые относятся к перемещаемой СЗ
+        // __ Находим те изменения, которые относятся к перемещаемому СЗ
         const diffsForBlockTask = diffs.find(diff => diff.isMoved || diff.isChangeChanged)
         if (!diffsForBlockTask) {
             // __ Откатываем изменения
@@ -1195,13 +1195,23 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
                 const newBlockTask = JSON.parse(JSON.stringify(blockTask))
 
                 // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-                newBlockTask.position = (diffsForBlockTask.newTaskPosition ?? 1) - 0.1
+                // __ Тут такой код. Чтобы правильная была нумерация
+                // __ Баг возникает если переносить часть со первой смены на самое начало второй
+                // __ или если переносить часть со второй смены на самый конец первой
+                if (targetChange === CHANGE_2) {
+                    newBlockTask.position = (diffsForBlockTask.newTaskPosition ?? 1) + 0.1
+                } else if (targetChange === CHANGE_1) {
+                    newBlockTask.position = (diffsForBlockTask.newTaskPosition ?? 1) - 0.1
+                }
 
                 // __ Устанавливаем новую дату, высчитываем новую дату по смещению
                 newBlockTask.action_at = additionDaysInStrFormat(
                     newBlockTask.action_at,
                     (diffsForBlockTask.dayToOffset ?? 0) - (diffsForBlockTask.dayFromOffset ?? 0)
                 )
+
+                // __ Устанавливаем новую смену, если перемещаем в другую
+                newBlockTask.change = targetChange
 
                 // __ Устанавливаем id
                 // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
@@ -1303,7 +1313,7 @@ const setStatuses = async (setStatuses: IBlockTaskStatusesSet[]) => {
 const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
     console.log('props.day: ', props.day)
 
-    const clearDay = clearRenderMatrixDay(props.day) as IBlockTask[]  // __ Возвращаем новый массив без пустых элементов
+    const clearDay = clearRenderMatrixDay(props.day) as unknown as IBlockTask[][]  // __ Возвращаем новый массив без пустых элементов
     const idx      = getIndexByChange(change)
 
     // __ Проверяем, есть ли СЗ в дне
@@ -1420,7 +1430,9 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
     // __ Объединение СЗ для одной Заявки
     if (result.menuItem === 3) {
-        const grouped = getBlockTasksGroupedByOrder(clearDay) // __ Получаем массив массивов СЗ по одинаковым Заявкам
+        console.log('clearDay: ', clearDay)
+
+        const grouped = getBlockTasksGroupedByOrder(clearDay[idx]) // __ Получаем массив массивов СЗ по одинаковым Заявкам
         // console.log('target: ', grouped)
         await blockStore.applyMergeTasksGroups(grouped)
         return
