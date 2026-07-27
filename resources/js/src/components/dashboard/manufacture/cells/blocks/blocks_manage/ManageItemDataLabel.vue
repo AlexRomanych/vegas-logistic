@@ -16,7 +16,7 @@
         class="flex flex-col m-0.5 app-label justify-center select-none"
         @click="labelClick"
     >
-        <div v-if="amountShow"><span>{{ amount.toFixed(TOTAL_PRECISION) }}</span></div>
+        <div v-if="amountShow"><span>{{ renderUnit }}</span></div>
         <hr v-if="amountShow && timeShow" class="w-full my-[2px]">
         <div v-if="timeShow" class="text-center">
             <div><span class="italic">{{ formatTimeForWrap[0] }}</span></div>
@@ -61,31 +61,38 @@ interface IProps {
 
     amount?: number         // __ Количество в штуках
     time?: number           // __ Трудозатраты в секундах
+    square?: number         // __ Площадь в квадратных метрах
+
     reference?: number | null // __ Референсное значение. Если передано, то тип элемента зависит от % Трудозатрат к Референсному значению
                               // __ Если null, то элемент рендерим, но значение не отображаем (выравниваем верстку)
     timeShow?: boolean
+    squareShow?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type:     'stone',
-    width:    'w-[200px]',
-    height:   'h-[25px]',
+    type    : 'stone',
+    width   : 'w-[200px]',
+    height  : 'h-[25px]',
     textSize: 'micro',
-    bold:     true,
-    align:    'center',
-    rounded:  'rounded-[4px]',
-    color:    '',
-    class_:   '',
+    bold    : true,
+    align   : 'center',
+    rounded : 'rounded-[4px]',
+    color   : '',
+    class_  : '',
 
-    amount:    0,
-    time:      0,
-    reference: 0,
-    timeShow:  true,
+    amount    : 0,
+    square    : 0,
+    time      : 0,
+    reference : 0,
+    timeShow  : true,
+    squareShow: true,
 })
 
 const emits = defineEmits<{
     (e: 'labelClick', text: string): void
 }>()
+
+const renderUnit = computed(() => props.squareShow ? props.square.toFixed(2) : props.amount.toFixed(TOTAL_PRECISION))
 
 const currentColorIndex = 500 // задаем основной индекс палитры tailwinds
 const textSizeClass     = computed(() => getFontSizeClass(props.textSize))

@@ -107,6 +107,9 @@ export const useBlocksStore = defineStore('blocks', () => {
     // __ Показывать ли Раскрытый день или нет в календаре СЗ Раскроя
     const globalBlockTaskFullDaysShow = ref(true)
 
+    // __ Показывать единицу измерения в Метрах Квадратных или Штуках
+    const globalBlockTaskBlockInSquare = ref(true)
+
     // __ Текущее Заявка, на которое ссылается кликнутое СЗ (для календаря для подсветки СЗ, которые ссылаются на одну заявку)
     const globalBlockTaskActiveOrderId = ref<number | null>(null)
 
@@ -969,6 +972,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         globalRenderPeriod,
         globalBlockTaskTimesShow,
         globalBlockTaskFullDaysShow,
+        globalBlockTaskBlockInSquare,
         globalBlockTaskActiveOrderId,
         globalBlockTaskOrderTypeColor,
         globalManageTaskCardActiveBlockLine,

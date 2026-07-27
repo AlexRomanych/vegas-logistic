@@ -1,6 +1,6 @@
 <template>
     <div
-        :class="[shadowColor, globalBlockTaskFullDaysShow ? 'min-w-[301px]' : 'min-w-[185px]']"
+        :class="[shadowColor, globalBlockTaskFullDaysShow ? 'min-w-[321px]' : 'min-w-[190px]']"
         class="m-1 pb-0.5 border-[1px] rounded border-slate-600 bg-slate-200 w-fit min-h-[129px] shadow-xl"
     >
         <!-- __ День недели -->
@@ -76,7 +76,7 @@
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
-                :width="columnsWidth.table"
+                :width="columnsWidth.line"
                 align="center"
                 rounded="rounded-[4px]"
                 text="1"
@@ -88,7 +88,7 @@
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
-                :width="columnsWidth.table"
+                :width="columnsWidth.line"
                 align="center"
                 rounded="rounded-[4px]"
                 text="2"
@@ -100,7 +100,7 @@
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
-                :width="columnsWidth.table"
+                :width="columnsWidth.line"
                 align="center"
                 color="red"
                 rounded="rounded-[4px]"
@@ -181,10 +181,12 @@
                     <!-- __ Количество + Трудозатраты Общие -->
                     <ManageItemDataLabel
                         :amount="getTotalAmountChange(change as unknown as IBlockTask[])"
+                        :square="getTotalSquareChange(change as unknown as IBlockTask[])"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME * 2"
                         :time="getTotalTimeChange(change as unknown as IBlockTask[])"
                         :time-show="globalBlockTaskTimesShow"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -194,10 +196,12 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].amount"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].time"
                         :time-show="globalBlockTaskTimesShow"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -207,10 +211,12 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].amount"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].time"
                         :time-show="globalBlockTaskTimesShow"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -220,11 +226,13 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].square"
                         :color="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
                         :height="heightTotals"
                         :reference="null"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].time"
                         :time-show="globalBlockTaskTimesShow"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -334,7 +342,7 @@ import {
     isTaskStatusCreated, isTaskStatusRunning,
     orderBlockTasksByStatus,
     repositionBlockTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName,
+    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName, getBlockTaskLineSquare,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
@@ -397,6 +405,7 @@ const blockStore = useBlocksStore()
 const {
           globalBlockTaskTimesShow,
           globalBlockTaskFullDaysShow,
+          globalBlockTaskBlockInSquare,
           /*globalDiffs,*/
           globalBlockTasks,
           globalBlockTaskActiveOrderId,
@@ -440,9 +449,9 @@ const columnsWidth = {
     change : 'w-[30px]',
     client : 'w-[90px]',
     orderNo: 'w-[45px]',
-    amount : 'w-[35px]',
+    amount : 'w-[40px]',
     common : 'w-[139px]',
-    table  : 'w-[35px]',
+    line   : 'w-[40px]',
 }
 
 // __ Цвет тени
@@ -476,6 +485,7 @@ const amountAndTimeTotalsChanges = computed(() => {
             Object.entries(amountAndTime).forEach(([key, value]) => {
                 amountAndTimeObj[key].amount += value.amount
                 amountAndTimeObj[key].time += value.time
+                amountAndTimeObj[key].square += value.square
             })
         })
 
@@ -490,6 +500,14 @@ const getTotalAmountChange = (tasks: IBlockTask[]) => {
     return tasks.reduce((totalAcc, task) =>
         totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0)
 }
+
+// __ Общая Площадь за день
+const getTotalSquareChange = (tasks: IBlockTask[]) => {
+    return tasks.reduce((totalAcc, task) =>
+        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + getBlockTaskLineSquare(line), 0), 0)
+}
+
+
 // const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
 //     totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0))
 

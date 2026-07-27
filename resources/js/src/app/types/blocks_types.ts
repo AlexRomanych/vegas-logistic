@@ -327,6 +327,7 @@ export type IBlockManufLineKeys =
 export type IStatItemBlock = {
     time: number
     amount: number
+    square: number
 }
 
 export interface IBlockTaskStatusItem {
@@ -337,7 +338,7 @@ export interface IBlockTaskStatusItem {
     PRIORITY: number
 }
 
-// __ Создаем тип для объекта amount, где ключами будут только ключи из SEWING_MACHINES
+// __ Создаем тип для объекта amount, где ключами будут только ключи из BLOCK_MANUF_LINES
 export type IAmountAndTimeBlock = Record<keyof typeof BLOCK_MANUF_LINES, IStatItemBlock>
 
 // --- ------------------------------------------------------------

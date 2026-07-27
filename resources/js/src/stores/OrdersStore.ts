@@ -6,7 +6,7 @@ import { defineStore } from 'pinia'
 
 import { jwtGet, jwtPost, jwtDelete, jwtPatch, jwtPatch_, jwtGet_ } from '@/app/utils/jwt_api'
 import type { IPeriod, ISewingTask } from '@/types'
-import axios from 'axios'
+// import axios from 'axios'
 // import { openNewTab } from '@/app/helpers/helpers_service'
 
 

@@ -49,6 +49,21 @@
                     @label-click="globalBlockTaskTimesShow = !globalBlockTaskTimesShow"
                 />
 
+                <!-- __ Единица измерения  -->
+                <AppLabelMultilineCheckBoxTS
+                    :height="MENU_ITEM_HEIGHT"
+                    :state="globalBlockTaskBlockInSquare"
+                    :state-false-char="['Переключить на', 'квадратные метры']"
+                    :state-true-char="['Переключить на', 'штуки']"
+                    :width="MENU_ITEM_LENGTH"
+                    align="center"
+                    class="cursor-pointer"
+                    state-false-type="success"
+                    state-true-type="primary"
+                    text-size="mini"
+                    @label-click="globalBlockTaskBlockInSquare = !globalBlockTaskBlockInSquare"
+                />
+
 
             </div>
         </div>
@@ -66,7 +81,12 @@ import AppLabelMultilineCheckBoxTS from '@/components/ui/labels/AppLabelMultilin
 
 const blocksStore = useBlocksStore()
 
-const { globalBlockTaskTimesShow, globalBlockTaskFullDaysShow, globalBlockTaskOrderTypeColor, } = storeToRefs(blocksStore)
+const {
+          globalBlockTaskTimesShow,
+          globalBlockTaskFullDaysShow,
+          globalBlockTaskOrderTypeColor,
+          globalBlockTaskBlockInSquare,
+      } = storeToRefs(blocksStore)
 
 const MENU_ITEM_HEIGHT = 'h-[20px]'
 const MENU_ITEM_LENGTH = 'w-[150px]'

@@ -400,7 +400,11 @@ function getLinesDetailedDiff(oldLines: IBlockTaskLine[], newLines: IBlockTaskLi
 // __ Создаем сам объект данных с ключами из BLOCK_MANUF_LINES и {time: 0, amount: 0} и инициализируем его нулями
 export function createAmountAndTimeObj() {
     return Object.values(BLOCK_MANUF_LINES).reduce((acc, value) => {
-        acc[value] = { time: 0, amount: 0 }
+        acc[value] = {
+            time  : 0,
+            amount: 0,
+            square: 0
+        }
         return acc
     }, {} as IAmountAndTimeBlock)
 }
@@ -428,9 +432,10 @@ export function getBlockTaskAmountAndTime(item: IBlockTask | IBlockTaskLine[]) {
             const key    = findTableKey as IBlockManufLine
             const amount = data[key]!.reduce((acc, line) => acc + line.amount, 0)
             const time   = data[key]!.reduce((acc, line) => acc + line.time, 0)
-            acc[value]   = { time, amount }
+            const square = data[key]!.reduce((acc, line) => acc + getBlockTaskLineSquare(line), 0)
+            acc[value]   = { time, amount, square }
         } else {
-            acc[value] = { time: 0, amount: 0 }
+            acc[value] = { time: 0, amount: 0, square: 0 }
         }
 
         return acc

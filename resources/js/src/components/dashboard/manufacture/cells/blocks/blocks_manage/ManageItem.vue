@@ -34,13 +34,13 @@
         <AppLabelMultiLineTS
             v-if="render.orderNo.show"
             :align="render.orderNo.align"
+            :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text="globalBlockTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
             :text-size="render.orderNo.textSize"
             :type="render.orderNo.type"
             :width="render.orderNo.width"
-            :class="animatedClass"
             rounded="rounded-[4px]"
         />
 
@@ -49,12 +49,14 @@
             v-if="render.amount.show"
             :align="render.amount.align"
             :amount="getTotalAmount"
+            :square="getTotalSquare"
             :class_="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="getTotalTime"
             :time-show="globalBlockTaskTimesShow"
+            :square-show="globalBlockTaskBlockInSquare"
             :type="render.amount.type"
             :width="render.amount.width"
         />
@@ -64,12 +66,14 @@
             v-if="globalBlockTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_1].amount"
+            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_1].square"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[BLOCK_MANUF_LINES.LINE_1].time"
             :time-show="globalBlockTaskTimesShow"
+            :square-show="globalBlockTaskBlockInSquare"
             :type="render.amount.type"
             :width="render.amount.width"
         />
@@ -79,12 +83,14 @@
             v-if="globalBlockTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_2].amount"
+            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_2].square"
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[BLOCK_MANUF_LINES.LINE_2].time"
             :time-show="globalBlockTaskTimesShow"
+            :square-show="globalBlockTaskBlockInSquare"
             :type="render.amount.type"
             :width="render.amount.width"
         />
@@ -94,12 +100,14 @@
             v-if="globalBlockTaskFullDaysShow"
             :align="render.amount.align"
             :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_0].amount"
+            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_0].square"
             :class="animatedClass"
             :color="amountAndTime[BLOCK_MANUF_LINES.LINE_0].amount === 0 ? color : 'red'"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="amountAndTime[BLOCK_MANUF_LINES.LINE_0].time"
             :time-show="globalBlockTaskTimesShow"
+            :square-show="globalBlockTaskBlockInSquare"
             :type="render.amount.type"
             :width="render.amount.width"
         />
@@ -120,7 +128,7 @@ import type {
     IBlockTask,
     IFontsType,
     IColorTypes,
-    IAmountAndTime
+    IAmountAndTimeBlock
 } from '@/types'
 
 import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, } from '@/app/constants/blocks.ts'
@@ -131,10 +139,10 @@ import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItemDataLabel.vue'
-import { getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { getBlockTaskLineSquare, getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 interface IProps {
-    amountAndTime: IAmountAndTime
+    amountAndTime: IAmountAndTimeBlock
     item?: IBlockTask
     columnsWidth?: Record<string, string>
     index?: number
@@ -154,21 +162,26 @@ type IRender = Record<string, IRenderItem>
 
 const props = withDefaults(defineProps<IProps>(), {
 
-    item:         () => BLOCK_TASK_DRAFT,
+    item        : () => BLOCK_TASK_DRAFT,
     columnsWidth: () => ({
-        client:  'w-[90px]',
-        amount:  'w-[50px]',
+        client : 'w-[90px]',
+        amount : 'w-[50px]',
         orderNo: 'w-[50px]',
-        common:  'w-[164px]',
+        common : 'w-[164px]',
     }),
-    index:        0,
-    orderId:      null,
+    index       : 0,
+    orderId     : null,
 })
 
 // __ Данные из Хранилища
 const blockStore = useBlocksStore()
 
-const { globalBlockTaskTimesShow, globalBlockTaskFullDaysShow, globalBlockTaskOrderTypeColor } = storeToRefs(blockStore)
+const {
+          globalBlockTaskTimesShow,
+          globalBlockTaskFullDaysShow,
+          globalBlockTaskOrderTypeColor,
+          globalBlockTaskBlockInSquare,
+      } = storeToRefs(blockStore)
 
 // __ Высота данных
 const dataHeight = computed(() => globalBlockTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
@@ -178,36 +191,36 @@ const change = computed(() => getChangeByName(props.item))
 
 // __ Подготавливаем рендер
 const render: IRender = reactive({
-    change:  {
-        show:     true,
-        width:    props.columnsWidth.change,
-        type:     change.value ? change.value.TYPE : 'dark',
-        align:    'center',
-        data:     () => change.value ? change.value.TITLE : '',
+    change : {
+        show    : true,
+        width   : props.columnsWidth.change,
+        type    : change.value ? change.value.TYPE : 'dark',
+        align   : 'center',
+        data    : () => change.value ? change.value.TITLE : '',
         textSize: 'huge',
     },
-    client:  {
-        show:     true,
-        width:    props.columnsWidth.client,
-        type:     'dark',
-        align:    'left',
-        data:     () => `${props.item.position}. ${props.item.order.client.short_name}`,
+    client : {
+        show    : true,
+        width   : props.columnsWidth.client,
+        type    : 'dark',
+        align   : 'left',
+        data    : () => `${props.item.position}. ${props.item.order.client.short_name}`,
         textSize: 'micro',
     },
     orderNo: {
-        show:     true,
-        width:    props.columnsWidth.orderNo,
-        type:     'dark',
-        align:    'center',
-        data:     () => props.item.order.order_no_str,
+        show    : true,
+        width   : props.columnsWidth.orderNo,
+        type    : 'dark',
+        align   : 'center',
+        data    : () => props.item.order.order_no_str,
         textSize: 'micro',
     },
-    amount:  {
-        show:     true,
-        width:    props.columnsWidth.amount,
-        type:     'dark',
-        align:    'center',
-        data:     () => props.item.block_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
+    amount : {
+        show    : true,
+        width   : props.columnsWidth.amount,
+        type    : 'dark',
+        align   : 'center',
+        data    : () => props.item.block_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
         textSize: 'micro',
     },
 })
@@ -215,6 +228,10 @@ const render: IRender = reactive({
 // __ Общее Количество
 const getTotalAmount = computed(() => props.item.block_lines.reduce((acc, line) => line.amount + acc, 0))
 // const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
+
+// __ Общая Площадь
+const getTotalSquare = computed(() => props.item.block_lines.reduce((acc, line) => getBlockTaskLineSquare(line) + acc, 0))
+
 
 // __ Общее Трудозатраты
 const getTotalTime = computed(() => props.item.block_lines.reduce((acc, line) => line.time + acc, 0))
@@ -242,8 +259,6 @@ const animatedClass = computed(() => {
     }
     return 'plan-item'
 })
-
-
 
 
 </script>
