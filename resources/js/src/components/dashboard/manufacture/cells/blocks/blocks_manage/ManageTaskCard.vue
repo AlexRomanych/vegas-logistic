@@ -60,6 +60,7 @@
                                     :show-comments="showComments"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
+                                    :sort-square="sortSquare"
                                     :sort-detail="sortDetail"
                                     :sort-kant="sortKant"
                                     :sort-machine="sortMachine"
@@ -95,6 +96,7 @@
 
                                         <div :key="element.id"
                                              @click="setActiveBlockLine(element, panel)"
+                                             @dblclick="moveBlockLine(element, panel)"
                                         >
                                             <ManageTaskCardItem
                                                 :block-line="element"
@@ -211,10 +213,9 @@ import type {
     IColorTypes,
     IBlockTaskLine,
     IDividerItem,
-    IAmountAndTime,
     IBlockLinesPanel,
     // IBlockManufLinePanel,
-    IBlockTaskOrderLine, IBlockTaskCardSort,
+    IBlockTaskOrderLine, IBlockTaskCardSort, IAmountAndTimeBlock,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -224,7 +225,7 @@ import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
     calculateDividedAmountAndTime,
-    getBlockTaskAmountAndTime,
+    getBlockTaskAmountAndTime, getBlockTaskLineSquare,
     isAverage, mergeBlockLines,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
@@ -302,8 +303,8 @@ const LEFT_PANEL_ID: IBlockLinesPanel  = 'left'
 const RIGHT_PANEL_ID: IBlockLinesPanel = 'right'
 const activePanel                      = ref<IBlockLinesPanel>(LEFT_PANEL_ID)
 
-const leftPanelAmountAndTimeTotal  = ref<IAmountAndTime>()
-const rightPanelAmountAndTimeTotal = ref<IAmountAndTime>()
+const leftPanelAmountAndTimeTotal  = ref<IAmountAndTimeBlock>()
+const rightPanelAmountAndTimeTotal = ref<IAmountAndTimeBlock>()
 
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
@@ -341,6 +342,7 @@ const sortTextile  = ref<IBlockTaskCardSort>('none')
 const sortKant     = ref<IBlockTaskCardSort>('none')
 const sortTkch     = ref<IBlockTaskCardSort>('none')
 const sortAmount   = ref<IBlockTaskCardSort>('none')
+const sortSquare   = ref<IBlockTaskCardSort>('none')
 const sortTime     = ref<IBlockTaskCardSort>('none')
 const sortSize     = ref<IBlockTaskCardSort>('none')
 const sortDetail   = ref<IBlockTaskCardSort>('none')
@@ -355,6 +357,7 @@ const renderData = {
     position: { width: 'min-w-[25px] max-w-[25px]', },
     model   : { width: 'min-w-[300px] max-w-[300px]', },
     amount  : { width: 'min-w-[30px] max-w-[30px]', },
+    square  : { width: 'min-w-[40px] max-w-[40px]', },
     time    : { width: 'min-w-[50px] max-w-[50px]', },
     line    : { width: 'min-w-[25px] max-w-[25px]', },
     describe: { width: 'min-w-[50px] max-w-[50px]', },
@@ -457,6 +460,20 @@ const calculateTotals = () => {
 const setActiveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockLinesPanel) => {
     globalManageTaskCardActiveBlockLine.value = blockLine
     activePanel.value                         = panel
+}
+
+// __ Перемещаем строку СЗ в другую панель при двойном клике
+const moveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockLinesPanel) => {
+    const panelFrom = panel === LEFT_PANEL_ID ? sourceBlockLines : targetBlockLines
+    const panelTo   = panel === LEFT_PANEL_ID ? targetBlockLines : sourceBlockLines
+
+    panelFrom.value = panelFrom.value.filter(line => line.id !== blockLine.id)
+    panelTo.value.push(blockLine)
+
+    globalManageTaskCardActiveBlockLine.value = null
+    activePanel.value                         = panel
+
+    calculateTotals()
 }
 
 // __ Разбить количество
@@ -701,6 +718,10 @@ const sortConfigs: Record<string, SortConfig> = {
         type    : 'number',
         getValue: (item) => item.amount
     },
+    square                    : {
+        type    : 'number',
+        getValue: (item) => getBlockTaskLineSquare(item)
+    },
     name_report               : {
         type    : 'string',
         getValue: (item) => {
@@ -763,6 +784,10 @@ const sortByField = (panel: IBlockLinesPanel, configKey: string) => {
         case 'amount':
             sortAmount.value = changeSortDirection(sortAmount.value)
             direction        = sortAmount.value
+            break
+        case 'square':
+            sortSquare.value = changeSortDirection(sortSquare.value)
+            direction        = sortSquare.value
             break
         case 'name_report':
             sortName.value = changeSortDirection(sortName.value)

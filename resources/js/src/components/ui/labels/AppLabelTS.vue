@@ -13,8 +13,8 @@
             textSelectAvailable,
             textDirection,
         ]"
-        :title="title"
         :style="color ? {'background-color': color} : ''"
+        :title="title"
         class="flex flex-col justify-center app-label"
         @click="labelClick"
     >
@@ -51,18 +51,18 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    text: 'Enter...',
-    type: 'dark',
-    width: 'w-[200px]',
-    height: 'h-[30px]',
-    textSize: 'normal',
-    bold: true,
-    align: 'left',
-    title: '',
-    rounded: 'rounded-lg',
-    color: '',
+    text      : 'Enter...',
+    type      : 'dark',
+    width     : 'w-[200px]',
+    height    : 'h-[30px]',
+    textSize  : 'normal',
+    bold      : true,
+    align     : 'left',
+    title     : '',
+    rounded   : 'rounded-lg',
+    color     : '',
     textSelect: false,
-    direction: 'row',
+    direction : 'row',
 })
 
 const emits = defineEmits<{
@@ -75,16 +75,16 @@ const labelClick = (e: Event) => {
     emits('labelClick', target.innerText)
 }
 
-const currentColorIndex = 500       // задаем основной индекс палитры tailwinds
-const backgroundColor = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex))
-const borderColor = computed(() => getColorClassByType(props.type, 'border', currentColorIndex))
-const currentTextColor = computed(() => getTextColorClassByType(props.type))
-const textSizeClass = computed(() => getFontSizeClass(props.textSize))
-const horizontalAlign = computed(() => getHorizontalAlignText(props.align))
-const semibold = computed(() => props.bold ? 'font-semibold' : '')
+const currentColorIndex   = 500       // задаем основной индекс палитры tailwinds
+const backgroundColor     = computed(() => getColorClassByType(props.type, 'bg', currentColorIndex))
+const borderColor         = computed(() => getColorClassByType(props.type, 'border', currentColorIndex))
+const currentTextColor    = computed(() => getTextColorClassByType(props.type))
+const textSizeClass       = computed(() => getFontSizeClass(props.textSize))
+const horizontalAlign     = computed(() => getHorizontalAlignText(props.align))
+const semibold            = computed(() => props.bold ? 'font-semibold' : '')
 const textSelectAvailable = computed(() => props.textSelect ? '' : 'select-none')
-
-const roundedCSS = computed(() => getRoundedClass(props.rounded))
+const roundedCSS          = computed(() => getRoundedClass(props.rounded))
+// console.log('roundedCSS: ', roundedCSS.value)
 
 // __ Вертикальный текст
 const textDirection = computed(() => props.direction === 'column' ? '[writing-mode:vertical-rl] rotate-180 whitespace-normal' : '')

@@ -11,6 +11,7 @@
             class="field"
             text="#"
             @click="emits('sortByField', 'position')"
+            title="Click - Сортировка по Порядку"
         />
 
         <!-- __ Название Блока -->
@@ -23,6 +24,7 @@
             class="field"
             :text="'Модель' + getSortIcon(sortName)"
             @click="emits('sortByField', 'name_report')"
+            title="Click - Сортировка по Названию Блока"
         />
 
         <!-- __ Количество -->
@@ -35,6 +37,20 @@
             class="field"
             text="шт."
             @click="emits('sortByField', 'amount')"
+            title="Click - Сортировка по Количеству"
+        />
+
+        <!-- __ Площадь -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortSquare)"
+            :width="renderData.square.width"
+            class="field"
+            text="S, m2"
+            @click="emits('sortByField', 'square')"
+            title="Click - Сортировка по Площади"
         />
 
         <!-- __ Трудозатраты -->
@@ -47,6 +63,7 @@
             class="field"
             :text="'Тр-ты' + getSortIcon(sortTime)"
             @click="emits('sortByField', 'time')"
+            title="Click - Сортировка по Трудозатратам"
         />
 
         <!-- __ Стол 1 -->
@@ -58,7 +75,7 @@
             :width="renderData.line.width"
             class="field"
             text="1"
-            @click="emits('sortByField', CUTTING_TABLES.TABLE_1)"
+            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_1)"
         />
 
         <!-- __ Стол 2 -->
@@ -70,7 +87,7 @@
             :width="renderData.line.width"
             class="field"
             text="2"
-            @click="emits('sortByField', CUTTING_TABLES.TABLE_2)"
+            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_2)"
         />
 
         <!-- __ Неопознанные -->
@@ -82,7 +99,7 @@
             :width="renderData.line.width"
             class="field"
             text="??"
-            @click="emits('sortByField', CUTTING_TABLES.TABLE_0)"
+            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_1)"
         />
 
 
@@ -98,7 +115,7 @@ import type {
 } from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { CUTTING_TABLES } from '@/app/constants/cutting.ts'
+import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 
 
 interface IProps {
@@ -113,6 +130,7 @@ interface IProps {
     sortKant?: ICuttingTaskCardSort
     sortTkch?: ICuttingTaskCardSort
     sortAmount?: ICuttingTaskCardSort
+    sortSquare?: ICuttingTaskCardSort
     sortTime?: ICuttingTaskCardSort
     sortSize?: ICuttingTaskCardSort
     sortTable_1?: ICuttingTaskCardSort
@@ -132,6 +150,7 @@ const props = withDefaults(defineProps<IProps>(), {
     sortKant    : 'none',
     sortTkch    : 'none',
     sortAmount  : 'none',
+    sortSquare  : 'none',
     sortTime    : 'none',
     sortSize    : 'none',
     sortTable_1 : 'none',

@@ -5,6 +5,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text="activePanel === 'left' ? ' Все ▶' : '◀ Все'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
@@ -17,6 +18,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text="activePanel === 'left' ? ' Линия 1 ▶' : '◀ Линия 1'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
@@ -29,6 +31,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text="activePanel === 'left' ? ' Линия 2 ▶' : '◀ Линия 2'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
@@ -42,6 +45,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text="activePanel === 'left' ? ' Линия ?? ▶' : '◀ Линия ??'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
@@ -54,6 +58,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             class="field"
@@ -90,6 +95,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             class="field"
@@ -113,6 +119,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="canMerge ? MENU_ITEMS_TYPE : 'danger'"
             class="field"
@@ -125,6 +132,7 @@
         <AppLabelTS
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
+            :rounded="DEFAULT_ROUNDED"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="blockTask.comment ? 'orange' : MENU_ITEMS_TYPE"
             class="field"
@@ -165,7 +173,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
     showComments: false,
-    showDetails:  false,
+    showDetails : false,
 })
 
 const emits = defineEmits<{
@@ -178,19 +186,20 @@ const emits = defineEmits<{
     (e: 'showComments'): void                   // __ Показать Комментарии !!! Резерв
 }>()
 
+const DEFAULT_ROUNDED = '4'
 
 // __ Константы панелей меню
-const MENU_ITEMS_WIDTH       = 'w-[90px]'
-const MENU_ITEMS_HEIGHT      = 'h-[35px]'
-const MENU_ITEMS_TYPE        = 'primary'
-const MENU_ITEMS_ALIGN       = 'center'
-const MENU_ITEMS_TEXT_SIZE   = 'mini'
+const MENU_ITEMS_WIDTH     = 'w-[90px]'
+const MENU_ITEMS_HEIGHT    = 'h-[35px]'
+const MENU_ITEMS_TYPE      = 'primary'
+const MENU_ITEMS_ALIGN     = 'center'
+const MENU_ITEMS_TEXT_SIZE = 'mini'
 // const MENU_ITEMS_ACTIVE_TYPE = 'success'
 
 
 // __ Тип для модального окна
 const modalType              = ref<IColorTypes>('danger')
-const modalText              = ref<string| string[]>('')
+const modalText              = ref<string | string[]>('')
 const modalMode              = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
@@ -219,8 +228,6 @@ const mergeLines = async () => {
         emits('mergeLines')
     }
 }
-
-
 
 
 </script>

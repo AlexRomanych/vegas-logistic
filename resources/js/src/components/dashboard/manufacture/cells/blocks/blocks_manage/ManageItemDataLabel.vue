@@ -85,7 +85,7 @@ const props = withDefaults(defineProps<IProps>(), {
     time      : 0,
     reference : 0,
     timeShow  : true,
-    squareShow: true,
+    squareShow: false,
 })
 
 const emits = defineEmits<{
