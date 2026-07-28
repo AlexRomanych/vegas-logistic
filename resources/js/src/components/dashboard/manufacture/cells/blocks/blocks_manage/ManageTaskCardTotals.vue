@@ -34,7 +34,6 @@
             width="w-[40px]"
         />
 
-
         <!-- __ Количество + Трудозатраты Общие -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"

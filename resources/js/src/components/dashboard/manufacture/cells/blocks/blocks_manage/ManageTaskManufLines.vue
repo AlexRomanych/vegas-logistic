@@ -64,6 +64,7 @@
                                     :short="false"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
+                                    :sort-square="sortSquare"
                                     :sort-line_0="sortLine_0"
                                     :sort-line_1="sortLine_1"
                                     :sort-line_2="sortLine_2"
@@ -93,6 +94,7 @@
 
                                         <div :key="element.id"
                                              @click="setActiveBlockLine(element, panel)"
+                                             @dblclick="moveBlockLine(element, panel)"
                                         >
                                             <ManageTaskManufLineItem
                                                 :block-line="element"
@@ -225,7 +227,7 @@ import {
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
-    getBlockTaskAmountAndTime,
+    getBlockTaskAmountAndTime, getBlockTaskLineSquare,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -387,6 +389,7 @@ const sortLine_1   = ref<IBlockTaskCardSort>('none')
 const sortLine_2   = ref<IBlockTaskCardSort>('none')
 const sortLine_0   = ref<IBlockTaskCardSort>('none')
 const sortAmount   = ref<IBlockTaskCardSort>('none')
+const sortSquare   = ref<IBlockTaskCardSort>('none')
 const sortTime     = ref<IBlockTaskCardSort>('none')
 const sortOrder    = ref<IBlockTaskCardSort>('none')
 
@@ -399,6 +402,7 @@ const renderData = {
     model     : { width: 'min-w-[250px] max-w-[250px]', },
     modelShort: { width: 'min-w-[130px] max-w-[130px]', },
     amount    : { width: 'min-w-[30px] max-w-[30px]', },
+    square    : { width: 'min-w-[40px] max-w-[40px]', },
     time      : { width: 'min-w-[50px] max-w-[50px]', },
     line      : { width: 'min-w-[25px] max-w-[25px]', },
     describe  : { width: 'min-w-[50px] max-w-[50px]', },
@@ -522,6 +526,29 @@ const setActiveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockManufLinesPa
     activePanel.value                         = panel
 }
 
+// __ Перемещаем строку СЗ в другую панель при двойном клике
+const moveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockManufLinesPanel) => {
+
+    // __ Перемещаем по двойному клику только тогда, когда нет Неопознанной Линии
+    if (lineBlockLines_0.value.length !== 0) {
+        return
+    }
+
+    const panelFrom = panel === LINE_1_PANEL_ID ? lineBlockLines_1 : lineBlockLines_2
+    const panelTo   = panel === LINE_1_PANEL_ID ? lineBlockLines_2 : lineBlockLines_1
+
+    const targetLine = panel === LINE_1_PANEL_ID ? BLOCK_MANUF_LINES.LINE_2 : BLOCK_MANUF_LINES.LINE_1
+
+    panelFrom.value = panelFrom.value.filter(line => line.id !== blockLine.id)
+    blockLine.manuf_line = targetLine
+    panelTo.value.push(blockLine)
+
+    globalManageTaskCardActiveBlockLine.value = null
+    activePanel.value                         = panel
+
+    calculateTotals()
+}
+
 // // __ Показать информацию о записи
 // const showLineInfo = async (blockLine: IBlockTaskLine) => {
 //     orderLine.value = blockLine.order_line
@@ -585,6 +612,7 @@ const changeSortDirection = (sortDirection: IBlockTaskCardSort) => {
     sortLine_2.value   = 'none'
     sortLine_0.value   = 'none'
     sortAmount.value   = 'none'
+    sortSquare.value   = 'none'
     sortTime.value     = 'none'
     sortOrder.value    = 'none'
 
@@ -608,6 +636,10 @@ const sortConfigs: Record<string, SortConfig> = {
     amount    : {
         type    : 'number',
         getValue: (item) => item.amount
+    },
+    square    : {
+        type    : 'number',
+        getValue: (item) => getBlockTaskLineSquare(item)
     },
     name      : {
         type    : 'string',
@@ -677,6 +709,10 @@ const sortByField = (panel: IBlockManufLinesPanel, configKey: string) => {
         case 'amount':
             sortAmount.value = changeSortDirection(sortAmount.value)
             direction        = sortAmount.value
+            break
+        case 'square':
+            sortSquare.value = changeSortDirection(sortSquare.value)
+            direction        = sortSquare.value
             break
         case 'name':
             sortName.value = changeSortDirection(sortName.value)

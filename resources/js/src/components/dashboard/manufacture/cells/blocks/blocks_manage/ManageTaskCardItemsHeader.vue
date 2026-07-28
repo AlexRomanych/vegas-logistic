@@ -10,21 +10,21 @@
             :width="renderData.position.width"
             class="field"
             text="#"
-            @click="emits('sortByField', 'position')"
             title="Click - Сортировка по Порядку"
+            @click="emits('sortByField', 'position')"
         />
 
         <!-- __ Название Блока -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
+            :text="'Модель' + getSortIcon(sortName)"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortName)"
             :width="renderData.model.width"
             class="field"
-            :text="'Модель' + getSortIcon(sortName)"
-            @click="emits('sortByField', 'name_report')"
             title="Click - Сортировка по Названию Блока"
+            @click="emits('sortByField', 'name_report')"
         />
 
         <!-- __ Количество -->
@@ -36,8 +36,8 @@
             :width="renderData.amount.width"
             class="field"
             text="шт."
-            @click="emits('sortByField', 'amount')"
             title="Click - Сортировка по Количеству"
+            @click="emits('sortByField', 'amount')"
         />
 
         <!-- __ Площадь -->
@@ -49,21 +49,21 @@
             :width="renderData.square.width"
             class="field"
             text="S, m2"
-            @click="emits('sortByField', 'square')"
             title="Click - Сортировка по Площади"
+            @click="emits('sortByField', 'square')"
         />
 
         <!-- __ Трудозатраты -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
+            :text="'Тр-ты' + getSortIcon(sortTime)"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getPositionBySort(sortTime)"
             :width="renderData.time.width"
             class="field"
-            :text="'Тр-ты' + getSortIcon(sortTime)"
-            @click="emits('sortByField', 'time')"
             title="Click - Сортировка по Трудозатратам"
+            @click="emits('sortByField', 'time')"
         />
 
         <!-- __ Стол 1 -->
@@ -101,7 +101,6 @@
             text="??"
             @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_1)"
         />
-
 
 
     </div>

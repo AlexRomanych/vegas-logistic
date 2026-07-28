@@ -11,6 +11,7 @@
             text="Детали"
             width="w-[60px]"
             @click="emits('showDetails')"
+            :rounded="DEFAULT_ROUNDED"
         />
 
         <!-- __ Обновить -->
@@ -23,6 +24,7 @@
             text="Обновить"
             width="w-[65px]"
             @click="reloadData"
+            :rounded="DEFAULT_ROUNDED"
         />
 
         <!-- __ Добавить комментарий к СЗ -->
@@ -35,6 +37,7 @@
             text="Комментарий"
             width="w-[90px]"
             @click="emits('addComment')"
+            :rounded="DEFAULT_ROUNDED"
         />
 
     </div>
@@ -75,6 +78,8 @@ const emits = defineEmits<{
     (e: 'reloadData'): void                     // __ Перегрузить данные
     (e: 'addComment'): void                     // __ Добавить комментарий к СЗ
 }>()
+
+const DEFAULT_ROUNDED = '4'
 
 
 // __ Константы панелей меню

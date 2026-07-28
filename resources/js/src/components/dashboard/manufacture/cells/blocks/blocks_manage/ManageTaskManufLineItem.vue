@@ -36,6 +36,17 @@
             class="field"
         />
 
+        <!-- __ Площадь -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text="getBlockTaskLineSquare(blockLine).toFixed(2)"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.square.width"
+            class="field"
+        />
+
         <!-- __ Трудозатраты -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -109,6 +120,7 @@ import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 import { storeToRefs } from 'pinia'
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 import {
+    getBlockTaskLineSquare,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 

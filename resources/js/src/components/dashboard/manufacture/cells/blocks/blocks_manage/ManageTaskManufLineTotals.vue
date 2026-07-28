@@ -23,6 +23,17 @@
             width="w-[30px]"
         />
 
+        <!-- __ Площадь в кв.м. -->
+        <AppLabelTS
+            :text="getTotalSquare === 0 ? '' : `${getTotalSquare.toFixed(2)} m2`"
+            :text-size="TOTAL_ITEMS_TEXT_SIZE"
+            align="center"
+            height="h-[60px]"
+            rounded="4"
+            type="primary"
+            width="w-[40px]"
+        />
+
         <!-- __ Количество + Трудозатраты Общие -->
         <ManageItemDataLabel
             :align="TOTAL_ITEMS_ALIGN"
@@ -103,6 +114,9 @@ const TOTAL_ITEMS_TEXT_SIZE = 'micro'
 
 // __ Общее Количество
 const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
+
+// __ Общая Площадь
+const getTotalSquare = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.square + acc, 0))
 
 // __ Общее Трудозатраты
 const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))

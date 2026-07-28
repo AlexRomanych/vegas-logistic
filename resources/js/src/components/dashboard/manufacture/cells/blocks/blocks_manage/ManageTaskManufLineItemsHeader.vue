@@ -10,6 +10,7 @@
             :width="renderData.position.width"
             class="field"
             text="#"
+            title="Click - Сортировка по Порядку"
             @click="emits('sortByField', 'position')"
         />
 
@@ -22,6 +23,7 @@
             :type="getPositionBySort(sortName)"
             :width="short ? renderData.modelShort.width : renderData.model.width"
             class="field"
+            title="Click - Сортировка по Названию Блока"
             @click="emits('sortByField', 'name')"
         />
 
@@ -34,7 +36,21 @@
             :width="renderData.amount.width"
             class="field"
             text="шт."
+            title="Click - Сортировка по Количеству"
             @click="emits('sortByField', 'amount')"
+        />
+
+        <!-- __ Площадь -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortSquare)"
+            :width="renderData.square.width"
+            class="field"
+            text="S, m2"
+            title="Click - Сортировка по Площади"
+            @click="emits('sortByField', 'square')"
         />
 
         <!-- __ Трудозатраты -->
@@ -48,7 +64,6 @@
             class="field"
             @click="emits('sortByField', 'time')"
         />
-
 
         <!-- __ Линия 1 -->
         <AppLabelTS
@@ -126,6 +141,7 @@ interface IProps {
     sortTextile?: IBlockTaskCardSort
     sortOrder?: IBlockTaskCardSort
     sortAmount?: IBlockTaskCardSort
+    sortSquare?: IBlockTaskCardSort
     sortTime?: IBlockTaskCardSort
     sortDetail?: IBlockTaskCardSort
     sortMachine?: IBlockTaskCardSort
@@ -140,6 +156,7 @@ const props = withDefaults(defineProps<IProps>(), {
     sortLine_2  : 'none',
     sortLine_0  : 'none',
     sortAmount  : 'none',
+    sortSquare  : 'none',
     sortTime    : 'none',
     sortOrder   : 'none',
 })
