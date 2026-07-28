@@ -524,7 +524,7 @@ const render: IRenderData = reactive({
     comment      : {
         id            : () => 'comment-search',
         header        : ['Комментарий к', 'производственному дню'],
-        width         : 'w-[312px]',
+        width         : 'w-[352px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -544,12 +544,12 @@ const blockTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
     id           : 'w-[30px]',
     position     : 'w-[30px]',
-    client       : 'w-[190px]',
+    client       : 'w-[285px]',
     order_no     : 'w-[50px]',
-    status       : 'w-[90px]',
+    status       : 'w-[148px]',
     progressTotal: PROGRESS_WIDTH,
-    load_at      : 'w-[143px]',
-    comment      : 'w-[1095px]',
+    load_at      : 'w-[155px]',
+    comment      : 'w-[511px]',
 }
 
 // __ Определяем тип календарного дня

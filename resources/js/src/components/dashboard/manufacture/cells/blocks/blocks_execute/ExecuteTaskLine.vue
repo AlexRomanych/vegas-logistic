@@ -17,6 +17,9 @@
         <!-- __ Количество -->
         <AppLabelTSWrapper :render-object="render.amount"/>
 
+        <!-- __ Площадь -->
+        <AppLabelTSWrapper :render-object="render.square"/>
+
         <!-- __ Трудозатраты -->
         <AppLabelTSWrapper :render-object="render.time"/>
 
@@ -65,7 +68,7 @@ import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
-import { getTimeString } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { getBlockTaskLineSquare, getTimeString } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
@@ -175,6 +178,22 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍Кол-во...',
         data          : (/*blockLine: IBlockTaskLine*/) => props.blockLine.amount.toString()
+    },
+    square      : {
+        id            : () => 'square-search',
+        header        : ['', ''],
+        width         : props.fieldsWidth.square,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍S...',
+        data          : (/*blockLine: IBlockTaskLine*/) => getBlockTaskLineSquare(props.blockLine).toFixed(2)
     },
     time        : {
         id            : () => 'time-search',

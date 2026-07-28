@@ -163,6 +163,7 @@ import { computed, ref } from 'vue'
 import type { IColorTypes, IBlockTaskLine } from '@/types'
 
 import {
+    getBlockTaskLineSquare,
     getTimeString
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
@@ -252,7 +253,8 @@ const lineHeight = computed(() => {
 const time = computed(() => getTimeString(props.blockLine, true).replaceAll('.', ''))
 
 // __ Получаем Площадь
-const square = computed(() => (props.blockLine.block.length * props.blockLine.block.width * props.blockLine.amount / 100 / 100).toFixed(3))
+const square = computed(() => getBlockTaskLineSquare(props.blockLine).toFixed(3))
+// const square = computed(() => (props.blockLine.block.length * props.blockLine.block.width * props.blockLine.amount / 100 / 100).toFixed(3))
 
 // __ Получаем КДБ
 const kdbId = computed(() => props.blockLine.block.collection.kdb?.id)

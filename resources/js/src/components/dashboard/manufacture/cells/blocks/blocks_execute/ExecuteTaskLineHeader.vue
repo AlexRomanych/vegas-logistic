@@ -17,6 +17,9 @@
         <!-- __ Количество -->
         <AppLabelTSWrapper :render-object="render.amount"/>
 
+        <!-- __ Площадь -->
+        <AppLabelTSWrapper :render-object="render.square"/>
+
         <!-- __ Трудозатраты -->
         <AppLabelTSWrapper :render-object="render.time"/>
 
@@ -147,6 +150,22 @@ const render: IRenderData = reactive({
         dataAlign:      DATA_ALIGN,
         placeholder:    '🔍Кол-во...',
         data:           (/*blockLine: IBlockTaskLine*/) => 'шт.'
+    },
+    square:      {
+        id:             () => 'square-search',
+        header:         ['', ''],
+        width:          props.fieldsWidth.square,
+        height:         DEFAULT_HEIGHT,
+        show:           true,
+        headerType:     () => HEADER_TYPE,
+        dataType:       () => DATA_TYPE,
+        type:           () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize:   DATA_TEXT_SIZE,
+        headerAlign:    HEADER_ALIGN,
+        dataAlign:      DATA_ALIGN,
+        placeholder:    '🔍S...',
+        data:           (/*blockLine: IBlockTaskLine*/) => 'S, m2'
     },
     time:      {
         id:             () => 'time-search',

@@ -354,11 +354,12 @@ const blockLineFieldsWidth = {
     position    : 'w-[30px]',
     name        : 'w-[305px]',
     amount      : 'w-[30px]',
+    square      : 'w-[40px]',
     finished_at : 'w-[80px]',
     line        : 'w-[25px]',
     time        : 'w-[70px]',
     kdb         : 'w-[68px]',
-    false_reason: 'w-[250px]',
+    false_reason: 'w-[427px]',
     description : 'w-[266px]',
 }
 

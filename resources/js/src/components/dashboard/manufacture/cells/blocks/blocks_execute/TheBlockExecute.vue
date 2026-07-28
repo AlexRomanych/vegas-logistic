@@ -350,7 +350,7 @@ const blockDays = ref<IBlockDay[]>([])
 const modalInfoType          = ref<IColorTypes>('danger')
 const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)
 
 // __ Тип для модального окна выбора СЗ
 const selectedTaskId        = ref<number | null>(null)
@@ -649,10 +649,10 @@ const blockTaskFieldsWidth = {
     position     : 'w-[30px]',
     client       : 'w-[285px]',
     order_no     : 'w-[50px]',
-    status       : 'w-[104px]',
+    status       : 'w-[148px]',
     progressTotal: PROGRESS_WIDTH,
     load_at      : 'w-[155px]',
-    comment      : 'w-[581px]',
+    comment      : 'w-[511px]',
 }
 
 // __ Определяем тип календарного дня
