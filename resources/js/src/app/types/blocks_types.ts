@@ -476,6 +476,12 @@ export interface IBlockTaskLinesGroupData {
     }
     collapsed?: boolean
     tuningTimeTotal: number
+
+    totals?: {
+        amount: { total: number; done: number }
+        square: { total: number }
+        labor_cost: { total: number }
+    }
 }
 
 
@@ -505,6 +511,12 @@ export interface IBlockTaskLinesSubgroup {
     collapsed?: boolean
     priority: number
     isTuning: boolean
+
+    totals: {
+        amount: { total: number; done: number }
+        square: { total: number }
+        labor_cost: { total: number }
+    }
 }
 
 // export interface IBlockTaskLinesUnderGroup {

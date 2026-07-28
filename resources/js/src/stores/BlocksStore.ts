@@ -662,6 +662,8 @@ export const useBlocksStore = defineStore('blocks', () => {
 
     // __ Получение производственных дней за период
     const getBlockDayByPeriod = async (period: IPeriod | null = null) => {
+        console.log(period)
+
         let response
         if (period) {
             response = await jwtGet(URL_BLOCK_DAY_PERIOD, { period })
