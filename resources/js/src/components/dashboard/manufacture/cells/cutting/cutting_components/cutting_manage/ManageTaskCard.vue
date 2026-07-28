@@ -96,8 +96,9 @@
                                     <template #item="{ element, /*index*/ }">
 
                                         <div :key="element.id"
-                                             @click="setActiveCuttingLine(element, panel)"
-                                             @dblclick="showLineInfo(element)"
+                                             @click.exact="setActiveCuttingLine(element, panel)"
+                                             @click.ctrl="showLineInfo(element)"
+                                             @dblclick="moveCuttingLine(element, panel)"
                                         >
                                             <ManageTaskCardItem
                                                 :cutting-line="element"
@@ -472,6 +473,20 @@ const setActiveCuttingLine = (cuttingLine: ICuttingTaskLine, panel: ICuttingLine
     activePanel.value                           = panel
 }
 
+// __ Перемещаем строку СЗ в другую панель при двойном клике
+const moveCuttingLine = (blockLine: ICuttingTaskLine, panel: ICuttingLinesPanel) => {
+    const panelFrom = panel === LEFT_PANEL_ID ? sourceCuttingLines : targetCuttingLines
+    const panelTo   = panel === LEFT_PANEL_ID ? targetCuttingLines : sourceCuttingLines
+
+    panelFrom.value = panelFrom.value.filter(line => line.id !== blockLine.id)
+    panelTo.value.push(blockLine)
+
+    globalManageTaskCardActiveCuttingLine.value = null
+    activePanel.value                         = panel
+
+    calculateTotals()
+}
+
 // __ Показать информацию о записи
 const showLineInfo = async (cuttingLine: ICuttingTaskLine) => {
     orderLine.value = cuttingLine.order_line
@@ -677,6 +692,8 @@ const addComment = async () => {
 
         // __ Обновляем комментарий в текущей строке, потому что теряем где-то реактивность
         // __ из-за передачи параметров в SFC по глубокой копии
+
+        // eslint-disable-next-line vue/no-mutating-props
         props.task.comment = newComment
     }
 }
