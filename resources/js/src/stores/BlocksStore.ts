@@ -10,7 +10,7 @@ import type {
     IBlockTaskStatusEntity,
     IBlockTaskStatusesSet,
     IBlockTask,
-    IPeriod, IRenderMatrixDiff,
+    IPeriod, IRenderMatrixDiff, IBlockTaskChange,
 } from '@/types'
 import { ref } from 'vue'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
@@ -64,11 +64,11 @@ const URL_BLOCKS_TASKS_COMMENT              = '/blocks/tasks/comment'           
 const URL_BLOCKS_TASKS_CHANGE               = '/blocks/tasks/change'                // URL для изменения смены Сменного задания
 const URL_BLOCKS_TASKS_ACTION_AT_SET        = '/blocks/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 
-const URL_BLOCKS_TASK_LINES_TABLE_SET   = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
-const URL_BLOCKS_TASK_LINE_DONE         = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
-const URL_BLOCKS_TASK_LINE_FALSE        = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
-const URL_BLOCKS_TASK_LINE_RESET        = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
-const URL_BLOCKS_TASK_LINE_DESCRIPTION  = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
+const URL_BLOCKS_TASK_LINES_TABLE_SET  = '/blocks/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+const URL_BLOCKS_TASK_LINE_DONE        = '/blocks/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_FALSE       = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+const URL_BLOCKS_TASK_LINE_RESET       = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
+const URL_BLOCKS_TASK_LINE_DESCRIPTION = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
@@ -467,16 +467,18 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
     // __ Проверка на наличие СЗ Блоков по статусу или массиву статусов в определенную дату
-    const checkBlockTasksByStatusOnDate = async (date: string, status: number[] | number | null = null) => {
+    const checkBlockTasksByStatusOnDate = async (date: string, change: string, status: number[] | number | null = null) => {
+
+        console.log('change: ', change)
         let response
         if (status) {
             if (isNumber(status)) {
                 status = [status]
             }
 
-            response = await jwtGet(URL_BLOCKS_TASKS_STATUS_ON_DATE_CHECK, { date, statuses: status })
+            response = await jwtGet(URL_BLOCKS_TASKS_STATUS_ON_DATE_CHECK, { date, change, statuses: status })
         } else {
-            response = await jwtGet(date, URL_BLOCKS_TASKS_STATUS_ON_DATE_CHECK)
+            response = await jwtGet(URL_BLOCKS_TASKS_STATUS_ON_DATE_CHECK, { date, change })
         }
         const result = await response
 

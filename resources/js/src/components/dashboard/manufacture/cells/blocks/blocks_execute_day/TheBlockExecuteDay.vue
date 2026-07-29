@@ -578,6 +578,9 @@ const handleStartAction = async () => {
         }
 
         for (const task of blockDay.value!.block_tasks) {
+
+            console.log('finish: ', task)
+
             for (const line of task.block_lines) {
                 if (!line.finished_at && !line.false_at) {
                     console.log('line: ', line)
@@ -606,7 +609,7 @@ const handleStartAction = async () => {
             await appModalAsyncMultiline.value!.show()
 
             // __ Переходим на страницу с выполнением СЗ
-            await router.push({ name: 'manufacture.cell.block.tasks.execute' })
+            router.push({ name: 'manufacture.cell.blocks.tasks.execute' })
         } else {
             await showError()
         }

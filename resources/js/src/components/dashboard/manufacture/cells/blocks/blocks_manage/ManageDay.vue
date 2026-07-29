@@ -1041,8 +1041,11 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             return
         }
 
+        // __ Находим смену, куда перемещаем. Если она разная с исходником, берем из Diff, если одинаковая - берем из Task
+        const toChange = targetChange ?? blockTask.change
+
         // __ Проверяем, что СЗ не находится в процессе выполнения
-        if (await blockStore.checkBlockTasksByStatusOnDate(splitDate(targetDate), BLOCK_TASK_STATUSES.RUNNING.ID)) {
+        if (await blockStore.checkBlockTasksByStatusOnDate(splitDate(targetDate), toChange, BLOCK_TASK_STATUSES.RUNNING.ID)) {
 
             // __ Получаем флаг готовности к добавлению новых СЗ
             const isReady: boolean = await blockStore.readyGetBlockDay(splitDate(targetDate))

@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  * @method static Builder|BlockDay byDates(mixed $data)
  * @method static Builder|BlockDay byPeriod(mixed $data)
  * @method static Builder|BlockDay whereDayAt(mixed $data)
+ *
+ * @property int $id
  */
 class BlockDay extends Model
 {

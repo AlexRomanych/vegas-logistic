@@ -366,6 +366,7 @@ class BlockDayController extends Controller
      * ___ Стартуем СЗ производственного дня
      * @param Request $request
      * @return BlockDayResource|string
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function startBlockDay(Request $request)
     {
@@ -397,10 +398,15 @@ class BlockDayController extends Controller
                     // ])
                     ->whereDate('action_at', '>=', $action_date->startOfDay())
                     ->whereDate('action_at', '<=', $action_date->endOfDay())
+                    ->where('change', $blockDay->change)
                     ->byStatus(BlockTaskStatus::BLOCK_STATUS_PENDING_ID)
                     // ->byStatus(BlockTaskStatus::BLOCK_STATUS_RUNNING_ID)
                     ->with(['statuses',])
                     ->get();
+
+                if ($pendingBlockTasks->isEmpty()) {
+                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id .' and change = ' . $blockDay->change . ' not found');
+                }
 
                 //$pendBlockTasksArr = $pendingBlockTasks->toArray();
 
@@ -426,6 +432,7 @@ class BlockDayController extends Controller
      * ___ Заканчиваем СЗ производственного дня
      * @param Request $request
      * @return BlockDayResource|string
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
      */
     public function finishBlockDay(Request $request)
     {
@@ -460,9 +467,14 @@ class BlockDayController extends Controller
                 $pendingBlockTasks = BlockTask::query()
                     ->whereDate('action_at', '>=', $action_date->startOfDay())
                     ->whereDate('action_at', '<=', $action_date->endOfDay())
+                    ->where('change', $blockDay->change)
                     ->byStatus(BlockTaskStatus::BLOCK_STATUS_RUNNING_ID)
                     ->with(['statuses', 'blockLines'])
                     ->get();
+
+                if ($pendingBlockTasks->isEmpty()) {
+                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id .' and change = ' . $blockDay->change . ' not found');
+                }
 
                 // debug
                 //$pendTaskArr = $pendingBlockTasks->toArray();

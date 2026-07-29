@@ -781,6 +781,8 @@ class BlockTaskController extends Controller
             $validated = $request->validate([
                 // __ Проверяем, что 'date' — это дата
                 'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'change' — это смена
+                'change'     => 'required|string|in:1,2',
                 // __ Проверяем, что 'statuses' — это массив
                 'statuses'   => 'nullable|array',
                 // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
@@ -791,6 +793,7 @@ class BlockTaskController extends Controller
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $blockTasks = BlockTask::query()
+                ->where('change', $validated['change'])
                 ->whereDate('action_at', $action_date)
                 ->byStatus($data)
                 ->get();
