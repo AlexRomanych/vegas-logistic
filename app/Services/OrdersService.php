@@ -1117,6 +1117,7 @@ final class OrdersService
             $attributes['describe_3'],
         ];
 
+        // __ Парсим метадату для раскроя и Пошива
         $extractedValues = [];
 
         foreach ($strings as $text) {
@@ -1189,6 +1190,35 @@ final class OrdersService
                 }
             }
         }
+
+
+        // __ Здесь парсим то, что должно попасть в СЗ блоков. Располагается внутри $...$
+        $extractedValues = [];
+
+        foreach ($strings as $text) {
+            // 1. Быстрая проверка: если строка пустая, null или в ней нет '#' — пропускаем
+            if (empty($text) || !str_contains($text, '$')) {
+                continue;
+            }
+
+            // 2. Если решетка есть, безопасно ищем текст внутри
+            if (preg_match('/\$([^$]*)\$/u', $text, $matches)) {
+                $extractedValues[] = $matches[1];
+            }
+        }
+
+        if (empty($extractedValues)) {
+            return $result;
+        } elseif (count($extractedValues) > 1) {
+            $eventLog          = new EventLog();
+            $eventLog->level   = EventLog::LEVEL_ERROR;
+            $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
+            $eventLog->message = 'Дублирование метаданных (Данные по Размеру Блока) в комментариях строки Заявки';
+            $eventLog->context = $extractedValues;
+            $eventLog->save();
+        }
+
+        $result[OrderLine::BLOCK_META_FIELD] = $extractedValues[0];
 
         return $result;
     }

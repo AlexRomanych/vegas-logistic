@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 class OrderLine extends Model
 {
+    public const BLOCK_META_FIELD = 'block_meta';
+
     protected $guarded = false;
 
 

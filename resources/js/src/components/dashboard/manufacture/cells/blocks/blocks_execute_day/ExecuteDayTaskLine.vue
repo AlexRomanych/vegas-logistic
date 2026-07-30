@@ -126,7 +126,7 @@
             :height="lineHeight"
             :text="blockLine.description ?? ''"
             :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(blockLine)"
+            :type="blockLine.description ? 'warning' : getCheckType(blockLine)"
             :width="fieldWidths.description"
             align="left"
             class="truncate cursor-pointer"

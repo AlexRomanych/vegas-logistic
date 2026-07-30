@@ -359,8 +359,8 @@ const blockLineFieldsWidth = {
     line        : 'w-[25px]',
     time        : 'w-[70px]',
     kdb         : 'w-[68px]',
-    false_reason: 'w-[427px]',
-    description : 'w-[266px]',
+    false_reason: 'w-[350px]',
+    description : 'w-[300px]',
 }
 
 // __ Пересчитываем Итого

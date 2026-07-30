@@ -17,6 +17,7 @@ use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Services\BusinessProcessesService;
 use App\Services\LogicalService;
+use App\Services\OrdersService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -151,6 +152,10 @@ final class BlocksService
                 'pivot.expense',
                 'pivot.rest',
                 'lines.amount',
+                'lines.composition',
+                'lines.describe_1',
+                'lines.describe_2',
+                'lines.describe_3',
                 'blocks.name',
                 'block_collections.priority',
                 //'block_collections.code_1c as collection_code_1c',
@@ -180,7 +185,7 @@ final class BlocksService
             return null;
         }
 
-        //$a = 0;
+        $a = 0;
 
         // __ Получаем плановую дату
         if (!(is_null($plannedDate) || $plannedDate === '')) {
@@ -212,20 +217,59 @@ final class BlocksService
                     throw new Exception('Missing Block with code 1c ' . $code1C);
                 }
 
-                // __ Получаем так, потому что collection - полк в Block
+                // __ Получаем так, потому что collection - поле в Block
                 $collection = $block->getRelation('blockCollection');
 
+
                 // __ Формируем контекст для Блока в СЗ
-                $orderLineContext = [];
-                $totals           = 0;
+                $orderLineContext[] = [];
+                $totals             = 0;
                 foreach ($records as $record) {
-                    $orderLineContext[] = [
-                        'order_line_id'     => $record->order_line_id,
-                        'order_line_amount' => $record->amount,
-                        'expense'           => (float)$record->expense,
-                        'rest'              => (float)$record->rest,
+                    if ($record->order_line_id === 16359) {
+                        $a = 0;
+                    }
+
+                    // __ Получаем метаинформацию для блока из Комментариев Строки
+                    $attr = [
+                        'composition' => $record->composition,
+                        'describe_1'  => $record->describe_1,
+                        'describe_2'  => $record->describe_2,
+                        'describe_3'  => $record->describe_3,
                     ];
-                    $totals             += (float)$record->expense + (float)$record->rest;
+
+                    // __ Если есть meta - Пишем отдельной Записью
+                    $meta = OrdersService::getOrderLineMetaData($attr);
+                    if (isset($meta[OrderLine::BLOCK_META_FIELD])) {
+                        $total = (int)((float)$record->expense + (float)$record->rest);
+                        BlockTaskLine::query()->create([
+                            'description'        => $meta[OrderLine::BLOCK_META_FIELD],
+                            'block_task_id'      => $createdTask->id,
+                            'block_code_1c'      => $block->code_1c,
+                            'block_code_1c_copy' => $block->code_1c,
+                            'block_name'         => $block->name,
+                            'order_line_ids'     => [
+                                'order_line_id'     => $record->order_line_id,
+                                'order_line_amount' => $record->amount,
+                                'expense'           => (float)$record->expense,
+                                'rest'              => (float)$record->rest,
+                            ],
+                            'amount'             => $total,
+                            'line'               => $collection->line,
+                            'position'           => $position++,
+                            'productivity'       => $collection->productivity,
+                            'square'             => $block->length * $block->width / 100 / 100,
+                            'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$total / $collection->productivity : 0,
+                        ]);
+                    } else {
+                        $orderLineContext[] = [
+                            'order_line_id'     => $record->order_line_id,
+                            'order_line_amount' => $record->amount,
+                            'expense'           => (float)$record->expense,
+                            'rest'              => (float)$record->rest,
+                        ];
+                    }
+
+                    $totals += (float)$record->expense + (float)$record->rest;
                 }
 
                 BlockTaskLine::query()->create([
@@ -309,7 +353,7 @@ final class BlocksService
                 ->whereDate('action_at', '>=', $sourceDay->startOfDay())
                 ->whereDate('action_at', '<=', $sourceDay->endOfDay())
                 ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
-                //->with(['blockTasks'])
+                                         //->with(['blockTasks'])
                 ->where('change_type', BlockDay::CHANGE_2)
                 ->first();
 
@@ -320,11 +364,11 @@ final class BlocksService
         }
 
         // __ Находим самую ближайшую будущую или текущую дату (начиная с дня + 1)
-        $findDay = $sourceDay->copy()->addDay();
+        $findDay          = $sourceDay->copy()->addDay();
         $nearestFutureDay = BlockDay::query()
             ->whereDate('action_at', '>=', $findDay->startOfDay())
             ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
-            //->with(['blockTasks'])   // __ Оставляем для жадной загрузки
+                                     //->with(['blockTasks'])   // __ Оставляем для жадной загрузки
             ->orderBy('action_at', 'asc')
             ->orderBy('change', 'asc')
             ->first();
