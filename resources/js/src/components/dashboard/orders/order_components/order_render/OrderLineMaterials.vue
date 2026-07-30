@@ -1,17 +1,20 @@
 <template>
     <!-- __ Данные -->
     <div v-for="(material, idx) of line.materials" :key="idx">
-        <div class="flex">
+        <div class="flex items-center">
+            <div
+                v-if="isBlock(material)"
+                :class="[getCheckClass(material)]"
+                class="w-[25px] h-[30px] rounded flex items-center justify-center transition-all cursor-pointer"
+                @click="emits('changeExpenseActive', material)"
+            >
+            <span :class="getCheckClass(material)" class="text-[12px] font-semibold text-white">
+                {{ getCheckSymbol(material) }}
+            </span>
+            </div>
+            <div v-else class="w-[25px] h-[30px] flex items-center justify-center">
 
-            <!--&lt;!&ndash; __ Collapsed &ndash;&gt;-->
-            <!--<AppLabelTS-->
-            <!--    v-if="render.collapsed.show"-->
-            <!--    :width="render.collapsed.width"-->
-            <!--    align="center"-->
-            <!--    text=""-->
-            <!--    text-size="normal"-->
-            <!--    type="light"-->
-            <!--/>-->
+            </div>
 
             <!-- __ Код из 1С -->
             <AppLabelTSWrapper :arg="material" :render-object="render.code_1c"/>
@@ -43,6 +46,10 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
+const emits = defineEmits<{
+    (e: 'changeExpenseActive', payload: IRenderOrderLineMaterial): void,
+}>()
+
 // __ Объект отображения данных
 // const DEFAULT_WIDTH      = 'w-[100px]'
 // const DEFAULT_WIDTH_DATE = 'w-[140px]'
@@ -56,10 +63,14 @@ const HEADER_ALIGN     = 'center'
 // const DATA_ALIGN_DEFAULT = 'center'
 const DATA_ALIGN       = 'left'
 
+
+const isBlock  = (material: IRenderOrderLineMaterial) => material.name.includes('БП ') || material.name.includes('(V) ')
+const isFabric = (material: IRenderOrderLineMaterial) => material.name.includes('ПС ')
+
 const getType = (material: IRenderOrderLineMaterial) => {
     if (!material) return DEFAULT_TYPE
-    if (material.name.includes('БП ') || material.name.includes('(V) ')) return 'indigo'
-    if (material.name.includes('ПС ')) return 'orange'
+    if (isBlock(material)) return 'indigo'
+    if (isFabric(material)) return 'orange'
     return DEFAULT_TYPE
 }
 
@@ -81,7 +92,7 @@ const render: IRenderData = reactive({
     },
     code_1c  : {
         header        : 'Код из 1С',
-        width         : 'w-[70px]',
+        width         : 'w-[85px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -137,6 +148,16 @@ const render: IRenderData = reactive({
     },
 
 })
+
+// __ Получаем класс завершенности
+const getCheckClass = (material: IRenderOrderLineMaterial) => {
+    return material.active ? 'bg-green-500' : 'bg-red-500'
+}
+
+// __ Получаем символ завершенности
+const getCheckSymbol = (material: IRenderOrderLineMaterial) => {
+    return material.active ? '✓' : '✘'
+}
 
 </script>
 

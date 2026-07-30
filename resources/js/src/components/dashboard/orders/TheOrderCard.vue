@@ -8,21 +8,21 @@
                 :type="activeTabName === tab.name ? 'indigo' : 'dark'"
                 :width="tab.width"
                 align="center"
-                @click="setActiveTab(tab)"
-                rounded="4"
                 class="shadow cursor-pointer uppercase"
+                rounded="4"
                 text-size="mini"
+                @click="setActiveTab(tab)"
             />
         </div>
 
         <!-- __ Разделительная линия -->
-        <TheDividerLineTS />
+        <TheDividerLineTS/>
 
         <div>
             <Suspense v-if="activeComponent">
                 <component :is="activeComponent"
-                           :order="order"
                            :id="paramId"
+                           :order="order"
                            v-on="dynamicEvents"
 
                 />
@@ -45,8 +45,8 @@
 
 </template>
 
-<script setup lang="ts">
-import type { IColorTypes, IRenderOrder, IRenderOrderLine } from '@/types'
+<script lang="ts" setup>
+import type { IColorTypes, IRenderOrder, IRenderOrderLine, IRenderOrderLineMaterial } from '@/types'
 
 import { onMounted, ref, shallowRef, computed, defineAsyncComponent /* provide, watch */ } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -103,84 +103,86 @@ const paramId   = ref<number>(-1)
 const TAB_NAME_COMMON  = 'Общие'
 const TAB_NAME_CONTEXT = 'Содержимое'
 const TAB_NAME_SEWING  = 'Пошив'
+const TAB_NAME_BLOCKS  = 'БП'
+const TAB_NAME_EXPENSE = 'Расход'
 
 
-const TAB_WIDTH             = 'w-[150px]'
-const DEFAULT_ACTIVE_COLOR  = '#1A2F6F'
+const TAB_WIDTH            = 'w-[150px]'
+const DEFAULT_ACTIVE_COLOR = '#1A2F6F'
 // const DEFAULT_PASSIVE_COLOR = '#111C3A'
 
 const tabs: ITab[] = [
     {
-        name:        'Общие',
+        name       : 'Общие',
         displayName: ['Общая', 'информация'],
-        component:   'Common',
-        icon:        '✨',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Common',
+        icon       : '✨',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        TAB_NAME_CONTEXT,
+        name       : TAB_NAME_CONTEXT,
         displayName: ['Содержимое', 'Заявки'],
-        component:   'Context',
-        icon:        '✨',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Context',
+        icon       : '✨',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Закрой',
+        name       : 'Закрой',
         displayName: ['СЗ:', 'Раскрой'],
-        component:   'Cutting',
-        icon:        '🚀',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Cutting',
+        icon       : '🚀',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        TAB_NAME_SEWING,
+        name       : TAB_NAME_SEWING,
         displayName: ['СЗ:', 'Пошив'],
-        component:   'Sewing',
-        icon:        '🚀',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Sewing',
+        icon       : '🚀',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Сборка',
+        name       : 'Сборка',
         displayName: ['СЗ:', 'Сборка'],
-        component:   'Assembly',
-        icon:        '💡',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Assembly',
+        icon       : '💡',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'ПБ',
+        name       : TAB_NAME_BLOCKS,
         displayName: ['СЗ:', 'ПБ'],
-        component:   'Blocks',
-        icon:        '💡',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Blocks',
+        icon       : '💡',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Расход',
+        name       : TAB_NAME_EXPENSE,
         displayName: ['Расход', ''],
-        component:   'Expense',
-        icon:        '💡',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Expense',
+        icon       : '💡',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
     {
-        name:        'Материалы',
+        name       : 'Материалы',
         displayName: ['Материалы', '(СВПМ)'],
-        component:   'Materials',
-        icon:        '💡',
-        active:      false,
-        width:       TAB_WIDTH,
-        color:       DEFAULT_ACTIVE_COLOR,
+        component  : 'Materials',
+        icon       : '💡',
+        active     : false,
+        width      : TAB_WIDTH,
+        color      : DEFAULT_ACTIVE_COLOR,
     },
 ]
 
@@ -202,7 +204,7 @@ const setActiveTab = (tab: ITab) => {
         console.log(`Использован кэшированный компонент: ${tab.name}`)
     } else {
         // Формируем ключ, который соответствует пути к файлу
-        const filePath = `/resources/js/src/components/dashboard/orders/order_components/order_card/tabs/${tab.component}.vue`;
+        const filePath        = `/resources/js/src/components/dashboard/orders/order_components/order_card/tabs/${tab.component}.vue`
         activeComponent.value = defineAsyncComponent({
             // Просто передаем функцию из мапы
             loader: COMPONENTS[filePath] as () => Promise<any>
@@ -371,6 +373,21 @@ const deleteOrderLine = async (inOrderLine: IRenderOrderLine) => {
 
 }
 
+
+// __ Toggle Activity Строки Расхода
+const changeExpenseActive = async (material: IRenderOrderLineMaterial) => {
+    // console.log('material: ', material)
+    const result = await ordersStore.toggleOrderLineMaterialExpense(material.pivot_id)
+    if (checkCRUD(result)) {
+        material.active = !material.active
+    } else {
+        await showError()
+        return
+    }
+    console.log('material: ', material)
+}
+
+
 // provide(OrderKey, computed(() => order.value))
 // provide(IdKey, computed(() => paramId.value))
 // provide('test', computed(() => order))
@@ -390,6 +407,12 @@ const dynamicEvents = computed(() => {
     if (activeTabName.value === TAB_NAME_CONTEXT) {
         // console.log('deleteOrderLine: ', deleteOrderLine)
         events['delete-order-line'] = deleteOrderLine
+        return events
+    }
+
+    // __ Toggle Activity Строки Расхода
+    if (activeTabName.value === TAB_NAME_EXPENSE) {
+        events['change-expense-active'] = changeExpenseActive
         return events
     }
 
@@ -433,7 +456,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-    .shadow {
-        @apply shadow-[0_0_15px_rgba(79,70,229,0.4)];
-    }
+.shadow {
+    @apply shadow-[0_0_15px_rgba(79,70,229,0.4)];
+}
 </style>

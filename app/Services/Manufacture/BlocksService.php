@@ -140,6 +140,7 @@ final class BlocksService
             ->join('blocks', 'blocks.code_1c', '=', 'pivot.material_code_1c')
             ->join('block_collections', 'blocks.collection', '=', 'block_collections.code_1c')
             ->where('lines.order_id', $orderId)
+            ->where('pivot.active', true)   // __ Только Активный Расход
             ->whereIn('pivot.detail', [ModelConstruct::DETAIL_CONSTRUCT_BASE_BLOCK])
             ->whereIn('pivot.material_code_1c', $blockCodes)
             // Перечисляем только те поля, которые нам реально нужны:

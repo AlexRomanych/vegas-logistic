@@ -7,6 +7,7 @@
                     :order-lines="orderRender ? orderRender.lines : []"
                     :show-collapsed="false"
                     :show-materials="true"
+                    @change-expense-active="emits('change-expense-active', $event)"
                 />
 
             </div>
@@ -27,7 +28,7 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed } from 'vue'
 
-import type { IColorTypes, IRenderOrder, ISewingTask } from '@/types'
+import type { IColorTypes, IRenderOrder, IRenderOrderLineMaterial, ISewingTask } from '@/types'
 
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 
@@ -47,6 +48,10 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
+
+const emits = defineEmits<{
+    (e: 'change-expense-active', payload: IRenderOrderLineMaterial): void,
+}>()
 
 const ordersStore = useOrdersStore()
 

@@ -755,6 +755,7 @@ class OrderController extends Controller
      * ___ Получаем Расход в Иерархии Заявки: Order->OrderLines->Materials для группы Заявок
      * @param Request $request
      * @return AnonymousResourceCollection|string
+     * @noinspection DuplicatedCode
      */
     public function getOrderWithExpense(Request $request)
     {
@@ -873,6 +874,7 @@ class OrderController extends Controller
                 ->join('clients', 'clients.id', '=', 'orders.client_id')
                 ->join('models', 'models.code_1c', '=', 'order_lines.model_code_1c')
                 ->whereIn('order_lines.order_id', $cleanOrderIds)
+                ->where('order_line_material_pivot.active', true) // __ Только активный Расход
                 ->with(['category', 'group'])
 
                 // Все неагрегированные поля добавляем в GROUP BY
@@ -1122,6 +1124,35 @@ class OrderController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+    /**
+     * ___ Переключаем Расход для одной Строки расхода в Спецификациях
+     * @param Request $request
+     * @return string
+     */
+    public function toggleOrderLineMaterialExpense(Request $request)
+    {
+        try {
+            $all = $request->all();
+
+            $data = $request->validate([
+                'id' => 'required|numeric|exists:order_line_material_pivot,id',
+            ]);
+
+            $expense = OrderLineMaterialPivot::query()->findOrFail($data['id']);
+
+            $expenseArray = $expense->toArray();
+
+            $expense->active = !$expense->active;
+            $expense->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
 
 
 }

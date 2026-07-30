@@ -60,7 +60,7 @@ class OrderLine extends Model
             'material_code_1c'                   // 4. Внешний ключ связанной модели в пивоте
         )
             ->using(OrderLineMaterialPivot::class) // 5. Указываем использовать кастомную пивот-модель
-            ->withPivot(['expense_per_pic', 'rest_per_pic']);
+            ->withPivot(['expense_per_pic', 'rest_per_pic', 'id', 'active']);
         //->withTimestamps();                    // 6. Если в пивот-таблице есть поля created_at/updated_at
     }
 

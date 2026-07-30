@@ -16,12 +16,13 @@ class OrderLineMaterialRenderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-
             'code_1c'         => $this->code_1c,
             'name'            => $this->name,
             'unit'            => $this->unit,
+            'pivot_id'        => $this->pivot->id,
             'expense_per_pic' => $this->pivot->expense_per_pic,
             'rest_per_pic'    => $this->pivot->rest_per_pic,
+            'active'          => $this->pivot->active,
 
             //'pivot'   => [
             //    'expense_per_pic' => $this->pivot->expense_per_pic,

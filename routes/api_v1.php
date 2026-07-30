@@ -113,6 +113,8 @@ Route::prefix('/orders')
         Route::get('/', [OrderController::class, 'getOrders']);
 
         Route::get('/expense', [OrderController::class, 'getOrderWithExpense']);
+        Route::patch('/expense/material/toggle', [OrderController::class, 'toggleOrderLineMaterialExpense']);
+
         Route::get('/materials', [OrderController::class, 'getOrderWithMaterials']);
         Route::post('/materials', [OrderController::class, 'createOrdersMaterials']);
         Route::delete('/materials', [OrderController::class, 'deleteOrdersMaterials']);

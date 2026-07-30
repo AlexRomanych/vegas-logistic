@@ -162,6 +162,8 @@ export interface IRenderOrderLineModel {
 }
 
 export interface IRenderOrderLineMaterial {
+    pivot_id: number
+    active: boolean
     code_1c: string
     name: string
     expense_per_pic: number

@@ -76,7 +76,6 @@
     <!-- __ Данные -->
     <div v-for="orderLine of orderLinesRender" :key="orderLine.id">
         <div class="flex" @dblclick="!showBlocks ? showLineInfo(orderLine) : () => {}">
-
             <!-- __ Collapsed -->
             <AppLabelTS
                 v-if="render.collapsed.show"
@@ -158,8 +157,11 @@
 
         <!-- __ Расходы материалов -->
         <template v-if="showMaterials">
-            <div v-if="!orderLine.collapsed_materials" class="ml-[74px]">
-                <OrderLineMaterials :line="orderLine"/>
+            <div v-if="!orderLine.collapsed_materials" class="ml-[34px]">
+                <OrderLineMaterials
+                    :line="orderLine"
+                    @change-expense-active="emits('changeExpenseActive', $event)"
+                />
             </div>
         </template>
 
@@ -206,7 +208,7 @@
 <script lang="ts" setup>
 import { reactive, /*ref,*/ computed, ref } from 'vue'
 
-import type { IColorTypes, IModelConstruct, IRenderData, IRenderOrderLine } from '@/types'
+import type { IColorTypes, IModelConstruct, IRenderData, IRenderOrderLine, IRenderOrderLineMaterial } from '@/types'
 
 import { useModelsStore } from '@/stores/ModelsStore.ts'
 
@@ -242,6 +244,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<{
     (e: 'deleteOrderLine', payload: IRenderOrderLine): void
+    (e: 'changeExpenseActive', payload: IRenderOrderLineMaterial): void,
 }>()
 
 const modelsStore = useModelsStore()

@@ -11,23 +11,23 @@ import type { IPeriod, ISewingTask } from '@/types'
 
 
 // __ Устанавливаем глобальные переменные
-const API_PREFIX                    = '/api/v1/'                    // Префикс API
-const URL_ORDERS                    = 'orders'                      // URL для получения списка заказов
-const URL_ORDERS_EXPENSE            = 'orders/expense'              // URL для получения Заказа с Расходом
-const URL_ORDERS_MATERIALS          = 'orders/materials'            // URL для получения Заказа с деревом Материалов
-const URL_ORDERS_CUTTING_TASK_LINES = 'orders/cutting/task/lines'   // URL для получения Заказа с Содержимым СЗ РАскроя
-const URL_ORDER                     = 'order'                       // URL для получения заказа
-const URL_ORDERS_TYPES              = 'orders/types'                // URL для получения типа заказов
-const URL_ORDERS_TYPES_COLOR_UPDATE = 'orders/types/color/patch'    // URL для обновления цвета типа заказов
+const API_PREFIX                         = '/api/v1/'                           // Префикс API
+const URL_ORDERS                         = 'orders'                             // URL для получения списка заказов
+const URL_ORDERS_EXPENSE                 = 'orders/expense'                     // URL для получения Заказа с Расходом
+const URL_ORDERS_EXPENSE_MATERIAL_TOGGLE = 'orders/expense/material/toggle'     // URL для получения Заказа с Расходом
+const URL_ORDERS_MATERIALS               = 'orders/materials'                   // URL для получения Заказа с деревом Материалов
+const URL_ORDERS_CUTTING_TASK_LINES      = 'orders/cutting/task/lines'          // URL для получения Заказа с Содержимым СЗ РАскроя
+const URL_ORDER                          = 'order'                              // URL для получения заказа
+const URL_ORDERS_TYPES                   = 'orders/types'                       // URL для получения типа заказов
+const URL_ORDERS_TYPES_COLOR_UPDATE      = 'orders/types/color/patch'           // URL для обновления цвета типа заказов
 
-
-const URL_ORDERS_UPLOAD          = 'orders/upload/'                 // URL для загрузки заказов с диска
-const URL_ORDERS_VALIDATE        = 'orders/validate/'               // URL для проверки заказов с диска
-const URL_ORDERS_DELETE          = 'orders/delete/'                 // URL для удаления заказов
-const URL_ORDERS_LINE_DELETE     = 'orders/line/delete/'            // URL для удаления линии контекста в заказе
-const URL_ORDERS_ADD_AVERAGE     = 'orders/add/average'             // URL для добавления прогнозной Заявки
-const URL_ORDERS_SET_LOAD_AT     = 'orders/patch/load-at'           // URL для изменения даты загрузки на складе
-const URL_ORDERS_SET_DESCRIPTION = 'orders/patch/description'       // URL для изменения описания Заявки
+const URL_ORDERS_UPLOAD                  = 'orders/upload/'                     // URL для загрузки заказов с диска
+const URL_ORDERS_VALIDATE                = 'orders/validate/'                   // URL для проверки заказов с диска
+const URL_ORDERS_DELETE                  = 'orders/delete/'                     // URL для удаления заказов
+const URL_ORDERS_LINE_DELETE             = 'orders/line/delete/'                // URL для удаления линии контекста в заказе
+const URL_ORDERS_ADD_AVERAGE             = 'orders/add/average'                 // URL для добавления прогнозной Заявки
+const URL_ORDERS_SET_LOAD_AT             = 'orders/patch/load-at'               // URL для изменения даты загрузки на складе
+const URL_ORDERS_SET_DESCRIPTION         = 'orders/patch/description'           // URL для изменения описания Заявки
 
 
 export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой при рендере расчетных значений
@@ -52,6 +52,15 @@ export const useOrdersStore = defineStore('orders', () => {
         ordersShow = result.data
         return result.data
     }
+
+
+    // __ Переключаем Расход для одной Строки расхода в Спецификациях
+    const toggleOrderLineMaterialExpense = async (id: number) => {
+        const result = await jwtPatch_(URL_ORDERS_EXPENSE_MATERIAL_TOGGLE, { id })
+        if (DEBUG) console.log('OrdersStore: toggleOrderLineMaterialExpense: ', result)
+        return result.data
+    }
+
 
     // __ Получаем с API список Заказов + Материалы
     const getOrderWithExpense = async (ids: number[]) => {
@@ -248,6 +257,7 @@ export const useOrdersStore = defineStore('orders', () => {
         deleteOrderLine,
         addOrdersAverage,
 
+        toggleOrderLineMaterialExpense,
         getOrderWithExpense,
         getOrdersWithMaterials,
         getOrdersWithCuttingTaskLines,

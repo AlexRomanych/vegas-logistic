@@ -46,10 +46,10 @@ class FabricTaskRollLogResource extends JsonResource
             ],
 
             'responsible' => [
-                'id' => $this->responsible->id,
-                'name' => $this->responsible->name,
-                'surname' => $this->responsible->surname,
-                'patronymic' => $this->responsible->patronymic,
+                'id' => $this->responsible?->id,
+                'name' => $this->responsible?->name,
+                'surname' => $this->responsible?->surname,
+                'patronymic' => $this->responsible?->patronymic,
             ],
 
             // '_' => parent::toArray($request)
