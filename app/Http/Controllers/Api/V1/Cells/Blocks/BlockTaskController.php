@@ -940,13 +940,15 @@ class BlockTaskController extends Controller
     }
 
 
-    //___ Получаем СЗ на Раскрой по статусам до определенной даты
-    public function getBlockTasksByStatusBeforeDate(Request $request)
+    //___ Получаем СЗ на Блоки по статусам до определенной даты и смены
+    public function getBlockTasksByStatusBeforeDateAndChange(Request $request)
     {
         try {
             $validated = $request->validate([
                 // __ Проверяем, что 'date' — это дата
                 'date'       => 'required|date_format:Y-m-d',
+                // __ Проверяем, что 'change' — это смена
+                'change'     => 'required|string|in:1,2',
                 // __ Проверяем, что 'statuses' — это массив
                 'statuses'   => 'nullable|array',
                 // __ Проверяем каждый элемент массива: должен быть числом и существовать в БД
@@ -954,15 +956,23 @@ class BlockTaskController extends Controller
             ]);
 
             $data        = $validated['statuses'] ?? null;
+            $change      = $validated['change'];
             $action_date = Carbon::parse($validated['date'])->startOfDay();
 
             $blockTasks = BlockTask::query()
-                ->whereDate('action_at', '<', $action_date)
+                ->where(function ($query) use ($action_date, $change) {
+                    // __ Условие 1: Все задачи до текущей даты (для обеих смен)
+                    $query->whereDate('action_at', '<', $action_date);
+
+                    // __ Условие 2: Если смена 2 — добавляем задачи первой смены за текущую дату
+                    if ($change === '2') {
+                        $query->orWhere(function ($q) use ($action_date) {
+                            $q->whereDate('action_at', $action_date)
+                                ->where('change', '1');
+                        });
+                    }
+                })
                 ->byStatus($data)
-                // ->whereBetween('action_at', [
-                //     $start->startOfDay(),
-                //     $end->endOfDay()
-                // ])
                 ->with([
                     'order',
                     'order.client',

@@ -247,8 +247,8 @@ const isStartAvailable = computed(() => {
     const today   = new Date().toLocaleDateString('en-CA')// ().split('T')[0] // Получится '2026-05-16'
     const compare = blockDay.value ? blockDay.value.action_at.split(' ')[0] : today
 
-    // console.log('today: ', today)
-    // console.log('compare: ', compare)
+    console.log('today: ', today)
+    console.log('compare: ', compare)
 
     if (compare > today) {
         return false
@@ -885,7 +885,7 @@ onMounted(async () => {
             // __ автоматом через middleware переноситься на следующий день
             const [dayData, tasksBefore, /*_*/] = await Promise.all([
                 blockStore.getBlockDayByDateAndChange(executeDate, executeChange),
-                blockStore.getBlockTasksByStatusBeforeDate(executeDate, [
+                blockStore.getBlockTasksByStatusBeforeDateAndChange(executeDate, executeChange, [
                     BLOCK_TASK_STATUSES.PENDING.ID,
                     BLOCK_TASK_STATUSES.RUNNING.ID,
                     BLOCK_TASK_STATUSES.CREATED.ID,

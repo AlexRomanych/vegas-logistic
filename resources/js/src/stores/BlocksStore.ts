@@ -430,14 +430,14 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
     // __ Получение СЗ Блоков по статусу или массиву статусов до определенной даты
-    const getBlockTasksByStatusBeforeDate = async (date: string, status: number[] | number | null = null) => {
+    const getBlockTasksByStatusBeforeDateAndChange = async (date: string, change: IBlockTaskChangeKeys, status: number[] | number | null = null) => {
         let response
         if (status) {
             if (isNumber(status)) {
                 status = [status]
             }
 
-            response = await jwtGet(URL_BLOCKS_TASKS_STATUS_BEFORE_DATE, { date, statuses: status })
+            response = await jwtGet(URL_BLOCKS_TASKS_STATUS_BEFORE_DATE, { date, change, statuses: status })
         } else {
             response = await jwtGet(date, URL_BLOCKS_TASKS_STATUS_BEFORE_DATE)
         }
@@ -1016,7 +1016,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         deleteBlockTasksByOrderId,
         addBlockTasksByOrderId,
         calcBlockTasksCutByOrderId,
-        getBlockTasksByStatusBeforeDate,
+        getBlockTasksByStatusBeforeDateAndChange,
         getBlockTasksByStatusOnDate,
         checkBlockTasksByStatusOnDate,
         setBlockTaskComment,

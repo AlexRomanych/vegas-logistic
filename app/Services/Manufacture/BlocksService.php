@@ -332,56 +332,41 @@ final class BlocksService
         ManufactureDayAndChange|Carbon|string $manufactureEntity,
         int|string $change = BlockDay::CHANGE_1,
     ): ManufactureDayAndChange {
-        // __ Определяем референсный день
-        $sourceDay = Carbon::now();
+        // __ Определяем референсный день и смену
+        // __ Извлекаем дату и смену из входных параметров
         if ($manufactureEntity instanceof ManufactureDayAndChange) {
-            $sourceDay = $manufactureEntity->getManufactureDay();
-        } elseif (is_string($manufactureEntity)) {
-            $sourceDay = Carbon::parse($manufactureEntity);
-        } elseif ($manufactureEntity instanceof Carbon) {
-            $sourceDay = $manufactureEntity;
-        }
-
-        // __ Определяем референсную смену
-        $sourceChange = (string)$manufactureEntity;
-
-        // __ === КЛЮЧЕВОЙ ШАГ: Поиск целевого дня и смены ===
-
-        // __ Смотрим, есть ли в текущем дне вторая смена
-        if ($sourceChange === BlockDay::CHANGE_1) {
-            $nearestFutureDay = BlockDay::query()
-                ->whereDate('action_at', '>=', $sourceDay->startOfDay())
-                ->whereDate('action_at', '<=', $sourceDay->endOfDay())
-                ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
-                                         //->with(['blockTasks'])
-                ->where('change_type', BlockDay::CHANGE_2)
-                ->first();
-
-            // __ Если есть - возвращаем
-            if ($nearestFutureDay) {
-                return new ManufactureDayAndChange($sourceDay->copy(), BlockDay::CHANGE_2);
-            }
+            $sourceDay    = $manufactureEntity->getManufactureDay();
+            $sourceChange = (string)$manufactureEntity->getChange(); // Укажите ваш метод получения смены (например, ->change)
+        } else {
+            $sourceDay    = is_string($manufactureEntity) ? Carbon::parse($manufactureEntity) : $manufactureEntity->copy();
+            $sourceChange = (string)$change;
         }
 
         // __ Находим самую ближайшую будущую или текущую дату (начиная с дня + 1)
-        $findDay          = $sourceDay->copy()->addDay();
+        // __ Единый запрос: ищем ближайшую будущую смену с задачами
+        // __ (Будущие дни OR текущий день с более высокой сменой)
         $nearestFutureDay = BlockDay::query()
-            ->whereDate('action_at', '>=', $findDay->startOfDay())
-            ->whereHas('blockTasks') // __ Это добавит в SQL условие EXISTS (...)
-                                     //->with(['blockTasks'])   // __ Оставляем для жадной загрузки
+            ->where(function ($query) use ($sourceDay, $sourceChange) {
+                $query->whereDate('action_at', '>', $sourceDay)
+                    ->orWhere(function ($q) use ($sourceDay, $sourceChange) {
+                        $q->whereDate('action_at', $sourceDay)
+                            ->where('change', '>', $sourceChange);
+                    });
+            })
+            ->whereHas('blockTasks')
             ->orderBy('action_at', 'asc')
             ->orderBy('change', 'asc')
             ->first();
 
+        // __ НАШЛИ: Возвращаем
         if ($nearestFutureDay) {
-            // __ НАШЛИ: Возвращаем
             return new ManufactureDayAndChange(Carbon::parse($nearestFutureDay->action_at), $nearestFutureDay->change);
-        } else {
-            // __ НЕ НАШЛИ: Смотрим, какая смена и возвращаем в зависимости от нее
-            return $sourceChange === BlockDay::CHANGE_1
-                ? new ManufactureDayAndChange($sourceDay->copy(), BlockDay::CHANGE_2)
-                : new ManufactureDayAndChange($sourceDay->copy()->addDay(), BlockDay::CHANGE_1);
         }
+
+        // __ НЕ НАШЛИ: Смотрим, какая смена и возвращаем в зависимости от нее
+        return $sourceChange === BlockDay::CHANGE_1
+            ? new ManufactureDayAndChange($sourceDay->copy(), BlockDay::CHANGE_2)
+            : new ManufactureDayAndChange($sourceDay->copy()->addDay(), BlockDay::CHANGE_1);
     }
 
     /**

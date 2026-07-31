@@ -405,7 +405,7 @@ class BlockDayController extends Controller
                     ->get();
 
                 if ($pendingBlockTasks->isEmpty()) {
-                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id .' and change = ' . $blockDay->change . ' not found');
+                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id . ' and change = ' . $blockDay->change . ' not found');
                 }
 
                 //$pendBlockTasksArr = $pendingBlockTasks->toArray();
@@ -473,7 +473,7 @@ class BlockDayController extends Controller
                     ->get();
 
                 if ($pendingBlockTasks->isEmpty()) {
-                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id .' and change = ' . $blockDay->change . ' not found');
+                    throw new Exception('Tasks in Day with day_id = ' . $blockDay->id . ' and change = ' . $blockDay->change . ' not found');
                 }
 
                 // debug
@@ -557,6 +557,7 @@ class BlockDayController extends Controller
                             $tasksToUpdate[] = [
                                 'id'        => $falseTask['task']->id,
                                 'action_at' => $nextChange->getManufactureDay(),
+                                'change'    => $nextChange->getChange(),
                                 'position'  => $position++,
                             ];
 
@@ -610,6 +611,7 @@ class BlockDayController extends Controller
                         $tasksToUpdate[] = [
                             'id'        => $newTask->id,
                             'action_at' => $nextChange->getManufactureDay(),
+                            'change'    => $nextChange->getChange(),
                             'position'  => $position++,
                         ];
                     }
@@ -619,12 +621,51 @@ class BlockDayController extends Controller
                         $tasksToUpdate[] = [
                             'id'        => $task->id,
                             'action_at' => null,        // оставляем дату прежней
+                            'change'    => null,        // оставляем дату прежней
                             'position'  => $position++,
                         ];
                     }
 
                     // __ Применяем изменения
                     BlocksService::bulkUpdateTasks($tasksToUpdate);
+
+
+                    // __ Делаем сквозную нумерацию заново в текущем дне и в том, куда перенесли
+                    $datesToReorder = [
+                        $action_date,
+                        $nextChange->getManufactureDay(),
+                    ];
+
+                    // __ Используем unique(), чтобы не пересчитывать один и тот же день дважды (если перенесли в 2-ю смену того же дня)
+                    foreach (array_unique($datesToReorder) as $targetDate) {
+
+                        // __ Выбираем все СЗ на дату: сперва 1-я смена, затем 2-я; внутри смен — по position
+                        $tasks = BlockTask::query()
+                            ->whereDate('action_at', $targetDate)
+                            ->orderBy('change', 'asc')
+                            ->orderBy('position', 'asc')
+                            ->get();
+
+                        if ($tasks->isEmpty()) {
+                            continue;
+                        }
+
+                        $position      = 1;
+                        $tasksToUpdate = [];
+
+                        // __ Формируем массив для сквозной перенумерации (1, 2, 3...)
+                        foreach ($tasks as $task) {
+                            $tasksToUpdate[] = [
+                                'id'        => $task->id,
+                                'action_at' => null, // оставляем прежней
+                                'change'    => null, // оставляем прежней
+                                'position'  => $position++,
+                            ];
+                        }
+
+                        // __ Применяем изменения
+                        BlocksService::bulkUpdateTasks($tasksToUpdate);
+                    }
                 }
             });
 
