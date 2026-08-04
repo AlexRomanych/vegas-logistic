@@ -168,6 +168,17 @@
             text="Расход"
         />
 
+        <!-- __ Заявка -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.order"
+            rounded="4"
+            text="Заявка"
+        />
+
         <!--&lt;!&ndash; __ Рулон &ndash;&gt;-->
         <!--<AppLabelTS-->
         <!--    :align="DEFAULT_ALIGN"-->
@@ -305,18 +316,6 @@
             rounded="4"
             text="Причина"
         />
-
-        <!-- __ Заявка -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :height="LINE_HEIGHT"
-            :text-size="LINE_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="fieldWidths.order"
-            rounded="4"
-            text="Заявка"
-        />
-
 
     </div>
 </template>

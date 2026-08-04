@@ -57,8 +57,8 @@ export const SEWING_TASK_STATUSES: Record<ISewingTaskStatusKeys, ISewingTaskStat
     },
     DONE   : {
         ID   : 5,
-        TITLE: 'Создано',
-        WORD : 'created',
+        TITLE: 'Выполнено',
+        WORD : 'done',
         TYPE : 'success',
     },
 }

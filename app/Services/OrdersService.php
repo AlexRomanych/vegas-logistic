@@ -519,9 +519,15 @@ final class OrdersService
             $parts[1] = mb_substr($parts[1], 1);
         }
 
-        if (isset(self::$orderTypesCache['.' . $parts[1]])) {
-            return self::getOrderTypeByIndex('.' . $parts[1]);
+        $orderType = self::getOrderTypeByIndex('.' .$parts[1]);
+
+        if ($orderType) {
+            return $orderType;
         }
+
+        //if (isset(self::$orderTypesCache['.' . $parts[1]])) {
+        //    return self::getOrderTypeByIndex('.' . $parts[1]);
+        //}
 
         return self::getOrderTypeByIndex('.00');
     }

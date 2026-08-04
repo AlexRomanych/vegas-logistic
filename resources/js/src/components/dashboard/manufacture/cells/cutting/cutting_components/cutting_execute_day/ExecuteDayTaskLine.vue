@@ -181,6 +181,17 @@
             :text="cuttingLine.expense.toFixed(3)"
         />
 
+        <!-- __ Заявка -->
+        <AppLabelTS
+            :height="lineHeight"
+            :text="cuttingLine.groupAttr"
+            :text-size="LINE_TEXT_SIZE"
+            :type="getCheckType(cuttingLine)"
+            :width="fieldWidths.order"
+            align="left"
+            rounded="4"
+        />
+
         <!--&lt;!&ndash; __ Рулон &ndash;&gt;-->
         <!--<AppLabelTS-->
         <!--    :height="lineHeight"-->
@@ -326,19 +337,7 @@
             rounded="4"
         />
 
-        <!-- __ Заявка -->
-        <AppLabelTS
-            :height="lineHeight"
-            :text="cuttingLine.groupAttr"
-            :text-size="LINE_TEXT_SIZE"
-            :type="getCheckType(cuttingLine)"
-            :width="fieldWidths.order"
-            align="left"
-            rounded="4"
-        />
-
     </div>
-
 
 </template>
 

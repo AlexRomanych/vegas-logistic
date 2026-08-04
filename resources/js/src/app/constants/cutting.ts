@@ -148,8 +148,8 @@ export const CUTTING_TASK_STATUSES: Record<ICuttingTaskStatusKeys, ICuttingTaskS
     },
     DONE   : {
         ID   : 5,
-        TITLE: 'Создано',
-        WORD : 'created',
+        TITLE: 'Выполнено',
+        WORD : 'done',
         TYPE : 'success',
     },
 }

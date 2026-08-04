@@ -1374,8 +1374,14 @@ final class CuttingService
         ////$model = ModelsService::getModel('000002853');
         //$modelArray = $model->toArray();
 
+        $b = OrdersService::getOrderTypeByOrderNoAndClientId('362.11', 32);
 
         $a = 0;
+
+
+
+
+
     }
 
 
