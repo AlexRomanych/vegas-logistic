@@ -7,12 +7,12 @@
             <div class="mx-0.5">
                 <div class="flex">
 
-                    <!-- __ code_1c -->
+                    <!-- __ id -->
                     <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.code_1c"/>
+                        <AppLabelMultilineTSWrapper :render-object="render.id"/>
                         <AppInputTextTSWrapper
-                            v-model="code_1cFilter"
-                            :render-object="render.code_1c"
+                            v-model="idFilter"
+                            :render-object="render.id"
                         />
                     </div>
 
@@ -22,6 +22,15 @@
                         <AppInputTextTSWrapper
                             v-model="nameFilter"
                             :render-object="render.name"
+                        />
+                    </div>
+
+                    <!-- __ Номер Группы -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.group_number"/>
+                        <AppInputTextTSWrapper
+                            v-model="groupNumberFilter"
+                            :render-object="render.group_number"
                         />
                     </div>
 
@@ -47,33 +56,6 @@
                             class="mt-[8px]"
                             height="h-[30px]"
                             @change="filterByActive"
-                        />
-                    </div>
-
-                    <!-- __ Количества Слоев -->
-                    <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.layers"/>
-                        <AppInputTextTSWrapper
-                            v-model="layersFilter"
-                            :render-object="render.layers"
-                        />
-                    </div>
-
-                    <!-- __ Ширина ткани -->
-                    <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.width"/>
-                        <AppInputTextTSWrapper
-                            v-model="widthFilter"
-                            :render-object="render.width"
-                        />
-                    </div>
-
-                    <!-- __ Рабочая Ширина ткани -->
-                    <div>
-                        <AppLabelMultilineTSWrapper :render-object="render.widthWork"/>
-                        <AppInputTextTSWrapper
-                            v-model="widthWorkFilter"
-                            :render-object="render.widthWork"
                         />
                     </div>
 
@@ -124,52 +106,40 @@
         <div class="ml-2">
             <!-- __ Данные (Ткани) -->
             <div
-                v-for="textile of entitiesRender"
-                :key="textile.code_1c"
+                v-for="group of entitiesRender"
+                :key="group.id"
                 class="max-w-fit"
             >
                 <div class="flex">
 
-                    <!-- __ Code_1c -->
+                    <!-- __ id -->
                     <AppLabelTSWrapper
-                        :arg="textile"
-                        :render-object="render.code_1c"
+                        :arg="group"
+                        :render-object="render.id"
                         class="cursor-pointer"
                     />
 
                     <!-- __ Название -->
                     <AppLabelTSWrapper
-                        :arg="textile"
+                        :arg="group"
                         :render-object="render.name"
+                    />
+
+                    <!-- __ Номер Группы -->
+                    <AppLabelTSWrapper
+                        :arg="group"
+                        :render-object="render.group_number"
                     />
 
                     <!-- __ Active -->
                     <AppLabelTSWrapper
-                        :arg="textile"
+                        :arg="group"
                         :render-object="render.active"
-                    />
-
-                    <!-- __ Количества Слоев -->
-                    <AppLabelTSWrapper
-                        :arg="textile"
-                        :render-object="render.layers"
-                    />
-
-                    <!-- __ Ширина ткани -->
-                    <AppLabelTSWrapper
-                        :arg="textile"
-                        :render-object="render.width"
-                    />
-
-                    <!-- __ Рабочая Ширина ткани -->
-                    <AppLabelTSWrapper
-                        :arg="textile"
-                        :render-object="render.widthWork"
                     />
 
                     <!-- __ Описание -->
                     <AppLabelTSWrapper
-                        :arg="textile"
+                        :arg="group"
                         :render-object="render.description"
                     />
 
@@ -182,12 +152,12 @@
                         text-size="mini"
                         type="danger"
                         width="w-[30px]"
-                        @click="deleteTextile(textile)"
+                        @click="deleteGroup(group)"
                     />
 
                     <!-- __ Редактировать -->
                     <router-link
-                        :to="{ name: 'manufacture.cell.cutting.textiles.edit', params: { code_1c: textile.code_1c } }">
+                        :to="{ name: 'manufacture.cell.assembly.model.manufacture.groups.edit', params: { id: group.id } }">
                         <AppLabelTS
                             v-if="CAN_EDIT"
                             align="center"
@@ -216,10 +186,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { IAssemblyModelManufactureGroup, IColorTypes, ICuttingTextile, IRenderData, ISelectData, ISelectDataItem } from '@/types'
+import type { IAssemblyModelManufactureGroup, IColorTypes, IRenderData, ISelectData, ISelectDataItem } from '@/types'
 import { onMounted, reactive, ref, watchEffect } from 'vue'
 
-import { useCuttingStore } from '@/stores/CuttingStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -234,16 +204,16 @@ import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultil
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
-const cuttingStore = useCuttingStore()
+const assemblyStore = useAssemblyStore()
 
 const isLoading = ref(false)
 
 const CAN_EDIT   = true
-const CAN_DELETE = true
+const CAN_DELETE = false
 
-let entities: ICuttingTextile[] = []
+let entities: IAssemblyModelManufactureGroup[] = []
+const entitiesRender                           = ref<IAssemblyModelManufactureGroup[]>([])
 // let entities: ICuttingTextile[] = []
-const entitiesRender            = ref<IAssemblyModelManufactureGroup[]>([])
 
 // __ Тип для модального окна Сообщений
 const modalInfoType            = ref<IColorTypes>('danger')
@@ -271,12 +241,12 @@ const HEADER_ALIGN     = 'center'
 const DATA_ALIGN       = 'left'
 
 const render: IRenderData = reactive({
-    code_1c    : {
-        id            : () => 'code-1c-search',
-        header        : ['Код', 'из 1С'],
+    id          : {
+        id            : () => 'id-search',
+        header        : ['ID', ''],
         width         : 'w-[100px]',
         height        : DEFAULT_HEIGHT,
-        show          : true,
+        show          : false,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
         type          : () => DEFAULT_TYPE,
@@ -284,12 +254,12 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
-        placeholder   : '🔍Код...',
-        data          : (textile: ICuttingTextile) => textile.code_1c,
+        placeholder   : '🔍ID...',
+        data          : (group: IAssemblyModelManufactureGroup) => group.id.toString(),
     },
-    name       : {
+    name        : {
         id            : () => 'name-search',
-        header        : ['Название', 'Ткани'],
+        header        : ['Название', 'Группы'],
         width         : 'w-[400px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -301,9 +271,25 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Название...',
-        data          : (textile: ICuttingTextile) => textile.name,
+        data          : (group: IAssemblyModelManufactureGroup) => group.name,
     },
-    active     : {
+    group_number: {
+        id            : () => 'group-number-search',
+        header        : ['Номер', 'Группы'],
+        width         : 'w-[100px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍№...',
+        data          : (group: IAssemblyModelManufactureGroup) => group.group_number.toString(),
+    },
+    active      : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : 'w-[80px]',
@@ -311,63 +297,15 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (textile: ICuttingTextile) => textile.active ? 'success' : 'danger',
+        type          : (group: IAssemblyModelManufactureGroup) => group.active ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Название...',
-        data          : (textile: ICuttingTextile) => textile.active ? '✓' : '✗',
+        data          : (group: IAssemblyModelManufactureGroup) => group.active ? '✓' : '✗',
     },
-    layers     : {
-        id            : () => 'layers-search',
-        header        : ['Кол-во', 'настилов'],
-        width         : 'w-[100px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => HEADER_TYPE,
-        dataType      : () => DATA_TYPE,
-        type          : (textile: ICuttingTextile) => textile?.active && textile?.layers === 0 ? 'danger' : DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : 'center',
-        placeholder   : '🔍Слои...',
-        data          : (textile: ICuttingTextile) => textile.layers.toString(),
-    },
-    width      : {
-        id            : () => 'width-search',
-        header        : ['Ширина', 'ткани, см'],
-        width         : 'w-[100px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => HEADER_TYPE,
-        dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : 'center',
-        placeholder   : '🔍Шир...',
-        data          : (textile: ICuttingTextile) => textile.width.toString(),
-    },
-    widthWork  : {
-        id            : () => 'width-work-search',
-        header        : ['Раб. ширина', 'ткани, см'],
-        width         : 'w-[100px]',
-        height        : DEFAULT_HEIGHT,
-        show          : true,
-        headerType    : () => HEADER_TYPE,
-        dataType      : () => DATA_TYPE,
-        type          : () => DEFAULT_TYPE,
-        headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize  : DATA_TEXT_SIZE,
-        headerAlign   : HEADER_ALIGN,
-        dataAlign     : 'center',
-        placeholder   : '🔍Раб.шир...',
-        data          : (textile: ICuttingTextile) => textile.width_work.toString(),
-    },
-    description: {
+    description : {
         id            : () => 'description-search',
         header        : ['Описание', ''],
         width         : 'w-[450px]',
@@ -381,17 +319,15 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Описание...',
-        data          : (textile: ICuttingTextile) => textile.description ?? ''
+        data          : (group: IAssemblyModelManufactureGroup) => group.description ?? ''
     },
 })
 
 // __ Фильтры
 const nameFilter        = ref('')
-const code_1cFilter     = ref('')
+const idFilter          = ref('')
 const descriptionFilter = ref('')
-const layersFilter      = ref('')
-const widthFilter       = ref('')
-const widthWorkFilter   = ref('')
+const groupNumberFilter = ref('')
 const activeFilter      = ref(0)
 
 // __ Подготавливаем селекты
@@ -409,8 +345,11 @@ const filterByActive = (value: ISelectDataItem) => {
     activeFilter.value = value.id
 }
 
-// __ Удаляем Ткань
-const deleteTextile = async (textile: ICuttingTextile) => {
+// __ Удаляем Группу
+const deleteGroup = async (group: IAssemblyModelManufactureGroup) => {
+    if (!CAN_DELETE) {
+        return
+    }
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'confirm'
 
@@ -421,7 +360,7 @@ const deleteTextile = async (textile: ICuttingTextile) => {
         return
     }
 
-    const result = await cuttingStore.deleteCuttingTextile(textile.code_1c)
+    const result = await assemblyStore.deleteModelManufactureGroup(group.id)
 
     if (!checkCRUD(result)) {
         await showError()
@@ -432,31 +371,28 @@ const deleteTextile = async (textile: ICuttingTextile) => {
 
         modalInfoText.value = result.payload
         await appModalAsyncMultilineTS.value!.show()
-        entitiesRender.value = entitiesRender.value.filter(item => item.code_1c !== textile.code_1c)
+        entitiesRender.value = entitiesRender.value.filter(item => item.id !== group.id)
         return
     }
 }
 
 // __ Обнуляем фильтры
 const resetFilters = () => {
-    code_1cFilter.value     = ''
+    idFilter.value          = ''
     nameFilter.value        = ''
-    layersFilter.value      = ''
-    widthFilter.value       = ''
-    widthWorkFilter.value   = ''
+    groupNumberFilter.value = ''
     descriptionFilter.value = ''
 }
 
 // __ Получение данных
 const getEntities = async () => {
-    entities = await cuttingStore.getCuttingTextiles()
+    entities = await assemblyStore.getModelManufactureGroups()
     entities = entities
-        .map(textile => ({
-            ...textile,
-            description: textile.description ?? '',
+        .map(group => ({
+            ...group,
+            description: group.description ?? '',
         }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    // .filter(textile => textile.code_1c !== 0)
+        .sort((a, b) => a.group_number - b.group_number)
 }
 
 // __ Формирование данных для рендера
@@ -467,19 +403,15 @@ const getEntitiesRender = () => {
 // __ Фильтрация
 watchEffect(() => {
     const nameSearch        = nameFilter.value.toLowerCase()
-    const code1cSearch      = code_1cFilter.value.toLowerCase()
+    const idSearch          = idFilter.value.toLowerCase()
+    const groupNumberSearch = groupNumberFilter.value.toLowerCase()
     const descriptionSearch = descriptionFilter.value.toLowerCase()
-    const layersSearch      = layersFilter.value.toLowerCase()
-    const widthSearch       = widthFilter.value.toLowerCase()
-    const widthWorkSearch   = widthWorkFilter.value.toLowerCase()
 
     entitiesRender.value = entities
         .filter(entity => entity.name.toLowerCase().includes(nameSearch))
-        .filter(entity => entity.code_1c.toLowerCase().includes(code1cSearch))
+        .filter(entity => entity.id.toString().toLowerCase().includes(idSearch))
+        .filter(entity => entity.group_number.toString().toLowerCase().includes(groupNumberSearch))
         .filter(entity => entity.description!.toLowerCase().includes(descriptionSearch))
-        .filter(entity => entity.layers.toString().toLowerCase().includes(layersSearch))
-        .filter(entity => entity.width.toString().toLowerCase().includes(widthSearch))
-        .filter(entity => entity.width_work.toString().toLowerCase().includes(widthWorkSearch))
         .filter(entity => {
             if (activeFilter.value === 0) return true
             else if (activeFilter.value === 1) return entity.active
@@ -494,7 +426,7 @@ onMounted(async () => {
         loadingService,
         async () => {
             await getEntities()
-            console.log('cutting_textiles: ', entities)
+            console.log('model_manuf_groups: ', entities)
 
             getEntitiesRender()
         },

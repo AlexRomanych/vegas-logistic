@@ -433,7 +433,7 @@ Route::prefix('assembly')
         Route::get('test', [AssemblyController::class, 'test']);
 
         // __ Группы Моделей для Сортировки
-        Route::get('model/manufacture/groups', [AssemblyController::class, 'test']);
+        Route::get('model/manufacture/groups', [AssemblyController::class, 'getModelManufactureGroups']);
 
         // __ СЗ Сборки
         //Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);
