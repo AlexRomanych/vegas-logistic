@@ -1,7 +1,20 @@
 <template>
-    <div class="print-container">
+    <div class="print-container" :style="{ '--print-font-size': `${fontSize}px` }">
+
+        <!-- Панель управления (Кнопка печати + Кнопки шрифта) -->
+        <div class="no-print controls-panel">
+            <button class="print-btn" @click="handlePrint">Распечатать сменное задание</button>
+
+            <div class="zoom-controls">
+                <span>Шрифт печати: <b>{{ fontSize }}px</b></span>
+                <button class="zoom-btn" @click="changeFontSize(-1)">-</button>
+                <button class="zoom-btn" @click="changeFontSize(1)">+</button>
+                <button class="zoom-btn reset-btn" @click="fontSize = DEFAULT_FONT_SIZE; counter = 1">Сброс</button>
+            </div>
+        </div>
+
         <!-- Кнопка, которая не пойдет на печать -->
-        <button class="no-print print-btn" @click="handlePrint">Распечатать сменное задание</button>
+        <!--<button class="no-print print-btn" @click="handlePrint">Распечатать сменное задание</button>-->
 
         <header class="report-header mb-2">
             <div class="flex w-full justify-center gap-3 text-[24px]">
@@ -74,7 +87,7 @@ import type { IBlockTaskLinesSubgroup } from '@/types'
 
 import { onMounted, ref } from 'vue'
 
-import { formatDateInFullFormat, formatTimeInFullFormat, /*formatTimeWithLeadingZeros*/ } from '@/app/helpers/helpers_date'
+import { formatDateInFullFormat, /*formatTimeInFullFormat*, formatTimeWithLeadingZeros*/ } from '@/app/helpers/helpers_date'
 
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 
@@ -83,6 +96,21 @@ const metaData  = ref<Record<string, string>>({})
 // const time = (line: ICuttingTaskLine) => getTimeString(line, true).replaceAll('.', '')
 
 let counter = 1
+
+// Состояние размера шрифта для печати (по умолчанию 9px)
+const DEFAULT_FONT_SIZE = 15
+
+const fontSize = ref(DEFAULT_FONT_SIZE)
+
+// Функция изменения размера
+const changeFontSize = (delta: number) => {
+    counter = 1
+    const newSize = fontSize.value + delta
+    if (newSize >= 10 && newSize <= 20) {
+        fontSize.value = newSize
+    }
+}
+
 
 const handlePrint = () => {
     window.print()
@@ -114,11 +142,55 @@ onMounted(() => {
 
 <style scoped>
 
+
+/* Стили для панели управления кнопками */
+.controls-panel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f2f6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.zoom-btn {
+    width: 28px;
+    height: 28px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-btn:hover {
+    background: #e4e4e4;
+}
+
+.reset-btn {
+    width: auto;
+    padding: 0 8px;
+    font-weight: normal;
+    font-size: 12px;
+}
+
 /* Стили для экрана */
 .print-container {
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #333;
+    --print-font-size: 15px; /* <--- Добавь эту строку */
 }
 
 .print-btn {
@@ -174,6 +246,7 @@ onMounted(() => {
 
 /* МАГИЯ ПЕЧАТИ */
 /* МАГИЯ ПЕЧАТИ */
+/* МАГИЯ ПЕЧАТИ */
 @media print {
     .no-print {
         display: none !important;
@@ -183,12 +256,11 @@ onMounted(() => {
         padding: 0;
     }
 
-    /* Уменьшаем шрифт всей таблицы при печати (например, до 9px или 8.5px) */
+    /* Использование переменной размера шрифта */
     .production-table {
-        font-size: 9px !important;
+        font-size: var(--print-font-size, 15px) !important;
     }
 
-    /* Если нужно уменьшить отступы в ячейках, чтобы строки были компактнее */
     .production-table th,
     .production-table td {
         padding: 2px 4px !important;
