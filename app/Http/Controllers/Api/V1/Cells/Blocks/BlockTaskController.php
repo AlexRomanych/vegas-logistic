@@ -1079,7 +1079,7 @@ class BlockTaskController extends Controller
      */
     public function setBlockTaskLinesFalse(Request $request)
     {
-        try {
+        //try {
             $validated = $request->validate([
                 'ids'    => 'required|array',
                 'ids.*'  => 'required|integer|exists:block_task_lines,id',
@@ -1112,9 +1112,9 @@ class BlockTaskController extends Controller
 
             $lines = BlockTaskLine::query()->whereIn('id', $validated['ids'])->get();
             return BlockTaskLineResource::collection($lines);
-        } catch (Exception $e) {
-            return EndPointStaticRequestAnswer::fail($e);
-        }
+        //} catch (Exception $e) {
+        //    return EndPointStaticRequestAnswer::fail($e);
+        //}
     }
 
     /**

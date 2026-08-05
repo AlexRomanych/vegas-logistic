@@ -22,6 +22,7 @@ export * from './textile_types.ts'                  // Общие типы дл�
 export * from './sewing_types.ts'                   // Все типы для Пошива
 export * from './cutting_types.ts'                  // Все типы для Раскроя
 export * from './blocks_types.ts'                   // Все типы для Блоков
+export * from './assembly_types.ts'                 // Все типы для Сборки
 export * from './cell_event_types.ts'               // События для производственных участков
 
 

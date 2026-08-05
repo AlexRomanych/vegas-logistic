@@ -15,7 +15,7 @@ class BlockTaskLine extends Model
         'square'         => 'float',
         'productivity'   => 'float',
         'line'           => 'string',
-
+        'false_history'  => 'json'
     ];
 
 

@@ -13,7 +13,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useUserStore } from '@/stores/UserStore'
+import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
+const userStore = useUserStore()
 interface IMenuItem {
     name: string,
     path: string,
@@ -21,15 +25,20 @@ interface IMenuItem {
     isActive: boolean
 }
 
-import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
-
-let menuItems: IMenuItem[] = [
+const menuItems = ref<IMenuItem[]>([
     {name: 'Управление планом Сборки', path: 'manufacture.cell.assembly.plan.manage', shown: true, isActive: true},
-    // {name: 'Управление СЗ', path: 'manufacture.cell.fabric.tasks.manage', shown: true, isActive: true},
-]
-// menuItems = menuItems.map((item, index) => ({...item, id: index, shown: true, isActive: true}))
+    {name: 'Группы моделей для сортировки', path: 'manufacture.cell.assembly.model.manufacture.groups.show', shown: true, isActive: true},
+])
 
+if (userStore.hasAdminRole()) {
+    menuItems.value.push({
+        name    : 'Тест',
+        path    : 'manufacture.cell.assembly.test',
+        shown   : true,
+        isActive: true,
+    })
+}
 
 </script>
 
