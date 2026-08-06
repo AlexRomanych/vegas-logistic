@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 
 import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
 import type {
+    IAssemblyModelManufactureGroup,
     IPeriod, IRenderMatrixDiff,
 
 } from '@/types'
@@ -16,6 +17,7 @@ import { additionDaysInStrFormat } from '@/app/helpers/helpers_date'
 
 const DEBUG = true
 
+const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUP  = '/assembly/model/manufacture/group'   // URL для Группы Моделей Сортировки
 const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS = '/assembly/model/manufacture/groups'  // URL для Групп Моделей Сортировки
 
 const URL_ASSEMBLY      = '/assembly'                             // URL для получения Блоков
@@ -960,13 +962,38 @@ export const useAssemblyStore = defineStore('assembly', () => {
         return result.data
     }
 
+    // __ Получаем Группу Моделей для Сортировки
+    const getModelManufactureGroupById = async (id: number) => {
+        const response = await jwtGet(`${URL_ASSEMBLY_MODEL_MANUFACTURE_GROUP}/${id}`)
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: getModelManufactureGroupById: ', result)
+        return result.data
+    }
+
     // __ Удаляем Группу Моделей для Сортировки
     const deleteModelManufactureGroup = async (id: number) => {
         const response = await jwtDelete(URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS, { id })
         const result   = await response
         if (DEBUG) console.log('AssemblyStore: deleteModelManufactureGroup: ', result)
-        return result.data
+        return result
     }
+
+    // __ Создаем Группу Моделей для Сортировки
+    const createModelManufactureGroup = async (group: IAssemblyModelManufactureGroup) => {
+        const response = await jwtPost(URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS, { group })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: createModelManufactureGroup: ', result)
+        return result
+    }
+
+    // __ Oбновляем Группу Моделей для Сортировки
+    const updateModelManufactureGroup = async (group: IAssemblyModelManufactureGroup) => {
+        const response = await jwtPut(URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS, { group })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: updateModelManufactureGroup: ', result)
+        return result
+    }
+
 
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1067,6 +1094,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // removeResponsibleFromAssemblyDay,
 
         getModelManufactureGroups,
+        getModelManufactureGroupById,
+        createModelManufactureGroup,
+        updateModelManufactureGroup,
         deleteModelManufactureGroup,
 
         test,

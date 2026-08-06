@@ -424,7 +424,6 @@ Route::prefix('cell/events')
 //hr--------------------------------------------------------------------------------------------------------------------
 
 
-
 // __ Блок Сборки
 Route::prefix('assembly')
     ->middleware('jwt.auth')
@@ -434,6 +433,10 @@ Route::prefix('assembly')
 
         // __ Группы Моделей для Сортировки
         Route::get('model/manufacture/groups', [AssemblyController::class, 'getModelManufactureGroups']);
+        Route::get('model/manufacture/group/{id}', [AssemblyController::class, 'getModelManufactureGroupById']);
+        Route::post('model/manufacture/groups', [AssemblyController::class, 'createModelManufactureGroup']);
+        Route::put('model/manufacture/groups', [AssemblyController::class, 'updateModelManufactureGroup']);
+        Route::delete('model/manufacture/groups', [AssemblyController::class, 'deleteModelManufactureGroup']);
 
         // __ СЗ Сборки
         //Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);

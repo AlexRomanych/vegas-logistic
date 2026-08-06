@@ -70,7 +70,7 @@
 
                     <div>
                         <!-- __ + Ткань -->
-                        <router-link :to="{ name: 'manufacture.cell.cutting.textiles.create' }">
+                        <router-link :to="{ name: 'manufacture.cell.assembly.model.manufacture.groups.create' }">
                             <AppLabelMultiLineTS
                                 :text="['➕', '']"
                                 align="center"

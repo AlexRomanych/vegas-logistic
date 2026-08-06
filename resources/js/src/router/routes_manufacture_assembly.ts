@@ -32,6 +32,17 @@ const assembly = [
     },
 
     {
+        // ___ Создание Группы моделей для сортировки
+        path: _MAIN_PREFIX + 'model/manufacture/groups/create',
+        name: 'manufacture.cell.assembly.model.manufacture.groups.create',
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/assembly_models_manufacture_groups/TheAssemblyManufactureGroupEdit.vue'),
+        meta: {
+            title: 'Создание Группы моделей для сортировки',
+            mode : ROUTER_PAGE_MODE.CREATE,
+        } as IRouteMeta,
+    },
+
+    {
         // ___ Редактирование Группы моделей для сортировки
         path: _MAIN_PREFIX + 'model/manufacture/groups/edit/:id',
         name: 'manufacture.cell.assembly.model.manufacture.groups.edit',
