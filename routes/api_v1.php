@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
-use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyModelManufactureGroupController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockDayController;
@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\Plans\PlanController;
 use App\Http\Controllers\Api\V1\Plans\PlanLoadsController;
 use App\Http\Controllers\UpdateData1CController as Update;
 use App\Http\Controllers\UserController;
+use App\Services\Manufacture\AssemblyService;
 use Illuminate\Support\Facades\Route;
 
 
@@ -429,14 +430,17 @@ Route::prefix('assembly')
     ->middleware('jwt.auth')
     ->middleware('assembly_tasks_check')
     ->group(function () {
-        Route::get('test', [AssemblyController::class, 'test']);
+        //Route::get('test', [AssemblyModelManufactureGroupController::class, 'test']);
+        Route::get('test', function () {
+            $result = AssemblyService::test();
+        });
 
         // __ Группы Моделей для Сортировки
-        Route::get('model/manufacture/groups', [AssemblyController::class, 'getModelManufactureGroups']);
-        Route::get('model/manufacture/group/{id}', [AssemblyController::class, 'getModelManufactureGroupById']);
-        Route::post('model/manufacture/groups', [AssemblyController::class, 'createModelManufactureGroup']);
-        Route::put('model/manufacture/groups', [AssemblyController::class, 'updateModelManufactureGroup']);
-        Route::delete('model/manufacture/groups', [AssemblyController::class, 'deleteModelManufactureGroup']);
+        Route::get('model/manufacture/groups', [AssemblyModelManufactureGroupController::class, 'getModelManufactureGroups']);
+        Route::get('model/manufacture/group/{id}', [AssemblyModelManufactureGroupController::class, 'getModelManufactureGroupById']);
+        Route::post('model/manufacture/groups', [AssemblyModelManufactureGroupController::class, 'createModelManufactureGroup']);
+        Route::put('model/manufacture/groups', [AssemblyModelManufactureGroupController::class, 'updateModelManufactureGroup']);
+        Route::delete('model/manufacture/groups', [AssemblyModelManufactureGroupController::class, 'deleteModelManufactureGroup']);
 
         // __ СЗ Сборки
         //Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);

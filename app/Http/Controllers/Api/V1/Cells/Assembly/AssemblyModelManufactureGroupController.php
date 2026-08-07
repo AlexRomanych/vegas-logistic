@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class AssemblyController extends Controller
+class AssemblyModelManufactureGroupController extends Controller
 {
 
     /*
@@ -157,10 +157,4 @@ class AssemblyController extends Controller
     }
 
 
-
-    public function test(Request $request)
-    {
-        $result = AssemblyService::test();
-        return $result;
-    }
 }

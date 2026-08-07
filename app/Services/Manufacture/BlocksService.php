@@ -225,7 +225,7 @@ final class BlocksService
                 $orderLineContext[] = [];
                 $totals             = 0;
                 foreach ($records as $record) {
-                    if ($record->order_line_id === 16359) {
+                    if ($record->order_line_id === 19507) {
                         $a = 0;
                     }
 
@@ -240,7 +240,7 @@ final class BlocksService
                     // __ Если есть meta - Пишем отдельной Записью
                     $meta = OrdersService::getOrderLineMetaData($attr);
                     if (isset($meta[OrderLine::BLOCK_META_FIELD])) {
-                        $total = (int)((float)$record->expense + (float)$record->rest);
+                        $totalMeta = (int)((float)$record->expense + (float)$record->rest);
                         BlockTaskLine::query()->create([
                             'description'        => $meta[OrderLine::BLOCK_META_FIELD],
                             'block_task_id'      => $createdTask->id,
@@ -253,12 +253,12 @@ final class BlocksService
                                 'expense'           => (float)$record->expense,
                                 'rest'              => (float)$record->rest,
                             ],
-                            'amount'             => $total,
+                            'amount'             => $totalMeta,
                             'line'               => $collection->line,
                             'position'           => $position++,
                             'productivity'       => $collection->productivity,
                             'square'             => $block->length * $block->width / 100 / 100,
-                            'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$total / $collection->productivity : 0,
+                            'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totalMeta / $collection->productivity : 0,
                         ]);
                     } else {
                         $orderLineContext[] = [
@@ -267,24 +267,28 @@ final class BlocksService
                             'expense'           => (float)$record->expense,
                             'rest'              => (float)$record->rest,
                         ];
-                    }
 
-                    $totals += (float)$record->expense + (float)$record->rest;
+                        $totals += (float)$record->expense + (float)$record->rest;
+                    }
                 }
 
-                BlockTaskLine::query()->create([
-                    'block_task_id'      => $createdTask->id,
-                    'block_code_1c'      => $block->code_1c,
-                    'block_code_1c_copy' => $block->code_1c,
-                    'block_name'         => $block->name,
-                    'order_line_ids'     => $orderLineContext,
-                    'amount'             => (int)$totals,
-                    'line'               => $collection->line,
-                    'position'           => $position++,
-                    'productivity'       => $collection->productivity,
-                    'square'             => $block->length * $block->width / 100 / 100,
-                    'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totals / $collection->productivity : 0,
-                ]);
+                // __ Пишем только когда есть что-то, чтобы не было дублирования с верхним кодом
+                if ($totals > 0) {
+                    BlockTaskLine::query()->create([
+                        'block_task_id'      => $createdTask->id,
+                        'block_code_1c'      => $block->code_1c,
+                        'block_code_1c_copy' => $block->code_1c,
+                        'block_name'         => $block->name,
+                        'order_line_ids'     => $orderLineContext,
+                        'amount'             => (int)$totals,
+                        'line'               => $collection->line,
+                        'position'           => $position++,
+                        'productivity'       => $collection->productivity,
+                        'square'             => $block->length * $block->width / 100 / 100,
+                        'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totals / $collection->productivity : 0,
+                    ]);
+                }
+
             }
 
             // __ Создаем запись в Статусе: Создано

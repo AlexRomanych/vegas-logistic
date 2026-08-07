@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api\V1\Orders;
 
 
 use App\Classes\EndPointStaticRequestAnswer;
+use App\Classes\Settings;
 use App\Enums\ElementTypes;
 use App\Models\Client;
 use App\Models\Logs\EventLog;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
 use App\Models\Order\OrderStatus;
+use App\Services\Manufacture\AssemblyService;
 use App\Services\Manufacture\BlocksService;
 use App\Services\Manufacture\CuttingService;
 use App\Services\Manufacture\SewingService;
@@ -352,21 +354,35 @@ class OrderControllerLogic
                     if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
                         // __ Распределяем СЗ на Пошив
                         /** @var Order $forecastOrder */
-                        $result = SewingService::distributeSewingTaskFromOrderId($orderData['id']);
-                        if (!$result) {
-                            throw new Exception('Error while distributing Sewing Task with Client id = ' . $orderData['client_id']);
+                        if (Settings::createSewingTasksAvailable()) {
+                            $result = SewingService::distributeSewingTaskFromOrderId($orderData['id']);
+                            if (!$result) {
+                                throw new Exception('Error while distributing Sewing Task with Client id = ' . $orderData['client_id']);
+                            }
                         }
 
                         // __ Распределяем СЗ на Раскрой !!! TODO Не доделана
                         /** @var Order $forecastOrder */
-                        $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
-                        if (!$result) {
-                            throw new Exception('Error while distributing Cutting Task with Client id = ' . $orderData['client_id']);
-                        } else {
-                            $ordersIsdForCuttingCut[] = $orderData['id'];
+                        if (Settings::createCuttingTasksAvailable()) {
+                            $result = CuttingService::distributeCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
+                            if (!$result) {
+                                throw new Exception('Error while distributing Cutting Task with Client id = ' . $orderData['client_id']);
+                            } else {
+                                $ordersIsdForCuttingCut[] = $orderData['id'];
+                            }
                         }
 
                         // __ Распределяем СЗ на Сборку
+                        /** @var Order $forecastOrder */
+                        if (Settings::createAssemblyTasksAvailable()) {
+                            $result = AssemblyService::distributeAssemblyTaskFromOrderId($orderData['id']);
+                            if (!$result) {
+                                throw new Exception('Error while distributing Assembly Task with Client id = ' . $orderData['client_id']);
+                            }
+                        }
+
+
+                        // __ Распределяем СЗ на ...
                         // __ ...
 
                     }
@@ -387,28 +403,47 @@ class OrderControllerLogic
                     if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
                         // __ Создаем СЗ на Пошив !!!
                         /** @var Order $createdOrder */
-                        $sewingTask = SewingService::createSewingTaskFromOrderId($orderData['id']);
-                        if (!$sewingTask) {
-                            throw new Exception('Error while creating Sewing Task with Client id = ' . $orderData['client_id']);
+                        if (Settings::createSewingTasksAvailable()) {
+                            $sewingTask = SewingService::createSewingTaskFromOrderId($orderData['id']);
+                            if (!$sewingTask) {
+                                throw new Exception('Error while creating Sewing Task with Client id = ' . $orderData['client_id']);
+                            }
                         }
 
                         // __ Создаем СЗ на Раскрой !!!
                         /** @var Order $createdOrder */
-                        $cuttingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
-                        if (!$cuttingTask) {
-                            throw new Exception('Error while creating Cutting Task with Client id = ' . $orderData['client_id']);
-                        } else {
-                            $ordersIsdForCuttingCut[] = $orderData['id'];
+                        if (Settings::createCuttingTasksAvailable()) {
+                            $cuttingTask = CuttingService::createCuttingTaskFromOrderId($orderData['id'], calculateCut: false);
+                            if (!$cuttingTask) {
+                                throw new Exception('Error while creating Cutting Task with Client id = ' . $orderData['client_id']);
+                            } else {
+                                $ordersIsdForCuttingCut[] = $orderData['id'];
+                            }
                         }
 
-                        // __ Создаем СЗ на Сборку
-                        $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
-                        if (!$blockTask) {
-                            // !!! TODO !!! Если блоков в СЗ нет, то возвращается null
-                            // !!! TODO !!! Поэтому тут Доделать запись в Events
-
-                            // throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                        // __ Создаем СЗ на Сборку !!!
+                        /** @var Order $createdOrder */
+                        if (Settings::createAssemblyTasksAvailable()) {
+                            $assemblyTask = AssemblyService::createAssemblyTaskFromOrderId($orderData['id']);
+                            if (!$assemblyTask) {
+                                throw new Exception('Error while creating Assembly Task with Client id = ' . $orderData['client_id']);
+                            }
                         }
+
+                        // __ Создаем СЗ на Блоки
+                        if (Settings::createBlockTasksAvailable()) {
+                            $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
+                            if (!$blockTask) {
+                                // !!! TODO !!! Если блоков в СЗ нет, то возвращается null
+                                // !!! TODO !!! Поэтому тут Доделать запись в Events
+
+                                // throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                            }
+                        }
+
+
+
+
                     }
                 }
             }

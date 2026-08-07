@@ -122,7 +122,7 @@ final class CuttingService
             //$orderDebug = $order->toArray();
 
 
-            // __ Плучаем Расход
+            // __ Получаем Расход
 
             $groupedPivotRecordsExpense = DB::table('order_line_material_pivot as pivot')
                 ->join('order_lines as lines', 'lines.id', '=', 'pivot.order_line_id')

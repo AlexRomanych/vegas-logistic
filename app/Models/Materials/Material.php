@@ -9,7 +9,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
+
+/**
+ * @method static Builder|Material assembly()
+ * @method static Builder|Material group()
+ */
 class Material extends Model
 {
     protected $primaryKey = CODE_1C;
@@ -67,6 +73,36 @@ class Material extends Model
             ),
         );
     }
+
+    // Scopes: Только Группы
+    public function scopeGroup(Builder $query): Builder
+    {
+        return $query
+            ->whereNull('material_group_code_1c')
+            ->whereNull('material_category_code_1c');
+    }
+
+
+    // Scopes: Возвращаем структуру материалов Сборки ("С_...")
+    public function scopeAssembly(Builder $query, array|string|null $code1c = null): Builder
+    {
+        $codes = [];
+        if (is_string($code1c)) {
+            $codes = [$code1c];
+        } elseif (is_array($code1c)) {
+            $codes = $code1c;
+        }
+
+        return $query
+            ->group()
+            ->whereLike('name', 'С\_%')
+            ->when(!empty($codes), function (Builder $q) use ($codes) {
+                $q->whereIn(CODE_1C, $codes); // Если указан ключ/константа поля, например CODE_1C или 'code_1c'
+            })
+            ->with(['categories', 'categories.materials']);
+    }
+
+
 
 
     // Relations: === СВЯЗИ ДЛЯ ДВИЖЕНИЯ ВВЕРХ (К РОДИТЕЛЯМ) ===

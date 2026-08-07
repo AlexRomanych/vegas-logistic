@@ -9,6 +9,7 @@ const ORDER_MOVING_BUSINESS_PROCESS_ID = 1;
 const SEWING_NODE_ID = 8;
 const CUTTING_NODE_ID = 7;
 const BLOCKS_NODE_ID = 14;
+const ASSEMBLY_NODE_ID = 9;
 
 /*
 export const BUSINESS_PROCESS_NODES: IBusinessProcessNodesConst = {

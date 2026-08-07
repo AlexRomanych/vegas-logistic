@@ -925,29 +925,6 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // }
     //
     //
-    // // // __ Получаем время переналадки Блоков между двумя рисунками
-    // // const getAssemblyPicturesBetweenTuningTime = async (from, to) => {
-    // //     const result = await jwtGet(`${URL_FABRIC_PICTURE_TUNING_TIME}/${from}/${to}`)
-    // //     console.log('store: getAssemblyPicturesBetweenTuningTime: ', result)
-    // //     return result.data
-    // // }
-    // //
-    // //
-    // // // __ Получаем время переналадки Блоков между двумя ПС
-    // // const getAssemblyBetweenTuningTime = async (from, to) => {
-    // //     const result = await jwtGet(`${URL_FABRICS_BETWEEN_TUNING_TIME}/${from}/${to}`)
-    // //     console.log('store: getAssemblyBetweenTuningTime: ', result)
-    // //     return result.data
-    // // }
-    // //
-    // // // __ Получаем последний рисунок с предыдущего СЗ
-    // // const getLastRoll = async (taskDate, machineID) => {
-    // //     const result = await jwtGet(`${URL_FABRIC_TASKS_EXECUTE_ROLL_LAST}/${taskDate}/${machineID}`)
-    // //     console.log('store: getLastRoll: ', result)
-    // //     return result.data
-    // // }
-    //
-    //
 
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -993,7 +970,6 @@ export const useAssemblyStore = defineStore('assembly', () => {
         if (DEBUG) console.log('AssemblyStore: updateModelManufactureGroup: ', result)
         return result
     }
-
 
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

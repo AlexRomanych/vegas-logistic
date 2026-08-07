@@ -1,11 +1,12 @@
 // info Manufacture
+import type { IRouteMeta } from '@/types'
 
 import fabrics from '@/router/routes_manufacture_fabrics.js'
 import cutting from '@/router/routes_manufacture_cutting.ts'
 import sewing from '@/router/routes_manufacture_sewing.ts'
 import assembly from '@/router/routes_manufacture_assembly.ts'
 import blocks from '@/router/routes_manufacture_blocks.ts'
-import type { IRouteMeta } from '@/types'
+
 
 // Префикс для всех роутов производства
 const _MANUFACTURE_PREFIX = '/manufacture'

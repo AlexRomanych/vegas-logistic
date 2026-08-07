@@ -86,6 +86,7 @@ const menuData = () => {
 
                     {name: 'Конструкторская документация Чехлов (КДЧ)', path: 'manufacture.textile.design.show', shown: true, isActive: true},
                     {name: 'Конструкторская документация Блоков (КДБ)', path: 'manufacture.blocks.design.show', shown: true, isActive: true},
+                    {name: 'Группы моделей для сортировки', path: 'manufacture.cell.assembly.model.manufacture.groups.show', shown: true, isActive: true},
                 ]
         },
         {

@@ -71,7 +71,7 @@ const assembly = [
         // ___ Тест
         path     : _MAIN_PREFIX + 'test',
         name     : 'manufacture.cell.assembly.test',
-        component: () => import('@/components/dashboard/manufacture/cells/blocks/Test.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/Test.vue'),
         meta     : {
             title: 'Тестовая страница',
         } as IRouteMeta,
