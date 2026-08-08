@@ -58,8 +58,8 @@ const assembly = [
         // ___ Управление планом Cборочного цеха
         path: _MAIN_PREFIX + 'plan/manage',
         name: 'manufacture.cell.assembly.plan.manage',
-        component: () => import('@/components/dashboard/plans/ThePlanManageAssembly.vue'), // Переносим в планы
-        // component: () => import('@/components/dashboard/manufacture/cells/assembly/TheAssemblyPlanManage.vue'),
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/assembly_manage/TheAssemblyManage.vue'),
+        // component: () => import('@/components/dashboard/plans/ThePlanManageAssembly.vue'), // Переносим в планы
         meta: {
             title: 'Управление планом Сборочного цеха'
         } as IRouteMeta,

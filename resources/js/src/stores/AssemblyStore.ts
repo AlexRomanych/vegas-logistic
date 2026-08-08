@@ -2,9 +2,9 @@
 
 import { defineStore } from 'pinia'
 
-import { jwtGet, jwtPost, /*jwtDelete,*/ jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
+import { jwtGet, jwtPost, jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
 import type {
-    IAssemblyModelManufactureGroup,
+    IAssemblyModelManufactureGroup, IAssemblySectorKeys, IAssemblyTask,
     IPeriod, IRenderMatrixDiff,
 
 } from '@/types'
@@ -19,6 +19,20 @@ const DEBUG = true
 
 const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUP  = '/assembly/model/manufacture/group'   // URL для Группы Моделей Сортировки
 const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS = '/assembly/model/manufacture/groups'  // URL для Групп Моделей Сортировки
+
+const URL_ASSEMBLY_TASKS = '/assembly/tasks'                       // URL для получения Сменных заданий
+// const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
+// const URL_ASSEMBLY_TASKS_ORDER_ID             = '/assembly/tasks/order'                 // URL для получения Сменных заданий по id Заявки
+// const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
+// const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+// const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
+// const URL_ASSEMBLY_TASKS_STATUS_BEFORE_DATE   = '/assembly/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
+// const URL_ASSEMBLY_TASKS_STATUS_ON_DATE       = '/assembly/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
+// const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
+// const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
+// const URL_ASSEMBLY_TASKS_CHANGE               = '/assembly/tasks/change'                // URL для изменения смены Сменного задания
+// const URL_ASSEMBLY_TASKS_ACTION_AT_SET        = '/assembly/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
+//
 
 const URL_ASSEMBLY      = '/assembly'                             // URL для получения Блоков
 const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для тестирования
@@ -40,20 +54,7 @@ const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для 
 // const URL_ASSEMBLY_TASK_STATUSES             = '/assembly/task/statuses'               // URL для получения Статуса Движения СЗ
 // const URL_ASSEMBLY_TASK_STATUSES_SET         = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 // const URL_ASSEMBLY_TASK_STATUSES_COLOR_PATCH = '/assembly/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
-//
-// const URL_ASSEMBLY_TASKS                      = '/assembly/tasks'                       // URL для получения Сменных заданий
-// const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
-// const URL_ASSEMBLY_TASKS_ORDER_ID             = '/assembly/tasks/order'                 // URL для получения Сменных заданий по id Заявки
-// const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
-// const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
-// const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
-// const URL_ASSEMBLY_TASKS_STATUS_BEFORE_DATE   = '/assembly/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
-// const URL_ASSEMBLY_TASKS_STATUS_ON_DATE       = '/assembly/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
-// const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
-// const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
-// const URL_ASSEMBLY_TASKS_CHANGE               = '/assembly/tasks/change'                // URL для изменения смены Сменного задания
-// const URL_ASSEMBLY_TASKS_ACTION_AT_SET        = '/assembly/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
-//
+
 // const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_DONE        = '/assembly/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_FALSE       = '/assembly/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
@@ -78,14 +79,14 @@ const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для 
 
 
 export const useAssemblyStore = defineStore('assembly', () => {
-    //
-    // // __ Массив СЗ Раскроя
-    // const globalAssemblyTasks = ref<IAssemblyTask[]>([])
-    //
-    // // __ Копия массива СЗ Раскроя для отслеживания изменений
-    // let globalAssemblyTasksCopy: IAssemblyTask[] = []
-    //
-    // // __ Массив СЗ, готовых к выполнению
+
+    // __ Массив СЗ Раскроя
+    const globalAssemblyTasks = ref<IAssemblyTask[]>([])
+
+    // __ Копия массива СЗ Раскроя для отслеживания изменений
+    let globalAssemblyTasksCopy: IAssemblyTask[] = []
+
+    // __ Массив СЗ, готовых к выполнению
     // const globalAssemblyTasksPending = ref<IAssemblyTask[]>([])
     //
     // // __ Копия массива СЗ Раскроя для отслеживания изменений
@@ -928,6 +929,98 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---        Сменные Задания Сборки СЗ            !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Получение СЗ Сборки с сервера за период
+    // __ По задумке:
+    // __ 1. Если передана строка (название участка), то получаем СЗ вместе с этим участком
+    // __ 2. Если передан массив строк (название участков), то получаем СЗ вместе с этими участками
+    // __ 3. Если передан пустой массив [], то получаем СЗ без этих участков
+    // __ 4. Если не передано ничего null, то получаем СЗ со всеми участками
+
+    const getAssemblyTasks = async (
+        sectors: IAssemblySectorKeys[] | IAssemblySectorKeys | null = null,
+        period: IPeriod | null            = null
+    ) => {
+        // 1. Приводим параметр sectors к нормализованному виду (массиву)
+        let normalizedSectors: string[] | null = null
+
+        if (typeof sectors === 'string') {
+            normalizedSectors = [sectors]                 // Условие 1: строка -> массив из одного элемента
+        } else if (Array.isArray(sectors)) {
+            normalizedSectors = sectors                   // Условия 2 и 3: массив (в т.ч. Пустой)
+        } else {
+            normalizedSectors = null                      // Условие 4: null / undefined (все участки)
+        }
+
+        // 2. Формируем объект параметров для запроса
+        const params: Record<string, unknown> = {}
+
+        if (period) {
+            params.period = period
+        }
+
+        // Передаем sectors
+        if (normalizedSectors !== null) {
+            if (normalizedSectors.length === 0) {
+                // Если массив пустой — передаем пустую строку или спец-значение,
+                // чтобы ключ 'sectors' гарантированно попал в URL
+                params.sectors = ''
+            } else {
+                params.sectors = normalizedSectors
+            }
+        }
+
+        // 3. Выполняем запрос
+        // Примечание: jwtGet вернет Promise, поэтому лишний 'await response' не нужен
+        const response = await jwtGet(URL_ASSEMBLY_TASKS, params)
+
+        globalAssemblyTasks.value = response.data                            // __ кэшируем
+        globalAssemblyTasksCopy   = JSON.parse(JSON.stringify(response.data)) // __ копия для отслеживания изменений
+
+        if (DEBUG) console.log('AssemblyStore: getAssemblyTasks: ', response)
+        return response.data
+    }
+
+    //
+    // // __ Получение СЗ Блоков по ID Заявки
+    // const getAssemblyTasksByOrderId = async (id: number | null = null) => {
+    //     if (!id) {
+    //         return
+    //     }
+    //     const response = await jwtGet(`${URL_ASSEMBLY_TASKS_ORDER_ID}/${id}`)
+    //     const result   = await response
+    //     if (DEBUG) console.log('AssemblyStore: getAssemblyTasksByOrderId: ', result)
+    //     return result.data
+    // }
+    //
+    //
+    // // __ Удаление СЗ Блоков по ID Заявки
+    // const deleteAssemblyTasksByOrderId = async (id: number | null = null) => {
+    //     if (!id) {
+    //         return
+    //     }
+    //     const response = await jwtDelete(URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID, { id })
+    //     const result   = await response
+    //     if (DEBUG) console.log('AssemblyStore: deleteAssemblyTasksByOrderId: ', result)
+    //     return result
+    // }
+    //
+    // // __ Добавление СЗ Блоков по ID Заявки
+    // const addAssemblyTasksByOrderId = async (id: number | null = null) => {
+    //     if (!id) {
+    //         return
+    //     }
+    //     const response = await jwtPost(URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID, { id })
+    //     const result   = await response
+    //     if (DEBUG) console.log('AssemblyStore: addAssemblyTasksByOrderId: ', result)
+    //     return result
+    // }
+    //
+
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---    Группы Моделей для Сортировки            !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1074,6 +1167,8 @@ export const useAssemblyStore = defineStore('assembly', () => {
         createModelManufactureGroup,
         updateModelManufactureGroup,
         deleteModelManufactureGroup,
+
+        getAssemblyTasks,
 
         test,
     }

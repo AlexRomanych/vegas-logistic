@@ -11,11 +11,14 @@ use App\Models\Manufacture\Cells\Assembly\AssemblyTaskStatus;
 use App\Models\Materials\Material;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
+use App\Services\ModelsService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+//use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 final class AssemblyService
 {
@@ -310,6 +313,27 @@ final class AssemblyService
 
 
         return $groupedPivotRecordsExpense;
+    }
+
+    /**
+     * ___ Фильтруем по Чехлу
+     * @param Collection $data
+     * @return Collection
+     */
+    public static function filterCovers(Collection $data): Collection
+    {
+        // __ Фильтруем вложенную коллекцию lines для каждой задачи
+        return $data->transform(function ($task) {
+            // __ Оставляем только те строки, модель не Чехол
+            $filteredLines = $task->lines->filter(function ($line) {
+                return ModelsService::isElementBase($line->orderLine->model);
+            });
+
+            // __ Перезаписываем загруженную связь lines отфильтрованной коллекцией (без сброса индексации ключей)
+            $task->setRelation('lines', $filteredLines->values());
+
+            return $task;
+        });
     }
 
 

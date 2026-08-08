@@ -239,7 +239,8 @@ final class Model extends LaravelModel
     // Relations: Связь с Группой производства (FMX, Неопознанные, и т.д.)
     public function manufactureGroup(): BelongsTo
     {
-        return $this->belongsTo(ModelManufactureGroup::class, 'model_manufacture_group_id', 'id');
+        return $this->belongsTo(ModelManufactureGroup::class, 'model_manufacture_group_id', 'group_number');
+        //return $this->belongsTo(ModelManufactureGroup::class, 'model_manufacture_group_id', 'id');
     }
 
     // Relations: Связь с Типом производства (Производство матрасов, Производство чехлов, Производство подушек, и т.д.)

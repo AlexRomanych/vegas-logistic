@@ -22,7 +22,6 @@ class AssemblyTaskStatusPivot extends Pivot
 
 
 
-
     // Relations: Связь со СЗ
     public function assemblyTask(): BelongsTo
     {

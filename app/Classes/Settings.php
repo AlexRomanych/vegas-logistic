@@ -12,7 +12,7 @@ class Settings
      */
     public static function createAssemblyTasksAvailable(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class Settings
      */
     public static function createCuttingTasksAvailable(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -30,7 +30,7 @@ class Settings
      */
     public static function createSewingTasksAvailable(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -39,7 +39,7 @@ class Settings
      */
     public static function createBlockTasksAvailable(): bool
     {
-        return true;
+        return false;
     }
 
 }

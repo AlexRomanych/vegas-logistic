@@ -1,14 +1,244 @@
 // __ Все, что касается Сборки
 
 
+import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
+import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
+import {
+    ASSEMBLY_TASK_SECTOR_COCONUT,
+    ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
+    ASSEMBLY_TASK_SECTOR_FOAM_SIDE, ASSEMBLY_TASK_SECTOR_LAMIT,
+    ASSEMBLY_TASK_SECTOR_LATEX,
+    ASSEMBLY_TASK_SECTOR_LAYER, ASSEMBLY_TASK_SECTOR_TABLE,
+    CHANGE_1,
+    CHANGE_2
+} from '@/app/constants/assembly.ts'
+
+
 // --- --------------------------------------------------------------------
 // --- ----------- Для рендера Групп Моделей для Сортировки ---------------
 // --- --------------------------------------------------------------------
 export interface IAssemblyModelManufactureGroup {
     id: number
     name: string
-    active: boolean
     group_number: number
+    active?: boolean
+    color?: string
+    description?: string | null
+}
+
+// --- --------------------------------------------------------------------
+// --- -------------------- Сменные Задания (СЗ) --------------------------
+// --- --------------------------------------------------------------------
+
+export interface IAssemblyTask extends IPlanMatrixDayItem {
+    id: number
+    id_ref: number                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
+    action_at: string
+    active: boolean
+    change: IAssemblyTaskChangeKeys
+    position: number
+    comment: string | null,
+    order: IAssemblyTaskOrder
+    assembly_lines: IAssemblyTaskLine[]
+
+    statuses: IAssemblyTaskStatus[]
+    current_status: IAssemblyTaskStatus
+
+    collapsed?: boolean
+}
+
+
+// __ Связь с Заявкой
+export interface IAssemblyTaskOrder {
+    id: number
+    order_no_num: number
+    order_no_origin: string
+    order_no_str: string
+    load_at: string | null
+    comment_1c: string | null
+    client: IAssemblyTaskOrderClient
+    order_type: IAssemblyTaskOrderType
+}
+
+// __ Связь Основной Заявки с Клиентом
+export interface IAssemblyTaskOrderClient {
+    id: number
+    name: string
+    add_name: string
+    short_name: string
+}
+
+// __ Связь Основной Заявки с Типом Заявки
+export interface IAssemblyTaskOrderType {
+    id: number
+    display_name: string
     color: string
+}
+
+// __ Связь с Содержимым СЗ
+export interface IAssemblyTaskLine {
+    id: number
+    id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
+    amount: number                                  // __ Общее количество в заявке
+    time: number                                    // __ Трудозатраты
+
+    created_at: string | null
+    false_reason: string | null
+    finished_at: string | null
+    false_at: string | null
+    finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
+    position: number
+    productivity: number
     description: string | null
+
+    order_meta?: string                             // __ Номер заявки
+
+    order_line: IAssemblyTaskOrderLine
+
+    sector_lines: IAssemblyTaskLineSector[]
+
+    completed?: boolean                             // __ Флаг для SFC выполнения СЗ
+    groupAttr?: string                              // __ Атрибут для группировки строк
+}
+
+// __ Сам элемент расхода
+export interface IAssemblyTaskLineSector {
+    id: number
+
+    material_code_1c: string
+    material_name: string
+    sector: IAssemblySectorKeys
+
+    amount: number
+    count: number
+
+    detail_dims: {
+        width: number
+        length: number
+        height: number
+    }
+    dims: {
+        width: number
+        length: number
+        height: number
+    }
+
+    expense: number
+    rest: number
+    total: number
+
+    false_at: string | null
+    false_history: string[] | null
+    false_reason: string | null
+    finished_at: string | null
+    finished_by: number | null
+
+    time: number
+    description: string | null
+}
+
+
+// __ Данные по привязке контекста СЗ Блоков (AssemblyLine) к строкам (OrderLine) в Заявке (Order) в момент создания
+export interface IAssemblyTaskOrderLine {
+    id: number
+    amount: number
+    composition: string | null
+    describe_1: string | null
+    describe_2: string | null
+    describe_3: string | null
+    dims: {
+        height: number
+        length: number
+        width: number
+    }
+    size: string
+    textile: string
+    model: IAssemblyTaskModel
+}
+
+// __ Описание модели
+export interface IAssemblyTaskModel {
+    base_composition: string
+    base_height: number
+    code_1c: string
+    manufacture_group: IAssemblyModelManufactureGroup
+    name: string
+    name_report: string
+
+}
+
+// --- ------------------------------------------------------------
+// __ Для смен
+export type IAssemblyTaskChangeKeys = typeof CHANGE_1 | typeof CHANGE_2
+
+export interface IAssemblyTaskChange {
+    ID: number
+    NAME: IAssemblyTaskChangeKeys
+    TITLE: string
+    TITLE_ROME: string
+    ICON: string
+    TYPE: IColorTypes
+    TIME: string    // __ Время работы
+}
+
+
+// --- --------------------------------------------------------------------
+// --- ---------------------- Для Статусов СЗ -----------------------------
+// --- --------------------------------------------------------------------
+
+// __ Для разукрашки статусов
+export interface IAssemblyTaskStatusEntity {
+    id: number
+    name: string
+    color: string
+    position: number
+    description?: string | null
+    active?: boolean
+    status?: number
+    comment?: string | null
+    note?: string | null
+    meta?: string | null
+    created_at?: string | null
+    updated_at?: string | null
+}
+
+// __ Тип для обновления статуса заявки
+export type IAssemblyTaskStatusesSet = { task: number, status: number }
+
+// __ Статус Движения (выполнения) Заявки
+export interface IAssemblyTaskStatus {
+    id: number
+    color: string
+    name: string
+    pivot: IAssemblyTaskStatusPivot
+}
+
+// __ Дополнительная инфа
+export interface IAssemblyTaskStatusPivot {
+    created_at: string | null
+    duration: number | null
+    finished_at: string | null
+    set_at: string | null
+    started_at: string | null
+}
+
+
+// --- --------------------------------------------------------------------
+// --- -------------------- Типы Участков (SECTORS)  ----------------------
+// --- --------------------------------------------------------------------
+export type IAssemblySectorKeys =
+    typeof ASSEMBLY_TASK_SECTOR_FOAM_SIDE |
+    typeof ASSEMBLY_TASK_SECTOR_FOAM_LAYER |
+    typeof ASSEMBLY_TASK_SECTOR_LATEX |
+    typeof ASSEMBLY_TASK_SECTOR_LAYER |
+    typeof ASSEMBLY_TASK_SECTOR_COCONUT |
+    typeof ASSEMBLY_TASK_SECTOR_LAMIT |
+    typeof ASSEMBLY_TASK_SECTOR_TABLE
+
+export interface IAssemblySector {
+    ID: number
+    NAME: IAssemblySectorKeys
+    TITLE: string
+    ICON: string
+    TYPE: IColorTypes
 }

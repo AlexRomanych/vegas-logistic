@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyModelManufactureGroupController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockDayController;
@@ -443,7 +444,7 @@ Route::prefix('assembly')
         Route::delete('model/manufacture/groups', [AssemblyModelManufactureGroupController::class, 'deleteModelManufactureGroup']);
 
         // __ СЗ Сборки
-        //Route::get('tasks', [BlockTaskController::class, 'getBlockTasks']);
+        Route::get('tasks', [AssemblyTaskController::class, 'getAssemblyTasks']);
         //Route::get('tasks/order/{id}', [BlockTaskController::class, 'getBlockTasksByOrderId']);
         //Route::get('tasks/status', [BlockTaskController::class, 'getBlockTasksByStatus']);
         //Route::get('tasks/status/period', [BlockTaskController::class, 'getBlockTasksByStatusAndPeriod']);

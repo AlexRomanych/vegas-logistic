@@ -4,12 +4,23 @@ namespace App\Models\Manufacture\Cells\Assembly;
 
 use App\Models\Order\Order;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
+use function PHPUnit\Framework\isNull;
+
+
+/**
+ * @method static Builder|AssemblyTask query()
+ * @method Builder|AssemblyTask byStatus(mixed $data)
+ * @method Builder|AssemblyTask whereDayAt(mixed $data)
+ * @method Builder|AssemblyTask sectors(mixed $sectors, mixed $relations)
+ * @method Builder|AssemblyTask sectorCoconut(mixed $relations)
+ */
 class AssemblyTask extends Model
 {
     protected $guarded = false;
@@ -24,6 +35,8 @@ class AssemblyTask extends Model
     public const ASSEMBLY_TASK_SECTOR_LATEX = 'latex';              // __ Латекс
     public const ASSEMBLY_TASK_SECTOR_LAYER = 'layer';              // __ Тонкий настил
     public const ASSEMBLY_TASK_SECTOR_COCONUT = 'coconut';          // __ Кокос
+    public const ASSEMBLY_TASK_SECTOR_LAMIT = 'lamit';              // __ Ламит
+    public const ASSEMBLY_TASK_SECTOR_TABLE = 'table';              // __ Стол
 
     public const ASSEMBLY_TASK_SECTORS = [
         self::ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
@@ -33,13 +46,6 @@ class AssemblyTask extends Model
         self::ASSEMBLY_TASK_SECTOR_COCONUT,
     ];
 
-    // --- Поля
-    //public const FIELD_TABLE_1 = 'table_1';
-    //public const FIELD_TABLE_2 = 'table_2';
-    //public const FIELD_TABLE_3 = 'table_3';
-    //public const FIELD_AVERAGE = 'average';
-
-
     public const FIELD_UNIVERSAL = 'universal';
     public const FIELD_AUTO = 'auto';
     public const FIELD_SOLID_HARD = 'solid_hard';
@@ -47,15 +53,89 @@ class AssemblyTask extends Model
     public const FIELD_UNDEFINED = 'undefined';
 
 
-
     // --- -------------------------------
 
     // --- -------------------------------
     // --- ---------- Scopes -------------
     // --- -------------------------------
+
+    // Scopes
+    // Scopes __ По задумке:
+    // Scopes __ 1. Если передана строка (название участка), то получаем СЗ вместе с этим участком
+    // Scopes __ 2. Если передан массив строк (название участков), то получаем СЗ вместе с этими участками
+    // Scopes __ 3. Если передан пустой массив [], то получаем СЗ без этих участков
+    // Scopes __ 4. Если не передано ничего null, то получаем СЗ со всеми участками
+    public function scopeSectors(
+        $query,
+        array|string|null $sectors = null,
+        array|string|null $relations = null
+    ): Builder {
+        // __ Приводим строку к массиву для удобства
+        if (is_string($relations)) {
+            $relations = [$relations];
+        }
+
+        // __ Подгружаем lines в любом раскладе
+        $query->with(['lines']);
+
+        // __ Подгружаем отношения к Контексту Заявки
+        if (!is_null($relations)) {
+            $query->with($relations);
+        }
+
+        // __ Возвращаем вообще все, грузим ВСЕ связи без ограничений
+        if (is_null($sectors)) {
+            return $query->with([/*'lines', */ 'lines.sectors']);
+        }
+
+        // __ Приводим строку к массиву для удобства
+        if (is_string($sectors)) {
+            $sectors = [$sectors];
+        }
+
+        // __ Если $sectors пустой массив - не грузим участки
+        if (empty($sectors)) {
+            /** @var Builder $query */
+            return $query;
+        }
+
+        // __ Если передан непустой массив $sectors:
+
+        // __ А) Фильтруем сами AssemblyTask (оставляем только задачи, имеющие нужные участки)
+        $query->whereHas('lines.sectors', function ($q) use ($sectors) {
+            $q->whereIn('sector', $sectors);
+        });
+
+        // __ Б) Жадно загружаем (with) ТОЛЬКО те lines и sectors, которые подходят под фильтр
+        return $query->with([
+            'lines' => function ($qLine) use ($sectors) {
+                // Оставляем только строки, связанные с нужными участками
+                $qLine->whereHas('sectors', function ($q) use ($sectors) {
+                    $q->whereIn('sector', $sectors);
+                })
+                    // И внутри строк загружаем ТОЛЬКО целевые участки
+                    ->with([
+                        'sectors' => function ($qSector) use ($sectors) {
+                            $qSector->whereIn('sector', $sectors);
+                        }
+                    ]);
+            }
+        ]);
+    }
+
+    // Scopes Фильтруем по Кокосу
+    public function scopeSectorCoconut($query, array|string|null $relations = null): Builder
+    {
+        return $this->scopeSectors($query, self::ASSEMBLY_TASK_SECTOR_COCONUT, $relations);
+    }
+
+
+    // Scopes Фильтр по статусу
     public function scopeByStatus($query, array|string|int $statusIds = null)
     {
-        if (empty($statusIds)) return $query;
+        if (empty($statusIds)) {
+            return $query;
+        }
 
         $statusIds = collect($statusIds)->flatten()->map(fn($id) => (int)$id)->toArray();
         // $statusIds = is_string($statusIds) ? [(int) $statusIds] : [$statusIds];
@@ -73,7 +153,7 @@ class AssemblyTask extends Model
         // });
     }
 
-    // ___ Поиск по дате
+    // Scopes Фильтр по дате
     public function scopeWhereDayAt($query, string|Carbon $inDate)
     {
         // __ Важный нюанс:
@@ -94,7 +174,6 @@ class AssemblyTask extends Model
         //->whereDate('action_at', '>=', $targetDate->startOfDay())
         //->whereDate('action_at', '<=', $targetDate->endOfDay());
     }
-
 
 
     // Relations: Связь с Основной Заявкой
@@ -125,9 +204,9 @@ class AssemblyTask extends Model
     {
         return $this
             ->belongsToMany(
-                AssemblyTaskStatus::class,         // Класс, с которым связываемся
+                AssemblyTaskStatus::class,           // Класс, с которым связываемся
                 AssemblyTaskStatusPivot::TABLE,      // Промежуточная Таблица, связывающая классы
-                'assembly_task_id',                // Ключ в промежуточной таблице, связывающий с текущим классом
+                'assembly_task_id',                  // Ключ в промежуточной таблице, связывающий с текущим классом
                 'assembly_task_status_id' // Ключ в промежуточной таблице, связывающий с классом, с которым связываемся
             )
             ->using(AssemblyTaskStatusPivot::class)
@@ -162,8 +241,8 @@ class AssemblyTask extends Model
             AssemblyTaskStatus::class,       // Конечная модель, которую хотим получить
             AssemblyTaskStatusPivot::class,  // Промежуточная таблица (пивот)
             'assembly_task_id',              // Внешний ключ в промежуточной таблице
-            'id',                          // Внешний ключ в конечной таблице
-            'id',                          // Локальный ключ в текущей таблице (SewingTask)
+            'id',                            // Внешний ключ в конечной таблице
+            'id',                            // Локальный ключ в текущей таблице (SewingTask)
             'assembly_task_status_id'        // Локальный ключ в промежуточной таблице
         )
             // __ Принудительно выбираем поля статуса + нужные поля из пивота с алиасами
@@ -180,5 +259,6 @@ class AssemblyTask extends Model
             ])
             ->latestOfMany('id'); // И берем только самый последний по ID пивота!
     }
+
 
 }
