@@ -16,7 +16,8 @@ const URL_ORDERS                         = 'orders'                             
 const URL_ORDERS_EXPENSE                 = 'orders/expense'                     // URL для получения Заказа с Расходом
 const URL_ORDERS_EXPENSE_MATERIAL_TOGGLE = 'orders/expense/material/toggle'     // URL для получения Заказа с Расходом
 const URL_ORDERS_MATERIALS               = 'orders/materials'                   // URL для получения Заказа с деревом Материалов
-const URL_ORDERS_CUTTING_TASK_LINES      = 'orders/cutting/task/lines'          // URL для получения Заказа с Содержимым СЗ РАскроя
+const URL_ORDERS_CUTTING_TASK_LINES      = 'orders/cutting/task/lines'          // URL для получения Заказа с Содержимым СЗ Раскроя
+const URL_ORDERS_ASSEMBLY_TASK_LINES     = 'orders/assembly/task/lines'         // URL для получения Заказа с Содержимым СЗ Сборки
 const URL_ORDER                          = 'order'                              // URL для получения заказа
 const URL_ORDERS_TYPES                   = 'orders/types'                       // URL для получения типа заказов
 const URL_ORDERS_TYPES_COLOR_UPDATE      = 'orders/types/color/patch'           // URL для обновления цвета типа заказов
@@ -94,6 +95,13 @@ export const useOrdersStore = defineStore('orders', () => {
     const getOrdersWithCuttingTaskLines = async (id: number) => {
         const result = await jwtGet(`${URL_ORDERS_CUTTING_TASK_LINES}/${id}`)
         if (DEBUG) console.log('OrdersStore: getOrdersWithCuttingTaskLines: ', result)
+        return result.data
+    }
+
+    // __ Получаем с API список Заказов + Привязка Деталек Сборки
+    const getOrdersWithAssemblyTaskLines = async (id: number) => {
+        const result = await jwtGet(`${URL_ORDERS_ASSEMBLY_TASK_LINES}/${id}`)
+        if (DEBUG) console.log('OrdersStore: getOrdersWithAssemblyTaskLines: ', result)
         return result.data
     }
 
@@ -261,6 +269,7 @@ export const useOrdersStore = defineStore('orders', () => {
         getOrderWithExpense,
         getOrdersWithMaterials,
         getOrdersWithCuttingTaskLines,
+        getOrdersWithAssemblyTaskLines,
         deleteOrdersMaterials,
         createOrdersMaterials,
 

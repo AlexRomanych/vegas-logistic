@@ -38,9 +38,14 @@ class AssemblyTaskLineSectorResource extends JsonResource
             'expense' => $this->expense,
             'rest'    => $this->rest,
             'total'   => $this->total,
-            'amount'  => $this->amount,
-            'count'   => $this->count,
-            'time'    => $this->time,
+
+            'expense_per_pic' => $this->expense_per_pic,
+            'rest_per_pic'    => $this->rest_per_pic,
+            'total_per_pic'   => $this->total_per_pic,
+
+            'amount' => $this->amount,
+            'count'  => $this->count,
+            'time'   => $this->time,
 
             'description' => $this->description,
 

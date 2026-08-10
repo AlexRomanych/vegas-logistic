@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\Logs\EventLog;
+use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLine;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Materials\Material;
 use App\Models\Models\ModelConstruct;
@@ -78,10 +79,15 @@ class OrderLine extends Model
         return $this->belongsTo(ModelConstruct::class, 'construct_add_code_1c', CODE_1C);
     }
 
-
     // Relations: Связь со Строкой CuttingTaskLines (Обратная связь получения строки Заявки в Заказе)
     public function cuttingTaskLine(): HasMany
     {
         return $this->hasMany(CuttingTaskLine::class, 'order_line_id', 'id');
+    }
+
+    // Relations: Связь со Строкой AssemblyTaskLines (Обратная связь получения строки Заявки в Заказе)
+    public function assemblyTaskLine(): HasMany
+    {
+        return $this->hasMany(AssemblyTaskLine::class, 'order_line_id', 'id');
     }
 }

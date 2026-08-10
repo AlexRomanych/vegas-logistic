@@ -512,7 +512,7 @@ export interface IBlockTaskLinesSubgroup {
     priority: number
     isTuning: boolean
 
-    totals: {
+    totals?: {
         amount: { total: number; done: number }
         square: { total: number }
         labor_cost: { total: number }

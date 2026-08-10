@@ -124,6 +124,7 @@ Route::prefix('/orders')
 
 
         Route::get('/cutting/task/lines/{id}', [OrderController::class, 'getOrdersWithCuttingTaskLines']);
+        Route::get('/assembly/task/lines/{id}', [OrderController::class, 'getOrdersWithAssemblyTaskLines']);
 
         Route::get('/{id}', [OrderController::class, 'getOrderById']);
 
@@ -445,7 +446,7 @@ Route::prefix('assembly')
 
         // __ СЗ Сборки
         Route::get('tasks', [AssemblyTaskController::class, 'getAssemblyTasks']);
-        //Route::get('tasks/order/{id}', [BlockTaskController::class, 'getBlockTasksByOrderId']);
+        Route::get('tasks/order', [AssemblyTaskController::class, 'getAssemblyTasksByOrderId']);
         //Route::get('tasks/status', [BlockTaskController::class, 'getBlockTasksByStatus']);
         //Route::get('tasks/status/period', [BlockTaskController::class, 'getBlockTasksByStatusAndPeriod']);
         //Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDateAndChange']);

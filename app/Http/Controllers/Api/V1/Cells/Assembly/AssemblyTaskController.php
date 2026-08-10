@@ -12,6 +12,8 @@ use App\Services\Manufacture\AssemblyService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Collection;
 
 class AssemblyTaskController extends Controller
 {
@@ -90,4 +92,47 @@ class AssemblyTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+    /**
+     * ___ Получаем СЗ Сборки по id Заявки
+     * @param GetAssemblyTasksRequest $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function getAssemblyTasksByOrderId(GetAssemblyTasksRequest $request)
+    {
+        try {
+            // __ Если передан ID — возвращаем одну конкретную задачу
+            if (!$orderId = $request->validated('id')) {
+                throw new Exception('Missing Order id from AssemblyTask');
+            }
+
+            // __ Получаем участки производства
+            $sectors = $request->getSectors();
+
+            $assemblyTasks = AssemblyTask::query()
+                ->where('order_id', $orderId)
+                ->with([
+                    'order',
+                    'order.client',
+                    'order.orderType',
+                    'statuses',
+                ])
+                // __ Тут фильтруем по участкам и там же добавляем все связи
+                ->sectors($sectors, [
+                    'lines.orderLine',
+                    'lines.orderLine.model',
+                    'lines.orderLine.model.manufactureGroup',
+                ])
+                ->get();
+
+            // !!! Отфильтровываем Чехол
+            $assemblyTasks = AssemblyService::filterCovers($assemblyTasks);
+
+            return AssemblyTaskResource::collection($assemblyTasks);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
 }
+

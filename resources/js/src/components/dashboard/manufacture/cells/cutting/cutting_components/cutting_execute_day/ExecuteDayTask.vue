@@ -673,7 +673,10 @@ const cuttingLinesGroups = computed<ICuttingTaskLinesGroupData[]>(() => {
 
 // const cuttingLinesGroup = ref(cuttingLinesGroups.value[activeTabIndex.value].subgroups)
 const activeTableName   = computed(() => cuttingLinesGroups.value[activeTabIndex.value].groupName)
-const cuttingLinesGroup = computed(() => cuttingLinesGroups.value[activeTabIndex.value].subgroups)
+const cuttingLinesGroup = computed(() => {
+    setActiveTabIndex()
+    return cuttingLinesGroups.value[activeTabIndex.value].subgroups
+})
 const cuttingLines      = computed(() => {
     const result: ICuttingTaskLine[] = []
     cuttingLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
@@ -1240,13 +1243,23 @@ const printTask = () => {
 // __ Смотрим на то, чтобы при переключении между СЗ не попали на вкладку (УПМ/УШМ) с нулевыми СЗ,
 // __ которые не отображаются
 const setActiveTabIndex = () => {
-    if (!cuttingLinesGroups.value[activeTabIndex.value].hasData) {
+    // console.log('cuttingLinesGroups.value: ', cuttingLinesGroups.value)
+    // console.log('activeTabIndex.value: ', activeTabIndex.value)
+
+    if (cuttingLinesGroups.value[activeTabIndex.value] && cuttingLinesGroups.value[activeTabIndex.value].hasData) {
+        return
+    }
+
+    // if (!cuttingLinesGroups.value[activeTabIndex.value]?.hasData) {
         for (let i = 0; i < cuttingLinesGroups.value.length; i++) {
             if (cuttingLinesGroups.value[i].hasData) {
                 activeTabIndex.value = i
+                // console.log(i)
             }
         }
-    }
+    // }
+
+    // console.log('activeTabIndex.value: ', activeTabIndex.value)
 }
 
 

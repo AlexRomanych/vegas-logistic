@@ -9,9 +9,12 @@ class AssemblyTaskLineSector extends Model
     protected $guarded = false;
 
     protected $casts = [
-        'expense' => 'float',
-        'rest'    => 'float',
-        'total'   => 'float',
+        'expense'         => 'float',
+        'rest'            => 'float',
+        'total'           => 'float',
+        'expense_per_pic' => 'float',
+        'rest_per_pic'    => 'float',
+        'total_per_pic'   => 'float',
     ];
 
     // --- -------------------------------

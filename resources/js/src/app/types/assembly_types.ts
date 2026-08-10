@@ -12,6 +12,7 @@ import {
     CHANGE_1,
     CHANGE_2
 } from '@/app/constants/assembly.ts'
+import type { IDiffsType } from '@/types/index.ts'
 
 
 // --- --------------------------------------------------------------------
@@ -126,6 +127,10 @@ export interface IAssemblyTaskLineSector {
     expense: number
     rest: number
     total: number
+
+    expense_per_pic: number
+    rest_per_pic: number
+    total_per_pic: number
 
     false_at: string | null
     false_history: string[] | null
@@ -242,3 +247,52 @@ export interface IAssemblySector {
     ICON: string
     TYPE: IColorTypes
 }
+
+
+
+
+// --- --------------------------------------------------------------------
+// --- ------------------ Типы для разницы состояний  ---------------------
+// --- --------------------------------------------------------------------
+// __ Тип для разницы между массивами СЗ Пошиве
+export interface IAssemblyTaskArrayDiff {
+    taskId: number
+    taskIdRef?: number
+    type?: IDiffsType
+    // current?: IAssemblyTask
+    taskChanges?: {
+        action_at?: {
+            old: string | null
+            new: string
+        } | null
+        position?: {
+            old: number | null
+            new: number
+        } | null
+        status?: {
+            old: number | null
+            new: number
+        } | null
+        change: {
+            old: string | null,
+            new: string
+        } | null
+    }
+    lineChanges?: IAssemblyTaskArrayLineDiffs[]
+}
+
+export interface IAssemblyTaskArrayLineDiffs {
+    lineId: number
+    lineIdRef?: number
+    type: IDiffsType
+    amount?: {
+        old: number | null
+        new: number
+    } | null
+    position?: {
+        old: number | null
+        new: number
+    } | null
+}
+
+// --- ------------------------------------------------------------

@@ -25,7 +25,6 @@ import { onMounted, provide, ref, watch /*toRaw*/ } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import { useLoading } from 'vue-loading-overlay'
@@ -35,24 +34,24 @@ import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 
 import { getRenderMatrixForPlan, getRenderPeriodForPlan } from '@/app/helpers/plan/helpers_plan.ts'
 import { additionDays, formatToYMD, getSundayAfter } from '@/app/helpers/helpers_date'
-import { correctRenderMatrix, sortRenderMatrixByTaskPosition } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import { correctRenderMatrix, sortRenderMatrixByTaskPosition } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
-import ManageWeek from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageWeek.vue'
-import ManageMenu from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageMenu.vue'
+import ManageWeek from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageWeek.vue'
+import ManageMenu from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageMenu.vue'
 
 const DEBUG     = true
 const isLoading = ref(false)
 
-const planStore    = usePlansStore()
-const blocksStore = useBlocksStore()
+const planStore     = usePlansStore()
 const assemblyStore = useAssemblyStore()
 
 const { planPeriodGlobal } = storeToRefs(planStore)
 
 const {
-          globalBlockTasks, // __ Все задания (Global State)
+          globalAssemblyTasks, // __ Все задания (Global State)
           globalRenderPeriod, // __ Период для рендера
-      } = storeToRefs(blocksStore)
+      } = storeToRefs(assemblyStore)
+
 
 // __ Определяем переменные
 let planPeriod: IPeriod = PERIOD_DRAFT // __ Период плана загрузок
@@ -73,14 +72,14 @@ const getPlanPeriod = async () => {
 }
 
 // __ Получаем период для рендера
-const getRenderPeriod = () => (globalRenderPeriod.value = getRenderPeriodForPlan(globalBlockTasks.value))
+const getRenderPeriod = () => (globalRenderPeriod.value = getRenderPeriodForPlan(globalAssemblyTasks.value))
 
 // __ Корректируем период для рендера. находим самую позднюю дату отгрузки и пересчитываем конец периода до воскресенья
 const correctRenderPeriod = () => {
-    if (!globalBlockTasks.value.length) {
+    if (!globalAssemblyTasks.value.length) {
         return
     }
-    const maxDateObj = globalBlockTasks.value.reduce(
+    const maxDateObj = globalAssemblyTasks.value.reduce(
         (maxDateObj, task) => {
             if (task.order.load_at && new Date(task.order.load_at).getTime() > maxDateObj.value) {
                 maxDateObj.value = new Date(task.order.load_at).getTime()
@@ -95,7 +94,7 @@ const correctRenderPeriod = () => {
 }
 
 // __ Получаем матрицу для рендера
-const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalBlockTasks.value, globalRenderPeriod.value, true))
+const getRenderMatrix = () => (renderMatrix.value = getRenderMatrixForPlan(globalAssemblyTasks.value, globalRenderPeriod.value, true))
 
 // __ Делаем глубокую копию объекта, чтобы сравнивать с предыдущим состоянием
 // __ И отправлять на сервер только измененные данные
@@ -112,9 +111,9 @@ const getStartWeekDate = (weekOrder: number /* порядковы номер н�
 
 // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
 watch(
-    () => globalBlockTasks.value,
+    () => globalAssemblyTasks.value,
     () => {
-        if (!globalBlockTasks.value.length) {
+        if (!globalAssemblyTasks.value.length) {
             return
         }
 
@@ -130,7 +129,7 @@ watch(
         renderMatrix.value = correctRenderMatrix(renderMatrix.value)
 
         if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
-        if (DEBUG) console.log('globalBlockTasks:', globalBlockTasks.value)
+        if (DEBUG) console.log('globalAssemblyTasks:', globalAssemblyTasks.value)
     },
     { immediate: true, deep: true }
 )
@@ -145,11 +144,13 @@ onMounted(async () => {
             // !!! Порядок важен
 
             // const answer = await assemblyStore.getAssemblyTasks([])
-            const answer = await assemblyStore.getAssemblyTasks(['coconut', 'latex'])
+            // const answer = await assemblyStore.getAssemblyTasks(['coconut', 'latex'])
 
+            // __ Получаем AssemblyTasks без всяких участков и записываем в глобальную переменную в AssemblyStore
+            await assemblyStore.getAssemblyTasks([])
 
-            // await blocksStore.getBlockTasks() // __ Получаем BlockTasks и записываем в глобальную переменную в CuttingStore
-            await getPlanPeriod() // __ Получаем период плана загрузок
+            // __ Получаем период плана загрузок
+            await getPlanPeriod()
 
             // __ Дальше все через watcher
             // if (DEBUG) console.log('renderMatrix:', renderMatrix.value)

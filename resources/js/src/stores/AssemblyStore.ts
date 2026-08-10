@@ -20,9 +20,9 @@ const DEBUG = true
 const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUP  = '/assembly/model/manufacture/group'   // URL для Группы Моделей Сортировки
 const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS = '/assembly/model/manufacture/groups'  // URL для Групп Моделей Сортировки
 
-const URL_ASSEMBLY_TASKS = '/assembly/tasks'                       // URL для получения Сменных заданий
+const URL_ASSEMBLY_TASKS          = '/assembly/tasks'                       // URL для получения Сменных заданий
+const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // URL для получения Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
-// const URL_ASSEMBLY_TASKS_ORDER_ID             = '/assembly/tasks/order'                 // URL для получения Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
@@ -109,10 +109,10 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //
     // // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
     // const globalAssemblyTaskOrderTypeColor = ref(false)
-    //
-    // // __ Период рендеринга календаря
-    // const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
-    //
+
+    // __ Период рендеринга календаря
+    const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
+
     // // __ Статусы Движения СЗ
     // const globalAssemblyTaskStatuses = ref<IAssemblyTaskStatusEntity[]>([])
     //
@@ -941,9 +941,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
     const getAssemblyTasks = async (
         sectors: IAssemblySectorKeys[] | IAssemblySectorKeys | null = null,
-        period: IPeriod | null            = null
+        period: IPeriod | null                                      = null
     ) => {
-        // 1. Приводим параметр sectors к нормализованному виду (массиву)
+        // __ Приводим параметр sectors к нормализованному виду (массиву)
         let normalizedSectors: string[] | null = null
 
         if (typeof sectors === 'string') {
@@ -954,26 +954,25 @@ export const useAssemblyStore = defineStore('assembly', () => {
             normalizedSectors = null                      // Условие 4: null / undefined (все участки)
         }
 
-        // 2. Формируем объект параметров для запроса
+        // __ Формируем объект параметров для запроса
         const params: Record<string, unknown> = {}
 
         if (period) {
             params.period = period
         }
 
-        // Передаем sectors
+        // __ Передаем sectors
         if (normalizedSectors !== null) {
             if (normalizedSectors.length === 0) {
-                // Если массив пустой — передаем пустую строку или спец-значение,
-                // чтобы ключ 'sectors' гарантированно попал в URL
+                // __ Если массив пустой — передаем пустую строку или спец-значение,
+                // __ чтобы ключ 'sectors' гарантированно попал в URL
                 params.sectors = ''
             } else {
                 params.sectors = normalizedSectors
             }
         }
 
-        // 3. Выполняем запрос
-        // Примечание: jwtGet вернет Promise, поэтому лишний 'await response' не нужен
+        // __ Выполняем запрос
         const response = await jwtGet(URL_ASSEMBLY_TASKS, params)
 
         globalAssemblyTasks.value = response.data                            // __ кэшируем
@@ -982,6 +981,47 @@ export const useAssemblyStore = defineStore('assembly', () => {
         if (DEBUG) console.log('AssemblyStore: getAssemblyTasks: ', response)
         return response.data
     }
+
+    // __ Получаем СЗ Сборки по id
+    const getAssemblyTasksByOrderId = async (
+        id: number,
+        sectors: IAssemblySectorKeys[] | IAssemblySectorKeys | null = null,
+    ) => {
+        // __ Приводим параметр sectors к нормализованному виду (массиву)
+        let normalizedSectors: string[] | null = null
+
+        if (typeof sectors === 'string') {
+            normalizedSectors = [sectors]                 // Условие 1: строка -> массив из одного элемента
+        } else if (Array.isArray(sectors)) {
+            normalizedSectors = sectors                   // Условия 2 и 3: массив (в т.ч. Пустой)
+        } else {
+            normalizedSectors = null                      // Условие 4: null / undefined (все участки)
+        }
+
+        // __ Формируем объект параметров для запроса
+        const params: Record<string, unknown> = {}
+
+        // __ Добавляем id
+        params.id = id
+
+        // __ Передаем sectors
+        if (normalizedSectors !== null) {
+            if (normalizedSectors.length === 0) {
+                // __ Если массив пустой — передаем пустую строку или спец-значение,
+                // __ чтобы ключ 'sectors' гарантированно попал в URL
+                params.sectors = ''
+            } else {
+                params.sectors = normalizedSectors
+            }
+        }
+
+        // __ Выполняем запрос
+        const response = await jwtGet(URL_ASSEMBLY_TASKS_ORDER_ID, params)
+
+        if (DEBUG) console.log('AssemblyStore: getAssemblyTaskByOrderId: ', response)
+        return response.data
+    }
+
 
     //
     // // __ Получение СЗ Блоков по ID Заявки
@@ -1078,9 +1118,10 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
 
     return {
-        // globalAssemblyTasks,
+        globalAssemblyTasks,
+        globalRenderPeriod,
+
         // globalAssemblyTaskStatuses,
-        // globalRenderPeriod,
         // globalAssemblyTaskTimesShow,
         // globalAssemblyTaskFullDaysShow,
         // globalAssemblyTaskAssemblyInSquare,
@@ -1169,6 +1210,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
         deleteModelManufactureGroup,
 
         getAssemblyTasks,
+        getAssemblyTasksByOrderId,
 
         test,
     }

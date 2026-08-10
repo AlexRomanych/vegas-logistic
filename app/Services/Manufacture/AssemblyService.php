@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+
 //use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection;
 
@@ -136,6 +137,10 @@ final class AssemblyService
                                 'expense'               => (float)$expense->expense,
                                 'rest'                  => (float)$expense->rest,
                                 'total'                 => (float)$expense->expense + (float)$expense->rest,
+
+                                'expense_per_pic'       => (float)$expense->expense_per_pic,
+                                'rest_per_pic'          => (float)$expense->rest_per_pic,
+                                'total_per_pic'         => (float)$expense->expense_per_pic + (float)$expense->rest_per_pic,
 
                                 // __ Трудозатраты
                                 'time'                  => 0,
@@ -304,6 +309,8 @@ final class AssemblyService
                 'pivot.position',
                 'pivot.expense',
                 'pivot.rest',
+                'pivot.expense_per_pic',
+                'pivot.rest_per_pic',
                 'pivot.outputs',
             ])
             ->orderBy('pivot.position', 'asc')

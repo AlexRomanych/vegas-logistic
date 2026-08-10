@@ -176,6 +176,11 @@
                         <AppLabelMultilineTSWrapper :render-object="render.has_block_task"/>
                     </div>
 
+                    <!-- __ Наличие СЗ Сборки -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.has_assembly_task"/>
+                    </div>
+
                     <div>
                         <div class="flex">
                             <!-- __ Добавить заявку -->
@@ -736,6 +741,22 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍СЗ Раскроя...',
         data          : (order: IRenderOrder) => order.has_tasks.sewing_task ? '✓' : '✗',
+    },
+    has_assembly_task   : {
+        id            : () => 'has-assembly-task-search',
+        header        : ['СЗ', 'Сборка'],
+        width         : DEFAULT_WIDTH_TASK,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IRenderOrder) => order.has_tasks.assembly_task ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍СЗ Раскроя...',
+        data          : (order: IRenderOrder) => order.has_tasks.assembly_task ? '✓' : '✗',
     },
     has_block_task   : {
         id            : () => 'has-blocks-task-search',

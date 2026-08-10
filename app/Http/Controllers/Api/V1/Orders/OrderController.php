@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Order\OrderTypes\OrderTypeResource;
+use App\Http\Resources\Order\Render\OrderRenderAssemblyTaskContextResource;
 use App\Http\Resources\Order\Render\OrderRenderCuttingTaskContextResource;
 use App\Http\Resources\Order\Render\OrderRenderResource;
 use App\Models\Client;
@@ -57,11 +58,12 @@ class OrderController extends Controller
 
 
             $orders = Order::query()
-                ->whereDate('load_at', '>=', $start)     // Используем такую конструкцию, потому что
+                ->whereDate('load_at', '>=', $start)    // Используем такую конструкцию, потому что
                 ->whereDate('load_at', '<=', $end)      // ->whereBetween() не включает периоды
-                ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
-                ->withExists('sewingTask') // <-- Добавит boolean-поле sewing_task_exists
-                ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
+                ->withExists('sewingTask')      // <-- Добавит boolean-поле sewing_task_exists
+                ->withExists('cuttingTask')     // <-- Добавит boolean-поле cutting_task_exists
+                ->withExists('assemblyTask')    // <-- Добавит boolean-поле cutting_task_exists
+                ->withExists('blockTask')       // <-- Добавит boolean-поле block_task_exists
                                            // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
                 ->withCount([
                     'lines as expense_exists' => function ($query) {
@@ -745,6 +747,38 @@ class OrderController extends Controller
                 ->findOrFail($id);
 
             return new OrderRenderCuttingTaskContextResource($order);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+    /**
+     * ___ Получаем Заявки + Привязка к СЗ Сборки
+     * @param string $id
+     * @return OrderRenderAssemblyTaskContextResource|string
+     */
+    public function getOrdersWithAssemblyTaskLines(string $id)
+    {
+        try {
+            $validate = Validator::make([
+                'id' => $id
+            ], [
+                'id' => 'required|numeric|exists:orders,id'
+            ])
+                ->validate();
+
+            $order = Order::query()
+                ->with([
+                    'lines.model',
+                    'lines.model.modelType',
+                    'lines.specification',
+                    'lines.specificationAdd',
+                    'lines.assemblyTaskLine',
+                    'lines.assemblyTaskLine.sectors',
+                ])
+                ->findOrFail($id);
+
+            return new OrderRenderAssemblyTaskContextResource($order);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

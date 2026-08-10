@@ -7,6 +7,7 @@ use App\Models\Client;
 
 //use App\Models\Shared\Period;
 //use Illuminate\Database\Eloquent\Builder;
+use App\Models\Manufacture\Cells\Assembly\AssemblyTask;
 use App\Models\Manufacture\Cells\Block\BlockTask;
 use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Manufacture\Cells\Sewing\SewingTask;
@@ -118,6 +119,12 @@ class Order extends Model
     public function cuttingTask(): HasMany
     {
         return $this->hasMany(CuttingTask::class, 'order_id');
+    }
+
+    // Relations: Связь со СЗ Блоков
+    public function assemblyTask(): HasMany
+    {
+        return $this->hasMany(AssemblyTask::class, 'order_id');
     }
 
     // Relations: Связь со СЗ Блоков

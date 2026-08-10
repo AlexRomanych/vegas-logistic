@@ -18,7 +18,7 @@ class GetAssemblyTasksRequest extends FormRequest
         $allowedSectors = AssemblyTask::ASSEMBLY_TASK_SECTORS;
 
         return [
-            'id'        => ['nullable', 'integer', 'exists:assembly_tasks,id'],
+            'id'        => ['nullable', 'integer', 'exists:orders,id'],
 
             // __ Проверяем само поле sectors (если передали одиночную строку)
             'sectors'   => [

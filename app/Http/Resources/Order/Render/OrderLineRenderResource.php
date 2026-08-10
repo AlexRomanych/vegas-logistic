@@ -29,6 +29,7 @@ class OrderLineRenderResource extends JsonResource
             'specification'     => $this->whenloaded('specification', fn() => new OrderLineSpecificationRenderResource($this->specification)),
             'specification_add' => $this->whenloaded('specificationAdd', fn() => new OrderLineSpecificationRenderResource($this->specificationAdd)),
             'cutting_lines'     => $this->whenloaded('cuttingTaskLine', fn() => OrderRenderCuttingTaskLinesResource::collection($this->cuttingTaskLine)),
+            'assembly_lines'    => $this->whenloaded('assemblyTaskLine', fn() => OrderRenderAssemblyTaskLinesResource::collection($this->assemblyTaskLine)),
             'spec_name'         => $this->construct_name,
             'spec_name_add'     => $this->construct_add_name,
 

@@ -55,6 +55,7 @@ export interface IRenderOrder {
     has_tasks: {
         cutting_task: boolean,
         sewing_task: boolean,
+        assembly_task: boolean,
         block_task: boolean,
         expense_exists: boolean,
     }
@@ -69,7 +70,14 @@ export interface IRenderOrder {
 export interface IRenderOrderCuttingTask {
     id: number
     lines: IRenderOrderLine[]
-    order_no_origin : string | null
+    order_no_origin: string | null
+    collapsed: boolean
+}
+
+export interface IRenderOrderAssemblyTask {
+    id: number
+    lines: IRenderOrderLine[]
+    order_no_origin: string | null
     collapsed: boolean
 }
 
@@ -108,13 +116,14 @@ export interface IRenderOrderLine {
     specification?: IRenderOrderLineSpecification
     specification_add?: IRenderOrderLineSpecification
     cutting_lines?: IRenderOrderLineCuttingLine[]
+    assembly_lines?: IRenderOrderLineAssemblyLine[]
     block_lines?: IRenderOrderLineBlockLine[]
     collapsed_materials?: boolean
     collapsed_cutting_details?: boolean
     collapsed_blocks?: boolean
 
-    spec_name: string|null
-    spec_name_add: string|null
+    spec_name: string | null
+    spec_name_add: string | null
 }
 
 
@@ -131,11 +140,36 @@ export interface IRenderOrderLineCuttingLine {
     time: number
     detail: ICuttingTaskLineDetail
     expense: number
-    cut: string|null
-    finished_at: string|null
-    false_at: string|null
+    cut: string | null
+    finished_at: string | null
+    false_at: string | null
 }
 
+
+export interface IRenderOrderLineAssemblyLine {
+    amount: number
+    false_at: string | null
+    finished_at: string | null
+    id: number
+    sectors: IRenderOrderLineAssemblyLineSector[]
+    time: number
+}
+
+export interface IRenderOrderLineAssemblyLineSector {
+    id: number
+    sector: string
+    detail_width: number
+    detail_length: number
+    detail_height: number
+    material_code_1c: string
+    material_name: string
+    expense: number
+    rest: number
+    total: number
+    amount: number
+    count: number
+    time: number
+}
 
 
 export interface IRenderOrderLineBlockLine {

@@ -60,9 +60,10 @@ class OrderRenderResource extends JsonResource
 
             // __ Наличие СЗ
             'has_tasks' => [
-                'cutting_task' => $this->cutting_task_exists,
-                'sewing_task'  => $this->sewing_task_exists,
-                'block_task'   => $this->block_task_exists,
+                'cutting_task'   => $this->cutting_task_exists,
+                'sewing_task'    => $this->sewing_task_exists,
+                'assembly_task'  => $this->assembly_task_exists,
+                'block_task'     => $this->block_task_exists,
                 'expense_exists' => $this->expense_exists > 0,  // __ Возвращает кол-во записей
             ],
 

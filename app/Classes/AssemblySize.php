@@ -23,35 +23,36 @@ class AssemblySize
         //private readonly string $scope,
     )
     {
+        // __ Отдаем в миллиметрах
         switch ($sector):
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LATEX:
-                $this->widthDetail  = $this->width;
-                $this->lengthDetail = $this->length;
-                $this->heightDetail = $this->height;
+                $this->widthDetail  = $this->width * 10;
+                $this->lengthDetail = $this->length * 10;
+                $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 1;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_COCONUT:
-                $this->widthDetail  = $this->width;
-                $this->lengthDetail = $this->length;
-                $this->heightDetail = $this->height;
+                $this->widthDetail  = $this->width * 10;
+                $this->lengthDetail = $this->length * 10;
+                $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 1;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LAYER:
-                $this->widthDetail  = $this->width;
-                $this->lengthDetail = $this->length;
-                $this->heightDetail = $this->height;
+                $this->widthDetail  = $this->width * 10;
+                $this->lengthDetail = $this->length * 10;
+                $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 1;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_FOAM_SIDE:
-                $this->widthDetail  = $this->width;
-                $this->lengthDetail = $this->length;
-                $this->heightDetail = $this->height;
+                $this->widthDetail  = $this->width * 10;
+                $this->lengthDetail = $this->length * 10;
+                $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 2;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_FOAM_LAYER:
-                $this->widthDetail  = $this->width;
-                $this->lengthDetail = $this->length;
-                $this->heightDetail = $this->height;
+                $this->widthDetail  = $this->width * 10;
+                $this->lengthDetail = $this->length * 10;
+                $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 2;
                 break;
 

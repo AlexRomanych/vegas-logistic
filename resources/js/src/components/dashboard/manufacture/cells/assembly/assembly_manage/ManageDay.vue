@@ -1,6 +1,6 @@
 <template>
     <div
-        :class="[shadowColor, globalBlockTaskFullDaysShow ? 'min-w-[321px]' : 'min-w-[190px]']"
+        :class="[shadowColor, globalAssemblyTaskFullDaysShow ? 'min-w-[321px]' : 'min-w-[190px]']"
         class="m-1 pb-0.5 border-[1px] rounded border-slate-600 bg-slate-200 w-fit min-h-[129px] shadow-xl"
     >
         <!-- __ День недели -->
@@ -72,7 +72,7 @@
 
             <!-- __ Линия 1 -->
             <AppLabelTS
-                v-if="globalBlockTaskFullDaysShow"
+                v-if="globalAssemblyTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -84,7 +84,7 @@
 
             <!-- __ Линия 2 -->
             <AppLabelTS
-                v-if="globalBlockTaskFullDaysShow"
+                v-if="globalAssemblyTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -96,7 +96,7 @@
 
             <!-- __ Неопознанные -->
             <AppLabelTS
-                v-if="globalBlockTaskFullDaysShow"
+                v-if="globalAssemblyTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
                 :type="TOTALS_TYPE"
@@ -129,7 +129,7 @@
                 <draggable
                     :="dragOptions"
                     :disabled="!isDragging"
-                    :list="change as unknown as IBlockTask[]"
+                    :list="change as unknown as IAssemblyTask[]"
                     :move="checkMove"
                     class="min-h-[25px]"
                     item-key="id"
@@ -139,15 +139,15 @@
                 >
                     <template #item="{ element, index }">
                         <div
-                            @click="selectBlockTask(element)"
-                            @dblclick="showBlockTaskMenu(element)"
+                            @click="selectAssemblyTask(element)"
+                            @dblclick="showAssemblyTaskMenu(element)"
                         >
                             <ManageItem
-                                :amount-and-time="getBlockTaskAmountAndTime(element)"
+                                :amount-and-time="getAssemblyTaskAmountAndTime(element)"
                                 :columns-width="columnsWidth"
                                 :index="index"
                                 :item="element"
-                                :order-id="globalBlockTaskActiveOrderId"
+                                :order-id="globalAssemblyTaskActiveOrderId"
                             />
                         </div>
                     </template>
@@ -180,13 +180,13 @@
 
                     <!-- __ Количество + Трудозатраты Общие -->
                     <ManageItemDataLabel
-                        :amount="getTotalAmountChange(change as unknown as IBlockTask[])"
-                        :square="getTotalSquareChange(change as unknown as IBlockTask[])"
+                        :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"
+                        :square="getTotalSquareChange(change as unknown as IAssemblyTask[])"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME * 2"
-                        :time="getTotalTimeChange(change as unknown as IBlockTask[])"
-                        :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
+                        :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"
+                        :time-show="globalAssemblyTaskTimesShow"
+                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -194,14 +194,14 @@
 
                     <!-- __ Количество + Трудозатраты Линия 1 -->
                     <ManageItemDataLabel
-                        v-if="globalBlockTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].square"
+                        v-if="globalAssemblyTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].amount"
+                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
-                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].time"
-                        :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
+                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].time"
+                        :time-show="globalAssemblyTaskTimesShow"
+                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -209,14 +209,14 @@
 
                     <!-- __ Количество + Трудозатраты Линия 2 -->
                     <ManageItemDataLabel
-                        v-if="globalBlockTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].square"
+                        v-if="globalAssemblyTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].amount"
+                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
-                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].time"
-                        :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
+                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].time"
+                        :time-show="globalAssemblyTaskTimesShow"
+                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -224,15 +224,15 @@
 
                     <!-- __ Количество + Трудозатраты Неопознанные -->
                     <ManageItemDataLabel
-                        v-if="globalBlockTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].square"
-                        :color="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
+                        v-if="globalAssemblyTaskFullDaysShow"
+                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount"
+                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].square"
+                        :color="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
                         :height="heightTotals"
                         :reference="null"
-                        :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].time"
-                        :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
+                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].time"
+                        :time-show="globalAssemblyTaskTimesShow"
+                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -304,9 +304,9 @@ import type {
     IColorTypes,
     IDay,
     IModalAsyncMenu,
-    IPlanMatrix, IBlockDay,
-    IBlockTask,
-    IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock, IBlockTaskChangeKeys,
+    IPlanMatrix, IAssemblyDay,
+    IAssemblyTask,
+    IAssemblyTaskStatusesSet, IAssemblyTaskLine, IAssemblyLineSetData, DraggableHTMLElement, IAmountAndTimeAssembly, IAssemblyTaskChangeKeys,
 } from '@/types'
 
 import { computed, inject, type Ref, ref, } from 'vue'
@@ -315,7 +315,7 @@ import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblysStore } from '@/stores/AssemblysStore.ts'
 
 import {
     additionDaysInStrFormat,
@@ -332,37 +332,37 @@ import {
     clearRenderMatrix,
     clearRenderMatrixDay,
     correctRenderMatrix,
-    createAmountAndTimeObj,
     getDiffsWithPositions,
-    getBlockTaskAmountAndTime,
-    getBlockTasksDiff,
-    getBlockTasksGroupedByOrder,
-    getBlockTasksSameOrderInDay,
+    getAssemblyTasksDiff,
+    createAmountAndTimeObj,
+    getAssemblyTaskAmountAndTime,
+    getAssemblyTasksGroupedByOrder,
+    getAssemblyTasksSameOrderInDay,
     isTaskAverage,
     isTaskStatusCreated, isTaskStatusRunning,
-    orderBlockTasksByStatus,
-    repositionBlockTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName, getBlockTaskLineSquare,
-} from '@/app/helpers/manufacture/helpers_blocks.ts'
+    orderAssemblyTasksByStatus,
+    repositionAssemblyTaskLines,
+    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName, getAssemblyTaskLineSquare,
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
-import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_MANUF_LINES, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
 import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
-import ManageTaskCard from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCard.vue'
-import ManageItem from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItem.vue'
-import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItemDataLabel.vue'
+import ManageTaskCard from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
+import ManageItem from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItem.vue'
+import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItemDataLabel.vue'
 
-import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
-import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
+import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
 
 
-// type IDay = IBlockTask & IPlanMatrixDayItem
+// type IDay = IAssemblyTask & IPlanMatrixDayItem
 
 interface IProps {
     date: Date
@@ -400,17 +400,17 @@ const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
 // console.log('renderMatrixCopy: ', renderMatrixCopy)
 
 // __ Данные из Хранилища
-const blockStore = useBlocksStore()
+const assemblyStore = useAssemblysStore()
 
 const {
-          globalBlockTaskTimesShow,
-          globalBlockTaskFullDaysShow,
-          globalBlockTaskBlockInSquare,
+          globalAssemblyTaskTimesShow,
+          globalAssemblyTaskFullDaysShow,
+          globalAssemblyTaskAssemblyInSquare,
           /*globalDiffs,*/
-          globalBlockTasks,
-          globalBlockTaskActiveOrderId,
-          globalBlockTaskStatuses,
-      } = storeToRefs(blockStore)
+          globalAssemblyTasks,
+          globalAssemblyTaskActiveOrderId,
+          globalAssemblyTaskStatuses,
+      } = storeToRefs(assemblyStore)
 
 const router               = useRouter()
 const planStore            = usePlansStore()
@@ -425,10 +425,10 @@ const DATA_HEADER_TEXT_SIZE    = 'mini'
 const REFERENCE_TIME = 10.5 // часы
 
 // __ Высота под Итого
-const heightTotals = computed(() => (globalBlockTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
+const heightTotals = computed(() => (globalAssemblyTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
 
 // __ Дата
-const renderDate = computed(() => formatDateInFullFormat(props.date, !globalBlockTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
+const renderDate = computed(() => formatDateInFullFormat(props.date, !globalAssemblyTaskFullDaysShow.value) + ` (${getDayOfWeek(props.date)})`)
 // const renderDate = computed(() => getDateFromDateTimeString(props.date))
 
 // TODO: Переписать все в dateType()
@@ -472,15 +472,15 @@ const shadowColor = computed(() => {
 
 // __ Общее количество и время в виде Объекта
 const amountAndTimeTotalsChanges = computed(() => {
-    //  __ Создаем сам объект данных с ключами из BLOCK_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+    //  __ Создаем сам объект данных с ключами из ASSEMBLY_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
 
-    const result: IAmountAndTimeBlock[] = []
+    const result: IAmountAndTimeAssembly[] = []
     props.day.forEach(change => {
         const amountAndTimeObj = createAmountAndTimeObj()
 
-        change.forEach((blockTask: IBlockTask) => {
+        change.forEach((assemblyTask: IAssemblyTask) => {
 
-            const amountAndTime = getBlockTaskAmountAndTime(blockTask as IBlockTask)
+            const amountAndTime = getAssemblyTaskAmountAndTime(assemblyTask as IAssemblyTask)
 
             Object.entries(amountAndTime).forEach(([key, value]) => {
                 amountAndTimeObj[key].amount += value.amount
@@ -496,41 +496,41 @@ const amountAndTimeTotalsChanges = computed(() => {
 })
 
 // __ Общее Количество за день
-const getTotalAmountChange = (tasks: IBlockTask[]) => {
+const getTotalAmountChange = (tasks: IAssemblyTask[]) => {
     return tasks.reduce((totalAcc, task) =>
-        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0)
+        totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0), 0)
 }
 
 // __ Общая Площадь за день
-const getTotalSquareChange = (tasks: IBlockTask[]) => {
+const getTotalSquareChange = (tasks: IAssemblyTask[]) => {
     return tasks.reduce((totalAcc, task) =>
-        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + getBlockTaskLineSquare(line), 0), 0)
+        totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + getAssemblyTaskLineSquare(line), 0), 0)
 }
 
 
 // const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
-//     totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.amount, 0), 0))
+//     totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0), 0))
 
 // __ Общие Трудозатраты за день
-const getTotalTimeChange = (tasks: IBlockTask[]) => {
+const getTotalTimeChange = (tasks: IAssemblyTask[]) => {
     return tasks.reduce((totalAcc, task) =>
-        totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0)
+        totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0)
 }
 // const getTotalTimeDay = computed(() =>
-//     props.day.reduce((totalAcc, task) => totalAcc + task.block_lines.reduce((acc: number, line: IBlockTaskLine) => acc + line.time, 0), 0))
+//     props.day.reduce((totalAcc, task) => totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0))
 
 // __ Флаг отображения данных
-const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IBlockTask[]))
-const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unknown as IBlockTask[]))
+const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IAssemblyTask[]))
+const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unknown as IAssemblyTask[]))
 
 // __ Получаем подсветку Смены
-const getChangeType = (change: IBlockTaskChangeKeys) => {
+const getChangeType = (change: IAssemblyTaskChangeKeys) => {
     const findChange = getChangeByName(change)
     return findChange ? findChange.TYPE : 'dark'
 }
 
 // __ Получаем Название
-const getChangeTitle = (change: IBlockTaskChangeKeys) => {
+const getChangeTitle = (change: IAssemblyTaskChangeKeys) => {
     return change === CHANGE_1 ? 'Смена: 1 (08:30 - 20:30)' : 'Смена: 2 (20:30 - 08:30)'
 }
 
@@ -558,15 +558,15 @@ const comment     = ref('')
 const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
 // __ Установка активного Заказа
-const selectBlockTask = (blockTask: IBlockTask) => {
-    globalBlockTaskActiveOrderId.value = blockTask.order.id
+const selectAssemblyTask = (assemblyTask: IAssemblyTask) => {
+    globalAssemblyTaskActiveOrderId.value = assemblyTask.order.id
 }
 
 // __ Карточка СЗ
-const taskCard = ref<IBlockTask>(BLOCK_TASK_DRAFT)
+const taskCard = ref<IAssemblyTask>(ASSEMBLY_TASK_DRAFT)
 
-const showBlockTaskCard = async (blockTask: IBlockTask) => {
-    taskCard.value = JSON.parse(JSON.stringify(blockTask)) // __ Копируем объект, чтобы не мутировал оригинал
+const showAssemblyTaskCard = async (assemblyTask: IAssemblyTask) => {
+    taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
     // __ Показываем модальное окно обработки СЗ
     const answer = await manageTaskCard.value!.show()
@@ -581,44 +581,44 @@ const showBlockTaskCard = async (blockTask: IBlockTask) => {
     // __ Если есть правая панель, то это создание нового СЗ
     if (rightPanel.length > 0) {
         // __ Создаем новое СЗ на основе копии
-        const newBlockTask = JSON.parse(JSON.stringify(blockTask))
+        const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
 
         // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-        newBlockTask.position += 0.1
+        newAssemblyTask.position += 0.1
 
         // __ Устанавливаем id
         // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-        newBlockTask.id = 0
+        newAssemblyTask.id = 0
 
-        // __ Пересчитываем позиции для строк СЗ (BlockLines[])
-        // leftPanel  = repositionBlockTaskLines(leftPanel)
-        // rightPanel = repositionBlockTaskLines(rightPanel)
+        // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+        // leftPanel  = repositionAssemblyTaskLines(leftPanel)
+        // rightPanel = repositionAssemblyTaskLines(rightPanel)
 
         // __ Обновляем глобальный state СЗ
-        // blockTask.block_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
-        // newBlockTask.block_lines = rightPanel
+        // assemblyTask.assembly_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+        // newAssemblyTask.assembly_lines = rightPanel
 
         // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-        await blockStore.addBlockTaskToGlobal(blockTask, leftPanel, newBlockTask, rightPanel) // __ Тут реактивное перерисовывание
+        await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
 
         // console.log(taskCard.value)
     } else {
         // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
 
-        // __ Пересчитываем позиции для строк СЗ (BlockLines[])
-        // leftPanel = repositionBlockTaskLines(leftPanel)
+        // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+        // leftPanel = repositionAssemblyTaskLines(leftPanel)
 
         // __ Обновляем глобальный state СЗ
-        await blockStore.addBlockTaskToGlobal(blockTask, leftPanel) // __ Тут реактивное перерисовывание
+        await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel) // __ Тут реактивное перерисовывание
     }
 }
 
 // __ Изменение Производственной Линии
-const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
+const showAssemblyTaskManufLines = async (assemblyTask: IAssemblyTask) => {
     // __ Копируем объект, чтобы не мутировал оригинал
-    taskCard.value = JSON.parse(JSON.stringify(blockTask))
+    taskCard.value = JSON.parse(JSON.stringify(assemblyTask))
     // __ Добавляем метаданные Заявки в каждую строку
-    taskCard.value.block_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
+    taskCard.value.assembly_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
 
 
     // __ Показываем модальное окно обработки СЗ
@@ -629,14 +629,14 @@ const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
 
     // __ Получаем ссылки на панели
     const mutations                         = manageTaskManufLines.value!.mutations
-    const setBlockData: IBlockLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
+    const setAssemblyData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
 
-    console.log('mutations: ', setBlockData)
+    console.log('mutations: ', setAssemblyData)
 
-    const result = await blockStore.taskLinesManufLineSet(setBlockData)
+    const result = await assemblyStore.taskLinesManufLineSet(setAssemblyData)
     if (checkCRUD(result)) {
         // __ Меняем глобальный стейт
-        blockStore.setGlobalArrayChangeManufLines(setBlockData)
+        assemblyStore.setGlobalArrayChangeManufLines(setAssemblyData)
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = 'Данные успешно обновлены'
@@ -650,41 +650,41 @@ const showBlockTaskManufLines = async (blockTask: IBlockTask) => {
     // // __ Если есть правая панель, то это создание нового СЗ
     // if (rightPanel.length > 0) {
     //     // __ Создаем новое СЗ на основе копии
-    //     const newBlockTask = JSON.parse(JSON.stringify(blockTask))
+    //     const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
     //
     //     // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-    //     newBlockTask.position += 0.1
+    //     newAssemblyTask.position += 0.1
     //
     //     // __ Устанавливаем id
     //     // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-    //     newBlockTask.id = 0
+    //     newAssemblyTask.id = 0
     //
-    //     // __ Пересчитываем позиции для строк СЗ (BlockLines[])
-    //     // leftPanel  = repositionBlockTaskLines(leftPanel)
-    //     // rightPanel = repositionBlockTaskLines(rightPanel)
+    //     // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+    //     // leftPanel  = repositionAssemblyTaskLines(leftPanel)
+    //     // rightPanel = repositionAssemblyTaskLines(rightPanel)
     //
     //     // __ Обновляем глобальный state СЗ
-    //     // blockTask.block_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
-    //     // newBlockTask.block_lines = rightPanel
+    //     // assemblyTask.assembly_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+    //     // newAssemblyTask.assembly_lines = rightPanel
     //
     //     // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-    //     await blockStore.addBlockTaskToGlobal(blockTask, leftPanel, newBlockTask, rightPanel) // __ Тут реактивное перерисовывание
+    //     await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
     //
     //     // console.log(taskCard.value)
     // } else {
     //     // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
     //
-    //     // __ Пересчитываем позиции для строк СЗ (BlockLines[])
-    //     // leftPanel = repositionBlockTaskLines(leftPanel)
+    //     // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+    //     // leftPanel = repositionAssemblyTaskLines(leftPanel)
     //
     //     // __ Обновляем глобальный state СЗ
-    //     await blockStore.addBlockTaskToGlobal(blockTask, leftPanel) // __ Тут реактивное перерисовывание
+    //     await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel) // __ Тут реактивное перерисовывание
     // }
 }
 
 
 // __ Добавить комментарий
-const addComment = async (task: IBlockTask) => {
+const addComment = async (task: IAssemblyTask) => {
 
     comment.value = task.comment ?? '' // __ Устанавливаем комментарий
 
@@ -693,7 +693,7 @@ const addComment = async (task: IBlockTask) => {
 
         const newComment = commentEdit.value!.comment.trim()
 
-        const result = await blockStore.setBlockTaskComment(task.id, newComment)
+        const result = await assemblyStore.setAssemblyTaskComment(task.id, newComment)
 
         if (!checkCRUD(result)) {
 
@@ -709,7 +709,7 @@ const addComment = async (task: IBlockTask) => {
         }
 
         // __ Обновляем комментарий в глобальном массиве
-        blockStore.applyBlockTaskComment(task.id, newComment)
+        assemblyStore.applyAssemblyTaskComment(task.id, newComment)
 
         // __ Обновляем комментарий в СЗ
         task.comment = newComment
@@ -717,7 +717,7 @@ const addComment = async (task: IBlockTask) => {
 }
 
 // __ Меняем смену
-const modifyChange = async (task: IBlockTask) => {
+const modifyChange = async (task: IAssemblyTask) => {
 
     // __ Проверяем статус СЗ, если не Создано, то выходим
     if (!isTaskStatusCreated(task)) {
@@ -770,12 +770,12 @@ const modifyChange = async (task: IBlockTask) => {
     }
 
     // __ Перемещаем СЗ без вывода дополнительной информации
-    await blockStore.applyChanges(diffs) // __ Применяем изменения
+    await assemblyStore.applyChanges(diffs) // __ Применяем изменения
 
     // const answer = await appModalAsyncMultiline.value!.show()
     // if (answer) {
     //
-    //     const result = await blockStore.modifyChange(task.id, targetChange.NAME) // __ Применяем изменения
+    //     const result = await assemblyStore.modifyChange(task.id, targetChange.NAME) // __ Применяем изменения
     //     if (!checkCRUD(result)) {
     //         await showError()
     //         return
@@ -789,7 +789,7 @@ const modifyChange = async (task: IBlockTask) => {
 
 
 // __ Меню при двойном клике на Заявке (Разделить количество + Изменить стол)
-const showBlockTaskMenu = async (blockTask: IBlockTask) => {
+const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
     // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
     modalMenuType.value = 'indigo'
 
@@ -815,31 +815,31 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
 
     // __ Разделить количество
     if (result.menuItem === 1 && result.value) {
-        await showBlockTaskCard(blockTask)
+        await showAssemblyTaskCard(assemblyTask)
         return
     }
 
     // __ Изменить Смену
     if (result.menuItem === 2 && result.value) {
-        await modifyChange(blockTask)
+        await modifyChange(assemblyTask)
         return
     }
 
     // __ Изменить Линию
     if (result.menuItem === 3 && result.value) {
-        await showBlockTaskManufLines(blockTask)
+        await showAssemblyTaskManufLines(assemblyTask)
         return
     }
 
     // __ Добавить комментарий к СЗ
     if (result.menuItem === 4 && result.value) {
-        await addComment(blockTask)
+        await addComment(assemblyTask)
         return
     }
 
     // __ Перейти в карточку Заявки
     if (result.menuItem === 5 && result.value) {
-        router.push({ name: 'orders.card', params: { id: blockTask.order.id } })
+        router.push({ name: 'orders.card', params: { id: assemblyTask.order.id } })
         return
     }
 
@@ -867,7 +867,7 @@ const isDragging  = ref(true)
 const checkMove = (evt: DraggableHTMLElement) => {
     // return true
     // console.log('checkMove: ', evt)
-    const movedElement = evt.draggedContext.element as IBlockTask
+    const movedElement = evt.draggedContext.element as IAssemblyTask
     // console.log(movedElement)
     // return true
     // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
@@ -938,7 +938,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
     console.log('isChangeModify: ', isChangeModify)
 
     // __ Получаем сам перемещаемый элемент
-    const movedElement = evt.item._underlying_vm_ as IBlockTask
+    const movedElement = evt.item._underlying_vm_ as IAssemblyTask
 
     if (isOneDayAction && !isChangeModify) {
 
@@ -949,7 +949,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         if (isTaskStatusRunning(movedElement)) {
 
             // __ Получаем флаг готовности к добавлению новых СЗ
-            const isReady: IBlockDay = await blockStore.readyGetBlockDay(splitDate(movedElement.action_at))
+            const isReady: IAssemblyDay = await assemblyStore.readyGetAssemblyDay(splitDate(movedElement.action_at))
 
             if (!isReady) {
                 await showError([
@@ -966,7 +966,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // __ Перемещаем СЗ без вывода дополнительной информации
-        await blockStore.applyChanges(diffs) // __ Применяем изменения
+        await assemblyStore.applyChanges(diffs) // __ Применяем изменения
 
     } else {
 
@@ -985,8 +985,8 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // __ Находим те изменения, которые относятся к перемещаемому СЗ
-        const diffsForBlockTask = diffs.find(diff => diff.isMoved || diff.isChangeChanged)
-        if (!diffsForBlockTask) {
+        const diffsForAssemblyTask = diffs.find(diff => diff.isMoved || diff.isChangeChanged)
+        if (!diffsForAssemblyTask) {
             // __ Откатываем изменения
             console.error('Не найдено изменений для перемещения СЗ')
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
@@ -994,8 +994,8 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // __ Получаем СЗ, которое перемещаем, здесь не мутируем
-        const blockTask = globalBlockTasks.value.find(task => task.id === diffsForBlockTask.taskId)
-        if (!blockTask) {
+        const assemblyTask = globalAssemblyTasks.value.find(task => task.id === diffsForAssemblyTask.taskId)
+        if (!assemblyTask) {
             // __ Откатываем изменения
             console.error('Не найдено СЗ для перемещения')
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
@@ -1005,15 +1005,15 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         // __ Получаем дату, на которую нужно переместить СЗ
         const targetDate = additionDaysInStrFormat(
-            blockTask.action_at,
-            (diffsForBlockTask.dayToOffset ?? 0) - (diffsForBlockTask.dayFromOffset ?? 0)
+            assemblyTask.action_at,
+            (diffsForAssemblyTask.dayToOffset ?? 0) - (diffsForAssemblyTask.dayFromOffset ?? 0)
         )
 
         // __ Проверяем, на даты СЗ и отгрузки
-        let dateDiff = getDaysDifferenceFromDates(blockTask.order.load_at ?? targetDate, targetDate)
+        let dateDiff = getDaysDifferenceFromDates(assemblyTask.order.load_at ?? targetDate, targetDate)
 
         // console.log('targetDate: ', targetDate)
-        // console.log('blockTask.order.load_at: ', blockTask.order.load_at)
+        // console.log('assemblyTask.order.load_at: ', assemblyTask.order.load_at)
         // console.log('dateDiff: ', dateDiff)
 
         if (dateDiff < 0) {
@@ -1021,7 +1021,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
                 'Ошибка!',
                 'Дата СЗ не может быть позднее даты загрузки',
                 'на складе!',
-                `Дата загрузки на складе: ${formatDateIntl(splitDate(blockTask.order.load_at ?? targetDate), true)}`,
+                `Дата загрузки на складе: ${formatDateIntl(splitDate(assemblyTask.order.load_at ?? targetDate), true)}`,
             ])
             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
             return
@@ -1042,13 +1042,13 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // __ Находим смену, куда перемещаем. Если она разная с исходником, берем из Diff, если одинаковая - берем из Task
-        const toChange = targetChange ?? blockTask.change
+        const toChange = targetChange ?? assemblyTask.change
 
         // __ Проверяем, что СЗ не находится в процессе выполнения
-        if (await blockStore.checkBlockTasksByStatusOnDate(splitDate(targetDate), toChange, BLOCK_TASK_STATUSES.RUNNING.ID)) {
+        if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), toChange, ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
 
             // __ Получаем флаг готовности к добавлению новых СЗ
-            const isReady: boolean = await blockStore.readyGetBlockDay(splitDate(targetDate))
+            const isReady: boolean = await assemblyStore.readyGetAssemblyDay(splitDate(targetDate))
 
             if (!isReady) {
                 // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
@@ -1079,11 +1079,11 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             if (answer) {
 
                 // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
-                diffsForBlockTask.statusId = BLOCK_TASK_STATUSES.RUNNING.ID
-                // console.log('diffsForBlockTask: ', diffsForBlockTask)
+                diffsForAssemblyTask.statusId = ASSEMBLY_TASK_STATUSES.RUNNING.ID
+                // console.log('diffsForAssemblyTask: ', diffsForAssemblyTask)
                 // console.log('diffs: ', diffs)
 
-                const result = await blockStore.applyChanges(diffs) // __ Применяем изменения
+                const result = await assemblyStore.applyChanges(diffs) // __ Применяем изменения
                 // console.log('result: ', result)
 
                 if (!checkCRUD(result)) {
@@ -1104,7 +1104,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // // __ Проверяем, что СЗ не находится в процессе выполнения (Старый вариант)
-        // if (await blockStore.checkBlockTasksByStatusOnDate(splitDate(targetDate), BLOCK_TASK_STATUSES.RUNNING.ID)) {
+        // if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
         //     await showError([
         //         'Ошибка!',
         //         'Нельзя переместить СЗ в день, в котором',
@@ -1118,13 +1118,13 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
         // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || '', true)
+        const existingAssemblyTasks = getAssemblyTasksSameOrderInDay(assemblyTask, globalAssemblyTasks.value, targetDate, targetChange || '', true)
 
         // __ Формируем текст для модального окна
-        const orderInfo = `${blockTask.order.client.short_name} №${blockTask.order.order_no_str}`
+        const orderInfo = `${assemblyTask.order.client.short_name} №${assemblyTask.order.order_no_str}`
 
         // __ Находим количество для формирования динамического меню
-        const totalAmount = blockTask.block_lines.reduce((acc, item) => acc + item.amount, 0)
+        const totalAmount = assemblyTask.assembly_lines.reduce((acc, item) => acc + item.amount, 0)
 
         // __ Показываем модальное меню и обрабатываем результаты
         modalMenuType.value = 'primary'
@@ -1154,7 +1154,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
             // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-            if (existingBlockTasks.length) {
+            if (existingAssemblyTasks.length) {
                 // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                 modalInfoType.value = 'success'
                 modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -1164,21 +1164,21 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
                 if (result) {
                     // __ С объединением
-                    // console.warn('Union BlockTasks')
+                    // console.warn('Union AssemblyTasks')
 
                     // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                    await blockStore.applyMergeTasks([existingBlockTasks[0], blockTask]) // __ Объединяем СЗ с первой
-                    // blockStore.applyMergeTasks([blockTask, ...existingBlockTasks])   // __ Объединяем все остальные
+                    await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], assemblyTask]) // __ Объединяем СЗ с первой
+                    // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
                     return
                 }
             }
 
-            await blockStore.applyChanges(diffs) // __ Применяем изменения
+            await assemblyStore.applyChanges(diffs) // __ Применяем изменения
         } else if (result.menuItem === 2) {
             // __ Перемещаем часть СЗ в другой день
             // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
 
-            taskCard.value = JSON.parse(JSON.stringify(blockTask)) // __ Копируем объект, чтобы не мутировал оригинал
+            taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
 
             // __ Показываем модальное окно обработки СЗ
             const answer = await manageTaskCard.value!.show()
@@ -1195,33 +1195,33 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             // __ Если есть правая панель, то это создание нового СЗ
             if (rightPanel.length > 0) {
                 // __ Создаем новое СЗ на основе копии
-                const newBlockTask = JSON.parse(JSON.stringify(blockTask))
+                const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
 
                 // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
                 // __ Тут такой код. Чтобы правильная была нумерация
                 // __ Баг возникает если переносить часть со первой смены на самое начало второй
                 // __ или если переносить часть со второй смены на самый конец первой
                 if (targetChange === CHANGE_2) {
-                    newBlockTask.position = (diffsForBlockTask.newTaskPosition ?? 1) + 0.1
+                    newAssemblyTask.position = (diffsForAssemblyTask.newTaskPosition ?? 1) + 0.1
                 } else if (targetChange === CHANGE_1) {
-                    newBlockTask.position = (diffsForBlockTask.newTaskPosition ?? 1) - 0.1
+                    newAssemblyTask.position = (diffsForAssemblyTask.newTaskPosition ?? 1) - 0.1
                 }
 
                 // __ Устанавливаем новую дату, высчитываем новую дату по смещению
-                newBlockTask.action_at = additionDaysInStrFormat(
-                    newBlockTask.action_at,
-                    (diffsForBlockTask.dayToOffset ?? 0) - (diffsForBlockTask.dayFromOffset ?? 0)
+                newAssemblyTask.action_at = additionDaysInStrFormat(
+                    newAssemblyTask.action_at,
+                    (diffsForAssemblyTask.dayToOffset ?? 0) - (diffsForAssemblyTask.dayFromOffset ?? 0)
                 )
 
                 // __ Устанавливаем новую смену, если перемещаем в другую
-                newBlockTask.change = targetChange
+                newAssemblyTask.change = targetChange
 
                 // __ Устанавливаем id
                 // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-                newBlockTask.id = 0
+                newAssemblyTask.id = 0
 
                 // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-                if (existingBlockTasks.length) {
+                if (existingAssemblyTasks.length) {
                     // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
                     modalInfoType.value = 'success'
                     modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
@@ -1231,25 +1231,25 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
                     if (result) {
                         // __ С объединением
-                        console.warn('Union BlockTasks')
+                        console.warn('Union AssemblyTasks')
 
                         // __ Переносим правую панель в новый СЗ
-                        rightPanel               = repositionBlockTaskLines(rightPanel)
-                        newBlockTask.block_lines = rightPanel
+                        rightPanel               = repositionAssemblyTaskLines(rightPanel)
+                        newAssemblyTask.assembly_lines = rightPanel
 
                         // __ Изменяем содержимое в СЗ
-                        leftPanel = repositionBlockTaskLines(leftPanel)
-                        blockStore.setBlockTasksLines(blockTask, leftPanel) // __ Делаем это в родителе
+                        leftPanel = repositionAssemblyTaskLines(leftPanel)
+                        assemblyStore.setAssemblyTasksLines(assemblyTask, leftPanel) // __ Делаем это в родителе
 
                         // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-                        await blockStore.applyMergeTasks([existingBlockTasks[0], newBlockTask]) // __ Объединяем СЗ с первой
-                        // blockStore.applyMergeTasks([blockTask, ...existingBlockTasks])   // __ Объединяем все остальные
+                        await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], newAssemblyTask]) // __ Объединяем СЗ с первой
+                        // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
                         return
                     }
                 }
 
                 // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-                await blockStore.addBlockTaskToGlobal(blockTask, leftPanel, newBlockTask, rightPanel) // __ Тут реактивное перерисовывание
+                await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
             } else {
                 // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
                 // __ Игнорируем это поведение и просто показываем сообщение об ошибке
@@ -1285,21 +1285,21 @@ async function showError(error: string | string[] | null = null) {
 }
 
 // __ Вспомогалка. Устанавливаем статусы для СЗ
-const setStatuses = async (setStatuses: IBlockTaskStatusesSet[]) => {
+const setStatuses = async (setStatuses: IAssemblyTaskStatusesSet[]) => {
     if (setStatuses.length) {
         // __ Отправляем запрос на сервер
-        const result = await blockStore.setBlockTasksStatuses(setStatuses)
+        const result = await assemblyStore.setAssemblyTasksStatuses(setStatuses)
 
         // __ Установка статусов на лету
         if (checkCRUD(result)) {
             // __ Получаем статусы, если не получили их ранее
-            if (!globalBlockTaskStatuses.value.length) {
-                await blockStore.getBlockTaskStatuses()
+            if (!globalAssemblyTaskStatuses.value.length) {
+                await assemblyStore.getAssemblyTaskStatuses()
             }
 
             setStatuses.forEach(item => {
-                const task   = globalBlockTasks.value.find(task => task.id === item.task)
-                const status = globalBlockTaskStatuses.value.find(status => status.id === item.status)
+                const task   = globalAssemblyTasks.value.find(task => task.id === item.task)
+                const status = globalAssemblyTaskStatuses.value.find(status => status.id === item.status)
 
                 if (task && status) {
                     task.current_status.id    = item.status
@@ -1313,10 +1313,10 @@ const setStatuses = async (setStatuses: IBlockTaskStatusesSet[]) => {
 }
 
 // __ Вызываем меню для дня
-const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
+const actionDayMenu = async (change: IAssemblyTaskChangeKeys) => {
     console.log('props.day: ', props.day)
 
-    const clearDay = clearRenderMatrixDay(props.day) as unknown as IBlockTask[][]  // __ Возвращаем новый массив без пустых элементов
+    const clearDay = clearRenderMatrixDay(props.day) as unknown as IAssemblyTask[][]  // __ Возвращаем новый массив без пустых элементов
     const idx      = getIndexByChange(change)
 
     // __ Проверяем, есть ли СЗ в дне
@@ -1350,7 +1350,7 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
     if (result.menuItem === 1) {
 
         let isTasksHasUnknownLine = false
-        const setStatusesData     = clearDay[idx].flatMap((task: IBlockTask) => {
+        const setStatusesData     = clearDay[idx].flatMap((task: IAssemblyTask) => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
             // __ и не является AVERAGE и там нет нераспределенных Столов
@@ -1362,7 +1362,7 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
             isTasksHasUnknownLine ||= hasTaskUnknownManufLine(task)
             if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownManufLine(task)) {
-                return { task: task.id, status: BLOCK_TASK_STATUSES.PENDING.ID }
+                return { task: task.id, status: ASSEMBLY_TASK_STATUSES.PENDING.ID }
             } else {
                 // __ Тут не асинхронный вывод ошибки
             }
@@ -1394,18 +1394,18 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
         // __ Отправляем СЗ со статусом Pending вверх списка
         const dayClone = JSON.parse(JSON.stringify(clearDay))
 
-        const newStatusOrders = orderBlockTasksByStatus(dayClone)
-        const diffsTask       = getBlockTasksDiff(newStatusOrders[idx], clearDay[idx] as unknown as IBlockTask[])
+        const newStatusOrders = orderAssemblyTasksByStatus(dayClone)
+        const diffsTask       = getAssemblyTasksDiff(newStatusOrders[idx], clearDay[idx] as unknown as IAssemblyTask[])
 
         // console.log('newStatusOrders: ', newStatusOrders)
         // console.log('diffsTask: ', diffsTask)
 
-        // const result = await blockStore.saveChanges(newOrders, clearDay)
+        // const result = await assemblyStore.saveChanges(newOrders, clearDay)
 
         // __ Меняем реактивно позиции в отображении
         if (checkCRUD(result)) {
             diffsTask.forEach(item => {
-                const task = globalBlockTasks.value.find(task => task.id === item.taskId)
+                const task = globalAssemblyTasks.value.find(task => task.id === item.taskId)
                 if (task && item.taskChanges?.position?.new) {
                     task.position = item.taskChanges.position.new
                 }
@@ -1417,11 +1417,11 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
     // __ Возврат для редактирования
     if (result.menuItem === 2) {
-        const setStatusesData = clearDay[idx].flatMap((task: IBlockTask) => {
+        const setStatusesData = clearDay[idx].flatMap((task: IAssemblyTask) => {
             // return { task: task.id, status: 1 }
             // __ Отправляем на выполнение то, что создано или создано при закрытии смены
-            if (task.current_status.id === BLOCK_TASK_STATUSES.PENDING.ID) {
-                return { task: task.id, status: BLOCK_TASK_STATUSES.CREATED.ID }
+            if (task.current_status.id === ASSEMBLY_TASK_STATUSES.PENDING.ID) {
+                return { task: task.id, status: ASSEMBLY_TASK_STATUSES.CREATED.ID }
             }
 
             return []
@@ -1435,23 +1435,23 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
     if (result.menuItem === 3) {
         console.log('clearDay: ', clearDay)
 
-        const grouped = getBlockTasksGroupedByOrder(clearDay[idx]) // __ Получаем массив массивов СЗ по одинаковым Заявкам
+        const grouped = getAssemblyTasksGroupedByOrder(clearDay[idx]) // __ Получаем массив массивов СЗ по одинаковым Заявкам
         // console.log('target: ', grouped)
-        await blockStore.applyMergeTasksGroups(grouped)
+        await assemblyStore.applyMergeTasksGroups(grouped)
         return
     }
 
     // __ Сохранение комментария
     if (result.menuItem === 4) {
         // __ Получаем день
-        const blockDay = await blockStore.getBlockDayByDateAndChange(formatToYMD(props.date))
-        console.log('day: ', blockDay)
+        const assemblyDay = await assemblyStore.getAssemblyDayByDateAndChange(formatToYMD(props.date))
+        console.log('day: ', assemblyDay)
 
-        comment.value = blockDay.comment ?? '' // __ Устанавливаем комментарий
+        comment.value = assemblyDay.comment ?? '' // __ Устанавливаем комментарий
         const answer  = await commentEdit.value!.show()
         if (answer) {
             const newComment = commentEdit.value!.comment.trim()
-            const result     = await blockStore.setBlockDayComment(blockDay.id, newComment)
+            const result     = await assemblyStore.setAssemblyDayComment(assemblyDay.id, newComment)
             if (!checkCRUD(result)) {
                 await showError()
                 return
@@ -1467,7 +1467,7 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
 // __ Переход в Выполнение СЗ
 const gotoExecute = async () => {
-    await router.push({ name: 'manufacture.cell.blocks.tasks.execute' })
+    await router.push({ name: 'manufacture.cell.assemblys.tasks.execute' })
 }
 
 
