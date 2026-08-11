@@ -28,13 +28,15 @@ class AssemblySize
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LATEX:
                 $this->widthDetail  = $this->width * 10;
                 $this->lengthDetail = $this->length * 10;
-                $this->heightDetail = $this->height * 10;
+                $this->heightDetail = 0;
+                //$this->heightDetail = $this->height * 10;
                 $this->amountDetail = 1;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_COCONUT:
                 $this->widthDetail  = $this->width * 10;
                 $this->lengthDetail = $this->length * 10;
-                $this->heightDetail = $this->height * 10;
+                $this->heightDetail = 0;
+                //$this->heightDetail = $this->height * 10;
                 $this->amountDetail = 1;
                 break;
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LAYER:
@@ -60,22 +62,22 @@ class AssemblySize
     }
 
 
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->widthDetail;
     }
 
-    public function getLength()
+    public function getLength(): int
     {
         return $this->lengthDetail;
     }
 
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->heightDetail;
     }
 
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->amountDetail;
     }

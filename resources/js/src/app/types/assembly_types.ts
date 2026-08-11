@@ -4,15 +4,23 @@
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import {
+    ASSEMBLY_SECTORS,
     ASSEMBLY_TASK_SECTOR_COCONUT,
     ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
-    ASSEMBLY_TASK_SECTOR_FOAM_SIDE, ASSEMBLY_TASK_SECTOR_LAMIT,
+    ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
+    ASSEMBLY_TASK_SECTOR_LAMIT,
     ASSEMBLY_TASK_SECTOR_LATEX,
-    ASSEMBLY_TASK_SECTOR_LAYER, ASSEMBLY_TASK_SECTOR_TABLE,
+    ASSEMBLY_TASK_SECTOR_LAYER,
+    ASSEMBLY_TASK_SECTOR_TABLE,
+    ASSEMBLY_TASK_STATUS_CREATED, ASSEMBLY_TASK_STATUS_DONE,
+    ASSEMBLY_TASK_STATUS_PENDING,
+    ASSEMBLY_TASK_STATUS_ROLLING,
+    ASSEMBLY_TASK_STATUS_RUNNING,
     CHANGE_1,
     CHANGE_2
 } from '@/app/constants/assembly.ts'
 import type { IDiffsType } from '@/types/index.ts'
+import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 
 
 // --- --------------------------------------------------------------------
@@ -244,8 +252,10 @@ export interface IAssemblySector {
     ID: number
     NAME: IAssemblySectorKeys
     TITLE: string
+    LABEL: string[]
     ICON: string
     TYPE: IColorTypes
+    SHOW: boolean
 }
 
 
@@ -295,4 +305,44 @@ export interface IAssemblyTaskArrayLineDiffs {
     } | null
 }
 
-// --- ------------------------------------------------------------
+// --- --------------------------------------------------------------
+
+// --- --------------------------------------------------------------
+// --- ------------ Типы для работы со статусами СЗ -----------------
+// --- --------------------------------------------------------------
+
+export type IAssemblyTaskStatusKeys =
+    typeof ASSEMBLY_TASK_STATUS_CREATED |
+    typeof ASSEMBLY_TASK_STATUS_ROLLING |
+    typeof ASSEMBLY_TASK_STATUS_PENDING |
+    typeof ASSEMBLY_TASK_STATUS_RUNNING |
+    typeof ASSEMBLY_TASK_STATUS_DONE
+
+export interface IAssemblyTaskStatusItem {
+    ID: number,
+    WORD: string
+    TITLE: string
+    TYPE: IColorTypes
+    PRIORITY: number
+}
+
+
+// --- --------------------------------------------------------------
+// --- ----- Типы для работы с Трудозатратами и Количеством ---------
+// --- --------------------------------------------------------------
+export type IStatItemAssembly = {
+    time: number
+    amount: number
+}
+
+// __ Создаем тип для объекта amount, где ключами будут только ключи из BLOCK_MANUF_LINES
+export type IAmountAndTimeAssembly = Record<keyof typeof ASSEMBLY_SECTORS, IStatItemAssembly>
+
+// export interface IAssemblyTaskStatusItem {
+//     ID: number,
+//     WORD: string
+//     TITLE: string
+//     TYPE: IColorTypes
+//     PRIORITY: number
+// }
+

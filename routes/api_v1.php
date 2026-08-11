@@ -447,6 +447,9 @@ Route::prefix('assembly')
         // __ СЗ Сборки
         Route::get('tasks', [AssemblyTaskController::class, 'getAssemblyTasks']);
         Route::get('tasks/order', [AssemblyTaskController::class, 'getAssemblyTasksByOrderId']);
+        Route::post('tasks/order', [AssemblyTaskController::class, 'addAssemblyTasksByOrderId']);
+        Route::delete('tasks/order', [AssemblyTaskController::class, 'deleteAssemblyTasksByOrderId']);
+
         //Route::get('tasks/status', [BlockTaskController::class, 'getBlockTasksByStatus']);
         //Route::get('tasks/status/period', [BlockTaskController::class, 'getBlockTasksByStatusAndPeriod']);
         //Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDateAndChange']);
@@ -456,13 +459,13 @@ Route::prefix('assembly')
         //Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
         //Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
         //Route::post('tasks/action/set', [BlockTaskController::class, 'setBlockTaskActionAt']);
+
         //Route::post('tasks/lines/line/set', [BlockTaskController::class, 'taskLinesManufLineSet']);
         //Route::post('tasks/line/done', [BlockTaskController::class, 'setBlockTaskLinesDone']);
         //Route::post('tasks/line/false', [BlockTaskController::class, 'setBlockTaskLinesFalse']);
         //Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
-        //Route::post('tasks/line/description', [BlockTaskController::class, 'setBlockTaskLineDescription']);
-        //Route::post('tasks/add/order', [BlockTaskController::class, 'addBlockTasksByOrderId']);
-        //Route::delete('tasks/delete/order', [BlockTaskController::class, 'deleteBlockTasksByOrderId']);
+        Route::post('tasks/line/sector/description', [AssemblyTaskController::class, 'setAssemblyTaskLineSectorDescription']);
+
         //
         //// __ Коллекция Блоков
         //Route::get('collections', [BlockCollectionController::class, 'getBlockCollections']);

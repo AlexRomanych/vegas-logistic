@@ -1,15 +1,20 @@
 import type {
+    IAmountAndTimeAssembly,
+    IAmountAndTimeBlock,
+    IAssemblySectorKeys,
     IAssemblyTask,
     IAssemblyTaskArrayDiff,
     IAssemblyTaskArrayLineDiffs,
     IAssemblyTaskChangeKeys,
-    IAssemblyTaskLine,
+    IAssemblyTaskLine, IAssemblyTaskLineSector, IAssemblyTaskStatusKeys, IBlockManufLine, IBlockTask, IBlockTaskLine,
     IDay,
     IPlanMatrix,
-    IRenderMatrixDiff, IRenderMatrixLineDiffs
+    IRenderMatrixDiff, IRenderMatrixLineDiffs, IRenderOrderLineAssemblyLineSector, IStatItemAssembly
 } from '@/types'
-import { ASSEMBLY_TASK_DRAFT } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES } from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
+import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { getBlockTaskLineSquare } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 
 // __ Проблема с draggable
@@ -28,8 +33,8 @@ export function correctRenderMatrix(matrix: IPlanMatrix) {
                 if (filteredDay.length === 0) {
                     const draft = {
                         ...ASSEMBLY_TASK_DRAFT,
-                        id         : draftId--,
-                        position   : 100,
+                        id            : draftId--,
+                        position      : 100,
                         assembly_lines: [],  /* !!! Тут пустой массив, потому что где-то по ссылке сохраняется  */
                     }
                     filteredDay.push(draft)
@@ -216,7 +221,7 @@ export function getAssemblyTasksDiff(currentTasks: IAssemblyTask[], originalTask
  */
 function getTaskLinesDiff(currentLines: IAssemblyTaskLine[], originalLines: IAssemblyTaskLine[]) {
     const diffs: IAssemblyTaskArrayLineDiffs[] = []
-    const originalLinesMap                  = new Map(originalLines.map(l => [l.id, l]))
+    const originalLinesMap                     = new Map(originalLines.map(l => [l.id, l]))
 
     currentLines.forEach((line) => {
         const originalLine = originalLinesMap.get(line.id)
@@ -376,3 +381,134 @@ function getLinesDetailedDiff(oldLines: IAssemblyTaskLine[], newLines: IAssembly
 }
 
 // --- ----------------------------------------------------------------------------------
+
+
+// __ Получаем Участок (Сектор) по Названию
+export function getSectorByName(assemblySector: IAssemblySectorKeys) {
+    return Object.values(ASSEMBLY_SECTORS).find(value => value.NAME === assemblySector)
+}
+
+// __ Получаем Расход по материалу Участка
+export function getSectorExpense(assemblySector: IRenderOrderLineAssemblyLineSector | IAssemblyTaskLineSector) {
+    return assemblySector.total_per_pic * assemblySector.amount
+}
+
+// __ Получаем Расход по материалу Участка
+export function getSectorAmount(assemblySector: IRenderOrderLineAssemblyLineSector | IAssemblyTaskLineSector) {
+    return assemblySector.amount
+}
+
+// __ Получаем Трудозатраты по материалу Участка
+export function getSectorTime(assemblySector: IRenderOrderLineAssemblyLineSector | IAssemblyTaskLineSector) {
+    return assemblySector.time
+}
+
+
+// __ Получаем Размер Детальки по материалу Участка
+export function getSectorSize(assemblySector: IRenderOrderLineAssemblyLineSector | IAssemblyTaskLineSector) {
+    let width  = 0
+    let length = 0
+    let height = 0
+
+    if (isAssemblyTaskLineSector(assemblySector)) {
+        width  = assemblySector.detail_dims.width / 10
+        length = assemblySector.detail_dims.length / 10
+        height = assemblySector.detail_dims.height / 10
+    } else if (isAssemblyTaskLineSectorOrder(assemblySector)) {
+        width  = assemblySector.detail_width / 10
+        length = assemblySector.detail_length / 10
+        height = assemblySector.detail_height / 10
+    }
+
+    let size = `${width}x${length}`
+
+    if (height) {
+        size = `${size}x${height}`
+    }
+    return size
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статус СЗ по его ID
+export function getTaskStatusById(id: number) {
+    const statusKey = Object.keys(ASSEMBLY_TASK_STATUSES).find(key => ASSEMBLY_TASK_STATUSES[key as IAssemblyTaskStatusKeys].ID === id)
+    if (statusKey) {
+        return ASSEMBLY_TASK_STATUSES[statusKey as IAssemblyTaskStatusKeys]
+    }
+    return null
+}
+
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskLineSector (для функционала)
+function isAssemblyTaskLineSector(item: unknown): item is IAssemblyTaskLineSector {
+    return !!item && typeof item === 'object' && 'detail_dims' in item && 'dims' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IRenderOrderLineAssemblyLineSector (для вывода заявки)
+function isAssemblyTaskLineSectorOrder(item: unknown): item is IRenderOrderLineAssemblyLineSector {
+    return !!item && typeof item === 'object' && 'detail_width' in item && 'detail_length' in item && 'detail_height' in item
+}
+
+
+
+
+
+
+// --- -------------------------------------------------------------------------------------
+// --- ----------------------- Подсчет количества и Трудозатрат ----------------------------
+// --- -------------------------------------------------------------------------------------
+// __ Создаем сам объект данных с ключами из BLOCK_MANUF_LINES и {time: 0, amount: 0} и инициализируем его нулями
+export function createAmountAndTimeObj() {
+    return Object.values(ASSEMBLY_SECTORS).reduce((acc, value) => {
+        acc[value.NAME as keyof typeof ASSEMBLY_SECTORS] = {
+            time  : 0,
+            amount: 0,
+        }
+        return acc
+    }, {} as IAmountAndTimeAssembly)
+}
+
+
+// __ Получаем трудозатраты по Заявке или массиву строк (Содержимого) в формате объекта
+export function getAssemblyTaskAmountAndTime(item: IAssemblyTask | IAssemblyTaskLine[]) {
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.assembly_lines
+    }
+
+    //  __ Создаем сам объект данных с ключами из ASSEMBLY_SECTORS и {time: 0, amount: 0} и инициализируем его нулями
+    const groupedSectors = createAmountAndTimeObj()
+
+    // __ Собираем все Записи по участкам Производства
+    itemArr.forEach(line => {
+        line.sector_lines.forEach(sector => {
+            groupedSectors[sector.sector as keyof typeof ASSEMBLY_SECTORS].amount += sector.amount
+            groupedSectors[sector.sector as keyof typeof ASSEMBLY_SECTORS].time += sector.time
+        })
+    })
+
+    // console.log('groupedSectors:', groupedSectors)
+
+    return groupedSectors
+}
+
+
+// __ Получаем Общие трудозатраты по Заявке или массиву строк (Содержимого) в формате объекта
+export function getAssemblyTaskAmountAndTimeTotal(item: IAssemblyTask | IAssemblyTaskLine[]) {
+    const totals = getAssemblyTaskAmountAndTime(item)
+
+    // console.log('totals:', totals)
+
+    return Object.values(totals).reduce((acc, item) => {
+        acc.amount += item.amount
+        acc.time += item.time
+        return acc
+    }, {amount: 0, time: 0} as IStatItemAssembly)
+}

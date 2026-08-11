@@ -6,7 +6,9 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Assembly\GetAssemblyTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Assembly\Manage\AssemblyTaskResource;
+use App\Models\Manufacture\Cells\Assembly\AssemblyDay;
 use App\Models\Manufacture\Cells\Assembly\AssemblyTask;
+use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLineSector;
 use App\Services\DefaultsService;
 use App\Services\Manufacture\AssemblyService;
 use Carbon\Carbon;
@@ -14,6 +16,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class AssemblyTaskController extends Controller
 {
@@ -133,6 +137,111 @@ class AssemblyTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
+
+    /**
+     * ___ Добавляем СЗ для Сборки
+     * @param Request $request
+     * @return string
+     */
+    public function addAssemblyTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            AssemblyService::createAssemblyTaskFromOrderId($validated['id']);
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно создано');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Удаляем СЗ для Сборки
+     * @param Request $request
+     * @return string
+     */
+    public function deleteAssemblyTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:orders,id'
+            ]);
+
+            DB::transaction(function () use ($validated) {
+                // __ Меняем позиции СЗ в днях, где удаляем
+                $deletedTasks = AssemblyTask::query()
+                    ->select(['id', 'action_at'])
+                    ->where('order_id', $validated['id'])
+                    ->get();
+
+                // __ Удаляем здесь
+                AssemblyTask::query()
+                    ->where('order_id', $validated['id'])
+                    ->delete();
+
+                foreach ($deletedTasks as $deletedTask) {
+                    $tasksToUpdate = [];
+                    $pos           = 1;
+                    $existTasks    = AssemblyTask::query()
+                        ->select(['id', 'action_at', 'position', 'change'])
+                        ->where('change', AssemblyDay::CHANGE_1)
+                        ->where('action_at', '>=', $deletedTask->action_at->startOfDay())
+                        ->where('action_at', '<=', $deletedTask->action_at->endOfDay())
+                        ->orderBy('position')
+                        ->get();
+
+                    foreach ($existTasks as $existTask) {
+                        $tasksToUpdate[] = [
+                            'id'        => $existTask->id,
+                            'action_at' => null,
+                            'position'  => $pos++,
+                        ];
+                    }
+
+                    AssemblyService::bulkUpdateTasks($tasksToUpdate);
+                }
+            });
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+    /**
+     * ___ Обновляем Комментарий Записи
+     * @param Request $request
+     * @return string
+     */
+    public function setAssemblyTaskLineSectorDescription(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'          => 'required|integer|exists:assembly_task_line_sectors,id',
+                'description' => 'nullable|string',
+            ]);
+
+            $description = $validated['description'] ?? null;
+            AssemblyTaskLineSector::query()
+                ->where('id', $validated['id'])
+                ->update(['description' => $description]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
 
 }
 

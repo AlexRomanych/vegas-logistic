@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AssemblyDay extends Model
 {
+    public const CHANGE_1 = '1';
+    public const CHANGE_2 = '2';
+    public const CHANGE_0 = '0';        // __ Смена 1 + Смена 2
+
     protected $guarded = false;
 
     protected $casts = [

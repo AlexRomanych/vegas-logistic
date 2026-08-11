@@ -1,11 +1,11 @@
 import type {
     IAssemblyModelManufactureGroup,
     IAssemblySector,
-    IAssemblySectorKeys,
     IAssemblyTask,
     IAssemblyTaskChange,
-    IAssemblyTaskChangeKeys, IAssemblyTaskLine, IAssemblyTaskOrder, IAssemblyTaskStatus,
-    IColorTypes
+    IAssemblyTaskChangeKeys,
+    IAssemblyTaskStatusItem,
+    IAssemblyTaskStatusKeys,
 } from '@/types'
 
 // --- --------------------------------------------------------------------
@@ -67,40 +67,50 @@ export const ASSEMBLY_TASK_SECTOR_TABLE      = 'table'              // __ Сто
 
 
 export const ASSEMBLY_SECTORS = {
-    [ASSEMBLY_TASK_SECTOR_COCONUT]: {
+    ASSEMBLY_TASK_SECTOR_COCONUT: {
         ID   : 1,
         NAME : ASSEMBLY_TASK_SECTOR_COCONUT,
         TITLE: 'Кокос',
+        LABEL: ['Кокос', ''],
         ICON : '',
-        TYPE : 'primary',
+        TYPE : 'warning',
+        SHOW : true,
     },
-    [ASSEMBLY_TASK_SECTOR_LATEX]: {
+    ASSEMBLY_TASK_SECTOR_LATEX: {
         ID   : 2,
         NAME : ASSEMBLY_TASK_SECTOR_LATEX,
         TITLE: 'Латекс',
+        LABEL: ['Латекс', ''],
         ICON : '',
         TYPE : 'success',
+        SHOW : true,
     },
-    [ASSEMBLY_TASK_SECTOR_LAYER]: {
+    ASSEMBLY_TASK_SECTOR_LAYER: {
         ID   : 3,
         NAME : ASSEMBLY_TASK_SECTOR_LAYER,
         TITLE: 'Тонкий настил',
+        LABEL: ['Тонкий', 'настил'],
         ICON : '',
-        TYPE : 'dark',
+        TYPE : 'orange',
+        SHOW : true,
     },
-    [ASSEMBLY_TASK_SECTOR_FOAM_LAYER]: {
+    ASSEMBLY_TASK_SECTOR_FOAM_LAYER: {
         ID   : 4,
         NAME : ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
         TITLE: 'ППУ Настилы',
+        LABEL: ['ППУ', 'Настилы'],
         ICON : '',
-        TYPE : 'dark',
+        TYPE : 'indigo',
+        SHOW : true,
     },
-    [ASSEMBLY_TASK_SECTOR_FOAM_SIDE] : {
+    ASSEMBLY_TASK_SECTOR_FOAM_SIDE : {
         ID   : 5,
         NAME : ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
         TITLE: 'ППУ Борта',
+        LABEL: ['ППУ', 'Борта'],
         ICON : '',
-        TYPE : 'dark',
+        TYPE : 'primary',
+        SHOW : true,
     }
 } as const satisfies Record<string, IAssemblySector>
 
@@ -152,3 +162,55 @@ export const ASSEMBLY_TASK_DRAFT = {
 
     }
 } as const satisfies IAssemblyTask
+
+
+
+// --- --------------------------------------------------------------------
+// --- ------------------ Константы Статусов СЗ  --------------------------
+// --- --------------------------------------------------------------------
+
+export const ASSEMBLY_TASK_STATUS_CREATED = 'CREATED'     // __ Создано
+export const ASSEMBLY_TASK_STATUS_ROLLING = 'ROLLING'     // __ Переходящий
+export const ASSEMBLY_TASK_STATUS_PENDING = 'PENDING'     // __ Готово к выполнению
+export const ASSEMBLY_TASK_STATUS_RUNNING = 'RUNNING'     // __ Выполняется
+export const ASSEMBLY_TASK_STATUS_DONE    = 'DONE'        // __ Выполнено
+
+
+// __ Статусы движения СЗ на Блоках
+export const ASSEMBLY_TASK_STATUSES: Record<IAssemblyTaskStatusKeys, IAssemblyTaskStatusItem> = {
+    CREATED: {
+        ID      : 1,
+        TITLE   : 'Создано',
+        WORD    : 'created',
+        TYPE    : 'dark',
+        PRIORITY: 1,
+    },
+    ROLLING: {
+        ID      : 2,
+        TITLE   : 'Создано при закрытии СЗ',
+        WORD    : 'rolling',
+        TYPE    : 'orange',
+        PRIORITY: 2,
+    },
+    PENDING: {
+        ID      : 3,
+        TITLE   : 'Готово к выполнению',
+        WORD    : 'pending',
+        TYPE    : 'primary',
+        PRIORITY: 3,
+    },
+    RUNNING: {
+        ID      : 4,
+        TITLE   : 'Выполняется',
+        WORD    : 'running',
+        TYPE    : 'warning',
+        PRIORITY: 4,
+    },
+    DONE   : {
+        ID      : 5,
+        TITLE   : 'Создано',
+        WORD    : 'created',
+        TYPE    : 'success',
+        PRIORITY: 5,
+    },
+} as const

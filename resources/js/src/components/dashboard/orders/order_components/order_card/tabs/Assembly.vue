@@ -12,11 +12,11 @@
                     v-if="tab.show"
                     :text="tab.label"
                     :type="activeTabPosition === tab.position ? tab.typeActive : tab.type"
+                    :width="BUTTON_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    :width="BUTTON_WIDTH"
                     @click="activeTabPosition = tab.position"
                 />
             </div>
@@ -25,39 +25,62 @@
             <AppLabelTS
                 :text="actionText"
                 :type="actionType"
+                :width="BUTTON_WIDTH"
                 align="center"
                 height="h-[50px]"
                 rounded="4"
                 text-size="mini"
-                :width="BUTTON_WIDTH"
                 @click="actionTask"
             />
 
         </div>
 
         <template v-if="activeTabPosition === 1">
+
+            <div class="flex mb-2">
+                <!-- __ Участки -->
+                <div v-for="sector of sectors" :key="sector.ID">
+                    <div
+                        :class="[activeSector.ID === sector.ID ? 'bg-blue-300 border-2 border-blue-800 p-0.5' : 'p-0.5']"
+                        class="rounded-md transition-all"
+                    >
+                        <AppLabelMultiLineTS
+                            v-if="sector.SHOW"
+                            :text="sector.LABEL"
+                            :type="sector.TYPE"
+                            :width="SECTOR_WIDTH"
+                            align="center"
+                            class="start-group cursor-pointer"
+                            rounded="4"
+                            text-size="mini"
+                            @click="activeSector = sector"
+                        />
+                    </div>
+                </div>
+            </div>
+
             <!-- __ Шапка СЗ -->
             <ExecuteTaskHeader
                 :client-show="false"
-                :fields-width="cuttingTaskFieldsWidth"
+                :fields-width="assemblyTaskFieldsWidth"
                 :order-info="false"
             />
 
             <!-- __ Сами СЗ -->
-            <div v-for="cuttingTask of cuttingTasks" :key="cuttingTask.id">
+            <div v-for="assemblyTask of renderAssemblyTasks" :key="assemblyTask.id">
                 <ExecuteTask
+                    :assembly-task="assemblyTask"
                     :client-show="false"
-                    :cutting-task="cuttingTask"
-                    :fields-width="cuttingTaskFieldsWidth"
+                    :fields-width="assemblyTaskFieldsWidth"
                     :order-info="false"
                 />
             </div>
         </template>
         <template v-else-if="activeTabPosition === 2">
             <OrderLines
-                :order-lines="orderWithCuttingTask ? orderWithCuttingTask.lines : []"
+                :order-lines="orderWithAssemblyTask ? orderWithAssemblyTask.lines : []"
+                :show-assembly-sectors="true"
                 :show-collapsed="false"
-                :show-cutting-details="true"
             />
         </template>
 
@@ -77,25 +100,27 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed } from 'vue'
 
-import type { IColorTypes, IRenderOrder, ICuttingTask, IRenderOrderCuttingTask, IAssemblyTask, IRenderOrderAssemblyTask } from '@/types'
+import type { IColorTypes, IRenderOrder, IAssemblyTask, IRenderOrderAssemblyTask, } from '@/types'
 
-import { useCuttingStore } from '@/stores/CuttingStore.ts'
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 import { useOrdersStore } from '@/stores/OrdersStore.ts'
 
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { useLoading } from 'vue-loading-overlay'
 
-import ExecuteTaskHeader
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTaskHeader.vue'
-import ExecuteTask
-    from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecuteTask.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import { ASSEMBLY_SECTORS, } from '@/app/constants/assembly.ts'
+
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+
+import ExecuteTaskHeader
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_execute/ExecuteTaskHeader.vue'
+import ExecuteTask
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_execute/ExecuteTask.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
-import { DETAILS } from '@/app/constants/cutting.ts'
 
 
 interface IProps {
@@ -114,27 +139,48 @@ interface ITab {
 const props = defineProps<IProps>()
 
 const assemblyStore = useAssemblyStore()
-const cuttingStore = useCuttingStore()
-const ordersStore  = useOrdersStore()
+const ordersStore   = useOrdersStore()
 
 const DEBUG     = true
 const isLoading = ref(false)
 
 // __ Объявляем константы
 const BUTTON_WIDTH = 'w-[200px]'
-
+const SECTOR_WIDTH = 'w-[150px]'
 
 // __ Объявляем переменные
-const cuttingTasks         = ref<ICuttingTask[]>([])
-const orderWithCuttingTask = ref<IRenderOrderCuttingTask | null>(null)
+const assemblyTasks         = ref<IAssemblyTask[]>([])
+const orderWithAssemblyTask = ref<IRenderOrderAssemblyTask | null>(null)
 
 // __ Вычисляемые свойства
-const actionText = computed(() => cuttingTasks.value?.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
-const actionType = computed(() => cuttingTasks.value?.length !== 0 ? 'danger' : 'success')
+const actionText          = computed(() => assemblyTasks.value?.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
+const actionType          = computed(() => assemblyTasks.value?.length !== 0 ? 'danger' : 'success')
+const renderAssemblyTasks = computed(() => {
+    const tasks = assemblyTasks.value
+        .map(task => {
+            const assemblyLines = task.assembly_lines
+                .map(line => {
+                    const sectorLines = line.sector_lines
+                        .filter(sector => sector.sector === activeSector.value.NAME)
+                        .toSorted((a, b) => a.material_name.localeCompare(b.material_name))
+                    return sectorLines.length > 0 ? { ...line, sector_lines: sectorLines } : undefined
+                })
+                .filter(line => line !== undefined)
+            return { ...task, assembly_lines: assemblyLines, collapsed: false }
+        })
+    .filter(task => task.assembly_lines.length > 0)
+
+    // console.log('tasks: ', tasks)
+    return tasks
+})
 
 // __ Табы
 const tabs              = ref<ITab[]>([])
 const activeTabPosition = ref(1)
+
+// __ Участки
+const sectors      = computed(() => Object.entries(ASSEMBLY_SECTORS).map(([, value]) => value))
+const activeSector = ref(sectors.value[0])
 
 const setTabs = () => {
     tabs.value = []
@@ -154,12 +200,11 @@ const setTabs = () => {
     })
 }
 
-
 // __ Ширина полей для вывода СЗ
 const COLLAPSED_WIDTH = 'w-[30px]'
 const PROGRESS_WIDTH  = 'w-[264px]'
 
-const cuttingTaskFieldsWidth = {
+const assemblyTaskFieldsWidth = {
     collapsed    : COLLAPSED_WIDTH,
     id           : 'w-[30px]',
     position     : 'w-[30px]',
@@ -200,53 +245,52 @@ async function showError(error: string | string[] | null = null) {
 
 // __ Получаем СЗ с сервера
 const getTasks = async () => {
-    const [tasks, orderWithTask]: [ICuttingTask[], IRenderOrderAssemblyTask] = await Promise.all([
-        cuttingStore.getCuttingTasksByOrderId(props.id),
+    const [tasks, orderWithTask]: [IAssemblyTask[], IRenderOrderAssemblyTask] = await Promise.all([
+        assemblyStore.getAssemblyTasksByOrderId(props.id),
         ordersStore.getOrdersWithAssemblyTaskLines(props.id)
     ])
 
+    assemblyTasks.value = tasks.map(task => ({ ...task, collapsed: true }))
 
-    const assemblyTask: IAssemblyTask = await assemblyStore.getAssemblyTasksByOrderId(787)
-    console.log('assemblyTask: ', assemblyTask)
-
-    // const tasks: ICuttingTask[]                    = await cuttingStore.getCuttingTasksByOrderId(props.id)
-    // const orderWithTask: IRenderOrderCuttingTask[] = await cuttingStore.getCuttingTasksByOrderId(props.id)
-
-    cuttingTasks.value = tasks.map(task => ({ ...task, collapsed: true }))
-
-    const ORDER_OF_DETAILS = [
-        DETAILS.PANEL.NAME,      // 'panel'
-        DETAILS.PANEL_UP.NAME,   // 'panel_up'
-        DETAILS.SIDE.NAME,        // 'side'
-        DETAILS.PANEL_DOWN.NAME // 'panel_down'
+    const ORDER_OF_SECTORS = [
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LATEX.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAYER.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_LAYER.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_SIDE.NAME,
     ]
 
     if (orderWithTask) {
-        orderWithCuttingTask.value = {
+        orderWithAssemblyTask.value = {
             ...orderWithTask,
             lines: orderWithTask.lines.map(line => {
                 return {
                     ...line,
-                    collapsed_cutting_details: true,
-                    cutting_lines            : line.cutting_lines?.toSorted((a, b) => {
-                        // 2. Находим индексы текущих элементов в нашем эталоне
-                        const indexA = ORDER_OF_DETAILS.indexOf(a.detail)
-                        const indexB = ORDER_OF_DETAILS.indexOf(b.detail)
+                    collapsed_assembly_sectors: true,
+                    assembly_lines            : line.assembly_lines?.map(assemblyLine => {
+                        return {
+                            ...assemblyLine,
+                            sectors: assemblyLine.sectors?.toSorted((a, b) => {
+                                // 2. Находим индексы текущих элементов в нашем эталоне
+                                const indexA = ORDER_OF_SECTORS.indexOf(a.sector as typeof ORDER_OF_SECTORS[number])
+                                const indexB = ORDER_OF_SECTORS.indexOf(b.sector as typeof ORDER_OF_SECTORS[number])
 
-                        // 3. Сравниваем индексы (числа) обычным вычитанием
-                        return indexA - indexB
+                                // 3. Сравниваем индексы (числа) обычным вычитанием
+                                return indexA - indexB
+                            })
+                        }
                     })
                 }
-            })
+            }),
         }
     }
 }
 
 // __ Удаляем/добавляем СЗ
 const actionTask = async () => {
-
+    //
     let result
-    if (cuttingTasks.value?.length !== 0) {
+    if (assemblyTasks.value?.length !== 0) {
 
         // __ Удаляем СЗ
         modalInfoType.value = 'danger'
@@ -261,9 +305,9 @@ const actionTask = async () => {
             return
         }
 
-        result = await cuttingStore.deleteCuttingTasksByOrderId(props.id)
+        result = await assemblyStore.deleteAssemblyTasksByOrderId(props.id)
 
-        cuttingTasks.value = []
+        assemblyTasks.value = []
 
     } else {
 
@@ -280,9 +324,8 @@ const actionTask = async () => {
             return
         }
 
-        result = await cuttingStore.addCuttingTasksByOrderId(props.id)
+        result = await assemblyStore.addAssemblyTasksByOrderId(props.id)
         await getTasks()
-
     }
 
     if (checkCRUD(result)) {
@@ -296,7 +339,6 @@ const actionTask = async () => {
 }
 
 
-
 onMounted(async () => {
     isLoading.value = true
 
@@ -306,7 +348,7 @@ onMounted(async () => {
         async () => {
 
             await getTasks()
-            if (DEBUG) console.log('cuttingTask: ', cuttingTasks.value)
+            if (DEBUG) console.log('assemblyTask: ', assemblyTasks.value)
 
             setTabs()
         },

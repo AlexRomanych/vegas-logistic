@@ -28,6 +28,9 @@
             <!-- __ Collapsed CuttingDetails -->
             <AppLabelTSWrapper :render-object="render.collapsed_cutting_details" header/>
 
+            <!-- __ Collapsed AssemblySectors -->
+            <AppLabelTSWrapper :render-object="render.collapsed_assembly_sectors" header/>
+
             <!-- __ Collapsed Blocks -->
             <AppLabelTSWrapper :render-object="render.collapsed_blocks" header/>
 
@@ -101,6 +104,9 @@
             <!-- __ Collapsed CuttingDetails -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_cutting_details" @click="render.collapsed_cutting_details.click!(orderLine)"/>
 
+            <!-- __ Collapsed AssemblySectors -->
+            <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_assembly_sectors" @click="render.collapsed_assembly_sectors.click!(orderLine)"/>
+
             <!-- __ Collapsed Blocks -->
             <AppLabelTSWrapper :arg="orderLine" :render-object="render.collapsed_blocks" @click="render.collapsed_blocks.click!(orderLine)"/>
 
@@ -172,6 +178,13 @@
             </div>
         </template>
 
+        <!-- __ Участки СЗ для Сборки -->
+        <template v-if="showAssemblySectors">
+            <div v-if="!orderLine.collapsed_assembly_sectors" class="ml-[44px]">
+                <OrderLineAssemblySector :line="orderLine"/>
+            </div>
+        </template>
+
         <!-- __ Блоки -->
         <template v-if="showBlocks">
             <div v-if="!orderLine.collapsed_blocks" class="ml-[74px]">
@@ -215,14 +228,15 @@ import { useModelsStore } from '@/stores/ModelsStore.ts'
 // import { formatDateIntl } from '@/app/helpers/helpers_date.js'
 // import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
 
-import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import AppLabelTSWrapper from '@/components/dashboard/orders/components/AppLabelTSWrapper.vue'
 import OrderItemInfo from '@/components/dashboard/orders/order_components/order_common/OrderItemInfo.vue'
 import OrderLineMaterials from '@/components/dashboard/orders/order_components/order_render/OrderLineMaterials.vue'
 import OrderLineCuttingDetail from '@/components/dashboard/orders/order_components/order_render/OrderLineCuttingDetail.vue'
 import OrderLineBlock from '@/components/dashboard/orders/order_components/order_render/OrderLineBlock.vue'
 import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
-import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import OrderLineAssemblySector from '@/components/dashboard/orders/order_components/order_render/OrderLineAssemblySector.vue'
 
 
 interface IProps {
@@ -231,15 +245,17 @@ interface IProps {
     showDelete?: boolean
     showMaterials?: boolean
     showCuttingDetails?: boolean
+    showAssemblySectors?: boolean
     showBlocks?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    showCollapsed     : true,
-    showDelete        : false,
-    showMaterials     : false,
-    showCuttingDetails: false,
-    showBlocks        : false,
+    showCollapsed      : true,
+    showDelete         : false,
+    showMaterials      : false,
+    showCuttingDetails : false,
+    showAssemblySectors: false,
+    showBlocks         : false,
 })
 
 const emits = defineEmits<{
@@ -321,6 +337,21 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details ? '▲' : '▼',
         click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_cutting_details = !orderLine.collapsed_cutting_details
+    },
+    collapsed_assembly_sectors: {
+        header        : '▲▼',
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : props.showAssemblySectors,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : () => 'warning',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (orderLine: IRenderOrderLine) => orderLine.collapsed_assembly_sectors ? '▲' : '▼',
+        click         : (orderLine: IRenderOrderLine) => orderLine.collapsed_assembly_sectors = !orderLine.collapsed_assembly_sectors
     },
     collapsed_blocks         : {
         header        : '▲▼',

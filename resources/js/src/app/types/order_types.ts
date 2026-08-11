@@ -120,6 +120,7 @@ export interface IRenderOrderLine {
     block_lines?: IRenderOrderLineBlockLine[]
     collapsed_materials?: boolean
     collapsed_cutting_details?: boolean
+    collapsed_assembly_sectors?: boolean
     collapsed_blocks?: boolean
 
     spec_name: string | null
@@ -153,6 +154,7 @@ export interface IRenderOrderLineAssemblyLine {
     id: number
     sectors: IRenderOrderLineAssemblyLineSector[]
     time: number
+    description: string|null
 }
 
 export interface IRenderOrderLineAssemblyLineSector {
@@ -166,9 +168,17 @@ export interface IRenderOrderLineAssemblyLineSector {
     expense: number
     rest: number
     total: number
+    expense_per_pic: number
+    rest_per_pic: number
+    total_per_pic: number
     amount: number
     count: number
     time: number
+    false_at: string | null
+    finished_at: string | null
+    false_reason: string|null
+    description: string|null
+    position: number
 }
 
 

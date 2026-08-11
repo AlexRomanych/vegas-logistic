@@ -344,6 +344,104 @@ final class AssemblyService
     }
 
 
+    /**
+     * ___ Массовое обновление СЗ
+     * @param array $rows
+     * @return void
+     * @throws Throwable
+     * @noinspection DuplicatedCode
+     */
+    public static function bulkUpdateTasks(array $rows): void
+    {
+        // __ Получаем имя таблицы
+        $table = (new AssemblyTask)->getTable();
+
+        // __ 1. Находим только те ID, у которых действительно меняется позиция (чтобы не уводить в минус лишнее)
+        $idsForMinus = array_column(array_filter($rows, fn($r) => isset($r['position'])), 'id');
+
+        // __ 2. Находим все ID, которые участвуют в обновлении (хоть позиция, хоть amount)
+        $allIds = array_column($rows, 'id');
+
+        DB::transaction(function () use ($table, $rows, $idsForMinus, $allIds) {
+            // Warning!!! Не работает. Уводит position в минус.
+            // !!! В чем проблема сейчас?
+            // !!! Твой «ШАГ 1» уводит записи в минус на текущей дате (action_at). Если на новой дате, куда ты хочешь перенести задачу,
+            // !!!уже есть запись с такой же позицией, ты все равно получишь Unique violation.
+            // !!! Решение: Полное «обнуление» конфликта
+            // !!! Чтобы гарантированно избежать проблем, тебе нужно на первом шаге временно сделать записи уникальными не только по позиции, но и по дате,
+            // !!! чтобы они вообще не пересекались ни с какими существующими данными.
+            //$placeholders = implode(',', array_fill(0, count($allIds), '?'));
+            //DB::update("UPDATE {$table} SET position = (id * -1) WHERE id IN ({$placeholders})", $allIds);
+
+
+            // __ ШАГ 1: Уводим в минус ТОЛЬКО те записи, где позиция реально будет обновлена
+            if (!empty($idsForMinus)) {
+                $placeholders = implode(',', array_fill(0, count($idsForMinus), '?'));
+                DB::update("UPDATE {$table} SET position = (id * -1) WHERE id IN ({$placeholders})", $idsForMinus);
+            }
+
+            // __ ШАГ 2: Собираем финальный запрос
+            $casesActionAt  = [];
+            $paramsActionAt = [];
+
+            $casesPosition  = [];
+            $paramsPosition = [];
+
+            $casesChange  = [];
+            $paramsChange = [];
+
+            foreach ($rows as $row) {
+                if (isset($row['action_at'])) {
+                    $casesActionAt[] = "WHEN id = ? THEN ?";
+                    array_push($paramsActionAt, $row['id'], $row['action_at']);
+                }
+
+                if (isset($row['position'])) {
+                    $casesPosition[] = "WHEN id = ? THEN ?";
+                    array_push($paramsPosition, $row['id'], $row['position']);
+                }
+
+                if (isset($row['change'])) {
+                    $casesChange[] = "WHEN id = ? THEN ?";
+                    array_push($paramsChange, $row['id'], $row['change']);
+                }
+            }
+
+            $setParts    = [];
+            $finalParams = [];
+
+            if (!empty($casesActionAt)) {
+                $setParts[]  = "action_at = CASE " . implode(' ', $casesActionAt) . " ELSE action_at END";
+                $finalParams = array_merge($finalParams, $paramsActionAt);
+            }
+
+            if (!empty($casesPosition)) {
+                $setParts[]  = "position = CASE " . implode(' ', $casesPosition) . " ELSE position END";
+                $finalParams = array_merge($finalParams, $paramsPosition);
+            }
+
+            // __ Интегрируем блок смены в итоговый
+            // __ change обернуто в косые кавычки: `change` = CASE .... Это сделано обязательно, MySQL
+            // __ change обернуто в двойные кавычки: "change" = CASE .... Это сделано обязательно, PostgreSQL
+            // __ так как слово CHANGE является зарезервированной системной командой в SQL
+            if (!empty($casesChange)) {
+                $setParts[]  = '"change" = CASE ' . implode(' ', $casesChange) . ' ELSE "change" END';
+                $finalParams = array_merge($finalParams, $paramsChange);
+            }
+
+            if (empty($setParts)) {
+                return;
+            }
+
+            $wherePlaceholders = implode(',', array_fill(0, count($allIds), '?'));
+            $sql               = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id IN ({$wherePlaceholders})";
+
+            // __ Соединяем параметры: параметры CASE1 + параметры CASE2 + параметры WHERE
+            DB::update($sql, array_merge($finalParams, $allIds));
+        });
+    }
+
+
     public static function test(Request|null $request = null): mixed
     {
         //$assemblyMaterials = Material::query()

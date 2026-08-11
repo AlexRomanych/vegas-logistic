@@ -22,9 +22,10 @@ const URL_ASSEMBLY_MODEL_MANUFACTURE_GROUPS = '/assembly/model/manufacture/group
 
 const URL_ASSEMBLY_TASKS          = '/assembly/tasks'                       // URL для получения Сменных заданий
 const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // URL для получения Сменных заданий по id Заявки
-// const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
 // const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+
+// const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
 // const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
 // const URL_ASSEMBLY_TASKS_STATUS_BEFORE_DATE   = '/assembly/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE       = '/assembly/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
@@ -36,6 +37,14 @@ const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // U
 
 const URL_ASSEMBLY      = '/assembly'                             // URL для получения Блоков
 const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для тестирования
+
+// const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+// const URL_ASSEMBLY_TASK_LINE_DONE        = '/assembly/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+// const URL_ASSEMBLY_TASK_LINE_FALSE       = '/assembly/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
+// const URL_ASSEMBLY_TASK_LINE_RESET       = '/assembly/tasks/line/reset'            // URL для сброса статуса для записи СЗ
+const URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION = '/assembly/tasks/line/sector/description'      // URL для изменения описания для записи СЗ
+
+
 
 // const URL_ASSEMBLY_COLLECTIONS_TUNING_TIME           = '/assembly/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
 // const URL_ASSEMBLY_COLLECTIONS_TUNING_TIME_LIST      = '/assembly/collections/tuning/time/list'       // URL для получения времени переналадки Коллекций Блоков для Группы Коллекций
@@ -55,11 +64,6 @@ const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для 
 // const URL_ASSEMBLY_TASK_STATUSES_SET         = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 // const URL_ASSEMBLY_TASK_STATUSES_COLOR_PATCH = '/assembly/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
 
-// const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
-// const URL_ASSEMBLY_TASK_LINE_DONE        = '/assembly/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
-// const URL_ASSEMBLY_TASK_LINE_FALSE       = '/assembly/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
-// const URL_ASSEMBLY_TASK_LINE_RESET       = '/assembly/tasks/line/reset'            // URL для сброса статуса для записи СЗ
-// const URL_ASSEMBLY_TASK_LINE_DESCRIPTION = '/assembly/tasks/line/description'      // URL для изменения описания для записи СЗ
 //
 // const URL_ASSEMBLY_DAY                    = '/assembly/day'                         // URL для получения рабочего дня
 // const URL_ASSEMBLY_DAY_PERIOD             = '/assembly/days/period'                 // URL для получения рабочих дней за период
@@ -1022,42 +1026,37 @@ export const useAssemblyStore = defineStore('assembly', () => {
         return response.data
     }
 
+    // __ Удаление СЗ Блоков по ID Заявки
+    const deleteAssemblyTasksByOrderId = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+        const response = await jwtDelete(URL_ASSEMBLY_TASKS_ORDER_ID, { id })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: deleteAssemblyTasksByOrderId: ', result)
+        return result
+    }
 
-    //
-    // // __ Получение СЗ Блоков по ID Заявки
-    // const getAssemblyTasksByOrderId = async (id: number | null = null) => {
-    //     if (!id) {
-    //         return
-    //     }
-    //     const response = await jwtGet(`${URL_ASSEMBLY_TASKS_ORDER_ID}/${id}`)
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: getAssemblyTasksByOrderId: ', result)
-    //     return result.data
-    // }
-    //
-    //
-    // // __ Удаление СЗ Блоков по ID Заявки
-    // const deleteAssemblyTasksByOrderId = async (id: number | null = null) => {
-    //     if (!id) {
-    //         return
-    //     }
-    //     const response = await jwtDelete(URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: deleteAssemblyTasksByOrderId: ', result)
-    //     return result
-    // }
-    //
-    // // __ Добавление СЗ Блоков по ID Заявки
-    // const addAssemblyTasksByOrderId = async (id: number | null = null) => {
-    //     if (!id) {
-    //         return
-    //     }
-    //     const response = await jwtPost(URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID, { id })
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: addAssemblyTasksByOrderId: ', result)
-    //     return result
-    // }
-    //
+    // __ Добавление СЗ Блоков по ID Заявки
+    const addAssemblyTasksByOrderId = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+        const response = await jwtPost(URL_ASSEMBLY_TASKS_ORDER_ID, { id })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: addAssemblyTasksByOrderId: ', result)
+        return result
+    }
+
+    // __ Устанавливаем комментарий для Участка Строки СЗ
+    const setAssemblyTaskLineSectorDescription = async (assemblyTaskLinesSectorId: number, description: string) => {
+        if (!assemblyTaskLinesSectorId) {
+            return null
+        }
+        const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION, { id: assemblyTaskLinesSectorId, description })
+        if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLineSectorDescription: ', result)
+        return result.data
+    }
 
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1211,6 +1210,10 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
         getAssemblyTasks,
         getAssemblyTasksByOrderId,
+        deleteAssemblyTasksByOrderId,
+        addAssemblyTasksByOrderId,
+
+        setAssemblyTaskLineSectorDescription,
 
         test,
     }
