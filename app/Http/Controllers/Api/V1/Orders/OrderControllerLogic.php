@@ -350,8 +350,8 @@ class OrderControllerLogic
                 // __ Тут добавляем или распределяем СЗ на нужные участки
                 if ($orderData['need_to_distribute']) {
                     // __ Если тип элементов в Заявке - не матрасы, то пропускаем
-                    // __ Создаем СЗ на Участки только для матрасов
-                    if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
+                    // __ Создаем СЗ на Участки только для матрасов и Чехлов выборочно
+                    if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value || $orderData['elements_type'] === ElementTypes::COVERS->value) {
                         // __ Распределяем СЗ на Пошив
                         /** @var Order $forecastOrder */
                         if (Settings::createSewingTasksAvailable()) {
@@ -375,9 +375,11 @@ class OrderControllerLogic
                         // __ Распределяем СЗ на Сборку
                         /** @var Order $forecastOrder */
                         if (Settings::createAssemblyTasksAvailable()) {
-                            $result = AssemblyService::distributeAssemblyTaskFromOrderId($orderData['id']);
-                            if (!$result) {
-                                throw new Exception('Error while distributing Assembly Task with Client id = ' . $orderData['client_id']);
+                            if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
+                                $result = AssemblyService::distributeAssemblyTaskFromOrderId($orderData['id']);
+                                if (!$result) {
+                                    throw new Exception('Error while distributing Assembly Task with Client id = ' . $orderData['client_id']);
+                                }
                             }
                         }
 
@@ -399,8 +401,8 @@ class OrderControllerLogic
                     //$forecastOrder->lines()->where('model_code_1c', $averageModelCode)->delete();
                 } else {
                     // __ Если тип элементов в Заявке - не матрасы, то пропускаем
-                    // __ Создаем СЗ на Участки только для матрасов
-                    if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
+                    // __ Создаем СЗ на Участки только для матрасов и Частично для Чехлов
+                    if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value || $orderData['elements_type'] === ElementTypes::COVERS->value) {
                         // __ Создаем СЗ на Пошив !!!
                         /** @var Order $createdOrder */
                         if (Settings::createSewingTasksAvailable()) {
@@ -424,32 +426,29 @@ class OrderControllerLogic
                         // __ Создаем СЗ на Сборку !!!
                         /** @var Order $createdOrder */
                         if (Settings::createAssemblyTasksAvailable()) {
-                            $assemblyTask = AssemblyService::createAssemblyTaskFromOrderId($orderData['id']);
-                            if (!$assemblyTask) {
-                                throw new Exception('Error while creating Assembly Task with Client id = ' . $orderData['client_id']);
+                            if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
+                                $assemblyTask = AssemblyService::createAssemblyTaskFromOrderId($orderData['id']);
+                                if (!$assemblyTask) {
+                                    throw new Exception('Error while creating Assembly Task with Client id = ' . $orderData['client_id']);
+                                }
                             }
                         }
 
                         // __ Создаем СЗ на Блоки
                         if (Settings::createBlockTasksAvailable()) {
-                            $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
-                            if (!$blockTask) {
-                                // !!! TODO !!! Если блоков в СЗ нет, то возвращается null
-                                // !!! TODO !!! Поэтому тут Доделать запись в Events
+                            if ($orderData['elements_type'] === ElementTypes::MATTRESSES->value) {
+                                $blockTask = BlocksService::createBlockTaskFromOrderId($orderData['id']);
+                                if (!$blockTask) {
+                                    // !!! TODO !!! Если блоков в СЗ нет, то возвращается null
+                                    // !!! TODO !!! Поэтому тут Доделать запись в Events
 
-                                // throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                                    // throw new Exception('Error while creating Block Task with Client id = ' . $orderData['client_id']);
+                                }
                             }
                         }
-
-
-
-
                     }
                 }
             }
-
-
-
         });
 
         $a = 0;

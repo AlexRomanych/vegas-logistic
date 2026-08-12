@@ -549,7 +549,7 @@ const emits = defineEmits<{
 const router     = useRouter()
 const blockStore = useBlocksStore()
 
-// console.log('props.blockTask: ', props.blockTask)
+console.log('props.blockTask: ', props.blockTask)
 
 const UNION_TASKS_ID = 0
 

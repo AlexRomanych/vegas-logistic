@@ -21,7 +21,7 @@ class Settings
      */
     public static function createCuttingTasksAvailable(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -30,7 +30,7 @@ class Settings
      */
     public static function createSewingTasksAvailable(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -39,7 +39,7 @@ class Settings
      */
     public static function createBlockTasksAvailable(): bool
     {
-        return false;
+        return true;
     }
 
 }

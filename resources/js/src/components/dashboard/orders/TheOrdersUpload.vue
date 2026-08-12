@@ -107,8 +107,8 @@
                         <AppLabelTSWrapper :arg="order" :render-object="render.validateAdvice"/>
 
                         <!-- __ Выбор действия -->
-                        <AppLabelTSWrapper :arg="order" :render-object="render.choiseAction"
-                                           @click="render.choiseAction.click!(order)"/>
+                        <AppLabelTSWrapper :arg="order" :render-object="render.chooseAction"
+                                           @click="render.chooseAction.click!(order)"/>
 
                     </div>
 
@@ -174,7 +174,7 @@ const ordersStore = useOrdersStore()
 const isVerified = ref(false)   // Маяк, что данные были отправлены на проверку на сервер
 
 // __ Определяем переменные
-const orders         = ref<IValidatedOrder[]>([])
+// const orders         = ref<IValidatedOrder[]>([])
 const ordersRender   = ref<IValidatedOrder[]>([])
 const verifiedOrders = ref<IValidatedOrder[]>([])
 const selectedFile   = ref<File | null>(null)
@@ -192,8 +192,6 @@ const modalMode       = ref<'inform' | 'confirm'>('inform')
 const appModalAsyncTS = ref<any>(null)         // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Объект отображения данных
-// const DEFAULT_WIDTH = 'w-[100px]'
-const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 const DEFAULT_WIDTH_DATE = 'w-[70px]'
 const DEFAULT_HEIGHT     = 'h-[30px]'
 const HEADER_TYPE        = 'primary'
@@ -203,7 +201,9 @@ const HEADER_TEXT_SIZE   = 'mini'
 const DATA_TEXT_SIZE     = 'micro'
 const HEADER_ALIGN       = 'center'
 const DATA_ALIGN         = 'left'
-const DATA_ALIGN_DEFAULT = 'center'
+// const DEFAULT_WIDTH = 'w-[100px]'
+// const DEFAULT_WIDTH_BOOL = 'w-[70px]'
+// const DATA_ALIGN_DEFAULT = 'center'
 
 const OK_WORD                   = 'ok'
 const CREATE_ORDER_ACTION_WORD  = 'Создать Заявку'
@@ -214,170 +214,170 @@ const DOUBLE_ORDER_CHECK_WORD   = 'Дубликат Заявки.'
 // const CLIENT_MISSING_WORD = 'ok'
 
 const render: IRenderData = reactive({
-    collapsed:      {
-        header:         ['▲', '▼'],
-        width:          'w-[30px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => 'warning',
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => order.renderType as IColorTypes,
+    collapsed     : {
+        header        : ['▲', '▼'],
+        width         : 'w-[30px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'warning',
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => order.renderType as IColorTypes,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        data:           (order: IValidatedOrder) => order.collapsed ? '▲' : '▼',
-        click:          (order: IValidatedOrder) => order.collapsed = !order.collapsed
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        data          : (order: IValidatedOrder) => order.collapsed ? '▲' : '▼',
+        click         : (order: IValidatedOrder) => order.collapsed = !order.collapsed
     },
-    client:         {
-        id:             () => 'client-search',
-        header:         ['Клиент', ''],
-        width:          'w-[100px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => order.client_id !== 0 ? 'success' : 'danger',
+    client        : {
+        id            : () => 'client-search',
+        header        : ['Клиент', ''],
+        width         : 'w-[100px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => order.client_id !== 0 ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Клиент...',
-        data:           (order: IValidatedOrder) => order.client_full_name
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Клиент...',
+        data          : (order: IValidatedOrder) => order.client_full_name
     },
-    orderNoStr:     {
-        id:             () => 'order-no-search',
-        header:         ['№', 'Заявки'],
-        width:          'w-[50px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => order.client_id !== 0 ? 'success' : 'danger',
+    orderNoStr    : {
+        id            : () => 'order-no-search',
+        header        : ['№', 'Заявки'],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => order.client_id !== 0 ? 'success' : 'danger',
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍№...',
-        data:           (order: IValidatedOrder) => order.order_no,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍№...',
+        data          : (order: IValidatedOrder) => order.order_no,
         // color:          (order: IValidatedOrder) => order.order_type.color,
         // title:          (order: IValidatedOrder) => order.order_type.display_name
     },
-    elementsType:   {
-        id:             () => 'elements-type-search',
-        header:         ['Тип', 'изделий'],
-        width:          'w-[70px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => {
+    elementsType  : {
+        id            : () => 'elements-type-search',
+        header        : ['Тип', 'изделий'],
+        width         : 'w-[70px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => {
             if (!order || !order.elements_type) return DEFAULT_TYPE
             return order.elements_type.toLowerCase().includes('матрасы')
                 ? 'success' : order.elements_type.toLowerCase().includes('аксессуары')
                     ? 'info' : 'danger'
         },
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Тип изделий...',
-        data:           (order: IValidatedOrder) => order.elements_type || '',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Тип изделий...',
+        data          : (order: IValidatedOrder) => order.elements_type || '',
         // color:          (order: IValidatedOrder) => order.order_type.color,
         // title:          (order: IValidatedOrder) => order.order_type.display_name
     },
-    orderAmount:    {
-        id:             () => 'order-amount-search',
-        header:         ['Кол-', 'во'],
-        width:          'w-[50px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    orderAmount   : {
+        id            : () => 'order-amount-search',
+        header        : ['Кол-', 'во'],
+        width         : 'w-[50px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Кол-во...',
-        data:           (order: IValidatedOrder) => order.items.reduce((acc: number, line: IValidatedOrderItem) => acc + line.a, 0).toString()
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Кол-во...',
+        data          : (order: IValidatedOrder) => order.items.reduce((acc: number, line: IValidatedOrderItem) => acc + line.a, 0).toString()
     },
-    loadAt:         {
-        id:             () => 'load-at-search',
-        header:         ['Дата', 'загрузки'],
-        width:          DEFAULT_WIDTH_DATE,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    loadAt        : {
+        id            : () => 'load-at-search',
+        header        : ['Дата', 'загрузки'],
+        width         : DEFAULT_WIDTH_DATE,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍дд.мм.гггг...',
-        data:           (order: IValidatedOrder) => order.load_at
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍дд.мм.гггг...',
+        data          : (order: IValidatedOrder) => order.load_at
     },
-    unloadAt:       {
-        id:             () => 'unload-at-search',
-        header:         ['Дата', 'разгрузки'],
-        width:          DEFAULT_WIDTH_DATE,
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    unloadAt      : {
+        id            : () => 'unload-at-search',
+        header        : ['Дата', 'разгрузки'],
+        width         : DEFAULT_WIDTH_DATE,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍дд.мм.гггг...',
-        data:           (order: IValidatedOrder) => order.unload_at
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍дд.мм.гггг...',
+        data          : (order: IValidatedOrder) => order.unload_at
     },
-    comment_1c:     {
-        id:             () => 'comment-1c-search',
-        header:         ['Комментарий из 1С', ''],
-        width:          'w-[200px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    comment_1c    : {
+        id            : () => 'comment-1c-search',
+        header        : ['Комментарий из 1С', ''],
+        width         : 'w-[200px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Комментарий из 1С...',
-        data:           (order: IValidatedOrder) => order.comment ?? ''
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Комментарий из 1С...',
+        data          : (order: IValidatedOrder) => order.comment ?? ''
     },
-    validateCheck:  {
-        id:             () => 'validate-check-search',
-        header:         ['Результат', 'проверки'],
-        width:          'w-[250px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => {
+    validateCheck : {
+        id            : () => 'validate-check-search',
+        header        : ['Результат', 'проверки'],
+        width         : 'w-[250px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => {
             if (order.validate.check === DOUBLE_ORDER_CHECK_WORD) return 'danger'
             return DEFAULT_TYPE
         },
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Результат проверки...',
-        data:           (order: IValidatedOrder) => order.validate.check
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Результат проверки...',
+        data          : (order: IValidatedOrder) => order.validate.check
     },
     validateAction: {
-        id:             () => 'validate-check-search',
-        header:         ['Действие', ''],
-        width:          'w-[200px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => {
+        id            : () => 'validate-check-search',
+        header        : ['Действие', ''],
+        width         : 'w-[200px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => {
             if (order.validate.action === CREATE_ORDER_ACTION_WORD) return 'success'
             if (order.validate.action === IGNORE_ORDER_ACTION_WORD) return 'warning'
             if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return 'primary'
@@ -385,60 +385,67 @@ const render: IRenderData = reactive({
             return DEFAULT_TYPE
         },
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Действие...',
-        data:           (order: IValidatedOrder) => order.validate.action
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Действие...',
+        data          : (order: IValidatedOrder) => order.validate.action
     },
     validateAdvice: {
-        id:             () => 'validate-check-search',
-        header:         ['Описание', ''],
-        width:          'w-[350px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+        id            : () => 'validate-check-search',
+        header        : ['Описание', ''],
+        width         : 'w-[350px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        placeholder:    '🔍Описание...',
-        data:           (order: IValidatedOrder) => order.validate.advice
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍Описание...',
+        data          : (order: IValidatedOrder) => order.validate.advice
     },
-    choiseAction:   {
-        id:             () => 'choise-action-search',
-        header:         ['Действие', ''],
-        width:          'w-[150px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => HEADER_TYPE,
-        dataType:       () => DATA_TYPE,
-        type:           (order: IValidatedOrder) => {
+    chooseAction  : {
+        id            : () => 'choose-action-search',
+        header        : ['Действие', ''],
+        width         : 'w-[150px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (order: IValidatedOrder) => {
             if (order.validate.action === CREATE_ORDER_ACTION_WORD) return 'warning'
             if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) return 'success'
+            if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.elements_type === 'чехлы') return 'success'
             if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return 'danger'
             if (order.validate.action === IGNORE_CLIENT_ACTION_WORD && order.validate.mem_action === CREATE_CLIENT_ACTION_WORD) return 'primary'
             return 'light'
         },
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      'center',
-        placeholder:    '🔍Действие...',
-        data:           (order: IValidatedOrder) => {
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Действие...',
+        data          : (order: IValidatedOrder) => {
             if (order.validate.action === CREATE_ORDER_ACTION_WORD) return IGNORE_ORDER_ACTION_WORD
             if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) return CREATE_ORDER_ACTION_WORD
+            if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.elements_type === 'чехлы') return CREATE_ORDER_ACTION_WORD
             if (order.validate.action === CREATE_CLIENT_ACTION_WORD) return IGNORE_CLIENT_ACTION_WORD
             if (order.validate.action === IGNORE_CLIENT_ACTION_WORD && order.validate.mem_action === CREATE_CLIENT_ACTION_WORD) return CREATE_CLIENT_ACTION_WORD
             return ''
         },
-        class:          'cursor-pointer',
-        click:          (order: IValidatedOrder) => {
+        class         : 'cursor-pointer',
+        click         : (order: IValidatedOrder) => {
+            console.log('order: ', order)
             if (order.validate.action === CREATE_ORDER_ACTION_WORD) {
                 order.validate.mem_action = order.validate.action
                 order.validate.action     = IGNORE_ORDER_ACTION_WORD
+            } else if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.elements_type === 'чехлы') {
+                order.validate.mem_action = order.validate.action
+                order.validate.action     = CREATE_ORDER_ACTION_WORD
+
             } else if (order.validate.action === IGNORE_ORDER_ACTION_WORD && order.validate.mem_action === CREATE_ORDER_ACTION_WORD) {
                 order.validate.action = order.validate.mem_action
                 delete order.validate.mem_action
@@ -451,20 +458,20 @@ const render: IRenderData = reactive({
             }
         }
     },
-    uploadFile:     {      // __ Кнопка загрузки
-        id:             () => 'upload',
-        header:         ['Загрузить', ''],
-        width:          'w-[150px]',
-        height:         DEFAULT_HEIGHT,
-        show:           true,
-        headerType:     () => 'orange',
-        dataType:       () => DATA_TYPE,
-        type:           () => DEFAULT_TYPE,
+    uploadFile    : {      // __ Кнопка загрузки
+        id            : () => 'upload',
+        header        : ['Загрузить', ''],
+        width         : 'w-[150px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => 'orange',
+        dataType      : () => DATA_TYPE,
+        type          : () => DEFAULT_TYPE,
         headerTextSize: HEADER_TEXT_SIZE,
-        dataTextSize:   DATA_TEXT_SIZE,
-        headerAlign:    HEADER_ALIGN,
-        dataAlign:      DATA_ALIGN,
-        class:          'cursor-pointer',
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        class         : 'cursor-pointer',
     },
 })
 
@@ -532,8 +539,7 @@ const validateOrders = async () => {
         }))
 
 
-    DEBUG && console.log('ordersRender: ', ordersRender.value)
-
+    if (DEBUG) console.log('ordersRender: ', ordersRender.value)
 }
 
 

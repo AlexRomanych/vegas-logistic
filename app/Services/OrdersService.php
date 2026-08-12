@@ -110,60 +110,68 @@ final class OrdersService
                 $order['client_full_name'] = $client->short_name;          // Перезаписываем имя клиента из БД
                 $order['client_id']        = $client->id;                  // Перезаписываем id клиента из БД, если нашли по коду из 1С
 
-                if (self::isOrderCoversType($elementsType)) {
-                    $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Изделия в Заявке - Чехлы.';
-                    $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
-                    $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Загружать эту заявку не нужно. СЗ с Чехлами будут созданы автоматически';
-                } else {
-                    // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
-                    // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
-                    // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
-                    $existOrder = self::getOrderByClientIdOrderNoElementsTypeLoadAt(
-                        $client->id,
-                        $order['order_no'],
-                        $elementsTypeRef,
-                        $order['load_at']
-                    );
+                //if (self::isOrderCoversType($elementsType)) {
+                //$order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Изделия в Заявке - Чехлы.';
+                //$order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                //$order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Загружать эту заявку не нужно. СЗ с Чехлами будут созданы автоматически';
+                //
 
-                    // __ Если не нашли Заявку с таким номером в БД, пробуем найти по коду из 1С
-                    if (!$existOrder) {
-                        $existOrder = Order::query()
-                            ->where(CODE_1C, $order['order_code'])
-                            ->first();
-                    };
 
-                    // __ Если нашли Заявку с таким номером в БД
-                    if ($existOrder) {
-                        // __ Записываем id Заявки
-                        $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = $existOrder->id;
+                //} else {
 
-                        // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
-                        if (self::isOrderAverageType($existOrder, $elementsType)) {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Прогнозная Заявка с таким номером уже есть в базе.';
-                            $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_UPDATE;
-                            $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
-                        } else {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером уже есть в базе.';
-                            $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
-                            $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
-                        }
-                    } else {  // __ Если не нашли Заявку с таким номером в БД
 
-                        // __ Записываем id Заявки = 0
-                        $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = 0;
+                // __ Пробуем найти Заявку в БД, причем с учетом периода, если не нашли - пробуем соседние периоды
+                // __ Вероятность, что Заявка у такого клиента с таким номером попадет другой период (+- год) практически нулевая
+                // __ Перебираем периоды, чтобы наверняка исключить косяки с датами из 1С
+                $existOrder = self::getOrderByClientIdOrderNoElementsTypeLoadAt(
+                    $client->id,
+                    $order['order_no'],
+                    $elementsTypeRef,
+                    $order['load_at']
+                );
 
-                        if (self::isOrderMattressesType($elementsType)
-                            || self::isOrderAccessoriesType($elementsType)) {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе.';
-                            $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_ADD;
-                            $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить заявку в базу.';
-                        } else {
-                            $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
-                            $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
-                            $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
-                        }
+                // __ Если не нашли Заявку с таким номером в БД, пробуем найти по коду из 1С
+                if (!$existOrder) {
+                    $existOrder = Order::query()
+                        ->where(CODE_1C, $order['order_code'])
+                        ->first();
+                };
+
+                // __ Если нашли Заявку с таким номером в БД
+                if ($existOrder) {
+                    // __ Записываем id Заявки
+                    $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = $existOrder->id;
+
+                    // __ Если нашли Заявку с таким номером в БД, но она прогнозная - перезаписываем
+                    if (self::isOrderAverageType($existOrder, $elementsType)) {
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Прогнозная Заявка с таким номером уже есть в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_UPDATE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Обновить прогнозную заявку данными из 1С.';
+                    } else {
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером уже есть в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Для обновления Заявки, сначала удалите ее из базы.';
+                    }
+                } else {  // __ Если не нашли Заявку с таким номером в БД
+
+                    // __ Записываем id Заявки = 0
+                    $order[self::VALIDATE_FIELD][self::ORDER_ID_FIELD] = 0;
+                    if (self::isOrderCoversType($elementsType)) {
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Изделия в Заявке - Чехлы.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Загружать эту заявку не нужно. СЗ с Чехлами будут созданы автоматически';
+                    } elseif (self::isOrderMattressesType($elementsType)
+                        || self::isOrderAccessoriesType($elementsType)) {
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_ADD;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Добавить заявку в базу.';
+                    } else {
+                        $order[self::VALIDATE_FIELD][self::CHECK_FIELD]  = 'Заявка с таким номером не найдена в базе и Тип изделий в заявке не определен.';
+                        $order[self::VALIDATE_FIELD][self::ACTION_FIELD] = self::ACTION_ORDER_IGNORE;
+                        $order[self::VALIDATE_FIELD][self::ADVICE_FIELD] = 'Тип изделий не определен. Возможно требуется обновление моделей из 1С. Заявка не рекомендуется к добавлению в базу.';
                     }
                 }
+                //}
             }
 
             // __ Проходим по всем позициям в Заявке
@@ -348,6 +356,7 @@ final class OrdersService
         return match (true) {
             self::isOrderMattressesType($orderType)  => ElementTypes::MATTRESSES->value,
             self::isOrderAccessoriesType($orderType) => ElementTypes::ACCESSORIES->value,
+            self::isOrderCoversType($orderType)      => ElementTypes::COVERS->value,
             default                                  => ElementTypes::UNDEFINED->value,
         };
     }
@@ -519,7 +528,7 @@ final class OrdersService
             $parts[1] = mb_substr($parts[1], 1);
         }
 
-        $orderType = self::getOrderTypeByIndex('.' .$parts[1]);
+        $orderType = self::getOrderTypeByIndex('.' . $parts[1]);
 
         if ($orderType) {
             return $orderType;
@@ -1167,7 +1176,6 @@ final class OrdersService
         $result = [];
 
         foreach ($input as $item) {
-
             // Сделаем надежнее и чище через точечные проверки:
             if (stripos($item, 'ВысЧех') !== false) {
                 // Ищем знак '=', опциональные пробелы, а затем захватываем только цифры (\d+)
