@@ -631,17 +631,25 @@ class BlockDayController extends Controller
 
 
                     // __ Делаем сквозную нумерацию заново в текущем дне и в том, куда перенесли
-                    $datesToReorder = [
-                        $action_date,
-                        $nextChange->getManufactureDay(),
-                    ];
+                    // __ Преобразуем в строки Y-m-d, чтобы array_unique отработал 100% корректно
+                    $datesToReorder = array_unique([
+                        $action_date->format('Y-m-d'),
+                        $nextChange->getManufactureDay()->format('Y-m-d'),
+                    ]);
+
+                    //$datesToReorder = [
+                    //    $action_date,
+                    //    $nextChange->getManufactureDay(),
+                    //];
 
                     // __ Используем unique(), чтобы не пересчитывать один и тот же день дважды (если перенесли в 2-ю смену того же дня)
                     foreach (array_unique($datesToReorder) as $targetDate) {
 
                         // __ Выбираем все СЗ на дату: сперва 1-я смена, затем 2-я; внутри смен — по position
                         $tasks = BlockTask::query()
-                            ->whereDate('action_at', $targetDate)
+                            ->whereDate('action_at', '>=', Carbon::parse($targetDate)->startOfDay())
+                            ->whereDate('action_at', '<=', Carbon::parse($targetDate)->endOfDay())
+                            //->whereDate('action_at', $targetDate)
                             ->orderBy('change', 'asc')
                             ->orderBy('position', 'asc')
                             ->get();
