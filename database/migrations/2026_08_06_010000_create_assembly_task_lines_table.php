@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Manufacture\Cells\Assembly\AssemblyTask;
 use App\Traits\AddCommonColumnsInTableTrait;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -83,6 +84,9 @@ return new class extends Migration {
 
             // __ Трудозатраты на момент создания записи. Для Моделей, например 314.314
             $table->json('time_json')->nullable()->comment('Трудозатраты на момент создания записи');
+
+            // __ Линия производства 'Lamit' или 'Стол'
+            $table->string('manuf_line')->nullable()->default(AssemblyTask::ASSEMBLY_TASK_SECTOR_TABLE)->comment('Линия производства Lamit или Стол');
 
             // __ Фантом (призрак, фейк, фиктивный)
             // __ Поле, которое показывает, на что подменять свойства той или иной модели в записи

@@ -1321,7 +1321,23 @@ export function groupTaskLinesForExecute(
 
         // __ Сортируем по Коллекцию блоков:
         if (optimizationType === OPTIMIZE_BY_PRIORITY) {
-            groupedBlockCollectionArray.sort((a, b) => a.priority - b.priority) // __ по приоритету
+            console.log('groupedBlockCollectionArray: ', groupedBlockCollectionArray)
+
+            groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
+                const hasFalseA = a.lines.some(line => line.false_at)
+                const hasFalseB = b.lines.some(line => line.false_at)
+
+                // console.log(a.subgroupName, b.subgroupName)
+                // console.log(hasFalseA, hasFalseB)
+
+                // __ XOR ((hasFalseA && !hasFalseB) ||  (hasFalseB && !hasFalseA))
+                if (hasFalseA !== hasFalseB) {
+                    return Number(hasFalseB) - Number(hasFalseA)
+                }
+
+                return a.priority - b.priority
+            }) // __ по приоритету
+
         } else if (optimizationType === OPTIMIZE_BY_TUNING_TIME) {
             // console.log(optimizedData)
 
