@@ -179,13 +179,13 @@
                     <!-- __ Изменить Линию -->
                     <AppLabelTS
                         :height="MENU_HEIGHT"
+                        :type="blockTask.id === UNION_TASKS_ID ? 'danger' : 'dark'"
                         align="center"
                         class="menu-button"
                         rounded="4"
                         text="⚙️"
                         text-size="huge"
                         title="Переместить элемент на другую Линию"
-                        type="dark"
                         width="w-[50px]"
                         @click="changeManufLines"
                     />
@@ -549,7 +549,7 @@ const emits = defineEmits<{
 const router     = useRouter()
 const blockStore = useBlocksStore()
 
-console.log('props.blockTask: ', props.blockTask)
+// console.log('props.blockTask: ', props.blockTask)
 
 const UNION_TASKS_ID = 0
 
@@ -1037,6 +1037,11 @@ const stopGlobalSelection = () => {
 
 // __ Изменение Производственной Линии
 const changeManufLines = async (/*blockTask: IBlockTask*/) => {
+    // __ Для объединения СЗ не меняем Линии
+    if (props.blockTask.id === UNION_TASKS_ID) {
+        return
+    }
+
     // __ Копируем объект, чтобы не мутировал оригинал
     taskCard.value = JSON.parse(JSON.stringify(props.blockTask))
 

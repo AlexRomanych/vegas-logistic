@@ -1321,7 +1321,7 @@ export function groupTaskLinesForExecute(
 
         // __ Сортируем по Коллекцию блоков:
         if (optimizationType === OPTIMIZE_BY_PRIORITY) {
-            console.log('groupedBlockCollectionArray: ', groupedBlockCollectionArray)
+            // console.log('groupedBlockCollectionArray: ', groupedBlockCollectionArray)
 
             groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
                 const hasFalseA = a.lines.some(line => line.false_at)

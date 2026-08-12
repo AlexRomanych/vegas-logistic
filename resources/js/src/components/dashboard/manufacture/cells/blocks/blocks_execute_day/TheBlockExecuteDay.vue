@@ -247,8 +247,8 @@ const isStartAvailable = computed(() => {
     const today   = new Date().toLocaleDateString('en-CA')// ().split('T')[0] // Получится '2026-05-16'
     const compare = blockDay.value ? blockDay.value.action_at.split(' ')[0] : today
 
-    console.log('today: ', today)
-    console.log('compare: ', compare)
+    // console.log('today: ', today)
+    // console.log('compare: ', compare)
 
     if (compare > today) {
         return false
