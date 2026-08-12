@@ -12,7 +12,7 @@ class Settings
      */
     public static function createAssemblyTasksAvailable(): bool
     {
-        return true;
+        return false;
     }
 
     /**
