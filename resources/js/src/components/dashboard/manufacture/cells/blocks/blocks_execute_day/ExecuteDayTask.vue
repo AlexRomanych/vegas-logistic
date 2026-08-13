@@ -169,12 +169,21 @@
                 >
                     <!-- __ Прогресс -->
                     <AppProgressBar
-                        :progress="(statistics.time.finished / statistics.time.total) * 100"
-                        :text="`${formatTimeWithLeadingZeros(statistics.time.finished, 'hour')} / ${formatTimeWithLeadingZeros(statistics.time.total, 'hour')}`"
+                        :progress="(manufLinesGroup.time.done / manufLinesGroup.time.total) * 100"
+                        :text="`${formatTimeWithLeadingZeros(manufLinesGroup.time.done, 'hour')} / ${formatTimeWithLeadingZeros(manufLinesGroup.time.total, 'hour')}`"
                         height="h-[50px]"
                         text-size="mini"
                         width="w-[200px]"
                     />
+
+                    <!-- __ Прогресс -->
+                    <!--<AppProgressBar-->
+                    <!--    :progress="(statistics.time.finished / statistics.time.total) * 100"-->
+                    <!--    :text="`${formatTimeWithLeadingZeros(statistics.time.finished, 'hour')} / ${formatTimeWithLeadingZeros(statistics.time.total, 'hour')}`"-->
+                    <!--    height="h-[50px]"-->
+                    <!--    text-size="mini"-->
+                    <!--    width="w-[200px]"-->
+                    <!--/>-->
 
                     <!-- __ Изменить Линию -->
                     <AppLabelTS
@@ -348,6 +357,16 @@
                     </div>
                 </template>
             </div>
+
+            <TheDividerLineTS/>
+
+            <!-- __ Итого -->
+            <div class="ml-2">
+                <ExecuteDayTaskSubGroupCommon
+                    :subgroup="commonSubGroup"
+                />
+            </div>
+
         </div>
 
         <!-- __ Меню по правой кнопке мыши -->
@@ -499,8 +518,10 @@ import {
     OPTIMIZE_BY_TUNING_TIME
 } from '@/app/constants/blocks.ts'
 
+import { CELL_EVENT_BLOCK } from '@/app/constants/cell_events.ts'
+
 import {
-    getExecuteTaskStatistics,
+    // getExecuteTaskStatistics,
     groupTaskLinesForExecute,
     isTaskLineReset,
     // groupTaskLinesForExecuteForUnion,
@@ -513,6 +534,7 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 
 import ExecuteDayFalseReason from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayFalseReason.vue'
 import ExecuteDayTaskLine from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskLine.vue'
@@ -523,7 +545,7 @@ import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskManufLines.vue'
 import ExecuteDayTaskSubGroupTuning from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskSubGroupTuning.vue'
 import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageEventsAsync.vue'
-import { CELL_EVENT_BLOCK } from '@/app/constants/cell_events.ts'
+import ExecuteDayTaskSubGroupCommon from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskSubGroupCommon.vue'
 
 
 interface IProps {
@@ -588,7 +610,7 @@ const manageEventsAsync = ref<InstanceType<typeof ManageEventsAsync> | null>(nul
 const taskCard = ref<IBlockTask>(BLOCK_TASK_DRAFT)
 
 // __ Агрегатор
-const statistics = computed(() => getExecuteTaskStatistics(props.blockTask))
+// const statistics = computed(() => getExecuteTaskStatistics(props.blockTask))
 
 // __ Тип оптимизации + Оптимизированный массив
 const optimizationType = ref<IOptimizeType>(OPTIMIZE_BY_PRIORITY)
@@ -616,6 +638,7 @@ const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
     )
 })
 
+const manufLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value])
 const blockLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
 const blockLines      = computed(() => {
     const result: IBlockTaskLine[] = []
@@ -627,6 +650,36 @@ const blockLines      = computed(() => {
     return result
 })
 console.log('blockLinesGroups: ', blockLinesGroups.value)
+
+// __ Создаем синтетическую подгруппу для показа общей информации по групее
+const commonSubGroup = computed<IBlockTaskLinesSubgroup>(() => {
+    return {
+        subgroupName      : 'Всего',
+        subgroupId        : 0,
+        subgroupOrderTitle: null,
+        subgroupType      : 'orange',
+        hasData           : true,
+        time              : {
+            total     : blockLinesGroups.value[activeTabIndex.value].time.total,
+            done      : blockLinesGroups.value[activeTabIndex.value].time.done,
+            incomplete: blockLinesGroups.value[activeTabIndex.value].time.incomplete,
+        },
+        amount            : {
+            total     : blockLinesGroups.value[activeTabIndex.value].amount.total,
+            done      : blockLinesGroups.value[activeTabIndex.value].amount.done,
+            incomplete: blockLinesGroups.value[activeTabIndex.value].amount.incomplete,
+        },
+        square            : {
+            total     : blockLinesGroups.value[activeTabIndex.value].square.total,
+            done      : blockLinesGroups.value[activeTabIndex.value].square.done,
+            incomplete: blockLinesGroups.value[activeTabIndex.value].square.incomplete,
+        },
+        lines             : [],
+        priority          : 0,
+        isTuning          : false,
+    }
+})
+
 
 // __ Находим уникальные ids коллекции блоков, которые нужно оптимизировать
 const uniqueIds = computed<number[]>(() => {

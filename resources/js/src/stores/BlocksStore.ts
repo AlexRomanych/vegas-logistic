@@ -237,6 +237,8 @@ export const useBlocksStore = defineStore('blocks', () => {
             }
         })
 
+
+
         return await saveChanges()   // __ Сохраняем изменения
     }
 
@@ -260,25 +262,34 @@ export const useBlocksStore = defineStore('blocks', () => {
             findTask.block_lines = mergedTasks[0].block_lines
         }
 
+        // __ Добавляем на всякий случай для исключения рекурсивной реактивности
+        const blockTaskIds = blockTasks.map((task: IBlockTask) => task.id)
+
+        // __ Даты для пересчета позиций в дне
+        // __ Переопределяем порядок СЗ в дне, в котором добавили
+        const uniqueDates = new Set<string>(mergedTasks[0].action_at)
+
         // __ Удаляем лишние СЗ
-        for (let i = 1; i < blockTasks.length; i++) {
+        for (let i = 1; i < blockTaskIds.length; i++) {
 
             // __ Находим то, что нужно удалить
-            const workTask = globalBlockTasks.value.find((task: IBlockTask) => task.id === blockTasks[i].id)
+            const workTask = globalBlockTasks.value.find((task: IBlockTask) => task.id === blockTaskIds[i])
             if (workTask) {
 
                 // __ Удаляем
                 globalBlockTasks.value = globalBlockTasks.value.filter((task: IBlockTask) => {
-                    return task.id !== blockTasks[i].id
+                    return task.id !== blockTaskIds[i]
                 })
 
                 // __ Переопределяем порядок СЗ в дне, из которого удалили
-                globalBlockTasks.value = repositionBlockTaskInDay(globalBlockTasks.value, workTask.action_at)
+                uniqueDates.add(workTask.action_at)
+                // globalBlockTasks.value = repositionBlockTaskInDay(globalBlockTasks.value, workTask.action_at)
             }
         }
 
         // __ Переопределяем порядок СЗ в дне, в котором добавили
-        globalBlockTasks.value = repositionBlockTaskInDay(globalBlockTasks.value, mergedTasks[0].action_at)
+        uniqueDates.forEach(date => globalBlockTasks.value = repositionBlockTaskInDay(globalBlockTasks.value, date))
+        // globalBlockTasks.value = repositionBlockTaskInDay(globalBlockTasks.value, mergedTasks[0].action_at)
 
     }
 
@@ -307,6 +318,8 @@ export const useBlocksStore = defineStore('blocks', () => {
 
         console.log(diffsInGlobalBlockTasks)
         console.log('Сохраняем изменения')
+
+        // return
 
         const result = await jwtPost(URL_BLOCKS_TASKS_UPDATE, { diffs: diffsInGlobalBlockTasks })
         if (DEBUG) console.log('saveChanges: ', result)

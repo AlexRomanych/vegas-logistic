@@ -17,6 +17,8 @@ export const CHANGE_2 = '2'
 
 // __ Режим Сменной Работы
 export const CHANGE_MODE = CHANGE_1 satisfies IAssemblyTaskChangeKeys
+export const IS_ONE_CHANGE_MODE = true
+export const IS_NOT_ONE_CHANGE_MODE = !IS_ONE_CHANGE_MODE
 
 // __ Константы смен
 export const CHANGES = {

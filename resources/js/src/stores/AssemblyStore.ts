@@ -96,8 +96,12 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // // __ Копия массива СЗ Раскроя для отслеживания изменений
     // let globalAssemblyTasksPendingCopy: IAssemblyTask[] = []
     //
-    // // __ Показывать ли Трудозатраты в календаре СЗ Раскроя
-    // const globalAssemblyTaskTimesShow = ref(true)
+
+    // // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
+    const globalAssemblyTaskOrderTypeColor = ref(false)
+
+    // __ Показывать ли Трудозатраты в календаре СЗ Раскроя
+    const globalAssemblyTaskTimesShow = ref(true)
     //
     // // __ Показывать ли Раскрытый день или нет в календаре СЗ Раскроя
     // const globalAssemblyTaskFullDaysShow = ref(true)
@@ -111,8 +115,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // // __ Текущая Запись (AssemblyLine) в карточке СЗ в календаре СЗ Раскроя
     // const globalManageTaskCardActiveAssemblyLine = ref<IAssemblyTaskLine | null>(null)
     //
-    // // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
-    // const globalAssemblyTaskOrderTypeColor = ref(false)
+
 
     // __ Период рендеринга календаря
     const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
@@ -1119,6 +1122,8 @@ export const useAssemblyStore = defineStore('assembly', () => {
     return {
         globalAssemblyTasks,
         globalRenderPeriod,
+        globalAssemblyTaskOrderTypeColor,
+        globalAssemblyTaskTimesShow,
 
         // globalAssemblyTaskStatuses,
         // globalAssemblyTaskTimesShow,

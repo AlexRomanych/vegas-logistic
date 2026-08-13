@@ -15,8 +15,8 @@
                         <!-- __ Меню Карточки Заявки  -->
                         <ManageTaskCardMenu
                             :active-panel="activePanel"
-                            :block-lines="activePanel === LEFT_PANEL_ID ? sourceBlockLines : targetBlockLines"
-                            :block-task="props.task"
+                            :assembly-lines="activePanel === LEFT_PANEL_ID ? sourceAssemblyLines : targetAssemblyLines"
+                            :assembly-task="props.task"
                             :show-comments="showComments"
                             :show-details="showDetails"
                             @divide-element-amount="divideElementAmount"
@@ -80,11 +80,11 @@
 
                             <div class="flex-grow overflow-y-auto custom-scrollbar">
 
-                                <!-- __ Сами Записи (BlockLines) с возможностью перетаскивания -->
+                                <!-- __ Сами Записи (AssemblyLines) с возможностью перетаскивания -->
                                 <draggable
                                     :="dragOptions"
                                     :disabled="!isDragging"
-                                    :list="panel === LEFT_PANEL_ID ? sourceBlockLines : targetBlockLines"
+                                    :list="panel === LEFT_PANEL_ID ? sourceAssemblyLines : targetAssemblyLines"
                                     :move="checkMove"
                                     class="min-h-[25px]"
                                     item-key="position"
@@ -95,11 +95,11 @@
                                     <template #item="{ element, /*index*/ }">
 
                                         <div :key="element.id"
-                                             @click="setActiveBlockLine(element, panel)"
-                                             @dblclick="moveBlockLine(element, panel)"
+                                             @click="setActiveAssemblyLine(element, panel)"
+                                             @dblclick="moveAssemblyLine(element, panel)"
                                         >
                                             <ManageTaskCardItem
-                                                :block-line="element"
+                                                :assembly-line="element"
                                                 :render-data="renderData"
                                                 :show-comments="showComments"
                                                 :show-details="showDetails"
@@ -209,25 +209,25 @@ import draggable from 'vuedraggable'
 import { storeToRefs } from 'pinia'
 
 import type {
-    IBlockTask,
+    IAssemblyTask,
     IColorTypes,
-    IBlockTaskLine,
+    IAssemblyTaskLine,
     IDividerItem,
-    IBlockLinesPanel,
-    // IBlockManufLinePanel,
-    IBlockTaskOrderLine, IBlockTaskCardSort, IAmountAndTimeBlock,
+    IAssemblyLinesPanel,
+    // IAssemblyManufLinePanel,
+    IAssemblyTaskOrderLine, IAssemblyTaskCardSort, IAmountAndTimeAssembly,
 } from '@/types'
 
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_MANUF_LINES } from '@/app/constants/assembly.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
     calculateDividedAmountAndTime,
-    getBlockTaskAmountAndTime, getBlockTaskLineSquare,
-    isAverage, mergeBlockLines,
-} from '@/app/helpers/manufacture/helpers_blocks.ts'
+    getAssemblyTaskAmountAndTime, getAssemblyTaskLineSquare,
+    isAverage, mergeAssemblyLines,
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import { round } from '@/app/helpers/helpers_lib.ts'
@@ -238,19 +238,19 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 import ManageTaskCardItem
-    from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCardItem.vue'
+    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardItem.vue'
 import ManageTaskCardItemsHeader
-    from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCardItemsHeader.vue'
+    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardItemsHeader.vue'
 import ManageTaskCardMenu
-    from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCardMenu.vue'
+    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardMenu.vue'
 import ManageTaskCardTotals
-    from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCardTotals.vue'
+    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardTotals.vue'
 
-import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
-import OrderItemInfo from '@/components/dashboard/manufacture/cells/blocks/common/OrderItemInfo.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/assemblys/common/CommentEdit.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/assemblys/common/OrderItemInfo.vue'
 
 // import ManageTaskCardItemInfo
-//     from '@/components/dashboard/manufacture/cells/block/block_components/block_manage/_ManageTaskCardItemInfo.vue'
+//     from '@/components/dashboard/manufacture/cells/assembly/assembly_components/assembly_manage/_ManageTaskCardItemInfo.vue'
 
 interface IProps {
     type?: IColorTypes,
@@ -259,14 +259,14 @@ interface IProps {
     text?: string,
     mode?: 'inform' | 'confirm'
 
-    task: IBlockTask
+    task: IAssemblyTask
 }
 
-interface IRenderBlockLineDataItem {
+interface IRenderAssemblyLineDataItem {
     width: string
 }
 
-export type IRenderBlockLineData = Record<string, IRenderBlockLineDataItem>
+export type IRenderAssemblyLineData = Record<string, IRenderAssemblyLineDataItem>
 
 const props = withDefaults(defineProps<IProps>(), {
     type  : 'primary',
@@ -280,17 +280,17 @@ const props = withDefaults(defineProps<IProps>(), {
 // }>()
 
 // __ Данные из Хранилища
-const blockStore = useBlocksStore()
+const assemblyStore = useAssemblysStore()
 
-const { globalManageTaskCardActiveBlockLine } = storeToRefs(blockStore)
+const { globalManageTaskCardActiveAssemblyLine } = storeToRefs(assemblyStore)
 
 
 // __ Данные (объект) правой панели
-const targetBlockLines = ref<IBlockTaskLine[]>([])
-const sourceBlockLines = ref<IBlockTaskLine[]>([])
+const targetAssemblyLines = ref<IAssemblyTaskLine[]>([])
+const sourceAssemblyLines = ref<IAssemblyTaskLine[]>([])
 
 // __ Копия входящих данных (объект левой панели) для отслеживания изменений
-let taskMem: IBlockTask = JSON.parse(JSON.stringify(props.task))
+let taskMem: IAssemblyTask = JSON.parse(JSON.stringify(props.task))
 
 // __ Маяк изменений (для сохранения состояния при перетаскивании)
 const needForSave = ref(false)
@@ -299,12 +299,12 @@ const needForSave = ref(false)
 const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 
 // __ Переключатель панелей
-const LEFT_PANEL_ID: IBlockLinesPanel  = 'left'
-const RIGHT_PANEL_ID: IBlockLinesPanel = 'right'
-const activePanel                      = ref<IBlockLinesPanel>(LEFT_PANEL_ID)
+const LEFT_PANEL_ID: IAssemblyLinesPanel  = 'left'
+const RIGHT_PANEL_ID: IAssemblyLinesPanel = 'right'
+const activePanel                      = ref<IAssemblyLinesPanel>(LEFT_PANEL_ID)
 
-const leftPanelAmountAndTimeTotal  = ref<IAmountAndTimeBlock>()
-const rightPanelAmountAndTimeTotal = ref<IAmountAndTimeBlock>()
+const leftPanelAmountAndTimeTotal  = ref<IAmountAndTimeAssembly>()
+const rightPanelAmountAndTimeTotal = ref<IAmountAndTimeAssembly>()
 
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
@@ -323,7 +323,7 @@ const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна информации о записи в Заявке
-const orderLine     = ref<IBlockTaskOrderLine | null>(null)
+const orderLine     = ref<IAssemblyTaskOrderLine | null>(null)
 const orderItemInfo = ref<InstanceType<typeof OrderItemInfo> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для модального окна изменения Комментария
@@ -333,20 +333,20 @@ const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 // __ Функционал меню + Сортировка
 const showComments = ref(false)
 const showDetails  = ref(false)
-const sortPosition = ref<IBlockTaskCardSort>('none')
-const sortName     = ref<IBlockTaskCardSort>('none')
-const sortLine_1   = ref<IBlockTaskCardSort>('none')
-const sortLine_2   = ref<IBlockTaskCardSort>('none')
-const sortLine_0   = ref<IBlockTaskCardSort>('none')
-const sortTextile  = ref<IBlockTaskCardSort>('none')
-const sortKant     = ref<IBlockTaskCardSort>('none')
-const sortTkch     = ref<IBlockTaskCardSort>('none')
-const sortAmount   = ref<IBlockTaskCardSort>('none')
-const sortSquare   = ref<IBlockTaskCardSort>('none')
-const sortTime     = ref<IBlockTaskCardSort>('none')
-const sortSize     = ref<IBlockTaskCardSort>('none')
-const sortDetail   = ref<IBlockTaskCardSort>('none')
-const sortMachine  = ref<IBlockTaskCardSort>('none')
+const sortPosition = ref<IAssemblyTaskCardSort>('none')
+const sortName     = ref<IAssemblyTaskCardSort>('none')
+const sortLine_1   = ref<IAssemblyTaskCardSort>('none')
+const sortLine_2   = ref<IAssemblyTaskCardSort>('none')
+const sortLine_0   = ref<IAssemblyTaskCardSort>('none')
+const sortTextile  = ref<IAssemblyTaskCardSort>('none')
+const sortKant     = ref<IAssemblyTaskCardSort>('none')
+const sortTkch     = ref<IAssemblyTaskCardSort>('none')
+const sortAmount   = ref<IAssemblyTaskCardSort>('none')
+const sortSquare   = ref<IAssemblyTaskCardSort>('none')
+const sortTime     = ref<IAssemblyTaskCardSort>('none')
+const sortSize     = ref<IAssemblyTaskCardSort>('none')
+const sortDetail   = ref<IAssemblyTaskCardSort>('none')
+const sortMachine  = ref<IAssemblyTaskCardSort>('none')
 
 
 // __ Стилистика
@@ -372,7 +372,7 @@ const renderData = {
 const showModal = ref(false)
 
 let resolvePromise: ((value: boolean) => void) | null
-const show = async (/*blockTask: IBlockTask | null = null*/) => {
+const show = async (/*assemblyTask: IAssemblyTask | null = null*/) => {
     showModal.value = true
 
     // __ Для выхода по ESC
@@ -381,7 +381,7 @@ const show = async (/*blockTask: IBlockTask | null = null*/) => {
     // console.log(mainDiv)
 
     // __ Можно получить активную строку здесь
-    // globalManageTaskCardActiveBlockLine.value = blockTask?.block_lines[0]
+    // globalManageTaskCardActiveAssemblyLine.value = assemblyTask?.assembly_lines[0]
 
     return new Promise((resolve) => {
         resolvePromise = resolve
@@ -406,12 +406,12 @@ const select = async (value: boolean) => {
                 }
             }
 
-            targetBlockLines.value = []
-            sourceBlockLines.value = []
+            targetAssemblyLines.value = []
+            sourceAssemblyLines.value = []
         } else {
 
             // __ Левая часть не должна быть пуста
-            if (sourceBlockLines.value.length === 0) {
+            if (sourceAssemblyLines.value.length === 0) {
                 modalInfoText.value = ['Левая часть должна содержать хотя бы одну строку!']
                 modalInfoType.value = 'danger'
                 modalInfoMode.value = 'inform'
@@ -437,10 +437,10 @@ const select = async (value: boolean) => {
 defineExpose({
     show,
     get leftPanel() {
-        return sourceBlockLines.value
+        return sourceAssemblyLines.value
     },
     get rightPanel() {
-        return targetBlockLines.value
+        return targetAssemblyLines.value
     }
 })
 // --- -------------------------------------------------------------------------------------
@@ -452,25 +452,25 @@ defineExpose({
 
 // __ Пересчитываем Итого
 const calculateTotals = () => {
-    leftPanelAmountAndTimeTotal.value  = getBlockTaskAmountAndTime(sourceBlockLines.value)
-    rightPanelAmountAndTimeTotal.value = getBlockTaskAmountAndTime(targetBlockLines.value)
+    leftPanelAmountAndTimeTotal.value  = getAssemblyTaskAmountAndTime(sourceAssemblyLines.value)
+    rightPanelAmountAndTimeTotal.value = getAssemblyTaskAmountAndTime(targetAssemblyLines.value)
 }
 
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
-const setActiveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockLinesPanel) => {
-    globalManageTaskCardActiveBlockLine.value = blockLine
+const setActiveAssemblyLine = (assemblyLine: IAssemblyTaskLine, panel: IAssemblyLinesPanel) => {
+    globalManageTaskCardActiveAssemblyLine.value = assemblyLine
     activePanel.value                         = panel
 }
 
 // __ Перемещаем строку СЗ в другую панель при двойном клике
-const moveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockLinesPanel) => {
-    const panelFrom = panel === LEFT_PANEL_ID ? sourceBlockLines : targetBlockLines
-    const panelTo   = panel === LEFT_PANEL_ID ? targetBlockLines : sourceBlockLines
+const moveAssemblyLine = (assemblyLine: IAssemblyTaskLine, panel: IAssemblyLinesPanel) => {
+    const panelFrom = panel === LEFT_PANEL_ID ? sourceAssemblyLines : targetAssemblyLines
+    const panelTo   = panel === LEFT_PANEL_ID ? targetAssemblyLines : sourceAssemblyLines
 
-    panelFrom.value = panelFrom.value.filter(line => line.id !== blockLine.id)
-    panelTo.value.push(blockLine)
+    panelFrom.value = panelFrom.value.filter(line => line.id !== assemblyLine.id)
+    panelTo.value.push(assemblyLine)
 
-    globalManageTaskCardActiveBlockLine.value = null
+    globalManageTaskCardActiveAssemblyLine.value = null
     activePanel.value                         = panel
 
     calculateTotals()
@@ -480,24 +480,24 @@ const moveBlockLine = (blockLine: IBlockTaskLine, panel: IBlockLinesPanel) => {
 const divideElementAmount = async () => {
 
     // __ Проверяем, есть ли активная строка
-    if (!globalManageTaskCardActiveBlockLine.value) {
+    if (!globalManageTaskCardActiveAssemblyLine.value) {
         return
     }
 
     // __ Проверяем, больше ли количество, чем 1
-    if (globalManageTaskCardActiveBlockLine.value.amount <= 1) {
+    if (globalManageTaskCardActiveAssemblyLine.value.amount <= 1) {
         return
     }
 
     // __ Копируем объект, чтобы не мутировать оригинал
-    const activeBlockLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveBlockLine.value))
+    const activeAssemblyLineCopy = JSON.parse(JSON.stringify(globalManageTaskCardActiveAssemblyLine.value))
 
 
     dividerElement.value.name =
-        activeBlockLineCopy.block.name + ' ' +
-        activeBlockLineCopy.amount.toString() + ' шт.'
+        activeAssemblyLineCopy.assembly.name + ' ' +
+        activeAssemblyLineCopy.amount.toString() + ' шт.'
 
-    dividerElement.value.amount = activeBlockLineCopy.amount
+    dividerElement.value.amount = activeAssemblyLineCopy.amount
 
     // console.log('dividerElement.value: ', dividerElement.value)
 
@@ -514,8 +514,8 @@ const divideElementAmount = async () => {
 
         // __ Логика разделения
         // __ Получаем целевой массив по ссылке
-        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceBlockLines.value : targetBlockLines.value
-        const dividerElementIndex = workArray.findIndex(item => item.id === activeBlockLineCopy.id && item.position === activeBlockLineCopy.position)
+        const workArray           = activePanel.value === LEFT_PANEL_ID ? sourceAssemblyLines.value : targetAssemblyLines.value
+        const dividerElementIndex = workArray.findIndex(item => item.id === activeAssemblyLineCopy.id && item.position === activeAssemblyLineCopy.position)
         if (dividerElementIndex === -1) {
             return // страховка
         }
@@ -525,10 +525,10 @@ const divideElementAmount = async () => {
         const workElement = workArray[dividerElementIndex]
 
         // __ Ищем сразу по 2 массивам, потому что строка уже может быть перемещена в другую панель
-        const filteredSourceBlockLines = sourceBlockLines.value.filter(item => item.id_ref === workElement.id_ref)
-        const filteredTargetBlockLines = targetBlockLines.value.filter(item => item.id_ref === workElement.id_ref)
+        const filteredSourceAssemblyLines = sourceAssemblyLines.value.filter(item => item.id_ref === workElement.id_ref)
+        const filteredTargetAssemblyLines = targetAssemblyLines.value.filter(item => item.id_ref === workElement.id_ref)
 
-        const maxPosition = [...filteredSourceBlockLines, ...filteredTargetBlockLines]
+        const maxPosition = [...filteredSourceAssemblyLines, ...filteredTargetAssemblyLines]
             .filter(item => /*item.id === workElement.id ||*/ item.id_ref === workElement.id_ref)   // __ у новых строк ID = 0
             .reduce((acc, item) => (item.position > acc ? item.position : acc), -Infinity)
 
@@ -548,18 +548,18 @@ const divideElementAmount = async () => {
             return
         }
 
-        let newBlockLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
-        newBlockLine.id       = 0                                                  // __ Устанавливаем новый ID
-        newBlockLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
+        let newAssemblyLine      = { ...workArray[dividerElementIndex] }              // __ Копируем объект
+        newAssemblyLine.id       = 0                                                  // __ Устанавливаем новый ID
+        newAssemblyLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
         // __ Пересчитываем время и количество
-        newBlockLine                   = calculateDividedAmountAndTime(newBlockLine, range.take)
+        newAssemblyLine                   = calculateDividedAmountAndTime(newAssemblyLine, range.take)
         workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
 
         // __ Вставляем новую строку
-        workArray.splice(dividerElementIndex + 1, 0, newBlockLine)
+        workArray.splice(dividerElementIndex + 1, 0, newAssemblyLine)
 
-        // console.log(activeBlockLineCopy)
+        // console.log(activeAssemblyLineCopy)
         // console.log(workArray[dividerElementIndex])
         // console.log(workArray[dividerElementIndex + 1])
     }
@@ -567,54 +567,54 @@ const divideElementAmount = async () => {
 
 // __ Перезагрузить данные
 const reloadData = () => {
-    sourceBlockLines.value = JSON.parse(JSON.stringify(props.task.block_lines))
-    targetBlockLines.value = []
+    sourceAssemblyLines.value = JSON.parse(JSON.stringify(props.task.assembly_lines))
+    targetAssemblyLines.value = []
 
     calculateTotals()
 }
 
 // __ Объединить строки
-const mergeLines = (activePanel: IBlockLinesPanel) => {
+const mergeLines = (activePanel: IAssemblyLinesPanel) => {
     const workArray = activePanel === LEFT_PANEL_ID
-        ? [...sourceBlockLines.value]
-        : [...targetBlockLines.value]
+        ? [...sourceAssemblyLines.value]
+        : [...targetAssemblyLines.value]
 
-    const mergedBlockLines = mergeBlockLines(workArray)
+    const mergedAssemblyLines = mergeAssemblyLines(workArray)
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceBlockLines.value = [...mergedBlockLines]
+        sourceAssemblyLines.value = [...mergedAssemblyLines]
     } else {
-        targetBlockLines.value = [...mergedBlockLines]
+        targetAssemblyLines.value = [...mergedAssemblyLines]
     }
 }
 
 // __ Переместить в другую панель
-const moveToPanel = (activePanel: IBlockLinesPanel, blockType: string) => {
+const moveToPanel = (activePanel: IAssemblyLinesPanel, assemblyType: string) => {
     let sourceArray, targetArray
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceArray = [...sourceBlockLines.value]
-        targetArray = [...targetBlockLines.value]
+        sourceArray = [...sourceAssemblyLines.value]
+        targetArray = [...targetAssemblyLines.value]
     } else {
-        targetArray = [...sourceBlockLines.value]
-        sourceArray = [...targetBlockLines.value]
+        targetArray = [...sourceAssemblyLines.value]
+        sourceArray = [...targetAssemblyLines.value]
     }
 
     for (let i = 0; i < sourceArray.length; i++) {
         let compareValue = false
 
-        switch (blockType) {
+        switch (assemblyType) {
             case 'all':
                 compareValue = true
                 break
-            case BLOCK_MANUF_LINES.LINE_1:
-                compareValue = sourceArray[i].manuf_line === BLOCK_MANUF_LINES.LINE_1
+            case ASSEMBLY_MANUF_LINES.LINE_1:
+                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_1
                 break
-            case BLOCK_MANUF_LINES.LINE_2:
-                compareValue = sourceArray[i].manuf_line === BLOCK_MANUF_LINES.LINE_2
+            case ASSEMBLY_MANUF_LINES.LINE_2:
+                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_2
                 break
-            case BLOCK_MANUF_LINES.LINE_0:
-                compareValue = sourceArray[i].manuf_line === BLOCK_MANUF_LINES.LINE_0
+            case ASSEMBLY_MANUF_LINES.LINE_0:
+                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_0
                 break
         }
 
@@ -628,11 +628,11 @@ const moveToPanel = (activePanel: IBlockLinesPanel, blockType: string) => {
     sourceArray = sourceArray.filter(item => item.amount > 0)
 
     if (activePanel === LEFT_PANEL_ID) {
-        sourceBlockLines.value = [...sourceArray]
-        targetBlockLines.value = [...targetArray]
+        sourceAssemblyLines.value = [...sourceArray]
+        targetAssemblyLines.value = [...targetArray]
     } else {
-        sourceBlockLines.value = [...targetArray]
-        targetBlockLines.value = [...sourceArray]
+        sourceAssemblyLines.value = [...targetArray]
+        targetAssemblyLines.value = [...sourceArray]
     }
 
     calculateTotals()
@@ -649,7 +649,7 @@ const addComment = async () => {
 
         const newComment = commentEdit.value!.comment.trim()
 
-        const result = await blockStore.setBlockTaskComment(props.task.id, newComment)
+        const result = await assemblyStore.setAssemblyTaskComment(props.task.id, newComment)
 
         if (!checkCRUD(result)) {
 
@@ -665,7 +665,7 @@ const addComment = async () => {
         }
 
         // __ Обновляем комментарий в глобальном массиве
-        blockStore.applyBlockTaskComment(props.task.id, newComment)
+        assemblyStore.applyAssemblyTaskComment(props.task.id, newComment)
 
         // __ Обновляем комментарий в текущей строке, потому что теряем где-то реактивность
         // __ из-за передачи параметров в SFC по глубокой копии
@@ -682,7 +682,7 @@ const addComment = async () => {
 // --- -------------------------------------------------------------------------------------
 
 // __ Меняем направление сортировки
-const changeSortDirection = (sortDirection: IBlockTaskCardSort) => {
+const changeSortDirection = (sortDirection: IAssemblyTaskCardSort) => {
     sortPosition.value = 'none'
     sortName.value     = 'none'
     sortLine_1.value   = 'none'
@@ -705,7 +705,7 @@ type SortType = 'number' | 'string' | 'boolean'
 
 interface SortConfig {
     type: SortType
-    getValue: (item: IBlockTaskLine) => string | number | boolean
+    getValue: (item: IAssemblyTaskLine) => string | number | boolean
 }
 
 // __ Карта конфигураций. Ключи — это произвольные идентификаторы (ID колонок)
@@ -720,32 +720,32 @@ const sortConfigs: Record<string, SortConfig> = {
     },
     square                    : {
         type    : 'number',
-        getValue: (item) => getBlockTaskLineSquare(item)
+        getValue: (item) => getAssemblyTaskLineSquare(item)
     },
     name_report               : {
         type    : 'string',
         getValue: (item) => {
-            const modelCover = item.block.name    // __ Получаем название модели
+            const modelCover = item.assembly.name    // __ Получаем название модели
             if (!modelCover) return ''
 
             return modelCover
                 ? isAverage(modelCover)
                     ? 'Чехол для Планового матраса'
-                    : item.block.name
+                    : item.assembly.name
                 : ''
         }
     },
-    [BLOCK_MANUF_LINES.LINE_1]: {
+    [ASSEMBLY_MANUF_LINES.LINE_1]: {
         type    : 'boolean',
-        getValue: (item) => item.manuf_line === BLOCK_MANUF_LINES.LINE_1
+        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_1
     },
-    [BLOCK_MANUF_LINES.LINE_2]: {
+    [ASSEMBLY_MANUF_LINES.LINE_2]: {
         type    : 'boolean',
-        getValue: (item) => item.manuf_line === BLOCK_MANUF_LINES.LINE_2
+        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_2
     },
-    [BLOCK_MANUF_LINES.LINE_0]: {
+    [ASSEMBLY_MANUF_LINES.LINE_0]: {
         type    : 'boolean',
-        getValue: (item) => item.manuf_line === BLOCK_MANUF_LINES.LINE_0
+        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_0
     },
     time                      : {
         type    : 'number',
@@ -770,7 +770,7 @@ const compareValues = (a: unknown, b: unknown, type: SortType, modifier: number)
 }
 
 // __ Сортировка
-const sortByField = (panel: IBlockLinesPanel, configKey: string) => {
+const sortByField = (panel: IAssemblyLinesPanel, configKey: string) => {
     const config = sortConfigs[configKey]
     if (!config) return
 
@@ -793,15 +793,15 @@ const sortByField = (panel: IBlockLinesPanel, configKey: string) => {
             sortName.value = changeSortDirection(sortName.value)
             direction      = sortName.value
             break
-        case BLOCK_MANUF_LINES.LINE_1:
+        case ASSEMBLY_MANUF_LINES.LINE_1:
             sortLine_1.value = changeSortDirection(sortLine_1.value)
             direction        = sortLine_1.value
             break
-        case BLOCK_MANUF_LINES.LINE_2:
+        case ASSEMBLY_MANUF_LINES.LINE_2:
             sortLine_2.value = changeSortDirection(sortLine_2.value)
             direction        = sortLine_2.value
             break
-        case BLOCK_MANUF_LINES.LINE_0:
+        case ASSEMBLY_MANUF_LINES.LINE_0:
             sortLine_0.value = changeSortDirection(sortLine_0.value)
             direction        = sortLine_0.value
             break
@@ -812,8 +812,8 @@ const sortByField = (panel: IBlockLinesPanel, configKey: string) => {
     }
 
     const workArray = panel === LEFT_PANEL_ID
-        ? [...sourceBlockLines.value]
-        : [...targetBlockLines.value]
+        ? [...sourceAssemblyLines.value]
+        : [...targetAssemblyLines.value]
 
     const modifier = direction === 'asc' ? 1 : -1
 
@@ -822,9 +822,9 @@ const sortByField = (panel: IBlockLinesPanel, configKey: string) => {
     })
 
     if (panel === LEFT_PANEL_ID) {
-        sourceBlockLines.value = workArray
+        sourceAssemblyLines.value = workArray
     } else {
-        targetBlockLines.value = workArray
+        targetAssemblyLines.value = workArray
     }
 }
 
@@ -871,7 +871,7 @@ const finishDrag = (/*evt: any*/) => {
 watch(() => props.task, () => {
 
     // __ Задаем активную запись
-    globalManageTaskCardActiveBlockLine.value = props.task?.block_lines[0]
+    globalManageTaskCardActiveAssemblyLine.value = props.task?.assembly_lines[0]
 
     // __ Копируем входящие данные для отслеживания изменений
     taskMem = JSON.parse(JSON.stringify(props.task))
@@ -882,11 +882,11 @@ watch(() => props.task, () => {
     footTitle.load_at   = formatDateInFullFormat(props.task.order.load_at)
 
     // __ Копируем данные для левой и правой панели
-    sourceBlockLines.value = JSON.parse(JSON.stringify(props.task.block_lines))
-    targetBlockLines.value = []
+    sourceAssemblyLines.value = JSON.parse(JSON.stringify(props.task.assembly_lines))
+    targetAssemblyLines.value = []
 
-    // console.log(sourceBlockLines.value)
-    // console.log(targetBlockLines.value)
+    // console.log(sourceAssemblyLines.value)
+    // console.log(targetAssemblyLines.value)
 
     // __ Обновляем суммы
     calculateTotals()
@@ -917,19 +917,19 @@ watchEffect(() => {
     needForSave.value = true
 
     // __ Ситуация, когда мы перетаскиваем строки в правую часть
-    if (targetBlockLines.value.length > 0) {
+    if (targetAssemblyLines.value.length > 0) {
         return
     }
 
     // __ Ситуация, когда мы меняем порядок строк в левой части
     // __ Сравниваем длину массивов (исходного и копии)
-    if (sourceBlockLines.value.length !== taskMem.block_lines.length) {
+    if (sourceAssemblyLines.value.length !== taskMem.assembly_lines.length) {
         return
     }
 
     // __ Сравниваем содержимое массивов
-    for (let i = 0; i < sourceBlockLines.value.length; i++) {
-        const isEqual = JSON.stringify(sourceBlockLines.value[i]) === JSON.stringify(taskMem.block_lines[i])
+    for (let i = 0; i < sourceAssemblyLines.value.length; i++) {
+        const isEqual = JSON.stringify(sourceAssemblyLines.value[i]) === JSON.stringify(taskMem.assembly_lines[i])
         if (!isEqual) {
             return
         }

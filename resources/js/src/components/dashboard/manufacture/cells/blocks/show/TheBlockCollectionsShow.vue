@@ -436,13 +436,14 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watchEffect } from 'vue'
+import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
 
 import type {
     IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument, IBlock,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useUserStore } from '@/stores/UserStore'
 
 import { DEBUG } from '@/app/constants/common.ts'
 import { LINE_0, LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME, UNIT_METERS } from '@/app/constants/blocks.ts'
@@ -464,12 +465,17 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 const isLoading = ref(false)
 
+const userStore = useUserStore()
 const blocksStore = useBlocksStore()
 
 // const DEBUG = true
 
+const getRights = computed(() => {
+    return userStore.canEditBlocksPermissionsRole()
+})
+
 // __ Права изменения
-const CAN_EDIT   = true
+const CAN_EDIT   = getRights.value
 const CAN_DELETE = true
 
 // __ Определяем переменные

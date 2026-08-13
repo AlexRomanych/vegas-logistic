@@ -624,26 +624,33 @@ final class BlocksService
         //$coll = BlockCollection::query()->with('kdbDoc')->get();
         //$collArray = $coll->toArray();
 
-        $order    = Order::query()
-            ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
-            ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
-            ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
-            ->with([
-                'lines.model.modelType',
-                'lines.specification',
-                'lines.specificationAdd',
-                'client',
-                'orderType',
-                'sewingTask.lines',
-                'sewingTask.currentStatus',
-                'sewingTask.lines.orderLine',
-                'cuttingTask.lines',
-                'cuttingTask.currentStatus',
-                'cuttingTask.lines.orderLine',
-            ])
-            ->findOrFail(620);
-        $orderArr = $order->toArray();
+        //$order    = Order::query()
+        //    ->withExists('cuttingTask') // <-- Добавит boolean-поле cutting_task_exists
+        //    ->withExists('sewingTask')  // <-- Добавит boolean-поле sewing_task_exists
+        //    ->withExists('blockTask')  // <-- Добавит boolean-поле block_task_exists
+        //    ->with([
+        //        'lines.model.modelType',
+        //        'lines.specification',
+        //        'lines.specificationAdd',
+        //        'client',
+        //        'orderType',
+        //        'sewingTask.lines',
+        //        'sewingTask.currentStatus',
+        //        'sewingTask.lines.orderLine',
+        //        'cuttingTask.lines',
+        //        'cuttingTask.currentStatus',
+        //        'cuttingTask.lines.orderLine',
+        //    ])
+        //    ->findOrFail(620);
+        //$orderArr = $order->toArray();
+        //
+        //$a = 0;
 
+        $nextChange = BlocksService::getNextChange(Carbon::parse('2026-08-13'), '1');
+
+        $date = $nextChange->getManufactureDay();
+        $change = $nextChange->getChange();
         $a = 0;
+
     }
 }

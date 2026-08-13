@@ -112,18 +112,20 @@
 
             <div :class="change.length ? getChangeClass(idx) : ''">
 
-                <!-- __ Смена -->
-                <AppLabelTS
-                    :height="DEFAULT_HEIGHT"
-                    :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                    :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                    align="center"
-                    class="uppercase cursor-pointer"
-                    rounded="rounded-[4px]"
-                    text-size="mini"
-                    width="calc(w-full - 5px)"
-                    @click.exact="actionDayMenu(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                />
+                <div v-if="!IS_ONE_CHANGE_MODE">
+                    <!-- __ Смена -->
+                    <AppLabelTS
+                        :height="DEFAULT_HEIGHT"
+                        :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                        :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                        align="center"
+                        class="uppercase cursor-pointer"
+                        rounded="rounded-[4px]"
+                        text-size="mini"
+                        width="calc(w-full - 5px)"
+                        @click.exact="actionDayMenu(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                    />
+                </div>
 
                 <!-- __ Сами СЗ с возможностью перетаскивания -->
                 <draggable
@@ -181,62 +183,60 @@
                     <!-- __ Количество + Трудозатраты Общие -->
                     <ManageItemDataLabel
                         :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"
-                        :square="getTotalSquareChange(change as unknown as IAssemblyTask[])"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME * 2"
+                        :square="getTotalSquareChange(change as unknown as IAssemblyTask[])"
+                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"
                         :time-show="globalAssemblyTaskTimesShow"
-                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
                     />
 
-                    <!-- __ Количество + Трудозатраты Линия 1 -->
+                    <!-- __ Количество + Трудозатраты -->
                     <ManageItemDataLabel
                         v-if="globalAssemblyTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].amount"
-                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].square"
+                        :amount="0"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
-                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_1].time"
+                        :time="0"
                         :time-show="globalAssemblyTaskTimesShow"
-                        :square-show="globalAssemblyTaskAssemblyInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
                     />
 
                     <!-- __ Количество + Трудозатраты Линия 2 -->
-                    <ManageItemDataLabel
-                        v-if="globalAssemblyTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].amount"
-                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].square"
-                        :height="heightTotals"
-                        :reference="REFERENCE_TIME"
-                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].time"
-                        :time-show="globalAssemblyTaskTimesShow"
-                        :square-show="globalAssemblyTaskAssemblyInSquare"
-                        :type="TOTALS_TYPE"
-                        :width="columnsWidth.amount"
-                        class="plan-item"
-                    />
+                    <!--<ManageItemDataLabel-->
+                    <!--    v-if="globalAssemblyTaskFullDaysShow"-->
+                    <!--    :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].amount"-->
+                    <!--    :height="heightTotals"-->
+                    <!--    :reference="REFERENCE_TIME"-->
+                    <!--    :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].square"-->
+                    <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
+                    <!--    :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].time"-->
+                    <!--    :time-show="globalAssemblyTaskTimesShow"-->
+                    <!--    :type="TOTALS_TYPE"-->
+                    <!--    :width="columnsWidth.amount"-->
+                    <!--    class="plan-item"-->
+                    <!--/>-->
 
                     <!-- __ Количество + Трудозатраты Неопознанные -->
-                    <ManageItemDataLabel
-                        v-if="globalAssemblyTaskFullDaysShow"
-                        :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount"
-                        :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].square"
-                        :color="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
-                        :height="heightTotals"
-                        :reference="null"
-                        :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].time"
-                        :time-show="globalAssemblyTaskTimesShow"
-                        :square-show="globalAssemblyTaskAssemblyInSquare"
-                        :type="TOTALS_TYPE"
-                        :width="columnsWidth.amount"
-                        class="plan-item"
-                    />
+                    <!--<ManageItemDataLabel-->
+                    <!--    v-if="globalAssemblyTaskFullDaysShow"-->
+                    <!--    :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount"-->
+                    <!--    :color="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"-->
+                    <!--    :height="heightTotals"-->
+                    <!--    :reference="null"-->
+                    <!--    :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].square"-->
+                    <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
+                    <!--    :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].time"-->
+                    <!--    :time-show="globalAssemblyTaskTimesShow"-->
+                    <!--    :type="TOTALS_TYPE"-->
+                    <!--    :width="columnsWidth.amount"-->
+                    <!--    class="plan-item"-->
+                    <!--/>-->
                 </div>
 
                 <!-- __ Двойная Разделительная линия -->
@@ -315,7 +315,7 @@ import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 
 import { usePlansStore } from '@/stores/PlansStore.ts'
-import { useAssemblysStore } from '@/stores/AssemblysStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import {
     additionDaysInStrFormat,
@@ -347,7 +347,16 @@ import {
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
 
-import { ASSEMBLY_MANUF_LINES, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGE_1, CHANGE_2, CHANGES } from '@/app/constants/assembly.ts'
+import {
+    ASSEMBLY_MANUF_LINES,
+    ASSEMBLY_TASK_DRAFT,
+    ASSEMBLY_TASK_STATUSES,
+    CHANGE_1,
+    CHANGE_2,
+    CHANGE_MODE,
+    CHANGES,
+    IS_NOT_ONE_CHANGE_MODE, IS_ONE_CHANGE_MODE
+} from '@/app/constants/assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLine from '@/components/ui/dividers/TheDividerLine.vue'
@@ -628,7 +637,7 @@ const showAssemblyTaskManufLines = async (assemblyTask: IAssemblyTask) => {
     }
 
     // __ Получаем ссылки на панели
-    const mutations                         = manageTaskManufLines.value!.mutations
+    const mutations                               = manageTaskManufLines.value!.mutations
     const setAssemblyData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
 
     console.log('mutations: ', setAssemblyData)
@@ -1234,7 +1243,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
                         console.warn('Union AssemblyTasks')
 
                         // __ Переносим правую панель в новый СЗ
-                        rightPanel               = repositionAssemblyTaskLines(rightPanel)
+                        rightPanel                     = repositionAssemblyTaskLines(rightPanel)
                         newAssemblyTask.assembly_lines = rightPanel
 
                         // __ Изменяем содержимое в СЗ

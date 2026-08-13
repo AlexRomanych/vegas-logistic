@@ -258,7 +258,7 @@ import type { IPeriod, IRenderData, IBlockDay, IBlockTaskLine } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
-import { START_SHIFT_TIME, TOTAL_SHIFT_DURATION, } from '@/app/constants/blocks.ts'
+import { CHANGE_1, CHANGE_2, } from '@/app/constants/blocks.ts'
 
 import { getExecuteTaskStatistics, getBlockDates, unionDatesWithBlockTasks, getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import {
@@ -621,17 +621,27 @@ const getDeviationDay = (blockDay: IBlockDay) => {
     const statistics = getDayStatistics(blockDay)
 
     if (blockDay.start_at && !blockDay.finish_at) {
+        const change = blockDay.change
+
         // __ Находим время окончания смены
-        const endShiftTime     = new Date(blockDay.start_at.replace(' ', 'T'))
-        const [hours, minutes] = START_SHIFT_TIME.split(':')
-        endShiftTime.setHours(Number(hours), Number(minutes) + TOTAL_SHIFT_DURATION * 60, 0, 0)
+        const endShiftTime = new Date()
 
-        // __ Оставшееся время до окончания смены в секундах
-        const remainingTime = (endShiftTime.getTime() - new Date().getTime()) / 1000
+        if (change === CHANGE_1) {
+            endShiftTime.setHours(20, 30, 0, 0) // __ '20:30'
+        } else if (change === CHANGE_2) {
+            const startDate = new Date(blockDay.start_at)
+            endShiftTime.setDate(startDate.getDate() + 1)
+            endShiftTime.setHours(8, 30, 0, 0) // __ '08:30'
+        } else {
+            return 0
+        }
 
-        // __ Опережение или отставание
-        if (statistics.time.unfinished === 0) return 0
-        return round(remainingTime - statistics.time.unfinished)
+        // __ Время от текущего момента до окончания смены
+        const remainingWorkingTime    = endShiftTime.getTime() / 1000 - (new Date()).getTime() / 1000       // __ в секундах
+        const remainingUnfinishedTime = statistics.time.unfinished * 60 * 60      // __ в секундах
+
+        // __ Опережение или отставание в секундах
+        return round(remainingWorkingTime - 2 * remainingUnfinishedTime)
     }
 
     return 0
@@ -640,7 +650,7 @@ const getDeviationDay = (blockDay: IBlockDay) => {
 // __ Получаем отклонение прогресса выполнения СЗ по дню в %
 const getDeviationDayTotal = (blockDay: IBlockDay) => {
     const statistics = getDayStatistics(blockDay)
-    return statistics.time.unfinished !== 0 ? (getDeviationDay(blockDay) / statistics.time.unfinished) * 100 : 0
+    return statistics.time.unfinished !== 0 ? (getDeviationDay(blockDay) / statistics.time.unfinished / (60 * 60 )) * 100 : 0
 }
 
 // __ Текст для опережения/отставания
@@ -650,7 +660,7 @@ const getDeviationDayTotalText = (blockDay: IBlockDay) => {
         return 'В графике'
     }
 
-    return deviation > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation), 'hour')
+    return deviation > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation), )
 }
 
 // __ Получаем производственные дни

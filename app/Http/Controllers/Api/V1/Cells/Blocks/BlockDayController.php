@@ -556,7 +556,7 @@ class BlockDayController extends Controller
                         if ($falseTask['all_false']) {
                             $tasksToUpdate[] = [
                                 'id'        => $falseTask['task']->id,
-                                'action_at' => $nextChange->getManufactureDay(),
+                                'action_at' => $nextChange->getManufactureDay()->startOfDay(),
                                 'change'    => $nextChange->getChange(),
                                 'position'  => $position++,
                             ];
@@ -610,7 +610,7 @@ class BlockDayController extends Controller
                         // __ Переносим на следующий день
                         $tasksToUpdate[] = [
                             'id'        => $newTask->id,
-                            'action_at' => $nextChange->getManufactureDay(),
+                            'action_at' => $nextChange->getManufactureDay()->startOfDay(),
                             'change'    => $nextChange->getChange(),
                             'position'  => $position++,
                         ];

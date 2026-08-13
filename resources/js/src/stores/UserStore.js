@@ -190,6 +190,13 @@ export const useUserStore = defineStore('user', () => {
         return currentUser.email.includes('@admin')
     }
 
+    // __ Проверяет, можно ли редактировать блоки
+    const canEditBlocksPermissionsRole = () => {
+        // return false
+        // return currentUser.email.includes('@admin')
+        return currentUser.email === 'kofanov@vegas.by'
+    }
+
 
     return {
         registerUser,
@@ -197,7 +204,9 @@ export const useUserStore = defineStore('user', () => {
         logout,
         getUser,
         isAuthenticated,
+
         hasAdminRole,
+        canEditBlocksPermissionsRole,
 
         isAuth,
 

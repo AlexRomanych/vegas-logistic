@@ -181,12 +181,12 @@
                     <!-- __ Количество + Трудозатраты Общие -->
                     <ManageItemDataLabel
                         :amount="getTotalAmountChange(change as unknown as IBlockTask[])"
-                        :square="getTotalSquareChange(change as unknown as IBlockTask[])"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME * 2"
+                        :square="getTotalSquareChange(change as unknown as IBlockTask[])"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :time="getTotalTimeChange(change as unknown as IBlockTask[])"
                         :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -196,12 +196,12 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].square"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_1].time"
                         :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -211,12 +211,12 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].square"
                         :height="heightTotals"
                         :reference="REFERENCE_TIME"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].square"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_2].time"
                         :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -226,13 +226,13 @@
                     <ManageItemDataLabel
                         v-if="globalBlockTaskFullDaysShow"
                         :amount="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount"
-                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].square"
                         :color="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"
                         :height="heightTotals"
                         :reference="null"
+                        :square="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].square"
+                        :square-show="globalBlockTaskBlockInSquare"
                         :time="amountAndTimeTotalsChanges[idx][BLOCK_MANUF_LINES.LINE_0].time"
                         :time-show="globalBlockTaskTimesShow"
-                        :square-show="globalBlockTaskBlockInSquare"
                         :type="TOTALS_TYPE"
                         :width="columnsWidth.amount"
                         class="plan-item"
@@ -309,7 +309,7 @@ import type {
     IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock, IBlockTaskChangeKeys,
 } from '@/types'
 
-import { computed, inject, type Ref, ref, } from 'vue'
+import { computed, inject, type Ref, ref, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
@@ -1433,11 +1433,23 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
     // __ Объединение СЗ для одной Заявки
     if (result.menuItem === 3) {
-        console.log('clearDay: ', clearDay)
 
-        const grouped = getBlockTasksGroupedByOrder(clearDay[idx]) // __ Получаем массив массивов СЗ по одинаковым Заявкам
-        // console.log('target: ', grouped)
+        // __ Отфильтровываем статус Создано
+        const filteredByStatus = clearDay[idx].filter(item => isTaskStatusCreated(item))
+
+        let grouped = getBlockTasksGroupedByOrder(filteredByStatus) // __ Получаем массив массивов СЗ по одинаковым Заявкам
+        grouped     = grouped.filter(item => item.length > 1) // __ Удаляем без дубликатов
+
+        if (grouped.length === 0) {
+            await showError([
+                'Нет Сменных задания',
+                'для объединения в статусе "Создано"!',
+            ])
+            return
+        }
+
         await blockStore.applyMergeTasksGroups(grouped)
+
         return
     }
 
@@ -1467,7 +1479,7 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
 
 // __ Переход в Выполнение СЗ
 const gotoExecute = async () => {
-    await router.push({ name: 'manufacture.cell.blocks.tasks.execute' })
+    router.push({ name: 'manufacture.cell.blocks.tasks.execute' })
 }
 
 

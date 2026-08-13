@@ -97,7 +97,7 @@
                                 />
                             </div>
 
-                            <div class="mr-0.5">
+                            <div class="mr-0.5 z-40">
                                 <!-- __ Окончание -->
                                 <InputDateTS
                                     id="start"

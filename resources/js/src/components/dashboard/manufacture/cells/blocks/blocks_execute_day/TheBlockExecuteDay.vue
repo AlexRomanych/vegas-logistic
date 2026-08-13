@@ -2,7 +2,6 @@
     <template v-if="!isLoading">
         <div class="flex m-2">
 
-
             <template v-if="isStartAvailable">
                 <!-- __ Начать/Закончить выполнение -->
                 <AppLabelMultiLineTS
@@ -16,7 +15,6 @@
                     @click="handleStartAction"
                 />
 
-
                 <!-- __ Остановить для добавления новых СЗ -->
                 <AppLabelMultiLineTS
                     :text="addNewTasksLabelTitle"
@@ -28,7 +26,6 @@
                     text-size="mini"
                     @click="handleReadyAction"
                 />
-
 
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
@@ -77,7 +74,7 @@
 
                 <!-- __ Опережение/Отставание -->
                 <DeviationBar
-                    :deviation="statistics.time.unfinished !== 0 ? (deviation / statistics.time.unfinished) * 100 : 0"
+                    :deviation="statistics.time.unfinished !== 0 ? (deviation / (statistics.time.unfinished * 60 * 60)) * 100 : 0"
                     :text="deviationText"
                     height="h-[50px]"
                     text-size="mini"
@@ -109,6 +106,7 @@
                     v-if="tab.show"
                     :line-through="tab.task ? !tab.task.active : false"
                     :text="tab.label"
+                    :title="tab.position !== UNION_TASKS_POSITION ? 'Ctrl + Click - Добавить/Убрать из Объединения СЗ' : null"
                     :type="getTabType(tab)"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
@@ -117,7 +115,6 @@
                     text-size="mini"
                     @click.exact="activeTabPosition = tab.position"
                     @click.ctrl="setTaskInActive(tab)"
-                    :title="tab.position !== UNION_TASKS_POSITION ? 'Ctrl + Click - Добавить/Убрать из Объединения СЗ' : null"
                 />
             </div>
         </div>
@@ -177,7 +174,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 
-import { BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, START_SHIFT_TIME, TOTAL_SHIFT_DURATION } from '@/app/constants/blocks.ts'
+import { BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, } from '@/app/constants/blocks.ts'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
@@ -364,22 +361,39 @@ const elapsedTime = computed(() => {
 
 // __ Опережение / Отставание
 const deviation = computed(() => {
+
+    // console.log('statistics.value.time.unfinished: ', statistics.value.time.unfinished)
+
+    // __ Если нет невыполненных, возвращаем 0
+    if (statistics.value.time.unfinished === 0) return 0
+
+    const change = blockDay.value?.change
     if (now.value && startTime.value && !finishTime.value) {
+
         // __ Находим время окончания смены
-        const endShiftTime     = new Date(startTime.value * 1000)
-        const [hours, minutes] = START_SHIFT_TIME.split(':')
-        endShiftTime.setHours(Number(hours), Number(minutes) + TOTAL_SHIFT_DURATION * 60, 0, 0)
+        const endShiftTime = new Date()
 
-        // __ Оставшееся время до окончания смены в секундах
-        const remainingTime = endShiftTime.getTime() / 1000 - now.value
-        //
-        // console.log('unfinished: ', formatTimeWithLeadingZeros(statistics.value.time.unfinished))
-        // console.log('remainingTime: ', formatTimeWithLeadingZeros(round(remainingTime)))
-        // console.log('deviation: ', formatTimeWithLeadingZeros(round(remainingTime - statistics.value.time.unfinished)))
+        if (change === CHANGE_1) {
+            endShiftTime.setHours(20, 30, 0, 0) // __ '20:30'
+        } else if (change === CHANGE_2) {
+            const startDate = new Date(startTime.value * 1000)
+            endShiftTime.setDate(startDate.getDate() + 1)
+            endShiftTime.setHours(8, 30, 0, 0) // __ '08:30'
+        } else {
+            return 0
+        }
+        // console.log('endShiftTime: ', endShiftTime)
 
-        // __ Опережение или отставание
-        if (statistics.value.time.unfinished === 0) return 0
-        return round(remainingTime - statistics.value.time.unfinished)
+        // __ Время от текущего момента до окончания смены
+        const remainingWorkingTime    = endShiftTime.getTime() / 1000 - now.value       // __ в секундах
+        const remainingUnfinishedTime = statistics.value.time.unfinished * 60 * 60      // __ в секундах
+
+        // console.log('remainingWorkingTime: ', remainingWorkingTime)
+        // console.log('remainingUnfinishedTime: ', remainingUnfinishedTime)
+
+        // __ Опережение или отставание в секундах
+        return round(remainingWorkingTime - 2 * remainingUnfinishedTime)
+        // return (remainingWorkingTime - 2 * remainingUnfinishedTime) / remainingUnfinishedTime * 100
     }
 
     return 0
@@ -812,7 +826,6 @@ const prepareData = () => {
     allBlockTasksLinesUnion.value.position  = UNION_TASKS_POSITION // __ Позиция объединения всех строк
     allBlockTasksLinesUnion.value.action_at = blockDay.value.action_at
 }
-
 
 
 // __ Получаем раскраску Таба

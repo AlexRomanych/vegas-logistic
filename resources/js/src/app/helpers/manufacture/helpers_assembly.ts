@@ -1,20 +1,17 @@
 import type {
     IAmountAndTimeAssembly,
-    IAmountAndTimeBlock,
     IAssemblySectorKeys,
     IAssemblyTask,
     IAssemblyTaskArrayDiff,
     IAssemblyTaskArrayLineDiffs,
-    IAssemblyTaskChangeKeys,
-    IAssemblyTaskLine, IAssemblyTaskLineSector, IAssemblyTaskStatusKeys, IBlockManufLine, IBlockTask, IBlockTaskLine,
+    IAssemblyTaskChangeKeys, IAssemblyTaskExecuteStatistics,
+    IAssemblyTaskLine, IAssemblyTaskLineSector, IAssemblyTaskStatusKeys,
     IDay,
     IPlanMatrix,
     IRenderMatrixDiff, IRenderMatrixLineDiffs, IRenderOrderLineAssemblyLineSector, IStatItemAssembly
 } from '@/types'
-import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGES } from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
-import { getBlockTaskLineSquare } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 
 // __ Проблема с draggable
@@ -441,20 +438,6 @@ export function getTaskStatusById(id: number) {
 
 
 
-// --- -------------------------------------------------------------------------------------
-// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskLineSector (для функционала)
-function isAssemblyTaskLineSector(item: unknown): item is IAssemblyTaskLineSector {
-    return !!item && typeof item === 'object' && 'detail_dims' in item && 'dims' in item
-}
-
-// __ Функция-помощник: говорит TS, является ли item типом IRenderOrderLineAssemblyLineSector (для вывода заявки)
-function isAssemblyTaskLineSectorOrder(item: unknown): item is IRenderOrderLineAssemblyLineSector {
-    return !!item && typeof item === 'object' && 'detail_width' in item && 'detail_length' in item && 'detail_height' in item
-}
-
-
-
-
 
 
 // --- -------------------------------------------------------------------------------------
@@ -511,4 +494,106 @@ export function getAssemblyTaskAmountAndTimeTotal(item: IAssemblyTask | IAssembl
         acc.time += item.time
         return acc
     }, {amount: 0, time: 0} as IStatItemAssembly)
+}
+
+
+// __ Возвращает Смену по имени
+export function getChangeByName(task: IAssemblyTask | IAssemblyTaskChangeKeys) {
+    let compareKey = null
+    if (isAssemblyTask(task)) {
+        compareKey = task.change
+    } else {
+        compareKey = task
+    }
+
+    const changeKey = Object.keys(CHANGES).find(key => CHANGES[key as keyof typeof CHANGES].NAME === compareKey)
+    return changeKey ? CHANGES[changeKey as keyof typeof CHANGES] : null
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем статистику по выполнению СЗ
+// export function getExecuteTaskStatistics(item: IAssemblyTask | IAssemblyTaskLine[]) {
+//
+//     const statistics: IAssemblyTaskExecuteStatistics = {
+//         amount: {
+//             finished  : 0,
+//             unfinished: 0,
+//             total     : 0,
+//         },
+//         time  : {
+//             finished  : 0,
+//             unfinished: 0,
+//             total     : 0,
+//         },
+//     }
+//
+//     // __ Проверяем, что пришло на вход
+//     let itemArr = []
+//     if (Array.isArray(item)) {
+//         itemArr = item
+//     } else {
+//         itemArr = item.block_lines
+//     }
+//
+//     // __ Получаем суммарное количество и трудозатраты
+//     const totalAmountAndTimeObj = getAssemblyTaskAmountAndTime(itemArr)
+//
+//     // __ Общее Количество
+//     statistics.amount.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+//
+//     // __ Общее Трудозатраты
+//     statistics.time.total = Object.values(totalAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+//
+//     // __ Выполненные
+//     const finished = itemArr.filter(line => line.finished_at)
+//
+//     // __ Получаем суммарное количество и трудозатраты для выполненных
+//     const finishedAmountAndTimeObj = getAssemblyTaskAmountAndTime(finished)
+//
+//     // __ Выполненные Количество
+//     statistics.amount.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+//
+//     // __ Выполненные Трудозатраты
+//     statistics.time.finished = Object.values(finishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+//
+//     // __ Не Выполненные
+//     const unfinished = itemArr.filter(line => !line.finished_at)
+//
+//     // __ Получаем суммарное количество и трудозатраты для Не выполненных
+//     const unfinishedAmountAndTimeObj = getAssemblyTaskAmountAndTime(unfinished)
+//
+//     // __ Не Выполненные Количество
+//     statistics.amount.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.amount + acc, 0)
+//
+//     // __ Не Выполненные Трудозатраты
+//     statistics.time.unfinished = Object.values(unfinishedAmountAndTimeObj).reduce((acc, item) => item.time + acc, 0)
+//
+//     return statistics
+// }
+
+
+
+
+
+
+
+
+
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskLineSector (для функционала)
+function isAssemblyTaskLineSector(item: unknown): item is IAssemblyTaskLineSector {
+    return !!item && typeof item === 'object' && 'detail_dims' in item && 'dims' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IRenderOrderLineAssemblyLineSector (для вывода заявки)
+function isAssemblyTaskLineSectorOrder(item: unknown): item is IRenderOrderLineAssemblyLineSector {
+    return !!item && typeof item === 'object' && 'detail_width' in item && 'detail_length' in item && 'detail_height' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTask
+function isAssemblyTask(item: unknown): item is IAssemblyTask {
+    return !!item && typeof item === 'object' && 'order' in item && 'block_lines' in item
 }

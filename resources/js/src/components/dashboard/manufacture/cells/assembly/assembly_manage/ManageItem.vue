@@ -23,7 +23,7 @@
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
-            :text="globalBlockTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
+            :text="globalAssemblyTaskTimesShow ? [render.client.data(), formattedLoadDate] : render.client.data()"
             :text-size="render.client.textSize"
             :type="render.client.type"
             :width="render.client.width"
@@ -37,7 +37,7 @@
             :class="animatedClass"
             :color="color"
             :height="dataHeight"
-            :text="globalBlockTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
+            :text="globalAssemblyTaskTimesShow ? [render.orderNo.data(), ''] : render.orderNo.data()"
             :text-size="render.orderNo.textSize"
             :type="render.orderNo.type"
             :width="render.orderNo.width"
@@ -49,68 +49,66 @@
             v-if="render.amount.show"
             :align="render.amount.align"
             :amount="getTotalAmount"
-            :square="getTotalSquare"
             :class_="animatedClass"
             :color="color"
             :height="dataHeight"
             :text-size="render.amount.textSize"
             :time="getTotalTime"
-            :time-show="globalBlockTaskTimesShow"
-            :square-show="globalBlockTaskBlockInSquare"
+            :time-show="globalAssemblyTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
         />
 
         <!-- __ Количество + Трудозатраты Линия 1 -->
-        <ManageItemDataLabel
-            v-if="globalBlockTaskFullDaysShow"
-            :align="render.amount.align"
-            :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_1].amount"
-            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_1].square"
-            :class="animatedClass"
-            :color="color"
-            :height="dataHeight"
-            :text-size="render.amount.textSize"
-            :time="amountAndTime[BLOCK_MANUF_LINES.LINE_1].time"
-            :time-show="globalBlockTaskTimesShow"
-            :square-show="globalBlockTaskBlockInSquare"
-            :type="render.amount.type"
-            :width="render.amount.width"
-        />
+        <!--<ManageItemDataLabel-->
+        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
+        <!--    :align="render.amount.align"-->
+        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].amount"-->
+        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].square"-->
+        <!--    :class="animatedClass"-->
+        <!--    :color="color"-->
+        <!--    :height="dataHeight"-->
+        <!--    :text-size="render.amount.textSize"-->
+        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].time"-->
+        <!--    :time-show="globalAssemblyTaskTimesShow"-->
+        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
+        <!--    :type="render.amount.type"-->
+        <!--    :width="render.amount.width"-->
+        <!--/>-->
 
         <!-- __ Количество + Трудозатраты Линия 2 -->
-        <ManageItemDataLabel
-            v-if="globalBlockTaskFullDaysShow"
-            :align="render.amount.align"
-            :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_2].amount"
-            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_2].square"
-            :class="animatedClass"
-            :color="color"
-            :height="dataHeight"
-            :text-size="render.amount.textSize"
-            :time="amountAndTime[BLOCK_MANUF_LINES.LINE_2].time"
-            :time-show="globalBlockTaskTimesShow"
-            :square-show="globalBlockTaskBlockInSquare"
-            :type="render.amount.type"
-            :width="render.amount.width"
-        />
+        <!--<ManageItemDataLabel-->
+        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
+        <!--    :align="render.amount.align"-->
+        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].amount"-->
+        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].square"-->
+        <!--    :class="animatedClass"-->
+        <!--    :color="color"-->
+        <!--    :height="dataHeight"-->
+        <!--    :text-size="render.amount.textSize"-->
+        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].time"-->
+        <!--    :time-show="globalAssemblyTaskTimesShow"-->
+        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
+        <!--    :type="render.amount.type"-->
+        <!--    :width="render.amount.width"-->
+        <!--/>-->
 
         <!-- __ Количество + Трудозатраты Неопознанные -->
-        <ManageItemDataLabel
-            v-if="globalBlockTaskFullDaysShow"
-            :align="render.amount.align"
-            :amount="amountAndTime[BLOCK_MANUF_LINES.LINE_0].amount"
-            :square="amountAndTime[BLOCK_MANUF_LINES.LINE_0].square"
-            :class="animatedClass"
-            :color="amountAndTime[BLOCK_MANUF_LINES.LINE_0].amount === 0 ? color : 'red'"
-            :height="dataHeight"
-            :text-size="render.amount.textSize"
-            :time="amountAndTime[BLOCK_MANUF_LINES.LINE_0].time"
-            :time-show="globalBlockTaskTimesShow"
-            :square-show="globalBlockTaskBlockInSquare"
-            :type="render.amount.type"
-            :width="render.amount.width"
-        />
+        <!--<ManageItemDataLabel-->
+        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
+        <!--    :align="render.amount.align"-->
+        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].amount"-->
+        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].square"-->
+        <!--    :class="animatedClass"-->
+        <!--    :color="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? color : 'red'"-->
+        <!--    :height="dataHeight"-->
+        <!--    :text-size="render.amount.textSize"-->
+        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].time"-->
+        <!--    :time-show="globalAssemblyTaskTimesShow"-->
+        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
+        <!--    :type="render.amount.type"-->
+        <!--    :width="render.amount.width"-->
+        <!--/>-->
 
     </div>
 
@@ -121,29 +119,29 @@ import { computed, reactive, } from 'vue'
 
 import { storeToRefs } from 'pinia'
 
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import type {
     IHorizontalAlign,
-    IBlockTask,
+    IAssemblyTask,
     IFontsType,
     IColorTypes,
-    IAmountAndTimeBlock
+    IAmountAndTimeAssembly
 } from '@/types'
 
-import { BLOCK_MANUF_LINES, BLOCK_TASK_DRAFT, } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_TASK_DRAFT, } from '@/app/constants/assembly.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
-    from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageItemDataLabel.vue'
-import { getBlockTaskLineSquare, getChangeByName } from '@/app/helpers/manufacture/helpers_blocks.ts'
+    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageItemDataLabel.vue'
+import { getChangeByName } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 interface IProps {
-    amountAndTime: IAmountAndTimeBlock
-    item?: IBlockTask
+    amountAndTime: IAmountAndTimeAssembly
+    item?: IAssemblyTask
     columnsWidth?: Record<string, string>
     index?: number
     orderId?: number | null     // __ Для подсветки СЗ для Заявки
@@ -162,7 +160,7 @@ type IRender = Record<string, IRenderItem>
 
 const props = withDefaults(defineProps<IProps>(), {
 
-    item        : () => BLOCK_TASK_DRAFT,
+    item        : () => ASSEMBLY_TASK_DRAFT,
     columnsWidth: () => ({
         client : 'w-[90px]',
         amount : 'w-[50px]',
@@ -174,17 +172,17 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 // __ Данные из Хранилища
-const blockStore = useBlocksStore()
+const assemblyStore = useAssemblyStore()
 
 const {
-          globalBlockTaskTimesShow,
-          globalBlockTaskFullDaysShow,
-          globalBlockTaskOrderTypeColor,
-          globalBlockTaskBlockInSquare,
-      } = storeToRefs(blockStore)
+          globalAssemblyTaskOrderTypeColor,
+          globalAssemblyTaskTimesShow,
+          // globalAssemblyTaskFullDaysShow,
+          // globalAssemblyTaskAssemblyInSquare,
+      } = storeToRefs(assemblyStore)
 
 // __ Высота данных
-const dataHeight = computed(() => globalBlockTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
+const dataHeight = computed(() => globalAssemblyTaskTimesShow.value ? 'h-[60px]' : 'h-[30px]')
 
 // __ Получаем объект Смены
 const change = computed(() => getChangeByName(props.item))
@@ -220,21 +218,18 @@ const render: IRender = reactive({
         width   : props.columnsWidth.amount,
         type    : 'dark',
         align   : 'center',
-        data    : () => props.item.block_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
+        data    : () => props.item.assembly_lines.reduce((acc, item) => acc + item.amount, 0).toString(),
         textSize: 'micro',
     },
 })
 
 // __ Общее Количество
-const getTotalAmount = computed(() => props.item.block_lines.reduce((acc, line) => line.amount + acc, 0))
+const getTotalAmount = computed(() => props.item.assembly_lines.reduce((acc, line) => line.amount + acc, 0))
 // const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
-
-// __ Общая Площадь
-const getTotalSquare = computed(() => props.item.block_lines.reduce((acc, line) => getBlockTaskLineSquare(line) + acc, 0))
 
 
 // __ Общее Трудозатраты
-const getTotalTime = computed(() => props.item.block_lines.reduce((acc, line) => line.time + acc, 0))
+const getTotalTime = computed(() => props.item.assembly_lines.reduce((acc, line) => line.time + acc, 0))
 // const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))
 
 // __ Подготавливаем дату отгрузки для отображения
@@ -249,7 +244,7 @@ const color = computed(() => {
     // }
 
     // __ Если цвет по типу заявки, то берем его, или по статусу движения
-    return globalBlockTaskOrderTypeColor.value ? props.item.order.order_type.color : props.item.current_status.color
+    return globalAssemblyTaskOrderTypeColor.value ? props.item.order.order_type.color : props.item.current_status.color
 })
 
 // __ Анимация, СЗ для текущей Заявки

@@ -338,11 +338,18 @@ export type IStatItemAssembly = {
 // __ Создаем тип для объекта amount, где ключами будут только ключи из BLOCK_MANUF_LINES
 export type IAmountAndTimeAssembly = Record<keyof typeof ASSEMBLY_SECTORS, IStatItemAssembly>
 
-// export interface IAssemblyTaskStatusItem {
-//     ID: number,
-//     WORD: string
-//     TITLE: string
-//     TYPE: IColorTypes
-//     PRIORITY: number
-// }
+// --- --------------------------------------------------------------
+// --- -- Типы для работы со Статистикой выполнения СЗ (прогресс) ---
+// --- --------------------------------------------------------------
 
+// __ Вспомогательный Тип для вычисления статистики по СЗ
+export interface IAssemblyTaskExecuteStatistics {
+    amount: IAssemblyTaskExecuteStatisticsItem,
+    time: IAssemblyTaskExecuteStatisticsItem,
+}
+
+export interface IAssemblyTaskExecuteStatisticsItem {
+    finished: number
+    unfinished: number
+    total: number
+}

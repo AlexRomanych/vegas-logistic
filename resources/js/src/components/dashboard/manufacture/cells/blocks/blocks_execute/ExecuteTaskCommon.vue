@@ -10,7 +10,7 @@
                     :width="LINE_WIDTH"
                     rounded="4"
                     text-size="mini"
-                    type="dark"
+                    :type="getLineTitle(key) === 'Линия 1' ? 'indigo' : 'orange'"
                 />
 
                 <!-- __ Штуки -->
@@ -21,6 +21,16 @@
                     rounded="4"
                     text-size="mini"
                     type="info"
+                />
+
+                <!-- __ Площадь -->
+                <AppLabelTS
+                    :text="value.square.toFixed(3) + ' кв.м.'"
+                    :width="PICS_WIDTH"
+                    align="center"
+                    rounded="4"
+                    text-size="mini"
+                    type="warning"
                 />
 
                 <!-- __ Трудозатраты -->
@@ -52,7 +62,7 @@
             rounded="4"
             text="Всего:"
             text-size="mini"
-            type="orange"
+            type="primary"
         />
 
         <!-- __ Штуки -->
@@ -62,7 +72,17 @@
             align="center"
             rounded="4"
             text-size="mini"
-            type="primary"
+            type="info"
+        />
+
+        <!-- __ Площадь -->
+        <AppLabelTS
+            :text="totalSquare.toFixed(3) + ' кв.м.'"
+            :width="PICS_WIDTH"
+            align="center"
+            rounded="4"
+            text-size="mini"
+            type="warning"
         />
 
         <!-- __ Трудозатраты -->
@@ -72,7 +92,7 @@
             align="center"
             rounded="4"
             text-size="mini"
-            type="success"
+            type="indigo"
         />
 
         <!--&lt;!&ndash; __ Прогресс общий &ndash;&gt;-->
@@ -135,6 +155,10 @@ const getLinePercent = (key: IBlockManufLine) => {
 
 // __ Общее Количество
 const totalAmount = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.amount + acc, 0))
+
+// __ Общая Площадь
+const totalSquare = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.square + acc, 0))
+
 
 // __ Общее Трудозатраты
 const totalTime = computed(() => Object.values(calculateTotals.value).reduce((acc, item) => item.time + acc, 0))

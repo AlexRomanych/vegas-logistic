@@ -659,9 +659,10 @@ export const orderBlockTasksByStatus = (day: IDay): IDay => {
 // --- ------------------------------------------------------------------------------------
 // __ Пересчитываем позиции СЗ в массиве СЗ на определенный день
 export function repositionBlockTaskInDay(tasks: IBlockTask[], action_at: string) {
+    const parsedDate = action_at.split(' ')[0];
     tasks
         // __ Отбираем только объекты на нужную дату
-        .filter(item => item.action_at === action_at)
+        .filter(item => item.action_at.split(' ')[0] === parsedDate)
         // __ Сортируем их по возрастанию текущей позиции (включая x.1)
         .sort((a, b) => a.position - b.position)
         // __ Мутируем каждый объект, присваивая новый порядковый номер
@@ -1295,9 +1296,9 @@ export function groupTaskLinesForExecute(
                 hasData           : true,
                 lines             : (valueBlockCollection ?? []).toSorted((a, b) => getSquarePerPic(b) - getSquarePerPic(a)),
                 square            : {
-                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount * getSquarePerPic(line), 0),
-                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
-                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
+                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.square * getSquarePerPic(line), 0),
+                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.square * getSquarePerPic(line) : acc, 0),
+                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.square * getSquarePerPic(line) : acc, 0),
                 },
                 amount            : {
                     total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount, 0),
@@ -1426,19 +1427,19 @@ export function groupTaskLinesForExecute(
             hasData        : true,
             collapsed      : true,
             square         : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.square.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.incomplete, 0),
             },
             amount         : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.amount.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.incomplete, 0),
             },
             time           : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => acc + subgroup.time.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.incomplete, 0),
             },
             tuningTimeTotal: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
             // tuningTimeTotal: groupedBlockCollectionArrayTimes.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
