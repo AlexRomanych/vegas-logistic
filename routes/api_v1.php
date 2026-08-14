@@ -349,7 +349,7 @@ Route::prefix('documents')
 // __ Блок Блоков
 Route::prefix('blocks')
     ->middleware('jwt.auth')
-    //->middleware('block_tasks_check')
+    ->middleware('block_tasks_check')
     ->group(function () {
         Route::get('test', [BlockController::class, 'test']);
 

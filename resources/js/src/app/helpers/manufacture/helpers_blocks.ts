@@ -1296,9 +1296,9 @@ export function groupTaskLinesForExecute(
                 hasData           : true,
                 lines             : (valueBlockCollection ?? []).toSorted((a, b) => getSquarePerPic(b) - getSquarePerPic(a)),
                 square            : {
-                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.square * getSquarePerPic(line), 0),
-                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.square * getSquarePerPic(line) : acc, 0),
-                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.square * getSquarePerPic(line) : acc, 0),
+                    total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount * getSquarePerPic(line), 0),
+                    done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
+                    incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + line.amount * getSquarePerPic(line) : acc, 0),
                 },
                 amount            : {
                     total     : (valueBlockCollection || []).reduce((acc, line) => acc + line.amount, 0),
