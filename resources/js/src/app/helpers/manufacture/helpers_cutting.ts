@@ -1293,10 +1293,11 @@ export function mergeCuttingTasks(tasks: ICuttingTask[]): ICuttingTask[] {
             task.cutting_lines.forEach((newLine) => {
                 const existingLine = targetTask.cutting_lines.find(
                     (l) =>
-                        // __ Ищем строку с тем же order_line.id и типом машины
+                        // __ Ищем строку с тем же order_line.id и типом детальки
                         l.order_line.id === newLine.order_line.id &&
-                        // __ Смотрим, чтобы совпадали ШМ для average моделей
-                        l.order_line.model.main.machine_type === newLine.order_line.model.main.machine_type,
+                        // __ Смотрим, чтобы совпадали типы деталек
+                        l.detail === newLine.detail,
+                        // l.order_line.model.main.machine_type === newLine.order_line.model.main.machine_type,
                 )
 
                 if (existingLine) {

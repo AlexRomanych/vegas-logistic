@@ -673,7 +673,7 @@ const showCuttingTaskMenu = async (cuttingTask: ICuttingTask) => {
 
     // __ Перейти в карточку Заявки
     if (result.menuItem === 3 && result.value) {
-        await router.push({ name: 'orders.card', params: { id: cuttingTask.order.id } })
+        router.push({ name: 'orders.card', params: { id: cuttingTask.order.id } })
         return
     }
 
