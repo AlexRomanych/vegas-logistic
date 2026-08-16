@@ -415,6 +415,25 @@
                     >
                         <span class="mr-3 text-lg">↺</span> Отменить
                     </button>
+
+                    <!-- __ Перемещение на другую 1 Линию -->
+                    <button
+                        v-if="activeManufLineName === LINE_2"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(LINE_1_NAME)"
+                    >
+                        <span class="mr-3 text-2xl">①</span> Отправить на Линию 1
+                    </button>
+
+                    <!-- __ Перемещение на другую 2 Линию -->
+                    <button
+                        v-if="activeManufLineName === LINE_1"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(LINE_2_NAME)"
+                    >
+                        <span class="mr-3 text-2xl">①</span> Отправить на Линию 2
+                    </button>
+
                 </div>
             </Transition>
         </Teleport>
@@ -504,7 +523,7 @@ import type {
     IBlockTaskLinesGroupData,
     IBlockDocument,
     IBlockCollectionTime,
-    IOptimizeType,
+    IOptimizeType, IBlockTaskLinesGroupNames, IBlockManufLine,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -512,7 +531,7 @@ import { useBlocksStore } from '@/stores/BlocksStore.ts'
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 import {
     BLOCK_TASK_DRAFT,
-    BLOCK_UNION_TASK_NAME,
+    BLOCK_UNION_TASK_NAME, LINE_0, LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME,
     MAX_BLOCK_COLLECTIONS_OPTIMIZED,
     OPTIMIZE_BY_PRIORITY,
     OPTIMIZE_BY_TUNING_TIME
@@ -638,9 +657,10 @@ const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
     )
 })
 
-const manufLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value])
-const blockLinesGroup = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
-const blockLines      = computed(() => {
+const activeManufLineName = computed(() => blockLinesGroups.value[activeTabIndex.value].groupName)
+const manufLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value])
+const blockLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
+const blockLines          = computed(() => {
     const result: IBlockTaskLine[] = []
     blockLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
         subgroup.lines.forEach(line => {
@@ -898,17 +918,19 @@ const openContextMenu = async (event: MouseEvent) => {
 }
 
 // __ Меню
-const handleMenuAction = (action: string) => {
+const handleMenuAction = async (action: string) => {
     if (action === 'done') {
-        completeSelected()
+        await completeSelected()
     } else if (action === 'false') {
-        unCompleteSelected()
+        await unCompleteSelected()
     } else if (action === 'reset') {
-        resetStatus()
+        await resetStatus()
     } else if (action === 'divide') {
-        divideElementAmount()
+        await divideElementAmount()
     } else if (action === 'cancel') {
         selectedIds.value.clear()
+    } else if ([LINE_1_NAME, LINE_2_NAME].includes(action)) {
+        await changeManufLineByMenu(action as IBlockTaskLinesGroupNames)
     }
 
     showMenu.value = false
@@ -1200,6 +1222,42 @@ const changeDescription = async (blockLine: IBlockTaskLine, description: string)
         return
     }
 }
+
+
+// __ Устанавливаем Производственную линию по меню ПКМ
+async function changeManufLineByMenu(targetManufLine: IBlockTaskLinesGroupNames) {
+    // __ Получаем ссылки на панели
+    const setTablesData: IBlockLineSetData[] = [...selectedIds.value].map(id => {
+        let line: IBlockManufLine = LINE_0
+
+        switch (targetManufLine) {
+            case LINE_1_NAME:
+                line = LINE_1
+                break
+            case LINE_2_NAME:
+                line = LINE_2
+                break
+        }
+
+        return { id, line }
+    })
+
+    console.log('setTablesData: ', setTablesData)
+
+    const result = await blockStore.taskLinesManufLineSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        blockStore.setGlobalArrayChangeManufLines(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = `Линия изменена на ${targetManufLine}`
+        await appModalAsyncMultilineTS.value!.show()
+
+    } else {
+        await showError()
+    }
+}
+
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---                Collapse                     !!!
