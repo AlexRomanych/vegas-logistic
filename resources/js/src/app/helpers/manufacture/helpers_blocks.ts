@@ -153,6 +153,10 @@ export function getBlockTasksDiff(currentTasks: IBlockTask[], originalTasks: IBl
     const originalMap = new Map(originalTasks.map(task => [task.id, task]))
     const currentMap  = new Map(currentTasks.map(task => [task.id, task]))
 
+    // __ ГЛОБАЛЬНЫЙ ИНДЕКС ВСЕХ СТРОК ДО МАНИПУЛЯЦИЙ (для отслеживания перемещений)
+    // const allOriginalLinesMap = new Map<number, IBlockTaskLine>()
+    // originalTasks.forEach(t => t.block_lines.forEach(l => allOriginalLinesMap.set(l.id, l)))
+
     currentTasks.forEach((task) => {
         const original = originalMap.get(task.id)
 
@@ -194,7 +198,7 @@ export function getBlockTasksDiff(currentTasks: IBlockTask[], originalTasks: IBl
         const hasChangeChanged   = task.change !== original.change
 
         // __ Сравниваем строки пошива (детально)
-        const lineDiffs = getTaskLinesDiff(task.block_lines, original.block_lines)
+        const lineDiffs = getTaskLinesDiff(task.block_lines, original.block_lines, /*allOriginalLinesMap*/)
 
         // __ Если есть изменения хотя бы в одном месте
         if (hasDateChanged || hasPositionChanged || lineDiffs.length > 0 || hasStatusChanged || hasChangeChanged) {
@@ -234,7 +238,7 @@ export function getBlockTasksDiff(currentTasks: IBlockTask[], originalTasks: IBl
  * @param currentLines
  * @param originalLines
  */
-function getTaskLinesDiff(currentLines: IBlockTaskLine[], originalLines: IBlockTaskLine[]) {
+function getTaskLinesDiff(currentLines: IBlockTaskLine[], originalLines: IBlockTaskLine[], /*allOriginalLinesMap: Map<number, IBlockTaskLine> = null*/) {
     const diffs: IBlockTaskArrayLineDiffs[] = []
     const originalLinesMap                  = new Map(originalLines.map(l => [l.id, l]))
 
@@ -242,6 +246,10 @@ function getTaskLinesDiff(currentLines: IBlockTaskLine[], originalLines: IBlockT
         const originalLine = originalLinesMap.get(line.id)
 
         if (!originalLine) {
+
+            // Если строки не было в ЭТОЙ задаче, проверяем, была ли она ВСЕГО в системе
+            // const existsSomewhere = allOriginalLinesMap.has(line.id)
+
             diffs.push({
                 lineId   : line.id,
                 lineIdRef: line.id_ref,
@@ -258,6 +266,7 @@ function getTaskLinesDiff(currentLines: IBlockTaskLine[], originalLines: IBlockT
                 diffs.push({
                     lineId  : line.id,
                     type    : 'UPDATED',
+                    // type     : existsSomewhere ? 'UPDATED' : 'ADDED',
                     amount  : isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
                     position: isPosChanged ? { old: originalLine.position, new: line.position } : null,
                 })

@@ -1050,6 +1050,8 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             // __ Получаем флаг готовности к добавлению новых СЗ
             const isReady: boolean = await blockStore.readyGetBlockDay(splitDate(targetDate))
 
+
+
             if (!isReady) {
                 // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
                 await showError([

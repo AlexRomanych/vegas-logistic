@@ -314,7 +314,7 @@ export const useCuttingStore = defineStore('cutting', () => {
             return
         }
 
-        console.log(diffsInGlobalCuttingTasks)
+        console.log('diffsInGlobalCuttingTasks: ', diffsInGlobalCuttingTasks)
         console.log('Сохраняем изменения')
 
         const result = await jwtPost(URL_CUTTING_TASKS_UPDATE, { diffs: diffsInGlobalCuttingTasks })

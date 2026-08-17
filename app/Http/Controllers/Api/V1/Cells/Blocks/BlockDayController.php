@@ -780,6 +780,7 @@ class BlockDayController extends Controller
             $data       = $validated->validated();
             $parsedDate = Carbon::parse($data['date']);
             $day        = BlockDay::query()
+                ->where('change', $data['change'])
                 ->whereDate('action_at', '>=', $parsedDate->startOfDay())
                 ->whereDate('action_at', '<=', $parsedDate->endOfDay())
                 ->first();

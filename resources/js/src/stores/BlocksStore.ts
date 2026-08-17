@@ -316,7 +316,7 @@ export const useBlocksStore = defineStore('blocks', () => {
             return
         }
 
-        console.log(diffsInGlobalBlockTasks)
+        console.log('diffsInGlobalBlockTasks: ', diffsInGlobalBlockTasks)
         console.log('Сохраняем изменения')
 
         // return

@@ -192,7 +192,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Обновляем СЗ на Раскрой
+     * ___ Обновляем СЗ на Блоки
      * @param SyncBlockTasksRequest $request
      * @return mixed|string
      * @noinspection DuplicatedCode
