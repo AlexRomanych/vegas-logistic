@@ -4,7 +4,7 @@
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import {
-    ASSEMBLY_SECTORS,
+    ASSEMBLY_LINE_LAMIT, ASSEMBLY_LINE_TABLE, ASSEMBLY_LINE_UNDEFINED,
     ASSEMBLY_TASK_SECTOR_COCONUT,
     ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
     ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
@@ -20,7 +20,6 @@ import {
     CHANGE_2
 } from '@/app/constants/assembly.ts'
 import type { IDiffsType } from '@/types/index.ts'
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 
 
 // --- --------------------------------------------------------------------
@@ -53,9 +52,17 @@ export interface IAssemblyTask extends IPlanMatrixDayItem {
     statuses: IAssemblyTaskStatus[]
     current_status: IAssemblyTaskStatus
 
+    stats: IAssemblyTaskStats[]
+
     collapsed?: boolean
 }
 
+// __ Статистика по Участкам
+export interface IAssemblyTaskStats {
+    sector: IAssemblySectorKeys
+    total_amount: number
+    finished_amount: number
+}
 
 // __ Связь с Заявкой
 export interface IAssemblyTaskOrder {
@@ -90,6 +97,7 @@ export interface IAssemblyTaskLine {
     id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
     amount: number                                  // __ Общее количество в заявке
     time: number                                    // __ Трудозатраты
+    assembly_line: IAssemblyLineKeys                // __ Линия Сборки
 
     created_at: string | null
     false_reason: string | null
@@ -108,6 +116,8 @@ export interface IAssemblyTaskLine {
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
+
+    is_average?: boolean
 }
 
 // __ Сам элемент расхода
@@ -177,8 +187,17 @@ export interface IAssemblyTaskModel {
     manufacture_group: IAssemblyModelManufactureGroup
     name: string
     name_report: string
-
+    model_type: string
+    assembly_line: string
 }
+
+// --- ------------------------------------------------------------
+// __ Для Линий Сборки
+export type IAssemblyLineKeys = typeof ASSEMBLY_LINE_LAMIT | typeof ASSEMBLY_LINE_TABLE | typeof ASSEMBLY_LINE_UNDEFINED
+
+// --- ------------------------------------------------------------
+// __ Тип для сохранения (изменения) Линии Сборки для записи СЗ Сборки
+export type IAssemblyLineSetData = { id: number, line: IAssemblyLineKeys }
 
 // --- ------------------------------------------------------------
 // __ Для смен
@@ -335,8 +354,23 @@ export type IStatItemAssembly = {
     amount: number
 }
 
-// __ Создаем тип для объекта amount, где ключами будут только ключи из BLOCK_MANUF_LINES
-export type IAmountAndTimeAssembly = Record<keyof typeof ASSEMBLY_SECTORS, IStatItemAssembly>
+// __ Создаем тип для объекта amount, где ключами будут только ключи из ASSEMBLY_LINES
+export type IAmountAndTimeAssemblyLines = Record<IAssemblyLineKeys, IStatItemAssembly>
+
+// __ Создаем тип для объекта amount, где ключами будут только ключи из ASSEMBLY_SECTORS
+export type IAmountAndTimeAssembly = Record<IAssemblySectorKeys, IStatItemAssembly>
+
+
+export interface IAssemblyTaskStatusItem {
+    ID: number,
+    WORD: string
+    TITLE: string
+    TYPE: IColorTypes
+    PRIORITY: number
+}
+
+
+
 
 // --- --------------------------------------------------------------
 // --- -- Типы для работы со Статистикой выполнения СЗ (прогресс) ---
@@ -353,3 +387,18 @@ export interface IAssemblyTaskExecuteStatisticsItem {
     unfinished: number
     total: number
 }
+
+
+// --- ------------------------------------------------------------
+// __ Типы панелей меню в карточке Заказа в Пошиве в календаре
+export type IAssemblyLinesPanel = 'left' | 'right'
+export type IAssemblyManufLinesPanel = typeof ASSEMBLY_LINE_LAMIT | typeof ASSEMBLY_LINE_TABLE | typeof ASSEMBLY_LINE_UNDEFINED
+// --- ------------------------------------------------------------
+
+// --- ------------------------------------------------------------
+// __ Тип для сортировки в Карточке Заказа в Блоках
+export type IAssemblyTaskCardSort = 'none' | 'asc' | 'desc'
+// --- ------------------------------------------------------------
+
+
+

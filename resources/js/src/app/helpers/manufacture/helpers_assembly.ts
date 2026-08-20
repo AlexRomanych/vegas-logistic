@@ -4,14 +4,26 @@ import type {
     IAssemblyTask,
     IAssemblyTaskArrayDiff,
     IAssemblyTaskArrayLineDiffs,
-    IAssemblyTaskChangeKeys, IAssemblyTaskExecuteStatistics,
-    IAssemblyTaskLine, IAssemblyTaskLineSector, IAssemblyTaskStatusKeys,
+    IAssemblyTaskChangeKeys,
+    IAssemblyTaskExecuteStatistics,
+    IAssemblyTaskLine,
+    IAssemblyTaskLineSector,
+    IAssemblyTaskStatusKeys,
     IDay,
     IPlanMatrix,
-    IRenderMatrixDiff, IRenderMatrixLineDiffs, IRenderOrderLineAssemblyLineSector, IStatItemAssembly
+    IRenderMatrixDiff,
+    IRenderMatrixLineDiffs,
+    IRenderOrderLineAssemblyLineSector,
+    IStatItemAssembly,
+    IAssemblyTaskStatus,
+    IAssemblyTaskOrder,
+    IBlockTask,
+    IBlockTaskLine, IAssemblyLineKeys, IAmountAndTimeAssemblyLines, IAssemblyTaskOrderLine,
 } from '@/types'
-import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGES } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_LINE_UNDEFINED, ASSEMBLY_LINES, ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGES } from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
+import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 
 // __ Проблема с draggable
@@ -437,21 +449,28 @@ export function getTaskStatusById(id: number) {
 }
 
 
-
-
-
 // --- -------------------------------------------------------------------------------------
 // --- ----------------------- Подсчет количества и Трудозатрат ----------------------------
 // --- -------------------------------------------------------------------------------------
-// __ Создаем сам объект данных с ключами из BLOCK_MANUF_LINES и {time: 0, amount: 0} и инициализируем его нулями
+// __ Создаем сам объект данных с ключами из ASSEMBLY_SECTORS и {time: 0, amount: 0} и инициализируем его нулями
 export function createAmountAndTimeObj() {
     return Object.values(ASSEMBLY_SECTORS).reduce((acc, value) => {
-        acc[value.NAME as keyof typeof ASSEMBLY_SECTORS] = {
+        acc[value.NAME as IAssemblySectorKeys] = {
             time  : 0,
             amount: 0,
         }
         return acc
     }, {} as IAmountAndTimeAssembly)
+}
+
+export function createAmountAndTimeObjLine() {
+    return Object.values(ASSEMBLY_LINES).reduce((acc, value) => {
+        acc[value as IAssemblyLineKeys] = {
+            time  : 0,
+            amount: 0,
+        }
+        return acc
+    }, {} as IAmountAndTimeAssemblyLines)
 }
 
 
@@ -471,14 +490,40 @@ export function getAssemblyTaskAmountAndTime(item: IAssemblyTask | IAssemblyTask
 
     // __ Собираем все Записи по участкам Производства
     itemArr.forEach(line => {
-        line.sector_lines.forEach(sector => {
-            groupedSectors[sector.sector as keyof typeof ASSEMBLY_SECTORS].amount += sector.amount
-            groupedSectors[sector.sector as keyof typeof ASSEMBLY_SECTORS].time += sector.time
+        line.sector_lines?.forEach(sector => {
+            groupedSectors[sector.sector as IAssemblySectorKeys].amount += sector.amount
+            groupedSectors[sector.sector as IAssemblySectorKeys].time += sector.time
         })
+
+        groupedSectors[line.assembly_line as IAssemblySectorKeys].amount += line.amount
+        groupedSectors[line.assembly_line as IAssemblySectorKeys].time += line.time
     })
 
     // console.log('groupedSectors:', groupedSectors)
 
+    return groupedSectors
+}
+
+
+// __ Получаем трудозатраты по Заявке или массиву строк (Содержимого) в формате объекта
+export function getAssemblyTaskAmountAndTimeLines(item: IAssemblyTask | IAssemblyTaskLine[]) {
+
+    // __ Проверяем, что пришло на вход
+    let itemArr = []
+    if (Array.isArray(item)) {
+        itemArr = item
+    } else {
+        itemArr = item.assembly_lines
+    }
+
+    //  __ Создаем сам объект данных с ключами из ASSEMBLY_SECTORS и {time: 0, amount: 0} и инициализируем его нулями
+    const groupedSectors = createAmountAndTimeObjLine()
+
+    // __ Собираем все Записи по участкам Производства
+    itemArr.forEach(line => {
+        groupedSectors[line.assembly_line as IAssemblyLineKeys].amount += line.amount
+        groupedSectors[line.assembly_line as IAssemblyLineKeys].time += line.time
+    })
     return groupedSectors
 }
 
@@ -493,7 +538,29 @@ export function getAssemblyTaskAmountAndTimeTotal(item: IAssemblyTask | IAssembl
         acc.amount += item.amount
         acc.time += item.time
         return acc
-    }, {amount: 0, time: 0} as IStatItemAssembly)
+    }, { amount: 0, time: 0 } as IStatItemAssembly)
+}
+
+
+// __ Получаем трудозатраты в текстовом представлении '05ч. 30м. 18с.'
+// __ twoLines = true - Если больше часа, то выводим часы и минуты (обрезаем секунды)
+export function getTimeString(blockLine: IAssemblyTaskLine, twoLines: boolean = false, timeType = 'hour') {
+    const time = blockLine.time
+
+    // __ Если больше часа, то выводим часы и минуты (обрезаем секунды)
+    if (twoLines) {
+        // __ Получаем время. Если больше часа, то выводим часы и минуты (обрезаем секунды)
+        if (time >= 60 * 60) {
+            const timeStrArr = formatTimeWithLeadingZeros(time, timeType).split(' ')
+            if (timeStrArr[0] !== undefined && timeStrArr[1] !== undefined) {
+                return timeStrArr[0] + ' ' + timeStrArr[1]
+            } else {
+                return formatTimeWithLeadingZeros(time, timeType)
+            }
+        }
+    }
+
+    return formatTimeWithLeadingZeros(time, timeType)
 }
 
 
@@ -533,7 +600,7 @@ export function getChangeByName(task: IAssemblyTask | IAssemblyTaskChangeKeys) {
 //     if (Array.isArray(item)) {
 //         itemArr = item
 //     } else {
-//         itemArr = item.block_lines
+//         itemArr = item.assembly_lines
 //     }
 //
 //     // __ Получаем суммарное количество и трудозатраты
@@ -573,19 +640,486 @@ export function getChangeByName(task: IAssemblyTask | IAssemblyTaskChangeKeys) {
 // }
 
 
+// --- ------------------------------------------------------------------------------------
+// __ Пересчитываем позиции СЗ в массиве СЗ на определенный день
+export function repositionAssemblyTaskInDay(tasks: IAssemblyTask[], action_at: string) {
+    const parsedDate = action_at.split(' ')[0]
+    tasks
+        // __ Отбираем только объекты на нужную дату
+        .filter(item => item.action_at.split(' ')[0] === parsedDate)
+        // __ Сортируем их по возрастанию текущей позиции (включая x.1)
+        .sort((a, b) => a.position - b.position)
+        // __ Мутируем каждый объект, присваивая новый порядковый номер
+        .forEach((item, index) => {
+            item.position = index + 1
+        })
+    return tasks
+}
 
 
+// __ Пересчитываем позицию по порядку записей в массиве строк (AssemblyTaskLine[]) по ссылке
+// __ Пересчитываем позицию именно в том порядке, в котором они находятся в исходно массиве
+// __ (как определил специалист ОПП при перетаскивании строк или упорядочивании или сортировке)
+export function repositionAssemblyTaskLines(entity: IAssemblyTask | IAssemblyTaskLine[]) {
+    let items
+    if (isAssemblyTask(entity)) {
+        items = entity.assembly_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        return []
+    }
+
+    items.forEach((_, index, arr) => {
+        arr[index].position = index + 1
+    })
+    return items
+}
 
 
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, есть ли в массиве изменений хотя бы одна сущность для создания в БД
+export function isAddItemsInDiffsPresents(diffs: IAssemblyTaskArrayDiff[]) {
+    return diffs.some(taskDiff => {
+
+        // __ 1. Проверяем саму задачу
+        if (taskDiff.type === 'ADDED') return true
+
+        // __ 2. Безопасно проверяем строки (используем опциональную цепочку ?. )
+        // __ Проверяем, есть ли среди изменений строк хотя бы одно с типом 'ADDED'
+        return taskDiff.lineChanges?.some(lineDiff => lineDiff.type === 'ADDED') ?? false
+    })
+}
 
 
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли СЗ расчетным (AVERAGE) или нет
+export function isTaskAverage(entity: IAssemblyTask | IAssemblyTaskLine[]) {
 
+    let items: IAssemblyTaskLine[]
+    if (isAssemblyTask(entity)) {
+        items = entity.assembly_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        throw new Error('isTaskAverage: unknown incoming data type')
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i]?.is_average) return true
+    }
+
+    return false
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Создано" или "Создано при закрытии"
+export function isTaskStatusCreated(entity: IAssemblyTask | IAssemblyTaskStatus | number): boolean {
+    let item: number
+    if (isAssemblyTask(entity)) {
+        item = entity.current_status.id
+    } else if (isAssemblyTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === ASSEMBLY_TASK_STATUSES.CREATED.ID || item === ASSEMBLY_TASK_STATUSES.ROLLING.ID
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли Статус СЗ "Выполняется"
+export function isTaskStatusRunning(entity: IAssemblyTask | IAssemblyTaskStatus | number): boolean {
+    let item: number
+    if (isAssemblyTask(entity)) {
+        item = entity.current_status.id
+    } else if (isAssemblyTaskStatus(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        throw new Error('Invalid entity type')
+    }
+    return item === ASSEMBLY_TASK_STATUSES.RUNNING.ID
+}
+
+// __ Возвращает Название Заявки
+export function getOrderTitle(task: IAssemblyTask) {
+    return `${task.order.client.short_name} №${task.order.order_no_str}`
+}
+
+
+// --- ----------------------------------------------------------------------------------
+// __ Ищем Приориет Статусов движения Заявки
+export function getTaskPriority(task: IAssemblyTask): number {
+    const statusKeyId = task.current_status.id
+
+    // __ Ищем подходящий статус в вашем справочнике BLOCK_TASK_STATUSES
+    const statusConfig = Object.values(ASSEMBLY_TASK_STATUSES).find(
+        s => s.ID === statusKeyId
+    )
+
+    return statusConfig ? statusConfig.PRIORITY : 999 // 999 для неизвестных статусов
+}
+
+
+// __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
+export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix): IPlanMatrix {
+    matrix.forEach((week, weekIndex) => {
+        week.forEach((day, dayIndex) => {
+
+            // __ Собираем все задачи за день в один плоский массив и проставляем им смены
+            const allDayTasks: IAssemblyTask[] = []
+
+            day.forEach((change, changeIndex) => {
+                const currentChange = changeIndex === 0 ? CHANGE_1 : CHANGE_2
+
+                change.forEach((task: IAssemblyTask) => {
+                    allDayTasks.push({
+                        ...(task as IAssemblyTask),
+                        change: currentChange // Мутируем или создаем копию в зависимости от архитектуры
+                    })
+                })
+            })
+
+            // __ Сортируем задачи дня по вашему бизнес-правилу:
+            // __ Сначала Смена 1, затем Смена 2. Внутри смены — по PRIORITY из справочника.
+            allDayTasks.sort((a, b) => {
+                if (a.change !== b.change) {
+                    return a.change === CHANGE_1 ? -1 : 1
+                }
+
+                // __ Сортируем по убыванию
+                return getTaskPriority(b) - getTaskPriority(a)
+            })
+
+            // __ Проставляем сквозную позицию (index + 1)
+            const processedTasks = allDayTasks.map((task, index) => ({
+                ...task,
+                position: index + 1
+            }))
+
+            // __ Распределяем обратно по сменам, сохраняя сортировку по position
+            // __ Так как массив уже отсортирован, filter вернет элементы в правильном порядке.
+            const changeTasks1 = processedTasks.filter(task => task.change === CHANGE_1)
+            const changeTasks2 = processedTasks.filter(task => task.change === CHANGE_2)
+
+            // __ Записываем обратно в матрицу
+            //@ts-expect-error Recently missing
+            matrix[weekIndex][dayIndex][0] = changeTasks1
+            //@ts-expect-error Recently missing
+            matrix[weekIndex][dayIndex][1] = changeTasks2
+        })
+    })
+
+    return matrix
+}
+
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, есть ли в конкретном дне СЗ для какой-то конкретной Заявки
+// __ Если передан entity типа IAssemblyTask и applyStatus = true, то проверяем еще на одинаковость статусов
+export function getAssemblyTasksSameOrderInDay(
+    entity: IAssemblyTask | IAssemblyTaskOrder | number,
+    tasksList: IAssemblyTask[],
+    date: string | null   = null,
+    change: string | null = null,
+    applyStatus: boolean  = false) {
+
+    let item
+    if (isAssemblyTask(entity)) {
+        item = entity.order.id
+        if (!date) date = entity.action_at
+
+    } else if (isAssemblyTaskOrder(entity)) {
+        item = entity.id
+    } else if (typeof entity === 'number') {
+        item = entity
+    } else {
+        return []
+        // throw new Error('Invalid entity type')
+    }
+
+    if (!date) {
+        return []
+    }
+
+    if (isAssemblyTask(entity) && applyStatus) {
+        return tasksList.filter(task =>
+            task.action_at === date &&
+            task.change === change &&
+            task.order.id === item &&
+            task.current_status.id === entity.current_status.id
+        )
+    }
+
+    return tasksList.filter(task => task.action_at === date && task.order.id === item && task.change === change)
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем СЗ с одинаковыми Заявками (Заявки, к которым принадлежит СЗ)
+export function mergeAssemblyTasks(tasks: IAssemblyTask[]): IAssemblyTask[] {
+    const grouped = tasks.reduce((acc, task) => {
+        const orderId = task.order.id
+
+        if (!acc[orderId]) {
+
+            // __ Если заказа еще нет в словаре, клонируем объект задачи
+            // __ Используем структурированное клонирование, чтобы не мутировать исходный массив
+            acc[orderId] = JSON.parse(JSON.stringify(task))
+
+        } else {
+
+            // __ Если заказ уже есть, объединяем его assembly_lines
+            const targetTask = acc[orderId]
+
+            task.assembly_lines.forEach((newLine) => {
+                const existingLine = targetTask.assembly_lines.find(
+                    (l) =>
+                        // __ Ищем строку с тем же блоком и производственной линии
+                        l.order_line.id === newLine.order_line.id &&
+                        l.assembly_line === newLine.assembly_line,
+                )
+
+                if (existingLine) {
+                    // __ Если такая строка заказа уже есть — суммируем количество
+                    existingLine.amount += newLine.amount
+                } else {
+                    // __ Если такой строки еще нет — добавляем её целиком
+                    targetTask.assembly_lines.push(JSON.parse(JSON.stringify(newLine)))
+                }
+            })
+        }
+
+        return acc
+    }, {} as Record<number, IAssemblyTask>)
+
+    // __Возвращаем массив, сохраняя порядок первого появления каждого order.id
+    return Object.values(grouped)
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Превращаем массив объектов IAssemblyTask [{}, {}, ...] в массив массивов объектов [[...], [...]]
+// __ которые сгруппированы по одинаковой Заявке с возможностью учитывать статусы Заявок в определенном дне
+export function getAssemblyTasksGroupedByOrder(assemblyTasks: IAssemblyTask[], applyStatus: boolean = true) {
+    // const clearDay = clearRenderMatrixDay(assemblyTasks) // __ Возвращаем новый массив без пустых элементов
+    // const grouped  = clearDay.reduce((acc, item) => {
+    const grouped = assemblyTasks.reduce((acc, item) => {
+
+        // __ Создаем уникальный составной ключ
+        let key: string
+        if (applyStatus) {
+            key = `${item.order.id}-${item.current_status.id}`
+        } else {
+            key = `${item.order.id}`
+        }
+
+        // __ Если такого task_id еще нет в аккумуляторе, создаем пустой массив
+        if (!acc[key]) {
+            acc[key] = []
+        }
+        // __ Добавляем текущий объект в массив соответствующего task_id
+        acc[key].push(item)
+        return acc
+    }, {} as IAssemblyTask)
+
+    // __ Превращаем объект { 1: [...], 2: [...] } в массив массивов [[...], [...]]
+    return Object.values(grouped)
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Устанавливаем необходимы порядок (пронумеровываем заявки в массиве)
+// __ в соответствии со статусами
+// __ 1. Сначала статус СЗ - Done по возрастанию даты
+// __ 2. Потом статус СЗ   - Running по возрастанию даты
+// __ 3. Потом статус СЗ   - Pending по возрастанию даты
+// __ 4. Потом статус СЗ   - Created по возрастанию даты
+export const orderAssemblyTasksByStatus = (day: IDay): IDay => {
+
+    // __ Собираем все задачи за день в один плоский массив и проставляем им смены
+    const allDayTasks: IAssemblyTask[] = []
+
+    day.forEach((change: IAssemblyTask[], changeIndex: number) => {
+        const currentChange = changeIndex === 0 ? CHANGE_1 : CHANGE_2
+
+        change.forEach((task: IAssemblyTask) => {
+            allDayTasks.push({
+                ...(task as IAssemblyTask),
+                change: currentChange // Мутируем или создаем копию в зависимости от архитектуры
+            })
+        })
+    })
+
+    // __ Сортируем задачи дня по вашему бизнес-правилу:
+    // __ Сначала Смена 1, затем Смена 2. Внутри смены — по PRIORITY из справочника.
+    allDayTasks.sort((a, b) => {
+        if (a.change !== b.change) {
+            return a.change === CHANGE_1 ? -1 : 1
+        }
+
+        // __ Сортируем по убыванию
+        return getTaskPriority(b) - getTaskPriority(a)
+    })
+
+    // __ Проставляем сквозную позицию (index + 1)
+    const processedTasks = allDayTasks.map((task, index) => ({
+        ...task,
+        position: index + 1
+    }))
+
+    // __ Распределяем обратно по сменам, сохраняя сортировку по position
+    // __ Так как массив уже отсортирован, filter вернет элементы в правильном порядке.
+    const changeTasks1 = processedTasks.filter(task => task.change === CHANGE_1)
+    const changeTasks2 = processedTasks.filter(task => task.change === CHANGE_2)
+
+    // __ Записываем обратно в матрицу
+    const resultDay = JSON.parse(JSON.stringify(day))
+    resultDay[0]    = changeTasks1
+    resultDay[1]    = changeTasks2
+
+    return resultDay
+}
+
+
+// --- ------------------------------------------------------------------------------------
+// __ Проверяем, является ли СЗ со столом Undefined
+export function hasTaskUnknownAssemblyLine(entity: IAssemblyTask | IAssemblyTaskLine[]) {
+
+    let items: IAssemblyTaskLine[]
+    if (isAssemblyTask(entity)) {
+        items = entity.block_lines
+    } else if (Array.isArray(entity)) {
+        items = entity
+    } else {
+        throw new Error('hasTaskUnknownAssemblyLine: unknown incoming data type')
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].assembly_line === ASSEMBLY_LINE_UNDEFINED) return true
+    }
+
+    return false
+}
+
+// __ Получаем трудозатраты на один блок
+export function getAssemblyTimePerPic(assemblyLine: IAssemblyTaskLine): number {
+    return assemblyLine.amount !== 0 ? assemblyLine.time / assemblyLine.amount : 0
+}
+
+/**
+ * __ Функция, которая возвращает высчитанный объект количества при разделении строки на количество
+ * __ Возвращает новый экземпляр с пересчитанными данными
+ * @param assemblyLine      __Входная строка__
+ * @param newAmount         __Новое количество__
+ */
+export function calculateDividedAmountAndTime(assemblyLine: IAssemblyTaskLine, newAmount: number): IAssemblyTaskLine {
+
+    // __ Создаем копию строки (референсная)
+    const refAssemblyLine = { ...assemblyLine }
+
+    const timePerPic       = getAssemblyTimePerPic(assemblyLine)
+    // const timePerPic    = assemblyLine.amount !== 0 ? assemblyLine.time / assemblyLine.amount : 0
+    refAssemblyLine.time   = timePerPic * newAmount
+    refAssemblyLine.amount = newAmount
+
+    return refAssemblyLine
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Объединяем строки СЗ с принадлежностью к одной и той же строке Заявки
+export function mergeAssemblyLines(lines: IAssemblyTaskLine[]): IAssemblyTaskLine[] {
+
+    const grouped = lines.reduce((acc, line) => {
+
+        // __ Создаем составной ключ: ID + Линия Сборки
+        const assembly_line = line.assembly_line
+        const groupKey      = `${line.order_line.id}_${assembly_line}`
+
+        if (!acc[groupKey]) {
+            acc[groupKey] = JSON.parse(JSON.stringify(line))
+        } else {
+
+            // __ Складываем количество
+            acc[groupKey].amount += line.amount
+
+            // __ Складываем трудозатраты (time)
+            acc[groupKey].time += line.time
+
+            // if (acc[groupKey].time && line.time) {
+            //     for (const key in line.time) {
+            //         acc[groupKey].time[key] = (acc[groupKey].time[key] || 0) + line.time[key];
+            //     }
+            // }
+        }
+
+        return acc
+    }, {} as Record<string, IAssemblyTaskLine>)
+
+    return Object.values(grouped)
+}
+
+// --- ------------------------------------------------------------------------------------
+// __ Получаем Размер модели
+export function getOrderLineSize(line: IAssemblyTaskLine | IAssemblyTaskOrderLine): string {
+    let target = null
+    if (isIAssemblyTaskLine(line)) {
+        target = line.order_line
+    } else if (isIAssemblyTaskOrderLine(line)) {
+        target = line
+    } else {
+        throw new Error('Invalid line type in assembly_helpers/getOrderLineSize')
+    }
+
+    return `${target.dims.width}x${target.dims.length}x${target.dims.height}`
+}
+
+// --- ------------------------------------------------------------------------------------
+
+// __ Сортируем массив строк по размерам
+export function sortAssemblyTaskLinesBySize(
+    item: IAssemblyTask | IAssemblyTaskLine[],
+    direction: 'asc' | 'desc' = 'asc',
+): IAssemblyTaskLine[] {
+
+    // __ Проверяем, что пришло на вход
+    let sourceArray: IAssemblyTaskLine[] = []
+    if (Array.isArray(item)) {
+        sourceArray = item
+    } else {
+        sourceArray = item.cutting_lines
+    }
+
+    const dir = direction === 'asc' ? 1 : -1
+
+    return sourceArray.toSorted((a, b) => {
+        if (a.order_line.dims.width !== b.order_line.dims.width) {
+            return (a.order_line.dims.width - b.order_line.dims.width) * dir
+        }
+
+        if (a.order_line.dims.length !== b.order_line.dims.length) {
+            return (a.order_line.dims.length - b.order_line.dims.length) * dir
+        }
+
+        return (a.order_line.dims.height - b.order_line.dims.height) * dir
+    })
+}
 
 
 // --- -------------------------------------------------------------------------------------
 // __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskLineSector (для функционала)
 function isAssemblyTaskLineSector(item: unknown): item is IAssemblyTaskLineSector {
     return !!item && typeof item === 'object' && 'detail_dims' in item && 'dims' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskLine (для функционала)
+function isIAssemblyTaskLine(item: unknown): item is IAssemblyTaskLine {
+    return !!item && typeof item === 'object' && 'assembly_line' in item && 'order_line' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskOrderLine (для функционала)
+function isIAssemblyTaskOrderLine(item: unknown): item is IAssemblyTaskOrderLine {
+    return !!item && typeof item === 'object' && 'dims' in item && 'model' in item
 }
 
 // __ Функция-помощник: говорит TS, является ли item типом IRenderOrderLineAssemblyLineSector (для вывода заявки)
@@ -595,5 +1129,15 @@ function isAssemblyTaskLineSectorOrder(item: unknown): item is IRenderOrderLineA
 
 // __ Функция-помощник: говорит TS, является ли item типом IAssemblyTask
 function isAssemblyTask(item: unknown): item is IAssemblyTask {
-    return !!item && typeof item === 'object' && 'order' in item && 'block_lines' in item
+    return !!item && typeof item === 'object' && 'order' in item && 'assembly_lines' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyaskStatus
+function isAssemblyTaskStatus(item: unknown): item is IAssemblyTaskStatus {
+    return !!item && typeof item === 'object' && 'id' in item && 'color' in item && 'name' in item && 'pivot' in item
+}
+
+// __ Функция-помощник: говорит TS, является ли item типом IAssemblyTaskOrder
+function isAssemblyTaskOrder(item: unknown): item is IAssemblyTaskOrder {
+    return !!item && typeof item === 'object' && 'client' in item && 'order_type' in item
 }

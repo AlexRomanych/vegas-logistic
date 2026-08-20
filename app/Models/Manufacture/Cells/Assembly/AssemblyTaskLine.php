@@ -49,4 +49,14 @@ class AssemblyTaskLine extends Model
             ->hasMany(AssemblyTaskLineSector::class)
             ->where('sector', AssemblyTask::ASSEMBLY_TASK_SECTOR_COCONUT);
     }
+
+    // Relations:: Статистика по секторам
+    public function sectorStats(): HasMany
+    {
+        return $this->hasMany(AssemblyTaskLineSector::class)
+            ->select('assembly_task_line_id', 'sector')
+            ->selectRaw('SUM(amount) as total_amount')
+            ->selectRaw('SUM(CASE WHEN finished_at IS NOT NULL THEN amount ELSE 0 END) as finished_amount')
+            ->groupBy('assembly_task_line_id', 'sector');
+    }
 }

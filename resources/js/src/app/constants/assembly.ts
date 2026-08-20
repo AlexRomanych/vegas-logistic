@@ -1,4 +1,5 @@
 import type {
+    IAssemblyLineKeys,
     IAssemblyModelManufactureGroup,
     IAssemblySector,
     IAssemblyTask,
@@ -14,6 +15,15 @@ import type {
 // __ Смены
 export const CHANGE_1 = '1'
 export const CHANGE_2 = '2'
+
+// __ Линия сборки
+export const ASSEMBLY_LINE_LAMIT = 'lamit'
+export const ASSEMBLY_LINE_LAMIT_TITLE = 'Ламит'
+export const ASSEMBLY_LINE_TABLE = 'table'
+export const ASSEMBLY_LINE_TABLE_TITLE = 'Стол'
+
+export const ASSEMBLY_LINE_UNDEFINED = 'undefined'
+export const ASSEMBLY_LINE_UNDEFINED_TITLE = 'Н/Д'
 
 // __ Режим Сменной Работы
 export const CHANGE_MODE = CHANGE_1 satisfies IAssemblyTaskChangeKeys
@@ -44,6 +54,13 @@ export const CHANGES = {
 
 } as const satisfies Record<string, IAssemblyTaskChange>
 
+
+// __ Константы Линий Сборки
+export const ASSEMBLY_LINES = {
+    ASSEMBLY_LINE_LAMIT,
+    ASSEMBLY_LINE_TABLE,
+    ASSEMBLY_LINE_UNDEFINED,
+} as const satisfies Record<string, IAssemblyLineKeys>
 
 // __ Болванка Группы для Сортировки
 export const ASSEMBLY_MODEL_MANUFACTURE_GROUP_DRAFT = {
@@ -113,6 +130,24 @@ export const ASSEMBLY_SECTORS = {
         ICON : '',
         TYPE : 'primary',
         SHOW : true,
+    },
+    ASSEMBLY_TASK_SECTOR_LAMIT : {
+        ID   : 6,
+        NAME : ASSEMBLY_TASK_SECTOR_LAMIT,
+        TITLE: 'Ламит',
+        LABEL: ['Ламит', ''],
+        ICON : '',
+        TYPE : 'info',
+        SHOW : true,
+    },
+    ASSEMBLY_TASK_SECTOR_TABLE : {
+        ID   : 7,
+        NAME : ASSEMBLY_TASK_SECTOR_TABLE,
+        TITLE: 'Столы',
+        LABEL: ['Столы', ''],
+        ICON : '',
+        TYPE : 'dark',
+        SHOW : true,
     }
 } as const satisfies Record<string, IAssemblySector>
 
@@ -161,8 +196,10 @@ export const ASSEMBLY_TASK_DRAFT = {
             set_at     : null,
             started_at : null,
         }
+    },
 
-    }
+    stats: [],
+
 } as const satisfies IAssemblyTask
 
 

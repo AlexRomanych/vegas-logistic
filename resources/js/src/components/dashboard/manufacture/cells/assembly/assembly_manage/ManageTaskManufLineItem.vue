@@ -1,6 +1,5 @@
 <template>
 
-    <!-- __ Отрисовываем только те строки, у которых есть чехол -->
     <div class="flex">
         <!--<div class="flex">-->
 
@@ -8,17 +7,39 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.position.toString()"
+            :text="assemblyLine.position.toString()"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.position.width"
             class="field"
         />
 
+        <!-- __ Тип модели -->
+        <AppLabelTS
+            :rounded="DEFAULT_ROUNDED"
+            :text="assemblyLine.order_line.model.model_type"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.modelType.width"
+            align="center"
+            class="field"
+        />
+
+        <!-- __ Размер -->
+        <AppLabelTS
+            :rounded="DEFAULT_ROUNDED"
+            :text="getOrderLineSize(assemblyLine)"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.size.width"
+            align="center"
+            class="field"
+        />
+
         <!-- __ Название модели -->
         <AppLabelTS
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.block.name"
+            :text="assemblyLine.order_line.model.name_report"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="short ? renderData.modelShort.width : renderData.model.width"
@@ -29,21 +50,10 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.amount.toString()"
+            :text="assemblyLine.amount.toString()"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.amount.width"
-            class="field"
-        />
-
-        <!-- __ Площадь -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text="getBlockTaskLineSquare(blockLine).toFixed(2)"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.square.width"
             class="field"
         />
 
@@ -57,37 +67,26 @@
             :width="renderData.time.width"
         />
 
-        <!-- __ Линия 1 -->
+        <!-- __ Ламит -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForLine(BLOCK_MANUF_LINES.LINE_1)"
+            :type="getTypeForLine(ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT)"
             :width="renderData.line.width"
             class="field"
-            text="1"
+            text="Л"
         />
 
-        <!-- __ Линия 2 -->
+        <!-- __ Столы -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForLine(BLOCK_MANUF_LINES.LINE_2)"
+            :type="getTypeForLine(ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE)"
             :width="renderData.line.width"
             class="field"
-            text="2"
-        />
-
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForLine(BLOCK_MANUF_LINES.LINE_0)"
-            :width="renderData.line.width"
-            class="field"
-            text="??"
+            text="С"
         />
 
         <!-- __ Номер заявки -->
@@ -95,7 +94,7 @@
             v-if="showDetails"
             :align="'left'"
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.groupAttr ?? ''"
+            :text="assemblyLine.groupAttr ?? ''"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.order.width"
@@ -109,28 +108,28 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { IBlockManufLine, IBlockManufLinesPanel, IBlockTaskLine } from '@/types'
+import type { IAssemblyLineKeys, IAssemblyManufLinesPanel, IAssemblyTaskLine } from '@/types'
 import type {
-    IRenderBlockLineData
-} from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCard.vue'
+    IRenderAssemblyLineData
+} from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
 
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 
 import { storeToRefs } from 'pinia'
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 import {
-    getBlockTaskLineSquare,
     getTimeString
-} from '@/app/helpers/manufacture/helpers_blocks.ts'
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import { getOrderLineSize } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 
 interface IProps {
-    blockLine: IBlockTaskLine
-    panel: IBlockManufLinesPanel
-    renderData: IRenderBlockLineData
+    assemblyLine: IAssemblyTaskLine
+    panel: IAssemblyManufLinesPanel
+    renderData: IRenderAssemblyLineData
     showDetails?: boolean,
     short?: boolean
 }
@@ -141,12 +140,12 @@ const props = withDefaults(defineProps<IProps>(), {
     short      : false,
 })
 
-// console.log('props.blockLine: ', props.blockLine)
+// console.log('props.assemblyLine: ', props.assemblyLine)
 
 // __ Данные из Хранилища
-const blockStore = useBlocksStore()
+const assemblyStore = useAssemblyStore()
 
-const { globalManageTaskCardActiveBlockLine } = storeToRefs(blockStore)
+const { globalManageTaskCardActiveAssemblyLine } = storeToRefs(assemblyStore)
 
 const DEFAULT_ALIGN     = 'center'
 const DEFAULT_TEXT_SIZE = 'micro'
@@ -155,30 +154,29 @@ const ACCENT_TYPE       = 'success'
 const ACTIVE_TYPE       = 'primary'
 // const DEFAULT_TYPE      = 'primary'
 
+// __ Получаем Сборочную Линию
+const line = computed(() => props.assemblyLine.order_line.model.assembly_line)
 
 // __ Тип подсветки для основного элемента
 // __ Определяем, основная Линия или нет для подсветки
 const getType = computed(() => {
-    if (props.panel !== props.blockLine.block.collection.manuf_line) {
-        if (props.blockLine.block.collection.manuf_line === BLOCK_MANUF_LINES.LINE_1) {
+    if (props.panel !== line.value) {
+        if (line.value === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT) {
             return 'indigo'
-        } else if (props.blockLine.block.collection.manuf_line === BLOCK_MANUF_LINES.LINE_2) {
+        } else if (line.value === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE) {
             return 'orange'
         }
     }
 
-    return props.blockLine === globalManageTaskCardActiveBlockLine.value ? ACTIVE_TYPE : 'dark'
+    return props.assemblyLine === globalManageTaskCardActiveAssemblyLine.value ? ACTIVE_TYPE : 'dark'
 })
 
-// __ Получаем тип стегальной машины
-const line = computed(() => props.blockLine.manuf_line)
-
 // __ Тип подсветки для стегальной машины элемента
-const getTypeForLine = (blockLineTarget: IBlockManufLine) => {
+const getTypeForLine = (assemblyLineTarget: IAssemblyLineKeys) => {
 
     // !!! Порядок важен !!!
-    if (line.value === blockLineTarget) {
-        if (blockLineTarget === BLOCK_MANUF_LINES.LINE_0) {
+    if (line.value === assemblyLineTarget) {
+        if (assemblyLineTarget === ASSEMBLY_LINES.ASSEMBLY_LINE_UNDEFINED) {
             return 'danger'
         }
 
@@ -186,20 +184,19 @@ const getTypeForLine = (blockLineTarget: IBlockManufLine) => {
     }
 
     // __ Посвечиваем доступные столы
-    if (blockLineTarget === props.blockLine.block.collection.manuf_line ||
-        blockLineTarget === props.blockLine.block.collection.manuf_line_alt) {
-        if (blockLineTarget.toString() === BLOCK_MANUF_LINES.LINE_1.toString()) {
+    if (assemblyLineTarget === line.value) {
+        if (assemblyLineTarget.toString() === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT) {
             return 'indigo'
-        } else if (blockLineTarget.toString() === BLOCK_MANUF_LINES.LINE_2.toString()) {
+        } else if (assemblyLineTarget.toString() === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE) {
             return 'orange'
         }
     }
 
-    return props.blockLine === globalManageTaskCardActiveBlockLine.value ? ACTIVE_TYPE : 'dark'
+    return props.assemblyLine === globalManageTaskCardActiveAssemblyLine.value ? ACTIVE_TYPE : 'dark'
 }
 
 // __ Получаем трудозатраты
-const getTime = computed(() => getTimeString(props.blockLine, true).replaceAll('.', ''))
+const getTime = computed(() => getTimeString(props.assemblyLine, true).replaceAll('.', ''))
 
 
 </script>

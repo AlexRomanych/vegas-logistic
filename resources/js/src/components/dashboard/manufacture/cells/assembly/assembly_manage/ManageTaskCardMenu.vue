@@ -19,12 +19,12 @@
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
             :rounded="DEFAULT_ROUNDED"
-            :text="activePanel === 'left' ? ' Линия 1 ▶' : '◀ Линия 1'"
+            :text="activePanel === 'left' ? 'Ламит ▶' : '◀ Ламит'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', BLOCK_MANUF_LINES.LINE_1)"
+            @click="emits('moveToPanel', ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT)"
         />
 
         <!-- __ Переместить все элементы Линии 2 в другую группу -->
@@ -32,26 +32,12 @@
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
             :rounded="DEFAULT_ROUNDED"
-            :text="activePanel === 'left' ? ' Линия 2 ▶' : '◀ Линия 2'"
+            :text="activePanel === 'left' ? 'Столы ▶' : '◀ Столы'"
             :text-size="MENU_ITEMS_TEXT_SIZE"
             :type="MENU_ITEMS_TYPE"
             :width="MENU_ITEMS_WIDTH"
             class="field"
-            @click="emits('moveToPanel', BLOCK_MANUF_LINES.LINE_2)"
-        />
-
-
-        <!-- __ Переместить все элементы Стола ?? в другую группу -->
-        <AppLabelTS
-            :align="MENU_ITEMS_ALIGN"
-            :height="MENU_ITEMS_HEIGHT"
-            :rounded="DEFAULT_ROUNDED"
-            :text="activePanel === 'left' ? ' Линия ?? ▶' : '◀ Линия ??'"
-            :text-size="MENU_ITEMS_TEXT_SIZE"
-            :type="MENU_ITEMS_TYPE"
-            :width="MENU_ITEMS_WIDTH"
-            class="field"
-            @click="emits('moveToPanel', BLOCK_MANUF_LINES.LINE_0)"
+            @click="emits('moveToPanel', ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE)"
         />
 
         <!-- __ Разбить количество -->
@@ -134,15 +120,13 @@
             :height="MENU_ITEMS_HEIGHT"
             :rounded="DEFAULT_ROUNDED"
             :text-size="MENU_ITEMS_TEXT_SIZE"
-            :type="blockTask.comment ? 'orange' : MENU_ITEMS_TYPE"
+            :type="assemblyTask.comment ? 'orange' : MENU_ITEMS_TYPE"
             class="field"
             text="Комментарий"
             width="w-[90px]"
             @click="emits('addComment')"
         />
-
     </div>
-
 
     <AppModalAsyncMultiline
         ref="appModalAsyncMultiline"
@@ -156,17 +140,17 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 
-import type { IColorTypes, IBlockLinesPanel, IBlockTask, IBlockTaskLine } from '@/types'
+import type { IColorTypes, IAssemblyLinesPanel, IAssemblyTask, IAssemblyTaskLine } from '@/types'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 
 interface IProps {
-    activePanel: IBlockLinesPanel
-    blockLines: IBlockTaskLine[],
-    blockTask: IBlockTask,
+    activePanel: IAssemblyLinesPanel
+    assemblyLines: IAssemblyTaskLine[],
+    assemblyTask: IAssemblyTask,
     showComments?: boolean,
     showDetails?: boolean,
 }
@@ -214,7 +198,7 @@ const reloadData = async () => {
     }
 }
 
-const canMerge = computed(() => props.blockLines.length > 1)
+const canMerge = computed(() => props.assemblyLines.length > 1)
 
 // __ Объединить строки
 const mergeLines = async () => {

@@ -9,6 +9,7 @@ use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLine;
 use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLineSector;
 use App\Models\Manufacture\Cells\Assembly\AssemblyTaskStatus;
 use App\Models\Materials\Material;
+use App\Models\Models\Model;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
@@ -20,6 +21,8 @@ use Throwable;
 
 //use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection;
+
+use function PHPUnit\Framework\isNull;
 
 final class AssemblyService
 {
@@ -38,7 +41,7 @@ final class AssemblyService
     ): ?AssemblyTask {
         try {
             // __ Проверяем на существование заказа
-            $order = Order::query()->with(['lines', 'client'])->find($orderId);
+            $order = Order::query()->with(['lines', 'lines.model', 'client'])->find($orderId);
             if (!$order) {
                 return null;
             }
@@ -87,6 +90,8 @@ final class AssemblyService
                         'amount'           => $line->amount,
                         'position'         => $position++,
                         'time'             => 0,
+                        'assembly_line'    => $line->model->lamit === true ? Model::ASSEMBLY_LINE_LAMIT : Model::ASSEMBLY_LINE_TABLE,
+                        //'assembly_line'    => isNull($line->model->lamit) ?? $line->model->lamit === true ? Model::ASSEMBLY_LINE_LAMIT : Model::ASSEMBLY_LINE_TABLE,
 
                         // __ Задаем подмену свойств
                         'phantom'          => null,
@@ -138,19 +143,19 @@ final class AssemblyService
                                 'rest'                  => (float)$expense->rest,
                                 'total'                 => (float)$expense->expense + (float)$expense->rest,
 
-                                'expense_per_pic'       => (float)$expense->expense_per_pic,
-                                'rest_per_pic'          => (float)$expense->rest_per_pic,
-                                'total_per_pic'         => (float)$expense->expense_per_pic + (float)$expense->rest_per_pic,
+                                'expense_per_pic' => (float)$expense->expense_per_pic,
+                                'rest_per_pic'    => (float)$expense->rest_per_pic,
+                                'total_per_pic'   => (float)$expense->expense_per_pic + (float)$expense->rest_per_pic,
 
                                 // __ Трудозатраты
-                                'time'                  => 0,
+                                'time'            => 0,
 
                                 // __ Участок
-                                'sector'                => $sector,
+                                'sector'          => $sector,
 
                                 // __ Задаем подмену свойств
-                                'phantom'               => null,
-                                'phantom_json'          => null,
+                                'phantom'         => null,
+                                'phantom_json'    => null,
 
                                 //'position'              => 0,
                             ]);

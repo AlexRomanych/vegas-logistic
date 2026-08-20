@@ -60,20 +60,16 @@
                                     :show-comments="showComments"
                                     :show-details="showDetails"
                                     :sort-amount="sortAmount"
-                                    :sort-square="sortSquare"
-                                    :sort-detail="sortDetail"
-                                    :sort-kant="sortKant"
-                                    :sort-machine="sortMachine"
                                     :sort-name="sortName"
                                     :sort-position="sortPosition"
                                     :sort-size="sortSize"
-                                    :sort-table_0="sortLine_0"
                                     :sort-table_1="sortLine_1"
                                     :sort-table_2="sortLine_2"
                                     :sort-textile="sortTextile"
                                     :sort-time="sortTime"
-                                    :sort-tkch="sortTkch"
+                                    :sort-type="sortType"
                                     @sort-by-field="sortByField(panel, $event)"
+                                    @sort-by-size="sortBySize(panel)"
                                 />
 
                             </div>
@@ -95,8 +91,9 @@
                                     <template #item="{ element, /*index*/ }">
 
                                         <div :key="element.id"
-                                             @click="setActiveAssemblyLine(element, panel)"
                                              @dblclick="moveAssemblyLine(element, panel)"
+                                             @click.exact="setActiveAssemblyLine(element, panel)"
+                                             @click.ctrl="showLineInfo(element)"
                                         >
                                             <ManageTaskCardItem
                                                 :assembly-line="element"
@@ -214,19 +211,20 @@ import type {
     IAssemblyTaskLine,
     IDividerItem,
     IAssemblyLinesPanel,
-    // IAssemblyManufLinePanel,
-    IAssemblyTaskOrderLine, IAssemblyTaskCardSort, IAmountAndTimeAssembly,
+    IAssemblyTaskOrderLine,
+    IAssemblyTaskCardSort,
+    IAmountAndTimeAssemblyLines,
 } from '@/types'
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
-import { ASSEMBLY_MANUF_LINES } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import {
     calculateDividedAmountAndTime,
-    getAssemblyTaskAmountAndTime, getAssemblyTaskLineSquare,
-    isAverage, mergeAssemblyLines,
+    getAssemblyTaskAmountAndTimeLines,
+    mergeAssemblyLines, sortAssemblyTaskLinesBySize,
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -238,16 +236,16 @@ import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vu
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 import ManageTaskCardItem
-    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardItem.vue'
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCardItem.vue'
 import ManageTaskCardItemsHeader
-    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardItemsHeader.vue'
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCardItemsHeader.vue'
 import ManageTaskCardMenu
-    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardMenu.vue'
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCardMenu.vue'
 import ManageTaskCardTotals
-    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageTaskCardTotals.vue'
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCardTotals.vue'
 
-import CommentEdit from '@/components/dashboard/manufacture/cells/assemblys/common/CommentEdit.vue'
-import OrderItemInfo from '@/components/dashboard/manufacture/cells/assemblys/common/OrderItemInfo.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/assembly/common/OrderItemInfo.vue'
 
 // import ManageTaskCardItemInfo
 //     from '@/components/dashboard/manufacture/cells/assembly/assembly_components/assembly_manage/_ManageTaskCardItemInfo.vue'
@@ -280,7 +278,7 @@ const props = withDefaults(defineProps<IProps>(), {
 // }>()
 
 // __ Данные из Хранилища
-const assemblyStore = useAssemblysStore()
+const assemblyStore = useAssemblyStore()
 
 const { globalManageTaskCardActiveAssemblyLine } = storeToRefs(assemblyStore)
 
@@ -301,10 +299,10 @@ const footTitle = reactive({ action_at: '', order: '', load_at: '' })
 // __ Переключатель панелей
 const LEFT_PANEL_ID: IAssemblyLinesPanel  = 'left'
 const RIGHT_PANEL_ID: IAssemblyLinesPanel = 'right'
-const activePanel                      = ref<IAssemblyLinesPanel>(LEFT_PANEL_ID)
+const activePanel                         = ref<IAssemblyLinesPanel>(LEFT_PANEL_ID)
 
-const leftPanelAmountAndTimeTotal  = ref<IAmountAndTimeAssembly>()
-const rightPanelAmountAndTimeTotal = ref<IAmountAndTimeAssembly>()
+const leftPanelAmountAndTimeTotal  = ref<IAmountAndTimeAssemblyLines>()
+const rightPanelAmountAndTimeTotal = ref<IAmountAndTimeAssemblyLines>()
 
 // __ Главное окно
 const mainDiv = ref<HTMLDivElement | null>(null)
@@ -335,18 +333,13 @@ const showComments = ref(false)
 const showDetails  = ref(false)
 const sortPosition = ref<IAssemblyTaskCardSort>('none')
 const sortName     = ref<IAssemblyTaskCardSort>('none')
+const sortType     = ref<IAssemblyTaskCardSort>('none')
 const sortLine_1   = ref<IAssemblyTaskCardSort>('none')
 const sortLine_2   = ref<IAssemblyTaskCardSort>('none')
-const sortLine_0   = ref<IAssemblyTaskCardSort>('none')
 const sortTextile  = ref<IAssemblyTaskCardSort>('none')
-const sortKant     = ref<IAssemblyTaskCardSort>('none')
-const sortTkch     = ref<IAssemblyTaskCardSort>('none')
 const sortAmount   = ref<IAssemblyTaskCardSort>('none')
-const sortSquare   = ref<IAssemblyTaskCardSort>('none')
 const sortTime     = ref<IAssemblyTaskCardSort>('none')
 const sortSize     = ref<IAssemblyTaskCardSort>('none')
-const sortDetail   = ref<IAssemblyTaskCardSort>('none')
-const sortMachine  = ref<IAssemblyTaskCardSort>('none')
 
 
 // __ Стилистика
@@ -354,13 +347,14 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 // __ Размеры колонок
 const renderData = {
-    position: { width: 'min-w-[25px] max-w-[25px]', },
-    model   : { width: 'min-w-[300px] max-w-[300px]', },
-    amount  : { width: 'min-w-[30px] max-w-[30px]', },
-    square  : { width: 'min-w-[40px] max-w-[40px]', },
-    time    : { width: 'min-w-[50px] max-w-[50px]', },
-    line    : { width: 'min-w-[25px] max-w-[25px]', },
-    describe: { width: 'min-w-[50px] max-w-[50px]', },
+    position : { width: 'min-w-[25px] max-w-[25px]', },
+    size     : { width: 'min-w-[70px] max-w-[70px]', },
+    model    : { width: 'min-w-[300px] max-w-[300px]', },
+    modelType: { width: 'min-w-[100px] max-w-[100px]', },
+    amount   : { width: 'min-w-[30px] max-w-[30px]', },
+    time     : { width: 'min-w-[50px] max-w-[50px]', },
+    line     : { width: 'min-w-[25px] max-w-[25px]', },
+    describe : { width: 'min-w-[50px] max-w-[50px]', },
 }
 
 
@@ -452,14 +446,14 @@ defineExpose({
 
 // __ Пересчитываем Итого
 const calculateTotals = () => {
-    leftPanelAmountAndTimeTotal.value  = getAssemblyTaskAmountAndTime(sourceAssemblyLines.value)
-    rightPanelAmountAndTimeTotal.value = getAssemblyTaskAmountAndTime(targetAssemblyLines.value)
+    leftPanelAmountAndTimeTotal.value  = getAssemblyTaskAmountAndTimeLines(sourceAssemblyLines.value)
+    rightPanelAmountAndTimeTotal.value = getAssemblyTaskAmountAndTimeLines(targetAssemblyLines.value)
 }
 
 // __ Устанавливаем активную строку СЗ (клик по строке) + Переключаем панели, если строка в другой панели
 const setActiveAssemblyLine = (assemblyLine: IAssemblyTaskLine, panel: IAssemblyLinesPanel) => {
     globalManageTaskCardActiveAssemblyLine.value = assemblyLine
-    activePanel.value                         = panel
+    activePanel.value                            = panel
 }
 
 // __ Перемещаем строку СЗ в другую панель при двойном клике
@@ -471,7 +465,7 @@ const moveAssemblyLine = (assemblyLine: IAssemblyTaskLine, panel: IAssemblyLines
     panelTo.value.push(assemblyLine)
 
     globalManageTaskCardActiveAssemblyLine.value = null
-    activePanel.value                         = panel
+    activePanel.value                            = panel
 
     calculateTotals()
 }
@@ -494,7 +488,7 @@ const divideElementAmount = async () => {
 
 
     dividerElement.value.name =
-        activeAssemblyLineCopy.assembly.name + ' ' +
+        activeAssemblyLineCopy.order_line.model.name_report + ' ' +
         activeAssemblyLineCopy.amount.toString() + ' шт.'
 
     dividerElement.value.amount = activeAssemblyLineCopy.amount
@@ -553,7 +547,7 @@ const divideElementAmount = async () => {
         newAssemblyLine.position = round(maxPosition + 0.1, 1)      // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
 
         // __ Пересчитываем время и количество
-        newAssemblyLine                   = calculateDividedAmountAndTime(newAssemblyLine, range.take)
+        newAssemblyLine                = calculateDividedAmountAndTime(newAssemblyLine, range.take)
         workArray[dividerElementIndex] = calculateDividedAmountAndTime(workArray[dividerElementIndex], range.keep)
 
         // __ Вставляем новую строку
@@ -607,14 +601,11 @@ const moveToPanel = (activePanel: IAssemblyLinesPanel, assemblyType: string) => 
             case 'all':
                 compareValue = true
                 break
-            case ASSEMBLY_MANUF_LINES.LINE_1:
-                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_1
+            case ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT:
+                compareValue = sourceArray[i].assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT
                 break
-            case ASSEMBLY_MANUF_LINES.LINE_2:
-                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_2
-                break
-            case ASSEMBLY_MANUF_LINES.LINE_0:
-                compareValue = sourceArray[i].manuf_line === ASSEMBLY_MANUF_LINES.LINE_0
+            case ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE:
+                compareValue = sourceArray[i].assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE
                 break
         }
 
@@ -685,17 +676,13 @@ const addComment = async () => {
 const changeSortDirection = (sortDirection: IAssemblyTaskCardSort) => {
     sortPosition.value = 'none'
     sortName.value     = 'none'
+    sortType.value     = 'none'
     sortLine_1.value   = 'none'
     sortLine_2.value   = 'none'
-    sortLine_0.value   = 'none'
     sortTextile.value  = 'none'
-    sortKant.value     = 'none'
-    sortTkch.value     = 'none'
     sortAmount.value   = 'none'
     sortTime.value     = 'none'
     sortSize.value     = 'none'
-    sortDetail.value   = 'none'
-    sortMachine.value  = 'none'
 
     return ['none', 'desc'].includes(sortDirection) ? 'asc' : 'desc'
 }
@@ -710,44 +697,31 @@ interface SortConfig {
 
 // __ Карта конфигураций. Ключи — это произвольные идентификаторы (ID колонок)
 const sortConfigs: Record<string, SortConfig> = {
-    position                  : {
+    position                            : {
         type    : 'number',
         getValue: (item) => item.position
     },
-    amount                    : {
+    amount                              : {
         type    : 'number',
         getValue: (item) => item.amount
     },
-    square                    : {
-        type    : 'number',
-        getValue: (item) => getAssemblyTaskLineSquare(item)
-    },
-    name_report               : {
+    name_report                         : {
         type    : 'string',
-        getValue: (item) => {
-            const modelCover = item.assembly.name    // __ Получаем название модели
-            if (!modelCover) return ''
-
-            return modelCover
-                ? isAverage(modelCover)
-                    ? 'Чехол для Планового матраса'
-                    : item.assembly.name
-                : ''
-        }
+        getValue: (item) => item.order_line.model.name_report
     },
-    [ASSEMBLY_MANUF_LINES.LINE_1]: {
+    model_type                         : {
+        type    : 'string',
+        getValue: (item) => item.order_line.model.model_type
+    },
+    [ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT]: {
         type    : 'boolean',
-        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_1
+        getValue: (item) => item.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT
     },
-    [ASSEMBLY_MANUF_LINES.LINE_2]: {
+    [ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE]: {
         type    : 'boolean',
-        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_2
+        getValue: (item) => item.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE
     },
-    [ASSEMBLY_MANUF_LINES.LINE_0]: {
-        type    : 'boolean',
-        getValue: (item) => item.manuf_line === ASSEMBLY_MANUF_LINES.LINE_0
-    },
-    time                      : {
+    time                                : {
         type    : 'number',
         getValue: (item) => item.time
     }
@@ -785,25 +759,21 @@ const sortByField = (panel: IAssemblyLinesPanel, configKey: string) => {
             sortAmount.value = changeSortDirection(sortAmount.value)
             direction        = sortAmount.value
             break
-        case 'square':
-            sortSquare.value = changeSortDirection(sortSquare.value)
-            direction        = sortSquare.value
-            break
         case 'name_report':
             sortName.value = changeSortDirection(sortName.value)
             direction      = sortName.value
             break
-        case ASSEMBLY_MANUF_LINES.LINE_1:
+        case 'model_type':
+            sortType.value = changeSortDirection(sortType.value)
+            direction      = sortType.value
+            break
+        case ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT:
             sortLine_1.value = changeSortDirection(sortLine_1.value)
             direction        = sortLine_1.value
             break
-        case ASSEMBLY_MANUF_LINES.LINE_2:
+        case ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE:
             sortLine_2.value = changeSortDirection(sortLine_2.value)
             direction        = sortLine_2.value
-            break
-        case ASSEMBLY_MANUF_LINES.LINE_0:
-            sortLine_0.value = changeSortDirection(sortLine_0.value)
-            direction        = sortLine_0.value
             break
         case 'time':
             sortTime.value = changeSortDirection(sortTime.value)
@@ -826,6 +796,29 @@ const sortByField = (panel: IAssemblyLinesPanel, configKey: string) => {
     } else {
         targetAssemblyLines.value = workArray
     }
+}
+
+// __ Сортировка по размеру
+const sortBySize = (panel: IAssemblyLinesPanel) => {
+    sortSize.value = changeSortDirection(sortSize.value)
+
+    let sourceArray = panel === LEFT_PANEL_ID
+        ? [...sourceAssemblyLines.value]
+        : [...targetAssemblyLines.value]
+
+    sourceArray = sortAssemblyTaskLinesBySize(sourceArray, sortSize.value)
+
+    if (panel === LEFT_PANEL_ID) {
+        sourceAssemblyLines.value = sourceArray
+    } else {
+        targetAssemblyLines.value = sourceArray
+    }
+}
+
+// __ Показать информацию о записи
+const showLineInfo = async (assemblyLine: IAssemblyTaskLine) => {
+    orderLine.value = assemblyLine.order_line
+    await orderItemInfo.value!.show()             // показываем модалку и ждем ответ
 }
 
 

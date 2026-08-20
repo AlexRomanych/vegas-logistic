@@ -59,6 +59,20 @@
             :width="render.amount.width"
         />
 
+        <!-- __ Данные по каждому участку -->
+        <div v-for="dataItem of percentsRender" :key="dataItem.name" class="flex">
+            <AppLabelTS
+                :color="dataItem.color"
+                :text="dataItem.title"
+                align="center"
+                rounded="4"
+                text-size="micro"
+                width="w-[40px]"
+                :height="globalAssemblyTaskTimesShow ? 'h-[60px]' : 'h-[25px]'"
+            />
+        </div>
+
+
         <!-- __ Количество + Трудозатраты Линия 1 -->
         <!--<ManageItemDataLabel-->
         <!--    v-if="globalAssemblyTaskFullDaysShow"-->
@@ -126,21 +140,24 @@ import type {
     IAssemblyTask,
     IFontsType,
     IColorTypes,
-    IAmountAndTimeAssembly
+    IAmountAndTimeAssembly, IAssemblySectorKeys
 } from '@/types'
 
-import { ASSEMBLY_TASK_DRAFT, } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, } from '@/app/constants/assembly.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
-    from '@/components/dashboard/manufacture/cells/assemblys/assemblys_manage/ManageItemDataLabel.vue'
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItemDataLabel.vue'
 import { getChangeByName } from '@/app/helpers/manufacture/helpers_assembly.ts'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import type { IStats } from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageDay.vue'
 
 interface IProps {
     amountAndTime: IAmountAndTimeAssembly
+    percents: IStats[]
     item?: IAssemblyTask
     columnsWidth?: Record<string, string>
     index?: number
@@ -177,8 +194,8 @@ const assemblyStore = useAssemblyStore()
 const {
           globalAssemblyTaskOrderTypeColor,
           globalAssemblyTaskTimesShow,
-          // globalAssemblyTaskFullDaysShow,
-          // globalAssemblyTaskAssemblyInSquare,
+          globalAssemblyTaskFullDaysShow,
+          globalAssemblyTaskSectorsShow,
       } = storeToRefs(assemblyStore)
 
 // __ Высота данных
@@ -255,6 +272,33 @@ const animatedClass = computed(() => {
     return 'plan-item'
 })
 
+
+// __ Вычисление отображаемых участков
+const percentsRender = computed(() => {
+    let result = props.percents
+    if (!globalAssemblyTaskSectorsShow.value) {
+        const hiddenSectors = new Set<IAssemblySectorKeys>([
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.NAME,
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LATEX.NAME,
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_LAYER.NAME,
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_SIDE.NAME,
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAYER.NAME,
+        ]);
+
+        result = result.filter(item => !hiddenSectors.has(item.name));
+    }
+
+    if (!globalAssemblyTaskFullDaysShow.value) {
+        const hiddenSectors = new Set<IAssemblySectorKeys>([
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAMIT.NAME,
+            ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_TABLE.NAME,
+        ]);
+
+        result = result.filter(item => !hiddenSectors.has(item.name));
+    }
+
+    return result
+})
 
 </script>
 

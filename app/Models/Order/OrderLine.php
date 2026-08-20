@@ -4,6 +4,7 @@ namespace App\Models\Order;
 
 use App\Models\Logs\EventLog;
 use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLine;
+use App\Models\Manufacture\Cells\Assembly\AssemblyTaskLineSector;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
 use App\Models\Materials\Material;
 use App\Models\Models\ModelConstruct;
@@ -89,5 +90,11 @@ class OrderLine extends Model
     public function assemblyTaskLine(): HasMany
     {
         return $this->hasMany(AssemblyTaskLine::class, 'order_line_id', 'id');
+    }
+
+    // Relations: Связь со Строками Участков AssemblyTaskLineSectors (Обратная связь получения строки участка Заявки в Заказе)
+    public function assemblyTaskLineSectors(): HasMany
+    {
+        return $this->hasMany(AssemblyTaskLineSector::class, 'order_line_id', 'id');
     }
 }

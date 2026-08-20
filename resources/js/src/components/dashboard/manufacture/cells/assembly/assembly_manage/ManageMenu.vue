@@ -7,7 +7,7 @@
                 <!-- __ Цвет ярлычка -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalBlockTaskOrderTypeColor"
+                    :state="globalAssemblyTaskOrderTypeColor"
                     :state-false-char="['Цвет ярлычка', 'типа заявки']"
                     :state-true-char="['Цвет ярлычка', 'статуса заявки']"
                     :width="MENU_ITEM_LENGTH"
@@ -16,28 +16,28 @@
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalBlockTaskOrderTypeColor = !globalBlockTaskOrderTypeColor"
+                    @label-click="globalAssemblyTaskOrderTypeColor = !globalAssemblyTaskOrderTypeColor"
                 />
 
-                <!-- __ Показать / Скрыть детали для Линий -->
+                <!-- __ Показать / Скрыть Сборочные линии -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalBlockTaskFullDaysShow"
-                    :state-false-char="['Показать', 'детали Линий']"
-                    :state-true-char="['Скрыть', 'детали Линий']"
+                    :state="globalAssemblyTaskFullDaysShow"
+                    :state-false-char="['Показать', 'Сборочные линии']"
+                    :state-true-char="['Скрыть', 'Сборочные линии']"
                     :width="MENU_ITEM_LENGTH"
                     align="center"
                     class="cursor-pointer"
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalBlockTaskFullDaysShow = !globalBlockTaskFullDaysShow"
+                    @label-click="globalAssemblyTaskFullDaysShow = !globalAssemblyTaskFullDaysShow"
                 />
 
                 <!-- __ Показать / Скрыть Трудозатраты -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalBlockTaskTimesShow"
+                    :state="globalAssemblyTaskTimesShow"
                     :state-false-char="['Показать', 'трудозатраты']"
                     :state-true-char="['Скрыть', 'трудозатраты']"
                     :width="MENU_ITEM_LENGTH"
@@ -46,24 +46,23 @@
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalBlockTaskTimesShow = !globalBlockTaskTimesShow"
+                    @label-click="globalAssemblyTaskTimesShow = !globalAssemblyTaskTimesShow"
                 />
 
-                <!-- __ Единица измерения  -->
+                <!-- __ Показать / Скрыть Участки  -->
                 <AppLabelMultilineCheckBoxTS
                     :height="MENU_ITEM_HEIGHT"
-                    :state="globalBlockTaskBlockInSquare"
-                    :state-false-char="['Переключить на', 'квадратные метры']"
-                    :state-true-char="['Переключить на', 'штуки']"
+                    :state="globalAssemblyTaskSectorsShow"
+                    :state-false-char="['Показать', 'Участки']"
+                    :state-true-char="['Скрыть', 'Участки']"
                     :width="MENU_ITEM_LENGTH"
                     align="center"
                     class="cursor-pointer"
                     state-false-type="success"
                     state-true-type="primary"
                     text-size="mini"
-                    @label-click="globalBlockTaskBlockInSquare = !globalBlockTaskBlockInSquare"
+                    @label-click="globalAssemblyTaskSectorsShow = !globalAssemblyTaskSectorsShow"
                 />
-
 
             </div>
         </div>
@@ -75,18 +74,18 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
 
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import AppLabelMultilineCheckBoxTS from '@/components/ui/labels/AppLabelMultilineCheckBoxTS.vue'
 
-const blocksStore = useBlocksStore()
+const assemblyStore = useAssemblyStore()
 
 const {
-          globalBlockTaskTimesShow,
-          globalBlockTaskFullDaysShow,
-          globalBlockTaskOrderTypeColor,
-          globalBlockTaskBlockInSquare,
-      } = storeToRefs(blocksStore)
+          globalAssemblyTaskTimesShow,
+          globalAssemblyTaskFullDaysShow,
+          globalAssemblyTaskOrderTypeColor,
+          globalAssemblyTaskSectorsShow,
+      } = storeToRefs(assemblyStore)
 
 const MENU_ITEM_HEIGHT = 'h-[20px]'
 const MENU_ITEM_LENGTH = 'w-[150px]'

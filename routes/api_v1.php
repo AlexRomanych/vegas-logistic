@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CellItemController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyModelManufactureGroupController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyStatusController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
@@ -455,12 +456,12 @@ Route::prefix('assembly')
         //Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDateAndChange']);
         ////Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
         //Route::get('tasks/status/date/on/check', [BlockTaskController::class, 'checkBlockTasksByStatusOnDate']);
-        //Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);
-        //Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
+        Route::post('tasks/update', [AssemblyTaskController::class, 'updateAssemblyTasks']);
+        Route::post('tasks/comment', [AssemblyTaskController::class, 'setAssemblyTaskComment']);
         //Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
         //Route::post('tasks/action/set', [BlockTaskController::class, 'setBlockTaskActionAt']);
 
-        //Route::post('tasks/lines/line/set', [BlockTaskController::class, 'taskLinesManufLineSet']);
+        Route::post('tasks/lines/line/set', [AssemblyTaskController::class, 'taskLinesManufLineSet']);
         //Route::post('tasks/line/done', [BlockTaskController::class, 'setBlockTaskLinesDone']);
         //Route::post('tasks/line/false', [BlockTaskController::class, 'setBlockTaskLinesFalse']);
         //Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
@@ -483,12 +484,12 @@ Route::prefix('assembly')
         //Route::get('/{id}', [BlockController::class, 'getBlockById']);
         //Route::post('/', [BlockController::class, 'createBlock']);
         //Route::put('/', [BlockController::class, 'updateBlock']);
-        //
-        //// __ Статусы СЗ Блоков
-        //Route::get('/task/statuses', [BlockStatusController::class, 'getBlockTaskStatuses']);
-        //Route::patch('/task/statuses/color/patch', [BlockStatusController::class, 'patchBlockTaskStatusColor']);
-        //Route::post('/task/statuses/set', [BlockStatusController::class, 'setBlockTasksStatuses']);
-        //
+
+        // __ Статусы СЗ Сборки
+        Route::get('/task/statuses', [AssemblyStatusController::class, 'getAssemblyTaskStatuses']);
+        Route::patch('/task/statuses/color/patch', [AssemblyStatusController::class, 'patchAssemblyTaskStatusColor']);
+        Route::post('/task/statuses/set', [AssemblyStatusController::class, 'setAssemblyTasksStatuses']);
+
         //// __ Производственный день
         //Route::get('/days/period', [BlockDayController::class, 'getBlockDays']);
         //Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);

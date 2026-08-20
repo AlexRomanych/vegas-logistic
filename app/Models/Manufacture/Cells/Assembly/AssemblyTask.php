@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 use function PHPUnit\Framework\isNull;
@@ -25,6 +26,7 @@ class AssemblyTask extends Model
 {
     protected $guarded = false;
     protected $casts = [
+        'change'    => 'string',
         'action_at' => 'datetime',
     ];
 
@@ -258,6 +260,24 @@ class AssemblyTask extends Model
                 //'assembly_task_status_pivot.duration as pivot_duration',
             ])
             ->latestOfMany('id'); // И берем только самый последний по ID пивота!
+    }
+
+
+    // Relations: Суммарная информация по статистике участков
+    public function sectorStatsTotal(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            AssemblyTaskLineSector::class,
+            AssemblyTaskLine::class,
+            'assembly_task_id',      // Внешний ключ в таблице assembly_task_lines
+            'assembly_task_line_id', // Внешний ключ в таблице assembly_task_line_sectors
+            'id',                     // Локальный ключ в таблице assembly_tasks
+            'id'                      // Локальный ключ в таблице assembly_task_lines
+        )
+            ->select('assembly_task_lines.assembly_task_id', 'sector')
+            ->selectRaw('SUM(assembly_task_line_sectors.amount) as total_amount')
+            ->selectRaw('SUM(CASE WHEN assembly_task_line_sectors.finished_at IS NOT NULL THEN assembly_task_line_sectors.amount ELSE 0 END) as finished_amount')
+            ->groupBy('assembly_task_lines.assembly_task_id', 'sector');
     }
 
 

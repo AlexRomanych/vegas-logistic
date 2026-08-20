@@ -5,6 +5,7 @@ namespace App\Http\Resources\Manufacture\Cells\Assembly\Manage;
 
 use App\Models\Manufacture\Cells\Cutting\CuttingTask;
 use App\Models\Manufacture\Cells\Cutting\CuttingTaskLine;
+use App\Models\Models\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,6 +32,9 @@ class AssemblyTaskModelResource extends JsonResource
                 'group_number' => $this->manufactureGroup->group_number,
                 'name'         => $this->manufactureGroup->name,
             ]),
+
+            'model_type' => $this->modelType?->name,
+            'assembly_line'      => $this->lamit ? Model::ASSEMBLY_LINE_LAMIT : Model::ASSEMBLY_LINE_TABLE,
 
             //'cover_height'        => $this->cover_height,
             //'textile'             => $this->textile,

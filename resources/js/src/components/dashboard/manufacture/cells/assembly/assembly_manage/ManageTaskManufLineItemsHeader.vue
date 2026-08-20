@@ -14,7 +14,33 @@
             @click="emits('sortByField', 'position')"
         />
 
-        <!-- __ Название Блока -->
+        <!-- __ Тип модели -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortType)"
+            :width="renderData.modelType.width"
+            class="field"
+            :text="'Тип' + getSortIcon(sortType)"
+            title="Click - Сортировка по Типу Модели"
+            @click="emits('sortByField', 'model_type')"
+        />
+
+        <!-- __ Размер модели -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text="'Размер' + getSortIcon(sortSize)"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortSize)"
+            :width="renderData.size.width"
+            class="field"
+            title="Click - Сортировка по Размеру Модели"
+            @click="emits('sortBySize')"
+        />
+
+        <!-- __ Название Модели -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
@@ -23,7 +49,7 @@
             :type="getPositionBySort(sortName)"
             :width="short ? renderData.modelShort.width : renderData.model.width"
             class="field"
-            title="Click - Сортировка по Названию Блока"
+            title="Click - Сортировка по Названию Модели"
             @click="emits('sortByField', 'name')"
         />
 
@@ -40,19 +66,6 @@
             @click="emits('sortByField', 'amount')"
         />
 
-        <!-- __ Площадь -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortSquare)"
-            :width="renderData.square.width"
-            class="field"
-            text="S, m2"
-            title="Click - Сортировка по Площади"
-            @click="emits('sortByField', 'square')"
-        />
-
         <!-- __ Трудозатраты -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -65,40 +78,28 @@
             @click="emits('sortByField', 'time')"
         />
 
-        <!-- __ Линия 1 -->
+        <!-- __ Ламит -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortLine_1)"
+            :type="getPositionBySort(sortLamit)"
             :width="renderData.line.width"
             class="field"
-            text="1"
-            @click="emits('sortByField', 'line_1')"
+            text="Л"
+            @click="emits('sortByField', ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT)"
         />
 
-        <!-- __ Линия 2 -->
+        <!-- __ Столы -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortLine_2)"
+            :type="getPositionBySort(sortTable)"
             :width="renderData.line.width"
             class="field"
-            text="2"
-            @click="emits('sortByField', 'line_2')"
-        />
-
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortLine_0)"
-            :width="renderData.line.width"
-            class="field"
-            text="??"
-            @click="emits('sortByField', 'line_0')"
+            text="С"
+            @click="emits('sortByField', ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE)"
         />
 
         <!-- __ Номер заявки -->
@@ -119,32 +120,31 @@
 </template>
 
 <script lang="ts" setup>
-import type { IBlockManufLinesPanel, IBlockTaskCardSort } from '@/types'
+import type { IAssemblyManufLinesPanel, IAssemblyTaskCardSort } from '@/types'
 import type {
-    IRenderBlockLineData
-} from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCard.vue'
+    IRenderAssemblyLineData
+} from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import { ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 
 interface IProps {
-    renderData: IRenderBlockLineData
-    panel: IBlockManufLinesPanel
-    activePanel: IBlockManufLinesPanel
+    renderData: IRenderAssemblyLineData
+    panel: IAssemblyManufLinesPanel
+    activePanel: IAssemblyManufLinesPanel
     showDetails?: boolean
     short?: boolean
-    sortPosition?: IBlockTaskCardSort
-    sortName?: IBlockTaskCardSort
-    sortLine_1?: IBlockTaskCardSort
-    sortLine_2?: IBlockTaskCardSort
-    sortLine_0?: IBlockTaskCardSort
-    sortTextile?: IBlockTaskCardSort
-    sortOrder?: IBlockTaskCardSort
-    sortAmount?: IBlockTaskCardSort
-    sortSquare?: IBlockTaskCardSort
-    sortTime?: IBlockTaskCardSort
-    sortDetail?: IBlockTaskCardSort
-    sortMachine?: IBlockTaskCardSort
+    sortPosition?: IAssemblyTaskCardSort
+    sortName?: IAssemblyTaskCardSort
+    sortType?: IAssemblyTaskCardSort
+    sortSize?: IAssemblyTaskCardSort
+    sortLamit?: IAssemblyTaskCardSort
+    sortTable?: IAssemblyTaskCardSort
+    sortTextile?: IAssemblyTaskCardSort
+    sortOrder?: IAssemblyTaskCardSort
+    sortAmount?: IAssemblyTaskCardSort
+    sortTime?: IAssemblyTaskCardSort
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -152,11 +152,11 @@ const props = withDefaults(defineProps<IProps>(), {
     short       : false,
     sortPosition: 'none',
     sortName    : 'none',
-    sortLine_1  : 'none',
-    sortLine_2  : 'none',
-    sortLine_0  : 'none',
+    sortType    : 'none',
+    sortSize    : 'none',
+    sortLamit  : 'none',
+    sortTable  : 'none',
     sortAmount  : 'none',
-    sortSquare  : 'none',
     sortTime    : 'none',
     sortOrder   : 'none',
 })
@@ -164,6 +164,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<{
     (e: 'sortByField', field: string): void
+    (e: 'sortBySize'): void
 }>()
 
 const DEFAULT_ALIGN     = 'center'
@@ -175,7 +176,7 @@ const SORT_BY_DESC_TYPE = 'indigo'
 
 
 // __ Получаем тип в зависимости от направления сортировки
-const getPositionBySort = (sort: IBlockTaskCardSort) => {
+const getPositionBySort = (sort: IAssemblyTaskCardSort) => {
     if (props.panel !== props.activePanel) return DEFAULT_TYPE
     if (sort === 'none') return DEFAULT_TYPE
     if (sort === 'asc') return SORT_BY_ASC_TYPE
@@ -183,7 +184,7 @@ const getPositionBySort = (sort: IBlockTaskCardSort) => {
 }
 
 // __ Получаем иконку направления сортировки
-const getSortIcon = (sort: IBlockTaskCardSort) => {
+const getSortIcon = (sort: IAssemblyTaskCardSort) => {
     if (props.panel !== props.activePanel) return ''
     if (sort === 'none') return ''
     if (sort === 'asc') return '▲'

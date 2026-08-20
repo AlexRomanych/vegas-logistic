@@ -1,6 +1,6 @@
 <template>
     <div
-        :class="[shadowColor, globalAssemblyTaskFullDaysShow ? 'min-w-[321px]' : 'min-w-[190px]']"
+        :class="[shadowColor, dayWidth]"
         class="m-1 pb-0.5 border-[1px] rounded border-slate-600 bg-slate-200 w-fit min-h-[129px] shadow-xl"
     >
         <!-- __ День недели -->
@@ -16,6 +16,7 @@
                 title="Click + Ctrl - Выполнение СЗ"
                 width="w-full"
                 @click.ctrl="gotoExecute"
+                @click.exact="IS_ONE_CHANGE_MODE ? actionDayMenu(CHANGE_1) : () => {}"
             />
         </div>
 
@@ -24,17 +25,6 @@
             v-if="hasDataChange_1 || hasDataChange_2"
             class="flex"
         >
-            <!--&lt;!&ndash; __ Смена &ndash;&gt;-->
-            <!--<AppLabelTS-->
-            <!--    :height="DEFAULT_HEIGHT"-->
-            <!--    :text-size="DATA_HEADER_TEXT_SIZE"-->
-            <!--    :type="TOTALS_TYPE"-->
-            <!--    :width="columnsWidth.change"-->
-            <!--    align="center"-->
-            <!--    class="uppercase"-->
-            <!--    rounded="rounded-[4px]"-->
-            <!--    text="См"-->
-            <!--/>-->
 
             <!-- __ Клиент -->
             <AppLabelTS
@@ -70,189 +60,214 @@
                 text="Σ"
             />
 
-            <!-- __ Линия 1 -->
+            <!-- ___ Участки -->
+            <!-- __ Кокос -->
             <AppLabelTS
-                v-if="globalAssemblyTaskFullDaysShow"
+                v-if="globalAssemblyTaskSectorsShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
-                :type="TOTALS_TYPE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.TYPE"
                 :width="columnsWidth.line"
                 align="center"
                 rounded="rounded-[4px]"
-                text="1"
+                text="Кок"
             />
 
-            <!-- __ Линия 2 -->
+            <!-- __ Латекс -->
             <AppLabelTS
-                v-if="globalAssemblyTaskFullDaysShow"
+                v-if="globalAssemblyTaskSectorsShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
-                :type="TOTALS_TYPE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LATEX.TYPE"
                 :width="columnsWidth.line"
                 align="center"
                 rounded="rounded-[4px]"
-                text="2"
+                text="Лат"
             />
 
-            <!-- __ Неопознанные -->
+            <!-- __ Тонкий Настил -->
+            <AppLabelTS
+                v-if="globalAssemblyTaskSectorsShow"
+                :height="DEFAULT_HEIGHT"
+                :text-size="DATA_HEADER_TEXT_SIZE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAYER.TYPE"
+                :width="columnsWidth.line"
+                align="center"
+                rounded="rounded-[4px]"
+                text="Наст"
+            />
+
+            <!-- __ ППУ Настил -->
+            <AppLabelTS
+                v-if="globalAssemblyTaskSectorsShow"
+                :height="DEFAULT_HEIGHT"
+                :text-size="DATA_HEADER_TEXT_SIZE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_LAYER.TYPE"
+                :width="columnsWidth.line"
+                align="center"
+                rounded="rounded-[4px]"
+                text="П_Н"
+            />
+
+            <!-- __ ППУ Борта -->
+            <AppLabelTS
+                v-if="globalAssemblyTaskSectorsShow"
+                :height="DEFAULT_HEIGHT"
+                :text-size="DATA_HEADER_TEXT_SIZE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_SIDE.TYPE"
+                :width="columnsWidth.line"
+                align="center"
+                rounded="rounded-[4px]"
+                text="П_Б"
+            />
+
+            <!-- ___ Линия Сборки -->
+            <!-- __ Ламит -->
             <AppLabelTS
                 v-if="globalAssemblyTaskFullDaysShow"
                 :height="DEFAULT_HEIGHT"
                 :text-size="DATA_HEADER_TEXT_SIZE"
-                :type="TOTALS_TYPE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAMIT.TYPE"
                 :width="columnsWidth.line"
                 align="center"
-                color="red"
                 rounded="rounded-[4px]"
-                text="??"
+                text="Лам"
             />
+
+            <!-- __ Столы -->
+            <AppLabelTS
+                v-if="globalAssemblyTaskFullDaysShow"
+                :height="DEFAULT_HEIGHT"
+                :text-size="DATA_HEADER_TEXT_SIZE"
+                :type="ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_TABLE.TYPE"
+                :width="columnsWidth.line"
+                align="center"
+                rounded="rounded-[4px]"
+                text="Ст"
+            />
+
         </div>
 
         <div v-for="(change, idx) of day" :key="idx">
 
-            <div :class="change.length ? getChangeClass(idx) : ''">
+            <template v-if="!IS_ONE_CHANGE_MODE || (IS_ONE_CHANGE_MODE && idx == 0)">
 
-                <div v-if="!IS_ONE_CHANGE_MODE">
-                    <!-- __ Смена -->
-                    <AppLabelTS
-                        :height="DEFAULT_HEIGHT"
-                        :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                        :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                        align="center"
-                        class="uppercase cursor-pointer"
-                        rounded="rounded-[4px]"
-                        text-size="mini"
-                        width="calc(w-full - 5px)"
-                        @click.exact="actionDayMenu(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                    />
-                </div>
+                <div :class="change.length ? getChangeClass(idx) : ''">
 
-                <!-- __ Сами СЗ с возможностью перетаскивания -->
-                <draggable
-                    :="dragOptions"
-                    :disabled="!isDragging"
-                    :list="change as unknown as IAssemblyTask[]"
-                    :move="checkMove"
-                    class="min-h-[25px]"
-                    item-key="id"
-                    tag="div"
-                    @end="finishDrag"
-                    @start="startDrag"
-                >
-                    <template #item="{ element, index }">
-                        <div
-                            @click="selectAssemblyTask(element)"
-                            @dblclick="showAssemblyTaskMenu(element)"
-                        >
-                            <ManageItem
-                                :amount-and-time="getAssemblyTaskAmountAndTime(element)"
-                                :columns-width="columnsWidth"
-                                :index="index"
-                                :item="element"
-                                :order-id="globalAssemblyTaskActiveOrderId"
-                            />
-                        </div>
+                    <template v-if="!IS_ONE_CHANGE_MODE">
+                        <!-- __ Смена -->
+                        <AppLabelTS
+                            :height="DEFAULT_HEIGHT"
+                            :text="getChangeTitle(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                            :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                            align="center"
+                            class="uppercase cursor-pointer"
+                            rounded="rounded-[4px]"
+                            text-size="mini"
+                            width="calc(w-full - 5px)"
+                            @click.exact="actionDayMenu(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                        />
                     </template>
 
-                </draggable>
+                    <!-- __ Сами СЗ с возможностью перетаскивания -->
+                    <draggable
+                        :="dragOptions"
+                        :disabled="!isDragging"
+                        :list="change as unknown as IAssemblyTask[]"
+                        :move="checkMove"
+                        class="min-h-[25px]"
+                        item-key="id"
+                        tag="div"
+                        @end="finishDrag"
+                        @start="startDrag"
+                    >
+                        <template #item="{ element, index }">
+                            <div
+                                @click="selectAssemblyTask(element)"
+                                @dblclick="showAssemblyTaskMenu(element)"
+                            >
+                                <ManageItem
+                                    :amount-and-time="getAssemblyTaskAmountAndTime(element)"
+                                    :columns-width="columnsWidth"
+                                    :index="index"
+                                    :item="element"
+                                    :order-id="globalAssemblyTaskActiveOrderId"
+                                    :percents="getDataArray(element)"
+                                />
+                            </div>
+                        </template>
 
-                <!-- __ Разделительная линия -->
-                <div
-                    v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
-                    class="flex"
-                >
-                    <TheDividerLine/>
-                </div>
+                    </draggable>
 
-                <!-- __ Итого -->
-                <div
-                    v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
-                    class="flex"
-                >
-                    <!-- __ Всего: -->
-                    <AppLabelTS
-                        :height="heightTotals"
-                        :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
-                        :width="columnsWidth.common"
-                        align="center"
-                        rounded="rounded-[4px]"
-                        text="Всего:"
-                        text-size="mini"
-                    />
-
-                    <!-- __ Количество + Трудозатраты Общие -->
-                    <ManageItemDataLabel
-                        :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"
-                        :height="heightTotals"
-                        :reference="REFERENCE_TIME * 2"
-                        :square="getTotalSquareChange(change as unknown as IAssemblyTask[])"
-                        :square-show="globalAssemblyTaskAssemblyInSquare"
-                        :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"
-                        :time-show="globalAssemblyTaskTimesShow"
-                        :type="TOTALS_TYPE"
-                        :width="columnsWidth.amount"
-                        class="plan-item"
-                    />
-
-                    <!-- __ Количество + Трудозатраты -->
-                    <ManageItemDataLabel
-                        v-if="globalAssemblyTaskFullDaysShow"
-                        :amount="0"
-                        :height="heightTotals"
-                        :reference="REFERENCE_TIME"
-                        :time="0"
-                        :time-show="globalAssemblyTaskTimesShow"
-                        :type="TOTALS_TYPE"
-                        :width="columnsWidth.amount"
-                        class="plan-item"
-                    />
-
-                    <!-- __ Количество + Трудозатраты Линия 2 -->
-                    <!--<ManageItemDataLabel-->
-                    <!--    v-if="globalAssemblyTaskFullDaysShow"-->
-                    <!--    :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].amount"-->
-                    <!--    :height="heightTotals"-->
-                    <!--    :reference="REFERENCE_TIME"-->
-                    <!--    :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].square"-->
-                    <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
-                    <!--    :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_2].time"-->
-                    <!--    :time-show="globalAssemblyTaskTimesShow"-->
-                    <!--    :type="TOTALS_TYPE"-->
-                    <!--    :width="columnsWidth.amount"-->
-                    <!--    class="plan-item"-->
-                    <!--/>-->
-
-                    <!-- __ Количество + Трудозатраты Неопознанные -->
-                    <!--<ManageItemDataLabel-->
-                    <!--    v-if="globalAssemblyTaskFullDaysShow"-->
-                    <!--    :amount="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount"-->
-                    <!--    :color="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? '' : 'red'"-->
-                    <!--    :height="heightTotals"-->
-                    <!--    :reference="null"-->
-                    <!--    :square="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].square"-->
-                    <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
-                    <!--    :time="amountAndTimeTotalsChanges[idx][ASSEMBLY_MANUF_LINES.LINE_0].time"-->
-                    <!--    :time-show="globalAssemblyTaskTimesShow"-->
-                    <!--    :type="TOTALS_TYPE"-->
-                    <!--    :width="columnsWidth.amount"-->
-                    <!--    class="plan-item"-->
-                    <!--/>-->
-                </div>
-
-                <!-- __ Двойная Разделительная линия -->
-                <template v-for="i of [1, 2]" :key="i">
+                    <!-- __ Разделительная линия -->
                     <div
-                        v-if="(hasDataChange_1 && idx === 0)/* || (hasDataChange_2 && idx === 1)*/"
-                        class="flex bg-stone-200"
+                        v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
+                        class="flex"
                     >
                         <TheDividerLine/>
                     </div>
-                </template>
 
-            </div>
+                    <!-- __ Итого -->
+                    <div
+                        v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
+                        class="flex"
+                    >
+                        <!-- __ Всего: -->
+                        <AppLabelTS
+                            :height="heightTotals"
+                            :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
+                            :width="columnsWidth.common"
+                            align="center"
+                            rounded="rounded-[4px]"
+                            text="Всего:"
+                            text-size="mini"
+                        />
+
+                        <!-- __ Количество + Трудозатраты Общие -->
+                        <ManageItemDataLabel
+                            :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"
+                            :height="heightTotals"
+                            :reference="REFERENCE_TIME * 2"
+                            :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"
+                            :time-show="globalAssemblyTaskTimesShow"
+                            :type="TOTALS_TYPE"
+                            :width="columnsWidth.amount"
+                            class="plan-item"
+                        />
+
+                        <!-- __ Количество + Трудозатраты -->
+                        <ManageItemDataLabel
+                            v-if="globalAssemblyTaskFullDaysShow"
+                            :amount="0"
+                            :height="heightTotals"
+                            :reference="REFERENCE_TIME"
+                            :time="0"
+                            :time-show="globalAssemblyTaskTimesShow"
+                            :type="TOTALS_TYPE"
+                            :width="columnsWidth.amount"
+                            class="plan-item"
+                        />
+
+                    </div>
+
+                    <!-- __ Двойная Разделительная линия -->
+                    <template v-if="!IS_ONE_CHANGE_MODE">
+                        <template v-for="i of [1, 2]" :key="i">
+                            <div
+                                v-if="(hasDataChange_1 && idx === 0)/* || (hasDataChange_2 && idx === 1)*/"
+                                class="flex bg-stone-200"
+                            >
+                                <TheDividerLine/>
+                            </div>
+                        </template>
+                    </template>
+
+                </div>
+
+            </template>
         </div>
-
     </div>
+
 
     <!-- __ Карточка СЗ -->
     <ManageTaskCard
@@ -301,12 +316,18 @@
 <!--suppress PointlessBooleanExpressionJS, PointlessBooleanExpressionJS -->
 <script lang="ts" setup>
 import type {
+    DraggableHTMLElement,
+    // IAmountAndTimeAssembly,
+    IAssemblyLineSetData,
+    IAssemblySectorKeys,
+    IAssemblyTask,
+    IAssemblyTaskChangeKeys,
+    IAssemblyTaskLine, IAssemblyTaskLineSector,
+    IAssemblyTaskStatusesSet,
     IColorTypes,
     IDay,
     IModalAsyncMenu,
-    IPlanMatrix, IAssemblyDay,
-    IAssemblyTask,
-    IAssemblyTaskStatusesSet, IAssemblyTaskLine, IAssemblyLineSetData, DraggableHTMLElement, IAmountAndTimeAssembly, IAssemblyTaskChangeKeys,
+    IPlanMatrix,
 } from '@/types'
 
 import { computed, inject, type Ref, ref, } from 'vue'
@@ -323,39 +344,47 @@ import {
     formatDateIntl,
     formatToYMD,
     getDayOfWeek,
+    getDaysDifferenceFromDates,
     isHoliday,
     isToday,
     splitDate,
-    getDaysDifferenceFromDates,
 } from '@/app/helpers/helpers_date'
 import {
     clearRenderMatrix,
     clearRenderMatrixDay,
     correctRenderMatrix,
-    getDiffsWithPositions,
-    getAssemblyTasksDiff,
-    createAmountAndTimeObj,
+    // createAmountAndTimeObj,
     getAssemblyTaskAmountAndTime,
+    getAssemblyTasksDiff,
     getAssemblyTasksGroupedByOrder,
     getAssemblyTasksSameOrderInDay,
+    getChangeByName,
+    getDiffsWithPositions,
+    getIndexByChange,
+    getOrderTitle,
+    hasTaskUnknownAssemblyLine,
     isTaskAverage,
-    isTaskStatusCreated, isTaskStatusRunning,
+    isTaskStatusCreated,
+    isTaskStatusRunning,
     orderAssemblyTasksByStatus,
     repositionAssemblyTaskLines,
-    setTaskPositionInRenderMatrix, hasTaskUnknownManufLine, getOrderTitle, getIndexByChange, getChangeByName, getAssemblyTaskLineSquare,
+    setTaskPositionInRenderMatrix,
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
+import { getColorByPercent } from '@/app/helpers/helpers.ts'
 
 import {
-    ASSEMBLY_MANUF_LINES,
+    ASSEMBLY_LINES,
+    ASSEMBLY_SECTORS,
     ASSEMBLY_TASK_DRAFT,
+    ASSEMBLY_TASK_SECTOR_LAMIT,
+    ASSEMBLY_TASK_SECTOR_TABLE,
     ASSEMBLY_TASK_STATUSES,
     CHANGE_1,
     CHANGE_2,
-    CHANGE_MODE,
     CHANGES,
-    IS_NOT_ONE_CHANGE_MODE, IS_ONE_CHANGE_MODE
+    IS_ONE_CHANGE_MODE
 } from '@/app/constants/assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
@@ -369,9 +398,20 @@ import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/assemb
 
 import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 // type IDay = IAssemblyTask & IPlanMatrixDayItem
+
+export interface IStats {
+    id: number
+    name: IAssemblySectorKeys
+    total: number
+    done: number
+    percent: number
+    color: string
+    title: string
+}
 
 interface IProps {
     date: Date
@@ -383,8 +423,13 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 
+// console.log('props.day: ', props.day)
+
 // __ Класс для смен
 const getChangeClass = (change: number) => {
+    if (IS_ONE_CHANGE_MODE) {
+        return ''
+    }
     switch ((change + 1).toString()) {
         case CHANGES.CHANGE_1.NAME:
             return 'bg-indigo-200'
@@ -409,16 +454,16 @@ const renderMatrixCopy = inject<Ref<IPlanMatrix>>('renderMatrixCopy', ref([]))
 // console.log('renderMatrixCopy: ', renderMatrixCopy)
 
 // __ Данные из Хранилища
-const assemblyStore = useAssemblysStore()
+const assemblyStore = useAssemblyStore()
 
 const {
-          globalAssemblyTaskTimesShow,
-          globalAssemblyTaskFullDaysShow,
-          globalAssemblyTaskAssemblyInSquare,
-          /*globalDiffs,*/
           globalAssemblyTasks,
+          globalAssemblyTaskTimesShow,
+          globalAssemblyTaskSectorsShow,
+          globalAssemblyTaskFullDaysShow,
           globalAssemblyTaskActiveOrderId,
           globalAssemblyTaskStatuses,
+          /*globalDiffs,*/
       } = storeToRefs(assemblyStore)
 
 const router               = useRouter()
@@ -479,30 +524,103 @@ const shadowColor = computed(() => {
     }
 })
 
-// __ Общее количество и время в виде Объекта
-const amountAndTimeTotalsChanges = computed(() => {
-    //  __ Создаем сам объект данных с ключами из ASSEMBLY_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
 
-    const result: IAmountAndTimeAssembly[] = []
-    props.day.forEach(change => {
-        const amountAndTimeObj = createAmountAndTimeObj()
+// __ Объект отображения данных для каждого участка
+const getDataArray = (taskSource: IAssemblyTask) => {
 
-        change.forEach((assemblyTask: IAssemblyTask) => {
+    const task = JSON.parse(JSON.stringify(taskSource))
 
-            const amountAndTime = getAssemblyTaskAmountAndTime(assemblyTask as IAssemblyTask)
+    const lamitObj = {
+        total_amount: 0,
+        finished_amount: 0,
+    }
 
-            Object.entries(amountAndTime).forEach(([key, value]) => {
-                amountAndTimeObj[key].amount += value.amount
-                amountAndTimeObj[key].time += value.time
-                amountAndTimeObj[key].square += value.square
-            })
-        })
+    const tableObj = {
+        total_amount: 0,
+        finished_amount: 0,
+    }
 
-        result.push(amountAndTimeObj)
+    task.assembly_lines.forEach((line: IAssemblyTaskLine) => {
+        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT) {
+            lamitObj.total_amount += line.amount
+            lamitObj.finished_amount += line.finished_at ? line.amount : 0
+        }
+        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE) {
+            tableObj.total_amount += line.amount
+            tableObj.finished_amount += line.finished_at ? line.amount : 0
+        }
     })
 
-    return result
-})
+    task.stats.push({
+        sector: ASSEMBLY_TASK_SECTOR_LAMIT,
+        total_amount: lamitObj.total_amount,
+        finished_amount: lamitObj.finished_amount
+    })
+
+    task.stats.push({
+        sector: ASSEMBLY_TASK_SECTOR_TABLE,
+        total_amount: tableObj.total_amount,
+        finished_amount: tableObj.finished_amount
+    })
+    const data: IStats[] = []
+
+    Object.values(ASSEMBLY_SECTORS).forEach(value => {
+        const stats = task.stats.find((s: IAssemblyTaskLineSector) => s.sector === value.NAME)
+
+        const total   = stats?.total_amount || 0
+        const done    = stats?.finished_amount || 0
+        const percent = total > 0 ? (done / total) * 100 : 0
+
+        let color = getColorByPercent(percent)
+        let title = percent.toFixed(0) + '%'
+
+        if (total === 0) {
+            color = '#e1f5fe'
+            // color = '#67748B'
+            title = '✗'
+        } else if (round(percent) === 100) {
+            title = '✓'
+        }
+
+        data.push({
+            id: value.ID,
+            name : value.NAME,
+            total,
+            done,
+            percent,
+            title,
+            color,
+        })
+    })
+
+    return data.toSorted((a, b) => a.id - b.id)
+
+}
+
+
+// __ Общее количество и время в виде Объекта
+// const amountAndTimeTotalsChanges = computed(() => {
+//     //  __ Создаем сам объект данных с ключами из ASSEMBLY_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
+//
+//     const result: IAmountAndTimeAssembly[] = []
+//     props.day.forEach(change => {
+//         const amountAndTimeObj = createAmountAndTimeObj()
+//
+//         change.forEach((assemblyTask: IAssemblyTask) => {
+//
+//             const amountAndTime = getAssemblyTaskAmountAndTime(assemblyTask as IAssemblyTask)
+//
+//             // Object.entries(amountAndTime).forEach(([key, value]) => {
+//             //     amountAndTimeObj[key].amount += value.amount
+//             //     amountAndTimeObj[key].time += value.time
+//             // })
+//         })
+//
+//         result.push(amountAndTimeObj)
+//     })
+//
+//     return result
+// })
 
 // __ Общее Количество за день
 const getTotalAmountChange = (tasks: IAssemblyTask[]) => {
@@ -510,23 +628,11 @@ const getTotalAmountChange = (tasks: IAssemblyTask[]) => {
         totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0), 0)
 }
 
-// __ Общая Площадь за день
-const getTotalSquareChange = (tasks: IAssemblyTask[]) => {
-    return tasks.reduce((totalAcc, task) =>
-        totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + getAssemblyTaskLineSquare(line), 0), 0)
-}
-
-
-// const getTotalAmountDay = computed(() => props.day.reduce((totalAcc, task) =>
-//     totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0), 0))
-
 // __ Общие Трудозатраты за день
 const getTotalTimeChange = (tasks: IAssemblyTask[]) => {
     return tasks.reduce((totalAcc, task) =>
         totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0)
 }
-// const getTotalTimeDay = computed(() =>
-//     props.day.reduce((totalAcc, task) => totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0))
 
 // __ Флаг отображения данных
 const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IAssemblyTask[]))
@@ -638,14 +744,14 @@ const showAssemblyTaskManufLines = async (assemblyTask: IAssemblyTask) => {
 
     // __ Получаем ссылки на панели
     const mutations                               = manageTaskManufLines.value!.mutations
-    const setAssemblyData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.manuf_line, }))
+    const setAssemblyData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.assembly_line, }))
 
     console.log('mutations: ', setAssemblyData)
 
-    const result = await assemblyStore.taskLinesManufLineSet(setAssemblyData)
+    const result = await assemblyStore.taskLinesAssemblyLineSet(setAssemblyData)
     if (checkCRUD(result)) {
         // __ Меняем глобальный стейт
-        assemblyStore.setGlobalArrayChangeManufLines(setAssemblyData)
+        assemblyStore.setGlobalArrayChangeAssemblyLines(setAssemblyData)
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = 'Данные успешно обновлены'
@@ -767,6 +873,8 @@ const modifyChange = async (task: IAssemblyTask) => {
     // console.log('renderMatrixCleared: ', renderMatrixCloned)
     // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
 
+    debugger
+
     // // __ Получаем разницу между матрицами
     const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
     console.log('diffs: ', diffs)
@@ -806,8 +914,8 @@ const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
     modalMenu.value = {
         data: [
             { id: 1, title: 'Разделить количество' },
-            { id: 2, title: 'Изменить смену СЗ' },
-            { id: 3, title: 'Изменить Производственную линию' },
+            // { id: 2, title: 'Изменить смену СЗ' },
+            { id: 3, title: 'Изменить Линию Сборки' },
             { id: 4, title: 'Добавить / Изменить комментарий к СЗ' },
             { id: 5, title: 'Перейти в Карточку Заявки' },
             { id: CANCEL_ID, title: 'Отмена' },
@@ -834,7 +942,7 @@ const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
         return
     }
 
-    // __ Изменить Линию
+    // __ Изменить Линию Сборки
     if (result.menuItem === 3 && result.value) {
         await showAssemblyTaskManufLines(assemblyTask)
         return
@@ -953,29 +1061,29 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         console.log('movedElement: ', movedElement)
 
-        // __ Если перемещаемый элемент со статусом 'Выполняется', проверяем маячок,
-        // __ который указывает на готовность к добавлению СЗ
-        if (isTaskStatusRunning(movedElement)) {
-
-            // __ Получаем флаг готовности к добавлению новых СЗ
-            const isReady: IAssemblyDay = await assemblyStore.readyGetAssemblyDay(splitDate(movedElement.action_at))
-
-            if (!isReady) {
-                await showError([
-                    'Ошибка!',
-                    'Для перемещения СЗ со статусом "Выполняется"',
-                    'необходимо приостановить выполнение СЗ',
-                    'для добавления новых СЗ!',
-                ])
-
-                // __ Откатываем изменения
-                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-                return
-            }
-        }
-
-        // __ Перемещаем СЗ без вывода дополнительной информации
-        await assemblyStore.applyChanges(diffs) // __ Применяем изменения
+        // // __ Если перемещаемый элемент со статусом 'Выполняется', проверяем маячок,
+        // // __ который указывает на готовность к добавлению СЗ
+        // if (isTaskStatusRunning(movedElement)) {
+        //
+        //     // __ Получаем флаг готовности к добавлению новых СЗ
+        //     const isReady: IAssemblyDay = await assemblyStore.readyGetAssemblyDay(splitDate(movedElement.action_at))
+        //
+        //     if (!isReady) {
+        //         await showError([
+        //             'Ошибка!',
+        //             'Для перемещения СЗ со статусом "Выполняется"',
+        //             'необходимо приостановить выполнение СЗ',
+        //             'для добавления новых СЗ!',
+        //         ])
+        //
+        //         // __ Откатываем изменения
+        //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        //         return
+        //     }
+        // }
+        //
+        // // __ Перемещаем СЗ без вывода дополнительной информации
+        // await assemblyStore.applyChanges(diffs) // __ Применяем изменения
 
     } else {
 
@@ -1051,66 +1159,66 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
 
         // __ Находим смену, куда перемещаем. Если она разная с исходником, берем из Diff, если одинаковая - берем из Task
-        const toChange = targetChange ?? assemblyTask.change
+        // const toChange = targetChange ?? assemblyTask.change
 
-        // __ Проверяем, что СЗ не находится в процессе выполнения
-        if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), toChange, ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
-
-            // __ Получаем флаг готовности к добавлению новых СЗ
-            const isReady: boolean = await assemblyStore.readyGetAssemblyDay(splitDate(targetDate))
-
-            if (!isReady) {
-                // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
-                await showError([
-                    'Ошибка!',
-                    'Нельзя переместить СЗ в день, в котором',
-                    'есть СЗ в процессе выполнения!',
-                    'Для такого перемещения необходимо',
-                    'приостановить выполнение СЗ',
-                    'для добавления новых СЗ!'
-                ])
-                renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-                return
-            }
-
-            // __ Показываем предупреждение
-            modalInfoType.value = 'primary'
-            modalInfoMode.value = 'confirm'
-            modalInfoText.value = [
-                'СЗ будет перемещено в день,',
-                'в котором есть СЗ в процессе выполнения!',
-                'Перемещаемому СЗ будет установлен статус "Выполняется".',
-                'Отменить это действие нельзя!',
-                'Продолжить?'
-            ]
-
-            const answer = await appModalAsyncMultiline.value!.show()
-            if (answer) {
-
-                // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
-                diffsForAssemblyTask.statusId = ASSEMBLY_TASK_STATUSES.RUNNING.ID
-                // console.log('diffsForAssemblyTask: ', diffsForAssemblyTask)
-                // console.log('diffs: ', diffs)
-
-                const result = await assemblyStore.applyChanges(diffs) // __ Применяем изменения
-                // console.log('result: ', result)
-
-                if (!checkCRUD(result)) {
-                    await showError()
-                    renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-                    return
-                }
-
-                return
-            }
-
-            // console.log('isReady: ', isReady)
-            // console.log('diffs: ', diffs)
-
-            renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-            return
-
-        }
+        // // __ Проверяем, что СЗ не находится в процессе выполнения
+        // if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), toChange, ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
+        //
+        //     // __ Получаем флаг готовности к добавлению новых СЗ
+        //     const isReady: boolean = await assemblyStore.readyGetAssemblyDay(splitDate(targetDate))
+        //
+        //     if (!isReady) {
+        //         // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
+        //         await showError([
+        //             'Ошибка!',
+        //             'Нельзя переместить СЗ в день, в котором',
+        //             'есть СЗ в процессе выполнения!',
+        //             'Для такого перемещения необходимо',
+        //             'приостановить выполнение СЗ',
+        //             'для добавления новых СЗ!'
+        //         ])
+        //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        //         return
+        //     }
+        //
+        //     // __ Показываем предупреждение
+        //     modalInfoType.value = 'primary'
+        //     modalInfoMode.value = 'confirm'
+        //     modalInfoText.value = [
+        //         'СЗ будет перемещено в день,',
+        //         'в котором есть СЗ в процессе выполнения!',
+        //         'Перемещаемому СЗ будет установлен статус "Выполняется".',
+        //         'Отменить это действие нельзя!',
+        //         'Продолжить?'
+        //     ]
+        //
+        //     const answer = await appModalAsyncMultiline.value!.show()
+        //     if (answer) {
+        //
+        //         // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
+        //         diffsForAssemblyTask.statusId = ASSEMBLY_TASK_STATUSES.RUNNING.ID
+        //         // console.log('diffsForAssemblyTask: ', diffsForAssemblyTask)
+        //         // console.log('diffs: ', diffs)
+        //
+        //         const result = await assemblyStore.applyChanges(diffs) // __ Применяем изменения
+        //         // console.log('result: ', result)
+        //
+        //         if (!checkCRUD(result)) {
+        //             await showError()
+        //             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        //             return
+        //         }
+        //
+        //         return
+        //     }
+        //
+        //     // console.log('isReady: ', isReady)
+        //     // console.log('diffs: ', diffs)
+        //
+        //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        //     return
+        //
+        // }
 
         // // __ Проверяем, что СЗ не находится в процессе выполнения (Старый вариант)
         // if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
@@ -1127,7 +1235,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
         // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-        const existingAssemblyTasks = getAssemblyTasksSameOrderInDay(assemblyTask, globalAssemblyTasks.value, targetDate, targetChange || '', true)
+        const existingAssemblyTasks = getAssemblyTasksSameOrderInDay(assemblyTask, globalAssemblyTasks.value, targetDate, targetChange || assemblyTask.change, true)
 
         // __ Формируем текст для модального окна
         const orderInfo = `${assemblyTask.order.client.short_name} №${assemblyTask.order.order_no_str}`
@@ -1337,8 +1445,8 @@ const actionDayMenu = async (change: IAssemblyTaskChangeKeys) => {
     modalMenuType.value = 'success'
     modalMenu.value     = {
         data: [
-            { id: 1, title: 'Отправить на выполнение' },
-            { id: 2, title: 'Вернуть для редактирования' },
+            // { id: 1, title: 'Отправить на выполнение' },
+            // { id: 2, title: 'Вернуть для редактирования' },
             { id: 3, title: 'Объединить СЗ для одной Заявки' },
             { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
             { id: 6, title: 'Отмена' },
@@ -1369,8 +1477,8 @@ const actionDayMenu = async (change: IAssemblyTaskChangeKeys) => {
             // console.log('! isTaskAverage(task): ', !isTaskAverage(task))
             // console.log('! hasTaskUnknownTable(task): ', !hasTaskUnknownTable(task))
 
-            isTasksHasUnknownLine ||= hasTaskUnknownManufLine(task)
-            if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownManufLine(task)) {
+            isTasksHasUnknownLine ||= hasTaskUnknownAssemblyLine(task)
+            if (isTaskStatusCreated(task) && !isTaskAverage(task) && !hasTaskUnknownAssemblyLine(task)) {
                 return { task: task.id, status: ASSEMBLY_TASK_STATUSES.PENDING.ID }
             } else {
                 // __ Тут не асинхронный вывод ошибки
@@ -1474,9 +1582,25 @@ const actionDayMenu = async (change: IAssemblyTaskChangeKeys) => {
     throw new Error('Unknown menu item!')
 }
 
+
+// __ Считаем Ширину окна Дня
+const dayWidth = computed(() => {
+    if (globalAssemblyTaskSectorsShow.value && globalAssemblyTaskFullDaysShow.value) {
+        return 'min-w-[497px]'
+    }
+    if (globalAssemblyTaskSectorsShow.value && !globalAssemblyTaskFullDaysShow.value) {
+        return 'min-w-[409px]'
+    }
+    if (!globalAssemblyTaskSectorsShow.value && globalAssemblyTaskFullDaysShow.value) {
+        return 'min-w-[277px]'
+    }
+    return 'min-w-[184px]'
+})
+
+
 // __ Переход в Выполнение СЗ
 const gotoExecute = async () => {
-    await router.push({ name: 'manufacture.cell.assemblys.tasks.execute' })
+    // router.push({ name: 'manufacture.cell.assembly.tasks.execute' })
 }
 
 

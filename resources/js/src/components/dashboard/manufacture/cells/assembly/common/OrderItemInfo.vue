@@ -81,10 +81,10 @@ import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
-import type { IBlockTaskOrderLine, } from '@/types'
+import type { IAssemblyTaskOrderLine, } from '@/types'
 
 interface IProps {
-    orderLine: IBlockTaskOrderLine | null,
+    orderLine: IAssemblyTaskOrderLine | null,
     type?: IColorTypes,
     width?: string,
     height?: string,
@@ -128,7 +128,7 @@ const borderColor = computed(() => getColorClassByType(props.type, 'border'))
 
 const shortData = computed(() => [
     { label: 'Размер', value: props.orderLine?.size },
-    { label: 'Модель', value: props.orderLine?.model_name },
+    { label: 'Модель', value: props.orderLine?.model.name_report },
     { label: 'Количество', value: props.orderLine?.amount.toString() },
     { label: 'Ткань', value: props.orderLine?.textile },
 ])

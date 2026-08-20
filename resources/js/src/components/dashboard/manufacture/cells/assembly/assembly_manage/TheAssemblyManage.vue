@@ -117,19 +117,27 @@ watch(
             return
         }
 
+        console.log('globalAssemblyTasks.value: ', globalAssemblyTasks.value)
+
         // __ Выполняем всю подготовку и преобразование данных для рендера
         // __ !!! Порядок важен
         getRenderPeriod()
-        console.log(globalRenderPeriod.value)
+        console.log('globalRenderPeriod.value: ', globalRenderPeriod.value)
         correctRenderPeriod()
+
+        console.log('globalRenderPeriod.value: ', globalRenderPeriod.value)
+
         getRenderMatrix()
         console.log('renderMatrix.value: ', renderMatrix.value)
         renderMatrix.value = sortRenderMatrixByTaskPosition(renderMatrix.value)
         copyRenderMatrix()
         renderMatrix.value = correctRenderMatrix(renderMatrix.value)
 
+
+
         if (DEBUG) console.log('renderMatrix:', renderMatrix.value)
         if (DEBUG) console.log('globalAssemblyTasks:', globalAssemblyTasks.value)
+
     },
     { immediate: true, deep: true }
 )

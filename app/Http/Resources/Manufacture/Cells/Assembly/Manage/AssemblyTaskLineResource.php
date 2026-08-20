@@ -28,12 +28,16 @@ class AssemblyTaskLineResource extends JsonResource
             'false_reason'   => $this->false_reason,
             'time'           => $this->time,
             'productivity'   => $this->square,
+            'assembly_line'  => $this->assembly_line,
             'description'    => $this->description,
             'finished_by'    => $this->finished_by,
 
             'sector_lines' => $this->whenLoaded('sectors', fn() => AssemblyTaskLineSectorResource::collection($this->sectors)),
 
-            'order_line' => (new AssemblyTaskOrderLineResource($this->whenLoaded('orderLine'))),
+            'order_line' => $this->whenLoaded('orderLine', fn() => new AssemblyTaskOrderLineResource($this->orderLine)),
+            //'order_line' => (new AssemblyTaskOrderLineResource($this->whenLoaded('orderLine'))),
+
+
 
             //'order_line' => (new AssemblyTaskOrderLineResource($this->whenLoaded('orderLine')))
             //    ->additional([

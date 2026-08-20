@@ -6,11 +6,11 @@ export * from '@/app/helpers/helpers_render.js'
 import type { ColorName, EffectDirection } from '@/app/constants/colorsClasses.js'
 
 import {
-    colorsClasses, toDark, toLight, colorIndex, colorIndexOffset, colorIndexLight
+    colorsClasses, toDark, /*toLight,*/ colorIndex, colorIndexOffset, colorIndexLight
 } from '@/app/constants/colorsClasses.js'
 
 import {
-    fontPico, fontNano, fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, fontSizesList
+    fontPico, fontNano, fontMicro, fontMini, fontSmall, fontNormal, fontLarge, fontHuge, /*fontSizesList*/
 } from '@/app/constants/fontSizes.js'
 
 // Функция возвращает классы для типов кнопок (primary, secondary, success, danger, warning, info)
@@ -274,3 +274,32 @@ export function getRoundedClass(param: string) {
 
 
 
+// --- -------------------------------------------------------------------------
+// --- ------------------------------ Цвета-------------------------------------
+// --- -------------------------------------------------------------------------
+
+// __ Возвращает цвет по %
+export function getColorByPercent(percent: number) {
+    // 1. Ограничиваем значение в диапазоне от 0 до 100
+    const clampedPercent = Math.max(0, Math.min(100, percent));
+
+    // 2. Вычисляем тон (Hue): 0% = 0 (красный), 100% = 120 (зеленый)
+    const hue = (clampedPercent * 120) / 100;
+    const saturation = 100; // Насыщенность (100% для ярких цветов)
+    const lightness = 45;   // Яркость (45-50% дает сочные цвета)
+
+    // 3. Конвертируем HSL в HEX
+    return hslToHex(hue, saturation, lightness);
+}
+
+// __ Вспомогательная функция конвертации HSL -> HEX
+export function hslToHex(h: number, s: number, l: number) {
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n: number) => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+}

@@ -32,7 +32,7 @@
             :align="MENU_ITEMS_ALIGN"
             :height="MENU_ITEMS_HEIGHT"
             :text-size="MENU_ITEMS_TEXT_SIZE"
-            :type="blockTask.comment ? 'orange' : MENU_ITEMS_TYPE"
+            :type="assemblyTask.comment ? 'orange' : MENU_ITEMS_TYPE"
             class="field"
             text="Комментарий"
             width="w-[90px]"
@@ -55,16 +55,16 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-import type { IColorTypes, IBlockManufLinesPanel, IBlockTask, IBlockTaskLine } from '@/types'
+import type { IColorTypes, IAssemblyManufLinesPanel, IAssemblyTask, IAssemblyTaskLine } from '@/types'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 
 interface IProps {
-    activePanel: IBlockManufLinesPanel
-    blockLines: IBlockTaskLine[],
-    blockTask: IBlockTask,
+    activePanel: IAssemblyManufLinesPanel
+    assemblyLines: IAssemblyTaskLine[],
+    assemblyTask: IAssemblyTask,
     showDetails?: boolean,
 }
 

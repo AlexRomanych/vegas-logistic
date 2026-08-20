@@ -56,8 +56,8 @@ export function getRenderMatrixForPlan(plan: IPlanMatrixDayItem[], renderPeriod:
 
             // __ Делим на смены (Только Первая и Вторая и только для блоков)
             if (divideOnChanges) {
-                const changes_1 = dayLoads.filter(item => item.change === '1')
-                const changes_2 = dayLoads.filter(item => item.change === '2')
+                const changes_1 = dayLoads.filter(item => item.change === '1' || parseInt(item.change) === 1)
+                const changes_2 = dayLoads.filter(item => item.change === '2' || parseInt(item.change) === 2 )
                 weekLoads.push([changes_1, changes_2])
             } else {
                 weekLoads.push(dayLoads)

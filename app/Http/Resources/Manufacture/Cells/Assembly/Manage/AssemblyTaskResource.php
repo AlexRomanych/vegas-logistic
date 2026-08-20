@@ -46,6 +46,8 @@ class AssemblyTaskResource extends JsonResource
             'statuses'       => AssemblyTaskStatusResource::collection($this->whenLoaded('statuses')),
             'current_status' => $currentStatus ? new AssemblyTaskStatusResource($currentStatus) : null,
 
+            'stats' => $this->whenLoaded('sectorStatsTotal', fn() => AssemblyTaskStatsResource::collection($this->sectorStatsTotal)),
+
             //'order_id'    => $this->order_id,
             //'meta_ext'    => $this->meta_ext,
             //'status'      => $this->status,

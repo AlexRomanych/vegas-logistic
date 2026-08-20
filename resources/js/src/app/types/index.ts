@@ -3,6 +3,7 @@ import type { ISewingTask } from '@/types/sewing_types.ts'
 import type { ICuttingTask } from '@/types/cutting_types.ts'
 import type { IBlockTask } from '@/types/blocks_types.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
+import type { IAssemblyTask } from '@/types/assembly_types.ts'
 
 export * from './reasons_types.ts'                  // Причина невыполнения
 export * from './data_render.ts'                    // Элемент вывода датных в шаблон
@@ -56,7 +57,7 @@ export type IDims = {
 }
 
 
-export type IDay = (ISewingTask | ICuttingTask | IBlockTask) & IPlanMatrixDayItem
+export type IDay = (ISewingTask | ICuttingTask | IBlockTask | IAssemblyTask) & IPlanMatrixDayItem
 
 // --- ------------------------------------------------------------
 // __ Типы для разницы для каждой записи в матрице Пошива

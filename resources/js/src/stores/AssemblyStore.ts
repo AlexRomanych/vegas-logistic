@@ -4,8 +4,16 @@ import { defineStore } from 'pinia'
 
 import { jwtGet, jwtPost, jwtPatch, jwtPut_, jwtPut, jwtPatch_, jwtDelete } from '@/app/utils/jwt_api'
 import type {
-    IAssemblyModelManufactureGroup, IAssemblySectorKeys, IAssemblyTask,
-    IPeriod, IRenderMatrixDiff,
+    IAssemblyLineSetData,
+    IAssemblyModelManufactureGroup,
+    IAssemblySectorKeys,
+    IAssemblyTask,
+    IAssemblyTaskChangeKeys,
+    IAssemblyTaskLine,
+    IAssemblyTaskStatusEntity,
+    IAssemblyTaskStatusesSet,
+    IPeriod,
+    IRenderMatrixDiff,
 
 } from '@/types'
 import { ref } from 'vue'
@@ -13,6 +21,13 @@ import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import { isNumber } from '@/app/helpers/helpers_lib.ts'
 
 import { additionDaysInStrFormat } from '@/app/helpers/helpers_date'
+import {
+    getAssemblyTasksDiff,
+    isAddItemsInDiffsPresents, mergeAssemblyTasks,
+    repositionAssemblyTaskInDay,
+    repositionAssemblyTaskLines
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
+import { CHANGES } from '@/app/constants/assembly.ts'
 
 
 const DEBUG = true
@@ -25,12 +40,12 @@ const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // U
 // const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
 
-// const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
+const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
 // const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
 // const URL_ASSEMBLY_TASKS_STATUS_BEFORE_DATE   = '/assembly/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE       = '/assembly/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
-// const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
+const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
 // const URL_ASSEMBLY_TASKS_CHANGE               = '/assembly/tasks/change'                // URL для изменения смены Сменного задания
 // const URL_ASSEMBLY_TASKS_ACTION_AT_SET        = '/assembly/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 //
@@ -38,12 +53,11 @@ const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // U
 const URL_ASSEMBLY      = '/assembly'                             // URL для получения Блоков
 const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для тестирования
 
-// const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения раскройного стола для записи СЗ
+const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения сборочного стола для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_DONE        = '/assembly/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_FALSE       = '/assembly/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_RESET       = '/assembly/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 const URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION = '/assembly/tasks/line/sector/description'      // URL для изменения описания для записи СЗ
-
 
 
 // const URL_ASSEMBLY_COLLECTIONS_TUNING_TIME           = '/assembly/collections/tuning/time/'           // URL для получения времени переналадки Коллекций Блоков
@@ -60,15 +74,15 @@ const URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION = '/assembly/tasks/line/sector/d
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
 //
 //
-// const URL_ASSEMBLY_TASK_STATUSES             = '/assembly/task/statuses'               // URL для получения Статуса Движения СЗ
-// const URL_ASSEMBLY_TASK_STATUSES_SET         = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
+const URL_ASSEMBLY_TASK_STATUSES             = '/assembly/task/statuses'               // URL для получения Статуса Движения СЗ
+const URL_ASSEMBLY_TASK_STATUSES_SET         = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 // const URL_ASSEMBLY_TASK_STATUSES_COLOR_PATCH = '/assembly/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
 
 //
-// const URL_ASSEMBLY_DAY                    = '/assembly/day'                         // URL для получения рабочего дня
+const URL_ASSEMBLY_DAY                    = '/assembly/day'                         // URL для получения рабочего дня
 // const URL_ASSEMBLY_DAY_PERIOD             = '/assembly/days/period'                 // URL для получения рабочих дней за период
 // const URL_ASSEMBLY_DAY_DATES              = '/assembly/day/dates'                   // URL для получения рабочих дней по статусу
-// const URL_ASSEMBLY_DAY_COMMENT            = '/assembly/day/comment'                 // URL для сохранения комментария к дню
+const URL_ASSEMBLY_DAY_COMMENT            = '/assembly/day/comment'                 // URL для сохранения комментария к дню
 // const URL_ASSEMBLY_DAY_WORKERS_ACTIVE     = '/workers/active'                      // URL для получения активных рабочих
 // const URL_ASSEMBLY_DAY_WORKER_ADD         = '/assembly/day/worker/add'              // URL для добавления исполнителя к дню
 // const URL_ASSEMBLY_DAY_WORKER_GROUP_ADD   = '/assembly/day/workers/add'             // URL для добавления группы исполнителей к дню
@@ -97,31 +111,31 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // let globalAssemblyTasksPendingCopy: IAssemblyTask[] = []
     //
 
-    // // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
+    // __ Раскрашивать заявки в календаре в цвет Типа Заявки или в цвет Статусов Движения Заявок
     const globalAssemblyTaskOrderTypeColor = ref(false)
 
-    // __ Показывать ли Трудозатраты в календаре СЗ Раскроя
+    // __ Показывать ли Трудозатраты в календаре СЗ Сборки
     const globalAssemblyTaskTimesShow = ref(true)
-    //
-    // // __ Показывать ли Раскрытый день или нет в календаре СЗ Раскроя
-    // const globalAssemblyTaskFullDaysShow = ref(true)
-    //
-    // // __ Показывать единицу измерения в Метрах Квадратных или Штуках
-    // const globalAssemblyTaskAssemblyInSquare = ref(true)
-    //
-    // // __ Текущее Заявка, на которое ссылается кликнутое СЗ (для календаря для подсветки СЗ, которые ссылаются на одну заявку)
-    // const globalAssemblyTaskActiveOrderId = ref<number | null>(null)
-    //
-    // // __ Текущая Запись (AssemblyLine) в карточке СЗ в календаре СЗ Раскроя
-    // const globalManageTaskCardActiveAssemblyLine = ref<IAssemblyTaskLine | null>(null)
-    //
+
+    // __ Показывать ли Раскрытый день или нет в календаре СЗ Сборки
+    const globalAssemblyTaskFullDaysShow = ref(true)
+
+    // __ Показывать ли Участки или нет в календаре СЗ Сборки
+    const globalAssemblyTaskSectorsShow = ref(true)
+
+    // __ Текущее Заявка, на которое ссылается кликнутое СЗ (для календаря для подсветки СЗ, которые ссылаются на одну заявку)
+    const globalAssemblyTaskActiveOrderId = ref<number | null>(null)
+
+    // __ Текущая Запись (AssemblyLine) в карточке СЗ в календаре СЗ Сборки
+    const globalManageTaskCardActiveAssemblyLine = ref<IAssemblyTaskLine | null>(null)
 
 
     // __ Период рендеринга календаря
     const globalRenderPeriod = ref<IPeriod>(PERIOD_DRAFT)
 
-    // // __ Статусы Движения СЗ
-    // const globalAssemblyTaskStatuses = ref<IAssemblyTaskStatusEntity[]>([])
+    // __ Статусы Движения СЗ
+    const globalAssemblyTaskStatuses = ref<IAssemblyTaskStatusEntity[]>([])
+
     //
     // // __ Массив Рабочих
     // const globalWorkers = ref<IAssemblyDayWorker[]>([])
@@ -134,225 +148,225 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // // !!! --- Тут вся логика по управлению и сохранению частей СЗ !!!
     // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //
-    // /**
-    //  * __ Добавление новой части СЗ и изменение старой части СЗ, на основе которого была создана новая часть
-    //  * @param addAssemblyTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
-    //  * @param leftPanel        - __ контент в новом СЗ (правая панель)__
-    //  * @param oldAssemblyTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
-    //  * @param rightPanel       - __ контент в старом СЗ (левая панель)__
-    //  */
-    // const addAssemblyTaskToGlobal = async (
-    //     oldAssemblyTask: IAssemblyTask,
-    //     leftPanel: IAssemblyTaskLine[],
-    //     addAssemblyTask: IAssemblyTask | null     = null,
-    //     rightPanel: IAssemblyTaskLine[] | null = null,
-    // ) => {
-    //
-    //     // console.log('leftPanel: ', leftPanel)
-    //     // debugger
-    //
-    //     leftPanel                = repositionAssemblyTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
-    //     oldAssemblyTask.assembly_lines = leftPanel              // __ oldAssemblyTask приходит по ссылке
-    //
-    //     // __ Если есть правая панель, то добавляем ее в массив СЗ
-    //     if (addAssemblyTask && rightPanel) {
-    //
-    //         // console.log('passed')
-    //
-    //         rightPanel               = repositionAssemblyTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
-    //         addAssemblyTask.assembly_lines = rightPanel             // __ addAssemblyTask приходит новым объектом
-    //
-    //         // __ Добавляем новый объект в массив
-    //         globalAssemblyTasks.value.push(addAssemblyTask)
-    //
-    //         // __ Переопределяем порядок СЗ.
-    //         // __ Находим все СЗ в глабальной переменной с датой созданного СЗ и меняем порядок
-    //         globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, addAssemblyTask.action_at)
-    //
-    //     }
-    //
-    //     await saveChanges()   // __ Сохраняем изменения
-    // }
-    //
-    // // __ Устанавливаем содерживое СЗ
-    // const setAssemblyTasksLines = (assemblyTask: IAssemblyTask, assemblyTaskLines: IAssemblyTaskLine[]) => {
-    //     assemblyTask.assembly_lines = assemblyTaskLines
-    // }
-    //
-    // // __ Устанавливаем комментарий в СЗ
-    // const applyAssemblyTaskComment = (assemblyTaskId: number, comment: string) => {
-    //     const assemblyTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === assemblyTaskId)
-    //
-    //     console.log('assemblyTask: ', assemblyTask)
-    //     console.log('comment: ', comment)
-    //     if (assemblyTask) {
-    //         assemblyTask.comment = comment
-    //     }
-    // }
-    //
-    // // __ Применение изменений
-    // const applyChanges = async (diffs: IRenderMatrixDiff[] = []) => {
-    //
-    //     // __ Если нет изменений, то выход
-    //     if (diffs.length === 0) {
-    //         return
-    //     }
-    //
-    //     // __ Если нет статусов, то получаем их с сервера
-    //     if (globalAssemblyTaskStatuses.value.length === 0) {
-    //         await getAssemblyTaskStatuses()
-    //     }
-    //
-    //     diffs.forEach(diff => {
-    //
-    //         // __ Если изменилась позиция или дата производства или статус, то меняем ее в глобальном массиве
-    //         if (diff.isPositionChanged || diff.isMoved || diff.statusId || diff.isChangeChanged) {
-    //             const findTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === diff.taskId)
-    //             if (findTask) {
-    //
-    //                 if (diff.newTaskPosition) {
-    //                     findTask.position = diff.newTaskPosition
-    //                 }
-    //
-    //                 if (diff.newChange) {
-    //                     findTask.change = diff.newChange as IAssemblyTaskChangeKeys
-    //                 }
-    //
-    //                 if (diff.isMoved) {
-    //                     findTask.action_at = additionDaysInStrFormat(globalRenderPeriod.value.start, diff.dayToOffset ?? 0)
-    //                 }
-    //
-    //                 if (diff.statusId) {
-    //                     const findStatus = globalAssemblyTaskStatuses.value.find((status: IAssemblyTaskStatusEntity) => status.id === diff.statusId)
-    //                     if (findStatus) {
-    //                         findTask.current_status.id    = findStatus.id
-    //                         findTask.current_status.name  = findStatus.name
-    //                         findTask.current_status.color = findStatus.color
-    //                     }
-    //
-    //                 }
-    //             }
-    //         }
-    //     })
-    //
-    //     return await saveChanges()   // __ Сохраняем изменения
-    // }
-    //
-    // // __ Объединение СЗ для одинаковых Заявок в одном календарном дне
-    // const mergeTasks = (assemblyTasks: IAssemblyTask[]) => {
-    //
-    //     // __ Если массив СЗ меньше 2, то выход
-    //     if (assemblyTasks.length < 2) {
-    //         return
-    //     }
-    //
-    //     // __ Объединяем СЗ
-    //     const mergedTasks = mergeAssemblyTasks(assemblyTasks)
-    //
-    //     // __ Пересчитываем позиции !!! Важно выполнение после объединения СЗ
-    //     mergedTasks[0].assembly_lines = repositionAssemblyTaskLines(mergedTasks[0].assembly_lines)
-    //
-    //     // __ Заменяем СЗ в глобальном массиве
-    //     const findTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === mergedTasks[0].id)
-    //     if (findTask) {
-    //         findTask.assembly_lines = mergedTasks[0].assembly_lines
-    //     }
-    //
-    //     // __ Удаляем лишние СЗ
-    //     for (let i = 1; i < assemblyTasks.length; i++) {
-    //
-    //         // __ Находим то, что нужно удалить
-    //         const workTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === assemblyTasks[i].id)
-    //         if (workTask) {
-    //
-    //             // __ Удаляем
-    //             globalAssemblyTasks.value = globalAssemblyTasks.value.filter((task: IAssemblyTask) => {
-    //                 return task.id !== assemblyTasks[i].id
-    //             })
-    //
-    //             // __ Переопределяем порядок СЗ в дне, из которого удалили
-    //             globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, workTask.action_at)
-    //         }
-    //     }
-    //
-    //     // __ Переопределяем порядок СЗ в дне, в котором добавили
-    //     globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, mergedTasks[0].action_at)
-    //
-    // }
-    //
-    // // __ Применение объединения СЗ для массива СЗ
-    // const applyMergeTasks = async (assemblyTasks: IAssemblyTask[]) => {
-    //
-    //     mergeTasks(assemblyTasks)
-    //     return await saveChanges()
-    // }
-    //
-    // // __ Применение объединения СЗ для массива массивов СЗ  [[...], [...]]
-    // const applyMergeTasksGroups = async (assemblyTasksGroups: IAssemblyTask[][]) => {
-    //     assemblyTasksGroups.forEach(assemblyTasks => mergeTasks(assemblyTasks))
-    //     return await saveChanges()
-    // }
-    //
-    //
-    // // __ Сохранение изменений (Синхронизация с сервером)
-    // const saveChanges = async (globalArray = globalAssemblyTasks.value, globalArrayCopy = globalAssemblyTasksCopy, period: IPeriod | null = null) => {
-    //     const diffsInGlobalAssemblyTasks = getAssemblyTasksDiff(globalArray, globalArrayCopy)
-    //
-    //     // __ Если нет изменений, то выход
-    //     if (diffsInGlobalAssemblyTasks.length === 0) {
-    //         return
-    //     }
-    //
-    //     console.log(diffsInGlobalAssemblyTasks)
-    //     console.log('Сохраняем изменения')
-    //
-    //     const result = await jwtPost(URL_ASSEMBLY_TASKS_UPDATE, { diffs: diffsInGlobalAssemblyTasks })
-    //     if (DEBUG) console.log('saveChanges: ', result)
-    //
-    //
-    //     // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
-    //     // __ Если это изменение позиции, то просто пишем в базу
-    //     if (isAddItemsInDiffsPresents(diffsInGlobalAssemblyTasks)) {
-    //
-    //         // __ Получаем СЗ с сервера и реактивное обновление
-    //         await getAssemblyTasks(period)
-    //         console.log('Server data updated')
-    //     } else {
-    //
-    //         globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
-    //         // globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
-    //     }
-    //
-    //     return result
-    // }
-    //
-    //
-    // // __ Меняем динамически Столы раскроя в глобальном массиве, чтобы не перезагружать данные с сервера
-    // const setGlobalArrayChangeManufLines = (data: IAssemblyLineSetData[]) => {
-    //     for (const item of data) {
-    //         let isFind = false
-    //         for (const task of globalAssemblyTasks.value) {
-    //             for (const line of task.assembly_lines) {
-    //                 if (item.id === line.id) {
-    //                     line.manuf_line = item.line
-    //                     isFind          = true
-    //                     break
-    //                 }
-    //                 if (isFind) {
-    //                     break
-    //                 }
-    //             }
-    //             if (isFind) {
-    //                 break
-    //             }
-    //         }
-    //     }
-    //
-    //     // __ Копия для отслеживания изменений
-    //     globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalAssemblyTasks.value))
-    // }
-    //
-    //
+    /**
+     * __ Добавление новой части СЗ и изменение старой части СЗ, на основе которого была создана новая часть
+     * @param addAssemblyTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
+     * @param leftPanel        - __ контент в новом СЗ (правая панель)__
+     * @param oldAssemblyTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
+     * @param rightPanel       - __ контент в старом СЗ (левая панель)__
+     */
+    const addAssemblyTaskToGlobal = async (
+        oldAssemblyTask: IAssemblyTask,
+        leftPanel: IAssemblyTaskLine[],
+        addAssemblyTask: IAssemblyTask | null  = null,
+        rightPanel: IAssemblyTaskLine[] | null = null,
+    ) => {
+
+        // console.log('leftPanel: ', leftPanel)
+        // debugger
+
+        leftPanel                      = repositionAssemblyTaskLines(leftPanel)   // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+        oldAssemblyTask.assembly_lines = leftPanel              // __ oldAssemblyTask приходит по ссылке
+
+        // __ Если есть правая панель, то добавляем ее в массив СЗ
+        if (addAssemblyTask && rightPanel) {
+
+            // console.log('passed')
+
+            rightPanel                     = repositionAssemblyTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+            addAssemblyTask.assembly_lines = rightPanel || []             // __ addAssemblyTask приходит новым объектом
+
+            // __ Добавляем новый объект в массив
+            globalAssemblyTasks.value.push(addAssemblyTask)
+
+            // __ Переопределяем порядок СЗ.
+            // __ Находим все СЗ в глабальной переменной с датой созданного СЗ и меняем порядок
+            globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, addAssemblyTask.action_at)
+
+        }
+
+        await saveChanges()   // __ Сохраняем изменения
+    }
+
+    // __ Устанавливаем содерживое СЗ
+    const setAssemblyTasksLines = (assemblyTask: IAssemblyTask, assemblyTaskLines: IAssemblyTaskLine[]) => {
+        assemblyTask.assembly_lines = assemblyTaskLines
+    }
+
+    // __ Устанавливаем комментарий в СЗ
+    const applyAssemblyTaskComment = (assemblyTaskId: number, comment: string) => {
+        const assemblyTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === assemblyTaskId)
+
+        console.log('assemblyTask: ', assemblyTask)
+        console.log('comment: ', comment)
+        if (assemblyTask) {
+            assemblyTask.comment = comment
+        }
+    }
+
+    // __ Применение изменений
+    const applyChanges = async (diffs: IRenderMatrixDiff[] = []) => {
+
+        // __ Если нет изменений, то выход
+        if (diffs.length === 0) {
+            return
+        }
+
+        // __ Если нет статусов, то получаем их с сервера
+        if (globalAssemblyTaskStatuses.value.length === 0) {
+            await getAssemblyTaskStatuses()
+        }
+
+        diffs.forEach(diff => {
+
+            // __ Если изменилась позиция или дата производства или статус, то меняем ее в глобальном массиве
+            if (diff.isPositionChanged || diff.isMoved || diff.statusId || diff.isChangeChanged) {
+                const findTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === diff.taskId)
+                if (findTask) {
+
+                    if (diff.newTaskPosition) {
+                        findTask.position = diff.newTaskPosition
+                    }
+
+                    if (diff.newChange) {
+                        findTask.change = diff.newChange as IAssemblyTaskChangeKeys
+                    }
+
+                    if (diff.isMoved) {
+                        findTask.action_at = additionDaysInStrFormat(globalRenderPeriod.value.start, diff.dayToOffset ?? 0)
+                    }
+
+                    if (diff.statusId) {
+                        const findStatus = globalAssemblyTaskStatuses.value.find((status: IAssemblyTaskStatusEntity) => status.id === diff.statusId)
+                        if (findStatus) {
+                            findTask.current_status.id    = findStatus.id
+                            findTask.current_status.name  = findStatus.name
+                            findTask.current_status.color = findStatus.color
+                        }
+
+                    }
+                }
+            }
+        })
+
+        return await saveChanges()   // __ Сохраняем изменения
+    }
+
+    // __ Объединение СЗ для одинаковых Заявок в одном календарном дне
+    const mergeTasks = (assemblyTasks: IAssemblyTask[]) => {
+
+        // __ Если массив СЗ меньше 2, то выход
+        if (assemblyTasks.length < 2) {
+            return
+        }
+
+        // __ Объединяем СЗ
+        const mergedTasks = mergeAssemblyTasks(assemblyTasks)
+
+        // __ Пересчитываем позиции !!! Важно выполнение после объединения СЗ
+        mergedTasks[0].assembly_lines = repositionAssemblyTaskLines(mergedTasks[0].assembly_lines)
+
+        // __ Заменяем СЗ в глобальном массиве
+        const findTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === mergedTasks[0].id)
+        if (findTask) {
+            findTask.assembly_lines = mergedTasks[0].assembly_lines
+        }
+
+        // __ Удаляем лишние СЗ
+        for (let i = 1; i < assemblyTasks.length; i++) {
+
+            // __ Находим то, что нужно удалить
+            const workTask = globalAssemblyTasks.value.find((task: IAssemblyTask) => task.id === assemblyTasks[i].id)
+            if (workTask) {
+
+                // __ Удаляем
+                globalAssemblyTasks.value = globalAssemblyTasks.value.filter((task: IAssemblyTask) => {
+                    return task.id !== assemblyTasks[i].id
+                })
+
+                // __ Переопределяем порядок СЗ в дне, из которого удалили
+                globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, workTask.action_at)
+            }
+        }
+
+        // __ Переопределяем порядок СЗ в дне, в котором добавили
+        globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, mergedTasks[0].action_at)
+
+    }
+
+    // __ Применение объединения СЗ для массива СЗ
+    const applyMergeTasks = async (assemblyTasks: IAssemblyTask[]) => {
+
+        mergeTasks(assemblyTasks)
+        return await saveChanges()
+    }
+
+    // __ Применение объединения СЗ для массива массивов СЗ  [[...], [...]]
+    const applyMergeTasksGroups = async (assemblyTasksGroups: IAssemblyTask[][]) => {
+        assemblyTasksGroups.forEach(assemblyTasks => mergeTasks(assemblyTasks))
+        return await saveChanges()
+    }
+
+
+    // __ Сохранение изменений (Синхронизация с сервером)
+    const saveChanges = async (globalArray = globalAssemblyTasks.value, globalArrayCopy = globalAssemblyTasksCopy, period: IPeriod | null = null) => {
+        const diffsInGlobalAssemblyTasks = getAssemblyTasksDiff(globalArray, globalArrayCopy)
+
+        // __ Если нет изменений, то выход
+        if (diffsInGlobalAssemblyTasks.length === 0) {
+            return
+        }
+
+        console.log(diffsInGlobalAssemblyTasks)
+        console.log('Сохраняем изменения')
+
+        const result = await jwtPost(URL_ASSEMBLY_TASKS_UPDATE, { diffs: diffsInGlobalAssemblyTasks })
+        if (DEBUG) console.log('saveChanges: ', result)
+
+
+        // __ Если есть добавление новых элементов в БД, то обновляем данные, чтобы получить id
+        // __ Если это изменение позиции, то просто пишем в базу
+        if (isAddItemsInDiffsPresents(diffsInGlobalAssemblyTasks)) {
+
+            // __ Получаем СЗ с сервера и реактивное обновление
+            await getAssemblyTasks(null, period)
+            console.log('Server data updated')
+        } else {
+
+            globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+            // globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
+        }
+
+        return result
+    }
+
+
+    // __ Меняем динамически Столы раскроя в глобальном массиве, чтобы не перезагружать данные с сервера
+    const setGlobalArrayChangeAssemblyLines = (data: IAssemblyLineSetData[]) => {
+        for (const item of data) {
+            let isFind = false
+            for (const task of globalAssemblyTasks.value) {
+                for (const line of task.assembly_lines) {
+                    if (item.id === line.id) {
+                        line.assembly_line = item.line
+                        isFind          = true
+                        break
+                    }
+                    if (isFind) {
+                        break
+                    }
+                }
+                if (isFind) {
+                    break
+                }
+            }
+        }
+
+        // __ Копия для отслеживания изменений
+        globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalAssemblyTasks.value))
+    }
+
+
     // // --- ------------------------------------------------------------------------------------------
     //
     //
@@ -483,16 +497,16 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //     if (DEBUG) console.log('AssemblyStore: checkAssemblyTasksByStatusOnDate: ', result)
     //     return result.data
     // }
-    //
-    // // __ Сохранение Комментария к Сменному заданию - СЗ
-    // const setAssemblyTaskComment = async (id: number, comment: string | null = null) => {
-    //     const response = await jwtPost(URL_ASSEMBLY_TASKS_COMMENT, { id, comment })
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: setAssemblyTaskComment: ', result)
-    //     return result.data
-    // }
-    //
-    //
+
+    // __ Сохранение Комментария к Сменному заданию - СЗ
+    const setAssemblyTaskComment = async (id: number, comment: string | null = null) => {
+        const response = await jwtPost(URL_ASSEMBLY_TASKS_COMMENT, { id, comment })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: setAssemblyTaskComment: ', result)
+        return result.data
+    }
+
+
     // // __ Изменяем смену СЗ
     // // __ Сохранение Комментария к Сменному заданию - СЗ
     // const modifyChange = async (id: number, change: IAssemblyTaskChangeKeys) => {
@@ -628,16 +642,16 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // // --- ----------------------------------------------------------
     // // --- ------------------- Статусы СЗ ---------------------------
     // // --- ----------------------------------------------------------
-    //
-    // // __ Получение Статусов Движения СЗ
-    // const getAssemblyTaskStatuses = async () => {
-    //     const response = await jwtGet(URL_ASSEMBLY_TASK_STATUSES)
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: getAssemblyTaskStatuses: ', result)
-    //     globalAssemblyTaskStatuses.value = result.data    // __ кэшируем
-    //     return result.data
-    // }
-    //
+
+    // __ Получение Статусов Движения СЗ
+    const getAssemblyTaskStatuses = async () => {
+        const response = await jwtGet(URL_ASSEMBLY_TASK_STATUSES)
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: getAssemblyTaskStatuses: ', result)
+        globalAssemblyTaskStatuses.value = result.data    // __ кэшируем
+        return result.data
+    }
+
     // // __ Устанавливаем цвет ярлычка Типов заказов (серийная, гаррмем, прогнозная и т.д.)
     // const patchAssemblyTaskStatusColor = async (assemblyTaskStatusId: number, color: string) => {
     //     const result = await jwtPatch(URL_ASSEMBLY_TASK_STATUSES_COLOR_PATCH, { id: assemblyTaskStatusId, color })
@@ -645,17 +659,17 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //     await getAssemblyTaskStatuses()   // __ Обновляем статусы, чтобы был актуальный цвет
     //     return result.data
     // }
-    //
-    // // __ Устанавливаем статусы для СЗ.
-    // // __ data: [{ task: number, status: number }]
-    // const setAssemblyTasksStatuses = async (data: IAssemblyTaskStatusesSet[]) => {
-    //     const response = await jwtPost(URL_ASSEMBLY_TASK_STATUSES_SET, data)
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: setStatuses: ', result)
-    //     return result.data
-    // }
-    //
-    //
+
+    // __ Устанавливаем статусы для СЗ.
+    // __ data: [{ task: number, status: number }]
+    const setAssemblyTasksStatuses = async (data: IAssemblyTaskStatusesSet[]) => {
+        const response = await jwtPost(URL_ASSEMBLY_TASK_STATUSES_SET, data)
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: setStatuses: ', result)
+        return result.data
+    }
+
+
     // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // // !!! ---          Производственный день              !!!
     // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -675,23 +689,23 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //     if (DEBUG) console.log('AssemblyStore: getAssemblyDayByPeriod: ', result)
     //     return result.data
     // }
-    //
-    // // __ Получение производственного дня по дате и смене
-    // const getAssemblyDayByDateAndChange = async (date: string, change: IAssemblyTaskChangeKeys = CHANGES.CHANGE_1.NAME) => {
-    //     const response = await jwtGet(`${URL_ASSEMBLY_DAY}/${date}/${change}`)
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: getAssemblyDayByDateAndChange: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Сохранение Комментария к производственному дню
-    // const setAssemblyDayComment = async (id: number, comment: string | null = null) => {
-    //     const response = await jwtPost(URL_ASSEMBLY_DAY_COMMENT, { id, comment })
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: setAssemblyDayComment: ', result)
-    //     return result.data
-    // }
-    //
+
+    // __ Получение производственного дня по дате и смене
+    const getAssemblyDayByDateAndChange = async (date: string, change: IAssemblyTaskChangeKeys = CHANGES.CHANGE_1.NAME) => {
+        const response = await jwtGet(`${URL_ASSEMBLY_DAY}/${date}/${change}`)
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: getAssemblyDayByDateAndChange: ', result)
+        return result.data
+    }
+
+    // __ Сохранение Комментария к производственному дню
+    const setAssemblyDayComment = async (id: number, comment: string | null = null) => {
+        const response = await jwtPost(URL_ASSEMBLY_DAY_COMMENT, { id, comment })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: setAssemblyDayComment: ', result)
+        return result.data
+    }
+
     // // __ Получение производственных дней по массиву дат
     // // __ Тут по хорошему надо прикрутить еще и смену, но оставим на потом
     // const getAssemblyDaysByDates = async (dates: string[]) => {
@@ -744,17 +758,17 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //     if (DEBUG) console.log('AssemblyStore: readyUnsetAssemblyDay: ', result)
     //     return result.data
     // }
-    //
-    // // __ Устанавливаем новые Производственные Линии
-    // const taskLinesManufLineSet = async (data: IAssemblyLineSetData[]) => {
-    //     console.log('data: ', data)
-    //
-    //     const response = await jwtPost(URL_ASSEMBLY_TASK_LINES_TABLE_SET, { data })
-    //     const result   = await response
-    //     if (DEBUG) console.log('AssemblyStore: taskLinesManufLineSet: ', result)
-    //     return result.data
-    // }
-    //
+
+    // __ Устанавливаем новые Производственные Линии Сборки
+    const taskLinesAssemblyLineSet = async (data: IAssemblyLineSetData[]) => {
+        console.log('data: ', data)
+
+        const response = await jwtPost(URL_ASSEMBLY_TASK_LINES_TABLE_SET, { data })
+        const result   = await response
+        if (DEBUG) console.log('AssemblyStore: taskLinesAssemblyLineSet: ', result)
+        return result.data
+    }
+
     // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // // !!! ---             Персонал                        !!!
     // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -982,7 +996,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // __ Выполняем запрос
         const response = await jwtGet(URL_ASSEMBLY_TASKS, params)
 
-        globalAssemblyTasks.value = response.data                            // __ кэшируем
+        globalAssemblyTasks.value = response.data                             // __ кэшируем
         globalAssemblyTasksCopy   = JSON.parse(JSON.stringify(response.data)) // __ копия для отслеживания изменений
 
         if (DEBUG) console.log('AssemblyStore: getAssemblyTasks: ', response)
@@ -1125,13 +1139,15 @@ export const useAssemblyStore = defineStore('assembly', () => {
         globalAssemblyTaskOrderTypeColor,
         globalAssemblyTaskTimesShow,
 
-        // globalAssemblyTaskStatuses,
+        globalAssemblyTaskActiveOrderId,
+        globalManageTaskCardActiveAssemblyLine,
+        globalAssemblyTaskFullDaysShow,
+        globalAssemblyTaskSectorsShow,
+
+        globalAssemblyTaskStatuses,
         // globalAssemblyTaskTimesShow,
-        // globalAssemblyTaskFullDaysShow,
         // globalAssemblyTaskAssemblyInSquare,
-        // globalAssemblyTaskActiveOrderId,
         // globalAssemblyTaskOrderTypeColor,
-        // globalManageTaskCardActiveAssemblyLine,
         //
         // globalAssemblyTasksPending,
         //
@@ -1139,26 +1155,26 @@ export const useAssemblyStore = defineStore('assembly', () => {
         //
         // // globalAssemblyTaskPrintData,
         //
-        // addAssemblyTaskToGlobal,
-        // applyAssemblyTaskComment,
-        // applyChanges,
+        addAssemblyTaskToGlobal,
+        applyAssemblyTaskComment,
+        applyChanges,
         // saveChanges,
-        // setAssemblyTasksLines,
-        // applyMergeTasks,
-        // applyMergeTasksGroups,
-        // setGlobalArrayChangeManufLines,
+        setAssemblyTasksLines,
+        applyMergeTasks,
+        applyMergeTasksGroups,
+        setGlobalArrayChangeAssemblyLines,
         //
         // setAssemblyTaskLinesDone,
         // setAssemblyTaskLinesFalse,
         // setAssemblyTaskLinesReset,
         // setAssemblyTaskLineDescription,
         // divideLineInAssemblyTaskPending,
-        //
-        // taskLinesManufLineSet,
-        //
+
+        taskLinesAssemblyLineSet,
+
         // getAssemblyDayByPeriod,
-        // getAssemblyDayByDateAndChange,
-        // setAssemblyDayComment,
+        getAssemblyDayByDateAndChange,
+        setAssemblyDayComment,
         // modifyChange,
         // readyGetAssemblyDay,
         // getAssemblyDaysByDates,
@@ -1171,7 +1187,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // getAssemblyTasksByStatusBeforeDateAndChange,
         // getAssemblyTasksByStatusOnDate,
         // checkAssemblyTasksByStatusOnDate,
-        // setAssemblyTaskComment,
+        setAssemblyTaskComment,
         // setAssemblyTaskActionAt,
         // readySetAssemblyDay,
         // readyUnsetAssemblyDay,
@@ -1196,9 +1212,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // getAssemblyTasksByStatus,
         // getAssemblyTasksByStatusAndPeriod,
         //
-        // getAssemblyTaskStatuses,
+        getAssemblyTaskStatuses,
         // patchAssemblyTaskStatusColor,
-        // setAssemblyTasksStatuses,
+        setAssemblyTasksStatuses,
         //
         // getActiveWorkers,
         // addWorkerToAssemblyDay,

@@ -14,7 +14,33 @@
             @click="emits('sortByField', 'position')"
         />
 
-        <!-- __ Название Блока -->
+        <!-- __ Тип модели -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortType)"
+            :width="renderData.modelType.width"
+            class="field"
+            :text="'Тип' + getSortIcon(sortType)"
+            title="Click - Сортировка по Типу Модели"
+            @click="emits('sortByField', 'model_type')"
+        />
+
+        <!-- __ Размер модели -->
+        <AppLabelTS
+            :align="DEFAULT_ALIGN"
+            :rounded="DEFAULT_ROUNDED"
+            :text="'Размер' + getSortIcon(sortSize)"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getPositionBySort(sortSize)"
+            :width="renderData.size.width"
+            class="field"
+            title="Click - Сортировка по Размеру Модели"
+            @click="emits('sortBySize')"
+        />
+
+        <!-- __ Название Модели -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
@@ -23,7 +49,7 @@
             :type="getPositionBySort(sortName)"
             :width="renderData.model.width"
             class="field"
-            title="Click - Сортировка по Названию Блока"
+            title="Click - Сортировка по Названию Модели"
             @click="emits('sortByField', 'name_report')"
         />
 
@@ -40,19 +66,6 @@
             @click="emits('sortByField', 'amount')"
         />
 
-        <!-- __ Площадь -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortSquare)"
-            :width="renderData.square.width"
-            class="field"
-            text="S, m2"
-            title="Click - Сортировка по Площади"
-            @click="emits('sortByField', 'square')"
-        />
-
         <!-- __ Трудозатраты -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -66,7 +79,7 @@
             @click="emits('sortByField', 'time')"
         />
 
-        <!-- __ Стол 1 -->
+        <!-- __ Ламит -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
@@ -74,11 +87,11 @@
             :type="getPositionBySort(sortTable_1)"
             :width="renderData.line.width"
             class="field"
-            text="1"
-            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_1)"
+            text="Л"
+            @click="emits('sortByField', ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT)"
         />
 
-        <!-- __ Стол 2 -->
+        <!-- __ Столы -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
@@ -86,58 +99,39 @@
             :type="getPositionBySort(sortTable_2)"
             :width="renderData.line.width"
             class="field"
-            text="2"
-            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_2)"
+            text="С"
+            @click="emits('sortByField', ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE)"
         />
-
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getPositionBySort(sortTable_0)"
-            :width="renderData.line.width"
-            class="field"
-            text="??"
-            @click="emits('sortByField', BLOCK_MANUF_LINES.LINE_1)"
-        />
-
 
     </div>
 
 </template>
 
 <script lang="ts" setup>
-import type { ICuttingLinesPanel, ICuttingTaskCardSort } from '@/types'
+import type { IAssemblyLinesPanel, IAssemblyTaskCardSort } from '@/types'
 import type {
-    IRenderCuttingLineData
-} from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_manage/ManageTaskCard.vue'
+    IRenderAssemblyLineData
+} from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
+
+import { ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 
 
 interface IProps {
-    renderData: IRenderCuttingLineData
-    panel: ICuttingLinesPanel
-    activePanel: ICuttingLinesPanel
+    renderData: IRenderAssemblyLineData
+    panel: IAssemblyLinesPanel
+    activePanel: IAssemblyLinesPanel
     showComments?: boolean,
     showDetails?: boolean,
-    sortPosition?: ICuttingTaskCardSort
-    sortName?: ICuttingTaskCardSort
-    sortTextile?: ICuttingTaskCardSort
-    sortKant?: ICuttingTaskCardSort
-    sortTkch?: ICuttingTaskCardSort
-    sortAmount?: ICuttingTaskCardSort
-    sortSquare?: ICuttingTaskCardSort
-    sortTime?: ICuttingTaskCardSort
-    sortSize?: ICuttingTaskCardSort
-    sortTable_1?: ICuttingTaskCardSort
-    sortTable_2?: ICuttingTaskCardSort
-    sortTable_3?: ICuttingTaskCardSort
-    sortTable_0?: ICuttingTaskCardSort
-    sortDetail?: ICuttingTaskCardSort
-    sortMachine?: ICuttingTaskCardSort
+    sortPosition?: IAssemblyTaskCardSort
+    sortType?: IAssemblyTaskCardSort
+    sortName?: IAssemblyTaskCardSort
+    sortAmount?: IAssemblyTaskCardSort
+    sortTime?: IAssemblyTaskCardSort
+    sortSize?: IAssemblyTaskCardSort
+    sortTable_1?: IAssemblyTaskCardSort
+    sortTable_2?: IAssemblyTaskCardSort
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -145,19 +139,12 @@ const props = withDefaults(defineProps<IProps>(), {
     showDetails : false,
     sortPosition: 'none',
     sortName    : 'none',
-    sortTextile : 'none',
-    sortKant    : 'none',
-    sortTkch    : 'none',
+    sortType    : 'none',
     sortAmount  : 'none',
-    sortSquare  : 'none',
     sortTime    : 'none',
     sortSize    : 'none',
     sortTable_1 : 'none',
     sortTable_2 : 'none',
-    sortTable_3 : 'none',
-    sortTable_0 : 'none',
-    sortDetail  : 'none',
-    sortMachine : 'none',
 })
 
 
@@ -175,7 +162,7 @@ const SORT_BY_DESC_TYPE = 'indigo'
 
 
 // __ Получаем тип в зависимости от направления сортировки
-const getPositionBySort = (sort: ICuttingTaskCardSort) => {
+const getPositionBySort = (sort: IAssemblyTaskCardSort) => {
     if (props.panel !== props.activePanel) return DEFAULT_TYPE
     if (sort === 'none') return DEFAULT_TYPE
     if (sort === 'asc') return SORT_BY_ASC_TYPE
@@ -184,7 +171,7 @@ const getPositionBySort = (sort: ICuttingTaskCardSort) => {
 
 
 // __ Получаем иконку направления сортировки
-const getSortIcon = (sort: ICuttingTaskCardSort) => {
+const getSortIcon = (sort: IAssemblyTaskCardSort) => {
     if (props.panel !== props.activePanel) return ''
     if (sort === 'none') return ''
     if (sort === 'asc') return '▲'

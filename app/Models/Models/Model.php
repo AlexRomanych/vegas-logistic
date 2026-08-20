@@ -41,6 +41,9 @@ final class Model extends LaravelModel
     public const MACHINE_SOLID_LIGHT = 'Глух';
     public const MACHINE_SOLID_HARD = 'сложные';
 
+    public const ASSEMBLY_LINE_LAMIT = 'lamit';
+    public const ASSEMBLY_LINE_TABLE = 'table';
+
 
     //'code1C'                          ('Код по 1С')
     //'type'                            ('Тип продукции.Наименование (матрас, наматрасник и тд.)')

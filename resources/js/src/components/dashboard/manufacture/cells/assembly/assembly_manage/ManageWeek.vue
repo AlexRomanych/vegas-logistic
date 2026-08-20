@@ -12,10 +12,10 @@
 
             <div v-for="idx of [0, 1, 2, 3, 4, 5, 6]" :key="idx">
 
-                <!--<ManageDay-->
-                <!--    :date="getDate(idx)"-->
-                <!--    :day="(week[idx].length ? week[idx] : []) as IAssemblyTask[]"-->
-                <!--/>-->
+                <ManageDay
+                    :date="getDate(idx)"
+                    :day="(week[idx].length ? week[idx] : []) as IAssemblyTask[]"
+                />
 
             </div>
 
@@ -31,7 +31,7 @@ import { computed } from 'vue'
 
 import { additionDays, getWeekNumber } from '@/app/helpers/helpers_date'
 
-// import ManageDay from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageDay.vue'
+import ManageDay from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageDay.vue'
 
 interface IProps {
     date: Date                      // __ Дата начала недели

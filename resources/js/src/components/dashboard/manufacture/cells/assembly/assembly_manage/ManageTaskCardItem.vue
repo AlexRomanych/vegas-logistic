@@ -5,17 +5,39 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.position.toString()"
+            :text="assemblyLine.position.toString()"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.position.width"
             class="field"
         />
 
-        <!-- __ Название Блока -->
+        <!-- __ Тип модели -->
         <AppLabelTS
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.block.name"
+            :text="assemblyLine.order_line.model.model_type"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.modelType.width"
+            class="field"
+            align="center"
+        />
+
+        <!-- __ Размер -->
+        <AppLabelTS
+            :rounded="DEFAULT_ROUNDED"
+            :text="getOrderLineSize(assemblyLine)"
+            :text-size="DEFAULT_TEXT_SIZE"
+            :type="getType"
+            :width="renderData.size.width"
+            class="field"
+            align="center"
+        />
+
+        <!-- __ Название Модели -->
+        <AppLabelTS
+            :rounded="DEFAULT_ROUNDED"
+            :text="assemblyLine.order_line.model.name_report"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.model.width"
@@ -26,21 +48,10 @@
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
-            :text="blockLine.amount.toString()"
+            :text="assemblyLine.amount.toString()"
             :text-size="DEFAULT_TEXT_SIZE"
             :type="getType"
             :width="renderData.amount.width"
-            class="field"
-        />
-
-        <!-- __ Площадь -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text="getBlockTaskLineSquare(blockLine).toFixed(2)"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.square.width"
             class="field"
         />
 
@@ -54,75 +65,53 @@
             :width="renderData.time.width"
         />
 
-        <!-- __ Линия 1 -->
+        <!-- __ Ламит -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForManufLine(BLOCK_MANUF_LINES.LINE_1)"
+            :type="getTypeForAssemblyLine(ASSEMBLY_LINE_LAMIT)"
             :width="renderData.line.width"
             class="field"
-            text="1"
+            text="Л"
         />
 
-        <!-- __ Линия 2 -->
+        <!-- __ Столы -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
             :rounded="DEFAULT_ROUNDED"
             :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForManufLine(BLOCK_MANUF_LINES.LINE_2)"
+            :type="getTypeForAssemblyLine(ASSEMBLY_LINE_TABLE)"
             :width="renderData.line.width"
             class="field"
-            text="2"
+            text="С"
         />
 
-        <!-- __ Неопознанные -->
-        <AppLabelTS
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getTypeForManufLine(BLOCK_MANUF_LINES.LINE_0)"
-            :width="renderData.line.width"
-            class="field"
-            text="??"
-        />
-
-        <!-- __ Типовая конструкция блока -->
-        <AppLabelTS
-            v-if="showDetails"
-            :align="DEFAULT_ALIGN"
-            :rounded="DEFAULT_ROUNDED"
-            :text-size="DEFAULT_TEXT_SIZE"
-            :type="getType"
-            :width="renderData.tkch.width"
-            class="field"
-            text=""
-        />
     </div>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { IBlockTaskLine, IBlockManufLine } from '@/types'
-import type { IRenderBlockLineData } from '@/components/dashboard/manufacture/cells/blocks/blocks_manage/ManageTaskCard.vue'
+import type { IAssemblyLineKeys, IAssemblyTaskLine } from '@/types'
+import type { IRenderAssemblyLineData } from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
 
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
+import { ASSEMBLY_LINE_LAMIT, ASSEMBLY_LINE_TABLE, ASSEMBLY_LINES } from '@/app/constants/assembly.ts'
 
 
 import { storeToRefs } from 'pinia'
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 import {
-    getBlockTaskLineSquare,
+    getOrderLineSize,
     getTimeString
-} from '@/app/helpers/manufacture/helpers_blocks.ts'
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 
 interface IProps {
-    blockLine: IBlockTaskLine
-    renderData: IRenderBlockLineData
+    assemblyLine: IAssemblyTaskLine
+    renderData: IRenderAssemblyLineData
     showComments?: boolean,
     showDetails?: boolean,
 }
@@ -133,12 +122,12 @@ const props = withDefaults(defineProps<IProps>(), {
     showDetails : false,
 })
 
-// console.log('props.blockLine: ', props.blockLine)
+// console.log('props.assemblyLine: ', props.assemblyLine)
 
 // __ Данные из Хранилища
-const blockStore = useBlocksStore()
+const assemblyStore = useAssemblyStore()
 
-const { globalManageTaskCardActiveBlockLine } = storeToRefs(blockStore)
+const { globalManageTaskCardActiveAssemblyLine } = storeToRefs(assemblyStore)
 
 const DEFAULT_ALIGN     = 'center'
 const DEFAULT_TEXT_SIZE = 'micro'
@@ -150,28 +139,27 @@ const ACTIVE_TYPE       = 'primary'
 
 // __ Тип подсветки для основного элемента
 const getType = computed(() =>
-    props.blockLine === globalManageTaskCardActiveBlockLine.value ? ACTIVE_TYPE : 'dark')
+    props.assemblyLine === globalManageTaskCardActiveAssemblyLine.value ? ACTIVE_TYPE : 'dark')
 
 // __ Получаем Производственной Линии
-const manufLine = computed(() => props.blockLine.manuf_line)
+const manufLine = computed(() => props.assemblyLine.assembly_line)
 
 // __ Тип подсветки для Производственной Линии
-const getTypeForManufLine = (blockLineTarget: IBlockManufLine) => {
-
+const getTypeForAssemblyLine = (assemblyLineTarget: IAssemblyLineKeys) => {
     // !!! Порядок важен !!!
-    if (manufLine.value === blockLineTarget) {
-        if (blockLineTarget === BLOCK_MANUF_LINES.LINE_0) {
+    if (manufLine.value === assemblyLineTarget) {
+        if (assemblyLineTarget === ASSEMBLY_LINES.ASSEMBLY_LINE_UNDEFINED) {
             return 'danger'
         }
 
         return ACCENT_TYPE
     }
 
-    return props.blockLine === globalManageTaskCardActiveBlockLine.value ? ACTIVE_TYPE : 'dark'
+    return props.assemblyLine === globalManageTaskCardActiveAssemblyLine.value ? ACTIVE_TYPE : 'dark'
 }
 
 // __ Получаем трудозатраты
-const getTime = computed(() => getTimeString(props.blockLine, true).replaceAll('.', ''))
+const getTime = computed(() => getTimeString(props.assemblyLine, true).replaceAll('.', ''))
 
 
 </script>
