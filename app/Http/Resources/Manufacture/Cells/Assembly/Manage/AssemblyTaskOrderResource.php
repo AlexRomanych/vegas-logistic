@@ -22,17 +22,22 @@ class AssemblyTaskOrderResource extends JsonResource
             'order_no_str'    => $this->order_no_str,
             'order_no_origin' => $this->order_no_origin,
             'load_at'         => Carbon::parse($this->load_at)->format(RETURN_DATE_TIME_FORMAT),
+            'unload_at'       => $this->unload_at ? Carbon::parse($this->unload_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'comment_1c'      => $this->comment_1c,
 
-            'client'          => new AssemblyTaskOrderClientResource($this->whenLoaded('client')),
-            'order_type'      => new AssemblyTaskOrderTypeResource($this->whenLoaded('orderType')),
+            'client'      => new AssemblyTaskOrderClientResource($this->whenLoaded('client')),
+            'order_type'  => new AssemblyTaskOrderTypeResource($this->whenLoaded('orderType')),
+            'is_forecast' => $this->is_forecast,
+            'active'      => $this->active,
+
+
             // 'order_period'       => $this->order_period,
             // 'elements_type_ref'  => $this->elements_type_ref,
             // 'elements_type'      => $this->elements_type,
             // 'status'             => $this->status,
             // 'status_history'     => $this->status_history,
             // 'amounts'            => $this->amounts,
-            // 'is_forecast'        => $this->is_forecast,
+
             // 'shown'              => $this->shown,
             // 'stat_include'       => $this->stat_include,
             // 'load_position'      => $this->load_position,

@@ -55,17 +55,36 @@ const assembly = [
 
 
     {
-        // ___ Управление планом Cборочного цеха
+        // ___ Управление планом Cборочного цеха - Календарь
         path: _MAIN_PREFIX + 'plan/manage',
         name: 'manufacture.cell.assembly.plan.manage',
         component: () => import('@/components/dashboard/manufacture/cells/assembly/assembly_manage/TheAssemblyManage.vue'),
         // component: () => import('@/components/dashboard/plans/ThePlanManageAssembly.vue'), // Переносим в планы
         meta: {
-            title: 'Управление планом Сборочного цеха'
+            title: 'Управление планом Сборочного цеха - Календарь'
         } as IRouteMeta,
     },
 
 
+    {
+        // ___ Управление планом Cборочного цеха - Список
+        path: _MAIN_PREFIX + 'plan/manipulate',
+        name: 'manufacture.cell.assembly.plan.manipulate',
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/assembly_manipulate/TheAssemblyManipulate.vue'),
+        meta: {
+            title: 'Управление планом Сборочного цеха - Список'
+        } as IRouteMeta,
+    },
+
+    {
+        // ___ Фиксация действий Участков Cборочного цеха - День производства
+        path: _MAIN_PREFIX + 'manipulate/day/:date',
+        name: 'manufacture.cell.assembly.manipulate.day',
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/TheAssemblyManipulateDay.vue'),
+        meta: {
+            title: 'Сменные Задания участков Сборки'
+        } as IRouteMeta,
+    },
 
     {
         // ___ Тест

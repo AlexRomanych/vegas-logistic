@@ -25,7 +25,6 @@
             v-if="hasDataChange_1 || hasDataChange_2"
             class="flex"
         >
-
             <!-- __ Клиент -->
             <AppLabelTS
                 :height="DEFAULT_HEIGHT"
@@ -319,7 +318,6 @@ import type {
     DraggableHTMLElement,
     // IAmountAndTimeAssembly,
     IAssemblyLineSetData,
-    IAssemblySectorKeys,
     IAssemblyTask,
     IAssemblyTaskChangeKeys,
     IAssemblyTaskLine, IAssemblyTaskLineSector,
@@ -327,7 +325,7 @@ import type {
     IColorTypes,
     IDay,
     IModalAsyncMenu,
-    IPlanMatrix,
+    IPlanMatrix, IStats,
 } from '@/types'
 
 import { computed, inject, type Ref, ref, } from 'vue'
@@ -403,15 +401,6 @@ import { round } from '@/app/helpers/helpers_lib.ts'
 
 // type IDay = IAssemblyTask & IPlanMatrixDayItem
 
-export interface IStats {
-    id: number
-    name: IAssemblySectorKeys
-    total: number
-    done: number
-    percent: number
-    color: string
-    title: string
-}
 
 interface IProps {
     date: Date

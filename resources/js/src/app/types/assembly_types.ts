@@ -71,9 +71,12 @@ export interface IAssemblyTaskOrder {
     order_no_origin: string
     order_no_str: string
     load_at: string | null
+    unload_at: string | null
     comment_1c: string | null
     client: IAssemblyTaskOrderClient
     order_type: IAssemblyTaskOrderType
+
+    is_forecast: boolean,
 }
 
 // __ Связь Основной Заявки с Клиентом
@@ -388,6 +391,16 @@ export interface IAssemblyTaskExecuteStatisticsItem {
     total: number
 }
 
+export interface IStats {
+    id: number
+    name: IAssemblySectorKeys
+    total: number
+    done: number
+    percent: number
+    color: string
+    title: string
+}
+
 
 // --- ------------------------------------------------------------
 // __ Типы панелей меню в карточке Заказа в Пошиве в календаре
@@ -402,3 +415,38 @@ export type IAssemblyTaskCardSort = 'none' | 'asc' | 'desc'
 
 
 
+export interface IAssemblyManipulateDay {
+    action_at: string,
+    tasks: IAssemblyTask[],
+
+    collapsed?: boolean
+}
+
+
+
+// --- --------------------------------------------------------------
+// --- ----------- Типы для Группировки в Выполнении СЗ -------------
+// --- --------------------------------------------------------------
+export interface IMatrixManufactureTask {
+    task: IAssemblyTask
+    groups: IMatrixManufactureGroup[]
+}
+
+export interface IMatrixManufactureGroup {
+    group: IAssemblyModelManufactureGroup
+    group_lines: IMatrixManufactureGroupLine[]
+}
+
+export interface IMatrixManufactureGroupLine {
+    order_line: IAssemblyTaskOrderLine
+    materials_array: IAssemblyTaskLineSector[]
+}
+
+
+
+
+
+// __ Вспомогательный тип для снятия readonly со всех вложенных полей
+export type DeepWritable<T> = {
+    -readonly [P in keyof T]: T[P] extends object ? DeepWritable<T[P]> : T[P]
+}

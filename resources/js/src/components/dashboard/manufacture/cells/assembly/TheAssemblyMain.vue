@@ -27,7 +27,8 @@ interface IMenuItem {
 
 
 const menuItems = ref<IMenuItem[]>([
-    {name: 'Управление планом Сборки', path: 'manufacture.cell.assembly.plan.manage', shown: true, isActive: true},
+    {name: 'Управление планом Сборки (Календарь)', path: 'manufacture.cell.assembly.plan.manage', shown: true, isActive: true},
+    {name: 'Управление планом Сборки (Список)', path: 'manufacture.cell.assembly.plan.manipulate', shown: true, isActive: true},
     {name: 'Группы моделей для сортировки', path: 'manufacture.cell.assembly.model.manufacture.groups.show', shown: true, isActive: true},
 ])
 

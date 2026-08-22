@@ -5,7 +5,6 @@ import type {
     IAssemblyTaskArrayDiff,
     IAssemblyTaskArrayLineDiffs,
     IAssemblyTaskChangeKeys,
-    IAssemblyTaskExecuteStatistics,
     IAssemblyTaskLine,
     IAssemblyTaskLineSector,
     IAssemblyTaskStatusKeys,
@@ -17,13 +16,28 @@ import type {
     IStatItemAssembly,
     IAssemblyTaskStatus,
     IAssemblyTaskOrder,
-    IBlockTask,
-    IBlockTaskLine, IAssemblyLineKeys, IAmountAndTimeAssemblyLines, IAssemblyTaskOrderLine,
+    IAssemblyLineKeys,
+    IAmountAndTimeAssemblyLines,
+    IAssemblyTaskOrderLine,
+    IPeriod,
+    IAssemblyManipulateDay,
+    IStats,
+    IAssemblyModelManufactureGroup,
+    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask,
 } from '@/types'
-import { ASSEMBLY_LINE_UNDEFINED, ASSEMBLY_LINES, ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_STATUSES, CHANGES } from '@/app/constants/assembly.ts'
+import {
+    ASSEMBLY_LINE_UNDEFINED,
+    ASSEMBLY_LINES,
+    ASSEMBLY_SECTORS,
+    ASSEMBLY_TASK_DRAFT,
+    ASSEMBLY_TASK_SECTOR_LAMIT, ASSEMBLY_TASK_SECTOR_TABLE,
+    ASSEMBLY_TASK_STATUSES,
+    CHANGES
+} from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
-import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { getColorByPercent } from '@/app/helpers/helpers.ts'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 
 // __ Проблема с draggable
@@ -1103,6 +1117,378 @@ export function sortAssemblyTaskLinesBySize(
 
         return (a.order_line.dims.height - b.order_line.dims.height) * dir
     })
+}
+
+
+// __ Возвращаем подготовленный объект для отображения в Манипуляции СЗ Сборки
+// __ Выносим в отдельную функцию, чтобы не таскать портянку
+// __ Оставляем 5 дней до текущей даты и 7 после последней непустой
+export function getAssemblyManipulationRenderTasks(tasks: IAssemblyTask[], planPeriod: IPeriod): IAssemblyManipulateDay[] {
+    // __ Создаем массив
+    const grouped = Object.groupBy(tasks, task => task.action_at)
+
+    const renderTasks: IAssemblyManipulateDay[] = Object.entries(grouped)
+        .map(([key, value]) => {
+            return {
+                action_at: key.split(' ')[0],
+                tasks    : value as IAssemblyTask[],
+            }
+        })
+        .toSorted((a, b) => (new Date(a.action_at)).getTime() - (new Date(b.action_at)).getTime())
+
+    // __ Дополняем отсутствующими датами и пустыми массивами
+    const taskMap = new Map(
+        renderTasks.map(item => [item.action_at, item.tasks])
+    )
+
+    let filledTasks = []
+
+    const startDateStr = planPeriod.start.split(' ')[0] // '2026-08-01'
+    const startDate    = new Date(startDateStr)
+
+    // __ Считаем текущую дату минус 5 дней (обнуляем время для корректного сравнения)
+    const fiveDaysAgo = new Date()
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 4)
+    fiveDaysAgo.setHours(0, 0, 0, 0)
+
+    // __ Берём максимальный timestamp (то, что позже)
+    const current = new Date(Math.max(startDate.getTime(), fiveDaysAgo.getTime()))
+    // const current = new Date(startDateStr)
+
+    const endDateStr = planPeriod.end.split(' ')[0]
+    const end        = new Date(endDateStr)
+
+    while (current <= end) {
+        // Форматируем текущую дату в 'YYYY-MM-DD'
+        const dateStr = current.toISOString().split('T')[0]
+
+        filledTasks.push({
+            action_at: dateStr,
+            tasks    : taskMap.get(dateStr) || [],
+            collapsed: !Boolean(taskMap.get(dateStr)),
+        })
+
+        // Прибавляем +1 день
+        current.setDate(current.getDate() + 1)
+    }
+
+    // __ Находим с конца последний непустой день
+    let lastNonEmptyIndex = -1
+    for (let i = filledTasks.length - 1; i >= 0; i--) {
+        if (filledTasks[i].tasks && filledTasks[i].tasks.length > 0) {
+            lastNonEmptyIndex = i
+            break
+        }
+    }
+
+    // __ Отрезаем пустой хвост, оставляя ровно 7 дней после последнего непустого
+    if (lastNonEmptyIndex !== -1) {
+        filledTasks = filledTasks.slice(0, lastNonEmptyIndex + 1 + 7)
+    } else {
+        filledTasks = filledTasks.slice(0, 7)
+    }
+
+    return filledTasks
+}
+
+
+// __ Объект отображения данных для каждого участка для одного СЗ
+export function getDataArray(taskSource: IAssemblyTask, short: boolean = false) {
+
+    const task = JSON.parse(JSON.stringify(taskSource))
+
+    const lamitObj = {
+        total_amount   : 0,
+        finished_amount: 0,
+    }
+
+    const tableObj = {
+        total_amount   : 0,
+        finished_amount: 0,
+    }
+
+    task.assembly_lines.forEach((line: IAssemblyTaskLine) => {
+        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT) {
+            lamitObj.total_amount += line.amount
+            lamitObj.finished_amount += line.finished_at ? line.amount : 0
+        }
+        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE) {
+            tableObj.total_amount += line.amount
+            tableObj.finished_amount += line.finished_at ? line.amount : 0
+        }
+    })
+
+    task.stats.push({
+        sector         : ASSEMBLY_TASK_SECTOR_LAMIT,
+        total_amount   : lamitObj.total_amount,
+        finished_amount: lamitObj.finished_amount
+    })
+
+    task.stats.push({
+        sector         : ASSEMBLY_TASK_SECTOR_TABLE,
+        total_amount   : tableObj.total_amount,
+        finished_amount: tableObj.finished_amount
+    })
+    const data: IStats[] = []
+
+    Object.values(ASSEMBLY_SECTORS).forEach(value => {
+        const stats = task.stats.find((s: IAssemblyTaskLineSector) => s.sector === value.NAME)
+
+        const total   = stats?.total_amount || 0
+        const done    = stats?.finished_amount || 0
+        const percent = total > 0 ? (done / total) * 100 : 0
+
+        let color = getColorByPercent(percent)
+        let title = percent.toFixed(0) + '%'
+
+        if (!short) {
+            title = title + ' ' + `(${done}/${total})`
+        }
+
+        if (total === 0) {
+            color = '#e1f5fe'
+            // color = '#67748B'
+            title = '✗'
+        } else if (round(percent) === 100) {
+            title = '✓'
+        }
+
+        data.push({
+            id  : value.ID,
+            name: value.NAME,
+            total,
+            done,
+            percent,
+            title,
+            color,
+        })
+    })
+
+    return data.toSorted((a, b) => a.id - b.id)
+
+}
+
+
+// __ Объект отображения данных для каждого участка для группы СЗ
+export function getDataArrayTotal(tasksSource: IAssemblyTask[], short: boolean = false) {
+    const totalArray: IStats[][] = []
+
+    tasksSource.forEach(task => totalArray.push(getDataArray(task, short)))
+
+    const totalData: IStats[] = []
+
+    Object.values(ASSEMBLY_SECTORS).forEach(value => {
+        const summary: IStats = {
+            id     : value.ID,
+            name   : value.NAME,
+            total  : 0,
+            done   : 0,
+            percent: 0,
+            color  : '',
+            title  : '',
+        }
+
+        totalArray.forEach(items => {
+            const findItem = items.find(item => item.id === value.ID)
+            if (findItem) {
+                summary.done += findItem.done
+                summary.total += findItem.total
+            }
+        })
+
+        const total   = summary.total
+        const done    = summary.done
+        const percent = total > 0 ? (done / total) * 100 : 0
+
+        let color = getColorByPercent(percent)
+        let title = percent.toFixed(0) + '%'
+
+        if (!short) {
+            title = title + ' ' + `(${done}/${total})`
+        }
+
+        if (total === 0) {
+            color = '#e1f5fe'
+            // color = '#67748B'
+            title = '✗'
+        } else if (round(percent) === 100) {
+            title = '✓'
+        }
+
+        summary.percent = percent
+        summary.color   = color
+        summary.title   = title
+
+        totalData.push(summary)
+    })
+
+    return totalData
+}
+
+
+// __ Фильтруем СЗ по участкам, причем убираем из результата то СЗ, где нет таких участков
+export function filterTaskBySectors(entity: IAssemblyTask[] | IAssemblyManipulateDay, sectorFilter: IAssemblySectorKeys[] | IAssemblySectorKeys) {
+    let tasks = []
+    if (Array.isArray(entity)) {
+        tasks = entity
+    } else {
+        tasks = entity.tasks
+    }
+
+    let sectorList = []
+    if (Array.isArray(sectorFilter)) {
+        sectorList = sectorFilter
+    } else {
+        sectorList = [sectorFilter]
+    }
+
+    return tasks.filter(task => {
+        const filteredLines = task.assembly_lines.filter(line => {
+            const filteredSectors = line.sector_lines.filter(sector => sectorList.includes(sector.sector))
+            if (filteredSectors.length > 0) {
+                line.sector_lines = filteredSectors
+                return true
+            }
+            return false
+        })
+
+        if (filteredLines.length > 0) {
+            task.assembly_lines = filteredLines
+            return true
+        }
+        return false
+    })
+}
+
+
+// __ Возвращаем Матрицу для отображения Материалов и Самих Изделий, как в ЕПС для Группы СЗ
+export function getSectorMaterialsMatrixTasks(entity: IAssemblyTask | IAssemblyTask[]): IMatrixManufactureTask[] {
+    let tasks = []
+    if (Array.isArray(entity)) {
+        tasks = entity
+    } else if (isAssemblyTask(entity)) {
+        tasks = [entity]
+    } else {
+        throw new Error('Недопустимый тип - assembly_sectors/getSectorMaterialsMatrixTasks')
+    }
+
+    return tasks
+        .map(task => getSectorMaterialsMatrixTask(task))
+        .toSorted((a, b) => a.task.position - b.task.position)
+}
+
+
+// __ Возвращаем Матрицу для отображения Материалов и Самих Изделий, как в ЕПС для Одного СЗ
+export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTaskLine[]): IMatrixManufactureTask {
+    let taskLines = []
+    let task      = null
+
+    if (Array.isArray(entity)) {
+        taskLines = entity
+        task      = {
+            ...ASSEMBLY_TASK_DRAFT,
+            assembly_lines: taskLines,
+        }
+    } else if (isAssemblyTask(entity)) {
+        taskLines = entity.assembly_lines
+        task      = entity
+    } else {
+        throw new Error('Недопустимый тип - assembly_sectors/getSectorMaterialsMatrixTask')
+    }
+
+    // console.log('taskLines: ', taskLines)
+
+    const groupsCache    = new Map()    // __ Все Группы Сортировки
+    const materialsCache = new Map()    // __ Все Материалы
+
+    taskLines.forEach(line => {
+        groupsCache.set(line.order_line.model.manufacture_group.id, line.order_line.model.manufacture_group)
+        line.sector_lines.forEach(sectorLine => materialsCache.set(sectorLine.material_code_1c, {
+            code_1c: sectorLine.material_code_1c,
+            name   : sectorLine.material_name
+        }))
+    })
+
+    // console.log('groupsCache: ', groupsCache)
+    // console.log('materialsCache: ', materialsCache)
+
+    const grouped = Map.groupBy(taskLines, item => {
+        const group = item.order_line.model.manufacture_group
+
+        // Если объект с таким ID уже встретился, возвращаем ЕГО ссылку
+        // if (!groupsCache.has(group.id)) {
+        //     groupsCache.set(group.id, group)
+        // }
+
+        return groupsCache.get(group.id)
+    })
+
+    // console.log('grouped: ', grouped)
+
+    // __ Переводим в массив для сортировки Map с Материалами
+    const materialsCacheArray = Array.from(materialsCache.values()).sort((a, b) => a.name.localeCompare(b.name))
+
+    // __ И Обращаем обратно в Map для скорости досупа
+    const materialsCacheArrayMap = new Map()
+    materialsCacheArray.forEach((material, index) => {
+        materialsCacheArrayMap.set(material.code_1c, { code_1c: material.code_1c, name: material.name, index })
+    })
+
+    const groups: IMatrixManufactureGroup[] = []
+
+    // __ Проходимся по Кэшу Групп Группировки и собираем массив
+    for (const [, manufactureGroup] of groupsCache) {
+
+        // __ Получаем Массив Строк СЗ для данной Группы Сортировки
+        let manufactureGroupLines = grouped.get(manufactureGroup) || []
+
+        // __ Тут же сортируем его по убыванию Размера в Заявке
+        manufactureGroupLines = manufactureGroupLines.toSorted((a, b) => {
+            if (a.order_line.dims.width != b.order_line.dims.width) {
+                return b.order_line.dims.width - a.order_line.dims.width
+            }
+            if (a.order_line.dims.length != b.order_line.dims.length) {
+                return b.order_line.dims.length - a.order_line.dims.length
+            }
+            return b.order_line.dims.height - a.order_line.dims.height
+        })
+
+        const groupLines: IMatrixManufactureGroupLine[] = []
+
+        // __ Перебираем все Модели
+        manufactureGroupLines.forEach(assemblyLine => {
+
+            // __ Создаем массив Длины Всех Материалов
+            const matrix = Array(materialsCacheArray.length).fill(null)
+
+            // __ Перебираем все Материалы и Запихиваем в нужную ячейку массива
+            assemblyLine.sector_lines.forEach(sector => {
+                const material         = materialsCacheArrayMap.get(sector.material_code_1c)
+                matrix[material.index] = sector
+            })
+
+            groupLines.push({
+                order_line     : assemblyLine.order_line,
+                materials_array: matrix,
+            })
+
+        })
+
+        const group = {
+            group      : manufactureGroup as IAssemblyModelManufactureGroup,
+            group_lines: groupLines,
+        }
+
+        groups.push(group)
+    }
+
+    // console.log('groups: ', groups)
+
+    // __ Сортируем Группы
+    return {
+        task,
+        groups: groups.toSorted((a, b) => a.group.group_number - b.group.group_number)
+    }
 }
 
 

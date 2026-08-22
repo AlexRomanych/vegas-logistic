@@ -25,6 +25,8 @@ export interface IRenderDataItem {
     data?: (...args: any[]) => string
     click?: (...args: any[]) => void
     color?: (...args: any[]) => string
+
+    dataType: ((...args: any[]) => IColorTypes) | IColorTypes
 }
 
 export interface IRenderData {

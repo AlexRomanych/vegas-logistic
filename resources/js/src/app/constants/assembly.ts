@@ -1,10 +1,10 @@
 import type {
-    IAssemblyLineKeys,
+    IAssemblyLineKeys, IAssemblyManipulateDay,
     IAssemblyModelManufactureGroup,
     IAssemblySector,
     IAssemblyTask,
     IAssemblyTaskChange,
-    IAssemblyTaskChangeKeys,
+    IAssemblyTaskChangeKeys, IAssemblyTaskLine,
     IAssemblyTaskStatusItem,
     IAssemblyTaskStatusKeys,
 } from '@/types'
@@ -12,22 +12,26 @@ import type {
 // --- --------------------------------------------------------------------
 // --- -------------------- Константы Смен СЗ -----------------------------
 // --- --------------------------------------------------------------------
+
+// __ Название вкладки с общим СЗ
+export const ASSEMBLY_UNION_TASK_NAME = 'Объединение СЗ'
+
 // __ Смены
 export const CHANGE_1 = '1'
 export const CHANGE_2 = '2'
 
 // __ Линия сборки
-export const ASSEMBLY_LINE_LAMIT = 'lamit'
+export const ASSEMBLY_LINE_LAMIT       = 'lamit'
 export const ASSEMBLY_LINE_LAMIT_TITLE = 'Ламит'
-export const ASSEMBLY_LINE_TABLE = 'table'
+export const ASSEMBLY_LINE_TABLE       = 'table'
 export const ASSEMBLY_LINE_TABLE_TITLE = 'Стол'
 
-export const ASSEMBLY_LINE_UNDEFINED = 'undefined'
+export const ASSEMBLY_LINE_UNDEFINED       = 'undefined'
 export const ASSEMBLY_LINE_UNDEFINED_TITLE = 'Н/Д'
 
 // __ Режим Сменной Работы
-export const CHANGE_MODE = CHANGE_1 satisfies IAssemblyTaskChangeKeys
-export const IS_ONE_CHANGE_MODE = true
+export const CHANGE_MODE            = CHANGE_1 satisfies IAssemblyTaskChangeKeys
+export const IS_ONE_CHANGE_MODE     = true
 export const IS_NOT_ONE_CHANGE_MODE = !IS_ONE_CHANGE_MODE
 
 // __ Константы смен
@@ -86,7 +90,7 @@ export const ASSEMBLY_TASK_SECTOR_TABLE      = 'table'              // __ Сто
 
 
 export const ASSEMBLY_SECTORS = {
-    ASSEMBLY_TASK_SECTOR_COCONUT: {
+    ASSEMBLY_TASK_SECTOR_COCONUT   : {
         ID   : 1,
         NAME : ASSEMBLY_TASK_SECTOR_COCONUT,
         TITLE: 'Кокос',
@@ -95,7 +99,7 @@ export const ASSEMBLY_SECTORS = {
         TYPE : 'warning',
         SHOW : true,
     },
-    ASSEMBLY_TASK_SECTOR_LATEX: {
+    ASSEMBLY_TASK_SECTOR_LATEX     : {
         ID   : 2,
         NAME : ASSEMBLY_TASK_SECTOR_LATEX,
         TITLE: 'Латекс',
@@ -104,7 +108,7 @@ export const ASSEMBLY_SECTORS = {
         TYPE : 'success',
         SHOW : true,
     },
-    ASSEMBLY_TASK_SECTOR_LAYER: {
+    ASSEMBLY_TASK_SECTOR_LAYER     : {
         ID   : 3,
         NAME : ASSEMBLY_TASK_SECTOR_LAYER,
         TITLE: 'Тонкий настил',
@@ -131,7 +135,7 @@ export const ASSEMBLY_SECTORS = {
         TYPE : 'primary',
         SHOW : true,
     },
-    ASSEMBLY_TASK_SECTOR_LAMIT : {
+    ASSEMBLY_TASK_SECTOR_LAMIT     : {
         ID   : 6,
         NAME : ASSEMBLY_TASK_SECTOR_LAMIT,
         TITLE: 'Ламит',
@@ -140,7 +144,7 @@ export const ASSEMBLY_SECTORS = {
         TYPE : 'info',
         SHOW : true,
     },
-    ASSEMBLY_TASK_SECTOR_TABLE : {
+    ASSEMBLY_TASK_SECTOR_TABLE     : {
         ID   : 7,
         NAME : ASSEMBLY_TASK_SECTOR_TABLE,
         TITLE: 'Столы',
@@ -156,20 +160,22 @@ export const ASSEMBLY_SECTORS = {
 // --- ----------------------- Константы СЗ  ------------------------------
 // --- --------------------------------------------------------------------
 export const ASSEMBLY_TASK_DRAFT = {
-    id: 0,
-    id_ref: 0,                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
-    action_at: '',
-    active: true,
-    change: CHANGE_1,
-    position: 0,
-    comment: null,
+    id            : 0,
+    id_ref        : 0,                                  // __ референсный id (при разбиении нового СЗ, id_ref === id, то есть основаниие старого СЗ)
+    action_at     : '',
+    active        : true,
+    change        : CHANGE_1,
+    position      : 0,
+    comment       : null,
     order         : {
         id             : 0,
         order_no_num   : 0,
         order_no_origin: '0',
         order_no_str   : '0',
         load_at        : null,
+        unload_at      : null,
         comment_1c     : null,
+        is_forecast    : true,
         client         : {
             id        : 0,
             name      : '',
@@ -181,8 +187,9 @@ export const ASSEMBLY_TASK_DRAFT = {
             display_name: '',
             color       : '',
         }
+
     },
-    assembly_lines: [],
+    assembly_lines: [] as IAssemblyTaskLine[],
 
     statuses      : [],
     current_status: {
@@ -203,6 +210,11 @@ export const ASSEMBLY_TASK_DRAFT = {
 } as const satisfies IAssemblyTask
 
 
+// __ День для работы
+export const DAY_MANIPULATE_DRAFT = {
+    action_at: '',
+    tasks    : [],
+} as const satisfies IAssemblyManipulateDay
 
 // --- --------------------------------------------------------------------
 // --- ------------------ Константы Статусов СЗ  --------------------------
