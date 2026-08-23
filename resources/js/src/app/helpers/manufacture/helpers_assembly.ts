@@ -23,7 +23,7 @@ import type {
     IAssemblyManipulateDay,
     IStats,
     IAssemblyModelManufactureGroup,
-    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask,
+    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask, IColorTypes,
 } from '@/types'
 import {
     ASSEMBLY_LINE_UNDEFINED,
@@ -35,7 +35,7 @@ import {
     CHANGES
 } from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
-import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatDateTime, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 import { getColorByPercent } from '@/app/helpers/helpers.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
@@ -1458,18 +1458,91 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
         // __ Перебираем все Модели
         manufactureGroupLines.forEach(assemblyLine => {
 
-            // __ Создаем массив Длины Всех Материалов
-            const matrix = Array(materialsCacheArray.length).fill(null)
+            let doneTotal        = 0
+            let incompletedTotal = 0
+            let totalTotal       = 0
+
+            let maxFinishAt: number = 0
+            let maxFalseAt: number  = 0
+
+            // __ Создаем массив Длины Всех Материалов + атрибуты
+            const matrix      = Array(materialsCacheArray.length).fill(null)
+            const matrix_attr = Array(materialsCacheArray.length).fill(null)
 
             // __ Перебираем все Материалы и Запихиваем в нужную ячейку массива
             assemblyLine.sector_lines.forEach(sector => {
-                const material         = materialsCacheArrayMap.get(sector.material_code_1c)
-                matrix[material.index] = sector
+                const material = materialsCacheArrayMap.get(sector.material_code_1c)
+
+                // __ Или создаем или дописываем массив
+                if (matrix[material.index] === null) {
+                    matrix[material.index] = [sector]
+                } else {
+                    matrix[material.index].push(sector)
+                }
+            })
+
+            // __ Формируем атрибуты для вывода в шаблоне
+            matrix.forEach((sectors, index) => {
+
+                let title: string | string[] = ''
+                let renderType: IColorTypes  = 'light'
+
+                if (sectors) {
+                    const aggregate = aggregateDetailsByDims(sectors)
+                    title           = aggregate.map(detail => {
+                        const width  = detail.detail_dims.width / 10
+                        const length = detail.detail_dims.length / 10
+                        const height = detail.detail_dims.height / 10
+                        return height !== 0 ? `${width}x${length}x${height} - ${detail.amount}шт.` : `${width}x${length} - ${detail.amount}шт.`
+                    })
+
+                    let done        = 0
+                    let incompleted = 0
+                    let total       = 0
+
+                    sectors.forEach((sectorLine: IAssemblyTaskLineSector) => {
+                        if (isTaskLineDone(sectorLine)) {
+                            done += sectorLine.amount
+                            if ((new Date(sectorLine.finished_at!)).getTime() > maxFinishAt) {
+                                maxFinishAt = (new Date(sectorLine.finished_at!)).getTime()
+                            }
+                        } else if (isTaskLineFalse(sectorLine)) {
+                            incompleted += sectorLine.amount
+                            if ((new Date(sectorLine.false_at!)).getTime() > maxFinishAt) {
+                                maxFalseAt = (new Date(sectorLine.false_at!)).getTime()
+                            }
+                        }
+
+                        total += sectorLine.total
+                    })
+
+                    renderType = getCompletedType(total, done, incompleted)
+
+                    doneTotal += done
+                    incompletedTotal += incompleted
+                    totalTotal += total
+
+                }
+
+                matrix_attr[index] = {
+                    title,
+                    render_type: renderType
+                }
+
             })
 
             groupLines.push({
                 order_line     : assemblyLine.order_line,
+                order_line_attr: {
+                    render_type: getCompletedType(totalTotal, doneTotal, incompletedTotal),
+                    done       : doneTotal,
+                    total      : totalTotal,
+                    incomplete : incompletedTotal,
+                    finished_at: maxFinishAt !== 0 ? formatDateTime(new Date(maxFinishAt)) : null,
+                    false_at   : maxFalseAt !== 0 ? formatDateTime(new Date(maxFalseAt)) : null,
+                },
                 materials_array: matrix,
+                materials_attr : matrix_attr,
             })
 
         })
@@ -1477,6 +1550,7 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
         const group = {
             group      : manufactureGroup as IAssemblyModelManufactureGroup,
             group_lines: groupLines,
+            // group_materials: materialsCacheArray,
         }
 
         groups.push(group)
@@ -1487,8 +1561,79 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
     // __ Сортируем Группы
     return {
         task,
-        groups: groups.toSorted((a, b) => a.group.group_number - b.group.group_number)
+        materials: materialsCacheArray,
+        groups   : groups.toSorted((a, b) => a.group.group_number - b.group.group_number)
     }
+}
+
+
+// __ Агрегирование деталек по размеру
+export function aggregateDetailsByDims(details: IAssemblyTaskLineSector[]): IAssemblyTaskLineSector[] {
+    const map = new Map<string, IAssemblyTaskLineSector>()
+
+    for (const item of details) {
+        // Формируем уникальный ключ на основе габаритов детали
+        const key = `${item.detail_dims.width}x${item.detail_dims.length}x${item.detail_dims.height}`
+
+        if (map.has(key)) {
+            // Если дубликат найден — суммируем amount
+            const existing = map.get(key)!
+            existing.amount += item.amount
+        } else {
+            // Иначе сохраняем копию (чтобы не мутировать исходные объекты)
+            map.set(key, { ...item })
+        }
+    }
+
+    return Array.from(map.values())
+}
+
+
+// __ Получаем класс завершенности
+export function getCompletedType(total: number = 0, done: number = 0, incompleted: number = 0): IColorTypes {
+    if (total === 0) {
+        return 'light'
+    } else if (done === total) {
+        return 'success'
+    } else if (incompleted === total) {
+        return 'danger'
+    } else if (incompleted === 0 && done === 0 && total > 0) {
+        return 'dark'
+    }
+
+    // __ Когда есть одна из деталек отличного от другой типа
+    return 'orange'
+}
+
+
+// --- -------------------------------------------------------------------------------------
+// __ Получаем класс TailwindCSS по Типу
+export function getCheckClass(colorType: IColorTypes) {
+    switch (colorType) {
+        case 'dark':
+            return 'bg-slate-400'
+        case 'success':
+            return 'bg-green-500'
+        case 'danger':
+            return 'bg-red-500'
+    }
+    return ''
+}
+
+// --- -------------------------------------------------------------------------------------
+// __ Проверяем, является ли строка СЗ Выполненной
+export function isTaskLineDone(line: IAssemblyTaskLine | IAssemblyTaskLineSector) {
+    return !!line.finished_at
+}
+
+// __ Проверяем, является ли строка СЗ Не Выполненной
+export function isTaskLineFalse(line: IAssemblyTaskLine | IAssemblyTaskLineSector) {
+    return !!line.false_at
+}
+
+// __ Проверяем, является ли строка СЗ со сброшенным статусом
+export function isTaskLineReset(line: IAssemblyTaskLine | IAssemblyTaskLineSector) {
+    return !(isTaskLineDone(line) || isTaskLineFalse(line))
 }
 
 

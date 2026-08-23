@@ -427,22 +427,44 @@ export interface IAssemblyManipulateDay {
 // --- --------------------------------------------------------------
 // --- ----------- Типы для Группировки в Выполнении СЗ -------------
 // --- --------------------------------------------------------------
+
+// __ Основная структура
 export interface IMatrixManufactureTask {
-    task: IAssemblyTask
-    groups: IMatrixManufactureGroup[]
+    task: IAssemblyTask                             // __ Само СЗ
+    materials: MatrixManufactureGroupMaterial[]     // __ Список всех материалов, которые встречаются в Группах Сортировки
+    groups: IMatrixManufactureGroup[]               // __ Группировка по Группам сортировки ('FMX', 'Детские', ...)
 }
 
 export interface IMatrixManufactureGroup {
-    group: IAssemblyModelManufactureGroup
-    group_lines: IMatrixManufactureGroupLine[]
+    group: IAssemblyModelManufactureGroup           // __ Сама Группа со всеми свойствами
+    group_lines: IMatrixManufactureGroupLine[]      // __ Список: Строка Заказа - Список материалов,
 }
 
 export interface IMatrixManufactureGroupLine {
-    order_line: IAssemblyTaskOrderLine
-    materials_array: IAssemblyTaskLineSector[]
+    order_line: IAssemblyTaskOrderLine                      // __ Сама OrderLine
+    order_line_attr: IAssemblyTaskOrderLineAttr             // __ Вычисляемые атрибуты для строки
+    materials_array: (IAssemblyTaskLineSector[] | null)[]   // __ Список материалов, который попадается для этой строки
+    materials_attr: (IAssemblyTaskLineSectorAttr | null)[]  // __ Тут вычисляемые атрибуты - Отображение, разукрашка для материалов
 }
 
+export interface MatrixManufactureGroupMaterial {
+    name: string
+    code_1c: string
+}
 
+export interface IAssemblyTaskLineSectorAttr {
+    title: string | string[]
+    render_type: IColorTypes
+}
+
+export interface IAssemblyTaskOrderLineAttr {
+    render_type: IColorTypes
+    total: number
+    done: number
+    incomplete: number
+    finished_at: string | null
+    false_at: string | null
+}
 
 
 

@@ -14,19 +14,19 @@
 
             <div class="flex-1 flex justify-start items-center gap-0.5">
 
-                <!--&lt;!&ndash; __ Видимость заголовков &ndash;&gt;-->
-                <!--<AppLabelTS-->
-                <!--    :height="MENU_HEIGHT"-->
-                <!--    :text="showTuningTimes ? '🔓' : '🔒'"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text-size="huge"-->
-                <!--    title="Скрыть/Показать название размеров Кроя"-->
-                <!--    type="dark"-->
-                <!--    width="w-[50px]"-->
-                <!--    @click="toggleShowTuningTimesVisibility"-->
-                <!--/>-->
+                <!-- __ Видимость заголовков -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :text="showGroups ? '🔓' : '🔒'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="huge"
+                    title="Скрыть/Показать название размеров Кроя"
+                    type="dark"
+                    width="w-[50px]"
+                    @click="toggleShowGroups"
+                />
 
                 <!-- __ Свернуть/Развернуть Группы Сортировки -->
                 <AppLabelMultiLineTS
@@ -41,21 +41,6 @@
                     title="Свернуть/Развернуть Коллекцию Блоков"
                     @click="toggleGroups"
                 />
-
-                <!-- __ Свернуть/Развернуть Крой '▲' : '▼' -->
-                <!--<AppLabelMultiLineTS-->
-                <!--    :disabled="showUndergroupNames"-->
-                <!--    :height="MENU_HEIGHT_MULTILINE"-->
-                <!--    :text="collapsedUnderGroupsState ? ['Раскрыть', '▼ Крой'] : ['Свернуть', '▲ Крой']"-->
-                <!--    :type="!showUndergroupNames ? 'dark' : 'indigo'"-->
-                <!--    :width="MENU_WIDTH"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text-size="mini"-->
-                <!--    title="Свернуть/Развернуть группу Кроя"-->
-                <!--    @click="toggleUnderGroups"-->
-                <!--/>-->
 
                 <!-- __ Журнал -->
                 <AppLabelTS
@@ -254,6 +239,168 @@
 
             </div>
         </div>
+
+        <!-- __ Заголовок для Линий + Материалы -->
+        <div class="ml-[10px]">
+            <ManipulateDayTaskLineHeader
+                :field-widths="fieldWidths"
+                :materials="data.materials"
+                @toggle-all="toggleGroups"
+            />
+        </div>
+
+        <!-- __ Блок Самих данных -->
+        <div
+            ref="scrollContainer"
+            class="py-2 flex-1 overflow-y-auto border border-slate-200 rounded-xl bg-white select-none custom-scroll relative shadow-sm"
+        >
+            <div v-for="(group, gIndex) of data.groups" :key="gIndex">
+
+                <!-- __ Группы сортировки -->
+                <div
+                    v-if="showGroups"
+                    class="ml-2"
+                >
+                    <ManipulateDayTaskGroup
+                        :collapsed="collapsedStates[group.group.name]"
+                        :group
+                        @toggle-collapse="toggleGroup(group.group.name)"
+                        @select-group-items="selectGroupItems(group)"
+                    />
+                </div>
+
+                <!--:class="[!collapseStates[subgroup.subgroupName] ? 'mb-2' : '']"-->
+                <div
+                    v-if="!collapsedStates[group.group.name]"
+                    class="ml-5"
+                >
+
+                    <!-- !!! С фиксированной высотой строки СЗ !!! -->
+                    <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
+
+                    <div
+                        v-for="(record, index) of group.group_lines"
+                        :key="record.order_line.id"
+                        :class="[
+                                selectedIds.has(record.order_line.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
+                            ]"
+                        :data-task-id="record.order_line.id"
+                        class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
+                        @mousedown="startSelectionById(record.order_line.id, $event)"
+                        @mouseenter="updateSelectionById(record.order_line.id, $event)"
+                    >
+                        <!-- __ Строка СЗ -->
+                        <!--@show-document="showDocument(blockLine, $event)"-->
+                        <!--@change-description="changeDescription(blockLine, $event)"-->
+                        <ManipulateDayTaskLine
+                            :field-widths="fieldWidths"
+                            :group-line="record"
+                            :index="index + 1"
+                            :ordering="'index'"
+
+                        />
+
+                        <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
+                        <div
+                            v-if="selectedIds.has(record.order_line.id)"
+                            class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
+                        ></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <TheDividerLineTS/>
+
+            <!-- __ Итого -->
+            <!--<div class="ml-2">-->
+            <!--    <ExecuteDayTaskSubGroupCommon-->
+            <!--        :subgroup="commonSubGroup"-->
+            <!--    />-->
+            <!--</div>-->
+
+        </div>
+    </div>
+
+    <!-- __ Меню по правой кнопке мыши -->
+    <Teleport to="body">
+        <Transition name="fade">
+            <div
+                v-if="showMenu"
+                ref="menuRef"
+                :style="{ top: `${menuPosition.y}px`, left: `${menuPosition.x}px` }"
+                class="fixed z-[100] w-64 bg-white border border-gray-200 shadow-xl rounded-2xl overflow-hidden py-1.5 backdrop-blur-xl"
+                @click.stop
+            >
+                <div
+                    class="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-gray-50 mb-1"
+                >
+                    Действия ({{ selectedIds.size }})
+                </div>
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-green-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('done')"
+                >
+                    <span class="mr-3 text-lg">✓</span> Выполнено
+                </button>
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-red-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('false')"
+                >
+                    <span class="mr-3 text-lg">✘</span> Не выполнено
+                </button>
+                <!--<div class="h-[1px] bg-gray-100 my-1"></div>-->
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('reset')"
+                >
+                    <span class="mr-3 text-lg">↺</span> Сбросить
+                </button>
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('divide')"
+                >
+                    <span class="mr-3 text-lg">⛏</span> Разбить
+                </button>
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('cancel')"
+                >
+                    <span class="mr-3 text-lg">↺</span> Отменить
+                </button>
+
+                <!-- __ Перемещение на другую 1 Линию -->
+                <button
+                    v-if="activeManufLineName === LINE_2"
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-600 hover:text-white transition-colors"
+                    @click="handleMenuAction(LINE_1_NAME)"
+                >
+                    <span class="mr-3 text-2xl">①</span> Отправить на Линию 1
+                </button>
+
+                <!-- __ Перемещение на другую 2 Линию -->
+                <button
+                    v-if="activeManufLineName === LINE_1"
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                    @click="handleMenuAction(LINE_2_NAME)"
+                >
+                    <span class="mr-3 text-2xl">①</span> Отправить на Линию 2
+                </button>
+
+            </div>
+        </Transition>
+    </Teleport>
+
+    <div class="mt-1 text-[11px] font-bold text-slate-400 flex gap-6 px-2">
+            <span class="flex items-center gap-1.5"
+            ><span class="bg-gray-200 px-1 rounded text-[10px]">DRAG</span> Выделение</span
+            >
+        <span class="flex items-center gap-1.5"
+        ><span class="bg-gray-200 px-1 rounded text-[10px]">CTRL</span> Выбор вразнобой</span
+        >
+        <span class="flex items-center gap-1.5"
+        ><span class="bg-gray-200 px-1 rounded text-[10px]">SHIFT</span> Диапазон</span
+        >
     </div>
 
 
@@ -315,7 +462,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onUnmounted, onMounted, onBeforeUnmount } from 'vue'
 
 import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
@@ -331,10 +478,22 @@ import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageE
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import type { IAssemblyTask, IAssemblyTaskOrderLine, IBlockTaskLinesGroupNames, IDividerItem, IMatrixManufactureTask } from '@/types'
-import { LINE_1_NAME, LINE_2_NAME } from '@/app/constants/blocks.ts'
+import type {
+    IAssemblyModelManufactureGroup,
+    IAssemblyTask,
+    IAssemblyTaskOrderLine,
+    IBlockTaskLinesGroupNames,
+    IDividerItem, IMatrixManufactureGroup,
+    IMatrixManufactureTask
+} from '@/types'
+import { LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME } from '@/app/constants/blocks.ts'
 import { isTaskLineReset } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { ASSEMBLY_UNION_TASK_NAME } from '@/app/constants/assembly.ts'
+import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskLineHeader.vue'
+import ManipulateDayTaskLineHeader from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeader.vue'
+import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import ManipulateDayTaskGroup from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskGroup.vue'
+import ManipulateDayTaskLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLine.vue'
 
 
 interface IProps {
@@ -383,9 +542,31 @@ const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineT
 // __ Тип для Карточки и Изменения Линии
 const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
+
+// __ Поля данных
+const fieldWidths: Record<string, string> = {
+    check       : 'min-w-[25px] max-w-[25px]',
+    position    : 'min-w-[30px] max-w-[30px]',
+    name        : 'min-w-[200px] max-w-[200px]',
+    size        : 'min-w-[100px] max-w-[100px]',
+    amount      : 'min-w-[40px] max-w-[40px]',
+    time        : 'min-w-[100px] max-w-[100px]',
+    kdb         : 'min-w-[70px] max-w-[70px]',
+    timeLabel   : 'min-w-[100px] max-w-[100px]',
+    manuf_line  : 'min-w-[40px] max-w-[40px]',
+    false_reason: 'min-w-[174px] max-w-[174px]',
+    order       : 'min-w-[300px] max-w-[300px]',
+    description : 'min-w-[300px] max-w-[300px]',
+    material    : 'min-w-[110px] max-w-[110px]',
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---            Журнал Событий                   !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 // __ Журнал событий
 const manageEventsAsync = ref<InstanceType<typeof ManageEventsAsync> | null>(null)
-
 
 // __ Показываем Журнал Событий
 const showEvents = async () => {
@@ -417,9 +598,31 @@ async function showError(error: string | string[] | null = null) {
 // !!! ---                Collapse                     !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-const collapsedGroupsState = ref(true)
+// __ Видимость названий подгрупп
+const showGroups = ref(true)
+// __ Скрываем Переналадку
+const toggleShowGroups = () => {
+    showGroups.value = !showGroups.value
+}
 
+// __ Устанавливаем Collapsed
+const collapsedStates = ref<Record<string, boolean>>({})
+const setCollapsedStates = () => {
+    props.data.groups.forEach(group => collapsedStates.value[group.group.name] = true)
+}
+
+// __ Переключаем Группу
+const toggleGroup = (groupName: string) => {
+    if (collapsedStates.value[groupName] !== undefined) {
+        collapsedStates.value[groupName] = !collapsedStates.value[groupName]
+    }
+}
+
+// __ Устанавливаем Общий Collapsed
+const collapsedGroupsState = ref(true)
 const toggleGroups = () => {
+    collapsedGroupsState.value = !collapsedGroupsState.value
+    Object.keys(collapsedStates.value).forEach(key => collapsedStates.value[key] = collapsedGroupsState.value)
 }
 
 
@@ -428,7 +631,7 @@ const toggleGroups = () => {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Проверка на то, что Заявка - объединенная
 const isUnionTask = computed(() => assemblyTask.value.id === UNION_TASKS_ID)// __ Название заявок
-const taskTitle = computed(() => {
+const taskTitle   = computed(() => {
     if (isUnionTask.value) {
         return ASSEMBLY_UNION_TASK_NAME
     }
@@ -686,7 +889,7 @@ const stopAutoScroll = (): void => {
 
 // --- Методы выделения на id ---
 const flatVisibleIds = computed(() => {
-    // return blockLinesGroup.value.flatMap(subgroup => subgroup.lines.map(line => line.id))
+    return props.data.groups.flatMap(group => group.group_lines.map(line => line.order_line.id))
 })
 
 const startSelectionById = (id: number, event: MouseEvent) => {
@@ -795,8 +998,135 @@ const handleMenuAction = async (action: string) => {
     // showMenu.value = false
 }
 
+
+// __ Добавить в выделение все элементы ПС
+const selectGroupItems = async (group: IMatrixManufactureGroup) => {
+    modalInfoType.value = 'primary'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        `Выделить все элементы в коллекции Блоков: `,
+        `${group.group.name}?`
+    ]
+
+    // __ Показываем модалку и ждем ответ
+    const answer = await appModalAsyncMultilineTS.value!.show()
+    if (answer) {
+        group.group_lines.forEach(l => selectedIds.value.add(l.order_line.id))
+    }
+}
+
+// --- Жизненный цикл ---
+onMounted(async () => {
+    window.addEventListener('mouseup', stopGlobalSelection)
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('click', () => (showMenu.value = false))
+
+    // setActiveTabIndex()
+    // activeTabIndex.value = 0
+
+    setCollapsedStates()
+
+    localStorage.removeItem(TASK_TO_PRINT_KEY)      // __ Очищаем данные для печати
+    localStorage.removeItem(TASK_TO_PRINT_META_KEY) // __ Очищаем данные для печати
+})
+
+onBeforeUnmount(() => {
+    stopAutoScroll()
+})
+
+onUnmounted(() => {
+    window.removeEventListener('mouseup', stopGlobalSelection)
+    window.removeEventListener('mousemove', handleMouseMove)
+    stopAutoScroll()
+})
+
 </script>
 
 <style scoped>
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #e2e8f0; /* Светлый скролл */
+    border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.1s ease,
+    transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+}
+
+.select-none {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Измененная анимация выделения для светлой темы */
+@keyframes select-blink-light {
+    0% {
+        background-color: rgba(79, 70, 229, 0.05);
+    }
+    100% {
+        background-color: rgba(79, 70, 229, 0.1);
+    }
+}
+
+.animate-select {
+    animation: select-blink-light 0.3s ease-out forwards;
+}
+
+.wrapper {
+    /* Оставляем расчет высоты, он важен для overflow-y-auto внутри */
+    height: calc(100vh - var(--header-height) - var(--footer-height) - 165px);
+
+    /* Убираем фиксированный width и ставим это: */
+    width: 100%;
+    /*width: calc(100vw - var(--sidebar-width) - 15px);*/
+    min-width: 0; /* Важно для flex-контейнеров, чтобы не распирало контентом */
+
+    /*    display: flex;
+        flex-direction: column;*/
+
+}
+
+@keyframes select-blink {
+    0% {
+        opacity: 0;
+        transform: scaleX(0.98);
+    }
+    50% {
+        opacity: 1;
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+.animate-select {
+    animation: select-blink 0.4s ease-out forwards;
+}
+
+.menu-button {
+    @apply cursor-pointer shadow-[0_0_15px_rgba(79,70,229,0.4)];
+}
 
 </style>
+

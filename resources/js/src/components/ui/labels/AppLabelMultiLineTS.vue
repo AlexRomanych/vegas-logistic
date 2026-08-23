@@ -2,10 +2,10 @@
     <div
         :class="[
             width,
-            labelHeight,
             backgroundColor,
             borderColor,
             currentTextColor,
+            heightLimit !== '' ? heightLimit : labelHeight,
             textSizeClass,
             semibold,
             horizontalAlign,
@@ -44,6 +44,7 @@ interface IProps {
     type?: IColorTypes
     width?: string
     height?: string
+    heightLimit?: string
     textSize?: IFontsType
     bold?: boolean
     align?: IHorizontalAlign
@@ -57,12 +58,13 @@ const props = withDefaults(defineProps<IProps>(), {
     type: 'dark',
     width: 'w-[200px]',
     height: 'h-[25px]',
+    heightLimit: '',
     textSize: 'normal',
     bold: true,
     align: 'left',
     rounded: 'rounded-lg',
     color: '',
-    lineThrough: false,
+    lineThrough: false
 })
 
 const emits = defineEmits<{
