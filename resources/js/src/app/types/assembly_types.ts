@@ -180,6 +180,14 @@ export interface IAssemblyTaskOrderLine {
     size: string
     textile: string
     model: IAssemblyTaskModel
+
+    construct_code_1c: string | null
+    construct_name: string | null
+    construct_add_code_1c: string | null
+    construct_add_name: string | null
+
+    // __ Название Заявки
+    order_title?: string | null
 }
 
 // __ Описание модели
@@ -281,8 +289,6 @@ export interface IAssemblySector {
 }
 
 
-
-
 // --- --------------------------------------------------------------------
 // --- ------------------ Типы для разницы состояний  ---------------------
 // --- --------------------------------------------------------------------
@@ -373,8 +379,6 @@ export interface IAssemblyTaskStatusItem {
 }
 
 
-
-
 // --- --------------------------------------------------------------
 // --- -- Типы для работы со Статистикой выполнения СЗ (прогресс) ---
 // --- --------------------------------------------------------------
@@ -411,17 +415,18 @@ export type IAssemblyManufLinesPanel = typeof ASSEMBLY_LINE_LAMIT | typeof ASSEM
 // --- ------------------------------------------------------------
 // __ Тип для сортировки в Карточке Заказа в Блоках
 export type IAssemblyTaskCardSort = 'none' | 'asc' | 'desc'
-// --- ------------------------------------------------------------
 
+// --- ------------------------------------------------------------
 
 
 export interface IAssemblyManipulateDay {
     action_at: string,
     tasks: IAssemblyTask[],
+    description?: string | null
+    comment?: string | null
 
     collapsed?: boolean
 }
-
 
 
 // --- --------------------------------------------------------------
@@ -465,7 +470,6 @@ export interface IAssemblyTaskOrderLineAttr {
     finished_at: string | null
     false_at: string | null
 }
-
 
 
 // __ Вспомогательный тип для снятия readonly со всех вложенных полей

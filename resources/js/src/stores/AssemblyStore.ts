@@ -9,7 +9,7 @@ import type {
     IAssemblySectorKeys,
     IAssemblyTask,
     IAssemblyTaskChangeKeys,
-    IAssemblyTaskLine,
+    IAssemblyTaskLine, IAssemblyTaskLineSector,
     IAssemblyTaskStatusEntity,
     IAssemblyTaskStatusesSet,
     IPeriod,
@@ -22,12 +22,13 @@ import { isNumber } from '@/app/helpers/helpers_lib.ts'
 
 import { additionDaysInStrFormat } from '@/app/helpers/helpers_date'
 import {
-    getAssemblyTasksDiff,
+    getAssemblyTasksDiff, getOrderTitle,
     isAddItemsInDiffsPresents, mergeAssemblyTasks,
     repositionAssemblyTaskInDay,
     repositionAssemblyTaskLines
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { CHANGES } from '@/app/constants/assembly.ts'
+import { log } from '@/app/composable/log.ts'
 
 
 const DEBUG = true
@@ -40,12 +41,12 @@ const URL_ASSEMBLY_TASKS_ORDER_ID = '/assembly/tasks/order'                 // U
 // const URL_ASSEMBLY_TASKS_DELETE_BY_ORDER_ID   = '/assembly/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 // const URL_ASSEMBLY_TASKS_ADD_BY_ORDER_ID      = '/assembly/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
 
-const URL_ASSEMBLY_TASKS_UPDATE               = '/assembly/tasks/update'                // URL для обновления Сменных заданий
+const URL_ASSEMBLY_TASKS_UPDATE = '/assembly/tasks/update'                // URL для обновления Сменных заданий
 // const URL_ASSEMBLY_TASKS_CALC_BY_ORDER_ID     = '/assembly/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
 // const URL_ASSEMBLY_TASKS_STATUS_BEFORE_DATE   = '/assembly/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE       = '/assembly/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
-const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
+const URL_ASSEMBLY_TASKS_COMMENT = '/assembly/tasks/comment'               // URL для изменения комментария к Сменному заданию
 // const URL_ASSEMBLY_TASKS_CHANGE               = '/assembly/tasks/change'                // URL для изменения смены Сменного задания
 // const URL_ASSEMBLY_TASKS_ACTION_AT_SET        = '/assembly/tasks/action/set'            // URL для установки даты выполнения (action_at) СЗ
 //
@@ -53,8 +54,12 @@ const URL_ASSEMBLY_TASKS_COMMENT              = '/assembly/tasks/comment'       
 const URL_ASSEMBLY      = '/assembly'                             // URL для получения Блоков
 const URL_ASSEMBLY_TEST = '/assembly/test'                        // URL для тестирования
 
-const URL_ASSEMBLY_TASK_LINES_TABLE_SET  = '/assembly/tasks/lines/line/set'        // URL для изменения сборочного стола для записи СЗ
-// const URL_ASSEMBLY_TASK_LINE_DONE        = '/assembly/tasks/line/done'             // URL для установки статуса "Выполнено" для записи СЗ
+const URL_ASSEMBLY_TASK_LINES_TABLE_SET   = '/assembly/tasks/lines/line/set'        // URL для изменения сборочного стола для записи СЗ
+const URL_ASSEMBLY_TASK_LINE_SECTOR_DONE  = '/assembly/tasks/line/sector/done'      // URL для установки статуса "Выполнено" для записи СЗ
+const URL_ASSEMBLY_TASK_LINE_SECTOR_FALSE = '/assembly/tasks/line/sector/false'     // URL для установки статуса "Выполнено" для записи СЗ
+const URL_ASSEMBLY_TASK_LINE_SECTOR_RESET = '/assembly/tasks/line/sector/reset'     // URL для установки статуса "Выполнено" для записи СЗ
+
+
 // const URL_ASSEMBLY_TASK_LINE_FALSE       = '/assembly/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 // const URL_ASSEMBLY_TASK_LINE_RESET       = '/assembly/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 const URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION = '/assembly/tasks/line/sector/description'      // URL для изменения описания для записи СЗ
@@ -74,15 +79,15 @@ const URL_ASSEMBLY_TASK_LINE_SECTOR_DESCRIPTION = '/assembly/tasks/line/sector/d
 // const URL_ASSEMBLY_TASKS_STATUS_ON_DATE_CHECK = '/assembly/tasks/status/date/on/check'  // URL для проверки наличия Сменных заданий по статусу в определенный день
 //
 //
-const URL_ASSEMBLY_TASK_STATUSES             = '/assembly/task/statuses'               // URL для получения Статуса Движения СЗ
-const URL_ASSEMBLY_TASK_STATUSES_SET         = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
+const URL_ASSEMBLY_TASK_STATUSES     = '/assembly/task/statuses'               // URL для получения Статуса Движения СЗ
+const URL_ASSEMBLY_TASK_STATUSES_SET = '/assembly/task/statuses/set'           // URL для изменения/добавления Статуса Движения СЗ
 // const URL_ASSEMBLY_TASK_STATUSES_COLOR_PATCH = '/assembly/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
 
 //
-const URL_ASSEMBLY_DAY                    = '/assembly/day'                         // URL для получения рабочего дня
+const URL_ASSEMBLY_DAY = '/assembly/day'                         // URL для получения рабочего дня
 // const URL_ASSEMBLY_DAY_PERIOD             = '/assembly/days/period'                 // URL для получения рабочих дней за период
 // const URL_ASSEMBLY_DAY_DATES              = '/assembly/day/dates'                   // URL для получения рабочих дней по статусу
-const URL_ASSEMBLY_DAY_COMMENT            = '/assembly/day/comment'                 // URL для сохранения комментария к дню
+const URL_ASSEMBLY_DAY_COMMENT = '/assembly/day/comment'                 // URL для сохранения комментария к дню
 // const URL_ASSEMBLY_DAY_WORKERS_ACTIVE     = '/workers/active'                      // URL для получения активных рабочих
 // const URL_ASSEMBLY_DAY_WORKER_ADD         = '/assembly/day/worker/add'              // URL для добавления исполнителя к дню
 // const URL_ASSEMBLY_DAY_WORKER_GROUP_ADD   = '/assembly/day/workers/add'             // URL для добавления группы исполнителей к дню
@@ -139,15 +144,45 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //
     // // __ Массив Рабочих
     // const globalWorkers = ref<IAssemblyDayWorker[]>([])
-    //
-    //
-    // // --- ------------------------------------------------------------------------------------------
-    // // --- ---------------- Тут вся логика по управлению и сохранению частей СЗ ---------------------
-    // // --- ------------------------------------------------------------------------------------------
-    // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // // !!! --- Тут вся логика по управлению и сохранению частей СЗ !!!
-    // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //
+
+
+    // --- ------------------------------------------------------------------------------------------
+    // --- ---------------- Тут вся логика по управлению и сохранению частей СЗ ---------------------
+    // --- ------------------------------------------------------------------------------------------
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! --- Тут вся логика по управлению и сохранению частей СЗ !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Обновляем состояние росле установки статусов на Сеторах/Участках
+    const setAssemblyTaskLinesSectorsToGlobal = (sectors: IAssemblyTaskLineSector[]) => {
+        const sectorsIds = new Map()
+        sectors.forEach(item => sectorsIds.set(item.id, item))
+
+        globalAssemblyTasks.value.forEach(task => {
+
+            task.assembly_lines.forEach(assemblyLine => {
+                assemblyLine.sector_lines.forEach(sectorLine => {
+                    if (sectorsIds.has(sectorLine.id)) {
+                        const sectorLineCache    = sectorsIds.get(sectorLine.id)
+                        sectorLine.finished_at   = sectorLineCache.finished_at
+                        sectorLine.finished_by   = sectorLineCache.finished_by
+                        sectorLine.false_at      = sectorLineCache.false_at
+                        sectorLine.false_reason  = sectorLineCache.false_reason
+                        sectorLine.false_history = sectorLineCache.false_history
+                    }
+                })
+            })
+        })
+    }
+
+
+    // __ Добавляем название Заявки в каждый OrderLine
+    const addOrderTitleToOrderLine = () => {
+        globalAssemblyTasks.value.forEach(task => {
+            task.assembly_lines.forEach(assemblyLine => assemblyLine.order_line.order_title = getOrderTitle(task))
+        })
+    }
+
     /**
      * __ Добавление новой части СЗ и изменение старой части СЗ, на основе которого была создана новая часть
      * @param addAssemblyTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
@@ -349,7 +384,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
                 for (const line of task.assembly_lines) {
                     if (item.id === line.id) {
                         line.assembly_line = item.line
-                        isFind          = true
+                        isFind             = true
                         break
                     }
                     if (isFind) {
@@ -837,41 +872,42 @@ export const useAssemblyStore = defineStore('assembly', () => {
     //     if (DEBUG) console.log('AssemblyStore: removeResponsibleFromAssemblyDay: ', result)
     //     return result.data
     // }
-    //
-    //
-    // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // // !!! ---               Assembly Lines                   !!!
-    // // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //
-    // const setAssemblyTaskLinesDone = async (assemblyTaskLinesIds: number[]) => {
-    //     if (!assemblyTaskLinesIds.length) {
-    //         return []
-    //     }
-    //     const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_DONE, { ids: assemblyTaskLinesIds })
-    //     if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesDone: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Устанавливаем "Не Выполнено" на AssemblyTaskLines
-    // const setAssemblyTaskLinesFalse = async (assemblyTaskLinesIds: number[], falseReason: string | null = null) => {
-    //     if (!assemblyTaskLinesIds.length && !falseReason) {
-    //         return []
-    //     }
-    //     const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_FALSE, { ids: assemblyTaskLinesIds, reason: falseReason })
-    //     if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesFalse: ', result)
-    //     return result.data
-    // }
-    //
-    // // __ Сбрасываем статусы на AssemblyTaskLines
-    // const setAssemblyTaskLinesReset = async (assemblyTaskLinesIds: number[]) => {
-    //     if (!assemblyTaskLinesIds.length) {
-    //         return []
-    //     }
-    //     const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_RESET, { ids: assemblyTaskLinesIds })
-    //     if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesReset: ', result)
-    //     return result.data
-    // }
-    //
+
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---               Assembly Lines                !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Устанавливаем "Выполнено" на AssemblyTaskLinesSector
+    const setAssemblyTaskLinesSectorDone = async (assemblyTaskLinesIds: number[]) => {
+        if (!assemblyTaskLinesIds.length) {
+            return []
+        }
+        const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_SECTOR_DONE, { ids: assemblyTaskLinesIds })
+        if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesSectorDone: ', result)
+        return result.data
+    }
+
+    // __ Устанавливаем "Не Выполнено" на AssemblyTaskLinesSector
+    const setAssemblyTaskLinesSectorFalse = async (assemblyTaskLinesIds: number[], falseReason: string | null = null) => {
+        if (!assemblyTaskLinesIds.length && !falseReason) {
+            return []
+        }
+        const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_SECTOR_FALSE, { ids: assemblyTaskLinesIds, reason: falseReason })
+        if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesSectorFalse: ', result)
+        return result.data
+    }
+
+    // __ Сбрасываем статусы на AssemblyTaskLinesSector
+    const setAssemblyTaskLinesSectorReset = async (assemblyTaskLinesIds: number[]) => {
+        if (!assemblyTaskLinesIds.length) {
+            return []
+        }
+        const result = await jwtPost(URL_ASSEMBLY_TASK_LINE_SECTOR_RESET, { ids: assemblyTaskLinesIds })
+        if (DEBUG) console.log('AssemblyStore: setAssemblyTaskLinesSectorReset: ', result)
+        return result.data
+    }
+
     // // __ Устанавливаем комментарий для Строки СЗ
     // const setAssemblyTaskLineDescription = async (assemblyTaskLinesId: number, description: string) => {
     //     if (!assemblyTaskLinesId) {
@@ -996,8 +1032,15 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // __ Выполняем запрос
         const response = await jwtGet(URL_ASSEMBLY_TASKS, params)
 
-        globalAssemblyTasks.value = response.data                             // __ кэшируем
-        globalAssemblyTasksCopy   = JSON.parse(JSON.stringify(response.data)) // __ копия для отслеживания изменений
+        // __ Кэшируем
+        globalAssemblyTasks.value = response.data
+
+        // __ Добавляем название Заявки в каждый OrderLine
+        addOrderTitleToOrderLine()
+
+        console.log('globalAssemblyTasks.value!!!: ', globalAssemblyTasks.value)
+
+        globalAssemblyTasksCopy   = JSON.parse(JSON.stringify(globalAssemblyTasks.value)) // __ копия для отслеживания изменений
 
         if (DEBUG) console.log('AssemblyStore: getAssemblyTasks: ', response)
         return response.data
@@ -1163,7 +1206,12 @@ export const useAssemblyStore = defineStore('assembly', () => {
         applyMergeTasks,
         applyMergeTasksGroups,
         setGlobalArrayChangeAssemblyLines,
-        //
+        setAssemblyTaskLinesSectorsToGlobal,
+
+        setAssemblyTaskLinesSectorDone,
+        setAssemblyTaskLinesSectorFalse,
+        setAssemblyTaskLinesSectorReset,
+
         // setAssemblyTaskLinesDone,
         // setAssemblyTaskLinesFalse,
         // setAssemblyTaskLinesReset,

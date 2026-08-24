@@ -1327,7 +1327,40 @@ export function getDataArrayTotal(tasksSource: IAssemblyTask[], short: boolean =
 
 
 // __ Фильтруем СЗ по участкам, причем убираем из результата то СЗ, где нет таких участков
-export function filterTaskBySectors(entity: IAssemblyTask[] | IAssemblyManipulateDay, sectorFilter: IAssemblySectorKeys[] | IAssemblySectorKeys) {
+export function filterTaskBySectors(
+    entity: IAssemblyTask[] | IAssemblyManipulateDay,
+    sectorFilter: IAssemblySectorKeys[] | IAssemblySectorKeys
+): IAssemblyTask[] {
+    const tasks = Array.isArray(entity) ? entity : entity.tasks
+    const sectorList = Array.isArray(sectorFilter) ? sectorFilter : [sectorFilter]
+
+    return tasks.reduce<IAssemblyTask[]>((acc, task) => {
+        // __ Фильтруем и копируем линии с нужными секторами
+        const filteredLines = task.assembly_lines.reduce<typeof task.assembly_lines>((lineAcc, line) => {
+            const filteredSectors = line.sector_lines.filter(s => sectorList.includes(s.sector))
+
+            if (filteredSectors.length > 0) {
+                lineAcc.push({
+                    ...line,
+                    sector_lines: filteredSectors
+                })
+            }
+            return lineAcc
+        }, [])
+
+        // __ Если остались валидные линии — формируем новый объект задачи
+        if (filteredLines.length > 0) {
+            acc.push({
+                ...task,
+                assembly_lines: filteredLines
+            })
+        }
+
+        return acc
+    }, [])
+}
+
+export function filterTaskBySectors_Old(entity: IAssemblyTask[] | IAssemblyManipulateDay, sectorFilter: IAssemblySectorKeys[] | IAssemblySectorKeys) {
     let tasks = []
     if (Array.isArray(entity)) {
         tasks = entity
@@ -1513,7 +1546,7 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
                             }
                         }
 
-                        total += sectorLine.total
+                        total += sectorLine.amount
                     })
 
                     renderType = getCompletedType(total, done, incompleted)

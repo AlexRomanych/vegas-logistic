@@ -19,6 +19,19 @@
                 />
             </div>
         </div>
+
+        <!-- __ Комментарий к Дню СЗ -->
+        <AppLabelTS
+            v-if="renderDay.description"
+            :text="renderDay.description"
+            type="warning"
+            align="left"
+            rounded="4"
+            text-size="mini"
+            width="w-[200px]"
+            height="h-[50px]"
+        />
+
     </div>
 
     <!-- __ Сами Данные -->
@@ -53,6 +66,7 @@ import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, DAY_MANIPULATE_DRAFT } from '@/a
 import { filterTaskBySectors, getAssemblyManipulationRenderTasks, getSectorMaterialsMatrixTasks } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AssemblyManipulateSector from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDaySector.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface ITab {
     id: number
@@ -165,14 +179,13 @@ const addCommonTask = (date: string) => {
     renderDay.value.tasks.push(commonTask.value)
 }
 
-
 // __ Создаем объект отображения матрицы Группы --> Модели --> Материалы
 const matrix = computed(() => {
     const resultMatrix: Record<IAssemblySectorKeys, IMatrixManufactureTask[]> = {} as Record<IAssemblySectorKeys, IMatrixManufactureTask[]>
 
     Object.values(ASSEMBLY_SECTORS).forEach(value => {
-        const renderTasks        = JSON.parse(JSON.stringify(renderDay.value.tasks))
-        const filtered           = filterTaskBySectors(renderTasks, value.NAME)
+        // __ Фильтруем по Участку
+        const filtered           = filterTaskBySectors(renderDay.value.tasks, value.NAME)
         resultMatrix[value.NAME] = getSectorMaterialsMatrixTasks(filtered)
 
     })
@@ -184,11 +197,9 @@ onMounted(async () => {
     // warn: Порядок важен!
     isLoading.value = true
 
-
     await router.isReady().then(() => {
         paramDate = route.params.date as unknown as string
     })
-
 
     await loadTasks(paramDate)      // __ Загружаем СЗ
     getRenderDay(paramDate)         // __ Оборачиваем в Day
@@ -199,7 +210,6 @@ onMounted(async () => {
     console.log('matrix: ', matrix.value)
 
     isLoading.value = false
-    // console.log('editMode.value: ', editMode.value)
 })
 </script>
 

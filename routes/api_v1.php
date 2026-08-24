@@ -465,6 +465,9 @@ Route::prefix('assembly')
         //Route::post('tasks/line/done', [BlockTaskController::class, 'setBlockTaskLinesDone']);
         //Route::post('tasks/line/false', [BlockTaskController::class, 'setBlockTaskLinesFalse']);
         //Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
+        Route::post('tasks/line/sector/done', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorDone']);
+        Route::post('tasks/line/sector/false', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorFalse']);
+        Route::post('tasks/line/sector/reset', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorReset']);
         Route::post('tasks/line/sector/description', [AssemblyTaskController::class, 'setAssemblyTaskLineSectorDescription']);
 
         //

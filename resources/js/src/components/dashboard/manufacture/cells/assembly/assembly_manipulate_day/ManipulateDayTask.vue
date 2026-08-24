@@ -245,6 +245,7 @@
             <ManipulateDayTaskLineHeader
                 :field-widths="fieldWidths"
                 :materials="data.materials"
+                :show-order-title="data.task.id === UNION_TASKS_ID"
                 @toggle-all="toggleGroups"
             />
         </div>
@@ -297,7 +298,7 @@
                             :group-line="record"
                             :index="index + 1"
                             :ordering="'index'"
-
+                            :show-order-title="data.task.id === UNION_TASKS_ID"
                         />
 
                         <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -406,7 +407,7 @@
 
     <!-- __ Модальное окно для добавления причины не выполнения -->
     <ManipulateDayFalseReason
-        ref="executeDayFalseReason"
+        ref="manipulateDayFalseReason"
         :false-reason="falseReason"
         label="Причина не выполнения"
     />
@@ -487,13 +488,13 @@ import type {
     IMatrixManufactureTask
 } from '@/types'
 import { LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME } from '@/app/constants/blocks.ts'
-import { isTaskLineReset } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { ASSEMBLY_UNION_TASK_NAME } from '@/app/constants/assembly.ts'
 import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskLineHeader.vue'
 import ManipulateDayTaskLineHeader from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeader.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 import ManipulateDayTaskGroup from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskGroup.vue'
 import ManipulateDayTaskLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLine.vue'
+import { isTaskLineDone, isTaskLineFalse, isTaskLineReset } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 
 interface IProps {
@@ -558,6 +559,7 @@ const fieldWidths: Record<string, string> = {
     order       : 'min-w-[300px] max-w-[300px]',
     description : 'min-w-[300px] max-w-[300px]',
     material    : 'min-w-[110px] max-w-[110px]',
+    order_title : 'min-w-[110px] max-w-[110px]',
 }
 
 
@@ -599,14 +601,14 @@ async function showError(error: string | string[] | null = null) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Видимость названий подгрупп
-const showGroups = ref(true)
+const showGroups       = ref(true)
 // __ Скрываем Переналадку
 const toggleShowGroups = () => {
     showGroups.value = !showGroups.value
 }
 
 // __ Устанавливаем Collapsed
-const collapsedStates = ref<Record<string, boolean>>({})
+const collapsedStates    = ref<Record<string, boolean>>({})
 const setCollapsedStates = () => {
     props.data.groups.forEach(group => collapsedStates.value[group.group.name] = true)
 }
@@ -620,7 +622,7 @@ const toggleGroup = (groupName: string) => {
 
 // __ Устанавливаем Общий Collapsed
 const collapsedGroupsState = ref(true)
-const toggleGroups = () => {
+const toggleGroups         = () => {
     collapsedGroupsState.value = !collapsedGroupsState.value
     Object.keys(collapsedStates.value).forEach(key => collapsedStates.value[key] = collapsedGroupsState.value)
 }
@@ -639,84 +641,79 @@ const taskTitle   = computed(() => {
 })
 
 
+// __ Получаем все id Участков выделенных Линий
+// __ Выбираем только задачи с нулевым статусом
+const getSelectedSectorIds = (selector: 'reset' | null = null) => {
+    const ids = new Set<number>()
+    props.data.groups.forEach(group => {
+        group.group_lines.forEach(groupLine => {
+            if (selectedIds.value.has(groupLine.order_line.id)) {
+                groupLine.materials_array.forEach(details => {
+                    if (details) {
+                        details.forEach(sector => {
+                            if (selector === 'reset') {
+                                if (isTaskLineDone(sector) || isTaskLineFalse(sector)) {
+                                    ids.add(sector.id)
+                                }
+                            } else {
+                                if (isTaskLineReset(sector)) {
+                                    ids.add(sector.id)
+                                }
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    })
+    return Array.from(ids)
+}
+
 // __ Выполнено
 const completeSelected = async () => {
-    const ids: number[] = []
+    const ids: number[] = getSelectedSectorIds()
 
-    // __ Выбираем только задачи с нулевым статусом
-    // blockLines.value.forEach((t) => {
-    //     if (selectedIds.value.has(t.id)) {
-    //         if (isTaskLineReset(t)) {
-    //             ids.push(t.id)
-    //         }
-    //     }
-    // })
-    //
-    // if (!ids.length) {
-    //     return
-    // }
-    //
-    // emits('setFinishStatus', ids)
-    // showMenu.value = false
+    if (!ids.length) {
+        return
+    }
+
+    emits('setFinishStatus', ids)
+    showMenu.value = false
 }
 
 // __ Не Выполнено
 const unCompleteSelected = async () => {
-    const ids: number[] = []
-    //
-    // // __ Выбираем только задачи с нулевым статусом
-    // blockLines.value.forEach((t) => {
-    //     if (selectedIds.value.has(t.id)) {
-    //         if (isTaskLineReset(t)) {
-    //             ids.push(t.id)
-    //         }
-    //     }
-    // })
-    //
-    // if (!ids.length) {
-    //     return
-    // }
-    //
-    // const answer = await manipulateDayFalseReason.value?.show()
-    // if (answer) {
-    //     falseReason.value = manipulateDayFalseReason.value?.falseReason ?? ''
-    //
-    //     if (!falseReason.value) {
-    //         return
-    //     }
-    //
-    //     emits('setFalseStatus', ids, falseReason.value)
-    //     showMenu.value = false
-    // }
+    const ids: number[] = getSelectedSectorIds()
+
+    console.log('ids: ', ids)
+
+    if (!ids.length) {
+        return
+    }
+
+    const answer = await manipulateDayFalseReason.value?.show()
+    if (answer) {
+        falseReason.value = manipulateDayFalseReason.value?.falseReason ?? ''
+
+        if (!falseReason.value) {
+            return
+        }
+
+        emits('setFalseStatus', ids, falseReason.value)
+        showMenu.value = false
+    }
 }
 
 // __ Сброс статуса
 const resetStatus = async () => {
+    const ids: number[] = getSelectedSectorIds('reset')
 
-    // // __ Получаем флаг готовности к добавлению новых СЗ и если все в процессе выполнения - выходим
-    // const isReady: boolean = await blockStore.readyGetBlockDay(splitDate(props.blockTask.action_at))
-    // if (isReady) {
-    //     await showError(TASK_READY_ADD_STATUS_MESSAGE)
-    //     return
-    // }
-    //
-    // const ids: number[] = []
-    //
-    // // __ Выбираем только задачи не с нулевым статусом
-    // blockLines.value.forEach((t) => {
-    //     if (selectedIds.value.has(t.id)) {
-    //         if (!isTaskLineReset(t)) {
-    //             ids.push(t.id)
-    //         }
-    //     }
-    // })
-    //
-    // if (!ids.length) {
-    //     return
-    // }
-    //
-    // emits('resetStatus', ids)
-    // showMenu.value = false
+    if (!ids.length) {
+        return
+    }
+
+    emits('resetStatus', ids)
+    showMenu.value = false
 }
 
 // __ Разбить количество
@@ -1093,7 +1090,7 @@ onUnmounted(() => {
 
 .wrapper {
     /* Оставляем расчет высоты, он важен для overflow-y-auto внутри */
-    height: calc(100vh - var(--header-height) - var(--footer-height) - 165px);
+    height: calc(100vh - var(--header-height) - var(--footer-height) - 169px);
 
     /* Убираем фиксированный width и ставим это: */
     width: 100%;

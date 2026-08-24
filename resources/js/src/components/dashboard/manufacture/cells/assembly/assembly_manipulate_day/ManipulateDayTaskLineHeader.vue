@@ -82,6 +82,18 @@
             rounded="4"
         />
 
+        <!-- __ Название Заявки, показываем только для Объединения -->
+        <AppLabelMultiLineTS
+            v-if="showOrderTitle"
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text="['Заявка', '']"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.order_title"
+            rounded="4"
+        />
+
         <!-- __ Материалы -->
         <div v-for="material in materials" :key="material.code_1c">
             <AppLabelMultiLineTS
@@ -111,16 +123,16 @@
         />
 
         <!-- __ Причина не выполнения -->
-        <AppLabelMultiLineTS
-            :align="DEFAULT_ALIGN"
-            :height="LINE_HEIGHT"
-            :text="['Причина', '']"
-            :text-size="LINE_TEXT_SIZE"
-            :type="DEFAULT_TYPE"
-            :width="fieldWidths.false_reason"
-            class="truncate"
-            rounded="4"
-        />
+        <!--<AppLabelMultiLineTS-->
+        <!--    :align="DEFAULT_ALIGN"-->
+        <!--    :height="LINE_HEIGHT"-->
+        <!--    :text="['Причина', '']"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="DEFAULT_TYPE"-->
+        <!--    :width="fieldWidths.false_reason"-->
+        <!--    class="truncate"-->
+        <!--    rounded="4"-->
+        <!--/>-->
 
         <!--__ Описание -->
         <!--<AppLabelMultiLineTS-->
@@ -179,9 +191,12 @@ import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 interface IProps {
     fieldWidths: Record<string, string>
     materials: MatrixManufactureGroupMaterial[]
+    showOrderTitle?: boolean
 }
 
-defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    showOrderTitle: false,
+})
 
 const emits = defineEmits<{
     (e: 'toggleAll'): void,

@@ -61,19 +61,30 @@
         </template>
     </div>
 
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultiline
+        ref="appModalAsyncMultiline"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        ok-word="Понятно"
+    />
 
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
-
-import type { IAssemblySector, IAssemblyTask, IColorTypes, IMatrixManufactureTask } from '@/types'
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
+import type { IAssemblySector, IAssemblyTask, IAssemblyTaskLineSector, IColorTypes, IMatrixManufactureTask } from '@/types'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTask.vue'
 import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayInfo.vue'
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
 import ManipulateDayTask from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTask.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+
 
 interface ITab {
     show: boolean
@@ -92,11 +103,39 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
+const assemblyStore = useAssemblyStore()
+
 console.log('props.matrix: ', props.matrix)
 
 // __ Константы
 // const DEBUG = true
 const MENU_LABEL_WIDTH = 'w-[160px]'
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Ошибки                         !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Тип для модального окна Сообщений
+const modalInfoType          = ref<IColorTypes>('danger')
+const modalInfoText          = ref<string | string[]>('')
+const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value = renderError
+    await appModalAsyncMultiline.value!.show()
+}
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -121,6 +160,7 @@ const getOrderTitle = (task: IAssemblyTask) => {
 const infoTabPosition      = -2
 const personalTabPosition  = -1
 const UNION_TASKS_POSITION = 0
+const UNION_TASKS_ID = 0
 const activeTabPosition    = ref(infoTabPosition)
 
 const tabs = ref<ITab[]>([])
@@ -150,7 +190,7 @@ const setTabs = () => {
             show      : true,
             label     : getOrderTitle(item.task),
             position  : item.task.position,
-            type      : item.task.id === 0 ? 'orange' : 'dark',
+            type      : item.task.id === UNION_TASKS_ID ? 'orange' : 'dark',
             typeActive: 'primary',
             task      : item.task,
             active    : true,
@@ -207,55 +247,37 @@ const getTab = () => {
 // !!! ---   Функционал для выполнения дня Записи        !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// __ Устанавливаем статус Выполнено BlockLines
-const setFinishStatus = async (blockLinesIds: number[]) => {
-    // const result = (await blockStore.setBlockTaskLinesDone(blockLinesIds)) as IBlockTaskLine[]
-    //
-    // if (checkCRUD(result)) {
-    //     result.forEach(line => {
-    //         const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
-    //         if (findLine) {
-    //             findLine.finished_at = line.finished_at
-    //         }
-    //     })
-    // } else {
-    //     await showError()
-    // }
+// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
+const setFinishStatus = async (sectorLinesIds: number[]) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorDone(sectorLinesIds)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
 }
 
-// __ Устанавливаем статус Не Выполнено BlockLines
-const setFalseStatus = async (blockLinesIds: number[], falseReason: string) => {
-    // const result = (await blockStore.setBlockTaskLinesFalse(blockLinesIds, falseReason)) as IBlockTaskLine[]
-    //
-    // if (checkCRUD(result)) {
-    //     result.forEach(line => {
-    //         const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
-    //         if (findLine) {
-    //             findLine.false_at     = line.false_at
-    //             findLine.false_reason = line.false_reason
-    //         }
-    //     })
-    // } else {
-    //     await showError()
-    // }
+// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
+const setFalseStatus = async (sectorLinesIds: number[], falseReason: string) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorFalse(sectorLinesIds, falseReason)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
 }
 
-// __ Сбрасываем статус BlockLines
-const resetStatus = async (blockLinesIds: number[]) => {
-    // const result = (await blockStore.setBlockTaskLinesReset(blockLinesIds)) as IBlockTaskLine[]
-    //
-    // if (checkCRUD(result)) {
-    //     result.forEach(line => {
-    //         const findLine = allBlockTasksLinesUnion.value.block_lines.find(l => l.id === line.id)
-    //         if (findLine) {
-    //             findLine.finished_at  = line.finished_at
-    //             findLine.false_at     = line.false_at
-    //             findLine.false_reason = line.false_reason
-    //         }
-    //     })
-    // } else {
-    //     await showError()
-    // }
+// __ Сбрасываем статус IAssemblyTaskLineSector
+const resetStatus = async (sectorLinesIds: number[]) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorReset(sectorLinesIds)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
 }
 
 // __ Разделяем строку

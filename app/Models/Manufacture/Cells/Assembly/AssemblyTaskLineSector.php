@@ -15,6 +15,7 @@ class AssemblyTaskLineSector extends Model
         'expense_per_pic' => 'float',
         'rest_per_pic'    => 'float',
         'total_per_pic'   => 'float',
+        'false_history'   => 'array',
     ];
 
     // --- -------------------------------

@@ -43,7 +43,7 @@
         <!-- __ Кол-во -->
         <AppLabelTS
             :text="amount.toString()"
-            :type="DEFAULT_TYPE"
+            :type="targetColor"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -157,17 +157,25 @@ const amount = computed(() => props.group.group_lines.reduce((acc, line) => acc 
 // __ Общее время
 const totalTime = computed(() => (0))
 
-// // __ Проверяем, все ли Строки выполнены
+// __ Проверяем, все ли Строки выполнены
 // const isAllLinesDone = computed(() => props.subgroup.lines.every(line => isTaskLineDone(line)))
-//
-// // __ Проверяем, все ли Строки Невыполнены
+
+// __ Проверяем, все ли Строки Невыполнены
 // const isAllLinesFalse = computed(() => props.subgroup.lines.every(line => isTaskLineFalse(line)))
-//
+
 // __ Получаем Раскраску
 const targetColor = computed<IColorTypes>(() => {
-    // if (isAllLinesDone.value) return 'success'
-    // if (isAllLinesFalse.value) return 'danger'
-    return DEFAULT_TYPE
+    const totals           = props.group.group_lines.reduce((acc, line) => acc + line.order_line_attr.total, 0)
+    const totalsDone       = props.group.group_lines.reduce((acc, line) => acc + line.order_line_attr.done, 0)
+    const totalsIncomplete = props.group.group_lines.reduce((acc, line) => acc + line.order_line_attr.incomplete, 0)
+
+    if (totals === totalsDone) {
+        return 'success'
+    } else if (totals === totalsIncomplete) {
+        return 'danger'
+    } else {
+        return DEFAULT_TYPE
+    }
 })
 
 </script>

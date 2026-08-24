@@ -27,12 +27,17 @@ class AssemblyTaskOrderLineResource extends JsonResource
 
             'model' => $this->whenLoaded('model', fn() => new AssemblyTaskModelResource($this->model)),
 
-            'amount'      => $this->amount,
-            'textile'     => $this->textile,
-            'composition' => $this->composition,
-            'describe_1'  => $this->describe_1,
-            'describe_2'  => $this->describe_2,
-            'describe_3'  => $this->describe_3,
+            'amount'                => $this->amount,
+            'textile'               => $this->textile,
+            'composition'           => $this->composition,
+            'describe_1'            => $this->describe_1,
+            'describe_2'            => $this->describe_2,
+            'describe_3'            => $this->describe_3,
+            'construct_code_1c'     => $this->construct_code_1c,
+            'construct_name'        => $this->construct_name,
+            'construct_add_code_1c' => $this->construct_add_code_1c,
+            'construct_add_name'    => $this->construct_add_name,
+
 
             // 'model_name'    => $this->model_name,
             // 'model_code_1c' => $this->model_code_1c,
