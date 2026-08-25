@@ -4,6 +4,7 @@ import type { ICellEvent, ICellEventsCells } from '@/types'
 // __ Дублирование констант сервера
 export const CELL_EVENT_UNKNOWN = 'unknown' as const
 export const CELL_EVENT_BLOCK = 'blocks' as const
+export const CELL_EVENT_ASSEMBLY = 'blocks' as const
 export const CELL_EVENT_SEWING = 'sewing' as const
 export const CELL_EVENT_CUTTING = 'cutting' as const
 export const CELL_EVENT_FABRIC = 'fabric' as const

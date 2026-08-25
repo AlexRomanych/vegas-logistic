@@ -350,7 +350,6 @@
                 >
                     <span class="mr-3 text-lg">✘</span> Не выполнено
                 </button>
-                <!--<div class="h-[1px] bg-gray-100 my-1"></div>-->
                 <button
                     class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
                     @click="handleMenuAction('reset')"
@@ -369,25 +368,6 @@
                 >
                     <span class="mr-3 text-lg">↺</span> Отменить
                 </button>
-
-                <!-- __ Перемещение на другую 1 Линию -->
-                <button
-                    v-if="activeManufLineName === LINE_2"
-                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-600 hover:text-white transition-colors"
-                    @click="handleMenuAction(LINE_1_NAME)"
-                >
-                    <span class="mr-3 text-2xl">①</span> Отправить на Линию 1
-                </button>
-
-                <!-- __ Перемещение на другую 2 Линию -->
-                <button
-                    v-if="activeManufLineName === LINE_1"
-                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
-                    @click="handleMenuAction(LINE_2_NAME)"
-                >
-                    <span class="mr-3 text-2xl">①</span> Отправить на Линию 2
-                </button>
-
             </div>
         </Transition>
     </Teleport>
@@ -453,52 +433,55 @@
     <!--    type="primary"-->
     <!--/>-->
 
-    <!-- __ Журнал Событий -->
-    <!--<ManageEventsAsync-->
-    <!--    ref="manageEventsAsync"-->
-    <!--    :cell="CELL_EVENT_BLOCK"-->
-    <!--    :day-id="dayId"-->
-    <!--/>-->
+     <!--__ Журнал Событий -->
+    <ManageEventsAsync
+        ref="manageEventsAsync"
+        :cell="CELL_EVENT_ASSEMBLY"
+        :day-id="day.id"
+    />
 
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, nextTick, onUnmounted, onMounted, onBeforeUnmount } from 'vue'
 
-import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
-import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
-import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import { CELL_EVENT_BLOCK } from '@/app/constants/cell_events.ts'
-import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/block_design/BlockDesignDocumentAsync.vue'
-import OrderItemInfo from '@/components/dashboard/manufacture/cells/assembly/common/OrderItemInfo.vue'
-import ManipulateDayFalseReason from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayFalseReason.vue'
-import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
-import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
-import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageEventsAsync.vue'
-import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
-import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
-import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 import type {
+    IColorTypes,
     IAssemblyModelManufactureGroup,
     IAssemblyTask,
     IAssemblyTaskOrderLine,
-    IBlockTaskLinesGroupNames,
     IDividerItem, IMatrixManufactureGroup,
-    IMatrixManufactureTask
+    IMatrixManufactureTask, IAssemblyDay
 } from '@/types'
-import { LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME } from '@/app/constants/blocks.ts'
+
+import { CELL_EVENT_ASSEMBLY } from '@/app/constants/cell_events.ts'
+import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
 import { ASSEMBLY_UNION_TASK_NAME } from '@/app/constants/assembly.ts'
-import ExecuteDayTaskLineHeader from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTaskLineHeader.vue'
-import ManipulateDayTaskLineHeader from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeader.vue'
+
+import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
+import { isTaskLineDone, isTaskLineFalse, isTaskLineReset } from '@/app/helpers/manufacture/helpers_assembly.ts'
+
+import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+
+import OrderItemInfo from '@/components/dashboard/manufacture/cells/assembly/common/OrderItemInfo.vue'
+import ManipulateDayFalseReason from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayFalseReason.vue'
+import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
+import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageEventsAsync.vue'
+
+import ManipulateDayTaskLineHeader from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeader.vue'
 import ManipulateDayTaskGroup from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskGroup.vue'
 import ManipulateDayTaskLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLine.vue'
-import { isTaskLineDone, isTaskLineFalse, isTaskLineReset } from '@/app/helpers/manufacture/helpers_assembly.ts'
+
 
 
 interface IProps {
     data: IMatrixManufactureTask
+    day: IAssemblyDay   // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
 }
 
 const props = defineProps<IProps>()
@@ -684,8 +667,6 @@ const completeSelected = async () => {
 // __ Не Выполнено
 const unCompleteSelected = async () => {
     const ids: number[] = getSelectedSectorIds()
-
-    console.log('ids: ', ids)
 
     if (!ids.length) {
         return
@@ -978,21 +959,18 @@ const openContextMenu = async (event: MouseEvent) => {
 
 // __ Меню
 const handleMenuAction = async (action: string) => {
-    // if (action === 'done') {
-    //     await completeSelected()
-    // } else if (action === 'false') {
-    //     await unCompleteSelected()
-    // } else if (action === 'reset') {
-    //     await resetStatus()
-    // } else if (action === 'divide') {
-    //     await divideElementAmount()
-    // } else if (action === 'cancel') {
-    //     selectedIds.value.clear()
-    // } else if ([LINE_1_NAME, LINE_2_NAME].includes(action)) {
-    //     await changeAssemblyLineByMenu(action as IBlockTaskLinesGroupNames)
-    // }
-    //
-    // showMenu.value = false
+    if (action === 'done') {
+        await completeSelected()
+    } else if (action === 'false') {
+        await unCompleteSelected()
+    } else if (action === 'reset') {
+        await resetStatus()
+    } else if (action === 'divide') {
+        await divideElementAmount()
+    } else if (action === 'cancel') {
+        selectedIds.value.clear()
+    }
+    showMenu.value = false
 }
 
 

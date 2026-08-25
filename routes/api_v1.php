@@ -495,7 +495,7 @@ Route::prefix('assembly')
 
         //// __ Производственный день
         //Route::get('/days/period', [BlockDayController::class, 'getBlockDays']);
-        //Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
+        Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
         //Route::get('/day/dates', [BlockDayController::class, 'getBlockDaysByDates']);
         //Route::post('/day/comment', [BlockDayController::class, 'setBlockDayComment']);
         //Route::post('/day/worker/add', [BlockDayController::class, 'addWorkerToBlockDay']);

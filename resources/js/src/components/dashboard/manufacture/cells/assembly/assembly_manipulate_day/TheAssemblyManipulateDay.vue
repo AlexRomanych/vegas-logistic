@@ -24,12 +24,12 @@
         <AppLabelTS
             v-if="renderDay.description"
             :text="renderDay.description"
-            type="warning"
             align="left"
+            height="h-[50px]"
             rounded="4"
             text-size="mini"
+            type="warning"
             width="w-[200px]"
-            height="h-[50px]"
         />
 
     </div>
@@ -39,21 +39,24 @@
         <AssemblyManipulateSector
             :matrix="matrix[getTab().sector.NAME]"
             :sector="getTab().sector"
+            :day="day"
         />
     </div>
 
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
 import type {
+    IAssemblyDay,
     IAssemblyManipulateDay,
     IAssemblySector,
     IAssemblySectorKeys,
     IAssemblyTask,
+    IAssemblyTaskChangeKeys,
     IAssemblyTaskLine,
     IMatrixManufactureTask,
     IPeriod,
@@ -61,7 +64,7 @@ import type {
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
-import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, DAY_MANIPULATE_DRAFT } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_DAY_DRAFT, ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, CHANGE_1, DAY_MANIPULATE_DRAFT } from '@/app/constants/assembly.ts'
 
 import { filterTaskBySectors, getAssemblyManipulationRenderTasks, getSectorMaterialsMatrixTasks } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
@@ -88,6 +91,7 @@ let paramDate: string = ''
 
 // __ Подготавливаем переменные
 const renderDay      = ref<IAssemblyManipulateDay>(DAY_MANIPULATE_DRAFT)
+const day            = ref<IAssemblyDay>(ASSEMBLY_DAY_DRAFT)
 const tabs           = ref<ITab[]>([])
 const activeTabIndex = ref<number | null>(null)
 const commonTask     = ref<IAssemblyTask>(JSON.parse(JSON.stringify(ASSEMBLY_TASK_DRAFT)))
@@ -155,6 +159,11 @@ const loadTasks = async (date: string) => {
     await assemblyStore.getAssemblyTasks(null, period)
 }
 
+// __ Загружаем Производственый День
+const loadDay = async (date: string, change: IAssemblyTaskChangeKeys = CHANGE_1) => {
+    day.value = await assemblyStore.getAssemblyDayByDateAndChange(date, change) as IAssemblyDay
+}
+
 // __ Подготавливаем массив отображения
 const getRenderDay = (date: string) => {
     const period: IPeriod = { start: date, end: date }
@@ -201,12 +210,18 @@ onMounted(async () => {
         paramDate = route.params.date as unknown as string
     })
 
-    await loadTasks(paramDate)      // __ Загружаем СЗ
+    // __ Загружаем СЗ + Производственный день
+    await Promise.all([
+        loadTasks(paramDate),
+        loadDay(paramDate)
+    ])
+
     getRenderDay(paramDate)         // __ Оборачиваем в Day
     addCommonTask(paramDate)        // __ Добавляем Общее СЗ
     prepareTabs()                   // __ Подготавливаем Табы
 
     console.log('renderDay.value: ', renderDay.value)
+    console.log('day.value: ', day.value)
     console.log('matrix: ', matrix.value)
 
     isLoading.value = false

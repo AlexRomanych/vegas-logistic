@@ -42,6 +42,7 @@ class CellCuttingTaskController extends Controller
     {
         // __ !!! Увеличиваем Память, Запрос тяжелый
         ini_set('memory_limit', '512M');
+        set_time_limit(60);
 
         try {
             $validated = $request->validate([

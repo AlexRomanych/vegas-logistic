@@ -4,7 +4,9 @@
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
 import {
-    ASSEMBLY_LINE_LAMIT, ASSEMBLY_LINE_TABLE, ASSEMBLY_LINE_UNDEFINED,
+    ASSEMBLY_LINE_LAMIT,
+    ASSEMBLY_LINE_TABLE,
+    ASSEMBLY_LINE_UNDEFINED,
     ASSEMBLY_TASK_SECTOR_COCONUT,
     ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
     ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
@@ -12,15 +14,61 @@ import {
     ASSEMBLY_TASK_SECTOR_LATEX,
     ASSEMBLY_TASK_SECTOR_LAYER,
     ASSEMBLY_TASK_SECTOR_TABLE,
-    ASSEMBLY_TASK_STATUS_CREATED, ASSEMBLY_TASK_STATUS_DONE,
+    ASSEMBLY_TASK_STATUS_CREATED,
+    ASSEMBLY_TASK_STATUS_DONE,
     ASSEMBLY_TASK_STATUS_PENDING,
     ASSEMBLY_TASK_STATUS_ROLLING,
     ASSEMBLY_TASK_STATUS_RUNNING,
     CHANGE_1,
     CHANGE_2
 } from '@/app/constants/assembly.ts'
-import type { IDiffsType } from '@/types/index.ts'
+import type { ICellEvent, IDiffsType } from '@/types/index.ts'
 
+// --- --------------------------------------------------------------------
+// --- -------------------- Производственный день  ------------------------
+// --- --------------------------------------------------------------------
+// __ Тип для Производственного Дня
+export type IAssemblyDay = {
+    id: number
+    change: IAssemblyTaskChangeKeys
+    action_at: string
+    action_at_str: string
+    description: string | null
+    comment: string | null
+    start_at: string | null
+    paused_at: string | null
+    resume_at: string | null
+    finish_at: string | null
+    duration: number
+    assembly_tasks: IAssemblyTask[]
+    responsible: IAssemblyDayWorker | null
+    workers: IAssemblyDayWorker[]
+    cell_events: ICellEvent[]
+
+    ready: boolean  // __ Готовность к добавлению новых СЗ
+
+    collapsed?: boolean
+    personal_collapsed?: boolean
+    tasks_collapsed?: boolean
+    common_collapsed?: boolean
+    cell_events_collapsed?: boolean
+}
+
+// --- --------------------------------------------------------------------
+// --- --------------------- Для Учета персонала  -------------------------
+// --- --------------------------------------------------------------------
+export type IAssemblyDayWorker = {
+    id: number
+    surname: string
+    name: string
+    patronymic: string
+    pivot?: IAssemblyDayWorkerPivot
+}
+
+export type IAssemblyDayWorkerPivot = {
+    id: number
+    working_time: number | null
+}
 
 // --- --------------------------------------------------------------------
 // --- ----------- Для рендера Групп Моделей для Сортировки ---------------

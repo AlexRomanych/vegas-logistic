@@ -1,4 +1,5 @@
 import type {
+    IAssemblyDay,
     IAssemblyLineKeys, IAssemblyManipulateDay,
     IAssemblyModelManufactureGroup,
     IAssemblySector,
@@ -265,3 +266,24 @@ export const ASSEMBLY_TASK_STATUSES: Record<IAssemblyTaskStatusKeys, IAssemblyTa
         PRIORITY: 5,
     },
 } as const
+
+
+// __ Болванка дня производства Блоков
+export const ASSEMBLY_DAY_DRAFT: IAssemblyDay = {
+    id            : 0,
+    change        : CHANGE_1,
+    action_at     : '',
+    action_at_str : '',
+    description   : null,
+    comment       : null,
+    start_at      : null,
+    paused_at     : null,
+    resume_at     : null,
+    finish_at     : null,
+    duration      : 0,
+    assembly_tasks: [],
+    responsible   : null,
+    workers       : [],
+    ready         : false,  // __ Готовность к добавлению новых СЗ
+    cell_events   : []
+}

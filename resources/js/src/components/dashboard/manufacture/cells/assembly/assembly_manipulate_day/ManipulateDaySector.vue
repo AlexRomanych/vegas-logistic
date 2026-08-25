@@ -51,6 +51,7 @@
                 <template v-if="data.task.id === getTab().task!.id">
                     <ManipulateDayTask
                         :data="data"
+                        :day="day"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -75,7 +76,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
-import type { IAssemblySector, IAssemblyTask, IAssemblyTaskLineSector, IColorTypes, IMatrixManufactureTask } from '@/types'
+import type { IAssemblyDay, IAssemblySector, IAssemblyTask, IAssemblyTaskLineSector, IColorTypes, IMatrixManufactureTask } from '@/types'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTask.vue'
@@ -99,6 +100,7 @@ interface ITab {
 interface IProps {
     sector: IAssemblySector
     matrix: IMatrixManufactureTask[]
+    day: IAssemblyDay
 }
 
 const props = defineProps<IProps>()
@@ -160,7 +162,7 @@ const getOrderTitle = (task: IAssemblyTask) => {
 const infoTabPosition      = -2
 const personalTabPosition  = -1
 const UNION_TASKS_POSITION = 0
-const UNION_TASKS_ID = 0
+const UNION_TASKS_ID       = 0
 const activeTabPosition    = ref(infoTabPosition)
 
 const tabs = ref<ITab[]>([])
