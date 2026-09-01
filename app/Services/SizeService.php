@@ -4,7 +4,11 @@ namespace App\Services;
 
 
 use App\Models\Shared\Size;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
+
+use function PHPUnit\Framework\isEmpty;
 
 class SizeService
 {
@@ -40,7 +44,7 @@ class SizeService
         $resStr = '';
         for ($i = 0; $i < mb_strlen($size); $i++) {
             $char = mb_substr($size, $i, 1);
-            if (($char >= '0' && $char <='9') || $char === LAT_X) {
+            if (($char >= '0' && $char <= '9') || $char === LAT_X) {
                 $resStr = $resStr . $char;
             }
         }
@@ -56,7 +60,13 @@ class SizeService
     public static function getDimensions(string|null $size = null): Size
     {
         $size = self::correctSizeString($size);
-        $dims = explode(LAT_X, $size);
+
+        if (empty($size)) {
+            $dims = [null, null, null];
+        } else {
+            $dims = explode(LAT_X, $size);
+        }
+
         return new Size(...$dims);
     }
 }

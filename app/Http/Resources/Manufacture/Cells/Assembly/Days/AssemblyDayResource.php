@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Blocks\Days;
+namespace App\Http\Resources\Manufacture\Cells\Assembly\Days;
 
 //use Carbon\Carbon;
-use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskResource;
+use App\Http\Resources\Manufacture\Cells\Assembly\Manage\AssemblyTaskResource;
 use App\Http\Resources\Manufacture\Cells\Events\CellEventResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BlockDayResource extends JsonResource
+class AssemblyDayResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -32,16 +32,16 @@ class BlockDayResource extends JsonResource
             'description'   => $this->description,
             'comment'       => $this->comment,
             'ready'         => $this->ready,
-            'responsible'   => new BlockDayWorkerResource($this->whenLoaded('responsible')),
+            'responsible'   => new AssemblyDayWorkerResource($this->whenLoaded('responsible')),
 
             // __ Отправляем только активных рабочих
-            'workers'       => BlockDayWorkerResource::collection($this->whenLoaded('workers')),
+            'workers'       => AssemblyDayWorkerResource::collection($this->whenLoaded('workers')),
 
             // __ Произвордственные События
             'cell_events'   => CellEventResource::collection($this->whenLoaded('cellEvents')),
 
             // __ Сменные Задания
-            'block_tasks'   => BlockTaskResource::collection($this->whenLoaded('blockTasks')),
+            'assembly_tasks'   => AssemblyTaskResource::collection($this->whenLoaded('assemblyTasks')),
 
             // 'workers'       => CuttingDayWorkerResource::collection($this->whenLoaded('activeWorkers')),
 

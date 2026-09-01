@@ -49,7 +49,7 @@ class AssemblyDayController extends Controller
             }
 
             // __ Получаем СЗ
-            $assemblyTasks = AssemblysService::getAssemblyTasksByDatesAndStatus($start, $end);
+            //$assemblyTasks = AssemblyService::getAssemblyTasksByDatesAndStatus($start, $end);
 
             // __ Получаем Производственные дни
             $days = AssemblyDay::query()
@@ -60,33 +60,33 @@ class AssemblyDayController extends Controller
             //$assemblyTasksArray = $assemblyTasks->toArray();
             //$daysArray = $days->toArray();
 
-            // __ Группируем задачи по составному ключу (action_at + change)
-            // __ Приводим дату к строке Y-m-d, чтобы гарантировать точное совпадение дней
-            $groupedTasks = $assemblyTasks->groupBy(function (AssemblyTask $task) {
-                $date = $task->action_at instanceof Carbon
-                    ? $task->action_at->format('Y-m-d')
-                    : date('Y-m-d', strtotime($task->action_at));
-
-                return "{$date}_{$task->change}";
-            });
-
-            // __ Руками «прошиваем» отношение assemblyTasks для каждого дня
-            $days->each(function (AssemblyDay $day) use ($groupedTasks) {
-                $date = $day->action_at instanceof Carbon
-                    ? $day->action_at->format('Y-m-d')
-                    : date('Y-m-d', strtotime($day->action_at));
-
-                $key = "{$date}_{$day->change}";
-
-                // __ Достаем задачи для этого дня и смены, если их нет — возвращаем пустую коллекцию
-                $associatedTasks = $groupedTasks->get($key, collect());
-
-                // __ Сортируем задачи внутри этого дня по полю 'position'
-                $sortedTasks = $associatedTasks->sortBy('position')->values();
-
-                // __ Заселяем кастомное отношение прямо в память модели AssemblyDay
-                $day->setRelation('assemblyTasks', $sortedTasks);
-            });
+            //// __ Группируем задачи по составному ключу (action_at + change)
+            //// __ Приводим дату к строке Y-m-d, чтобы гарантировать точное совпадение дней
+            //$groupedTasks = $assemblyTasks->groupBy(function (AssemblyTask $task) {
+            //    $date = $task->action_at instanceof Carbon
+            //        ? $task->action_at->format('Y-m-d')
+            //        : date('Y-m-d', strtotime($task->action_at));
+            //
+            //    return "{$date}_{$task->change}";
+            //});
+            //
+            //// __ Руками «прошиваем» отношение assemblyTasks для каждого дня
+            //$days->each(function (AssemblyDay $day) use ($groupedTasks) {
+            //    $date = $day->action_at instanceof Carbon
+            //        ? $day->action_at->format('Y-m-d')
+            //        : date('Y-m-d', strtotime($day->action_at));
+            //
+            //    $key = "{$date}_{$day->change}";
+            //
+            //    // __ Достаем задачи для этого дня и смены, если их нет — возвращаем пустую коллекцию
+            //    $associatedTasks = $groupedTasks->get($key, collect());
+            //
+            //    // __ Сортируем задачи внутри этого дня по полю 'position'
+            //    $sortedTasks = $associatedTasks->sortBy('position')->values();
+            //
+            //    // __ Заселяем кастомное отношение прямо в память модели AssemblyDay
+            //    $day->setRelation('assemblyTasks', $sortedTasks);
+            //});
 
             return AssemblyDayResource::collection($days);
         } catch (Exception $e) {
@@ -99,7 +99,7 @@ class AssemblyDayController extends Controller
      * ___ Возвращает производственный день по дате и смене
      * @param string $date
      * @param string $change
-     * @return AnonymousResourceCollection|string
+     * @return AssemblyDayResource|string
      */
     public function getAssemblyDayByDateAndChange(string $date, string $change)
     {
@@ -122,21 +122,21 @@ class AssemblyDayController extends Controller
             // __ Создаем производственный день или получаем его, если он уже существует
             if ($change !== AssemblyDay::CHANGE_0) {
                 AssemblyDay::findOrCreateByDateAndChange($date, $change);
-                $days = AssemblyDay::query()
+                $day = AssemblyDay::query()
                     ->where('change', $change)
                     ->byDates($date)
                     ->with(['workers', 'responsible', 'cellEvents'])
-                    ->get();
+                    ->first();
             } else {
                 AssemblyDay::findOrCreateByDateAndChange($date, AssemblyDay::CHANGE_1);
                 AssemblyDay::findOrCreateByDateAndChange($date, AssemblyDay::CHANGE_2);
-                $days = AssemblyDay::query()
+                $day = AssemblyDay::query()
                     ->byDates($date)
                     ->with(['workers', 'responsible', 'cellEvents'])
-                    ->get();
+                    ->first();
             }
 
-            return AssemblyDayResource::collection($days);
+            return new AssemblyDayResource($day);
         } catch (Exception $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -791,5 +791,7 @@ class AssemblyDayController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
+
+
 
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CellItemController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyDayController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyModelManufactureGroupController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyStatusController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskController;
@@ -494,15 +495,17 @@ Route::prefix('assembly')
         Route::post('/task/statuses/set', [AssemblyStatusController::class, 'setAssemblyTasksStatuses']);
 
         //// __ Производственный день
-        //Route::get('/days/period', [BlockDayController::class, 'getBlockDays']);
-        Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
-        //Route::get('/day/dates', [BlockDayController::class, 'getBlockDaysByDates']);
-        //Route::post('/day/comment', [BlockDayController::class, 'setBlockDayComment']);
-        //Route::post('/day/worker/add', [BlockDayController::class, 'addWorkerToBlockDay']);
-        //Route::post('/day/workers/add', [BlockDayController::class, 'addWorkersToBlockDay']);
-        //Route::post('/day/worker/remove', [BlockDayController::class, 'removeWorkerFromBlockDay']);
-        //Route::patch('/day/responsible/add', [BlockDayController::class, 'addResponsibleToBlockDay']);
-        //Route::patch('/day/responsible/remove', [BlockDayController::class, 'removeResponsibleFromBlockDay']);
+        Route::get('/days/period', [AssemblyDayController::class, 'getAssemblyDays']);
+        Route::get('/day/{date}/{change}', [AssemblyDayController::class, 'getAssemblyDayByDateAndChange']);
+        Route::get('/day/dates', [AssemblyDayController::class, 'getAssemblyDaysByDates']);
+        Route::post('/day/comment', [AssemblyDayController::class, 'setAssemblyDayComment']);
+
+        Route::post('/day/worker/add', [AssemblyDayController::class, 'addWorkerToAssemblyDay']);
+        Route::post('/day/workers/add', [AssemblyDayController::class, 'addWorkersToAssemblyDay']);
+        Route::post('/day/worker/remove', [AssemblyDayController::class, 'removeWorkerFromAssemblyDay']);
+        Route::patch('/day/responsible/add', [AssemblyDayController::class, 'addResponsibleToAssemblyDay']);
+        Route::patch('/day/responsible/remove', [AssemblyDayController::class, 'removeResponsibleFromAssemblyDay']);
+
         //Route::patch('/day/start', [BlockDayController::class, 'startBlockDay']);
         //Route::patch('/day/finish', [BlockDayController::class, 'finishBlockDay']);
         //Route::get('/day/ready/get/{date}/{change}', [BlockDayController::class, 'readyGetBlockDay']);

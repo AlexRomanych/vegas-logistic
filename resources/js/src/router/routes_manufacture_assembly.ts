@@ -65,7 +65,6 @@ const assembly = [
         } as IRouteMeta,
     },
 
-
     {
         // ___ Управление планом Cборочного цеха - Список
         path: _MAIN_PREFIX + 'plan/manipulate',
@@ -87,6 +86,16 @@ const assembly = [
     },
 
     {
+        // ___ Справочник Статусов Движения СЗ
+        path     : _MAIN_PREFIX + 'task/statuses',
+        name     : 'manufacture.cell.assembly.task.statuses',
+        component: () => import('@/components/dashboard/manufacture/cells/assembly/statuses/TheAssemblyStatusesShow.vue'),
+        meta     : {
+            title: 'Статусы движения Сменных заданий Сборки'
+        } as IRouteMeta,
+    },
+
+    {
         // ___ Тест
         path     : _MAIN_PREFIX + 'test',
         name     : 'manufacture.cell.assembly.test',
@@ -100,3 +109,6 @@ const assembly = [
 ]
 
 export default assembly
+
+
+

@@ -20,7 +20,7 @@ import {
     ASSEMBLY_TASK_STATUS_ROLLING,
     ASSEMBLY_TASK_STATUS_RUNNING,
     CHANGE_1,
-    CHANGE_2
+    CHANGE_2, DATA_TYPE_AMOUNT, DATA_TYPE_NOTHING, DATA_TYPE_PROGRESS_AMOUNT, DATA_TYPE_PROGRESS_TIME, DATA_TYPE_TIME
 } from '@/app/constants/assembly.ts'
 import type { ICellEvent, IDiffsType } from '@/types/index.ts'
 
@@ -125,6 +125,7 @@ export interface IAssemblyTaskOrder {
     order_type: IAssemblyTaskOrderType
 
     is_forecast: boolean,
+    active: boolean,
 }
 
 // __ Связь Основной Заявки с Клиентом
@@ -146,6 +147,7 @@ export interface IAssemblyTaskOrderType {
 export interface IAssemblyTaskLine {
     id: number
     id_ref: number                                  // __ референсный id (при разбиении строки СЗ, id_ref === id, то есть основаниие старого СЗ)
+    task_id: number,
     amount: number                                  // __ Общее количество в заявке
     time: number                                    // __ Трудозатраты
     assembly_line: IAssemblyLineKeys                // __ Линия Сборки
@@ -444,6 +446,7 @@ export interface IAssemblyTaskExecuteStatisticsItem {
 }
 
 export interface IStats {
+    task_id: number
     id: number
     name: IAssemblySectorKeys
     total: number
@@ -451,6 +454,7 @@ export interface IStats {
     percent: number
     color: string
     title: string
+    titleArr: string[]
 }
 
 
@@ -468,13 +472,24 @@ export type IAssemblyTaskCardSort = 'none' | 'asc' | 'desc'
 
 
 export interface IAssemblyManipulateDay {
-    action_at: string,
-    tasks: IAssemblyTask[],
+    day?: IAssemblyDay
+    action_at: string
+    tasks: IAssemblyTask[]
     description?: string | null
     comment?: string | null
 
     collapsed?: boolean
 }
+
+// --- --------------------------------------------------------------
+// --- ----------- Типы для Отображения Общих данных ----------------
+// --- --------------------------------------------------------------
+export type ITotalsDataType =
+    typeof DATA_TYPE_NOTHING |
+    typeof DATA_TYPE_TIME |
+    typeof DATA_TYPE_AMOUNT |
+    typeof DATA_TYPE_PROGRESS_AMOUNT |
+    typeof DATA_TYPE_PROGRESS_TIME
 
 
 // --- --------------------------------------------------------------

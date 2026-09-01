@@ -11,6 +11,7 @@ use App\Models\Manufacture\Cells\Assembly\AssemblyTaskStatus;
 use App\Models\Materials\Material;
 use App\Models\Models\Model;
 use App\Models\Order\Order;
+use App\Models\Order\OrderLine;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
 use Exception;

@@ -71,6 +71,7 @@ interface IProps {
     text?: string | string[]
     mode?: 'inform' | 'confirm'
     okWord?: string
+    falseWord?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -80,6 +81,7 @@ const props = withDefaults(defineProps<IProps>(), {
     text  : 'This is a Modal Window',
     mode  : 'inform',
     okWord: 'Закрыть',
+    falseWord: 'Отмена',
 })
 
 

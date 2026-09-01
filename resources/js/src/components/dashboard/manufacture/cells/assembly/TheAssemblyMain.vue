@@ -12,12 +12,13 @@
 
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore'
 import NavItemCard from '@/components/dashboard/nav/NavItemCard.vue'
 
 const userStore = useUserStore()
+
 interface IMenuItem {
     name: string,
     path: string,
@@ -27,9 +28,10 @@ interface IMenuItem {
 
 
 const menuItems = ref<IMenuItem[]>([
-    {name: 'Управление планом Сборки (Календарь)', path: 'manufacture.cell.assembly.plan.manage', shown: true, isActive: true},
-    {name: 'Управление планом Сборки (Список)', path: 'manufacture.cell.assembly.plan.manipulate', shown: true, isActive: true},
-    {name: 'Группы моделей для сортировки', path: 'manufacture.cell.assembly.model.manufacture.groups.show', shown: true, isActive: true},
+    { name: 'Управление планом Сборки (Календарь)', path: 'manufacture.cell.assembly.plan.manage', shown: true, isActive: true },
+    { name: 'Управление планом Сборки (Список)', path: 'manufacture.cell.assembly.plan.manipulate', shown: true, isActive: true },
+    { name: 'Группы моделей для сортировки', path: 'manufacture.cell.assembly.model.manufacture.groups.show', shown: true, isActive: true },
+    { name: 'Статусы движения СЗ', path: 'manufacture.cell.assembly.task.statuses', shown: true, isActive: true },
 ])
 
 if (userStore.hasAdminRole()) {

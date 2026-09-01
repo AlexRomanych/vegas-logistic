@@ -163,10 +163,26 @@
                     class="cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    width="w-[500px]"
-                    @click.exact="day.collapsed = !day.collapsed"
+                    title="Ctrl + Click - Перейти к Участкам Сборки, Double Click - Меню"
+                    width="w-[672px]"
+                    @dblclick="showMenu(day)"
                     @click.ctrl="goToManipulateDay(day)"
                 />
+
+                <!-- __ Комментарий -->
+                <AppLabelTS
+                    :text="day.day?.comment ?? ''"
+                    :type="day.day?.comment ? 'warning' : getDateType(day)"
+                    align="left"
+                    class="cursor-pointer"
+                    rounded="4"
+                    text-size="mini"
+                    title="Ctrl + Click - Перейти к Участкам Сборки, Double Click - Изменить комментарий"
+                    width="w-[250px]"
+                    @dblclick="addDayComment(day)"
+                    @click.ctrl="goToManipulateDay(day)"
+                />
+
             </div>
 
             <!-- __ Сами СЗ -->
@@ -188,9 +204,10 @@
                     <template #item="{ element, index }">
                         <div
                             @click="() => ({}) /*selectAssemblyTask(element)*/"
-                            @dblclick="() => ({})/*showAssemblyTaskMenu(element)*/"
+                            @dblclick="showAssemblyTaskMenu(element)"
                         >
                             <ManipulateItem
+                                :data-type="DATA_TYPE_PROGRESS_AMOUNT"
                                 :index="index"
                                 :item="element"
                                 :render="render"
@@ -206,6 +223,7 @@
                 <!--__ Всего: -->
                 <div class="mb-2">
                     <ManipulateTotals
+                        :data-type="DATA_TYPE_PROGRESS_AMOUNT"
                         :field-width="SECTOR_WIDTH"
                         :tasks="day.tasks"
                     />
@@ -216,29 +234,66 @@
     </div>
 
     <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
         ok-word="Понятно"
     />
 
+    <!-- __ Модальное окно для изменения/добавления комментария -->
+    <CommentEdit
+        ref="commentEdit"
+        :comment="comment"
+        label="Комментарий к производственному дню"
+    />
+
+    <!-- __ Модальное Меню -->
+    <AppModalMenuTS
+        ref="appModalMenuTS"
+        :menu="modalMenu"
+        :type="modalMenuType"
+    />
+
+    <!-- __ Карточка СЗ -->
+    <ManageTaskCard
+        ref="manageTaskCard"
+        :mode="modalMode"
+        :task="taskCard"
+        :text="modalText"
+        :type="modalType"
+    />
+
+    <!-- __ Смена Производственной линии -->
+    <ManageTaskManufLines
+        ref="manageTaskManufLines"
+        :mode="modalMode"
+        :task="taskCard"
+        :text="modalText"
+        :type="modalType"
+    />
+
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watchEffect, watch, computed } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import draggable from 'vuedraggable'
 
 import type {
     DraggableHTMLElement,
-    IAssemblyManipulateDay, IAssemblyTask, IAssemblyTaskLine,
+    IAssemblyDay,
+    IAssemblyLineSetData,
+    IAssemblyManipulateDay,
+    IAssemblyTask,
+    IAssemblyTaskLine,
     IColorTypes,
-    IDataInputObj, IPeriod,
+    IDataInputObj,
+    IModalAsyncMenu,
+    IPeriod,
     IRenderData,
-    IRenderOrder,
     ISelectData,
     ISelectDataItem,
 } from '@/types'
@@ -246,17 +301,26 @@ import type {
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 import { usePlansStore } from '@/stores/PlansStore.ts'
 
-import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
-import { ASSEMBLY_SECTORS } from '@/app/constants/assembly.ts'
+// import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
+import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, CHANGE_1, CHANGE_2, DATA_TYPE_PROGRESS_AMOUNT } from '@/app/constants/assembly.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
-import { formatDateIntl, getDateFromDateTimeString, isHoliday, isToday, validateInputDateHelper } from '@/app/helpers/helpers_date.js'
-import { getAssemblyManipulationRenderTasks, } from '@/app/helpers/manufacture/helpers_assembly.ts'
+import { formatDateIntl, formatToYMD, getDaysDifferenceFromDates, isHoliday, isToday, splitDate, validateInputDateHelper } from '@/app/helpers/helpers_date.js'
+import {
+    getAssemblyDayDiff,
+    getAssemblyManipulationRenderTasks,
+    getAssemblyTasksGroupedByOrder,
+    getAssemblyTasksSameOrderInDay,
+    isTaskStatusCreated,
+    isTaskStatusRunning,
+    repositionAssemblyTaskLines,
+    setTaskPositionInRenderDays,
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
 import AppInputTextTSWrapper from '@/components/dashboard/orders/components/AppInputTextTSWrapper.vue'
 import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+// import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import CellDatesSelectMiniTS from '@/components/dashboard/orders/components/CellDatesSelectMiniTS.vue'
 
 // __ Loader
@@ -270,6 +334,11 @@ import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 
 import ManipulateItem from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate/ManipulateItem.vue'
 import ManipulateTotals from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate/ManipulateTotals.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
+import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
+import ManageTaskCard from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
+import type ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 
 const router = useRouter()                 // Определяем роутер
 
@@ -283,10 +352,10 @@ const planStore     = usePlansStore()
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Тип для модального окна Сообщений
-const modalInfoType          = ref<IColorTypes>('danger')
-const modalInfoText          = ref<string | string[]>('')
-const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Показываем сообщение об ошибке
 async function showError(error: string | string[] | null = null) {
@@ -301,28 +370,42 @@ async function showError(error: string | string[] | null = null) {
     }
 
     modalInfoText.value = renderError
-    await appModalAsyncMultiline.value!.show()
+    await appModalAsyncMultilineTS.value!.show()
 }
 
+// __ Тип для модального окна изменения Комментария
+const comment     = ref('')
+const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
-const { planPeriodGlobal } = storeToRefs(planStore)
+// __ Тип для модального Меню
+const modalMenuType  = ref<IColorTypes>('primary')
+const modalMenu      = ref<IModalAsyncMenu>({ data: [] })
+const appModalMenuTS = ref<InstanceType<typeof AppModalMenuTS> | null>(null)
 
-const {
-          globalAssemblyTasks,  // __ Все задания (Global State)
-          // globalRenderPeriod,   // __ Период для рендера
-      } = storeToRefs(assemblyStore)
+// __ Тип для Карточки и Изменения Производственной Линии
+// __ Карточка СЗ
+const taskCard             = ref<IAssemblyTask>(ASSEMBLY_TASK_DRAFT)
+const modalType            = ref<IColorTypes>('primary')
+const modalText            = ref<string>('')
+const modalMode            = ref<'inform' | 'confirm'>('inform')
+const manageTaskCard       = ref<InstanceType<typeof ManageTaskCard> | null>(null)
+const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | null>(null)
 
+
+const { planPeriodGlobal }                             = storeToRefs(planStore)
+const { globalAssemblyTasks, globalAssemblyTasksCopy } = storeToRefs(assemblyStore)
 
 // __ Глобальный Collapse
 const collapseAll = ref(true)
 
 // __ Определяем переменные
-let planPeriod: IPeriod = PERIOD_DRAFT // __ Период плана загрузок
-const renderDays        = ref<IAssemblyManipulateDay[]>([])
+// let planPeriod: IPeriod = PERIOD_DRAFT // __ Период плана загрузок
+const renderDays = ref<IAssemblyManipulateDay[]>([])
+const days       = ref<IAssemblyDay[]>([])
 
-const orders       = ref<IRenderOrder[]>([])
 const renderPeriod = ref<IPeriod | null>(null)
 // const ordersRender = ref<IRenderOrder[]>([])
+
 
 // __ Возможность редактирования
 // TODO: Реализовать через систему ролей
@@ -332,7 +415,6 @@ const renderPeriod = ref<IPeriod | null>(null)
 // const DEFAULT_WIDTH = 'w-[100px]'
 const DEFAULT_WIDTH_BOOL = 'w-[70px]'
 const DEFAULT_WIDTH_DATE = 'w-[100px]'
-const DEFAULT_WIDTH_TASK = 'w-[70px]'
 const DEFAULT_HEIGHT     = 'h-[30px]'
 const HEADER_TYPE        = 'primary'
 const DATA_TYPE          = 'primary'
@@ -553,7 +635,7 @@ const render: IRenderData = reactive({
     },
     description: {  // __ Описание Заявки
         id            : () => 'description-search',
-        header        : ['Комментарий к', 'сменному заданию'],
+        header        : ['Комментарий к', 'сменному заданию / дню'],
         width         : 'w-[250px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -608,7 +690,6 @@ const render: IRenderData = reactive({
 const idFilter            = ref('')
 const clientFilter        = ref('')
 const orderNoStrFilter    = ref('')
-const comment1CFilter     = ref('')
 const descriptionFilter   = ref('')
 const loadAtFilter        = ref('')
 const unloadAtFilter      = ref('')
@@ -689,23 +770,54 @@ const goToManipulateDay = (day: IAssemblyManipulateDay) => {
 }
 
 // __ Печать заявки
-const printOrder = async (task: IAssemblyTask) => {
-    // __ Получаем объект с путем и параметрами
-    const routeData = router.resolve({
-        name  : 'orders.print',
-        params: { id: task.id }
-        // query: { orderId: id }
-    })
+// const printOrder = async (task: IAssemblyTask) => {
+//     // __ Получаем объект с путем и параметрами
+//     const routeData = router.resolve({
+//         name  : 'orders.print',
+//         params: { id: task.id }
+//         // query: { orderId: id }
+//     })
+//
+//     // __ Открываем новое окно через стандартный JS
+//     window.open(routeData.href, '_blank')
+// }
 
-    // __ Открываем новое окно через стандартный JS
-    window.open(routeData.href, '_blank')
+
+// __ Сохранение комментария
+const addDayComment = async (manipulateDay: IAssemblyManipulateDay) => {
+    console.log('manipulateDay: ', manipulateDay)
+
+    if (!manipulateDay.day) {
+        if (manipulateDay.tasks.length === 0) {
+            await showError(['Нет СЗ для сохранения комментария!'])
+            return
+        }
+
+        // __ Получаем день
+        manipulateDay.day = await assemblyStore.getAssemblyDayByDateAndChange(manipulateDay.action_at)
+    }
+
+    if (!manipulateDay.day) {
+        throw new Error('Отсутствует целевой день. TheAssemblyManipulate.vue --> addDayComment')
+    }
+
+    comment.value = manipulateDay.day.comment ?? '' // __ Устанавливаем комментарий
+    const answer  = await commentEdit.value!.show()
+    if (answer) {
+        const newComment = commentEdit.value!.comment.trim()
+        const result     = await assemblyStore.setAssemblyDayComment(manipulateDay.day.id, newComment)
+        if (checkCRUD(result)) {
+            manipulateDay.day.comment = newComment
+        } else {
+            await showError()
+        }
+    }
 }
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---    Табы для группировки отображения           !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 // __ Тип раскраски для даты группировки
 const getDateType = (day: IAssemblyManipulateDay): IColorTypes => {
@@ -716,61 +828,65 @@ const getDateType = (day: IAssemblyManipulateDay): IColorTypes => {
 }
 
 
-// __ Реализация фильтров
-watchEffect(() => {
-    const filterOrders = (inOrders: IRenderOrder[]) => {
-        return inOrders
-            .filter(order => order.id.toString().toLowerCase().includes(idFilter.value.toLowerCase()))
-            .filter(order => order.client.short_name.toLowerCase().includes(clientFilter.value.toLowerCase()))
-            .filter(order => order.order_no_str.toLowerCase().includes(orderNoStrFilter.value.toLowerCase()))
-            .filter(order => order.comment_1c?.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
-            .filter(order => order.description!.toLowerCase().includes(comment1CFilter.value.toLowerCase()))
-            .filter(order => getDateFromDateTimeString(order.load_at).includes(loadAtFilter.value))
-            .filter(order => getDateFromDateTimeString(order.unload_at).includes(unloadAtFilter.value))
-            .filter(order => {
-                if (orderActiveFilter.value === 0) return true
-                else if (orderActiveFilter.value === 1) return order.active
-                else if (orderActiveFilter.value === 2) return !order.active
-            })
-            .filter(order => {
-                if (orderForecastFilter.value === 0) return true
-                else if (orderForecastFilter.value === 1) return order.is_forecast
-                else if (orderForecastFilter.value === 2) return !order.is_forecast
-            })
-
-    }
-
-    // if (activeTabIndex.value === LIST_TAB_ID) {
-    //     tabs.value[activeTabIndex.value].renderData = filterOrders(orders.value)
-    // } else if (activeTabIndex.value === CLIENTS_TAB_ID || activeTabIndex.value === DATES_TAB_ID) {
-    //     tabs.value[activeTabIndex.value].renderData = activeTabIndex.value === CLIENTS_TAB_ID
-    //         ? getGroupByClientsData()
-    //         : getGroupByDatesData()
-    //     tabs.value[activeTabIndex.value].renderData.forEach((item: any) => item[1] = filterOrders(item[1]))
-    //     tabs.value[activeTabIndex.value].renderData.forEach((item: any) => item[0].collapsed = !item[1].length)
-    //
-    // }
-})
-
-
 // __ Получаем период плана загрузок с сервера
-const getDefaultPeriod = async () => (planPeriod = await planStore.getPlanLoadsDefaultPeriod())
+const getDefaultPeriod = async (period: IPeriod | null) => {
+    if (period) {
+        planPeriodGlobal.value = renderPeriod.value
+        return
+    }
+    renderPeriod.value     = await planStore.getPlanLoadsDefaultPeriod()
+    planPeriodGlobal.value = renderPeriod.value
+}
 
-const getPlanPeriod = async () => {
-    // TODO: Доделать выбор периода
-    await getDefaultPeriod() //
-    planPeriodGlobal.value = planPeriod
+
+// __ Получаем Дни
+const getDays = async () => {
+    const actionAtSet = new Set<string>()
+    globalAssemblyTasks.value.forEach(task => actionAtSet.add(task.action_at.split(' ')[0]))
+    days.value = await assemblyStore.getAssemblyDaysByDates([...actionAtSet])
+}
+
+
+// __ Добавляем Дни к Массиву отображения
+const marryDays = () => {
+    const daysMap = new Map<string, IAssemblyDay>()
+    days.value.forEach(day => daysMap.set(day.action_at, day))
+    renderDays.value.forEach(renderDay => {
+        const day = daysMap.get(renderDay.action_at)
+        if (day) {
+            renderDay.day = day
+            renderDay.tasks.sort((a, b) => a.position - b.position)
+        }
+    })
 }
 
 // __ Подготавливаем массив отображения
 const getRenderTasks = () => {
-    renderDays.value = getAssemblyManipulationRenderTasks(globalAssemblyTasks.value, planPeriodGlobal.value!)
+    renderDays.value = getAssemblyManipulationRenderTasks(
+        globalAssemblyTasks.value,
+        planPeriodGlobal.value!,
+        {
+            idFilter           : idFilter.value,
+            clientFilter       : clientFilter.value,
+            orderNoStrFilter   : orderNoStrFilter.value,
+            descriptionFilter  : descriptionFilter.value,
+            loadAtFilter       : loadAtFilter.value,
+            unloadAtFilter     : unloadAtFilter.value,
+            orderActiveFilter  : orderActiveFilter.value.toString(),
+            orderForecastFilter: orderForecastFilter.value.toString(),
+        },
+    )
+    marryDays()
 }
 
 
 // __ Тут следим за состоянием глобальных данных с сервера и обновляем локальные данные
 watch(
-    [() => globalAssemblyTasks.value, () => planPeriodGlobal.value],
+    [
+        () => globalAssemblyTasks.value,
+        () => planPeriodGlobal.value,
+        () => days.value,
+    ],
     (/*[tasks, period]*/) => {
         if (!globalAssemblyTasks.value.length) {
             return
@@ -780,8 +896,12 @@ watch(
             return
         }
 
-        console.log('globalAssemblyTasks.value: ', globalAssemblyTasks.value)
-        console.log('planPeriodGlobal.value: ', planPeriodGlobal.value)
+        if (days.value.length === 0) {
+            return
+        }
+
+        console.log('globalAssemblyTasks.value!!!: ', globalAssemblyTasks.value)
+        console.log('planPeriodGlobal.value!!!: ', planPeriodGlobal.value)
 
         getRenderTasks()
         console.log('renderDays.value: ', renderDays.value)
@@ -789,6 +909,21 @@ watch(
     },
     { immediate: true, deep: true }
 )
+
+// __ Реализация фильтров
+watch([
+    () => idFilter.value,
+    () => clientFilter.value,
+    () => orderNoStrFilter.value,
+    () => descriptionFilter.value,
+    () => loadAtFilter.value,
+    () => unloadAtFilter.value,
+    () => orderActiveFilter.value,
+    () => orderForecastFilter.value,
+], () => {
+    console.log('filtered!!!')
+    getRenderTasks()
+})
 
 // __ Загрузка Заявок
 const loadTasks = async (period: IPeriod | null = null) => {
@@ -805,11 +940,25 @@ const loadTasks = async (period: IPeriod | null = null) => {
             // const answer = await assemblyStore.getAssemblyTasks(['coconut', 'latex'])
 
             // __ Получаем AssemblyTasks без всяких участков и записываем в глобальную переменную в AssemblyStore
-            await assemblyStore.getAssemblyTasks([])
-            // console.log('Assembly Tasks: ', globalAssemblyTasks.value)
+            await Promise.all([
+                assemblyStore.getAssemblyTasks([], renderPeriod.value),
+                getDefaultPeriod(renderPeriod.value), // __ Получаем период плана загрузок
+            ])
 
-            // __ Получаем период плана загрузок
-            await getPlanPeriod()
+
+            // const daysData = assemblyStore.getAssemblyDaysByPeriod(renderPeriod.value),
+
+            // const [daysData,] = await Promise.all([
+            //     assemblyStore.getAssemblyDaysByPeriod(renderPeriod.value),
+            //     assemblyStore.getAssemblyTasks([], renderPeriod.value),
+            //     getDefaultPeriod(renderPeriod.value), // __ Получаем период плана загрузок
+            // ])
+
+            // days.value = daysData
+
+            await getDays()
+            console.log('days.value: ', days.value)
+            // console.log('Assembly Tasks: ', globalAssemblyTasks.value)
             console.log('planPeriodGlobal.value: ', planPeriodGlobal.value)
 
 
@@ -831,9 +980,380 @@ onMounted(async () => {
 })
 
 
-// --- ------------------------------------------------------
-// --- ----------- Управление Druggable ---------------------
-// --- ------------------------------------------------------
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                 Меню Дня                      !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const showMenu = async (day: IAssemblyManipulateDay) => {
+    console.log('props.day: ', day)
+
+    // const clearDay = clearRenderMatrixDay(props.day) as unknown as IAssemblyTask[][]  // __ Возвращаем новый массив без пустых элементов
+    // const idx      = getIndexByChange(change)
+
+    // __ Проверяем, есть ли СЗ в дне
+    if (day.tasks.length === 0) {
+        return
+    }
+
+    // __ Показываем модальное меню и обрабатываем результаты
+    modalMenuType.value = 'success'
+    modalMenu.value     = {
+        data: [
+            // { id: 1, title: 'Отправить на выполнение' },
+            // { id: 2, title: 'Вернуть для редактирования' },
+            { id: 3, title: 'Объединить СЗ для одной Заявки' },
+            { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
+            { id: 5, title: 'Перейти к Участкам Сборки' },
+            { id: 6, title: 'Отмена' },
+        ],
+    }
+
+    // let result = {menuItem: null, value: false} as IModalResponse
+
+    // __ Показываем модальное меню
+    const result = await appModalMenuTS.value!.show()
+
+    // __ Отмена + terminate
+    if (!result.value || result.menuItem === 6) {
+        return
+    }
+
+    // __ Отправка на выполнение
+    if (result.menuItem === 1) {
+        return
+    }
+
+    // __ Возврат для редактирования
+    if (result.menuItem === 2) {
+        return
+    }
+
+    // __ Объединение СЗ для одной Заявки
+    if (result.menuItem === 3) {
+
+        // __ Получаем массив массивов СЗ по одинаковым Заявкам
+        const grouped = getAssemblyTasksGroupedByOrder(day.tasks)
+        // console.log('target: ', grouped)
+        await assemblyStore.applyMergeTasksGroups(grouped)
+        return
+    }
+
+    // __ Сохранение комментария
+    if (result.menuItem === 4) {
+        await addDayComment(day)
+        return
+    }
+
+    // __ Перейти к Участкам Сборки
+    if (result.menuItem === 5) {
+        goToManipulateDay(day)
+        return
+    }
+
+    throw new Error('Unknown menu item!')
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---       Логика Меню Сменного Задания            !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+// __ Показываем Меню на клике по самому СЗ
+const showAssemblyTaskCard = async (assemblyTask: IAssemblyTask) => {
+    taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
+
+    // __ Показываем модальное окно обработки СЗ
+    const answer = await manageTaskCard.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Получаем ссылки на панели
+    const leftPanel  = manageTaskCard.value!.leftPanel
+    const rightPanel = manageTaskCard.value!.rightPanel
+
+    // __ Если есть правая панель, то это создание нового СЗ
+    if (rightPanel.length > 0) {
+        // __ Создаем новое СЗ на основе копии
+        const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
+
+        // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+        newAssemblyTask.position += 0.1
+
+        // __ Устанавливаем id
+        // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+        newAssemblyTask.id = 0
+
+        // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+        // leftPanel  = repositionAssemblyTaskLines(leftPanel)
+        // rightPanel = repositionAssemblyTaskLines(rightPanel)
+
+        // __ Обновляем глобальный state СЗ
+        // assemblyTask.assembly_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+        // newAssemblyTask.assembly_lines = rightPanel
+
+        // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+        await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
+
+        // console.log(taskCard.value)
+    } else {
+        // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+
+        // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+        // leftPanel = repositionAssemblyTaskLines(leftPanel)
+
+        // __ Обновляем глобальный state СЗ
+        await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel) // __ Тут реактивное перерисовывание
+    }
+}
+
+// __ Изменение Производственной Линии
+const showAssemblyTaskManufLines = async (assemblyTask: IAssemblyTask) => {
+    // __ Копируем объект, чтобы не мутировал оригинал
+    taskCard.value = JSON.parse(JSON.stringify(assemblyTask))
+    // __ Добавляем метаданные Заявки в каждую строку
+    taskCard.value.assembly_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
+
+
+    // __ Показываем модальное окно обработки СЗ
+    const answer = await manageTaskManufLines.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Получаем ссылки на панели
+    const mutations                               = manageTaskManufLines.value!.mutations
+    const setAssemblyData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.assembly_line, }))
+
+    console.log('mutations: ', setAssemblyData)
+
+    const result = await assemblyStore.taskLinesAssemblyLineSet(setAssemblyData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        assemblyStore.setGlobalArrayChangeAssemblyLines(setAssemblyData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = 'Данные успешно обновлены'
+        await appModalAsyncMultilineTS.value!.show()
+
+    } else {
+        await showError()
+    }
+
+
+    // // __ Если есть правая панель, то это создание нового СЗ
+    // if (rightPanel.length > 0) {
+    //     // __ Создаем новое СЗ на основе копии
+    //     const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
+    //
+    //     // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+    //     newAssemblyTask.position += 0.1
+    //
+    //     // __ Устанавливаем id
+    //     // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+    //     newAssemblyTask.id = 0
+    //
+    //     // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+    //     // leftPanel  = repositionAssemblyTaskLines(leftPanel)
+    //     // rightPanel = repositionAssemblyTaskLines(rightPanel)
+    //
+    //     // __ Обновляем глобальный state СЗ
+    //     // assemblyTask.assembly_lines    = leftPanel              // __ Тут передача по ссылке, автоматическое изменение
+    //     // newAssemblyTask.assembly_lines = rightPanel
+    //
+    //     // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+    //     await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
+    //
+    //     // console.log(taskCard.value)
+    // } else {
+    //     // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+    //
+    //     // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
+    //     // leftPanel = repositionAssemblyTaskLines(leftPanel)
+    //
+    //     // __ Обновляем глобальный state СЗ
+    //     await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel) // __ Тут реактивное перерисовывание
+    // }
+}
+
+
+// __ Добавить комментарий к СЗ
+const addTaskComment = async (task: IAssemblyTask) => {
+
+    comment.value = task.comment ?? '' // __ Устанавливаем комментарий
+
+    const answer = await commentEdit.value!.show()
+    if (answer) {
+
+        const newComment = commentEdit.value!.comment.trim()
+
+        const result = await assemblyStore.setAssemblyTaskComment(task.id, newComment)
+
+        if (!checkCRUD(result)) {
+
+            modalInfoText.value = [
+                'Упс! Что-то пошло не так.',
+                'Попробуйте повторить операцию позже.',
+            ]
+            modalInfoType.value = 'danger'
+            modalInfoMode.value = 'inform'
+            await appModalAsyncMultilineTS.value!.show()
+
+            return
+        }
+
+        // __ Обновляем комментарий в глобальном массиве
+        assemblyStore.applyAssemblyTaskComment(task.id, newComment)
+
+        // __ Обновляем комментарий в СЗ
+        task.comment = newComment
+    }
+}
+
+// __ Меняем смену
+const modifyChange = async (task: IAssemblyTask) => {
+    console.log('modifyChange: ', task)
+
+    //
+    // // __ Проверяем статус СЗ, если не Создано, то выходим
+    // if (!isTaskStatusCreated(task)) {
+    //     await showError([
+    //         'Изменить смену можно только у СЗ',
+    //         'со статусом "Создано" или ',
+    //         'со статусом "Создано при закрытии СЗ"!',
+    //     ])
+    //
+    //     return
+    // }
+    //
+    // const targetChange = task.change === CHANGES.CHANGE_1.NAME ? CHANGES.CHANGE_2 : CHANGES.CHANGE_1
+    //
+    // // __ Показываем предупреждение
+    // modalInfoType.value = 'primary'
+    // modalInfoMode.value = 'confirm'
+    // modalInfoText.value = [
+    //     'Смена СЗ',
+    //     getOrderTitle(task),
+    //     `будет изменена на ${targetChange.TITLE}.`,
+    //     'Продолжить?'
+    // ]
+    //
+    // const answer = await appModalAsyncMultilineTS.value!.show()
+    // if (!answer) {
+    //     return
+    // }
+    //
+    // // __ Устанавливаем реактивно смену
+    // task.change = targetChange.NAME
+    //
+    // // __ Выясняем, что перетаскивали и куда перемещали и что устанавливали (смена)
+    // let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
+    // renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
+    // renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
+    //
+    // // console.log('renderMatrixCleared: ', renderMatrixCloned)
+    // // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
+    //
+    // debugger
+    //
+    // // // __ Получаем разницу между матрицами
+    // const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
+    // console.log('diffs: ', diffs)
+    //
+    // // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
+    // if (!diffs.length) {
+    //     // __ Откатываем изменения
+    //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+    //     return
+    // }
+    //
+    // // __ Перемещаем СЗ без вывода дополнительной информации
+    // await assemblyStore.applyChanges(diffs) // __ Применяем изменения
+
+    // const answer = await appModalAsyncMultiline.value!.show()
+    // if (answer) {
+    //
+    //     const result = await assemblyStore.modifyChange(task.id, targetChange.NAME) // __ Применяем изменения
+    //     if (!checkCRUD(result)) {
+    //         await showError()
+    //         return
+    //     }
+    //
+    //     // __ Устанавливаем реактивно смену
+    //     task.change = targetChange.NAME
+    //     return
+    // }
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---          Меню Сменного Задания                !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Меню при двойном клике на Заявке (Разделить количество + Изменить стол)
+const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
+    // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
+    modalMenuType.value = 'indigo'
+
+    const CANCEL_ID = 6
+    modalMenu.value = {
+        data: [
+            { id: 1, title: 'Разделить количество' },
+            // { id: 2, title: 'Изменить смену СЗ' },
+            { id: 3, title: 'Изменить Линию Сборки' },
+            { id: 4, title: 'Добавить / Изменить комментарий к СЗ' },
+            { id: 5, title: 'Перейти в Карточку Заявки' },
+            { id: CANCEL_ID, title: 'Отмена' },
+        ],
+    }
+
+    const result = await appModalMenuTS.value!.show()
+    // let result = { menuItem: 3, value: true } as IModalResponse
+
+    // __ Отмена
+    if (result.menuItem === CANCEL_ID && result.value) {
+        return
+    }
+
+    // __ Разделить количество
+    if (result.menuItem === 1 && result.value) {
+        await showAssemblyTaskCard(assemblyTask)
+        return
+    }
+
+    // __ Изменить Смену
+    if (result.menuItem === 2 && result.value) {
+        await modifyChange(assemblyTask)
+        return
+    }
+
+    // __ Изменить Линию Сборки
+    if (result.menuItem === 3 && result.value) {
+        await showAssemblyTaskManufLines(assemblyTask)
+        return
+    }
+
+    // __ Добавить комментарий к СЗ
+    if (result.menuItem === 4 && result.value) {
+        await addTaskComment(assemblyTask)
+        return
+    }
+
+    // __ Перейти в карточку Заявки
+    if (result.menuItem === 5 && result.value) {
+        router.push({ name: 'orders.card', params: { id: assemblyTask.order.id } })
+        return
+    }
+
+}
+
+
+// --- -----------------------------------------------------
+// --- ------------- Управление Druggable ------------------
+// --- -----------------------------------------------------
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---           Управление Druggable                !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Опции для draggable
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const dragOptions = computed(() => {
@@ -847,35 +1367,37 @@ const dragOptions = computed(() => {
         // disabled: false, // Выносим в отдельное свойство
     }
 })
-const isDragging  = ref(true)
+
+const isDragging = ref(true)
 
 const checkMove = (evt: DraggableHTMLElement) => {
-    // // return true
-    // // console.log('checkMove: ', evt)
-    // const movedElement = evt.draggedContext.element as IAssemblyTask
-    // // console.log(movedElement)
-    // // return true
-    // // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
-    // if (!isTaskStatusCreated(movedElement) && !isTaskStatusRunning(movedElement)) {
-    //     return false
-    // }
-    //
-    // // __ Проверяем, что перемещаемый элемент не в прошлом
-    // const nowDate  = formatToYMD(new Date())
-    // const dateDiff = getDaysDifferenceFromDates(movedElement.action_at, nowDate)
-    //
-    // // console.log('movedElement.action_at: ', movedElement.action_at)
-    // // console.log('nowDate: ', nowDate)
-    // // console.log('dateDiff: ', dateDiff)
-    //
-    // if (dateDiff < 0) {
-    //     // await showError(['Ошибка!', 'Прошлое не ворошим!'])
-    //     // renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     return false
-    // }
-    //
+    return true
+    // console.log('checkMove: ', evt)
+    const movedElement = evt.draggedContext.element as IAssemblyTask
+    // console.log(movedElement)
     // return true
+    // __ Проверяем, что перемещаемый элемент со статусом 'Создано' или 'Выполняется' но внутри одного дня
+    if (!isTaskStatusCreated(movedElement) && !isTaskStatusRunning(movedElement)) {
+        return false
+    }
+
+    // __ Проверяем, что перемещаемый элемент не в прошлом
+    const nowDate  = formatToYMD(new Date())
+    const dateDiff = getDaysDifferenceFromDates(movedElement.action_at, nowDate)
+
+    // console.log('movedElement.action_at: ', movedElement.action_at)
+    // console.log('nowDate: ', nowDate)
+    // console.log('dateDiff: ', dateDiff)
+
+    if (dateDiff < 0) {
+        // await showError(['Ошибка!', 'Прошлое не ворошим!'])
+        // renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
+        return false
+    }
+
+    return true
 }
+
 
 // __ Начало перетаскивания СЗ
 const startDrag = (/*evt: any*/) => {
@@ -890,367 +1412,294 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
     // // console.log('evt: ', evt)
     //
     //
-    // // __ Выясняем, что перетаскивали и куда перемещали
-    // let renderMatrixCloned = JSON.parse(JSON.stringify(renderMatrix.value))
-    // renderMatrixCloned     = clearRenderMatrix(renderMatrixCloned)
-    // renderMatrixCloned     = setTaskPositionInRenderMatrix(renderMatrixCloned)
-    //
-    // console.log('renderMatrixCleared: ', renderMatrixCloned)
-    // console.log('renderMatrixCopy: ', renderMatrixCopy.value)
-    //
-    // // __ Получаем разницу между матрицами
-    // const diffs = getDiffsWithPositions(renderMatrixCloned, renderMatrixCopy.value)
-    // console.log('matrix diffs: ', diffs)
-    //
-    // // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
-    // if (!diffs.length) {
-    //     // __ Откатываем изменения
-    //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     return
-    // }
-    //
-    // // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
-    // const isOneDayAction = !diffs.some(diff => diff.isMoved)
-    //
-    // // __ Проверяем, переместились ли СЗ в рамках смены
+    // __ Выясняем, что перетаскивали и куда перемещали
+    const renderDaysCloned = JSON.parse(JSON.stringify(renderDays.value))
+    renderDays.value       = setTaskPositionInRenderDays(renderDays.value)
+
+    console.log('renderDaysCloned: ', renderDaysCloned)
+
+
+    // __ Получаем разницу между матрицами
+    // __ Именно renderDaysCloned, renderDays.value, потому
+    const { diffs, dayFrom, dayTo } = getAssemblyDayDiff(renderDays.value, renderDaysCloned)
+    console.log('matrix diffs: ', diffs, dayFrom, dayTo)
+
+    // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
+    if (!diffs.length) {
+        // __ Откатываем изменения
+        renderDays.value = renderDaysCloned
+        return
+    }
+
+    // __ Проверяем, переместились ли СЗ в рамках одного дня или нет
+    const isOneDayAction = !(dayFrom && dayTo)
+
+    // __ Проверяем, переместились ли СЗ в рамках смены
+    const isChangeModify = false
     // const isChangeModify = diffs.some(diff => diff.isChangeChanged)
-    //
-    // // __ Находим целевую смену (куда перемещаем)
+
+    // __ Находим целевую смену (куда перемещаем)
+    const targetChange = CHANGE_1
     // const targetChange = diffs.find(diff => diff.isChangeChanged)?.newChange
-    //
-    //
-    // console.log('isOneDayAction: ', isOneDayAction)
+
+
+    console.log('isOneDayAction: ', isOneDayAction)
     // console.log('isChangeModify: ', isChangeModify)
-    //
-    // // __ Получаем сам перемещаемый элемент
-    // const movedElement = evt.item._underlying_vm_ as IAssemblyTask
-    //
-    // if (isOneDayAction && !isChangeModify) {
-    //
-    //     console.log('movedElement: ', movedElement)
-    //
-    //     // // __ Если перемещаемый элемент со статусом 'Выполняется', проверяем маячок,
-    //     // // __ который указывает на готовность к добавлению СЗ
-    //     // if (isTaskStatusRunning(movedElement)) {
-    //     //
-    //     //     // __ Получаем флаг готовности к добавлению новых СЗ
-    //     //     const isReady: IAssemblyDay = await assemblyStore.readyGetAssemblyDay(splitDate(movedElement.action_at))
-    //     //
-    //     //     if (!isReady) {
-    //     //         await showError([
-    //     //             'Ошибка!',
-    //     //             'Для перемещения СЗ со статусом "Выполняется"',
-    //     //             'необходимо приостановить выполнение СЗ',
-    //     //             'для добавления новых СЗ!',
-    //     //         ])
-    //     //
-    //     //         // __ Откатываем изменения
-    //     //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     //         return
-    //     //     }
-    //     // }
-    //     //
-    //     // // __ Перемещаем СЗ без вывода дополнительной информации
-    //     // await assemblyStore.applyChanges(diffs) // __ Применяем изменения
-    //
-    // } else {
-    //
-    //     // __ Проверяем, что перемещаемый элемент не со статусом 'Выполняется'
-    //     // __ потому что здесь уже перемещение между днями, а с этим статусом только в рамках дня
-    //     if (isTaskStatusRunning(movedElement)) {
-    //         await showError([
-    //             'Ошибка!',
-    //             'Нельзя переместить СЗ со статусом "Выполняется"',
-    //             'на другой день!',
-    //         ])
-    //
-    //         // __ Откатываем изменения
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     }
-    //
-    //     // __ Находим те изменения, которые относятся к перемещаемому СЗ
-    //     const diffsForAssemblyTask = diffs.find(diff => diff.isMoved || diff.isChangeChanged)
-    //     if (!diffsForAssemblyTask) {
-    //         // __ Откатываем изменения
-    //         console.error('Не найдено изменений для перемещения СЗ')
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     }
-    //
-    //     // __ Получаем СЗ, которое перемещаем, здесь не мутируем
-    //     const assemblyTask = globalAssemblyTasks.value.find(task => task.id === diffsForAssemblyTask.taskId)
-    //     if (!assemblyTask) {
-    //         // __ Откатываем изменения
-    //         console.error('Не найдено СЗ для перемещения')
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     }
-    //
-    //
-    //     // __ Получаем дату, на которую нужно переместить СЗ
-    //     const targetDate = additionDaysInStrFormat(
-    //         assemblyTask.action_at,
-    //         (diffsForAssemblyTask.dayToOffset ?? 0) - (diffsForAssemblyTask.dayFromOffset ?? 0)
-    //     )
-    //
-    //     // __ Проверяем, на даты СЗ и отгрузки
-    //     let dateDiff = getDaysDifferenceFromDates(assemblyTask.order.load_at ?? targetDate, targetDate)
-    //
-    //     // console.log('targetDate: ', targetDate)
-    //     // console.log('assemblyTask.order.load_at: ', assemblyTask.order.load_at)
-    //     // console.log('dateDiff: ', dateDiff)
-    //
-    //     if (dateDiff < 0) {
-    //         await showError([
-    //             'Ошибка!',
-    //             'Дата СЗ не может быть позднее даты загрузки',
-    //             'на складе!',
-    //             `Дата загрузки на складе: ${formatDateIntl(splitDate(assemblyTask.order.load_at ?? targetDate), true)}`,
-    //         ])
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     }
-    //
-    //     // __ Проверяем, на даты СЗ и текущую дату (чтобы не было в прошлом)
-    //     const nowDate = formatToYMD(new Date())
-    //     dateDiff      = getDaysDifferenceFromDates(targetDate, nowDate)
-    //
-    //     // console.log('targetDate: ', targetDate)
-    //     // console.log('nowDate: ', nowDate)
-    //     // console.log('dateDiff: ', dateDiff)
-    //
-    //     if (dateDiff < 0) {
-    //         await showError(['Ошибка!', 'Дата СЗ не может быть в прошлом!'])
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     }
-    //
-    //     // __ Находим смену, куда перемещаем. Если она разная с исходником, берем из Diff, если одинаковая - берем из Task
-    //     // const toChange = targetChange ?? assemblyTask.change
-    //
-    //     // // __ Проверяем, что СЗ не находится в процессе выполнения
-    //     // if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), toChange, ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
-    //     //
-    //     //     // __ Получаем флаг готовности к добавлению новых СЗ
-    //     //     const isReady: boolean = await assemblyStore.readyGetAssemblyDay(splitDate(targetDate))
-    //     //
-    //     //     if (!isReady) {
-    //     //         // __ Если в процессе выполнения и не установлен флаг "Разрешить добавление новых СЗ"
-    //     //         await showError([
-    //     //             'Ошибка!',
-    //     //             'Нельзя переместить СЗ в день, в котором',
-    //     //             'есть СЗ в процессе выполнения!',
-    //     //             'Для такого перемещения необходимо',
-    //     //             'приостановить выполнение СЗ',
-    //     //             'для добавления новых СЗ!'
-    //     //         ])
-    //     //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     //         return
-    //     //     }
-    //     //
-    //     //     // __ Показываем предупреждение
-    //     //     modalInfoType.value = 'primary'
-    //     //     modalInfoMode.value = 'confirm'
-    //     //     modalInfoText.value = [
-    //     //         'СЗ будет перемещено в день,',
-    //     //         'в котором есть СЗ в процессе выполнения!',
-    //     //         'Перемещаемому СЗ будет установлен статус "Выполняется".',
-    //     //         'Отменить это действие нельзя!',
-    //     //         'Продолжить?'
-    //     //     ]
-    //     //
-    //     //     const answer = await appModalAsyncMultiline.value!.show()
-    //     //     if (answer) {
-    //     //
-    //     //         // __ Задаем статус для перемещаемого СЗ (получен по ссылке), чтобу установить его на бэке
-    //     //         diffsForAssemblyTask.statusId = ASSEMBLY_TASK_STATUSES.RUNNING.ID
-    //     //         // console.log('diffsForAssemblyTask: ', diffsForAssemblyTask)
-    //     //         // console.log('diffs: ', diffs)
-    //     //
-    //     //         const result = await assemblyStore.applyChanges(diffs) // __ Применяем изменения
-    //     //         // console.log('result: ', result)
-    //     //
-    //     //         if (!checkCRUD(result)) {
-    //     //             await showError()
-    //     //             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     //             return
-    //     //         }
-    //     //
-    //     //         return
-    //     //     }
-    //     //
-    //     //     // console.log('isReady: ', isReady)
-    //     //     // console.log('diffs: ', diffs)
-    //     //
-    //     //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     //     return
-    //     //
-    //     // }
-    //
-    //     // // __ Проверяем, что СЗ не находится в процессе выполнения (Старый вариант)
-    //     // if (await assemblyStore.checkAssemblyTasksByStatusOnDate(splitDate(targetDate), ASSEMBLY_TASK_STATUSES.RUNNING.ID)) {
-    //     //     await showError([
-    //     //         'Ошибка!',
-    //     //         'Нельзя переместить СЗ в день, в котором',
-    //     //         'есть СЗ в процессе выполнения!'
-    //     //     ])
-    //     //     renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //     //     return
-    //     // }
-    //
-    //     // console.log('targetDAte: ', targetDAte)
-    //
-    //     // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
-    //     // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-    //     const existingAssemblyTasks = getAssemblyTasksSameOrderInDay(assemblyTask, globalAssemblyTasks.value, targetDate, targetChange || assemblyTask.change, true)
-    //
-    //     // __ Формируем текст для модального окна
-    //     const orderInfo = `${assemblyTask.order.client.short_name} №${assemblyTask.order.order_no_str}`
-    //
-    //     // __ Находим количество для формирования динамического меню
-    //     const totalAmount = assemblyTask.assembly_lines.reduce((acc, item) => acc + item.amount, 0)
-    //
-    //     // __ Показываем модальное меню и обрабатываем результаты
-    //     modalMenuType.value = 'primary'
-    //     modalMenu.value     = {
-    //         data: [
-    //             { id: 1, title: 'Переместить все' },
-    //             { id: 2, title: 'Переместить часть' },
-    //             { id: 3, title: 'Отмена' },
-    //         ],
-    //     }
-    //
-    //     let result = { menuItem: 1, value: true } as IModalResponse
-    //
-    //     // __ Если количество СЗ больше 1, то показываем меню, иначе сразу перемещаем
-    //     if (totalAmount > 1) {
-    //         // __ Показываем модальное меню
-    //         result = await appModalMenuTS.value!.show()
-    //     }
-    //
-    //     // __ 'Отмена'
-    //     if (result.value === false || result.menuItem === 3) {
-    //         // __ Откатываем изменения
-    //         renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //         return
-    //     } else if (result.menuItem === 1 || totalAmount === 1) {
-    //         // __ Перемещаем все СЗ
-    //         // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
-    //
-    //         // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-    //         if (existingAssemblyTasks.length) {
-    //             // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
-    //             modalInfoType.value = 'success'
-    //             modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
-    //             modalInfoMode.value = 'confirm'
-    //
-    //             const result = await appModalAsyncMultiline.value!.show()
-    //
-    //             if (result) {
-    //                 // __ С объединением
-    //                 // console.warn('Union AssemblyTasks')
-    //
-    //                 // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-    //                 await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], assemblyTask]) // __ Объединяем СЗ с первой
-    //                 // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
-    //                 return
-    //             }
-    //         }
-    //
-    //         await assemblyStore.applyChanges(diffs) // __ Применяем изменения
-    //     } else if (result.menuItem === 2) {
-    //         // __ Перемещаем часть СЗ в другой день
-    //         // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
-    //
-    //         taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
-    //
-    //         // __ Показываем модальное окно обработки СЗ
-    //         const answer = await manageTaskCard.value!.show()
-    //         if (!answer) {
-    //             // __ Откатываем изменения
-    //             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //             return
-    //         }
-    //
-    //         // __ Получаем правую и левую панели
-    //         let leftPanel  = manageTaskCard.value!.leftPanel
-    //         let rightPanel = manageTaskCard.value!.rightPanel
-    //
-    //         // __ Если есть правая панель, то это создание нового СЗ
-    //         if (rightPanel.length > 0) {
-    //             // __ Создаем новое СЗ на основе копии
-    //             const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
-    //
-    //             // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
-    //             // __ Тут такой код. Чтобы правильная была нумерация
-    //             // __ Баг возникает если переносить часть со первой смены на самое начало второй
-    //             // __ или если переносить часть со второй смены на самый конец первой
-    //             if (targetChange === CHANGE_2) {
-    //                 newAssemblyTask.position = (diffsForAssemblyTask.newTaskPosition ?? 1) + 0.1
-    //             } else if (targetChange === CHANGE_1) {
-    //                 newAssemblyTask.position = (diffsForAssemblyTask.newTaskPosition ?? 1) - 0.1
-    //             }
-    //
-    //             // __ Устанавливаем новую дату, высчитываем новую дату по смещению
-    //             newAssemblyTask.action_at = additionDaysInStrFormat(
-    //                 newAssemblyTask.action_at,
-    //                 (diffsForAssemblyTask.dayToOffset ?? 0) - (diffsForAssemblyTask.dayFromOffset ?? 0)
-    //             )
-    //
-    //             // __ Устанавливаем новую смену, если перемещаем в другую
-    //             newAssemblyTask.change = targetChange
-    //
-    //             // __ Устанавливаем id
-    //             // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
-    //             newAssemblyTask.id = 0
-    //
-    //             // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
-    //             if (existingAssemblyTasks.length) {
-    //                 // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
-    //                 modalInfoType.value = 'success'
-    //                 modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
-    //                 modalInfoMode.value = 'confirm'
-    //
-    //                 const result = await appModalAsyncMultiline.value!.show()
-    //
-    //                 if (result) {
-    //                     // __ С объединением
-    //                     console.warn('Union AssemblyTasks')
-    //
-    //                     // __ Переносим правую панель в новый СЗ
-    //                     rightPanel                     = repositionAssemblyTaskLines(rightPanel)
-    //                     newAssemblyTask.assembly_lines = rightPanel
-    //
-    //                     // __ Изменяем содержимое в СЗ
-    //                     leftPanel = repositionAssemblyTaskLines(leftPanel)
-    //                     assemblyStore.setAssemblyTasksLines(assemblyTask, leftPanel) // __ Делаем это в родителе
-    //
-    //                     // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
-    //                     await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], newAssemblyTask]) // __ Объединяем СЗ с первой
-    //                     // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
-    //                     return
-    //                 }
-    //             }
-    //
-    //             // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
-    //             await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
-    //         } else {
-    //             // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
-    //             // __ Игнорируем это поведение и просто показываем сообщение об ошибке
-    //             await showError(['Ошибка!', 'Правая часть не может быть пустой!'])
-    //             // modalInfoType.value = 'danger'
-    //             // modalInfoText.value = ['Ошибка!', 'Правая часть не может быть пустой!']
-    //             // modalInfoMode.value = 'inform'
-    //             // await appModalAsyncMultiline.value!.show()
-    //
-    //             // __ Откатываем изменения
-    //             renderMatrix.value = correctRenderMatrix(JSON.parse(JSON.stringify(renderMatrixCopy.value)))
-    //
-    //             return
-    //         }
-    //     }
-    // }
+
+    // __ Получаем сам перемещаемый элемент
+    const movedElement = evt.item._underlying_vm_ as IAssemblyTask
+
+    if (isOneDayAction && !isChangeModify) {
+
+        console.log('movedElement: ', movedElement)
+
+        // __ Если перемещаемый элемент со статусом 'Выполняется', проверяем маячок,
+        // __ который указывает на готовность к добавлению СЗ
+        if (isTaskStatusRunning(movedElement)) {
+
+            // __ Получаем флаг готовности к добавлению новых СЗ
+            // const isReady: IAssemblyDay = await assemblyStore.readyGetAssemblyDay(splitDate(movedElement.action_at))
+
+            // if (!isReady) {
+            await showError([
+                'Ошибка!',
+                'Для перемещения СЗ со статусом "Выполняется"',
+                'необходимо приостановить выполнение СЗ',
+                'для добавления новых СЗ!',
+            ])
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+            // }
+        }
+
+        // __ Перемещаем СЗ без вывода дополнительной информации
+        await assemblyStore.applyChangesManipulate(diffs) // __ Применяем изменения
+
+    } else {
+
+        // __ Проверяем, что перемещаемый элемент не со статусом 'Выполняется'
+        // __ потому что здесь уже перемещение между днями, а с этим статусом только в рамках дня
+        if (isTaskStatusRunning(movedElement)) {
+            await showError([
+                'Ошибка!',
+                'Нельзя переместить СЗ со статусом "Выполняется"',
+                'на другой день!',
+            ])
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+        }
+
+        // __ Находим те изменения, которые относятся к перемещаемому СЗ
+        const diffsForAssemblyTask = diffs.find(diff => diff.taskChanges?.action_at || diff.taskChanges?.change)
+        if (!diffsForAssemblyTask) {
+            console.error('Не найдено изменений для перемещения СЗ')
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+        }
+
+        // __ Получаем СЗ, которое перемещаем, здесь не мутируем
+        const assemblyTask = movedElement
+
+        // __ Получаем дату, на которую нужно переместить СЗ
+        const targetDate = dayTo
+
+        // __ Проверяем, на даты СЗ и отгрузки
+        let dateDiff = getDaysDifferenceFromDates(assemblyTask.order.load_at ?? targetDate!, targetDate!)
+
+        // console.log('targetDate: ', targetDate)
+        // console.log('assemblyTask.order.load_at: ', assemblyTask.order.load_at)
+        // console.log('dateDiff: ', dateDiff)
+
+        if (dateDiff < 0) {
+            await showError([
+                'Ошибка!',
+                'Дата СЗ не может быть позднее даты загрузки',
+                'на складе!',
+                `Дата загрузки на складе: ${formatDateIntl(splitDate(assemblyTask.order.load_at ?? targetDate), true)}`,
+            ])
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+        }
+
+        // __ Проверяем, на даты СЗ и текущую дату (чтобы не было в прошлом)
+        const nowDate = formatToYMD(new Date())
+        dateDiff      = getDaysDifferenceFromDates(targetDate!, nowDate)
+
+        // console.log('targetDate: ', targetDate)
+        // console.log('nowDate: ', nowDate)
+        // console.log('dateDiff: ', dateDiff)
+
+        if (dateDiff < 0) {
+            await showError(['Ошибка!', 'Дата СЗ не может быть в прошлом!'])
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+        }
+
+        // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
+        // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
+        const existingAssemblyTasks = getAssemblyTasksSameOrderInDay(
+            assemblyTask,
+            globalAssemblyTasksCopy.value,
+            targetDate,
+            targetChange || assemblyTask.change,
+            true
+        )
+
+        // __ Формируем текст для модального окна
+        const orderInfo = `${assemblyTask.order.client.short_name} №${assemblyTask.order.order_no_str}`
+
+        // __ Находим количество для формирования динамического меню
+        const totalAmount = assemblyTask.assembly_lines.reduce((acc, item) => acc + item.amount, 0)
+
+        // __ Показываем модальное меню и обрабатываем результаты
+        modalMenuType.value = 'primary'
+        modalMenu.value     = {
+            data: [
+                { id: 1, title: 'Переместить все' },
+                { id: 2, title: 'Переместить часть' },
+                { id: 3, title: 'Отмена' },
+            ],
+        }
+
+        let result = { menuItem: 1, value: true } as IModalResponse
+
+        // __ Если количество СЗ больше 1, то показываем меню, иначе сразу перемещаем
+        if (totalAmount > 1) {
+            // __ Показываем модальное меню
+            result = await appModalMenuTS.value!.show()
+        }
+
+        // __ 'Отмена'
+        if (!result.value || result.menuItem === 3) {
+
+            // __ Откатываем изменения
+            renderDays.value = renderDaysCloned
+            return
+
+        } else if (result.menuItem === 1 || totalAmount === 1) {
+
+            // __ Перемещаем все СЗ
+            // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
+
+            // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
+            if (existingAssemblyTasks.length) {
+                // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
+                modalInfoType.value = 'success'
+                modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
+                modalInfoMode.value = 'confirm'
+
+                const result = await appModalAsyncMultilineTS.value!.show()
+
+                if (result) {
+                    // __ С объединением
+                    // console.warn('Union AssemblyTasks')
+
+                    // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
+                    await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], assemblyTask]) // __ Объединяем СЗ с первой
+                    // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
+                    return
+                }
+            }
+
+            // __ Применяем изменения
+            await assemblyStore.applyChangesManipulate(diffs)
+
+        } else if (result.menuItem === 2) {
+            // __ Перемещаем часть СЗ в другой день
+            // !!! Логика для доработки TODO: Тут проверка на даты на возможность перемещения СЗ
+
+            taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
+
+            // __ Показываем модальное окно обработки СЗ
+            const answer = await manageTaskCard.value!.show()
+            if (!answer) {
+
+                // __ Откатываем изменения
+                renderDays.value = renderDaysCloned
+                return
+            }
+
+            // __ Получаем правую и левую панели
+            let leftPanel  = manageTaskCard.value!.leftPanel
+            let rightPanel = manageTaskCard.value!.rightPanel
+
+            // __ Если есть правая панель, то это создание нового СЗ
+            if (rightPanel.length > 0) {
+                // __ Создаем новое СЗ на основе копии
+                const newAssemblyTask = JSON.parse(JSON.stringify(assemblyTask))
+
+                // __ Увеличиваем позицию на 0.1 (смещаем вниз относительно предыдущего элемента)
+                // __ Тут такой код. Чтобы правильная была нумерация
+                // __ Баг возникает если переносить часть со первой смены на самое начало второй
+                // __ или если переносить часть со второй смены на самый конец первой
+                //@ts-expect-error Для бобавления в будушем смен
+                if (targetChange === CHANGE_2) {
+                    newAssemblyTask.position = (diffsForAssemblyTask.taskChanges?.position?.new ?? 1) + 0.1
+                } else if (targetChange === CHANGE_1) {
+                    newAssemblyTask.position = (diffsForAssemblyTask.taskChanges?.position?.new ?? 1) - 0.1
+                }
+
+                // __ Устанавливаем новую дату, высчитываем новую дату по смещению
+                newAssemblyTask.action_at = dayTo
+
+                // __ Устанавливаем новую смену, если перемещаем в другую
+                newAssemblyTask.change = targetChange
+
+                // __ Устанавливаем id
+                // __ Тут именно 0, т.к. id = 0 - это заглушка для добавления нового элемента и там стоит проверка при рендере
+                newAssemblyTask.id = 0
+
+                // __ Проверяем, есть ли уже СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ
+                if (existingAssemblyTasks.length) {
+                    // __ Тут ситуация, когда в целевом дне есть уже СЗ для той же Заявки
+                    modalInfoType.value = 'success'
+                    modalInfoText.value = ['Объединить СЗ для', orderInfo, 'в одно?']
+                    modalInfoMode.value = 'confirm'
+
+                    const result = await appModalAsyncMultilineTS.value!.show()
+
+                    if (result) {
+                        // __ С объединением
+                        console.warn('Union AssemblyTasks')
+
+                        // __ Переносим правую панель в новый СЗ
+                        rightPanel                     = repositionAssemblyTaskLines(rightPanel)
+                        newAssemblyTask.assembly_lines = rightPanel
+
+                        // __ Изменяем содержимое в СЗ
+                        leftPanel = repositionAssemblyTaskLines(leftPanel)
+                        assemblyStore.setAssemblyTasksLines(assemblyTask, leftPanel) // __ Делаем это в родителе
+
+                        // !!! Важен порядок параметров в функции. Основное СЗ - Куда перемещаем
+                        await assemblyStore.applyMergeTasks([existingAssemblyTasks[0], newAssemblyTask]) // __ Объединяем СЗ с первой
+                        // assemblyStore.applyMergeTasks([assemblyTask, ...existingAssemblyTasks])   // __ Объединяем все остальные
+                        return
+                    }
+                }
+
+                // __ Добавляем СЗ в глобальный массив (Обновляем глобальный state СЗ)
+                await assemblyStore.addAssemblyTaskToGlobal(assemblyTask, leftPanel, newAssemblyTask, rightPanel) // __ Тут реактивное перерисовывание
+            } else {
+                // __ Тут ситуация, когда изменился только левая панель (разделение количества и(или) порядка)
+                // __ Игнорируем это поведение и просто показываем сообщение об ошибке
+                await showError(['Ошибка!', 'Правая часть не может быть пустой!'])
+
+                // __ Откатываем изменения
+                renderDays.value = renderDaysCloned
+                return
+            }
+        }
+    }
 }
 
 

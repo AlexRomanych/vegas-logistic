@@ -16,13 +16,25 @@ class AssemblySize
     public function __construct(
         private readonly string $sector,
         private readonly string $scope,
-        private readonly int $width = 0,
-        private readonly int $length = 0,
-        private readonly int $height = 0,
+        private int|null $width = 0,
+        private int|null $length = 0,
+        private int|null $height = 0,
         //private readonly string $scope,
         //private readonly string $scope,
     )
     {
+        if (is_null($this->width)) {
+            $this->width = 0;
+        }
+
+        if (is_null($this->length)) {
+            $this->length = 0;
+        }
+
+        if (is_null($this->height)) {
+            $this->height = 0;
+        }
+
         // __ Отдаем в миллиметрах
         switch ($sector):
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LATEX:

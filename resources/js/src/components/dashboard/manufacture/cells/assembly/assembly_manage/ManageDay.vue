@@ -183,15 +183,14 @@
                         <template #item="{ element, index }">
                             <div
                                 @click="selectAssemblyTask(element)"
-                                @dblclick="showAssemblyTaskMenu(element)"
+                                @dblclick.exact="showAssemblyTaskMenu(element)"
                             >
                                 <ManageItem
-                                    :amount-and-time="getAssemblyTaskAmountAndTime(element)"
                                     :columns-width="columnsWidth"
                                     :index="index"
                                     :item="element"
                                     :order-id="globalAssemblyTaskActiveOrderId"
-                                    :percents="getDataArray(element)"
+                                    :data-type="DATA_TYPE_AMOUNT"
                                 />
                             </div>
                         </template>
@@ -209,45 +208,60 @@
                     <!-- __ Итого -->
                     <div
                         v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"
-                        class="flex"
                     >
-                        <!-- __ Всего: -->
-                        <AppLabelTS
+                        <ManageDayTotals
+                            :tasks="day[idx] as unknown as IAssemblyTask[]"
                             :height="heightTotals"
                             :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"
                             :width="columnsWidth.common"
-                            align="center"
-                            rounded="rounded-[4px]"
-                            text="Всего:"
-                            text-size="mini"
-                        />
-
-                        <!-- __ Количество + Трудозатраты Общие -->
-                        <ManageItemDataLabel
-                            :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"
-                            :height="heightTotals"
-                            :reference="REFERENCE_TIME * 2"
-                            :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"
-                            :time-show="globalAssemblyTaskTimesShow"
-                            :type="TOTALS_TYPE"
-                            :width="columnsWidth.amount"
-                            class="plan-item"
-                        />
-
-                        <!-- __ Количество + Трудозатраты -->
-                        <ManageItemDataLabel
-                            v-if="globalAssemblyTaskFullDaysShow"
-                            :amount="0"
-                            :height="heightTotals"
-                            :reference="REFERENCE_TIME"
-                            :time="0"
-                            :time-show="globalAssemblyTaskTimesShow"
-                            :type="TOTALS_TYPE"
-                            :width="columnsWidth.amount"
-                            class="plan-item"
+                            :data-type="DATA_TYPE_AMOUNT"
+                            :field-width="columnsWidth.line"
                         />
 
                     </div>
+
+                    <!-- __ Итого -->
+                    <!--<div-->
+                    <!--    v-if="(hasDataChange_1 && idx === 0) || (hasDataChange_2 && idx === 1)"-->
+                    <!--    class="flex"-->
+                    <!--&gt;-->
+                    <!--    &lt;!&ndash; __ Всего: &ndash;&gt;-->
+                    <!--    <AppLabelTS-->
+                    <!--        :height="heightTotals"-->
+                    <!--        :type="getChangeType(idx === 0 ? CHANGE_1 : CHANGE_2)"-->
+                    <!--        :width="columnsWidth.common"-->
+                    <!--        align="center"-->
+                    <!--        rounded="rounded-[4px]"-->
+                    <!--        text="Всего:"-->
+                    <!--        text-size="mini"-->
+                    <!--    />-->
+
+                    <!--    &lt;!&ndash; __ Количество + Трудозатраты Общие &ndash;&gt;-->
+                    <!--    <ManageItemDataLabel-->
+                    <!--        :amount="getTotalAmountChange(change as unknown as IAssemblyTask[])"-->
+                    <!--        :height="heightTotals"-->
+                    <!--        :reference="REFERENCE_TIME * 2"-->
+                    <!--        :time="getTotalTimeChange(change as unknown as IAssemblyTask[])"-->
+                    <!--        :time-show="globalAssemblyTaskTimesShow"-->
+                    <!--        :type="TOTALS_TYPE"-->
+                    <!--        :width="columnsWidth.amount"-->
+                    <!--        class="plan-item"-->
+                    <!--    />-->
+
+                    <!--    &lt;!&ndash; __ Количество + Трудозатраты &ndash;&gt;-->
+                    <!--    <ManageItemDataLabel-->
+                    <!--        v-if="globalAssemblyTaskFullDaysShow"-->
+                    <!--        :amount="0"-->
+                    <!--        :height="heightTotals"-->
+                    <!--        :reference="REFERENCE_TIME"-->
+                    <!--        :time="0"-->
+                    <!--        :time-show="globalAssemblyTaskTimesShow"-->
+                    <!--        :type="TOTALS_TYPE"-->
+                    <!--        :width="columnsWidth.amount"-->
+                    <!--        class="plan-item"-->
+                    <!--    />-->
+
+                    <!--</div>-->
 
                     <!-- __ Двойная Разделительная линия -->
                     <template v-if="!IS_ONE_CHANGE_MODE">
@@ -316,16 +330,15 @@
 <script lang="ts" setup>
 import type {
     DraggableHTMLElement,
-    // IAmountAndTimeAssembly,
     IAssemblyLineSetData,
     IAssemblyTask,
     IAssemblyTaskChangeKeys,
-    IAssemblyTaskLine, IAssemblyTaskLineSector,
+    IAssemblyTaskLine,
     IAssemblyTaskStatusesSet,
     IColorTypes,
     IDay,
     IModalAsyncMenu,
-    IPlanMatrix, IStats,
+    IPlanMatrix,
 } from '@/types'
 
 import { computed, inject, type Ref, ref, } from 'vue'
@@ -351,8 +364,6 @@ import {
     clearRenderMatrix,
     clearRenderMatrixDay,
     correctRenderMatrix,
-    // createAmountAndTimeObj,
-    getAssemblyTaskAmountAndTime,
     getAssemblyTasksDiff,
     getAssemblyTasksGroupedByOrder,
     getAssemblyTasksSameOrderInDay,
@@ -370,18 +381,15 @@ import {
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { ifDateInPeriod } from '@/app/helpers/plan/helpers_plan.ts'
-import { getColorByPercent } from '@/app/helpers/helpers.ts'
 
 import {
-    ASSEMBLY_LINES,
     ASSEMBLY_SECTORS,
     ASSEMBLY_TASK_DRAFT,
-    ASSEMBLY_TASK_SECTOR_LAMIT,
-    ASSEMBLY_TASK_SECTOR_TABLE,
     ASSEMBLY_TASK_STATUSES,
     CHANGE_1,
     CHANGE_2,
     CHANGES,
+    DATA_TYPE_AMOUNT,
     IS_ONE_CHANGE_MODE
 } from '@/app/constants/assembly.ts'
 
@@ -392,11 +400,10 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 
 import ManageTaskCard from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
 import ManageItem from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItem.vue'
-import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItemDataLabel.vue'
-
-import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
 import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
-import { round } from '@/app/helpers/helpers_lib.ts'
+import ManageDayTotals from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageDayTotals.vue'
+import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
+// import ManageItemDataLabel from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItemDataLabel.vue'
 
 
 // type IDay = IAssemblyTask & IPlanMatrixDayItem
@@ -411,8 +418,7 @@ const props = withDefaults(defineProps<IProps>(), {
     day: () => [],
 })
 
-
-// console.log('props.day: ', props.day)
+// console.log('day: --> ', props.day)
 
 // __ Класс для смен
 const getChangeClass = (change: number) => {
@@ -465,7 +471,7 @@ const TOTALS_TYPE: IColorTypes = 'stone'
 const DATA_HEADER_TEXT_SIZE    = 'mini'
 // const CHANGE_1_TYPE            = 'indigo'
 // const CHANGE_2_TYPE            = 'orange'
-const REFERENCE_TIME = 10.5 // часы
+// const REFERENCE_TIME = 10.5 // часы
 
 // __ Высота под Итого
 const heightTotals = computed(() => (globalAssemblyTaskTimesShow.value ? 'h-[80px]' : 'h-[40px]'))
@@ -514,103 +520,6 @@ const shadowColor = computed(() => {
 })
 
 
-// __ Объект отображения данных для каждого участка
-const getDataArray = (taskSource: IAssemblyTask) => {
-
-    const task = JSON.parse(JSON.stringify(taskSource))
-
-    const lamitObj = {
-        total_amount: 0,
-        finished_amount: 0,
-    }
-
-    const tableObj = {
-        total_amount: 0,
-        finished_amount: 0,
-    }
-
-    task.assembly_lines.forEach((line: IAssemblyTaskLine) => {
-        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_LAMIT) {
-            lamitObj.total_amount += line.amount
-            lamitObj.finished_amount += line.finished_at ? line.amount : 0
-        }
-        if (line.assembly_line === ASSEMBLY_LINES.ASSEMBLY_LINE_TABLE) {
-            tableObj.total_amount += line.amount
-            tableObj.finished_amount += line.finished_at ? line.amount : 0
-        }
-    })
-
-    task.stats.push({
-        sector: ASSEMBLY_TASK_SECTOR_LAMIT,
-        total_amount: lamitObj.total_amount,
-        finished_amount: lamitObj.finished_amount
-    })
-
-    task.stats.push({
-        sector: ASSEMBLY_TASK_SECTOR_TABLE,
-        total_amount: tableObj.total_amount,
-        finished_amount: tableObj.finished_amount
-    })
-    const data: IStats[] = []
-
-    Object.values(ASSEMBLY_SECTORS).forEach(value => {
-        const stats = task.stats.find((s: IAssemblyTaskLineSector) => s.sector === value.NAME)
-
-        const total   = stats?.total_amount || 0
-        const done    = stats?.finished_amount || 0
-        const percent = total > 0 ? (done / total) * 100 : 0
-
-        let color = getColorByPercent(percent)
-        let title = percent.toFixed(0) + '%'
-
-        if (total === 0) {
-            color = '#e1f5fe'
-            // color = '#67748B'
-            title = '✗'
-        } else if (round(percent) === 100) {
-            title = '✓'
-        }
-
-        data.push({
-            id: value.ID,
-            name : value.NAME,
-            total,
-            done,
-            percent,
-            title,
-            color,
-        })
-    })
-
-    return data.toSorted((a, b) => a.id - b.id)
-
-}
-
-
-// __ Общее количество и время в виде Объекта
-// const amountAndTimeTotalsChanges = computed(() => {
-//     //  __ Создаем сам объект данных с ключами из ASSEMBLY_MACHINES и {time: 0, amount: 0} и инициализируем его нулями
-//
-//     const result: IAmountAndTimeAssembly[] = []
-//     props.day.forEach(change => {
-//         const amountAndTimeObj = createAmountAndTimeObj()
-//
-//         change.forEach((assemblyTask: IAssemblyTask) => {
-//
-//             const amountAndTime = getAssemblyTaskAmountAndTime(assemblyTask as IAssemblyTask)
-//
-//             // Object.entries(amountAndTime).forEach(([key, value]) => {
-//             //     amountAndTimeObj[key].amount += value.amount
-//             //     amountAndTimeObj[key].time += value.time
-//             // })
-//         })
-//
-//         result.push(amountAndTimeObj)
-//     })
-//
-//     return result
-// })
-
 // __ Общее Количество за день
 const getTotalAmountChange = (tasks: IAssemblyTask[]) => {
     return tasks.reduce((totalAcc, task) =>
@@ -618,10 +527,10 @@ const getTotalAmountChange = (tasks: IAssemblyTask[]) => {
 }
 
 // __ Общие Трудозатраты за день
-const getTotalTimeChange = (tasks: IAssemblyTask[]) => {
-    return tasks.reduce((totalAcc, task) =>
-        totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0)
-}
+// const getTotalTimeChange = (tasks: IAssemblyTask[]) => {
+//     return tasks.reduce((totalAcc, task) =>
+//         totalAcc + task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.time, 0), 0)
+// }
 
 // __ Флаг отображения данных
 const hasDataChange_1 = computed(() => getTotalAmountChange(props.day[0] as unknown as IAssemblyTask[]))
@@ -629,13 +538,18 @@ const hasDataChange_2 = computed(() => getTotalAmountChange(props.day[1] as unkn
 
 // __ Получаем подсветку Смены
 const getChangeType = (change: IAssemblyTaskChangeKeys) => {
+    if (IS_ONE_CHANGE_MODE) {
+        return 'stone'
+    }
     const findChange = getChangeByName(change)
     return findChange ? findChange.TYPE : 'dark'
 }
 
-// __ Получаем Название
+// __ Получаем Название Смены
 const getChangeTitle = (change: IAssemblyTaskChangeKeys) => {
-    return change === CHANGE_1 ? 'Смена: 1 (08:30 - 20:30)' : 'Смена: 2 (20:30 - 08:30)'
+    return change === CHANGES.CHANGE_1.NAME
+        ? `Смена: ${CHANGES.CHANGE_1.TITLE} (${CHANGES.CHANGE_1.TIME})`
+        : `Смена: ${CHANGES.CHANGE_2.TITLE} (${CHANGES.CHANGE_2.TIME})`
 }
 
 

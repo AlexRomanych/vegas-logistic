@@ -39,20 +39,23 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { IAssemblyTask } from '@/types'
+import type { IAssemblyTask, ITotalsDataType } from '@/types'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import { getDataArrayTotal } from '@/app/helpers/manufacture/helpers_assembly.ts'
+import { DATA_TYPE_NOTHING } from '@/app/constants/assembly.ts'
 
 interface IPops {
     tasks: IAssemblyTask[]
     fieldWidth?: string
+    dataType?: ITotalsDataType
 }
 
 const props = withDefaults(defineProps<IPops>(), {
     fieldWidth: 'w-[40px]',
+    dataType  : DATA_TYPE_NOTHING,
 })
 
-const totals = computed(() => getDataArrayTotal(props.tasks))
+const totals = computed(() => getDataArrayTotal(props.tasks, props.dataType))
 
 // console.log('totals: ', totals.value)
 

@@ -28,6 +28,7 @@
             :type="render.client.type"
             :width="render.client.width"
             rounded="rounded-[4px]"
+            title="Double Click - Меню"
         />
 
         <!-- __ Номер заявки -->
@@ -42,6 +43,7 @@
             :type="render.orderNo.type"
             :width="render.orderNo.width"
             rounded="rounded-[4px]"
+            title="Double Click - Меню"
         />
 
         <!-- __ Количество + Трудозатраты Общие -->
@@ -57,72 +59,25 @@
             :time-show="globalAssemblyTaskTimesShow"
             :type="render.amount.type"
             :width="render.amount.width"
+            title="Double Click - Меню"
         />
 
         <!-- __ Данные по каждому участку -->
         <div v-for="dataItem of percentsRender" :key="dataItem.name" class="flex">
-            <AppLabelTS
+            <AppLabelMultiLineTS
                 :color="dataItem.color"
-                :text="dataItem.title"
+                :height="dataHeight"
+                :heightLimit="dataHeight"
+                :text="dataItem.titleArr"
+                :title="'Double Click - Меню\nCtrl+Click - Перейти на Участок'"
                 align="center"
+                class="cursor-pointer"
                 rounded="4"
                 text-size="micro"
                 width="w-[40px]"
-                :height="globalAssemblyTaskTimesShow ? 'h-[60px]' : 'h-[25px]'"
+                @click.ctrl="goToSector(dataItem)"
             />
         </div>
-
-
-        <!-- __ Количество + Трудозатраты Линия 1 -->
-        <!--<ManageItemDataLabel-->
-        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
-        <!--    :align="render.amount.align"-->
-        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].amount"-->
-        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].square"-->
-        <!--    :class="animatedClass"-->
-        <!--    :color="color"-->
-        <!--    :height="dataHeight"-->
-        <!--    :text-size="render.amount.textSize"-->
-        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_1].time"-->
-        <!--    :time-show="globalAssemblyTaskTimesShow"-->
-        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
-        <!--    :type="render.amount.type"-->
-        <!--    :width="render.amount.width"-->
-        <!--/>-->
-
-        <!-- __ Количество + Трудозатраты Линия 2 -->
-        <!--<ManageItemDataLabel-->
-        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
-        <!--    :align="render.amount.align"-->
-        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].amount"-->
-        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].square"-->
-        <!--    :class="animatedClass"-->
-        <!--    :color="color"-->
-        <!--    :height="dataHeight"-->
-        <!--    :text-size="render.amount.textSize"-->
-        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_2].time"-->
-        <!--    :time-show="globalAssemblyTaskTimesShow"-->
-        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
-        <!--    :type="render.amount.type"-->
-        <!--    :width="render.amount.width"-->
-        <!--/>-->
-
-        <!-- __ Количество + Трудозатраты Неопознанные -->
-        <!--<ManageItemDataLabel-->
-        <!--    v-if="globalAssemblyTaskFullDaysShow"-->
-        <!--    :align="render.amount.align"-->
-        <!--    :amount="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].amount"-->
-        <!--    :square="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].square"-->
-        <!--    :class="animatedClass"-->
-        <!--    :color="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].amount === 0 ? color : 'red'"-->
-        <!--    :height="dataHeight"-->
-        <!--    :text-size="render.amount.textSize"-->
-        <!--    :time="amountAndTime[ASSEMBLY_MANUF_LINES.LINE_0].time"-->
-        <!--    :time-show="globalAssemblyTaskTimesShow"-->
-        <!--    :square-show="globalAssemblyTaskAssemblyInSquare"-->
-        <!--    :type="render.amount.type"-->
-        <!--    :width="render.amount.width"-->
-        <!--/>-->
 
     </div>
 
@@ -130,7 +85,7 @@
 
 <script lang="ts" setup>
 import { computed, reactive, } from 'vue'
-
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
@@ -140,28 +95,27 @@ import type {
     IAssemblyTask,
     IFontsType,
     IColorTypes,
-    IAmountAndTimeAssembly, IAssemblySectorKeys
+    IAssemblySectorKeys,
+    IStats,
+    ITotalsDataType
 } from '@/types'
 
-import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, DATA_TYPE_NOTHING, REDIRECT_KEY, } from '@/app/constants/assembly.ts'
 // import { DEBUG } from '@/app/constants/common.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
+import { getChangeByName, getDataArray } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import ManageItemDataLabel
     from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageItemDataLabel.vue'
-import { getChangeByName } from '@/app/helpers/manufacture/helpers_assembly.ts'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import type { IStats } from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageDay.vue'
 
 interface IProps {
-    amountAndTime: IAmountAndTimeAssembly
-    percents: IStats[]
     item?: IAssemblyTask
     columnsWidth?: Record<string, string>
     index?: number
     orderId?: number | null     // __ Для подсветки СЗ для Заявки
+    dataType?: ITotalsDataType
 }
 
 interface IRenderItem {
@@ -186,7 +140,10 @@ const props = withDefaults(defineProps<IProps>(), {
     }),
     index       : 0,
     orderId     : null,
+    dataType    : DATA_TYPE_NOTHING,
 })
+
+const router = useRouter()
 
 // __ Данные из Хранилища
 const assemblyStore = useAssemblyStore()
@@ -242,12 +199,9 @@ const render: IRender = reactive({
 
 // __ Общее Количество
 const getTotalAmount = computed(() => props.item.assembly_lines.reduce((acc, line) => line.amount + acc, 0))
-// const getTotalAmount = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.amount + acc, 0))
-
 
 // __ Общее Трудозатраты
 const getTotalTime = computed(() => props.item.assembly_lines.reduce((acc, line) => line.time + acc, 0))
-// const getTotalTime = computed(() => Object.values(props.amountAndTime).reduce((acc, item) => item.time + acc, 0))
 
 // __ Подготавливаем дату отгрузки для отображения
 const formattedLoadDate = computed(() => {
@@ -272,10 +226,12 @@ const animatedClass = computed(() => {
     return 'plan-item'
 })
 
+// __ Вычисляем объект отображения
+const percents = computed(() => getDataArray(props.item, props.dataType))
 
 // __ Вычисление отображаемых участков
 const percentsRender = computed(() => {
-    let result = props.percents
+    let result = percents.value
     if (!globalAssemblyTaskSectorsShow.value) {
         const hiddenSectors = new Set<IAssemblySectorKeys>([
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.NAME,
@@ -283,22 +239,39 @@ const percentsRender = computed(() => {
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_LAYER.NAME,
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_SIDE.NAME,
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAYER.NAME,
-        ]);
+        ])
 
-        result = result.filter(item => !hiddenSectors.has(item.name));
+        result = result.filter(item => !hiddenSectors.has(item.name))
     }
 
     if (!globalAssemblyTaskFullDaysShow.value) {
         const hiddenSectors = new Set<IAssemblySectorKeys>([
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAMIT.NAME,
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_TABLE.NAME,
-        ]);
+        ])
 
-        result = result.filter(item => !hiddenSectors.has(item.name));
+        result = result.filter(item => !hiddenSectors.has(item.name))
     }
 
     return result
 })
+
+// __ Переход на нужный Участок и нужное СЗ
+const goToSector = (dataItem: IStats) => {
+    localStorage.setItem(REDIRECT_KEY, JSON.stringify({
+        task_id  : props.item.id,
+        sector_id: dataItem.id,
+    }))
+
+    router.push({
+        name  : 'manufacture.cell.assembly.manipulate.day',
+        params: {
+            date: props.item.action_at.split(' ')[0],
+        },
+    })
+
+    // console.log('dataItem: ', dataItem)
+}
 
 </script>
 
@@ -306,6 +279,5 @@ const percentsRender = computed(() => {
 .plan-item {
     @apply cursor-pointer truncate;
 }
-
 
 </style>

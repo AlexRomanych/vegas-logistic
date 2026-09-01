@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderControllerLogic
 {
@@ -266,7 +267,9 @@ class OrderControllerLogic
                     // __ Добавляем контекст Заявки (OrderLines)
                     foreach ($order['items'] as $orderLine) {
                         // __ Получаем размеры
+
                         $dims = SizeService::getDimensions($orderLine['s']);
+
 
                         // __ Пробуем найти модель
                         $findModel = ModelsService::getModelByCode1C($orderLine['c']);

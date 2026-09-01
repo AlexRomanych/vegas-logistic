@@ -28,22 +28,26 @@
     <div class="m-2">
         <template v-if="activeTabPosition === infoTabPosition">
             <!-- __ Общая инфа -->
-            <!--<div class="ml-8">-->
-            <!--    <ExecuteDayInfo :block-day="blockDay!"/>-->
-            <!--</div>-->
+            <div class="ml-8">
+                <ManipulateDayInfo
+                    :assembly-day="assemblyDay!"
+                    :matrix="matrix"
+                    :sector="sector"
+                />
+            </div>
         </template>
         <template v-else-if="activeTabPosition === personalTabPosition">
             <!-- __ Персонал -->
-            <!--<div class="ml-8">-->
-            <!--    <ExecutePersonal-->
-            <!--        :block-day="blockDay!"-->
-            <!--        :can-edit="isStartAvailable "-->
-            <!--        @add-worker="addWorker"-->
-            <!--        @add-workers="addWorkers"-->
-            <!--        @remove-worker="removeWorker"-->
-            <!--        @add-responsible="addResponsible"-->
-            <!--    />-->
-            <!--</div>-->
+            <div class="ml-8">
+                <ManipulatePersonal
+                    :assembly-day="assemblyDay!"
+                    :can-edit="true "
+                    @add-worker="addWorker"
+                    @add-workers="addWorkers"
+                    @remove-worker="removeWorker"
+                    @add-responsible="addResponsible"
+                />
+            </div>
         </template>
         <template v-else>
             <!-- __ Сами СЗ -->
@@ -51,7 +55,7 @@
                 <template v-if="data.task.id === getTab().task!.id">
                     <ManipulateDayTask
                         :data="data"
-                        :day="day"
+                        :day="assemblyDay"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -75,16 +79,27 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
+
+import type {
+    IAssemblyDay,
+    IAssemblySector,
+    IAssemblyTask,
+    IAssemblyTaskLineSector,
+    IAssemblyDayWorker,
+    IColorTypes,
+    IMatrixManufactureTask
+} from '@/types'
+
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
-import type { IAssemblyDay, IAssemblySector, IAssemblyTask, IAssemblyTaskLineSector, IColorTypes, IMatrixManufactureTask } from '@/types'
-import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
-import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTask.vue'
-import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayInfo.vue'
-import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
-import ManipulateDayTask from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTask.vue'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import ManipulateDayTask from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTask.vue'
+import ManipulateDayInfo from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayInfo.vue'
+import ManipulatePersonal from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulatePersonal.vue'
 
 
 interface ITab {
@@ -100,7 +115,8 @@ interface ITab {
 interface IProps {
     sector: IAssemblySector
     matrix: IMatrixManufactureTask[]
-    day: IAssemblyDay
+    assemblyDay: IAssemblyDay
+    activeTaskId: number | null
 }
 
 const props = defineProps<IProps>()
@@ -108,6 +124,7 @@ const props = defineProps<IProps>()
 const assemblyStore = useAssemblyStore()
 
 console.log('props.matrix: ', props.matrix)
+console.log('props.assemblyDay: ', props.assemblyDay)
 
 // __ Константы
 // const DEBUG = true
@@ -199,6 +216,12 @@ const setTabs = () => {
         })
     )
     tabs.value.sort((a, b) => a.position - b.position)
+
+    // __ Устанавливаем Активное СЗ после перехода
+    const findTab = tabs.value.find(tab => tab.task?.id === props.activeTaskId)
+    if (findTab) {
+        activeTabPosition.value = findTab.position
+    }
 }
 
 // __ Получаем раскраску Таба
@@ -232,7 +255,8 @@ const setTaskInActive = (tab: ITab) => {
         }
         tab.task.active = !tab.task.active
     }
-    // prepareData()
+
+    assemblyStore.setAssemblyTaskActive(tab.task!.id, tab.task!.active)
 }
 
 
@@ -283,16 +307,16 @@ const resetStatus = async (sectorLinesIds: number[]) => {
 }
 
 // __ Разделяем строку
-const divideLine = async (taskId: number, blockLineId: number, range: { take: number; keep: number }) => {
+const divideLine = async (taskId: number, assemblyLineId: number, range: { take: number; keep: number }) => {
     //
     // // __ Старый вариант, когда нельзя было разбить в Объединении СЗ
-    // // const findTask = blockDay.value!.block_tasks.find(task => task.id === taskId)
+    // // const findTask = assemblyDay.value!.assembly_tasks.find(task => task.id === taskId)
     //
     // // __ Новый вариант, когда можно разбить в Объединении СЗ, в принципе taskId не нужен
-    // let findTask: IBlockTask | undefined = undefined
-    // for (const task of blockDay.value!.block_tasks) {
-    //     for (const line of task.block_lines) {
-    //         if (line.id === blockLineId) {
+    // let findTask: IAssemblyTask | undefined = undefined
+    // for (const task of assemblyDay.value!.assembly_tasks) {
+    //     for (const line of task.assembly_lines) {
+    //         if (line.id === assemblyLineId) {
     //             findTask = task
     //             break
     //         }
@@ -306,21 +330,21 @@ const divideLine = async (taskId: number, blockLineId: number, range: { take: nu
     //     return // страховка
     // }
     //
-    // const dividerElementIndex = findTask.block_lines.findIndex(line => line.id === blockLineId)
-    // const newBlockLine        = { ...findTask.block_lines[dividerElementIndex] } // __ Копируем объект
-    // newBlockLine.id           = 0 // __ Устанавливаем новый ID
-    // newBlockLine.position     = round(newBlockLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
+    // const dividerElementIndex = findTask.assembly_lines.findIndex(line => line.id === assemblyLineId)
+    // const newAssemblyLine        = { ...findTask.assembly_lines[dividerElementIndex] } // __ Копируем объект
+    // newAssemblyLine.id           = 0 // __ Устанавливаем новый ID
+    // newAssemblyLine.position     = round(newAssemblyLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
     //
-    // newBlockLine.amount                              = range.take
-    // findTask.block_lines[dividerElementIndex].amount = range.keep
+    // newAssemblyLine.amount                              = range.take
+    // findTask.assembly_lines[dividerElementIndex].amount = range.keep
     //
     // // __ Вставляем новую строку
-    // findTask.block_lines.splice(dividerElementIndex + 1, 0, newBlockLine)
-    // findTask.block_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
+    // findTask.assembly_lines.splice(dividerElementIndex + 1, 0, newAssemblyLine)
+    // findTask.assembly_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
     //
-    // const result = await blockStore.divideLineInBlockTaskPending(findTask, { start: executeDate, end: executeDate })
+    // const result = await assemblyStore.divideLineInAssemblyTaskPending(findTask, { start: executeDate, end: executeDate })
     //
-    // // await blockStore.getBlockTasks({ start: executeDate, end: executeDate })
+    // // await assemblyStore.getAssemblyTasks({ start: executeDate, end: executeDate })
     // // await nextTick() // __ Ждем, пока все отрендерится
     // // prepareData()
     // // setTabs()
@@ -335,6 +359,48 @@ const divideLine = async (taskId: number, blockLineId: number, range: { take: nu
     // } else {
     //     return
     // }
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Персонал                       !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// !!! Warning!!! --- Тут по-хорошему нужно прокинуть выше или менять глобальный в AssemblyStore
+
+// __ Добавляем работника
+const addWorker = (worker: IAssemblyDayWorker) => {
+    const existWorker = props.assemblyDay!.workers.find(w => w.id === worker.id)
+    if (!existWorker) {
+        props.assemblyDay!.workers.push(worker)
+    }
+}
+
+// __ Добавляем список работников
+const addWorkers = (workers: IAssemblyDayWorker[]) => {
+    workers.forEach(worker => {
+        const existWorker = props.assemblyDay!.workers.find(w => w.id === worker.id)
+        if (!existWorker) {
+            console.log('push: ', worker)
+            props.assemblyDay!.workers.push(worker)
+        }
+    })
+}
+
+// __ Удаляем работника
+const removeWorker = (worker: IAssemblyDayWorker) => {
+    const findIndex = props.assemblyDay!.workers.findIndex(w => w.id === worker.id)
+    if (findIndex !== -1) {
+        props.assemblyDay!.workers.splice(findIndex, 1)
+        if (props.assemblyDay!.responsible && props.assemblyDay!.responsible.id === worker.id) {
+            props.assemblyDay!.responsible = null
+        }
+    }
+}
+
+// __ Добавляем Ответственного
+const addResponsible = (worker: IAssemblyDayWorker) => {
+    props.assemblyDay!.responsible = worker
 }
 
 

@@ -23,7 +23,7 @@ import type {
     IAssemblyManipulateDay,
     IStats,
     IAssemblyModelManufactureGroup,
-    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask, IColorTypes,
+    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask, IColorTypes, ITotalsDataType,
 } from '@/types'
 import {
     ASSEMBLY_LINE_UNDEFINED,
@@ -32,10 +32,10 @@ import {
     ASSEMBLY_TASK_DRAFT,
     ASSEMBLY_TASK_SECTOR_LAMIT, ASSEMBLY_TASK_SECTOR_TABLE,
     ASSEMBLY_TASK_STATUSES,
-    CHANGES
+    CHANGES, DATA_TYPE_AMOUNT, DATA_TYPE_NOTHING, DATA_TYPE_PROGRESS_AMOUNT
 } from '@/app/constants/assembly.ts'
 import { CHANGE_1, CHANGE_2 } from '@/app/constants/assembly.ts'
-import { formatDateTime, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { formatDateTime, formatTimeWithLeadingZeros, getDateFromDateTimeString } from '@/app/helpers/helpers_date'
 import { getColorByPercent } from '@/app/helpers/helpers.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 
@@ -144,6 +144,43 @@ export function getIndexByChange(change: IAssemblyTaskChangeKeys): number {
 // __ Разница по задумке должна быть только в одной Заявке:
 // __ Либо перемещение в рамках одного дня, либо из одного дня в другой
 // __ Задача найти эти дни и эту Заявку
+
+// --- ------------------------------------------------------------------------------------
+
+// __ Разница между днями в Manipulate
+export function getAssemblyDayDiff(
+    currentDays: IAssemblyManipulateDay[],
+    originalDays: IAssemblyManipulateDay[],
+) {
+    let dayFrom: string | null = null
+    let dayTo: string | null   = null
+
+    // __ Подготавливаем массивы
+    const currentTasks: IAssemblyTask[]  = []
+    const originalTasks: IAssemblyTask[] = []
+
+    for (let i = 0; i < currentDays.length; i++) {
+        currentDays[i].tasks.forEach(task => {
+            currentTasks.push(task)
+
+            // __ Ищем даты откуда и куда перемещено
+            if (!(dayFrom && dayFrom)) {
+                if (currentDays[i].action_at !== task.action_at) {
+                    dayFrom        = task.action_at
+                    dayTo          = currentDays[i].action_at
+                    task.action_at = dayTo
+                }
+            }
+        })
+        originalDays[i].tasks.forEach(task => originalTasks.push(task))
+    }
+
+    return {
+        diffs: getAssemblyTasksDiff(currentTasks, originalTasks),
+        dayFrom,
+        dayTo,
+    }
+}
 
 // --- ------------------------------------------------------------------------------------
 /**
@@ -778,6 +815,16 @@ export function getTaskPriority(task: IAssemblyTask): number {
 }
 
 
+// __ Пересчитываем позиции СЗ в матрице Дней Манипуляции после перетаскивания мышью
+export function setTaskPositionInRenderDays(days: IAssemblyManipulateDay[]): IAssemblyManipulateDay[] {
+    days.forEach(day => {
+        let position = 1
+        day.tasks.forEach(task => task.position = position++)
+    })
+    return days
+}
+
+
 // __ Пересчитываем позиции СЗ в матрице рендера после перетаскивания мышью
 export function setTaskPositionInRenderMatrix(matrix: IPlanMatrix): IPlanMatrix {
     matrix.forEach((week, weekIndex) => {
@@ -1122,10 +1169,44 @@ export function sortAssemblyTaskLinesBySize(
 
 // __ Возвращаем подготовленный объект для отображения в Манипуляции СЗ Сборки
 // __ Выносим в отдельную функцию, чтобы не таскать портянку
-// __ Оставляем 5 дней до текущей даты и 7 после последней непустой
-export function getAssemblyManipulationRenderTasks(tasks: IAssemblyTask[], planPeriod: IPeriod): IAssemblyManipulateDay[] {
+// __ Оставляем 5 дней до текущей даты и 7 после последней непустой - Пока без 5 дней до
+export function getAssemblyManipulationRenderTasks(
+    tasks: IAssemblyTask[],
+    planPeriod: IPeriod,
+    filters: Record<string, string> = {}
+): IAssemblyManipulateDay[] {
+
+    const getActiveFilter = (task: IAssemblyTask, value: string) => {
+        if (value === '0') return true
+        else if (value === '1') return task.active
+        else if (value === '2') return !task.active
+    }
+
+    const getForecastFilter = (task: IAssemblyTask, value: string) => {
+        if (value === '0') return true
+        else if (value === '1') return task.order.is_forecast
+        else if (value === '2') return !task.order.is_forecast
+    }
+
+    const filteredTasks: IAssemblyTask[] = []
+    tasks.forEach(task => {
+        if (
+            task.id.toString().toLocaleLowerCase().includes(filters.idFilter.toLocaleLowerCase()) &&
+            task.order.client.short_name.toLocaleLowerCase().includes(filters.clientFilter.toLocaleLowerCase()) &&
+            task.order.order_no_str.toLocaleLowerCase().includes(filters.orderNoStrFilter.toLocaleLowerCase()) &&
+            (task.description || '').toLocaleLowerCase().includes(filters.descriptionFilter.toLocaleLowerCase()) &&
+            getDateFromDateTimeString(task.order.load_at).toLowerCase().includes(filters.loadAtFilter) &&
+            getDateFromDateTimeString(task.order.unload_at).toLowerCase().includes(filters.unloadAtFilter) &&
+            getActiveFilter(task, filters.orderActiveFilter) &&
+            getForecastFilter(task, filters.orderForecastFilter)
+        ) {
+            filteredTasks.push(task)
+        }
+    })
+
+
     // __ Создаем массив
-    const grouped = Object.groupBy(tasks, task => task.action_at)
+    const grouped = Object.groupBy(filteredTasks, task => task.action_at)
 
     const renderTasks: IAssemblyManipulateDay[] = Object.entries(grouped)
         .map(([key, value]) => {
@@ -1144,16 +1225,16 @@ export function getAssemblyManipulationRenderTasks(tasks: IAssemblyTask[], planP
     let filledTasks = []
 
     const startDateStr = planPeriod.start.split(' ')[0] // '2026-08-01'
-    const startDate    = new Date(startDateStr)
+    // const startDate    = new Date(startDateStr)
 
     // __ Считаем текущую дату минус 5 дней (обнуляем время для корректного сравнения)
-    const fiveDaysAgo = new Date()
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 4)
-    fiveDaysAgo.setHours(0, 0, 0, 0)
+    // const fiveDaysAgo = new Date()
+    // fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 4)
+    // fiveDaysAgo.setHours(0, 0, 0, 0)
 
     // __ Берём максимальный timestamp (то, что позже)
-    const current = new Date(Math.max(startDate.getTime(), fiveDaysAgo.getTime()))
-    // const current = new Date(startDateStr)
+    const current = new Date(startDateStr)
+    // const current = new Date(Math.max(startDate.getTime(), fiveDaysAgo.getTime()))
 
     const endDateStr = planPeriod.end.split(' ')[0]
     const end        = new Date(endDateStr)
@@ -1163,8 +1244,8 @@ export function getAssemblyManipulationRenderTasks(tasks: IAssemblyTask[], planP
         const dateStr = current.toISOString().split('T')[0]
 
         filledTasks.push({
-            action_at: dateStr,
-            tasks    : taskMap.get(dateStr) || [],
+            action_at: dateStr + ' 00:00:00',
+            tasks    : (taskMap.get(dateStr) || []).toSorted((a, b) => a.position - b.position),
             collapsed: !Boolean(taskMap.get(dateStr)),
         })
 
@@ -1193,7 +1274,7 @@ export function getAssemblyManipulationRenderTasks(tasks: IAssemblyTask[], planP
 
 
 // __ Объект отображения данных для каждого участка для одного СЗ
-export function getDataArray(taskSource: IAssemblyTask, short: boolean = false) {
+export function getDataArray(taskSource: IAssemblyTask, dataType: ITotalsDataType = DATA_TYPE_NOTHING) {
 
     const task = JSON.parse(JSON.stringify(taskSource))
 
@@ -1238,11 +1319,19 @@ export function getDataArray(taskSource: IAssemblyTask, short: boolean = false) 
         const done    = stats?.finished_amount || 0
         const percent = total > 0 ? (done / total) * 100 : 0
 
-        let color = getColorByPercent(percent)
-        let title = percent.toFixed(0) + '%'
+        let color    = getColorByPercent(percent)
+        let title    = percent.toFixed(0) + '%'
+        let titleArr = ['', '']
 
-        if (!short) {
-            title = title + ' ' + `(${done}/${total})`
+        switch (dataType) {
+            case DATA_TYPE_PROGRESS_AMOUNT:
+                titleArr = [title, `(${done}/${total})`]
+                title    = title + ' ' + `(${done}/${total})`
+                break
+            case DATA_TYPE_AMOUNT:
+                titleArr = [title, `(${total})`]
+                title    = title + ' ' + `(${total})`
+                break
         }
 
         if (total === 0) {
@@ -1254,12 +1343,14 @@ export function getDataArray(taskSource: IAssemblyTask, short: boolean = false) 
         }
 
         data.push({
-            id  : value.ID,
-            name: value.NAME,
+            task_id: task.id,
+            id     : value.ID,
+            name   : value.NAME,
             total,
             done,
             percent,
             title,
+            titleArr,
             color,
         })
     })
@@ -1270,22 +1361,24 @@ export function getDataArray(taskSource: IAssemblyTask, short: boolean = false) 
 
 
 // __ Объект отображения данных для каждого участка для группы СЗ
-export function getDataArrayTotal(tasksSource: IAssemblyTask[], short: boolean = false) {
+export function getDataArrayTotal(tasksSource: IAssemblyTask[], dataType: ITotalsDataType = DATA_TYPE_NOTHING) {
     const totalArray: IStats[][] = []
 
-    tasksSource.forEach(task => totalArray.push(getDataArray(task, short)))
+    tasksSource.forEach(task => totalArray.push(getDataArray(task, dataType)))
 
     const totalData: IStats[] = []
 
     Object.values(ASSEMBLY_SECTORS).forEach(value => {
         const summary: IStats = {
-            id     : value.ID,
-            name   : value.NAME,
-            total  : 0,
-            done   : 0,
-            percent: 0,
-            color  : '',
-            title  : '',
+            task_id : 0,
+            id      : value.ID,
+            name    : value.NAME,
+            total   : 0,
+            done    : 0,
+            percent : 0,
+            color   : '',
+            title   : '',
+            titleArr: ['', ''],
         }
 
         totalArray.forEach(items => {
@@ -1300,11 +1393,20 @@ export function getDataArrayTotal(tasksSource: IAssemblyTask[], short: boolean =
         const done    = summary.done
         const percent = total > 0 ? (done / total) * 100 : 0
 
-        let color = getColorByPercent(percent)
-        let title = percent.toFixed(0) + '%'
+        let color    = getColorByPercent(percent)
+        let title    = percent.toFixed(0) + '%'
+        let titleArr = ['', '']
 
-        if (!short) {
-            title = title + ' ' + `(${done}/${total})`
+        switch (dataType) {
+            case DATA_TYPE_PROGRESS_AMOUNT:
+                titleArr = [title, `(${done}/${total})`]
+                title    = title + ' ' + `(${done}/${total})`
+                break
+            case DATA_TYPE_AMOUNT:
+                titleArr = [title, `(${total})`]
+                title    = title + ' ' + `(${total})`
+                break
+
         }
 
         if (total === 0) {
@@ -1315,9 +1417,10 @@ export function getDataArrayTotal(tasksSource: IAssemblyTask[], short: boolean =
             title = '✓'
         }
 
-        summary.percent = percent
-        summary.color   = color
-        summary.title   = title
+        summary.percent  = percent
+        summary.color    = color
+        summary.title    = title
+        summary.titleArr = titleArr
 
         totalData.push(summary)
     })
@@ -1331,7 +1434,7 @@ export function filterTaskBySectors(
     entity: IAssemblyTask[] | IAssemblyManipulateDay,
     sectorFilter: IAssemblySectorKeys[] | IAssemblySectorKeys
 ): IAssemblyTask[] {
-    const tasks = Array.isArray(entity) ? entity : entity.tasks
+    const tasks      = Array.isArray(entity) ? entity : entity.tasks
     const sectorList = Array.isArray(sectorFilter) ? sectorFilter : [sectorFilter]
 
     return tasks.reduce<IAssemblyTask[]>((acc, task) => {
@@ -1395,7 +1498,10 @@ export function filterTaskBySectors_Old(entity: IAssemblyTask[] | IAssemblyManip
 
 
 // __ Возвращаем Матрицу для отображения Материалов и Самих Изделий, как в ЕПС для Группы СЗ
-export function getSectorMaterialsMatrixTasks(entity: IAssemblyTask | IAssemblyTask[]): IMatrixManufactureTask[] {
+export function getSectorMaterialsMatrixTasks(
+    entity: IAssemblyTask | IAssemblyTask[],
+    trueMap: Map<number, boolean>,
+): IMatrixManufactureTask[] {
     let tasks = []
     if (Array.isArray(entity)) {
         tasks = entity
@@ -1406,13 +1512,16 @@ export function getSectorMaterialsMatrixTasks(entity: IAssemblyTask | IAssemblyT
     }
 
     return tasks
-        .map(task => getSectorMaterialsMatrixTask(task))
+        .map(task => getSectorMaterialsMatrixTask(task, trueMap))
         .toSorted((a, b) => a.task.position - b.task.position)
 }
 
 
 // __ Возвращаем Матрицу для отображения Материалов и Самих Изделий, как в ЕПС для Одного СЗ
-export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTaskLine[]): IMatrixManufactureTask {
+export function getSectorMaterialsMatrixTask(
+    entity: IAssemblyTask | IAssemblyTaskLine[],
+    trueMap: Map<number, boolean>,
+): IMatrixManufactureTask {
     let taskLines = []
     let task      = null
 
@@ -1429,7 +1538,18 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
         throw new Error('Недопустимый тип - assembly_sectors/getSectorMaterialsMatrixTask')
     }
 
-    // console.log('taskLines: ', taskLines)
+    // __ Для Объединенного СЗ исключаем линии из расчета с неактивным СЗ
+    if (task.id === 0) {
+        const filteredLines: IAssemblyTaskLine[] = []
+        taskLines.forEach(line => {
+            const trueTask = trueMap.get(line.task_id)
+            if (trueTask) {
+                filteredLines.push(line)
+            }
+        })
+
+        taskLines = filteredLines
+    }
 
     const groupsCache    = new Map()    // __ Все Группы Сортировки
     const materialsCache = new Map()    // __ Все Материалы
@@ -1577,8 +1697,9 @@ export function getSectorMaterialsMatrixTask(entity: IAssemblyTask | IAssemblyTa
                 materials_array: matrix,
                 materials_attr : matrix_attr,
             })
-
+            // }
         })
+
 
         const group = {
             group      : manufactureGroup as IAssemblyModelManufactureGroup,

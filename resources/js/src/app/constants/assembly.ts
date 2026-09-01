@@ -10,6 +10,10 @@ import type {
     IAssemblyTaskStatusKeys,
 } from '@/types'
 
+
+// __ Название Ключа передачи инфы для перехода на гужную вкладку
+export const REDIRECT_KEY = 'target'
+
 // --- --------------------------------------------------------------------
 // --- -------------------- Константы Смен СЗ -----------------------------
 // --- --------------------------------------------------------------------
@@ -44,7 +48,7 @@ export const CHANGES = {
         ICON      : '①',
         TITLE_ROME: 'I',
         TYPE      : 'indigo',
-        TIME      : '08:30-20:30',
+        TIME      : '08:30 - 20:30',
 
     },
     CHANGE_2: {
@@ -54,11 +58,18 @@ export const CHANGES = {
         ICON      : '②',
         TITLE_ROME: 'II',
         TYPE      : 'orange',
-        TIME      : '20:30-08:30',
+        TIME      : '20:30 - 08:30',
     },
 
 } as const satisfies Record<string, IAssemblyTaskChange>
 
+
+// __ Константы отображения Общих данных
+export const DATA_TYPE_NOTHING         = 'nothing'          // __ ничего не отображать
+export const DATA_TYPE_TIME            = 'time'             // __ показывать трудозатраты
+export const DATA_TYPE_AMOUNT          = 'amount'           // __ показывать количество
+export const DATA_TYPE_PROGRESS_AMOUNT = 'progress_amount'  // __ показывать прогресс по количеству (выполнено/общее)
+export const DATA_TYPE_PROGRESS_TIME   = 'progress_time'    // __ показывать прогресс по трудозатратам (выполнено/общее)
 
 // __ Константы Линий Сборки
 export const ASSEMBLY_LINES = {
@@ -187,7 +198,8 @@ export const ASSEMBLY_TASK_DRAFT = {
             id          : 0,
             display_name: '',
             color       : '',
-        }
+        },
+        active         : true,
 
     },
     assembly_lines: [] as IAssemblyTaskLine[],

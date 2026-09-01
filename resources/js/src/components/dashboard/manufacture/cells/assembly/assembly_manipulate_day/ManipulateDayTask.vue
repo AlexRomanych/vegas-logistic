@@ -588,6 +588,10 @@ const showGroups       = ref(true)
 // __ Скрываем Переналадку
 const toggleShowGroups = () => {
     showGroups.value = !showGroups.value
+    if (!showGroups.value) {
+        collapsedGroupsState.value = false
+        Object.keys(collapsedStates.value).forEach(key => collapsedStates.value[key] = collapsedGroupsState.value)
+    }
 }
 
 // __ Устанавливаем Collapsed

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Manufacture\Cells\Blocks\Days;
+namespace App\Http\Resources\Manufacture\Cells\Assembly\Days;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BlockDayWorkerResource extends JsonResource
+class AssemblyDayWorkerResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -26,6 +26,8 @@ class BlockDayWorkerResource extends JsonResource
                 return [
                     'id'           => $this->pivot->id,
                     'working_time' => $this->pivot->working_time,
+                    'sectors'      => $this->pivot->sectors,
+                    'sector'       => $this->pivot->sector,
                 ];
             }),
             // 'pivot'      => $this->pivot,
