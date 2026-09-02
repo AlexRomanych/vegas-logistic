@@ -17,7 +17,7 @@ import type {
     IRenderMatrixDiff,
 
 } from '@/types'
-import { ref } from 'vue'
+import { ref, watch, watchEffect } from 'vue'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
 import { isNumber } from '@/app/helpers/helpers_lib.ts'
 
@@ -29,7 +29,6 @@ import {
     repositionAssemblyTaskLines
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import { CHANGES } from '@/app/constants/assembly.ts'
-import { log } from '@/app/composable/log.ts'
 
 
 const DEBUG = true
@@ -110,6 +109,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
     const globalAssemblyTasks = ref<IAssemblyTask[]>([])
 
     // __ Копия массива СЗ Раскроя для отслеживания изменений
+    // let globalAssemblyTasksCopy: IAssemblyTask[] = []
     let globalAssemblyTasksCopy = ref<IAssemblyTask[]>([])
 
     // __ Массив СЗ, готовых к выполнению
@@ -155,6 +155,14 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! --- Тут вся логика по управлению и сохранению частей СЗ !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Восстанавливаем состояние предыдущее
+    const backUpChanges = () => {
+        // console.log('globalAssemblyTasks.value: ', globalAssemblyTasks.value)
+        // console.log('globalAssemblyTasksCopy.value: ', globalAssemblyTasksCopy.value)
+        // globalAssemblyTasks.value = globalAssemblyTasksCopy
+        globalAssemblyTasks.value = JSON.parse(JSON.stringify(globalAssemblyTasksCopy.value))
+    }
 
     // __ Обновляем состояние росле установки статусов на Сеторах/Участках
     const setAssemblyTaskLinesSectorsToGlobal = (sectors: IAssemblyTaskLineSector[]) => {
@@ -203,9 +211,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
     /**
      * __ Добавление новой части СЗ и изменение старой части СЗ, на основе которого была создана новая часть
-     * @param addAssemblyTask     - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
+     * @param addAssemblyTask  - __ СЗ, которое уже было сформировано на основе старой части СЗ (правая панель)__
      * @param leftPanel        - __ контент в новом СЗ (правая панель)__
-     * @param oldAssemblyTask     - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
+     * @param oldAssemblyTask  - __ СЗ, на основе которого формируется новая часть СЗ (левая панель)__
      * @param rightPanel       - __ контент в старом СЗ (левая панель)__
      */
     const addAssemblyTaskToGlobal = async (
@@ -224,8 +232,6 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // __ Если есть правая панель, то добавляем ее в массив СЗ
         if (addAssemblyTask && rightPanel) {
 
-            // console.log('passed')
-
             rightPanel                     = repositionAssemblyTaskLines(rightPanel)  // __ Пересчитываем позиции для строк СЗ (AssemblyLines[])
             addAssemblyTask.assembly_lines = rightPanel || []             // __ addAssemblyTask приходит новым объектом
 
@@ -237,6 +243,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
             globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, addAssemblyTask.action_at)
 
         }
+
+        // __ Переопределяем порядок СЗ в дне, из которого проводили манипуляции
+        globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, oldAssemblyTask.action_at)
 
         await saveChanges()   // __ Сохраняем изменения
     }
@@ -415,15 +424,19 @@ export const useAssemblyStore = defineStore('assembly', () => {
     // __ Сохранение изменений (Синхронизация с сервером)
     const saveChanges = async (
         globalArray            = globalAssemblyTasks.value,
+        // globalArrayCopy        = globalAssemblyTasksCopy,
         globalArrayCopy        = globalAssemblyTasksCopy.value,
         period: IPeriod | null = null,
     ) => {
         const diffsInGlobalAssemblyTasks = getAssemblyTasksDiff(globalArray, globalArrayCopy)
 
+        console.log('-----------------------------------')
         console.log('diffsInGlobalAssemblyTasks: ', diffsInGlobalAssemblyTasks)
+        console.log('-----------------------------------')
 
-        console.log('globalArray: ', globalAssemblyTasks.value)
-        console.log('globalArrayCopy: ', globalAssemblyTasksCopy.value)
+        // console.log('globalArray: ', globalAssemblyTasks.value)
+        // // console.log('globalArrayCopy: ', globalAssemblyTasksCopy)
+        // console.log('globalArrayCopy: ', globalAssemblyTasksCopy.value)
 
 
         // __ Если нет изменений, то выход
@@ -431,7 +444,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
             return
         }
 
-        console.log(diffsInGlobalAssemblyTasks)
+        // console.log(diffsInGlobalAssemblyTasks)
         console.log('Сохраняем изменения')
 
         const result = await jwtPost(URL_ASSEMBLY_TASKS_UPDATE, { diffs: diffsInGlobalAssemblyTasks })
@@ -447,6 +460,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
             console.log('Server data updated')
         } else {
 
+            // globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
             globalAssemblyTasksCopy.value = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
             // globalArrayCopy = JSON.parse(JSON.stringify(globalArray))     // __ копия для отслеживания изменений
         }
@@ -477,6 +491,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
         }
 
         // __ Копия для отслеживания изменений
+        // globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalAssemblyTasks.value))
         globalAssemblyTasksCopy.value = JSON.parse(JSON.stringify(globalAssemblyTasks.value))
     }
 
@@ -1118,6 +1133,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
         console.log('globalAssemblyTasks.value!!!: ', globalAssemblyTasks.value)
 
+        // globalAssemblyTasksCopy = JSON.parse(JSON.stringify(globalAssemblyTasks.value)) // __ копия для отслеживания изменений
         globalAssemblyTasksCopy.value = JSON.parse(JSON.stringify(globalAssemblyTasks.value)) // __ копия для отслеживания изменений
 
         if (DEBUG) console.log('AssemblyStore: getAssemblyTasks: ', response)
@@ -1254,8 +1270,39 @@ export const useAssemblyStore = defineStore('assembly', () => {
     }
 
 
+    // watch(
+    //     () => JSON.parse(JSON.stringify(globalAssemblyTasksCopy.value)),
+    //     (newData, oldData) => {
+    //         console.log('--------------------------------')
+    //         // console.log('old (прошлый слепок): ', oldData)
+    //         console.log('old (прошлый слепок): ', oldData?.toSorted((a, b) => (new Date(a.action_at)).getTime() - (new Date(b.action_at)).getTime()))
+    //         // console.log('new (текущий слепок): ', newData)
+    //         console.log('new (текущий слепок): ', newData?.toSorted((a, b) => (new Date(a.action_at)).getTime() - (new Date(b.action_at)).getTime()))
+    //         console.log('--------------------------------')
+    //     },
+    //     { deep: true, immediate: true }
+    // )
+
+
+    // watchEffect(
+    //     () => {
+    //         // Просто обращаемся к значению, чтобы Vue зарегистрировал зависимость
+    //         const temp = globalAssemblyTasksCopy.value
+    //     },
+    //     {
+    //         onTrigger(e) {
+    //             console.log('ТРИГГЕР СРАБОТАЛ!', e)
+    //             // e.target — какой объект изменился
+    //             // e.key — какой ключ изменили
+    //             // e.newValue / e.oldValue
+    //             debugger // Автоматически остановит выполнение в DevTools и покажет Call Stack!
+    //         }
+    //     }
+    // )
+
     return {
-        globalAssemblyTasks, globalAssemblyTasksCopy,
+        globalAssemblyTasks,
+        globalAssemblyTasksCopy,
         globalRenderPeriod,
         globalAssemblyTaskOrderTypeColor,
         globalAssemblyTaskTimesShow,
@@ -1276,6 +1323,7 @@ export const useAssemblyStore = defineStore('assembly', () => {
 
         // // globalAssemblyTaskPrintData,
 
+        backUpChanges,
         addAssemblyTaskToGlobal,
         applyAssemblyTaskComment,
         applyChanges,

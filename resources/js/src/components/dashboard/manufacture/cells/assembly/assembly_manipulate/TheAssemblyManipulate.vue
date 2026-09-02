@@ -317,27 +317,25 @@ import {
     setTaskPositionInRenderDays,
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
-import AppLabelMultilineTSWrapper from '@/components/dashboard/orders/components/AppLabelMultilineTSWrapper.vue'
-import AppInputTextTSWrapper from '@/components/dashboard/orders/components/AppInputTextTSWrapper.vue'
-import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
-// import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import CellDatesSelectMiniTS from '@/components/dashboard/orders/components/CellDatesSelectMiniTS.vue'
-
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
+import AppLabelMultilineTSWrapper from '@/components/dashboard/manufacture/cells/assembly/components/AppLabelMultilineTSWrapper.vue'
+import AppInputTextTSWrapper from '@/components/dashboard/manufacture/cells/assembly/components/AppInputTextTSWrapper.vue'
+import CellDatesSelectMiniTS from '@/components/dashboard/manufacture/cells/assembly/components/CellDatesSelectMiniTS.vue'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import AppSelectSimpleTS from '@/components/ui/selects/AppSelectSimpleTS.vue'
 
 import ManipulateItem from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate/ManipulateItem.vue'
 import ManipulateTotals from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate/ManipulateTotals.vue'
 import CommentEdit from '@/components/dashboard/manufacture/cells/assembly/common/CommentEdit.vue'
 import AppModalMenuTS, { type IModalResponse } from '@/components/ui/modals/AppModalAsyncMenuTS.vue'
 import ManageTaskCard from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskCard.vue'
-import type ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
+import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 
 const router = useRouter()                 // Определяем роутер
@@ -1057,7 +1055,6 @@ const showMenu = async (day: IAssemblyManipulateDay) => {
 // !!! ---       Логика Меню Сменного Задания            !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
 // __ Показываем Меню на клике по самому СЗ
 const showAssemblyTaskCard = async (assemblyTask: IAssemblyTask) => {
     taskCard.value = JSON.parse(JSON.stringify(assemblyTask)) // __ Копируем объект, чтобы не мутировал оригинал
@@ -1371,7 +1368,7 @@ const dragOptions = computed(() => {
 const isDragging = ref(true)
 
 const checkMove = (evt: DraggableHTMLElement) => {
-    return true
+    // return true
     // console.log('checkMove: ', evt)
     const movedElement = evt.draggedContext.element as IAssemblyTask
     // console.log(movedElement)
@@ -1416,8 +1413,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
     const renderDaysCloned = JSON.parse(JSON.stringify(renderDays.value))
     renderDays.value       = setTaskPositionInRenderDays(renderDays.value)
 
-    console.log('renderDaysCloned: ', renderDaysCloned)
-
+    // console.log('renderDaysCloned: ', renderDaysCloned)
 
     // __ Получаем разницу между матрицами
     // __ Именно renderDaysCloned, renderDays.value, потому
@@ -1427,7 +1423,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
     // __ Если нет изменений - выходим, чтобы не было лишних телодвижений
     if (!diffs.length) {
         // __ Откатываем изменения
-        renderDays.value = renderDaysCloned
+        assemblyStore.backUpChanges()
         return
     }
 
@@ -1469,7 +1465,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             ])
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
             // }
         }
@@ -1489,7 +1485,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             ])
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
         }
 
@@ -1499,12 +1495,19 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             console.error('Не найдено изменений для перемещения СЗ')
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
         }
 
         // __ Получаем СЗ, которое перемещаем, здесь не мутируем
         const assemblyTask = movedElement
+
+        // __ Возвращаем дату и позицию из копии, потому что здесь она уже мутирована
+        const findTask = globalAssemblyTasksCopy.value.find(task => task.id === assemblyTask.id)
+        if (findTask) {
+            assemblyTask.action_at = findTask.action_at
+            assemblyTask.position = findTask.position
+        }
 
         // __ Получаем дату, на которую нужно переместить СЗ
         const targetDate = dayTo
@@ -1525,7 +1528,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             ])
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
         }
 
@@ -1541,7 +1544,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             await showError(['Ошибка!', 'Дата СЗ не может быть в прошлом!'])
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
         }
 
@@ -1583,7 +1586,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         if (!result.value || result.menuItem === 3) {
 
             // __ Откатываем изменения
-            renderDays.value = renderDaysCloned
+            assemblyStore.backUpChanges()
             return
 
         } else if (result.menuItem === 1 || totalAmount === 1) {
@@ -1625,7 +1628,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
             if (!answer) {
 
                 // __ Откатываем изменения
-                renderDays.value = renderDaysCloned
+                assemblyStore.backUpChanges()
                 return
             }
 
@@ -1695,13 +1698,27 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
                 await showError(['Ошибка!', 'Правая часть не может быть пустой!'])
 
                 // __ Откатываем изменения
-                renderDays.value = renderDaysCloned
+                assemblyStore.backUpChanges()
                 return
             }
         }
     }
 }
 
+
+
+// assemblyStore.$subscribe((mutation, state) => {
+//     console.log('Тип изменения:', mutation.type);
+//     console.log('Новое состояние:', state);
+// })
+
+
+// watch(() => assemblyStore.globalAssemblyTasksCopy, (oldData, newData) => {
+//     console.log('--------------------------------')
+//     console.log('old: ', oldData)
+//     console.log('newData: ', newData)
+//     console.log('--------------------------------')
+// }, { deep: true, immediate: true })
 
 </script>
 

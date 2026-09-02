@@ -86,7 +86,8 @@
                 class="cursor-pointer"
                 rounded="4"
                 text-size="micro"
-                @dblclick="goToSector(dataItem)"
+                title="Ctrl + Click - Переход на участок"
+                @click.ctrl="goToSector(dataItem)"
             />
         </div>
 
