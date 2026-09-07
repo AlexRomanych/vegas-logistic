@@ -232,6 +232,15 @@ const percents = computed(() => getDataArray(props.item, props.dataType))
 // __ Вычисление отображаемых участков
 const percentsRender = computed(() => {
     let result = percents.value
+
+    // __ Исключаем Заявку_Ф всегда
+    const hiddenSectors = new Set<IAssemblySectorKeys>([
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COMMON.NAME,
+    ])
+
+    result = result.filter(item => !hiddenSectors.has(item.name))
+
+
     if (!globalAssemblyTaskSectorsShow.value) {
         const hiddenSectors = new Set<IAssemblySectorKeys>([
             ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.NAME,

@@ -18,12 +18,12 @@
                 <AppLabelTS
                     :height="MENU_HEIGHT"
                     :text="showGroups ? '🔓' : '🔒'"
+                    :type="showGroups ? 'primary' : 'dark'"
                     align="center"
                     class="menu-button"
                     rounded="4"
                     text-size="huge"
                     title="Скрыть/Показать название размеров Кроя"
-                    type="dark"
                     width="w-[50px]"
                     @click="toggleShowGroups"
                 />
@@ -42,6 +42,35 @@
                     @click="toggleGroups"
                 />
 
+                <!-- __ Видимость Деталей -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :type="showDetails ? 'primary' : 'dark'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="📋"
+                    text-size="huge"
+                    title="Детали Участков"
+                    width="w-[50px]"
+                    @click="showDetails = !showDetails"
+                />
+
+                <!-- __ Свернуть/Развернуть Детали -->
+                <AppLabelMultiLineTS
+                    v-if="showDetails"
+                    :height="MENU_HEIGHT_MULTILINE"
+                    :text="collapsedDetailsState ? ['Раскрыть', '▼ Детали'] : ['Свернуть', '▲ Детали']"
+                    :type="'primary'"
+                    :width="MENU_WIDTH"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="mini"
+                    title="Свернуть/Развернуть Детали Модели по Участкам"
+                    @click="toggleDetails"
+                />
+
                 <!-- __ Журнал -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -55,50 +84,6 @@
                     width="w-[50px]"
                     @click="showEvents"
                 />
-
-                <!-- __ Слои -->
-                <!--<AppLabelTS-->
-                <!--    :height="MENU_HEIGHT"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text="📐"-->
-                <!--    text-size="huge"-->
-                <!--    title="Операции с Настилами"-->
-                <!--    type="dark"-->
-                <!--    width="w-[50px]"-->
-                <!--    @click="console.log('layers')"-->
-                <!--/>-->
-
-                <!--&lt;!&ndash; __ Оптимизация по Приоритету &ndash;&gt;-->
-                <!--<AppLabelTS-->
-                <!--    :height="MENU_HEIGHT"-->
-                <!--    :type="optimizationType === OPTIMIZE_BY_PRIORITY ? 'warning' : 'dark'"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text="⬇️"-->
-                <!--    text-size="huge"-->
-                <!--    title="Оптимизация по Приоритету"-->
-                <!--    width="w-[50px]"-->
-                <!--    @click="optimizationType = OPTIMIZE_BY_PRIORITY"-->
-                <!--/>-->
-
-                <!--&lt;!&ndash; __ Оптимизация по Переналадке &ndash;&gt;-->
-                <!--<template v-if="uniqueIds.length <= MAX_BLOCK_COLLECTIONS_OPTIMIZED">-->
-                <!--    <AppLabelTS-->
-                <!--        :height="MENU_HEIGHT"-->
-                <!--        :type="optimizationType === OPTIMIZE_BY_TUNING_TIME ? 'primary' : 'dark'"-->
-                <!--        align="center"-->
-                <!--        class="menu-button"-->
-                <!--        rounded="4"-->
-                <!--        text="⌛"-->
-                <!--        text-size="huge"-->
-                <!--        title="Оптимизация по времени Переналадки"-->
-                <!--        width="w-[50px]"-->
-                <!--        @click="optimizeByTuningTime"-->
-                <!--    />-->
-                <!--</template>-->
 
                 <!-- __ Печать -->
                 <AppLabelTS
@@ -128,6 +113,20 @@
                         width="min-w-[250px]"
                     />
                 </template>
+
+                <!-- __ Изменить Линию Сборки-->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :type="assemblyTask.id === UNION_TASKS_ID ? 'danger' : 'dark'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="⚙️"
+                    text-size="huge"
+                    title="Переместить элемент на другую Линию"
+                    width="w-[50px]"
+                    @click="changeAssemblyLines"
+                />
 
                 <!-- __ Выполнено -->
                 <AppLabelMultiLineTS
@@ -175,19 +174,19 @@
                 />
 
                 <!-- __ Разбить количество -->
-                <!--<AppLabelMultiLineTS-->
-                <!--    :disabled="selectedIds.size === 0"-->
-                <!--    :height="MENU_HEIGHT_MULTILINE"-->
-                <!--    :text="['⛏', 'Разбить']"-->
-                <!--    :type="selectedIds.size === 0 ? 'dark' : 'indigo'"-->
-                <!--    :width="MENU_WIDTH"-->
-                <!--    align="center"-->
-                <!--    class="menu-button"-->
-                <!--    rounded="4"-->
-                <!--    text-size="small"-->
-                <!--    title="Разбить количество элементов"-->
-                <!--    @click="divideElementAmount"-->
-                <!--/>-->
+                <AppLabelMultiLineTS
+                    :disabled="selectedIds.size === 0"
+                    :height="MENU_HEIGHT_MULTILINE"
+                    :text="['⛏', 'Разбить']"
+                    :type="selectedIds.size === 0 ? 'dark' : 'indigo'"
+                    :width="MENU_WIDTH"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text-size="small"
+                    title="Разбить количество элементов"
+                    @click="divideElementAmount"
+                />
 
                 <!-- __ Сброс отметки выделения -->
                 <AppLabelMultiLineTS
@@ -209,10 +208,8 @@
 
         <!-- __ Заголовок для Линий + Материалы -->
         <div class="ml-[10px]">
-            <ManipulateDayTaskLineHeader
+            <ManipulateDayTaskLineHeaderAssembly
                 :field-widths="fieldWidths"
-                :materials="data.materials"
-                :show-order-title="data.task.id === UNION_TASKS_ID"
                 @toggle-all="toggleGroups"
             />
         </div>
@@ -229,9 +226,9 @@
                     v-if="showGroups"
                     class="ml-2"
                 >
-                    <ManipulateDayTaskGroup
+                    <ManipulateDayTaskGroupAssembly
                         :collapsed="collapsedStates[group.group.name]"
-                        :group
+                        :group="group"
                         @toggle-collapse="toggleGroup(group.group.name)"
                         @select-group-items="selectGroupItems(group)"
                     />
@@ -240,37 +237,39 @@
                 <!--:class="[!collapseStates[subgroup.subgroupName] ? 'mb-2' : '']"-->
                 <div
                     v-if="!collapsedStates[group.group.name]"
-                    class="ml-5"
+
                 >
 
                     <!-- !!! С фиксированной высотой строки СЗ !!! -->
                     <!--class="h-[35px] flex items-center px-6 border-b border-gray-100 transition-colors relative"-->
 
                     <div
-                        v-for="(record, index) of group.group_lines"
-                        :key="`${record.order_line.id}_${index}`"
+                        v-for="(record, index) of group.group_assembly_lines"
+                        :key="record.id"
                         :class="[
-                                selectedIds.has(record.order_line.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
+                                selectedIds.has(record.id) ? 'bg-slate-300 text-slate-900' : 'hover:bg-gray-50',
                             ]"
-                        :data-task-id="record.order_line.id"
-                        class="my-[-1px] flex items-center px-6 border-b border-gray-100 transition-colors relative"
-                        @mousedown="startSelectionById(record.order_line.id, $event)"
-                        @mouseenter="updateSelectionById(record.order_line.id, $event)"
+                        :data-task-id="record.id"
+                        class="my-[-1px] pl-[10px] pr-6 border-b border-gray-100 transition-colors relative"
+                        @mousedown="startSelectionById(record.id, $event)"
+                        @mouseenter="updateSelectionById(record.id, $event)"
                     >
                         <!-- __ Строка СЗ -->
                         <!--@show-document="showDocument(blockLine, $event)"-->
-                        <!--@change-description="changeDescription(blockLine, $event)"-->
-                        <ManipulateDayTaskLine
+                        <ManipulateDayTaskLineAssembly
+                            :assembly-line="record"
                             :field-widths="fieldWidths"
-                            :group-line="record"
                             :index="index + 1"
                             :ordering="'index'"
-                            :show-order-title="data.task.id === UNION_TASKS_ID"
+                            :sector="sector"
+                            :show-details="showDetails"
+                            @change-description="changeDescription(record, $event)"
+                            @toggle-sectors="record.sectorCollapsed = !record.sectorCollapsed"
                         />
 
                         <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
                         <div
-                            v-if="selectedIds.has(record.order_line.id)"
+                            v-if="selectedIds.has(record.id)"
                             class="absolute inset-0 border-l-4 border-r-4 border-slate-500 pointer-events-none animate-select"
                         ></div>
                     </div>
@@ -323,18 +322,64 @@
                 >
                     <span class="mr-3 text-lg">↺</span> Сбросить
                 </button>
-                <!--<button-->
-                <!--    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"-->
-                <!--    @click="handleMenuAction('divide')"-->
-                <!--&gt;-->
-                <!--    <span class="mr-3 text-lg">⛏</span> Разбить-->
-                <!--</button>-->
+                <button
+                    class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                    @click="handleMenuAction('divide')"
+                >
+                    <span class="mr-3 text-lg">⛏</span> Разбить
+                </button>
                 <button
                     class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-stone-600 hover:text-white transition-colors"
                     @click="handleMenuAction('cancel')"
                 >
                     <span class="mr-3 text-lg">↺</span> Отменить
                 </button>
+
+                <!-- ___ Делаем отдельную логику для Линий Сборки (можно переместить все элементы) -->
+                <!-- ___ И для Заявки_Ф (можно переместить первый выбранный) -->
+                <!-- __ Линии Сборки -->
+                <template v-if="isLine(props.sector.NAME)">
+                    <!-- __ Перемещение на Ламит -->
+                    <button
+                        v-if="props.sector.NAME === ASSEMBLY_TASK_SECTOR_TABLE"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(ASSEMBLY_TASK_SECTOR_LAMIT)"
+                    >
+                        <span class="mr-3 text-lg">🏭</span> Переместить на Ламит
+                    </button>
+
+                    <!-- __ Перемещение на Столы -->
+                    <button
+                        v-if="props.sector.NAME === ASSEMBLY_TASK_SECTOR_LAMIT"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(ASSEMBLY_TASK_SECTOR_TABLE)"
+                    >
+                        <span class="mr-3 text-lg">🖐</span>Переместить на Столы
+                    </button>
+                </template>
+
+                <!-- __ Заявка_Ф -->
+                <template v-else-if="isCommon(props.sector.NAME)">
+                    <!-- __ Перемещение на Ламит -->
+                    <button
+                        v-if="getFirstSelectionAssemblyLine() === ASSEMBLY_LINE_TABLE"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(ASSEMBLY_TASK_SECTOR_LAMIT, 'common')"
+                    >
+                        <span class="mr-3 text-lg">🏭</span> Переместить на Ламит
+                    </button>
+
+                    <!-- __ Перемещение на Столы -->
+                    <button
+                        v-if="getFirstSelectionAssemblyLine() === ASSEMBLY_LINE_LAMIT"
+                        class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-600 hover:text-white transition-colors"
+                        @click="handleMenuAction(ASSEMBLY_TASK_SECTOR_TABLE, 'common')"
+                    >
+                        <span class="mr-3 text-lg">🖐</span>Переместить на Столы
+                    </button>
+                </template>
+
+
             </div>
         </Transition>
     </Teleport>
@@ -344,6 +389,7 @@
         <span class="flex items-center gap-1.5"><span class="bg-gray-200 px-1 rounded text-[10px]">CTRL</span> Выбор вразнобой</span>
         <span class="flex items-center gap-1.5"><span class="bg-gray-200 px-1 rounded text-[10px]">SHIFT</span> Диапазон</span>
     </div>
+
 
     <!-- __ Модальное окно для добавления причины не выполнения -->
     <ManipulateDayFalseReason
@@ -376,14 +422,14 @@
         width="w-[800px]"
     />
 
-    <!-- __ Смена Производственной линии -->
-    <!--<ManageTaskManufLines-->
-    <!--    ref="manageTaskManufLines"-->
-    <!--    :mode="modalMode"-->
-    <!--    :task="taskCard"-->
-    <!--    :text="modalText"-->
-    <!--    :type="modalType"-->
-    <!--/>-->
+    <!-- __ Смена Линии Сборки -->
+    <ManageTaskManufLines
+        ref="manageTaskManufLines"
+        :mode="modalMode"
+        :task="taskCard"
+        :text="modalText"
+        :type="modalType"
+    />
 
     <!-- __ Просмотр PDF в модальном режиме -->
     <!--<BlockDesignDocumentAsync-->
@@ -407,17 +453,38 @@ import { ref, computed, nextTick, onUnmounted, onMounted, onBeforeUnmount } from
 
 import type {
     IColorTypes,
+    IAssemblyDay,
     IAssemblyTask,
+    IAssemblyTaskLine,
+    IAssemblySector,
     IAssemblyTaskOrderLine,
-    IDividerItem, IMatrixManufactureGroup,
-    IMatrixManufactureTask, IAssemblyDay
+    IMatrixManufactureGroup,
+    IMatrixManufactureTask,
+    IAssemblyLineSetData,
+    IAssemblyLineKeys,
+    IDividerItem
 } from '@/types'
 
 import { CELL_EVENT_ASSEMBLY } from '@/app/constants/cell_events.ts'
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { ASSEMBLY_UNION_TASK_NAME } from '@/app/constants/assembly.ts'
+import {
+    ASSEMBLY_LINE_LAMIT, ASSEMBLY_LINE_TABLE,
+    ASSEMBLY_LINE_UNDEFINED,
+    ASSEMBLY_TASK_DRAFT,
+    ASSEMBLY_TASK_SECTOR_LAMIT,
+    ASSEMBLY_TASK_SECTOR_TABLE,
+    ASSEMBLY_UNION_TASK_NAME
+} from '@/app/constants/assembly.ts'
 
-import { isTaskLineDone, isTaskLineFalse, isTaskLineReset } from '@/app/helpers/manufacture/helpers_assembly.ts'
+import {
+    getAssemblyLineFromMatrixGroupsById,
+    isCommon,
+    isLine,
+    isTaskLineDone,
+    isTaskLineFalse,
+    isTaskLineReset
+} from '@/app/helpers/manufacture/helpers_assembly.ts'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 // import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
@@ -425,20 +492,25 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 import AppRangeModalAsyncTS from '@/components/ui/modals/AppRangeModalAsyncTS.vue'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+// import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 
 import OrderItemInfo from '@/components/dashboard/manufacture/cells/assembly/common/OrderItemInfo.vue'
 import ManipulateDayFalseReason from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayFalseReason.vue'
+import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
 import ManageEventsAsync from '@/components/dashboard/manufacture/events/ManageEventsAsync.vue'
-// import ManageTaskManufLines from '@/components/dashboard/manufacture/cells/assembly/assembly_manage/ManageTaskManufLines.vue'
 
-import ManipulateDayTaskLineHeader from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeader.vue'
-import ManipulateDayTaskGroup from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskGroup.vue'
-import ManipulateDayTaskLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLine.vue'
+import ManipulateDayTaskLineHeaderAssembly
+    from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineHeaderAssembly.vue'
+import ManipulateDayTaskLineAssembly from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskLineAssembly.vue'
+
+import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
+import ManipulateDayTaskGroupAssembly from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskGroupAssembly.vue'
 
 
 interface IProps {
     data: IMatrixManufactureTask
     day: IAssemblyDay   // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
+    sector: IAssemblySector
 }
 
 const props = defineProps<IProps>()
@@ -447,9 +519,10 @@ const emits = defineEmits<{
     (e: 'setFinishStatus', payload: number[]): void
     (e: 'setFalseStatus', payload: number[], falseReason: string): void
     (e: 'resetStatus', payload: number[]): void
-    (e: 'divideLine', taskId: number, lineId: number, divideAmount: { take: number; keep: number }): void
+    (e: 'divideLine', lineId: number, divideAmount: { take: number; keep: number }): void
 }>()
 
+const assemblyStore = useAssemblyStore()
 
 const assemblyTask = computed<IAssemblyTask>(() => props.data.task)
 
@@ -481,12 +554,14 @@ const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
 const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для Карточки и Изменения Линии
-// const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+// __ Карточка СЗ
+const taskCard             = ref<IAssemblyTask>(ASSEMBLY_TASK_DRAFT)
+const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 
 // __ Поля данных
 const fieldWidths: Record<string, string> = {
-    check       : 'min-w-[25px] max-w-[25px]',
+    check       : 'min-w-[30px] max-w-[30px]',
     position    : 'min-w-[30px] max-w-[30px]',
     name        : 'min-w-[200px] max-w-[200px]',
     size        : 'min-w-[100px] max-w-[100px]',
@@ -494,7 +569,7 @@ const fieldWidths: Record<string, string> = {
     time        : 'min-w-[100px] max-w-[100px]',
     kdb         : 'min-w-[70px] max-w-[70px]',
     timeLabel   : 'min-w-[100px] max-w-[100px]',
-    manuf_line  : 'min-w-[40px] max-w-[40px]',
+    manuf_line  : 'min-w-[80px] max-w-[80px]',
     false_reason: 'min-w-[174px] max-w-[174px]',
     order       : 'min-w-[300px] max-w-[300px]',
     description : 'min-w-[300px] max-w-[300px]',
@@ -537,11 +612,15 @@ async function showError(error: string | string[] | null = null) {
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! ---                Collapse                     !!!
+// !!! ---         Collapse And Toggle                 !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+// __ Видимость деталек
+const showDetails = ref(false)
+
 // __ Видимость названий подгрупп
-const showGroups       = ref(true)
+const showGroups = ref(true)
+
 // __ Скрываем Переналадку
 const toggleShowGroups = () => {
     showGroups.value = !showGroups.value
@@ -564,11 +643,20 @@ const toggleGroup = (groupName: string) => {
     }
 }
 
-// __ Устанавливаем Общий Collapsed
+// __ Устанавливаем Общий Collapsed на Группыы
 const collapsedGroupsState = ref(true)
 const toggleGroups         = () => {
     collapsedGroupsState.value = !collapsedGroupsState.value
     Object.keys(collapsedStates.value).forEach(key => collapsedStates.value[key] = collapsedGroupsState.value)
+}
+
+// __ Устанавливаем Общий Collapsed на Группыы
+const collapsedDetailsState = ref(true)
+const toggleDetails         = () => {
+    collapsedDetailsState.value = !collapsedDetailsState.value
+    props.data.groups.forEach(group => {
+        group.group_assembly_lines.forEach(line => line.sectorCollapsed = collapsedDetailsState.value)
+    })
 }
 
 
@@ -584,29 +672,56 @@ const taskTitle   = computed(() => {
     return `${assemblyTask.value.position}. ${assemblyTask.value.order.client.short_name} №${assemblyTask.value.order.order_no_num}`
 })
 
+// __ Меняем Комментарий к строке СЗ
+const changeDescription = async (assemblyLine: IAssemblyTaskLine, description: string) => {
+
+    const result = await assemblyStore.setAssemblyTaskLineDescription(assemblyLine.id, description)
+    if (checkCRUD(result)) {
+        assemblyStore.setGlobalAssemblyTaskLineDescription(assemblyLine.id, description)
+        return
+    } else {
+        await showError()
+        return
+    }
+}
+
+// __ Получаем первую выделенную запись
+const getFirstSelectionAssemblyLine = () => {
+    if (selectedIds.value.size === 0) {
+        return ASSEMBLY_LINE_UNDEFINED
+    }
+
+    const firstId = selectedIds.value.values().next().value
+    if (!firstId) {
+        return ASSEMBLY_LINE_UNDEFINED
+    }
+
+    const assemblyLine = getAssemblyLineFromMatrixGroupsById(props.data.groups, firstId)
+    if (!assemblyLine) {
+        return ASSEMBLY_LINE_UNDEFINED
+    }
+
+    return assemblyLine.assembly_line
+}
+
 
 // __ Получаем все id Участков выделенных Линий
-// __ Выбираем только задачи с нулевым статусом
-const getSelectedSectorIds = (selector: 'reset' | null = null) => {
+const getSelectedIds = (selector: 'reset' | null = null) => {
+
     const ids = new Set<number>()
+
     props.data.groups.forEach(group => {
-        group.group_lines.forEach(groupLine => {
-            if (selectedIds.value.has(groupLine.order_line.id)) {
-                groupLine.materials_array.forEach(details => {
-                    if (details) {
-                        details.forEach(sector => {
-                            if (selector === 'reset') {
-                                if (isTaskLineDone(sector) || isTaskLineFalse(sector)) {
-                                    ids.add(sector.id)
-                                }
-                            } else {
-                                if (isTaskLineReset(sector)) {
-                                    ids.add(sector.id)
-                                }
-                            }
-                        })
+        group.group_assembly_lines.forEach(assemblyLine => {
+            if (selectedIds.value.has(assemblyLine.id)) {
+                if (selector === 'reset') {
+                    if (isTaskLineDone(assemblyLine) || isTaskLineFalse(assemblyLine)) {
+                        ids.add(assemblyLine.id)
                     }
-                })
+                } else {
+                    if (isTaskLineReset(assemblyLine)) {
+                        ids.add(assemblyLine.id)
+                    }
+                }
             }
         })
     })
@@ -615,7 +730,7 @@ const getSelectedSectorIds = (selector: 'reset' | null = null) => {
 
 // __ Выполнено
 const completeSelected = async () => {
-    const ids: number[] = getSelectedSectorIds()
+    const ids: number[] = getSelectedIds()
 
     if (!ids.length) {
         return
@@ -627,7 +742,7 @@ const completeSelected = async () => {
 
 // __ Не Выполнено
 const unCompleteSelected = async () => {
-    const ids: number[] = getSelectedSectorIds()
+    const ids: number[] = getSelectedIds()
 
     if (!ids.length) {
         return
@@ -648,7 +763,7 @@ const unCompleteSelected = async () => {
 
 // __ Сброс статуса
 const resetStatus = async () => {
-    const ids: number[] = getSelectedSectorIds('reset')
+    const ids: number[] = getSelectedIds('reset')
 
     if (!ids.length) {
         return
@@ -660,50 +775,52 @@ const resetStatus = async () => {
 
 // __ Разбить количество
 const divideElementAmount = async () => {
-    // // __ Проверяем, что есть выделенные элементы
-    // if (selectedIds.value.size === 0) {
-    //     return
-    // }
-    //
-    // // __ Проверяем, что это не объединение СЗ
-    // // if (props.blockTask.id === 0) {
-    // //     return
-    // // }
-    //
-    // // __ Берем первый элемент из выделенных
-    // const findElement = JSON.parse(
-    //     JSON.stringify(blockLines.value.find((line) => line.id === Array.from(selectedIds.value)[0]))
-    // )
-    //
-    // // console.log('selected: ', findElement)
-    //
-    // // __ Проверяем, что элемент не завершен
-    // if (findElement && (findElement.finished_at || findElement.false_at || findElement.amount === 1)) {
-    //     return
-    // }
-    //
-    // // __ Формируем название для модального окна
-    // dividerElement.value.name =
-    //     findElement.block.name + findElement.amount.toString() + ' шт.'
-    //
-    // dividerElement.value.amount = findElement.amount
-    //
-    // const answer = await appRangeModalAsyncTS.value!.show() // показываем модалку и ждем ответ
-    // if (answer) {
-    //     // __ Получаем диапазон + проверяем его (страховочка)
-    //     const range = appRangeModalAsyncTS.value!.range
-    //     if (!range || range.take === 0 || range.keep === 0) {
-    //         return
-    //     }
-    //
-    //     emits('divideLine', props.blockTask.id, findElement.id, range)
-    //     selectedIds.value.clear()
-    // }
-}
+    // __ Проверяем, что есть выделенные элементы
+    if (selectedIds.value.size === 0) {
+        return
+    }
 
-const stopGlobalSelection = () => {
-    isDragging.value = false
-    stopAutoScroll()
+    // __ Проверяем, что это не объединение СЗ
+    // if (isUnionTask.value) {
+    //     await showError(['Нельзя разделить в Объединении СЗ!'])
+    //     return
+    // }
+
+    // __ Берем первый элемент из выделенных
+    const findElement = getAssemblyLineFromMatrixGroupsById(props.data.groups, Array.from(selectedIds.value)[0])
+    if (!findElement) return
+
+    // __ Проверяем на количество
+    if (findElement.amount < 2) {
+        await showError(['Маловато для разделения!'])
+        return
+    }
+
+    // __ Проверяем, что элемент не завершен
+    if (!isTaskLineReset(findElement)) {
+        await showError(['Строку можно разделить только со сброшенным статусом!'])
+        return
+    }
+
+    // console.log('selected: ', findElement)
+
+    // __ Формируем название для модального окна
+    dividerElement.value.name =
+        findElement.order_line.model.name_report + ' ' + findElement.amount.toString() + ' шт.'
+
+    dividerElement.value.amount = findElement.amount
+
+    const answer = await appRangeModalAsyncTS.value!.show() // показываем модалку и ждем ответ
+    if (answer) {
+        // __ Получаем диапазон + проверяем его (страховочка)
+        const range = appRangeModalAsyncTS.value!.range
+        if (!range || range.take === 0 || range.keep === 0) {
+            return
+        }
+
+        emits('divideLine', findElement.id, range)
+        selectedIds.value.clear()
+    }
 }
 
 
@@ -735,6 +852,90 @@ const printTask = () => {
     // // 2. Открываем новое окно через стандартный JS
     // window.open(routeData.href, '_blank')
 }
+
+
+// __ Изменение Производственной Линии
+const changeAssemblyLines = async (/*blockTask: IBlockTask*/) => {
+
+    console.log('data: ', props.data)
+
+    // __ Для объединения СЗ не меняем Линии
+    if (props.data.task.id === UNION_TASKS_ID) {
+        return
+    }
+
+
+    // __ Копируем объект, чтобы не мутировал оригинал
+    taskCard.value = JSON.parse(JSON.stringify(props.data.task))
+
+    console.log('taskCard: ', taskCard.value)
+
+    // __ Добавляем метаданные Заявки в каждую строку
+    taskCard.value.assembly_lines.forEach(line => line.order_meta = `${taskCard.value.order.client.short_name} №${taskCard.value.order.order_no_str}`)
+
+
+    // __ Показываем модальное окно обработки СЗ
+    const answer = await manageTaskManufLines.value!.show()
+    if (!answer) {
+        return
+    }
+
+    // __ Получаем ссылки на панели
+    const mutations                             = manageTaskManufLines.value!.mutations
+    const setTablesData: IAssemblyLineSetData[] = mutations.map(line => ({ id: line.id, line: line.assembly_line, }))
+
+    console.log('mutations: ', setTablesData)
+
+    const result = await assemblyStore.taskLinesAssemblyLineSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        assemblyStore.setGlobalArrayChangeAssemblyLines(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = 'Данные успешно обновлены'
+        await appModalAsyncMultilineTS.value!.show()
+
+    } else {
+        await showError()
+    }
+}
+
+
+// __ Устанавливаем Производственную линию по меню ПКМ
+const changeAssemblyLineByMenu = async (targetAssemblyLine: IAssemblyLineKeys) => {
+    // __ Получаем ссылки на панели
+    const setTablesData: IAssemblyLineSetData[] = [...selectedIds.value].map(id => {
+        let line: IAssemblyLineKeys = ASSEMBLY_LINE_UNDEFINED
+
+        switch (targetAssemblyLine) {
+            case ASSEMBLY_LINE_LAMIT:
+                line = ASSEMBLY_LINE_LAMIT
+                break
+            case ASSEMBLY_LINE_TABLE:
+                line = ASSEMBLY_LINE_TABLE
+                break
+        }
+
+        return { id, line }
+    })
+
+    console.log('setTablesData: ', setTablesData)
+
+    const result = await assemblyStore.taskLinesAssemblyLineSet(setTablesData)
+    if (checkCRUD(result)) {
+        // __ Меняем глобальный стейт
+        const lineName = targetAssemblyLine === ASSEMBLY_LINE_LAMIT ? 'Ламит' : 'Столы'
+        assemblyStore.setGlobalArrayChangeAssemblyLines(setTablesData)
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = `Линия изменена на ${lineName}`
+        await appModalAsyncMultilineTS.value!.show()
+
+    } else {
+        await showError()
+    }
+}
+
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---           Скрол и выделение                 !!!
@@ -775,6 +976,11 @@ const startAutoScroll = (direction: 1 | -1): void => {
     scrollId = requestAnimationFrame(scrollStep)
 }
 
+const stopGlobalSelection = () => {
+    isDragging.value = false
+    stopAutoScroll()
+}
+
 const stopAutoScroll = (): void => {
     if (scrollId !== null) {
         cancelAnimationFrame(scrollId)
@@ -784,7 +990,7 @@ const stopAutoScroll = (): void => {
 
 // --- Методы выделения на id ---
 const flatVisibleIds = computed(() => {
-    return props.data.groups.flatMap(group => group.group_lines.map(line => line.order_line.id))
+    return props.data.groups.flatMap(group => group.group_assembly_lines.map(line => line.id))
 })
 
 const startSelectionById = (id: number, event: MouseEvent) => {
@@ -875,7 +1081,7 @@ const openContextMenu = async (event: MouseEvent) => {
 }
 
 // __ Меню
-const handleMenuAction = async (action: string) => {
+const handleMenuAction = async (action: string, mode: string | null = null) => {
     if (action === 'done') {
         await completeSelected()
     } else if (action === 'false') {
@@ -886,6 +1092,16 @@ const handleMenuAction = async (action: string) => {
         await divideElementAmount()
     } else if (action === 'cancel') {
         selectedIds.value.clear()
+    } else if (action === ASSEMBLY_TASK_SECTOR_LAMIT || action === ASSEMBLY_TASK_SECTOR_TABLE) {
+        // __ Если это прилетело из Заявки_Ф - оставляем только первый элемент
+        if (mode === 'common') {
+            const firstLineId = selectedIds.value.values().next().value
+            if (firstLineId) {
+                selectedIds.value.clear()
+                selectedIds.value.add(firstLineId)
+            }
+        }
+        await changeAssemblyLineByMenu(action)
     }
     showMenu.value = false
 }
@@ -903,7 +1119,7 @@ const selectGroupItems = async (group: IMatrixManufactureGroup) => {
     // __ Показываем модалку и ждем ответ
     const answer = await appModalAsyncMultilineTS.value!.show()
     if (answer) {
-        group.group_lines.forEach(l => selectedIds.value.add(l.order_line.id))
+        group.group_assembly_lines.forEach(l => selectedIds.value.add(l.id))
     }
 }
 

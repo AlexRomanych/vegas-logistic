@@ -6,6 +6,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Assembly\GetAssemblyTasksRequest;
 use App\Http\Requests\Manufacture\Assembly\Sync\SyncAssemblyTasksRequest;
+use App\Http\Resources\Manufacture\Cells\Assembly\Manage\AssemblyTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Assembly\Manage\AssemblyTaskLineSectorResource;
 use App\Http\Resources\Manufacture\Cells\Assembly\Manage\AssemblyTaskResource;
 use App\Models\Manufacture\Cells\Assembly\AssemblyDay;
@@ -162,7 +163,6 @@ class AssemblyTaskController extends Controller
     }
 
 
-
     /**
      * ___ Добавляем СЗ для Сборки
      * @param Request $request
@@ -236,33 +236,6 @@ class AssemblyTaskController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
-
-    /**
-     * ___ Обновляем Комментарий Записи
-     * @param Request $request
-     * @return string
-     */
-    public function setAssemblyTaskLineSectorDescription(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'id'          => 'required|integer|exists:assembly_task_line_sectors,id',
-                'description' => 'nullable|string',
-            ]);
-
-            $description = $validated['description'] ?? null;
-            AssemblyTaskLineSector::query()
-                ->where('id', $validated['id'])
-                ->update(['description' => $description]);
-
-            return EndPointStaticRequestAnswer::ok();
-        } catch (Exception|Throwable $e) {
-            return EndPointStaticRequestAnswer::fail($e);
-        }
-    }
-
 
 
     /**
@@ -375,12 +348,11 @@ class AssemblyTaskController extends Controller
                         // __ Сортируем именно в таком порядке, удаляем в самом конце
                         $lineDiffs = $diff['lineChanges'];
 
-                        // ⚠️ Внимание: тут в исходном коде была опечатка (usort($diffs вместо $lineDiffs)), исправил
                         usort($lineDiffs, function ($a, $b) {
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
-                                'ADDED'   => 1,
-                                'UPDATED' => 2,
+                                'UPDATED' => 1,
+                                'ADDED'   => 2,
                                 'DELETED' => 3,
                                 default   => 4,
                             };
@@ -398,11 +370,6 @@ class AssemblyTaskController extends Controller
 
                                     $newLine = $sourceLine->replicate();
 
-
-                                    //$newLine = AssemblyTaskLine::query()
-                                    //    ->findOrFail($lineDiff['lineIdRef'])
-                                    //    ->replicate();
-
                                     // __ Ситуация, когда новые строки появились в новом СЗ
                                     // __ Связываем с новым СЗ
                                     if ($currentTaskId) {
@@ -418,8 +385,15 @@ class AssemblyTaskController extends Controller
 
                                     // __ 🔗 Копируем все секторы из старой строки в новую!
                                     foreach ($sourceLine->sectors as $sector) {
-                                        $newSector = $sector->replicate();
+                                        $newSector                        = $sector->replicate();
                                         $newSector->assembly_task_line_id = $newLine->id; // Привязываем к новому ID
+
+                                        // __ Перестраховочка
+                                        if (isset($lineDiff['amount']['new']) && $lineDiff['amount']['new']) {
+                                            // __ Сохраняем новое количество на участке
+                                            $newSector->amount = $lineDiff['amount']['new'] * $newSector->count;
+                                        }
+
                                         $newSector->save();
                                     }
 
@@ -446,6 +420,19 @@ class AssemblyTaskController extends Controller
                                         'position' => $lineDiff['position']['new'] ?? null,
                                         // 'assembly_task_id' => $updatedTaskId ?? null,
                                     ];
+
+                                    // __ Пересчитываем новое количество на участках (Sectors), например, при разбиении
+                                    if (isset($lineDiff['amount']['new']) && $lineDiff['amount']['new']) {
+                                        $sourceLine = AssemblyTaskLine::query()
+                                            ->with('sectors') // __ Подгружаем секторы исходной строки
+                                            ->findOrFail($lineDiff['lineId']);
+
+                                        foreach ($sourceLine->sectors as $sector) {
+                                            // __ Сохраняем новое количество на участке
+                                            $sector->amount = $lineDiff['amount']['new'] * $sector->count;
+                                            $sector->save();
+                                        }
+                                    }
 
                                     // __ Собираем id линий для пересчета трудозатрат
                                     if (isset($lineDiff['amount'])) {
@@ -524,6 +511,8 @@ class AssemblyTaskController extends Controller
                 // ]);
             });
         } catch (Throwable $e) {
+
+            $a = 0;
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
@@ -737,6 +726,121 @@ class AssemblyTaskController extends Controller
     }
 
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---             Assembly Lines                  !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    /**
+     * ___ Устанавливаем статус Выполнено для Сущности Участка
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function setAssemblyTaskLinesDone(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:assembly_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = AssemblyTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing Assembly Task Line with id: ' . $id . '.');
+                }
+
+                $line->finished_at = now();
+                $line->save();
+            }
+
+            $sectors = AssemblyTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return AssemblyTaskLineResource::collection($sectors);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Устанавливаем статус Не выполнено для Сущности Участка
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     * @noinspection DuplicatedCode
+     */
+    public function setAssemblyTaskLinesFalse(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'    => 'required|array',
+                'ids.*'  => 'required|integer|exists:assembly_task_lines,id',
+                'reason' => 'required|string',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = AssemblyTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing Assembly Task Line with id: ' . $id . '.');
+                }
+
+                $line->false_at     = now();
+                $line->false_reason = $validated['reason'];
+
+                $history = $line->false_history;
+                if (is_null($history)) {
+                    $history = [];
+                }
+
+                $history[]           = [
+                    'at'     => $line->false_at->format(RETURN_DATE_TIME_FORMAT),
+                    'by'     => auth()->id(),
+                    'reason' => $validated['reason'],
+                ];
+                $line->false_history = $history;
+                $line->finished_at   = null;
+                $line->save();
+            }
+
+            $lines = AssemblyTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return AssemblyTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Сбрасываем отметку Выполнено/Не выполнено для Сущности Участка
+     * @param Request $request
+     * @return AnonymousResourceCollection|string
+     */
+    public function setAssemblyTaskLinesReset(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids'   => 'required|array',
+                'ids.*' => 'required|integer|exists:assembly_task_lines,id',
+            ]);
+
+            foreach ($validated['ids'] as $id) {
+                $line = AssemblyTaskLine::query()->find($id);
+                if (!$line) {
+                    throw new Exception('Missing Assembly Task Line with id: ' . $id . '.');
+                }
+
+                $line->finished_at  = null;
+                $line->false_at     = null;
+                $line->false_reason = null;
+                $line->save();
+            }
+
+            $lines = AssemblyTaskLine::query()->whereIn('id', $validated['ids'])->get();
+            return AssemblyTaskLineResource::collection($lines);
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
     /**
      * ___ Меняем Линию Сборки
      * @param Request $request
@@ -829,7 +933,36 @@ class AssemblyTaskController extends Controller
 
 
     /**
-     * ___ Устанавливаем статус Выполнено для линии
+     * ___ Обновляем Комментарий Сущности Участка
+     * @param Request $request
+     * @return string
+     */
+    public function setAssemblyTaskLineDescription(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'          => 'required|integer|exists:assembly_task_lines,id',
+                'description' => 'nullable|string',
+            ]);
+
+            $description = $validated['description'] ?? null;
+            AssemblyTaskLine::query()
+                ->where('id', $validated['id'])
+                ->update(['description' => $description]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!! ---         Assembly Lines Sectors              !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    /**
+     * ___ Устанавливаем статус Выполнено для Сущности Участка
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -860,7 +993,7 @@ class AssemblyTaskController extends Controller
 
 
     /**
-     * ___ Устанавливаем статус Не выполнено для линии
+     * ___ Устанавливаем статус Не выполнено для Сущности Участка
      * @param Request $request
      * @return AnonymousResourceCollection|string
      * @noinspection DuplicatedCode
@@ -907,7 +1040,7 @@ class AssemblyTaskController extends Controller
 
 
     /**
-     * ___ Сбрасываем отметку Выполнено/Не выполнено для линии
+     * ___ Сбрасываем отметку Выполнено/Не выполнено для Сущности Участка
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -934,6 +1067,31 @@ class AssemblyTaskController extends Controller
             $lines = AssemblyTaskLineSector::query()->whereIn('id', $validated['ids'])->get();
             return AssemblyTaskLineSectorResource::collection($lines);
         } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Обновляем Комментарий Сущности Участка
+     * @param Request $request
+     * @return string
+     */
+    public function setAssemblyTaskLineSectorDescription(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'          => 'required|integer|exists:assembly_task_line_sectors,id',
+                'description' => 'nullable|string',
+            ]);
+
+            $description = $validated['description'] ?? null;
+            AssemblyTaskLineSector::query()
+                ->where('id', $validated['id'])
+                ->update(['description' => $description]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
     }

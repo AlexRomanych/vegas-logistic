@@ -462,10 +462,14 @@ Route::prefix('assembly')
         //Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
         //Route::post('tasks/action/set', [BlockTaskController::class, 'setBlockTaskActionAt']);
 
+        // __ Строки СЗ
         Route::post('tasks/lines/line/set', [AssemblyTaskController::class, 'taskLinesManufLineSet']);
-        //Route::post('tasks/line/done', [BlockTaskController::class, 'setBlockTaskLinesDone']);
-        //Route::post('tasks/line/false', [BlockTaskController::class, 'setBlockTaskLinesFalse']);
-        //Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
+        Route::post('tasks/line/done', [AssemblyTaskController::class, 'setAssemblyTaskLinesDone']);
+        Route::post('tasks/line/false', [AssemblyTaskController::class, 'setAssemblyTaskLinesFalse']);
+        Route::post('tasks/line/reset', [AssemblyTaskController::class, 'setAssemblyTaskLinesReset']);
+        Route::post('tasks/line/description', [AssemblyTaskController::class, 'setAssemblyTaskLineDescription']);
+
+        // __ Сущности Участков
         Route::post('tasks/line/sector/done', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorDone']);
         Route::post('tasks/line/sector/false', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorFalse']);
         Route::post('tasks/line/sector/reset', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorReset']);

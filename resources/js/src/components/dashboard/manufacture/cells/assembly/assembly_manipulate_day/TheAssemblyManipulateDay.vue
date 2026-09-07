@@ -35,14 +35,41 @@
     </div>
 
     <!-- __ Сами Данные -->
-    <div v-if="activeTabIndex">
-        <AssemblyManipulateSector
+
+    <template v-if="activeTabIndex !== null">
+        <ManipulateDaySector
             :active-task-id="activeTaskId"
             :assembly-day="day"
             :matrix="matrix[getTab().sector.NAME]"
             :sector="getTab().sector"
         />
-    </div>
+    </template>
+
+    <!--&lt;!&ndash; __ Сами Данные &ndash;&gt;-->
+    <!--<template v-if="activeTabIndex">-->
+    <!--    &lt;!&ndash; __ Все, что касается Резки &ndash;&gt;-->
+    <!--    <template v-if="isSector(getTab().sector.NAME)">-->
+    <!--        <ManipulateDaySector-->
+    <!--            :active-task-id="activeTaskId"-->
+    <!--            :assembly-day="day"-->
+    <!--            :matrix="matrix[getTab().sector.NAME]"-->
+    <!--            :sector="getTab().sector"-->
+    <!--        />-->
+    <!--    </template>-->
+    <!--    &lt;!&ndash; __ Столы + Ламит &ndash;&gt;-->
+    <!--    <template v-else-if="isLine(getTab().sector.NAME)">-->
+    <!--        <ManipulateDayLine-->
+    <!--            :active-task-id="activeTaskId"-->
+    <!--            :assembly-day="day"-->
+    <!--            :matrix="matrix[getTab().sector.NAME]"-->
+    <!--            :sector="getTab().sector"-->
+    <!--        />-->
+    <!--    </template>-->
+    <!--    &lt;!&ndash; __ Обработка исключения&ndash;&gt;-->
+    <!--    <template v-else>-->
+    <!--        <div><span>Неизвестный Участок: {{ getTab().sector.NAME }}</span></div>-->
+    <!--    </template>-->
+    <!--</template>-->
 
 </template>
 
@@ -69,12 +96,14 @@ import { ASSEMBLY_DAY_DRAFT, ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, CHANGE_1, DA
 
 import {
     filterTaskBySectors,
-    getSectorMaterialsMatrixTasks,
+    getSectorMaterialsMatrixTasks, isCommon, isLine, isSector,
     // getAssemblyManipulationRenderTasks,
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import AssemblyManipulateSector from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDaySector.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import ManipulateDaySector from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDaySector.vue'
+
+// import ManipulateDayLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayLine.vue'
 
 interface ITab {
     id: number
@@ -151,15 +180,34 @@ const prepareTabs = () => {
 
 // __ Проверяем, пустой ли таб или нет (Есть ли в списке СЗ - СЗ с нужным Участком)
 const isEmpty = (tab: ITab) => {
-    let total = 0
-    renderDay.value.tasks.forEach(task => {
-        const findSector = task.stats.find(stat => stat.sector === tab.sector.NAME)
-        if (findSector) {
-            total += findSector.total_amount
-        }
-    })
 
-    return total === 0
+    if (isCommon(tab.sector.NAME)) {
+
+        return false
+    } else if (isSector(tab.sector.NAME)) {
+        let total = 0
+        renderDay.value.tasks.forEach(task => {
+            const findSector = task.stats.find(stat => stat.sector === tab.sector.NAME)
+            if (findSector) {
+                total += findSector.total_amount
+            }
+        })
+
+        return total === 0
+
+    } else if (isLine(tab.sector.NAME)) {
+        for (let i = 0; i < renderDay.value.tasks.length; i++) {
+            for (let j = 0; j < renderDay.value.tasks[i].assembly_lines.length; j++) {
+                if (renderDay.value.tasks[i].assembly_lines[j].assembly_line === tab.sector.NAME) {
+                    if (renderDay.value.tasks[i].assembly_lines[j].amount > 0) {
+                        return false
+                    }
+                }
+            }
+        }
+    }
+
+    return true
 }
 
 // __ Находим id таба по activeTabIndex
@@ -185,19 +233,15 @@ const loadTasks = async () => {
 
 // __ Загружаем Производственый День
 const loadDay = async (change: IAssemblyTaskChangeKeys = CHANGE_1) => {
-    const dayDate = paramDate.value.split(' ')[0]
-    const days = await assemblyStore.getAssemblyDayByDateAndChange(dayDate, change) as IAssemblyDay[]
-    if (days[0]) {
-        day.value                = days[0]
-        day.value.assembly_tasks = globalAssemblyTasks.value
-
-        console.log('globalAssemblyTasks.value: ', globalAssemblyTasks.value)
-    }
+    const dayDate            = paramDate.value.split(' ')[0]
+    day.value                = await assemblyStore.getAssemblyDayByDateAndChange(dayDate, change) as IAssemblyDay
+    day.value.assembly_tasks = globalAssemblyTasks.value
 }
 
 // __ Подготавливаем массив отображения
 const getRenderDay = () => {
     renderDay.value = {
+        day        : day.value,
         action_at  : paramDate.value,
         tasks      : globalAssemblyTasks.value,
         description: null,
@@ -248,10 +292,11 @@ const matrix = computed(() => {
     globalAssemblyTasks.value.forEach(task => trueMap.set(task.id, task.active))
 
     Object.values(ASSEMBLY_SECTORS).forEach(value => {
+
         // __ Фильтруем по Участку
         const filtered           = filterTaskBySectors(renderDay.value.tasks, value.NAME)
-
         resultMatrix[value.NAME] = getSectorMaterialsMatrixTasks(filtered, trueMap)
+
     })
 
     console.log('calc matrix: ', resultMatrix)
@@ -259,8 +304,8 @@ const matrix = computed(() => {
 })
 
 watch(() => globalAssemblyTasks.value, () => {
-    // addCommonTask()
-}, {deep: true})
+    console.log('updated')
+}, { deep: true })
 
 
 onMounted(async () => {

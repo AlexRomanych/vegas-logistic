@@ -27,6 +27,7 @@ class AssemblyTaskLineResource extends JsonResource
             'false_at'      => $this->false_at ? Carbon::parse($this->false_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'finished_at'   => $this->finished_at ? Carbon::parse($this->finished_at)->format(RETURN_DATE_TIME_FORMAT) : null,
             'false_reason'  => $this->false_reason,
+            'false_history' => $this->false_history,
             'time'          => $this->time,
             'productivity'  => $this->square,
             'assembly_line' => $this->assembly_line,

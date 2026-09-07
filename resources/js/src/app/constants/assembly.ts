@@ -92,18 +92,28 @@ export const ASSEMBLY_MODEL_MANUFACTURE_GROUP_DRAFT = {
 // --- --------------------------------------------------------------------
 // --- ---------------- Константы Участков (SECTORS)  ---------------------
 // --- --------------------------------------------------------------------
-export const ASSEMBLY_TASK_SECTOR_COCONUT    = 'coconut'          // __ Кокос
-export const ASSEMBLY_TASK_SECTOR_LATEX      = 'latex'              // __ Латекс
-export const ASSEMBLY_TASK_SECTOR_LAYER      = 'layer'              // __ Тонкий настил
-export const ASSEMBLY_TASK_SECTOR_FOAM_LAYER = 'foam_layer'    // __ Настилы
+export const ASSEMBLY_TASK_SECTOR_COMMON    = 'common'          // __ Заявка Ф
+export const ASSEMBLY_TASK_SECTOR_COCONUT    = 'coconut'        // __ Кокос
+export const ASSEMBLY_TASK_SECTOR_LATEX      = 'latex'          // __ Латекс
+export const ASSEMBLY_TASK_SECTOR_LAYER      = 'layer'          // __ Тонкий настил
+export const ASSEMBLY_TASK_SECTOR_FOAM_LAYER = 'foam_layer'     // __ Настилы
 export const ASSEMBLY_TASK_SECTOR_FOAM_SIDE  = 'foam_side'      // __ Борта
-export const ASSEMBLY_TASK_SECTOR_LAMIT      = 'lamit'              // __ Ламит
-export const ASSEMBLY_TASK_SECTOR_TABLE      = 'table'              // __ Стол
+export const ASSEMBLY_TASK_SECTOR_LAMIT      = 'lamit'          // __ Ламит
+export const ASSEMBLY_TASK_SECTOR_TABLE      = 'table'          // __ Стол
 
 
 export const ASSEMBLY_SECTORS = {
-    ASSEMBLY_TASK_SECTOR_COCONUT   : {
+    ASSEMBLY_TASK_SECTOR_COMMON   : {
         ID   : 1,
+        NAME : ASSEMBLY_TASK_SECTOR_COMMON,
+        TITLE: 'Заявка',
+        LABEL: ['Заявка', ''],
+        ICON : '',
+        TYPE : 'danger',
+        SHOW : false,
+    },
+    ASSEMBLY_TASK_SECTOR_COCONUT   : {
+        ID   : 2,
         NAME : ASSEMBLY_TASK_SECTOR_COCONUT,
         TITLE: 'Кокос',
         LABEL: ['Кокос', ''],
@@ -112,7 +122,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_LATEX     : {
-        ID   : 2,
+        ID   : 3,
         NAME : ASSEMBLY_TASK_SECTOR_LATEX,
         TITLE: 'Латекс',
         LABEL: ['Латекс', ''],
@@ -121,7 +131,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_LAYER     : {
-        ID   : 3,
+        ID   : 4,
         NAME : ASSEMBLY_TASK_SECTOR_LAYER,
         TITLE: 'Тонкий настил',
         LABEL: ['Тонкий', 'настил'],
@@ -130,7 +140,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_FOAM_LAYER: {
-        ID   : 4,
+        ID   : 5,
         NAME : ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
         TITLE: 'ППУ Настилы',
         LABEL: ['ППУ', 'Настилы'],
@@ -139,7 +149,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_FOAM_SIDE : {
-        ID   : 5,
+        ID   : 6,
         NAME : ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
         TITLE: 'ППУ Борта',
         LABEL: ['ППУ', 'Борта'],
@@ -148,7 +158,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_LAMIT     : {
-        ID   : 6,
+        ID   : 7,
         NAME : ASSEMBLY_TASK_SECTOR_LAMIT,
         TITLE: 'Ламит',
         LABEL: ['Ламит', ''],
@@ -157,7 +167,7 @@ export const ASSEMBLY_SECTORS = {
         SHOW : true,
     },
     ASSEMBLY_TASK_SECTOR_TABLE     : {
-        ID   : 7,
+        ID   : 8,
         NAME : ASSEMBLY_TASK_SECTOR_TABLE,
         TITLE: 'Столы',
         LABEL: ['Столы', ''],

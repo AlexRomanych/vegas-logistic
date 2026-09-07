@@ -94,8 +94,9 @@
         <!-- __ Название Заявки, показываем только для Объединения -->
         <AppLabelMultiLineTS
             v-if="showOrderTitle"
+            :height-limit="lineHeight"
             :height="lineHeight"
-            :text="groupLine.order_line.order_title!"
+            :text="splitString(groupLine.order_line.order_title!)"
             :title="TITLE"
             :type="groupLine.order_line_attr.render_type"
             :width="fieldWidths.order_title"
@@ -113,6 +114,7 @@
             <template v-if="detail">
                 <AppLabelMultiLineTS
                     :height="lineHeight"
+                    :height-limit="lineHeight"
                     :text="groupLine.materials_attr[index]?.title"
                     :text-size="MATERIAL_TEXT_SIZE"
                     :type="groupLine.materials_attr[index]?.render_type"
@@ -289,6 +291,7 @@ import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultil
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
 import OrderItemInfo from '@/components/dashboard/manufacture/cells/assembly/common/OrderItemInfo.vue'
 import CardSpecification from '@/components/dashboard/models/components/CardSpecification.vue'
+import { splitString } from '@/app/helpers/helpers.ts'
 
 
 interface IProps {

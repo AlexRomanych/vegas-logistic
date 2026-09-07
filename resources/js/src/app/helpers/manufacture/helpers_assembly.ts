@@ -29,7 +29,7 @@ import {
     ASSEMBLY_LINE_UNDEFINED,
     ASSEMBLY_LINES,
     ASSEMBLY_SECTORS,
-    ASSEMBLY_TASK_DRAFT,
+    ASSEMBLY_TASK_DRAFT, ASSEMBLY_TASK_SECTOR_COMMON,
     ASSEMBLY_TASK_SECTOR_LAMIT, ASSEMBLY_TASK_SECTOR_TABLE,
     ASSEMBLY_TASK_STATUSES,
     CHANGES, DATA_TYPE_AMOUNT, DATA_TYPE_NOTHING, DATA_TYPE_PROGRESS_AMOUNT
@@ -1297,6 +1297,14 @@ export function getDataArray(taskSource: IAssemblyTask, dataType: ITotalsDataTyp
             tableObj.total_amount += line.amount
             tableObj.finished_amount += line.finished_at ? line.amount : 0
         }
+        // commonObj.total_amount += line.amount
+        // commonObj.finished_amount += line.finished_at ? line.amount : 0
+    })
+
+    task.stats.push({
+        sector         : ASSEMBLY_TASK_SECTOR_COMMON,
+        total_amount   : lamitObj.total_amount + tableObj.total_amount,
+        finished_amount: lamitObj.finished_amount + tableObj.finished_amount
     })
 
     task.stats.push({
@@ -1437,19 +1445,38 @@ export function filterTaskBySectors(
     const tasks      = Array.isArray(entity) ? entity : entity.tasks
     const sectorList = Array.isArray(sectorFilter) ? sectorFilter : [sectorFilter]
 
-    return tasks.reduce<IAssemblyTask[]>((acc, task) => {
-        // __ Фильтруем и копируем линии с нужными секторами
-        const filteredLines = task.assembly_lines.reduce<typeof task.assembly_lines>((lineAcc, line) => {
-            const filteredSectors = line.sector_lines.filter(s => sectorList.includes(s.sector))
+    if (isCommon(sectorList)) {
+        return tasks
+    }
 
-            if (filteredSectors.length > 0) {
-                lineAcc.push({
-                    ...line,
-                    sector_lines: filteredSectors
-                })
-            }
-            return lineAcc
-        }, [])
+    return tasks.reduce<IAssemblyTask[]>((acc, task) => {
+
+        // __ Фильтруем и копируем линии с нужными секторами
+        let filteredLines: IAssemblyTaskLine[] = []
+
+        if (isSector(sectorList)) {
+            filteredLines = task.assembly_lines.reduce<typeof task.assembly_lines>((lineAcc, line) => {
+                const filteredSectors = line.sector_lines.filter(s => sectorList.includes(s.sector))
+
+                if (filteredSectors.length > 0) {
+                    lineAcc.push({
+                        ...line,
+                        sector_lines: filteredSectors
+                    })
+                }
+                return lineAcc
+            }, [])
+        } else if (isLine(sectorList)) {
+            filteredLines = task.assembly_lines.reduce<IAssemblyTaskLine[]>((lineAcc, line) => {
+                if (sectorList.includes(line.assembly_line as IAssemblySectorKeys)) {
+                    lineAcc.push({
+                        ...line, // Копируем объект линии (или трансформируем нужные поля)
+                        sector_lines: [...line.sector_lines]
+                    })
+                }
+                return lineAcc
+            }, [])
+        }
 
         // __ Если остались валидные линии — формируем новый объект задачи
         if (filteredLines.length > 0) {
@@ -1702,8 +1729,9 @@ export function getSectorMaterialsMatrixTask(
 
 
         const group = {
-            group      : manufactureGroup as IAssemblyModelManufactureGroup,
-            group_lines: groupLines,
+            group_assembly_lines: manufactureGroupLines,
+            group               : manufactureGroup as IAssemblyModelManufactureGroup,
+            group_lines         : groupLines,
             // group_materials: materialsCacheArray,
         }
 
@@ -1773,6 +1801,77 @@ export function getCheckClass(colorType: IColorTypes) {
     }
     return ''
 }
+
+// --- -------------------------------------------------------------------------------------
+// __ Проверяем, относится ли Участок к Заявке_Ф
+export function isCommon(entity: IAssemblySectorKeys | IAssemblySectorKeys[] | string | string[]): boolean {
+    const sectors = new Set<IAssemblySectorKeys>([
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COMMON.NAME,
+    ])
+
+    let workData = []
+    if (Array.isArray(entity)) {
+        workData = entity
+    } else {
+        workData = [entity]
+    }
+
+    return workData.some((sector) => sectors.has(sector as IAssemblySectorKeys))
+}
+
+// __ Проверяем, относится ли Участок к Резке
+export function isSector(entity: IAssemblySectorKeys | IAssemblySectorKeys[] | string | string[]): boolean {
+    const sectors = new Set<IAssemblySectorKeys>([
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_COCONUT.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LATEX.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAYER.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_LAYER.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_FOAM_SIDE.NAME,
+    ])
+
+    let workData = []
+    if (Array.isArray(entity)) {
+        workData = entity
+    } else {
+        workData = [entity]
+    }
+
+    return workData.some((sector) => sectors.has(sector as IAssemblySectorKeys))
+}
+
+// __ Проверяем, относится ли Участок к Линии Сборки
+export function isLine(entity: IAssemblySectorKeys | IAssemblySectorKeys[] | string | string[]): boolean {
+    const sectors = new Set<IAssemblySectorKeys>([
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_LAMIT.NAME,
+        ASSEMBLY_SECTORS.ASSEMBLY_TASK_SECTOR_TABLE.NAME,
+    ])
+
+    let workData = []
+    if (Array.isArray(entity)) {
+        workData = entity
+    } else {
+        workData = [entity]
+    }
+
+    return workData.some((sector) => sectors.has(sector as IAssemblySectorKeys))
+}
+
+// --- -------------------------------------------------------------------------------------
+export function getAssemblyLineFromMatrixGroupsById(groups: IMatrixManufactureGroup[], id: number): IAssemblyTaskLine | null {
+    let findElement: IAssemblyTaskLine | null = null
+    outerLoop: for (let i = 0; i < groups.length; i ++) {
+        for (let j = 0; j < groups[i].group_assembly_lines.length; j ++) {
+            if (groups[i].group_assembly_lines[j].id === id) {
+                findElement = JSON.parse(JSON.stringify(groups[i].group_assembly_lines[j]))
+                break outerLoop
+            }
+        }
+    }
+    return findElement
+}
+
+// --- -------------------------------------------------------------------------------------
+// --- -------------------------------------------------------------------------------------
 
 // --- -------------------------------------------------------------------------------------
 // __ Проверяем, является ли строка СЗ Выполненной

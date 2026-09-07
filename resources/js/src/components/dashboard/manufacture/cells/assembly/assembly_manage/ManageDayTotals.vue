@@ -55,7 +55,7 @@ import { computed } from 'vue'
 
 import type { IAssemblyTask, IAssemblyTaskLine, IColorTypes, ITotalsDataType } from '@/types'
 
-import { DATA_TYPE_NOTHING } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_TASK_SECTOR_COMMON, DATA_TYPE_NOTHING } from '@/app/constants/assembly.ts'
 
 import { getDataArrayTotal } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
@@ -76,8 +76,8 @@ const props = withDefaults(defineProps<IPops>(), {
     dataType  : DATA_TYPE_NOTHING,
 })
 
-// __ Общий объект отображения
-const totals = computed(() => getDataArrayTotal(props.tasks, props.dataType))
+// __ Общий объект отображения без Заявки_Ф
+const totals = computed(() => getDataArrayTotal(props.tasks, props.dataType).filter(item => item.name !== ASSEMBLY_TASK_SECTOR_COMMON))
 
 // __ Всего по количеству в СЗ в Дне в Смене
 const totalAmount = computed(() => {

@@ -7,7 +7,7 @@ import {
     ASSEMBLY_LINE_LAMIT,
     ASSEMBLY_LINE_TABLE,
     ASSEMBLY_LINE_UNDEFINED,
-    ASSEMBLY_TASK_SECTOR_COCONUT,
+    ASSEMBLY_TASK_SECTOR_COCONUT, ASSEMBLY_TASK_SECTOR_COMMON,
     ASSEMBLY_TASK_SECTOR_FOAM_LAYER,
     ASSEMBLY_TASK_SECTOR_FOAM_SIDE,
     ASSEMBLY_TASK_SECTOR_LAMIT,
@@ -154,6 +154,7 @@ export interface IAssemblyTaskLine {
 
     created_at: string | null
     false_reason: string | null
+    false_history: string[] | null
     finished_at: string | null
     false_at: string | null
     finished_by: number | null                      // __ Тут в будущем добавим объект пользователя (Worker)
@@ -166,6 +167,7 @@ export interface IAssemblyTaskLine {
     order_line: IAssemblyTaskOrderLine
 
     sector_lines: IAssemblyTaskLineSector[]
+    sectorCollapsed: boolean
 
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
@@ -320,6 +322,7 @@ export interface IAssemblyTaskStatusPivot {
 // --- -------------------- Типы Участков (SECTORS)  ----------------------
 // --- --------------------------------------------------------------------
 export type IAssemblySectorKeys =
+    typeof ASSEMBLY_TASK_SECTOR_COMMON |
     typeof ASSEMBLY_TASK_SECTOR_FOAM_SIDE |
     typeof ASSEMBLY_TASK_SECTOR_FOAM_LAYER |
     typeof ASSEMBLY_TASK_SECTOR_LATEX |
@@ -505,6 +508,7 @@ export interface IMatrixManufactureTask {
 
 export interface IMatrixManufactureGroup {
     group: IAssemblyModelManufactureGroup           // __ Сама Группа со всеми свойствами
+    group_assembly_lines: IAssemblyTaskLine[]       // __ Все Линии СЗ в группе
     group_lines: IMatrixManufactureGroupLine[]      // __ Список: Строка Заказа - Список материалов,
 }
 

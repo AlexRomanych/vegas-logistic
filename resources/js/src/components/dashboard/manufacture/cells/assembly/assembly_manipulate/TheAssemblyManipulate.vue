@@ -204,7 +204,7 @@
                     <template #item="{ element, index }">
                         <div
                             @click="() => ({}) /*selectAssemblyTask(element)*/"
-                            @dblclick="showAssemblyTaskMenu(element)"
+                            @dblclick="showAssemblyTaskMenu(element, day)"
                         >
                             <ManipulateItem
                                 :data-type="DATA_TYPE_PROGRESS_AMOUNT"
@@ -1288,18 +1288,19 @@ const modifyChange = async (task: IAssemblyTask) => {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Меню при двойном клике на Заявке (Разделить количество + Изменить стол)
-const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
+const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask, day: IAssemblyManipulateDay) => {
     // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
     modalMenuType.value = 'indigo'
 
-    const CANCEL_ID = 6
+    const CANCEL_ID = 7
     modalMenu.value = {
         data: [
             { id: 1, title: 'Разделить количество' },
-            // { id: 2, title: 'Изменить смену СЗ' },
+            { id: 2, title: 'Перейти к Участкам Сборки' },
             { id: 3, title: 'Изменить Линию Сборки' },
             { id: 4, title: 'Добавить / Изменить комментарий к СЗ' },
             { id: 5, title: 'Перейти в Карточку Заявки' },
+            // { id: 6, title: 'Изменить смену СЗ' },
             { id: CANCEL_ID, title: 'Отмена' },
         ],
     }
@@ -1318,9 +1319,9 @@ const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
         return
     }
 
-    // __ Изменить Смену
+    // __ Перейти к Участкам Сборки
     if (result.menuItem === 2 && result.value) {
-        await modifyChange(assemblyTask)
+        goToManipulateDay(day)
         return
     }
 
@@ -1342,6 +1343,11 @@ const showAssemblyTaskMenu = async (assemblyTask: IAssemblyTask) => {
         return
     }
 
+    // __ Изменить Смену
+    if (result.menuItem === 6 && result.value) {
+        await modifyChange(assemblyTask)
+        return
+    }
 }
 
 

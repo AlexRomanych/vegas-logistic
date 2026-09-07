@@ -53,15 +53,39 @@
             <!-- __ Сами СЗ -->
             <div v-for="data of matrix" :key="data.task.id">
                 <template v-if="data.task.id === getTab().task!.id">
-                    <ManipulateDayTask
-                        :data="data"
-                        :day="assemblyDay"
-                        @set-finish-status="setFinishStatus"
-                        @set-false-status="setFalseStatus"
-                        @reset-status="resetStatus"
-                        @divide-line="divideLine"
-                    />
+
+                    <!-- __ Все, что про Резку -->
+                    <template v-if="isSector(sector.NAME)">
+                        <ManipulateDayTask
+                            :data="data"
+                            :day="assemblyDay"
+                            @set-finish-status="setDoneStatusSector"
+                            @set-false-status="setFalseStatusSector"
+                            @reset-status="resetStatusSector"
+                        />
+                    </template>
+
+                    <!-- __ Все, что про Линию -->
+                    <template v-else-if="isLine(sector.NAME) || isCommon(sector.NAME)">
+                        <ManipulateDayTaskAssembly
+                            :data="data"
+                            :day="assemblyDay"
+                            :sector="sector"
+                            @set-finish-status="setDoneStatusLine"
+                            @set-false-status="setFalseStatusLine"
+                            @reset-status="resetStatusLine"
+                            @divide-line="divideLine"
+                        />
+                    </template>
+
+                    <!-- __ Обработка Исключения -->
+                    <template v-else>
+                        <div><span>Неизвестные данные</span></div>
+                    </template>
+
                 </template>
+
+
             </div>
         </template>
     </div>
@@ -87,19 +111,21 @@ import type {
     IAssemblyTaskLineSector,
     IAssemblyDayWorker,
     IColorTypes,
-    IMatrixManufactureTask
+    IMatrixManufactureTask, IAssemblyTaskLine
 } from '@/types'
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+import { isCommon, isLine, isSector } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import ManipulateDayTask from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTask.vue'
 import ManipulateDayInfo from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayInfo.vue'
 import ManipulatePersonal from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulatePersonal.vue'
+import ManipulateDayTaskAssembly from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTaskAssembly.vue'
 
 
 interface ITab {
@@ -162,7 +188,7 @@ async function showError(error: string | string[] | null = null) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Получаем название СЗ
 const getOrderTitle = (task: IAssemblyTask) => {
-    if (task.position === 0) {
+    if (task.position === UNION_TASKS_POSITION) {
         return ['Объединение', 'СЗ']
     }
     return [
@@ -262,19 +288,67 @@ const setTaskInActive = (tab: ITab) => {
 
 // __ Находим id таба по activeTabIndex
 const getTab = () => {
-    const tab = tabs.value.find(tab => tab.position === activeTabPosition.value)
+    let tab = tabs.value.find(tab => tab.position === activeTabPosition.value)
     if (tab) {
         return tab
     }
+
+    // __ Если у этого Участка нет текущего СЗ, то перекидываем на Объединение СЗ
+    tab = tabs.value.find(tab => tab.position === UNION_TASKS_POSITION)
+    if (tab) {
+        activeTabPosition.value = UNION_TASKS_POSITION
+        return tab
+    }
+
     throw new Error('Tab not found')
 }
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! ---   Функционал для выполнения дня Записи        !!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---        Функционал для выполнения Записи СЗ        !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
-const setFinishStatus = async (sectorLinesIds: number[]) => {
+const setDoneStatusLine = async (linesIds: number[]) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesDone(linesIds)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
+const setFalseStatusLine = async (linesIds: number[], falseReason: string) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesFalse(linesIds, falseReason)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Сбрасываем статус IAssemblyTaskLineSector
+const resetStatusLine = async (linesIds: number[]) => {
+    const result = (await assemblyStore.setAssemblyTaskLinesReset(linesIds)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! --- Функционал для выполнения Записи Сущности Участка !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
+const setDoneStatusSector = async (sectorLinesIds: number[]) => {
+    console.log('reached')
+
     const result = (await assemblyStore.setAssemblyTaskLinesSectorDone(sectorLinesIds)) as IAssemblyTaskLineSector[]
 
     if (checkCRUD(result)) {
@@ -285,7 +359,7 @@ const setFinishStatus = async (sectorLinesIds: number[]) => {
 }
 
 // __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
-const setFalseStatus = async (sectorLinesIds: number[], falseReason: string) => {
+const setFalseStatusSector = async (sectorLinesIds: number[], falseReason: string) => {
     const result = (await assemblyStore.setAssemblyTaskLinesSectorFalse(sectorLinesIds, falseReason)) as IAssemblyTaskLineSector[]
 
     if (checkCRUD(result)) {
@@ -296,7 +370,7 @@ const setFalseStatus = async (sectorLinesIds: number[], falseReason: string) => 
 }
 
 // __ Сбрасываем статус IAssemblyTaskLineSector
-const resetStatus = async (sectorLinesIds: number[]) => {
+const resetStatusSector = async (sectorLinesIds: number[]) => {
     const result = (await assemblyStore.setAssemblyTaskLinesSectorReset(sectorLinesIds)) as IAssemblyTaskLineSector[]
 
     if (checkCRUD(result)) {
@@ -306,59 +380,16 @@ const resetStatus = async (sectorLinesIds: number[]) => {
     }
 }
 
+
 // __ Разделяем строку
-const divideLine = async (taskId: number, assemblyLineId: number, range: { take: number; keep: number }) => {
-    //
-    // // __ Старый вариант, когда нельзя было разбить в Объединении СЗ
-    // // const findTask = assemblyDay.value!.assembly_tasks.find(task => task.id === taskId)
-    //
-    // // __ Новый вариант, когда можно разбить в Объединении СЗ, в принципе taskId не нужен
-    // let findTask: IAssemblyTask | undefined = undefined
-    // for (const task of assemblyDay.value!.assembly_tasks) {
-    //     for (const line of task.assembly_lines) {
-    //         if (line.id === assemblyLineId) {
-    //             findTask = task
-    //             break
-    //         }
-    //     }
-    //     if (findTask) {
-    //         break
-    //     }
-    // }
-    //
-    // if (!findTask) {
-    //     return // страховка
-    // }
-    //
-    // const dividerElementIndex = findTask.assembly_lines.findIndex(line => line.id === assemblyLineId)
-    // const newAssemblyLine        = { ...findTask.assembly_lines[dividerElementIndex] } // __ Копируем объект
-    // newAssemblyLine.id           = 0 // __ Устанавливаем новый ID
-    // newAssemblyLine.position     = round(newAssemblyLine.position + 0.1, 1) // __ Делаем новую строку ниже текущей позицию с шагом 0.1 (всего 9 разбиений)
-    //
-    // newAssemblyLine.amount                              = range.take
-    // findTask.assembly_lines[dividerElementIndex].amount = range.keep
-    //
-    // // __ Вставляем новую строку
-    // findTask.assembly_lines.splice(dividerElementIndex + 1, 0, newAssemblyLine)
-    // findTask.assembly_lines.sort((a, b) => a.position - b.position) // !!! Обязательно
-    //
-    // const result = await assemblyStore.divideLineInAssemblyTaskPending(findTask, { start: executeDate, end: executeDate })
-    //
-    // // await assemblyStore.getAssemblyTasks({ start: executeDate, end: executeDate })
-    // // await nextTick() // __ Ждем, пока все отрендерится
-    // // prepareData()
-    // // setTabs()
-    // // await nextTick() // __ Ждем, пока все отрендерится
-    //
-    // // console.log('result: ', result)
-    // // console.log('tabs: ', tabs.value)
-    // // console.log('activeTabPosition: ', activeTabPosition)
-    //
-    // if (!checkCRUD(result)) {
-    //     await showError()
-    // } else {
-    //     return
-    // }
+const divideLine = async (assemblyLineId: number, range: { take: number; keep: number }) => {
+    const result = await assemblyStore.divideLineInAssemblyTask(assemblyLineId, range)
+
+    if (!checkCRUD(result)) {
+        await showError()
+    } else {
+        return
+    }
 }
 
 

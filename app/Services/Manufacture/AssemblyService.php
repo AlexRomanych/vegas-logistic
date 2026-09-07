@@ -114,52 +114,64 @@ final class AssemblyService
 
                             //$a = 0;
 
-                            /** @var AssemblyTaskLineSector $createdTaskLineSector */
-                            $createdTaskLineSector = AssemblyTaskLineSector::query()->create([
+                            $details = $assemblySize->getDetails();
+                            foreach ($details as $detail) {
 
-                                // __ Связи
-                                'assembly_task_line_id' => $createdTaskLine->id,
-                                'order_line_id'         => $line->id,
+                                $a = 0;
 
-                                // __ Количество
-                                'amount'                => $line->amount,
-                                'count'                 => $assemblySize->getAmount(),
 
-                                // __ Параметры
-                                'width'                 => $line->width,
-                                'length'                => $line->length,
-                                'height'                => $line->height,
+                                /** @var AssemblyTaskLineSector $createdTaskLineSector */
+                                $createdTaskLineSector = AssemblyTaskLineSector::query()->create([
 
-                                // __ Размеры детальки
-                                'detail_width'          => $assemblySize->getWidth(),
-                                'detail_length'         => $assemblySize->getLength(),
-                                'detail_height'         => $assemblySize->getHeight(),
+                                    // __ Связи
+                                    'assembly_task_line_id' => $createdTaskLine->id,
+                                    'order_line_id'         => $line->id,
 
-                                // __ Материал
-                                'material_code_1c'      => $expense->material_code_1c,
-                                'material_name'         => $expense->material_name_expense,
+                                    // __ Количество
+                                    'amount'                => $line->amount * $detail['amount'],
+                                    'count'                 => $detail['amount'],   // __ Количество на единицу
+                                    //'count'                 => $assemblySize->getAmount(),
 
-                                // __ Расход
-                                'expense'               => (float)$expense->expense,
-                                'rest'                  => (float)$expense->rest,
-                                'total'                 => (float)$expense->expense + (float)$expense->rest,
+                                    // __ Параметры
+                                    'width'                 => $line->width,
+                                    'length'                => $line->length,
+                                    'height'                => $line->height,
 
-                                'expense_per_pic' => (float)$expense->expense_per_pic,
-                                'rest_per_pic'    => (float)$expense->rest_per_pic,
-                                'total_per_pic'   => (float)$expense->expense_per_pic + (float)$expense->rest_per_pic,
+                                    // __ Размеры детальки
+                                    'detail_width'          => $detail['width'],
+                                    'detail_length'         => $detail['length'],
+                                    'detail_height'         => $detail['height'],
+                                    //'detail_width'          => $assemblySize->getWidth(),
+                                    //'detail_length'         => $assemblySize->getLength(),
+                                    //'detail_height'         => $assemblySize->getHeight(),
 
-                                // __ Трудозатраты
-                                'time'            => 0,
+                                    // __ Материал
+                                    'material_code_1c'      => $expense->material_code_1c,
+                                    'material_name'         => $expense->material_name_expense,
 
-                                // __ Участок
-                                'sector'          => $sector,
+                                    // __ Расход
+                                    'expense'               => (float)$expense->expense,
+                                    'rest'                  => (float)$expense->rest,
+                                    'total'                 => (float)$expense->expense + (float)$expense->rest,
 
-                                // __ Задаем подмену свойств
-                                'phantom'         => null,
-                                'phantom_json'    => null,
+                                    'expense_per_pic' => (float)$expense->expense_per_pic,
+                                    'rest_per_pic'    => (float)$expense->rest_per_pic,
+                                    'total_per_pic'   => (float)$expense->expense_per_pic + (float)$expense->rest_per_pic,
 
-                                //'position'              => 0,
-                            ]);
+                                    // __ Трудозатраты
+                                    'time'            => 0,
+
+                                    // __ Участок
+                                    'sector'          => $sector,
+
+                                    // __ Задаем подмену свойств
+                                    'phantom'         => null,
+                                    'phantom_json'    => null,
+
+                                    //'position'              => 0,
+                                ]);
+                            }
+
                         }
                     }
                 }
@@ -272,7 +284,10 @@ final class AssemblyService
             ->when($isSpecialSector, function ($query) use ($isSide, $isLayer) {
                 // __ Поле procedure НЕ должно содержать "шт" (без учета регистра)
                 // В PostgreSQL используем ILIKE (или LOWER(pivot.procedure) NOT LIKE '%шт%')
-                $query->where('pivot.procedure', 'NOT ILIKE', '%шт%');
+                //$query->where('pivot.procedure', 'NOT ILIKE', '%шт%');
+                //$query->whereRaw("LOWER(pivot.procedure) NOT LIKE '%шт%'");
+
+                $query->whereRaw("pivot.procedure !~* ?", ['[Шш][Тт]']);
                 //$query->whereRaw("pivot.procedure !~* ?", ['[Шш][Тт]']);
 
                 //$query->where('pivot.procedure', 'NOT LIKE', '%шт%')
@@ -281,7 +296,10 @@ final class AssemblyService
 
                 // __ Если sector == 'side' -> должно быть слово "борт"
                 if ($isSide) {
-                    $query->where('pivot.procedure', 'ILIKE', '%борт%');
+                    //$query->where('pivot.procedure', 'ILIKE', '%борт%');
+                    $query->whereRaw("pivot.procedure ~* ?", ['[Бб][Оо][Рр][Тт]']);
+                    //$query->whereRaw("LOWER(pivot.procedure) LIKE '%борт%'");
+
                     //$query->whereRaw("pivot.procedure ~* ?", ['[Бб][Оо][Рр][Тт]']);
 
                     //$query->where(function ($q) {
@@ -293,7 +311,9 @@ final class AssemblyService
 
                 // __ Если sector == 'layer' -> должно быть слово "наст"
                 if ($isLayer) {
+                    //$query->whereRaw("pivot.procedure ~* ?", ['[Нн][Аа][Сс][Тт]']);
                     $query->whereRaw("pivot.procedure ~* ?", ['[Нн][Аа][Сс][Тт]']);
+                    //$query->whereRaw("LOWER(pivot.procedure) LIKE '%наст%'");
                     //$query->whereRaw('LOWER(pivot.procedure) LIKE ?', ['%наст%']);
                     //$query->where('pivot.procedure', '~*', 'наст');
                     //$query->where('pivot.procedure', 'LIKE', '%Наст%');

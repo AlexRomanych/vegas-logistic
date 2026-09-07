@@ -431,7 +431,7 @@
                         class="w-full flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors"
                         @click="handleMenuAction(LINE_2_NAME)"
                     >
-                        <span class="mr-3 text-2xl">①</span> Отправить на Линию 2
+                        <span class="mr-3 text-2xl">②</span> Отправить на Линию 2
                     </button>
 
                 </div>
