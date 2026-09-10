@@ -6,8 +6,7 @@
 
                 <div :class="[width, height, borderColor, 'modal-container']">
 
-                    <!-- Шапка с кнопкой закрытия -->
-                    <div class="flex justify-end w-full shrink-0">
+                    <div class="close-cross-container">
                         <div class="m-1 p-1">
                             <AppInputButton
                                 id="close"
@@ -20,17 +19,17 @@
                         </div>
                     </div>
 
-                    <!-- Скроллируемая область текста -->
-                    <div class="text-container">
-                        <div :class="[alignClass, 'text-data flex flex-col']">
+                    <div class="text-container [<::-webkit-scrollbar]:w-2 [<::-webkit-scrollbar-thumb]:bg-slate-600 [<::-webkit-scrollbar-thumb]:rounded">
+                        <div class="text-data flex flex-col">
                             <div v-for="(showText, index) in displayTextArray" :key="index">
                                 <span>{{ showText }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Нижний блок с кнопками действий -->
-                    <div class="w-full flex justify-end shrink-0 pt-2">
+
+                    <div class="w-full h-full flex justify-end">
+
                         <div v-if="mode === 'confirm'"
                              class="m-1 p-1">
                             <AppInputButton
@@ -41,16 +40,17 @@
                             />
                         </div>
 
-                        <div class="m-1 p-1">
+                        <div
+                            class="m-1 p-1">
                             <AppInputButton
-                                id="cancel"
+                                id="confirm"
                                 :title="mode === 'confirm' ? 'Отмена' : okWord"
                                 :type="type"
                                 @buttonClick="select(false)"
                             />
                         </div>
-                    </div>
 
+                    </div>
                 </div>
             </div>
         </Transition>
@@ -72,38 +72,28 @@ interface IProps {
     mode?: 'inform' | 'confirm'
     okWord?: string
     falseWord?: string
-    align?: 'left' | 'center' | 'right'
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type     : 'primary',
-    width    : 'min-w-[500px]',
-    height   : 'min-h-[300px]',
-    text     : 'This is a Modal Window',
-    mode     : 'inform',
-    okWord   : 'Закрыть',
+    type  : 'primary',
+    width : 'min-w-[500px]',
+    height: 'min-h-[300px]',
+    text  : 'This is a Modal Window',
+    mode  : 'inform',
+    okWord: 'Закрыть',
     falseWord: 'Отмена',
-    align    : 'left',
 })
+
+
+// const emit = defineEmits(['select'])
 
 const getDisplayText   = (text: string | string[]) => Array.isArray(text) ? text : [text]
 const displayTextArray = ref(getDisplayText(props.text))
 
-const showModal = ref(false)
+const showModal = ref(false)           // реактивность видимости модального окна
+// const showText = ref(props.text)              // реактивность текста сообщения в модальном окне
 
 const borderColor = computed(() => getColorClassByType(props.type, 'border'))
-
-const alignClass = computed(() => {
-    switch (props.align) {
-        case 'center':
-            return 'text-center items-center'
-        case 'right':
-            return 'text-right items-end'
-        case 'left':
-        default:
-            return 'text-left items-start'
-    }
-})
 
 let resolvePromise: ((value: boolean) => void) | null
 const show = () => {
@@ -125,46 +115,66 @@ defineExpose({
     show,
 })
 
+// Следим за отображением текста в модальном окне
 watch(() => props.text, (value) => {
     displayTextArray.value = getDisplayText(value)
 })
+
+
 </script>
 
 <style scoped>
+
+
+
+
+
+
+
+
+
 .dark-container {
-    @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center;
+    @apply z-[999] bg-slate-500 bg-opacity-95 fixed w-screen h-screen top-0 left-0 flex justify-center items-center
 }
+/*
 
 .modal-container {
-    @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8 p-4 box-border max-h-[90vh];
+    @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8
 }
+*/
+
+.modal-container {
+    @apply bg-slate-800 bg-opacity-100 rounded-xl flex flex-col justify-between items-center border-l-8 p-4
+}
+
+.close-cross-container {
+    @apply flex justify-end w-full h-full
+}
+
+/*
+.text-container {
+    @apply flex items-end
+}
+*/
 
 .text-container {
-    @apply w-full flex-1 min-h-0 overflow-y-auto px-2 my-2;
+    /* Добавляем ограничение высоты и автоматический вертикальный скролл */
+    @apply flex items-center w-full px-6 my-4 max-h-[50vh] overflow-y-auto
 }
+
+/*.text-data {
+    @apply border-2 border-slate-800 w-full h-full text-white
+}*/
 
 .text-data {
-    @apply w-full text-white space-y-1;
+    @apply w-full text-white break-words
 }
 
-/* Кастомный темно-серый скроллбар */
-.text-container::-webkit-scrollbar {
-    width: 6px;
+/*
+.close-button-container {
+    @apply w-full h-full flex justify-end
 }
-
-.text-container::-webkit-scrollbar-track {
-    background: #1e293b;
-    border-radius: 3px;
-}
-
-.text-container::-webkit-scrollbar-thumb {
-    background: #475569;
-    border-radius: 3px;
-}
-
-.text-container::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
-}
+*/
 
 /* Состояние появления и исчезновения */
 .modal-enter-active,
@@ -172,9 +182,10 @@ watch(() => props.text, (value) => {
     transition: all 0.5s ease;
 }
 
+/* Стартовое состояние при появлении / Финальное при исчезновении */
 .modal-enter-from,
 .modal-leave-to {
     opacity: 0;
-    transform: scale(1.10);
+    transform: scale(1.10); /* Легкое увеличение для эффекта приближения */
 }
 </style>

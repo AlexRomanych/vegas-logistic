@@ -144,7 +144,7 @@ const DEFAULT_TYPE = 'primary'
 // const FIELDS_AMOUNT_TIME_WIDTH = 'w-[174px]'
 
 // __ Количество
-const amount = computed(() => props.group.group_lines.reduce((acc, line) => acc + line.order_line.amount, 0))
+const amount = computed(() => props.group.group_assembly_lines.reduce((acc, line) => acc + line.amount, 0))
 
 // __ Общее время
 const totalTime = computed(() => (0))

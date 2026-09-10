@@ -25,7 +25,7 @@
     </div>
 
     <!-- __ Вкладки -->
-    <div class="m-2">
+    <div v-if="isTabsFilled" class="m-2">
         <template v-if="activeTabPosition === infoTabPosition">
             <!-- __ Общая инфа -->
             <div class="ml-8">
@@ -91,8 +91,9 @@
     </div>
 
     <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
+        :align="modalInfoAlign"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
@@ -102,7 +103,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 import type {
     IAssemblyDay,
@@ -116,12 +117,14 @@ import type {
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
+import { UNION_TASK_ID } from '@/app/constants/assembly.ts'
+
 import { formatDateInFullFormat } from '@/app/helpers/helpers_date'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { isCommon, isLine, isSector } from '@/app/helpers/manufacture/helpers_assembly.ts'
 
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
 import ManipulateDayTask from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayTask.vue'
 import ManipulateDayInfo from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayInfo.vue'
 import ManipulatePersonal from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulatePersonal.vue'
@@ -164,12 +167,14 @@ const MENU_LABEL_WIDTH = 'w-[160px]'
 const modalInfoType          = ref<IColorTypes>('danger')
 const modalInfoText          = ref<string | string[]>('')
 const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const modalInfoAlign         = ref<'left' | 'right' | 'center'>('center')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Показываем сообщение об ошибке
 async function showError(error: string | string[] | null = null) {
     modalInfoType.value = 'danger'
     modalInfoMode.value = 'inform'
+    modalInfoAlign.value = 'center'
 
     let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
     if (typeof error === 'string' && error.length > 0) {
@@ -179,7 +184,7 @@ async function showError(error: string | string[] | null = null) {
     }
 
     modalInfoText.value = renderError
-    await appModalAsyncMultiline.value!.show()
+    await appModalAsyncMultilineTS.value!.show()
 }
 
 
@@ -188,7 +193,7 @@ async function showError(error: string | string[] | null = null) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Получаем название СЗ
 const getOrderTitle = (task: IAssemblyTask) => {
-    if (task.position === UNION_TASKS_POSITION) {
+    if (task.id === UNION_TASK_ID) {
         return ['Объединение', 'СЗ']
     }
     return [
@@ -205,10 +210,11 @@ const getOrderTitle = (task: IAssemblyTask) => {
 const infoTabPosition      = -2
 const personalTabPosition  = -1
 const UNION_TASKS_POSITION = 0
-const UNION_TASKS_ID       = 0
-const activeTabPosition    = ref(infoTabPosition)
+const activeTabPosition    = ref(UNION_TASKS_POSITION)
 
 const tabs = ref<ITab[]>([])
+
+const isTabsFilled = computed(() => Object.keys(tabs.value).length !== 0)
 
 const setTabs = () => {
     tabs.value = []
@@ -234,8 +240,8 @@ const setTabs = () => {
         tabs.value.push({
             show      : true,
             label     : getOrderTitle(item.task),
-            position  : item.task.position,
-            type      : item.task.id === UNION_TASKS_ID ? 'orange' : 'dark',
+            position  : item.task.id === UNION_TASK_ID ? UNION_TASKS_POSITION : item.task.position,
+            type      : item.task.id === UNION_TASK_ID ? 'orange' : 'dark',
             typeActive: 'primary',
             task      : item.task,
             active    : true,
@@ -288,6 +294,9 @@ const setTaskInActive = (tab: ITab) => {
 
 // __ Находим id таба по activeTabIndex
 const getTab = () => {
+    // console.log('set tab!!!: ', tabs.value)
+    // console.log('activeTabPosition.value!!!: ', activeTabPosition.value)
+
     let tab = tabs.value.find(tab => tab.position === activeTabPosition.value)
     if (tab) {
         return tab
@@ -300,96 +309,8 @@ const getTab = () => {
         return tab
     }
 
+    // return
     throw new Error('Tab not found')
-}
-
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! ---        Функционал для выполнения Записи СЗ        !!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
-const setDoneStatusLine = async (linesIds: number[]) => {
-    const result = (await assemblyStore.setAssemblyTaskLinesDone(linesIds)) as IAssemblyTaskLine[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
-const setFalseStatusLine = async (linesIds: number[], falseReason: string) => {
-    const result = (await assemblyStore.setAssemblyTaskLinesFalse(linesIds, falseReason)) as IAssemblyTaskLine[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-// __ Сбрасываем статус IAssemblyTaskLineSector
-const resetStatusLine = async (linesIds: number[]) => {
-    const result = (await assemblyStore.setAssemblyTaskLinesReset(linesIds)) as IAssemblyTaskLine[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!! --- Функционал для выполнения Записи Сущности Участка !!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
-const setDoneStatusSector = async (sectorLinesIds: number[]) => {
-    console.log('reached')
-
-    const result = (await assemblyStore.setAssemblyTaskLinesSectorDone(sectorLinesIds)) as IAssemblyTaskLineSector[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
-const setFalseStatusSector = async (sectorLinesIds: number[], falseReason: string) => {
-    const result = (await assemblyStore.setAssemblyTaskLinesSectorFalse(sectorLinesIds, falseReason)) as IAssemblyTaskLineSector[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-// __ Сбрасываем статус IAssemblyTaskLineSector
-const resetStatusSector = async (sectorLinesIds: number[]) => {
-    const result = (await assemblyStore.setAssemblyTaskLinesSectorReset(sectorLinesIds)) as IAssemblyTaskLineSector[]
-
-    if (checkCRUD(result)) {
-        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
-    } else {
-        await showError()
-    }
-}
-
-
-// __ Разделяем строку
-const divideLine = async (assemblyLineId: number, range: { take: number; keep: number }) => {
-    const result = await assemblyStore.divideLineInAssemblyTask(assemblyLineId, range)
-
-    if (!checkCRUD(result)) {
-        await showError()
-    } else {
-        return
-    }
 }
 
 
@@ -432,6 +353,154 @@ const removeWorker = (worker: IAssemblyDayWorker) => {
 // __ Добавляем Ответственного
 const addResponsible = (worker: IAssemblyDayWorker) => {
     props.assemblyDay!.responsible = worker
+}
+
+
+// __ Проверяем на Наличие Персонала
+const isPersonalFilled = async () => {
+
+    console.log('props.assemblyDay!.workers: ', props.assemblyDay!.workers)
+
+    if (props.assemblyDay!.workers.length === 0) {
+        await showError([
+            'Не заполнен персонал!',
+            'Для дальнейшей работы с данными',
+            'необходимо заполнить персонал!',
+        ])
+
+        return false
+    }
+
+    return true
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---        Функционал для выполнения Записи СЗ        !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
+const setDoneStatusLine = async (linesIds: number[]) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesDone(linesIds)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
+const setFalseStatusLine = async (linesIds: number[], falseReason: string) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesFalse(linesIds, falseReason)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Сбрасываем статус IAssemblyTaskLineSector
+const resetStatusLine = async (linesIds: number[]) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesReset(linesIds)) as IAssemblyTaskLine[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! --- Функционал для выполнения Записи Сущности Участка !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// __ Устанавливаем статус Выполнено IAssemblyTaskLineSector
+const setDoneStatusSector = async (sectorLinesIds: number[]) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorDone(sectorLinesIds)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Устанавливаем статус Не Выполнено IAssemblyTaskLineSector
+const setFalseStatusSector = async (sectorLinesIds: number[], falseReason: string) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorFalse(sectorLinesIds, falseReason)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+// __ Сбрасываем статус IAssemblyTaskLineSector
+const resetStatusSector = async (sectorLinesIds: number[]) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = (await assemblyStore.setAssemblyTaskLinesSectorReset(sectorLinesIds)) as IAssemblyTaskLineSector[]
+
+    if (checkCRUD(result)) {
+        assemblyStore.setAssemblyTaskLinesSectorsToGlobal(result)
+    } else {
+        await showError()
+    }
+}
+
+
+// __ Разделяем строку
+const divideLine = async (assemblyLineId: number, range: { take: number; keep: number }) => {
+
+    // __ Проверяем на персонал
+    if (!(await isPersonalFilled())) {
+        return
+    }
+
+    const result = await assemblyStore.divideLineInAssemblyTask(assemblyLineId, range)
+
+    if (!checkCRUD(result)) {
+        await showError()
+    } else {
+        return
+    }
 }
 
 

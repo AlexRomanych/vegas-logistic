@@ -23,7 +23,7 @@ import type {
     IAssemblyManipulateDay,
     IStats,
     IAssemblyModelManufactureGroup,
-    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask, IColorTypes, ITotalsDataType,
+    IMatrixManufactureGroup, IMatrixManufactureGroupLine, IMatrixManufactureTask, IColorTypes, ITotalsDataType, IAssemblyTaskStats,
 } from '@/types'
 import {
     ASSEMBLY_LINE_UNDEFINED,
@@ -919,8 +919,74 @@ export function getAssemblyTasksSameOrderInDay(
 }
 
 // --- ------------------------------------------------------------------------------------
+// __ Проверяем на Принадлежность СЗ к одной Заявке
+export function isAssemblyTasksEqual(
+    firstTask: IAssemblyTask,
+    secondTask: IAssemblyTask,
+    applyDate: boolean   = false,
+    applyStatus: boolean = false,
+): boolean {
+
+    let isEqual =
+            firstTask.change === secondTask.change &&
+            firstTask.order.id === secondTask.order.id
+
+    if (applyDate) isEqual &&= firstTask.action_at === secondTask.action_at
+    if (applyStatus) isEqual &&= firstTask.current_status.id === secondTask.current_status.id
+
+    return isEqual
+}
+
+
 // __ Объединяем СЗ с одинаковыми Заявками (Заявки, к которым принадлежит СЗ)
-export function mergeAssemblyTasks(tasks: IAssemblyTask[]): IAssemblyTask[] {
+// __ Делать ли сравнение перед слиянием
+export function mergeAssemblyTasks(tasks: IAssemblyTask[], compareTask: boolean = false): IAssemblyTask[] {
+    if (!tasks?.length) return []
+
+    const mergedTasks: IAssemblyTask[] = []
+
+    for (const task of tasks) {
+        // __ Ищем, есть ли уже похожая задача в итоговом массиве
+
+        let targetTask: IAssemblyTask | undefined
+        if (compareTask) {
+            targetTask = mergedTasks.find(existing =>
+                isAssemblyTasksEqual(existing, task)
+            )
+        } else {
+            targetTask = mergedTasks?.[0]
+        }
+
+        if (!targetTask) {
+            // __ Если такой задачи еще нет, клонируем её
+            targetTask = JSON.parse(JSON.stringify(task))
+            // Очищаем линии, чтобы пересобрать их с нуля без дублей
+            targetTask!.assembly_lines = []
+            mergedTasks.push(targetTask!)
+        }
+
+        // __ Накапливаем и склеиваем абсолютно все линии из текущей задачи
+        for (const newLine of task.assembly_lines) {
+            const existingLine = targetTask!.assembly_lines.find(l =>
+                l.order_line.id === newLine.order_line.id &&
+                l.assembly_line === newLine.assembly_line &&
+                l.description === newLine.description
+            )
+
+            if (existingLine) {
+                // __ Если такая линия уже есть в аккумулируемой задаче — суммируем
+                existingLine.amount += newLine.amount
+            } else {
+                // __ Если нет — добавляем глубокую копию линии
+                targetTask!.assembly_lines.push(JSON.parse(JSON.stringify(newLine)))
+            }
+        }
+    }
+
+    return mergedTasks
+}
+
+export function mergeAssemblyTasks_Old(tasks: IAssemblyTask[]): IAssemblyTask[] {
     const grouped = tasks.reduce((acc, task) => {
         const orderId = task.order.id
 
@@ -1347,7 +1413,7 @@ export function getDataArray(taskSource: IAssemblyTask, dataType: ITotalsDataTyp
             // color = '#67748B'
             title = '✗'
         } else if (round(percent) === 100) {
-            title = '✓'
+            title = `✓ (${total})`
         }
 
         data.push({
@@ -1422,7 +1488,7 @@ export function getDataArrayTotal(tasksSource: IAssemblyTask[], dataType: ITotal
             // color = '#67748B'
             title = '✗'
         } else if (round(percent) === 100) {
-            title = '✓'
+            title = `✓ (${total})`
         }
 
         summary.percent  = percent
@@ -1859,8 +1925,8 @@ export function isLine(entity: IAssemblySectorKeys | IAssemblySectorKeys[] | str
 // --- -------------------------------------------------------------------------------------
 export function getAssemblyLineFromMatrixGroupsById(groups: IMatrixManufactureGroup[], id: number): IAssemblyTaskLine | null {
     let findElement: IAssemblyTaskLine | null = null
-    outerLoop: for (let i = 0; i < groups.length; i ++) {
-        for (let j = 0; j < groups[i].group_assembly_lines.length; j ++) {
+    outerLoop: for (let i = 0; i < groups.length; i++) {
+        for (let j = 0; j < groups[i].group_assembly_lines.length; j++) {
             if (groups[i].group_assembly_lines[j].id === id) {
                 findElement = JSON.parse(JSON.stringify(groups[i].group_assembly_lines[j]))
                 break outerLoop

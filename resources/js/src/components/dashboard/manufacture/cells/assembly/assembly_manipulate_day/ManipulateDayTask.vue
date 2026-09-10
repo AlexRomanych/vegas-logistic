@@ -212,7 +212,7 @@
             <ManipulateDayTaskLineHeader
                 :field-widths="fieldWidths"
                 :materials="data.materials"
-                :show-order-title="data.task.id === UNION_TASKS_ID"
+                :show-order-title="data.task.id === UNION_TASK_ID"
                 @toggle-all="toggleGroups"
             />
         </div>
@@ -265,7 +265,7 @@
                             :group-line="record"
                             :index="index + 1"
                             :ordering="'index'"
-                            :show-order-title="data.task.id === UNION_TASKS_ID"
+                            :show-order-title="data.task.id === UNION_TASK_ID"
                         />
 
                         <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -370,6 +370,7 @@
     <!-- __ Модальное окно для сообщений -->
     <AppModalAsyncMultilineTS
         ref="appModalAsyncMultilineTS"
+        :align="modalInfoAlign"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
@@ -415,7 +416,7 @@ import type {
 
 import { CELL_EVENT_ASSEMBLY } from '@/app/constants/cell_events.ts'
 import { TASK_TO_PRINT_KEY, TASK_TO_PRINT_META_KEY } from '@/app/constants/common.ts'
-import { ASSEMBLY_UNION_TASK_NAME } from '@/app/constants/assembly.ts'
+import { ASSEMBLY_UNION_TASK_NAME, UNION_TASK_ID } from '@/app/constants/assembly.ts'
 
 import { isTaskLineDone, isTaskLineFalse, isTaskLineReset } from '@/app/helpers/manufacture/helpers_assembly.ts'
 // import { formatTimeWithLeadingZeros, splitDate } from '@/app/helpers/helpers_date'
@@ -453,8 +454,6 @@ const emits = defineEmits<{
 
 const assemblyTask = computed<IAssemblyTask>(() => props.data.task)
 
-const UNION_TASKS_ID = 0
-
 const MENU_WIDTH            = 'w-[85px]'
 const MENU_HEIGHT           = 'h-[50px]'
 const MENU_HEIGHT_MULTILINE = 'h-[25px]'
@@ -478,6 +477,7 @@ const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | nul
 const modalInfoType            = ref<IColorTypes>('danger')
 const modalInfoText            = ref<string | string[]>('')
 const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const modalInfoAlign           = ref<'left' | 'right' | 'center'>('center')
 const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для Карточки и Изменения Линии
@@ -576,7 +576,7 @@ const toggleGroups         = () => {
 // !!! ---                Побочка                      !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Проверка на то, что Заявка - объединенная
-const isUnionTask = computed(() => assemblyTask.value.id === UNION_TASKS_ID)// __ Название заявок
+const isUnionTask = computed(() => assemblyTask.value.id === UNION_TASK_ID)// __ Название заявок
 const taskTitle   = computed(() => {
     if (isUnionTask.value) {
         return ASSEMBLY_UNION_TASK_NAME
@@ -893,9 +893,10 @@ const handleMenuAction = async (action: string) => {
 
 // __ Добавить в выделение все элементы ПС
 const selectGroupItems = async (group: IMatrixManufactureGroup) => {
-    modalInfoType.value = 'primary'
-    modalInfoMode.value = 'confirm'
-    modalInfoText.value = [
+    modalInfoType.value  = 'primary'
+    modalInfoMode.value  = 'confirm'
+    modalInfoAlign.value = 'center'
+    modalInfoText.value  = [
         `Выделить все элементы в коллекции Блоков: `,
         `${group.group.name}?`
     ]

@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyDayController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyModelManufactureGroupController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyStatusController;
 use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskLineController;
+use App\Http\Controllers\Api\V1\Cells\Assembly\AssemblyTaskLineSectorController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockCollectionController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockController;
 use App\Http\Controllers\Api\V1\Cells\Blocks\BlockDayController;
@@ -463,17 +465,17 @@ Route::prefix('assembly')
         //Route::post('tasks/action/set', [BlockTaskController::class, 'setBlockTaskActionAt']);
 
         // __ Строки СЗ
-        Route::post('tasks/lines/line/set', [AssemblyTaskController::class, 'taskLinesManufLineSet']);
-        Route::post('tasks/line/done', [AssemblyTaskController::class, 'setAssemblyTaskLinesDone']);
-        Route::post('tasks/line/false', [AssemblyTaskController::class, 'setAssemblyTaskLinesFalse']);
-        Route::post('tasks/line/reset', [AssemblyTaskController::class, 'setAssemblyTaskLinesReset']);
-        Route::post('tasks/line/description', [AssemblyTaskController::class, 'setAssemblyTaskLineDescription']);
+        Route::post('tasks/lines/line/set', [AssemblyTaskLineController::class, 'taskLinesManufLineSet']);
+        Route::post('tasks/line/done', [AssemblyTaskLineController::class, 'setAssemblyTaskLinesDone']);
+        Route::post('tasks/line/false', [AssemblyTaskLineController::class, 'setAssemblyTaskLinesFalse']);
+        Route::post('tasks/line/reset', [AssemblyTaskLineController::class, 'setAssemblyTaskLinesReset']);
+        Route::post('tasks/line/description', [AssemblyTaskLineController::class, 'setAssemblyTaskLineDescription']);
 
         // __ Сущности Участков
-        Route::post('tasks/line/sector/done', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorDone']);
-        Route::post('tasks/line/sector/false', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorFalse']);
-        Route::post('tasks/line/sector/reset', [AssemblyTaskController::class, 'setAssemblyTaskLinesSectorReset']);
-        Route::post('tasks/line/sector/description', [AssemblyTaskController::class, 'setAssemblyTaskLineSectorDescription']);
+        Route::post('tasks/line/sector/done', [AssemblyTaskLineSectorController::class, 'setAssemblyTaskLinesSectorDone']);
+        Route::post('tasks/line/sector/false', [AssemblyTaskLineSectorController::class, 'setAssemblyTaskLinesSectorFalse']);
+        Route::post('tasks/line/sector/reset', [AssemblyTaskLineSectorController::class, 'setAssemblyTaskLinesSectorReset']);
+        Route::post('tasks/line/sector/description', [AssemblyTaskLineSectorController::class, 'setAssemblyTaskLineSectorDescription']);
 
         //
         //// __ Коллекция Блоков

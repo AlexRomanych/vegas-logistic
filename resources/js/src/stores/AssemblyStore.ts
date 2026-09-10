@@ -15,9 +15,9 @@ import type {
     IRenderMatrixDiff,
 
 } from '@/types'
-import { ref, watch, watchEffect } from 'vue'
+import { ref, } from 'vue'
 import { PERIOD_DRAFT } from '@/app/constants/shared.ts'
-import { isNumber, round } from '@/app/helpers/helpers_lib.ts'
+import { round } from '@/app/helpers/helpers_lib.ts'
 
 import { additionDaysInStrFormat } from '@/app/helpers/helpers_date'
 import {
@@ -26,8 +26,7 @@ import {
     repositionAssemblyTaskInDay,
     repositionAssemblyTaskLines
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
-import { CHANGES } from '@/app/constants/assembly.ts'
-import { log } from '@/app/composable/log.ts'
+import { ASSEMBLY_TASK_DRAFT, CHANGES, UNION_TASK_ID } from '@/app/constants/assembly.ts'
 
 
 const DEBUG = true
@@ -289,6 +288,8 @@ export const useAssemblyStore = defineStore('assembly', () => {
         // __ Переопределяем порядок СЗ в дне, из которого проводили манипуляции
         globalAssemblyTasks.value = repositionAssemblyTaskInDay(globalAssemblyTasks.value, oldAssemblyTask.action_at)
 
+        console.log('globalAssemblyTasks.value-----', globalAssemblyTasks.value)
+
         await saveChanges()   // __ Сохраняем изменения
     }
 
@@ -470,8 +471,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
         period: IPeriod | null = null,
     ) => {
 
-        const filteredTasks = globalArray.filter(task => task.id !== 0)
-        console.log('filteredTasks: ', filteredTasks)
+        // console.log('globalArray: ', globalArray )
+        const filteredTasks = globalArray.filter(task => task.id !== UNION_TASK_ID)
+        // console.log('filteredTasks: ', filteredTasks)
         // console.log('globalArray: ', globalAssemblyTasks.value)
         const diffsInGlobalAssemblyTasks = getAssemblyTasksDiff(filteredTasks, globalArrayCopy)
         // const diffsInGlobalAssemblyTasks = getAssemblyTasksDiff(globalArray, globalArrayCopy)
@@ -1242,8 +1244,9 @@ export const useAssemblyStore = defineStore('assembly', () => {
         const response = await jwtGet(URL_ASSEMBLY_TASKS, params)
 
         // __ Кэшируем
+        // console.log('before cache')
         globalAssemblyTasks.value = response.data
-
+        // console.log('after cache')
         // __ Добавляем название Заявки в каждый OrderLine
         addOrderTitleToOrderLine()
 

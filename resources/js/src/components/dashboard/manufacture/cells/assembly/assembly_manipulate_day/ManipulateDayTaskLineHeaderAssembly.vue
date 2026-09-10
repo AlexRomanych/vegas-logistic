@@ -115,6 +115,19 @@
             rounded="4"
         />
 
+        <!-- __ Состав МЭ -->
+        <!--__ Описание -->
+        <AppLabelMultiLineTS
+            :align="DEFAULT_ALIGN"
+            :height="LINE_HEIGHT"
+            :text="['Состав', 'мягкого элемента']"
+            :text-size="LINE_TEXT_SIZE"
+            :type="DEFAULT_TYPE"
+            :width="fieldWidths.base_composition"
+            class="truncate"
+            rounded="4"
+        />
+
         <!--__ Описание -->
         <AppLabelMultiLineTS
             :align="DEFAULT_ALIGN"
@@ -143,6 +156,7 @@
 
 <script lang="ts" setup>
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 
 interface IProps {

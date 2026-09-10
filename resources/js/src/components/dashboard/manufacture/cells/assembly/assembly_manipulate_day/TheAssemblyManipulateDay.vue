@@ -83,7 +83,7 @@ import type {
     IAssemblyManipulateDay,
     IAssemblySector,
     IAssemblySectorKeys,
-    IAssemblyTask,
+    // IAssemblyTask,
     IAssemblyTaskChangeKeys,
     IAssemblyTaskLine,
     IMatrixManufactureTask,
@@ -92,7 +92,15 @@ import type {
 
 import { useAssemblyStore } from '@/stores/AssemblyStore.ts'
 
-import { ASSEMBLY_DAY_DRAFT, ASSEMBLY_SECTORS, ASSEMBLY_TASK_DRAFT, CHANGE_1, DAY_MANIPULATE_DRAFT, REDIRECT_KEY } from '@/app/constants/assembly.ts'
+import {
+    ASSEMBLY_DAY_DRAFT,
+    ASSEMBLY_SECTORS,
+    ASSEMBLY_TASK_DRAFT,
+    CHANGE_1,
+    DAY_MANIPULATE_DRAFT,
+    REDIRECT_KEY,
+    UNION_TASK_ID
+} from '@/app/constants/assembly.ts'
 
 import {
     filterTaskBySectors,
@@ -258,8 +266,10 @@ const getRenderDay = () => {
 
 
 // __ Создаем объединенное СЗ
-const commonTask = computed<IAssemblyTask>(() => {
+const commonTask = () => {
     const comTask = JSON.parse(JSON.stringify(ASSEMBLY_TASK_DRAFT))
+
+    comTask.id = UNION_TASK_ID
 
     const allTaskLines: IAssemblyTaskLine[] = []
     globalAssemblyTasks.value.forEach(task => {
@@ -275,12 +285,13 @@ const commonTask = computed<IAssemblyTask>(() => {
     console.log('calc')
 
     return comTask
-})
+}
 
 
 // __ Добавляем Объединение СЗ
 const addCommonTask = () => {
-    renderDay.value.tasks.push(commonTask.value)
+    globalAssemblyTasks.value.push(commonTask())
+    // renderDay.value.tasks.push(commonTask())
 }
 
 // __ Создаем объект отображения матрицы Группы --> Модели --> Материалы
@@ -303,9 +314,37 @@ const matrix = computed(() => {
     return resultMatrix
 })
 
-watch(() => globalAssemblyTasks.value, () => {
-    console.log('updated')
-}, { deep: true })
+
+watch(
+    () => JSON.parse(JSON.stringify(globalAssemblyTasks.value)), // Копируем массив, чтобы сохранить ссылку на прошлый состав
+    (newTasks, oldTasks) => {
+
+        // __ Добавляем Общее СЗ
+        const unionTask = globalAssemblyTasks.value.find(task => task.id === UNION_TASK_ID)
+        if (!unionTask) {
+            addCommonTask()
+            renderDay.value.tasks = globalAssemblyTasks.value
+            return
+        }
+
+        // console.log('newTasks: ', newTasks)
+        // console.log('oldTasks: ', oldTasks)
+
+        // __ Пересчитывем Общее СЗ при изменении active (исключение СЗ из общего расчета)
+        for (let i = 0; i < newTasks.length; i++) {
+            for (let j = 0; j < oldTasks.length; j++) {
+                if (newTasks[i].id === oldTasks[j].id) {
+                    if (newTasks[i].active !== oldTasks[j].active) {
+                        globalAssemblyTasks.value = globalAssemblyTasks.value.filter(task => task.id !== UNION_TASK_ID)
+                        addCommonTask()
+                        renderDay.value.tasks = globalAssemblyTasks.value
+                    }
+                }
+            }
+        }
+
+        // console.log('updated: ', globalAssemblyTasks.value)
+    }, { deep: true })
 
 
 onMounted(async () => {
@@ -323,7 +362,7 @@ onMounted(async () => {
     ])
 
     getRenderDay()      // __ Оборачиваем в Day
-    addCommonTask()     // __ Добавляем Общее СЗ
+    // addCommonTask()     // __ Добавляем Общее СЗ
     prepareTabs()       // __ Подготавливаем Табы
 
     console.log('globalAssemblyTasks.value: ', globalAssemblyTasks.value)

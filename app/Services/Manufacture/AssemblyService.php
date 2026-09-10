@@ -116,7 +116,6 @@ final class AssemblyService
 
                             $details = $assemblySize->getDetails();
                             foreach ($details as $detail) {
-
                                 $a = 0;
 
 
@@ -171,7 +170,6 @@ final class AssemblyService
                                     //'position'              => 0,
                                 ]);
                             }
-
                         }
                     }
                 }
@@ -273,6 +271,7 @@ final class AssemblyService
         $isSpecialSector = $isSide || $isLayer;
 
         // __ Получаем Расход
+        /** @noinspection PhpUnnecessaryLocalVariableInspection */
         $groupedPivotRecordsExpense = DB::table('order_line_material_pivot as pivot')
             ->join('order_lines as lines', 'lines.id', '=', 'pivot.order_line_id')
             ->where('lines.order_id', $orderId)
@@ -468,16 +467,125 @@ final class AssemblyService
     }
 
 
+    /**
+     *  ___ Устанавливаем Статус СЗ Сборки по его содержимому
+     * @param array $ids
+     * @param bool $isSector    __Что приходит на вход: Lines или Sectors__
+     * @return void
+     * @throws Throwable
+     */
+    public static function setAssemblyTaskStatus(array $ids, bool $isSector = true): void
+    {
+        if (empty($ids)) {
+            return;
+        }
+
+        if ($isSector) {
+            // __ Получаем список уникальных ID задач (AssemblyTask), которых коснулись изменения в секторах
+            $taskIds = DB::table('assembly_task_line_sectors as sector')
+                ->join('assembly_task_lines as line', 'line.id', '=', 'sector.assembly_task_line_id')
+                ->whereIn('sector.id', $ids)
+                ->distinct()
+                ->pluck('line.assembly_task_id');
+        } else {
+            $taskIds = DB::table('assembly_task_lines')
+                ->whereIn('id', $ids)
+                ->distinct()
+                ->pluck('assembly_task_id');
+
+            // или
+            //$taskIds = AssemblyTaskLine::query()
+            //    ->whereIn('id', $ids)
+            //    ->pluck('assembly_task_id')
+            //    ->unique()
+            //    ->values();
+
+            // или
+            //$taskIds = AssemblyTask::query()
+            //    ->whereHas('assemblyLines', function ($query) use ($ids) {
+            //        $query->whereIn('id', $ids);
+            //    })
+            //    ->pluck('id');
+        }
+
+
+        if ($taskIds->isEmpty()) {
+            return;
+        }
+
+        // __ Загружаем задачи со всеми зависимостями для агрегации состояния
+        $tasks = AssemblyTask::query()
+            ->whereIn('id', $taskIds)
+            ->with([
+                'latestTaskStatus',
+                'assemblyLines' => function ($q) {
+                    $q->select('id', 'assembly_task_id', 'finished_at', 'false_at')
+                        ->with(['sectors:id,assembly_task_line_id,finished_at,false_at']);
+                }
+            ])
+            ->get();
+
+        //$taskArray = $tasks->toArray();
+        //$a         = 0;
+
+        DB::transaction(function () use ($tasks) {
+            foreach ($tasks as $task) {
+                $totalFieldsCount    = 0;
+                $finishedFieldsCount = 0;
+                $falseFieldsCount    = 0;
+
+                // __ Подсчитываем заполненность finished_at и false_at для ВСЕХ строк и их секторов в рамках задачи
+                foreach ($task->assemblyLines as $line) {
+                    // __ Проверка полей самой строки AssemblyTaskLine
+                    $totalFieldsCount += 1;
+                    if (!is_null($line->finished_at)) {
+                        $finishedFieldsCount++;
+                    }
+                    if (!is_null($line->false_at)) {
+                        $falseFieldsCount++;
+                    }
+
+                    // __ Проверка полей каждого сектора AssemblyTaskLineSector
+                    foreach ($line->sectors as $sector) {
+                        $totalFieldsCount += 1;
+                        if (!is_null($sector->finished_at)) {
+                            $finishedFieldsCount++;
+                        }
+                        if (!is_null($sector->false_at)) {
+                            $falseFieldsCount++;
+                        }
+                    }
+                }
+
+                // __ Определяем целевой статус
+                if (($finishedFieldsCount + $falseFieldsCount) === 0) {
+                    $targetStatusId = AssemblyTaskStatus::ASSEMBLY_STATUS_CREATED_ID;
+                } elseif ($finishedFieldsCount === $totalFieldsCount) {
+                    $targetStatusId = AssemblyTaskStatus::ASSEMBLY_STATUS_DONE_ID;
+                } else {
+                    $targetStatusId = AssemblyTaskStatus::ASSEMBLY_STATUS_RUNNING_ID;
+                }
+
+                // __ Проверяем текущий статус (последний из pivot)
+                $currentStatusId = $task->latestTaskStatus?->assembly_task_status_id;
+
+                // Если статус изменился — привязываем новый статус в pivot
+                if ($currentStatusId !== $targetStatusId) {
+                    $task->statuses()->attach($targetStatusId, [
+                        'set_at'     => now(),
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+        });
+    }
+
+
     public static function test(Request|null $request = null): mixed
     {
-        //$assemblyMaterials = Material::query()
-        //    ->assembly('000000003')
-        //    ->get();
-        //
-        //$assemblyMaterialsArray = $assemblyMaterials->toArray();
+        //$expense = self::getSectorExpense(738, AssemblyTask::ASSEMBLY_TASK_SECTOR_FOAM_LAYER);
 
-        $expense = self::getSectorExpense(738, AssemblyTask::ASSEMBLY_TASK_SECTOR_FOAM_LAYER);
-
+        //self::setAssemblyTaskStatus();
 
         $a = 0;
 

@@ -154,16 +154,17 @@
                     width="w-[30px]"
                     @click="day.collapsed = !day.collapsed"
                 />
-
+                <!--:text="`${formatDateIntl(day.action_at, true)} (${day.tasks.length})`"-->
                 <!-- __ Дата -->
                 <AppLabelTS
-                    :text="`${formatDateIntl(day.action_at, true)} (${day.tasks.length})`"
+
+                    :text="`${formatDateIntl(day.action_at, true)} ${day.tasks.length ? `(${day.tasks.length} шт.)` : ''}`.trim()"
+                    :title="`Double Click - Меню\nCtrl + Click - Перейти к Участкам Сборки`"
                     :type="getDateType(day)"
                     align="left"
                     class="cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    title="Ctrl + Click - Перейти к Участкам Сборки, Double Click - Меню"
                     width="w-[672px]"
                     @dblclick="showMenu(day)"
                     @click.ctrl="goToManipulateDay(day)"
@@ -514,8 +515,10 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Клиент...',
         data          : (task: IAssemblyTask) => task.order.client.short_name,
-        color         : (task: IAssemblyTask) => task.order.order_type.color,
-        title         : (task: IAssemblyTask) => task.order.order_type.display_name,
+        color         : (task: IAssemblyTask) => task.current_status.color,
+        // color         : (task: IAssemblyTask) => task.order.order_type.color,
+        title: (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
+        // title         : (task: IAssemblyTask) => task.order.order_type.display_name,
     },
     orderNoStr : {
         id            : () => 'order-no-search',
@@ -532,8 +535,9 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍№...',
         data          : (task: IAssemblyTask) => task.order.order_no_str,
-        color         : (task: IAssemblyTask) => task.order.order_type.color,
-        title         : (task: IAssemblyTask) => task.order.order_type.display_name,
+        color         : (task: IAssemblyTask) => task.current_status.color,
+        // color         : (task: IAssemblyTask) => task.order.order_type.color,
+        title: (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
     },
     taskAmount : {
         id            : () => 'task-amount-search',
@@ -549,9 +553,10 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Кол-во...',
-        color         : (task: IAssemblyTask) => task.order.order_type.color,
-        title         : (task: IAssemblyTask) => task.order.order_type.display_name,
-        data          : (task: IAssemblyTask) => task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0).toString(),
+        color         : (task: IAssemblyTask) => task.current_status.color,
+        // color         : (task: IAssemblyTask) => task.order.order_type.color,
+        title: (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
+        data : (task: IAssemblyTask) => task.assembly_lines.reduce((acc: number, line: IAssemblyTaskLine) => acc + line.amount, 0).toString(),
     },
     taskActive : {
         id            : () => 'order-active',
@@ -598,6 +603,8 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍дд.мм.гггг...',
         data          : (task: IAssemblyTask) => formatDateIntl(task.order.load_at),
+        color         : (task: IAssemblyTask) => task.current_status.color,
+        title         : (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
     },
     unloadAt   : {
         id            : () => 'unload-at-search',
@@ -614,6 +621,9 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍дд.мм.гггг...',
         data          : (task: IAssemblyTask) => formatDateIntl(task.order.unload_at),
+        color         : (task: IAssemblyTask) => task.current_status.color,
+        title         : (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
+
     },
     comment_1c : {
         id            : () => 'comment-1c-search',
@@ -630,10 +640,12 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Комментарий из 1С...',
         data          : (task: IAssemblyTask) => task.order.comment_1c ?? '',
+        color         : (task: IAssemblyTask) => task.order.comment_1c ? '' : task.current_status.color,
+        title         : (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
     },
     description: {  // __ Описание Заявки
         id            : () => 'description-search',
-        header        : ['Комментарий к', 'сменному заданию / дню'],
+        header        : ['Комментарий к', 'Сменному заданию / Дню'],
         width         : 'w-[250px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -646,6 +658,8 @@ const render: IRenderData = reactive({
         dataAlign     : DATA_ALIGN,
         placeholder   : '🔍Комментарий...',
         data          : (task: IAssemblyTask) => task.comment ?? '',
+        color         : (task: IAssemblyTask) => task.comment ? '' : task.current_status.color,
+        title         : (task: IAssemblyTask) => `Тип: ${task.order.order_type.display_name}\nСтатус: ${task.current_status.name}`,
     },
     sector     : {
         id            : () => 'sector-search',
@@ -1512,7 +1526,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         const findTask = globalAssemblyTasksCopy.value.find(task => task.id === assemblyTask.id)
         if (findTask) {
             assemblyTask.action_at = findTask.action_at
-            assemblyTask.position = findTask.position
+            assemblyTask.position  = findTask.position
         }
 
         // __ Получаем дату, на которую нужно переместить СЗ
@@ -1710,7 +1724,6 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
         }
     }
 }
-
 
 
 // assemblyStore.$subscribe((mutation, state) => {

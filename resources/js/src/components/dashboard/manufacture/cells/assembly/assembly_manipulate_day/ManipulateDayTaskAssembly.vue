@@ -117,7 +117,7 @@
                 <!-- __ Изменить Линию Сборки-->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
-                    :type="assemblyTask.id === UNION_TASKS_ID ? 'danger' : 'dark'"
+                    :type="assemblyTask.id === UNION_TASK_ID ? 'danger' : 'dark'"
                     align="center"
                     class="menu-button"
                     rounded="4"
@@ -416,9 +416,11 @@
     <!-- __ Модальное окно для сообщений -->
     <AppModalAsyncMultilineTS
         ref="appModalAsyncMultilineTS"
+        :align="modalInfoAlign"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        ok-word="Понятно"
         width="w-[800px]"
     />
 
@@ -473,11 +475,11 @@ import {
     ASSEMBLY_TASK_DRAFT,
     ASSEMBLY_TASK_SECTOR_LAMIT,
     ASSEMBLY_TASK_SECTOR_TABLE,
-    ASSEMBLY_UNION_TASK_NAME
+    ASSEMBLY_UNION_TASK_NAME, UNION_TASK_ID
 } from '@/app/constants/assembly.ts'
 
 import {
-    getAssemblyLineFromMatrixGroupsById,
+    getAssemblyLineFromMatrixGroupsById, getOrderLineSize,
     isCommon,
     isLine,
     isTaskLineDone,
@@ -526,8 +528,6 @@ const assemblyStore = useAssemblyStore()
 
 const assemblyTask = computed<IAssemblyTask>(() => props.data.task)
 
-const UNION_TASKS_ID = 0
-
 const MENU_WIDTH            = 'w-[85px]'
 const MENU_HEIGHT           = 'h-[50px]'
 const MENU_HEIGHT_MULTILINE = 'h-[25px]'
@@ -551,6 +551,7 @@ const appRangeModalAsyncTS = ref<InstanceType<typeof AppRangeModalAsyncTS> | nul
 const modalInfoType            = ref<IColorTypes>('danger')
 const modalInfoText            = ref<string | string[]>('')
 const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const modalInfoAlign           = ref<'left' | 'right' | 'center'>('center')
 const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Тип для Карточки и Изменения Линии
@@ -561,20 +562,21 @@ const manageTaskManufLines = ref<InstanceType<typeof ManageTaskManufLines> | nul
 
 // __ Поля данных
 const fieldWidths: Record<string, string> = {
-    check       : 'min-w-[30px] max-w-[30px]',
-    position    : 'min-w-[30px] max-w-[30px]',
-    name        : 'min-w-[200px] max-w-[200px]',
-    size        : 'min-w-[100px] max-w-[100px]',
-    amount      : 'min-w-[40px] max-w-[40px]',
-    time        : 'min-w-[100px] max-w-[100px]',
-    kdb         : 'min-w-[70px] max-w-[70px]',
-    timeLabel   : 'min-w-[100px] max-w-[100px]',
-    manuf_line  : 'min-w-[80px] max-w-[80px]',
-    false_reason: 'min-w-[174px] max-w-[174px]',
-    order       : 'min-w-[300px] max-w-[300px]',
-    description : 'min-w-[300px] max-w-[300px]',
-    material    : 'min-w-[110px] max-w-[110px]',
-    order_title : 'min-w-[110px] max-w-[110px]',
+    check           : 'min-w-[30px] max-w-[30px]',
+    position        : 'min-w-[30px] max-w-[30px]',
+    name            : 'min-w-[200px] max-w-[200px]',
+    size            : 'min-w-[100px] max-w-[100px]',
+    amount          : 'min-w-[40px] max-w-[40px]',
+    time            : 'min-w-[100px] max-w-[100px]',
+    kdb             : 'min-w-[70px] max-w-[70px]',
+    timeLabel       : 'min-w-[100px] max-w-[100px]',
+    manuf_line      : 'min-w-[80px] max-w-[80px]',
+    false_reason    : 'min-w-[174px] max-w-[174px]',
+    order           : 'min-w-[300px] max-w-[300px]',
+    description     : 'min-w-[300px] max-w-[300px]',
+    material        : 'min-w-[110px] max-w-[110px]',
+    order_title     : 'min-w-[110px] max-w-[110px]',
+    base_composition: 'min-w-[300px] max-w-[300px]',
 }
 
 
@@ -606,7 +608,8 @@ async function showError(error: string | string[] | null = null) {
         renderError = error
     }
 
-    modalInfoText.value = renderError
+    modalInfoText.value  = renderError
+    modalInfoAlign.value = 'center'
     await appModalAsyncMultilineTS.value!.show()
 }
 
@@ -664,7 +667,7 @@ const toggleDetails         = () => {
 // !!! ---                Побочка                      !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // __ Проверка на то, что Заявка - объединенная
-const isUnionTask = computed(() => assemblyTask.value.id === UNION_TASKS_ID)// __ Название заявок
+const isUnionTask = computed(() => assemblyTask.value.id === UNION_TASK_ID)// __ Название заявок
 const taskTitle   = computed(() => {
     if (isUnionTask.value) {
         return ASSEMBLY_UNION_TASK_NAME
@@ -736,7 +739,40 @@ const completeSelected = async () => {
         return
     }
 
-    emits('setFinishStatus', ids)
+    // __ Проверка на Незавершенное производство
+    const completeIds: number[]           = []
+    const errorLines: IAssemblyTaskLine[] = []
+
+    for (let i = 0; i < props.data.groups.length; i++) {
+        for (let j = 0; j < props.data.groups[i].group_assembly_lines.length; j++) {
+            if (ids.includes(props.data.groups[i].group_assembly_lines[j].id)) {
+                const completeSectors = props.data.groups[i].group_assembly_lines[j].sector_lines.every(sector => sector.finished_at)
+                if (completeSectors) {
+                    completeIds.push(props.data.groups[i].group_assembly_lines[j].id)
+                } else {
+                    errorLines.push(props.data.groups[i].group_assembly_lines[j])
+                }
+            }
+        }
+    }
+
+    if (errorLines.length > 0) {
+        const errorLinesText = errorLines.map(el => `${getOrderLineSize(el.order_line)} ${el.order_line.model.name_report} - ${el.amount}шт.`)
+        const errorMessage   = [
+            'У следующих записей есть незавершенное',
+            'производство, поэтому статус Выполнено',
+            'не может быть установлен:',
+            ...errorLinesText
+        ]
+
+        await showError(errorMessage)
+    }
+
+    if (completeIds.length === 0) {
+        return
+    }
+
+    emits('setFinishStatus', completeIds)
     showMenu.value = false
 }
 
@@ -860,7 +896,7 @@ const changeAssemblyLines = async (/*blockTask: IBlockTask*/) => {
     console.log('data: ', props.data)
 
     // __ Для объединения СЗ не меняем Линии
-    if (props.data.task.id === UNION_TASKS_ID) {
+    if (props.data.task.id === UNION_TASK_ID) {
         return
     }
 
@@ -1109,9 +1145,10 @@ const handleMenuAction = async (action: string, mode: string | null = null) => {
 
 // __ Добавить в выделение все элементы ПС
 const selectGroupItems = async (group: IMatrixManufactureGroup) => {
-    modalInfoType.value = 'primary'
-    modalInfoMode.value = 'confirm'
-    modalInfoText.value = [
+    modalInfoType.value  = 'primary'
+    modalInfoMode.value  = 'confirm'
+    modalInfoAlign.value = 'center'
+    modalInfoText.value  = [
         `Выделить все элементы в коллекции Блоков: `,
         `${group.group.name}?`
     ]

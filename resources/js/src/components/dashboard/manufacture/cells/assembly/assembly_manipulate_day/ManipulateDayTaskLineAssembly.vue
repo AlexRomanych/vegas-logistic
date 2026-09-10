@@ -164,6 +164,17 @@
             rounded="4"
         />
 
+        <!-- __ Состав МЭ -->
+        <AppLabelTS
+            :height="lineHeight"
+            :text="assemblyLine.order_line.model.base_composition ?? ''"
+            :text-size="'micro'"
+            :type="checkType"
+            :width="fieldWidths.base_composition"
+            align="center"
+            rounded="4"
+        />
+
         <!-- __ Описание -->
         <AppLabelTS
             :height="lineHeight"
