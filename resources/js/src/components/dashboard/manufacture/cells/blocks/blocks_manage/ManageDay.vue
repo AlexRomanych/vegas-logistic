@@ -309,7 +309,7 @@ import type {
     IBlockTaskStatusesSet, IBlockTaskLine, IBlockLineSetData, DraggableHTMLElement, IAmountAndTimeBlock, IBlockTaskChangeKeys,
 } from '@/types'
 
-import { computed, inject, type Ref, ref, nextTick } from 'vue'
+import { computed, inject, type Ref, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
@@ -793,7 +793,7 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
     // __ Показываем модальное меню при двойном клике на Заявке обрабатываем результаты
     modalMenuType.value = 'indigo'
 
-    const CANCEL_ID = 6
+    const CANCEL_ID = 7
     modalMenu.value = {
         data: [
             { id: 1, title: 'Разделить количество' },
@@ -801,6 +801,7 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
             { id: 3, title: 'Изменить Производственную линию' },
             { id: 4, title: 'Добавить / Изменить комментарий к СЗ' },
             { id: 5, title: 'Перейти в Карточку Заявки' },
+            { id: 6, title: 'Перейти в Выполнение СЗ' },
             { id: CANCEL_ID, title: 'Отмена' },
         ],
     }
@@ -840,6 +841,18 @@ const showBlockTaskMenu = async (blockTask: IBlockTask) => {
     // __ Перейти в карточку Заявки
     if (result.menuItem === 5 && result.value) {
         router.push({ name: 'orders.card', params: { id: blockTask.order.id } })
+        return
+    }
+
+    // __ Перейти в выполнение СЗ
+    if (result.menuItem === 6 && result.value) {
+        router.push({
+            name  : 'manufacture.cell.blocks.tasks.execute.day',
+            params: {
+                date  : blockTask.action_at.split(' ')[0],
+                change: blockTask.change
+            }
+        })
         return
     }
 
@@ -1049,7 +1062,6 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
             // __ Получаем флаг готовности к добавлению новых СЗ
             const isReady: boolean = await blockStore.readyGetBlockDay(splitDate(targetDate))
-
 
 
             if (!isReady) {
@@ -1334,6 +1346,7 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
             { id: 2, title: 'Вернуть для редактирования' },
             { id: 3, title: 'Объединить СЗ для одной Заявки' },
             { id: 4, title: 'Добавить/изменить комментарий ко всем СЗ' },
+            { id: 5, title: 'Перейти в Выполнение СЗ' },
             { id: 6, title: 'Отмена' },
         ],
     }
@@ -1475,6 +1488,17 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
         return
     }
 
+    // __ Перейти в выполнение СЗ
+    if (result.menuItem === 5) {
+        router.push({
+            name  : 'manufacture.cell.blocks.tasks.execute.day',
+            params: {
+                date  : clearDay[idx][0].action_at.split(' ')[0],
+                change: clearDay[idx][0].change
+            }
+        })
+        return
+    }
 
     throw new Error('Unknown menu item!')
 }
