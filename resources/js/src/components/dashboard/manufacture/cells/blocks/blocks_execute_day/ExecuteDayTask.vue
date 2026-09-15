@@ -661,7 +661,7 @@ const activeManufLineName = computed(() => blockLinesGroups.value[activeTabIndex
 const manufLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value])
 const blockLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value]?.subgroups ?? [])
 
-const blockLines          = computed(() => {
+const blockLines = computed(() => {
     const result: IBlockTaskLine[] = []
     blockLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
         subgroup.lines.forEach(line => {
@@ -1185,20 +1185,33 @@ const printTask = () => {
 
 // __ Смотрим на то, чтобы при переключении между СЗ не попали на вкладку (УПМ/УШМ) с нулевыми СЗ,
 // __ которые не отображаются
-const setActiveTabIndex = (index: number = 0) => {
-    const idx = index
+const setActiveTabIndex = (index: number | null = null) => {
+    let idx: number
 
-    if (blockLinesGroups.value[idx].subgroups && !blockLinesGroups.value[idx].hasData) {
+    if (index === null) {
+        idx = activeTabIndex.value
+    } else {
+        idx = index
+    }
+
+    // console.log(`activeTabIndex.value before: `, activeTabIndex.value)
+    // console.log(activeTabIndex.value, index, idx)
+    // console.log(blockLinesGroups.value)
+    // console.log(blockLinesGroups.value[idx])
+
+    if (!blockLinesGroups.value[idx]?.subgroups && !blockLinesGroups.value[idx]?.hasData) {
         for (let i = 0; i < blockLinesGroups.value.length; i++) {
             if (blockLinesGroups.value[i].hasData) {
                 activeTabIndex.value = i
-                console.log('correct')
+                // console.log('correct')
+                // console.log(`activeTabIndex.value after: `, activeTabIndex.value)
                 return
             }
         }
     }
 
     activeTabIndex.value = idx
+    // console.log(`activeTabIndex.value after: `, activeTabIndex.value)
 }
 
 
@@ -1343,7 +1356,7 @@ const selectSubgroupItems = async (subgroup: IBlockTaskLinesSubgroup) => {
 
 
 watch(() => props.blockTask, () => {
-    console.log('task changed')
+    // console.log('task changed')
     setActiveTabIndex()
 }, { immediate: true })
 
