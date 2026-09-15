@@ -28,7 +28,7 @@
                             rounded="4"
                             text-size="mini"
                             width="w-[50px]"
-                            @click="activeTabIndex = idx"
+                            @click="setActiveTabIndex(idx)"
                         />
                     </template>
                 </template>
@@ -659,7 +659,8 @@ const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
 
 const activeManufLineName = computed(() => blockLinesGroups.value[activeTabIndex.value].groupName)
 const manufLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value])
-const blockLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value].subgroups)
+const blockLinesGroup     = computed(() => blockLinesGroups.value[activeTabIndex.value]?.subgroups ?? [])
+
 const blockLines          = computed(() => {
     const result: IBlockTaskLine[] = []
     blockLinesGroups.value[activeTabIndex.value].subgroups.forEach(subgroup => {
@@ -1184,14 +1185,20 @@ const printTask = () => {
 
 // __ Смотрим на то, чтобы при переключении между СЗ не попали на вкладку (УПМ/УШМ) с нулевыми СЗ,
 // __ которые не отображаются
-const setActiveTabIndex = () => {
-    if (!blockLinesGroups.value[activeTabIndex.value].hasData) {
+const setActiveTabIndex = (index: number = 0) => {
+    const idx = index
+
+    if (blockLinesGroups.value[idx].subgroups && !blockLinesGroups.value[idx].hasData) {
         for (let i = 0; i < blockLinesGroups.value.length; i++) {
             if (blockLinesGroups.value[i].hasData) {
                 activeTabIndex.value = i
+                console.log('correct')
+                return
             }
         }
     }
+
+    activeTabIndex.value = idx
 }
 
 
@@ -1333,6 +1340,12 @@ const selectSubgroupItems = async (subgroup: IBlockTaskLinesSubgroup) => {
         subgroup.lines.forEach(l => selectedIds.value.add(l.id))
     }
 }
+
+
+watch(() => props.blockTask, () => {
+    console.log('task changed')
+    setActiveTabIndex()
+}, { immediate: true })
 
 
 // --- Жизненный цикл ---
