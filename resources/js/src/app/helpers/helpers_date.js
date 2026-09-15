@@ -52,25 +52,43 @@ export function getPeriod() {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // attract Возвращает номер недели для указанной даты
 export function getWeekNumber(date) {
-    // Копируем дату, чтобы не изменять исходную
-    const d      = new Date(date)
-    // Получаем день недели (0 - воскресенье, 6 - суббота)
-    const dayNum = d.getDay()
-    // Получаем первый день года
-    d.setMonth(0, 1)
-    const firstDayOfYear = d.getDay()
+    const target = new Date(date.valueOf())
 
-    // Расчет разницы в днях и округление вверх
-    const diffDays = Math.round((date - d) / (1000 * 60 * 60 * 24))
+    // Смещаем дату на четверг текущей недели, чтобы правильно определить год по стандарту ISO
+    const dayNumber = (date.getDay() + 6) % 7
+    target.setDate(target.getDate() - dayNumber + 3)
 
-    // Корректировка номера недели в зависимости от системы подсчета
-    // Здесь используется система, где первая неделя начинается с понедельника
-    let weekNum = Math.ceil((diffDays + firstDayOfYear - 1) / 7)
+    // Первый четверг года всегда находится на первой неделе
+    const firstThursday = new Date(target.getFullYear(), 0, 4)
+    const firstDayNumber = (firstThursday.getDay() + 6) % 7
+    firstThursday.setDate(firstThursday.getDate() - firstDayNumber + 3)
 
-    // Если первая неделя года начинается с воскресенья, то:
-    // weekNum = Math.ceil((diffDays + firstDayOfYear) / 7);
+    // Разница в миллисекундах между текущим четвергом и первым четвергом года
+    const diffMilliseconds = target - firstThursday
 
-    return weekNum
+    // Переводим разницу в недели и прибавляем 1
+    return 1 + Math.round(diffMilliseconds / (7 * 24 * 60 * 60 * 1000))
+
+
+    // // Копируем дату, чтобы не изменять исходную
+    // const d      = new Date(date)
+    // // Получаем день недели (0 - воскресенье, 6 - суббота)
+    // const dayNum = d.getDay()
+    // // Получаем первый день года
+    // d.setMonth(0, 1)
+    // const firstDayOfYear = d.getDay()
+    //
+    // // Расчет разницы в днях и округление вверх
+    // const diffDays = Math.round((date - d) / (1000 * 60 * 60 * 24))
+    //
+    // // Корректировка номера недели в зависимости от системы подсчета
+    // // Здесь используется система, где первая неделя начинается с понедельника
+    // let weekNum = Math.ceil((diffDays + firstDayOfYear - 1) / 7)
+    //
+    // // Если первая неделя года начинается с воскресенья, то:
+    // // weekNum = Math.ceil((diffDays + firstDayOfYear) / 7);
+    //
+    // return weekNum
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

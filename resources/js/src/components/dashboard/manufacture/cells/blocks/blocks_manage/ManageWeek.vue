@@ -3,8 +3,8 @@
 
         <!-- __ Номер недели -->
         <div
-            class="font-bold text-slate-700 [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)] m-1 border-[1px] rounded border-slate-600 bg-slate-200 min-w-[50px] min-h-[50px] flex items-center justify-center">
-            {{ weekNumber }}
+            class="[writing-mode:vertical-lr] rotate-180 font-bold text-slate-700 [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)] m-1 border-[1px] rounded border-slate-600 bg-slate-200 min-w-[50px] min-h-[50px] flex items-center justify-center">
+            {{ `${weekNumber} нед.` }}
         </div>
 
         <!-- __ Дни отгрузки -->
