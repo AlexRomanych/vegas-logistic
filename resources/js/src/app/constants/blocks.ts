@@ -45,6 +45,11 @@ export const CHANGE_2 = '2'
 export const OPTIMIZE_BY_TUNING_TIME = 'tuning_time'
 export const OPTIMIZE_BY_PRIORITY    = 'priority'
 
+// __ Оптимизация по переходящим рулонам
+// __ Не выполненные переходящие рулоны всегда сверху
+// __ К ним подтягиваются все остальные
+export const OPTIMIZE_BY_ROLLING = 'rolling'
+
 // __ Объект Коллекции блоков
 export const BLOCK_COLLECTION_DRAFT: IBlockCollection = {
     id          : 0,
@@ -243,9 +248,9 @@ export const TUNING_TIME_LINES_SUBGROUP_DRAFT: IBlockTaskLinesSubgroup = {
     },
     priority          : 0,
     isTuning          : true,
-    totals: {
-        amount: { total: 0, done: 0 },
-        square: { total: 0 },
+    totals            : {
+        amount    : { total: 0, done: 0 },
+        square    : { total: 0 },
         labor_cost: { total: 0 },
     }
 } as const satisfies IBlockTaskLinesSubgroup

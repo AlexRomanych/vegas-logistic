@@ -104,6 +104,21 @@
                 <!--    @click="console.log('layers')"-->
                 <!--/>-->
 
+                <!-- __ Оптимизация по Приоритету + Невыполненные -->
+                <AppLabelTS
+                    :height="MENU_HEIGHT"
+                    :type="optimizationType === OPTIMIZE_BY_ROLLING ? 'warning' : 'dark'"
+                    align="center"
+                    class="menu-button"
+                    rounded="4"
+                    text="🔄"
+                    text-size="huge"
+                    title="Оптимизация по Не выполненным рулонам и Приоритету"
+                    width="w-[50px]"
+                    @click="optimizationType = OPTIMIZE_BY_ROLLING"
+                />
+
+
                 <!-- __ Оптимизация по Приоритету -->
                 <AppLabelTS
                     :height="MENU_HEIGHT"
@@ -533,7 +548,7 @@ import {
     BLOCK_TASK_DRAFT,
     BLOCK_UNION_TASK_NAME, LINE_0, LINE_1, LINE_1_NAME, LINE_2, LINE_2_NAME,
     MAX_BLOCK_COLLECTIONS_OPTIMIZED,
-    OPTIMIZE_BY_PRIORITY,
+    OPTIMIZE_BY_PRIORITY, OPTIMIZE_BY_ROLLING,
     OPTIMIZE_BY_TUNING_TIME
 } from '@/app/constants/blocks.ts'
 
@@ -631,8 +646,12 @@ const taskCard = ref<IBlockTask>(BLOCK_TASK_DRAFT)
 // __ Агрегатор
 // const statistics = computed(() => getExecuteTaskStatistics(props.blockTask))
 
+// __ Видимость названий подгрупп
+const showTuningTimes = ref(true)
+
 // __ Тип оптимизации + Оптимизированный массив
-const optimizationType = ref<IOptimizeType>(OPTIMIZE_BY_PRIORITY)
+const optimizationType = ref<IOptimizeType>(OPTIMIZE_BY_ROLLING)
+// const optimizationType = ref<IOptimizeType>(OPTIMIZE_BY_PRIORITY)
 const optimizedData    = ref<number[]>([])
 
 // __ Табы Группировки СЗ по АШМ/УШМ
@@ -653,7 +672,8 @@ const blockLinesGroups = computed<IBlockTaskLinesGroupData[]>(() => {
         props.blockTask.block_lines, title,
         props.tuningTimes,
         optimizationType.value,
-        optimizedData.value
+        optimizedData.value,
+        showTuningTimes.value,
     )
 })
 
@@ -674,6 +694,8 @@ console.log('blockLinesGroups: ', blockLinesGroups.value)
 
 // __ Создаем синтетическую подгруппу для показа общей информации по групее
 const commonSubGroup = computed<IBlockTaskLinesSubgroup>(() => {
+    console.log('blockLinesGroups.value[activeTabIndex.value]: ', blockLinesGroups.value[activeTabIndex.value])
+
     return {
         subgroupName      : 'Всего',
         subgroupId        : 0,
@@ -1286,8 +1308,7 @@ async function changeManufLineByMenu(targetManufLine: IBlockTaskLinesGroupNames)
 const collapsedSubGroupsState = ref(true)
 // const collapsedUnderGroupsState = ref(true)
 
-// __ Видимость названий подгрупп
-const showTuningTimes = ref(true)
+
 
 // --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---
 // __ Храним пары: [ИмяГруппы]: boolean (true - свернуто, false - развернуто)

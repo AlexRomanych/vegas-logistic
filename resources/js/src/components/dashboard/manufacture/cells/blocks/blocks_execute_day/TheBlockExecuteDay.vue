@@ -80,10 +80,24 @@
                     text-size="mini"
                     width="w-[200px]"
                 />
+
+                <!-- __ Ассемблер -->
+                <AppLabelMultiLineTS
+                    :text="['🧮АССЕМБЛЕР:', assembler.toString()]"
+                    :width="MENU_LABEL_WIDTH"
+                    align="center"
+                    class="start-group cursor-pointer"
+                    rounded="4"
+                    text-size="mini"
+                    :type="assembler ? 'success' : 'danger'"
+                />
+
+
             </template>
 
             <!-- __ Комментарий к дню -->
             <AppLabelTS
+                v-if="blockDay?.comment"
                 :text="blockDay?.comment ?? ''"
                 align="left"
                 class="start-group"
@@ -226,6 +240,7 @@ const blockDay                = ref<IBlockDay | null>(null)
 const tasksBeforeCurrentDay   = ref<IBlockTask[]>([])
 const allBlockTasksLinesUnion = ref<IBlockTask>(BLOCK_TASK_DRAFT) // __ Переменная для объединения всех BlockTaskLines
 const tuningTimes             = ref<IBlockCollectionTime[]>([])
+const assembler               = ref(blockDay.value?.assembler ?? 0)
 
 const statistics = computed(() => getExecuteTaskStatistics(allBlockTasksLinesUnion.value))
 

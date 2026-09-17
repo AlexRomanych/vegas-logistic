@@ -22,7 +22,7 @@
 
         <!-- __ Время -->
         <AppLabelTS
-            :text="formatTimeWithLeadingZeros(subgroup.time.total, 'min')"
+            :text="formatTimeWithLeadingZeros(subgroup.time.total, 'hour')"
             :type="subgroup.subgroupType"
             align="center"
             rounded="4"

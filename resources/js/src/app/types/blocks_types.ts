@@ -17,7 +17,7 @@ import {
     BLOCK_MANUF_LINES,
     CHANGE_1,
     CHANGE_2,
-    OPTIMIZE_BY_TUNING_TIME, OPTIMIZE_BY_PRIORITY
+    OPTIMIZE_BY_TUNING_TIME, OPTIMIZE_BY_PRIORITY, OPTIMIZE_BY_ROLLING
 } from '@/app/constants/blocks.ts'
 import type { IPlanMatrixDayItem } from '@/types/plan_types.ts'
 import type { IColorTypes } from '@/app/constants/colorsClasses.ts'
@@ -141,6 +141,8 @@ export type IBlockDay = {
     cell_events: ICellEvent[]
 
     ready: boolean  // __ Готовность к добавлению новых СЗ
+
+    assembler: number
 
     collapsed?: boolean
     personal_collapsed?: boolean
@@ -562,4 +564,7 @@ export interface IBlockCollectionTime {
 // --- -------------------- Оптимизация выполнения -----------------------
 // --- -------------------------------------------------------------------
 
-export type IOptimizeType = typeof OPTIMIZE_BY_TUNING_TIME | typeof OPTIMIZE_BY_PRIORITY
+export type IOptimizeType =
+    typeof OPTIMIZE_BY_TUNING_TIME |
+    typeof OPTIMIZE_BY_PRIORITY |
+    typeof OPTIMIZE_BY_ROLLING

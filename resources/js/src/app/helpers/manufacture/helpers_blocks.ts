@@ -25,7 +25,7 @@ import {
     BLOCK_MANUF_LINES,
     BLOCK_TASK_DRAFT,
     BLOCK_TASK_STATUSES,
-    CHANGES, CHANGE_1, CHANGE_2, TUNING_TIME_LINES_SUBGROUP_DRAFT, OPTIMIZE_BY_PRIORITY, OPTIMIZE_BY_TUNING_TIME,
+    CHANGES, CHANGE_1, CHANGE_2, TUNING_TIME_LINES_SUBGROUP_DRAFT, OPTIMIZE_BY_PRIORITY, OPTIMIZE_BY_TUNING_TIME, OPTIMIZE_BY_ROLLING,
     // LINE_0_NAME, LINE_1_NAME, LINE_2_NAME
 } from '@/app/constants/blocks.ts'
 // import { round } from '@/app/helpers/helpers_lib.ts'
@@ -264,8 +264,8 @@ function getTaskLinesDiff(currentLines: IBlockTaskLine[], originalLines: IBlockT
 
             if (isAmountChanged || isPosChanged) {
                 diffs.push({
-                    lineId  : line.id,
-                    type    : 'UPDATED',
+                    lineId: line.id,
+                    type  : 'UPDATED',
                     // type     : existsSomewhere ? 'UPDATED' : 'ADDED',
                     amount  : isAmountChanged ? { old: originalLine.amount, new: line.amount } : null,
                     position: isPosChanged ? { old: originalLine.position, new: line.position } : null,
@@ -459,7 +459,7 @@ export function getBlockTaskAmountAndTime(item: IBlockTask | IBlockTaskLine[]) {
 export function getBlockTasksGroupedByOrder(blockTasks: IBlockTask[], applyStatus: boolean = true) {
     // const clearDay = clearRenderMatrixDay(blockTasks) // __ Возвращаем новый массив без пустых элементов
     // const grouped  = clearDay.reduce((acc, item) => {
-    const grouped  = blockTasks.reduce((acc, item) => {
+    const grouped = blockTasks.reduce((acc, item) => {
 
         // __ Создаем уникальный составной ключ
         let key: string
@@ -668,7 +668,7 @@ export const orderBlockTasksByStatus = (day: IDay): IDay => {
 // --- ------------------------------------------------------------------------------------
 // __ Пересчитываем позиции СЗ в массиве СЗ на определенный день
 export function repositionBlockTaskInDay(tasks: IBlockTask[], action_at: string) {
-    const parsedDate = action_at.split(' ')[0];
+    const parsedDate = action_at.split(' ')[0]
     tasks
         // __ Отбираем только объекты на нужную дату
         .filter(item => item.action_at.split(' ')[0] === parsedDate)
@@ -1272,7 +1272,8 @@ export function groupTaskLinesForExecute(
     orderTitle: string | null           = null,
     tuningTimes: IBlockCollectionTime[] = [],
     optimizationType: IOptimizeType     = OPTIMIZE_BY_PRIORITY,
-    optimizedData: number[]             = []        // Массив оптимизации, полученный с сервера
+    optimizedData: number[]             = [],       // __ Массив оптимизации, полученный с сервера
+    includesTuningTimeToTotal: boolean  = false,    // __ Включать или нет время оптимизации в Итого
 ): IBlockTaskLinesGroupData[] {
 
     // const X_LAT = 'x'
@@ -1348,6 +1349,39 @@ export function groupTaskLinesForExecute(
                 return a.priority - b.priority
             }) // __ по приоритету
 
+        } else if (optimizationType === OPTIMIZE_BY_ROLLING) {
+
+            groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
+                const hasFalseA = a.lines.some(line => line.false_at)
+                const hasFalseB = b.lines.some(line => line.false_at)
+
+                // console.log(a.subgroupName, b.subgroupName)
+                // console.log(hasFalseA, hasFalseB)
+
+
+                if (hasFalseA && hasFalseB) {
+                    return a.priority - b.priority
+                }
+
+                if (hasFalseA && !hasFalseB) {
+                    return -1
+                }
+
+                if (hasFalseB && !hasFalseA) {
+                    return 1
+                }
+
+                return a.priority - b.priority
+
+                // __ XOR ((hasFalseA && !hasFalseB) ||  (hasFalseB && !hasFalseA))
+                if (hasFalseA !== hasFalseB) {
+                    return Number(hasFalseB) - Number(hasFalseA)
+                }
+
+                return a.priority - b.priority
+            }) // __ по приоритету
+
+
         } else if (optimizationType === OPTIMIZE_BY_TUNING_TIME) {
             // console.log(optimizedData)
 
@@ -1387,7 +1421,7 @@ export function groupTaskLinesForExecute(
                             if (findCollectionTo.tuning_time !== 0) {
                                 tuningGroup.subgroupName =
                                     `${groupedBlockCollectionArray[i].subgroupName} --> ${groupedBlockCollectionArray[i + 1].subgroupName}`
-                                tuningGroup.time.total   = findCollectionTo.tuning_time
+                                tuningGroup.time.total   = findCollectionTo.tuning_time! / 60
                             }
 
                         } else {
@@ -1436,19 +1470,19 @@ export function groupTaskLinesForExecute(
             hasData        : true,
             collapsed      : true,
             square         : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.square.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.square.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.square.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.square.incomplete, 0),
             },
             amount         : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.amount.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.amount.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.amount.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.amount.incomplete, 0),
             },
             time           : {
-                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.total, 0),
-                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.done, 0),
-                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc : acc + subgroup.time.incomplete, 0),
+                total     : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.time.total, 0),
+                done      : groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.time.done, 0),
+                incomplete: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning && !includesTuningTimeToTotal ? acc : acc + subgroup.time.incomplete, 0),
             },
             tuningTimeTotal: groupedBlockCollectionArray.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
             // tuningTimeTotal: groupedBlockCollectionArrayTimes.reduce((acc, subgroup) => subgroup.isTuning ? acc + subgroup.time.total : acc, 0),
