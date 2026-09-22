@@ -457,7 +457,7 @@ class AssemblyDayController extends Controller
                 $assemblyDay->finish_at = now();
 
                 // __ Добавляем длительность в секундах
-                $startPoint         = is_null($assemblyDay->resume_at) ? $assemblyDay->start_at : $assemblyDay->resume_at;
+                $startPoint            = is_null($assemblyDay->resume_at) ? $assemblyDay->start_at : $assemblyDay->resume_at;
                 $assemblyDay->duration += $startPoint?->diffInSeconds($assemblyDay->finish_at) ?? 0;
                 $assemblyDay->save();
 
@@ -603,7 +603,7 @@ class AssemblyDayController extends Controller
                         $positionLine = 1;
                         foreach ($falseTask['false_lines'] as $line) {
                             $line->assembly_task_id = $newTask->id;
-                            $line->position      = $positionLine++;
+                            $line->position         = $positionLine++;
                             $line->save();
                         }
 
@@ -644,7 +644,6 @@ class AssemblyDayController extends Controller
 
                     // __ Используем unique(), чтобы не пересчитывать один и тот же день дважды (если перенесли в 2-ю смену того же дня)
                     foreach (array_unique($datesToReorder) as $targetDate) {
-
                         // __ Выбираем все СЗ на дату: сперва 1-я смена, затем 2-я; внутри смен — по position
                         $tasks = AssemblyTask::query()
                             ->whereDate('action_at', '>=', Carbon::parse($targetDate)->startOfDay())
@@ -704,7 +703,7 @@ class AssemblyDayController extends Controller
                 $history = [];
             }
 
-            $history[]         = [
+            $history[]            = [
                 'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
                 'by'     => auth()->id(),
                 'action' => 'Set ready for adding new Assembly Tasks',
@@ -739,7 +738,7 @@ class AssemblyDayController extends Controller
                 $history = [];
             }
 
-            $history[]         = [
+            $history[]            = [
                 'at'     => Carbon::now()->format(RETURN_DATE_TIME_FORMAT),
                 'by'     => auth()->id(),
                 'action' => 'Set unready for adding new Assembly Tasks',
@@ -791,7 +790,6 @@ class AssemblyDayController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
 }

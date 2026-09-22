@@ -84,14 +84,14 @@
                 <!-- __ Ассемблер -->
                 <AppLabelMultiLineTS
                     :text="['🧮АССЕМБЛЕР:', assembler.toString()]"
+                    :type="assembler ? 'success' : 'danger'"
                     :width="MENU_LABEL_WIDTH"
                     align="center"
                     class="start-group cursor-pointer"
                     rounded="4"
                     text-size="mini"
-                    :type="assembler ? 'success' : 'danger'"
+                    @click="setAssembler"
                 />
-
 
             </template>
 
@@ -179,6 +179,14 @@
         :type="modalInfoType"
         ok-word="Понятно"
     />
+
+    <!-- __ Ввод Ассемблера -->
+    <AppModalAsyncNumberTS
+        ref="appModalAsyncNumberTS"
+        :val="assembler"
+        text="Показания Ассемблера:"
+    />
+
 </template>
 
 <script lang="ts" setup>
@@ -209,6 +217,7 @@ import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayInfo.vue'
 import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/blocks_execute_day/ExecuteDayTask.vue'
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
+import AppModalAsyncNumberTS from '@/components/ui/modals/AppModalAsyncNumberTS.vue'
 
 interface ITab {
     show: boolean
@@ -624,6 +633,13 @@ const handleStartAction = async () => {
             }
         }
 
+        // console.log('blockDay.value!.assembler: ', blockDay.value!.assembler)
+
+        if (blockDay.value!.assembler === 0) {
+            await showError(['Не заполнено', 'показание Ассемблера!'])
+            return
+        }
+
         const finishedDay = await blockStore.finishBlockDay(blockDay.value!.id)
         console.log('Finish: returnedData: ', finishedDay)
 
@@ -877,6 +893,28 @@ const setTaskInActive = (tab: ITab) => {
     prepareData()
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                Ассемблер                      !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const appModalAsyncNumberTS = ref<InstanceType<typeof AppModalAsyncNumberTS> | null>(null)
+
+// __ Устанавливаем ассемблер
+const setAssembler = async () => {
+    const answer = await appModalAsyncNumberTS.value!.show()
+    if (answer) {
+        const counter = appModalAsyncNumberTS.value!.inputNumber
+        const result  = await blockStore.setBlockDayAssembler(blockDay.value!.id, counter)
+
+        if (checkCRUD(result)) {
+            assembler.value           = appModalAsyncNumberTS.value!.inputNumber
+            blockDay.value!.assembler = appModalAsyncNumberTS.value!.inputNumber
+            console.log('assembler.value: ', assembler.value)
+        } else {
+            await showError()
+        }
+    }
+}
+
 
 const startTimer = () => {
     // __ Запускаем счетчик
@@ -926,6 +964,7 @@ onMounted(async () => {
 
             tasksBeforeCurrentDay.value = tasksBefore
             blockDay.value              = dayData[0]
+            assembler.value             = blockDay.value?.assembler || 0
 
             prepareData()   // __ Собираем все вместе
             startTimer()    // __ Запускаем счетчик

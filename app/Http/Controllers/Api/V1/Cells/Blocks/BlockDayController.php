@@ -171,6 +171,35 @@ class BlockDayController extends Controller
 
 
     /**
+     * ___ Устанавливает счетчик Ассемблера
+     * @param Request $request
+     * @return string
+     */
+    public function setBlockDayAssembler(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'        => 'required|integer|exists:block_days,id',
+                'assembler' => 'present|integer',
+            ]);
+
+            $blockDay = BlockDay::query()->find($validated['id']);
+            if (!$blockDay) {
+                throw new Exception('Missing assembly day with id: ' . $validated['id'] . '.');
+            }
+
+            $blockDay->assembler = $validated['assembler'];
+            $blockDay->save();
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+    /**
      * ___ Возвращает производственные дни по массиву дат
      * @param Request $request
      * @return AnonymousResourceCollection|string

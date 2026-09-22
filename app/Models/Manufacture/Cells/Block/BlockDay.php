@@ -38,6 +38,7 @@ class BlockDay extends Model
         'finish_at' => 'datetime',
         'duration'  => 'integer',
         'history'   => 'array',
+        'assembler' => 'integer',
 
     ];
 

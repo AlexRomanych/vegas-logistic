@@ -32,6 +32,7 @@ class BlockDayResource extends JsonResource
             'description'   => $this->description,
             'comment'       => $this->comment,
             'ready'         => $this->ready,
+            'assembler'     => $this->assembler,
             'responsible'   => new BlockDayWorkerResource($this->whenLoaded('responsible')),
 
             // __ Отправляем только активных рабочих

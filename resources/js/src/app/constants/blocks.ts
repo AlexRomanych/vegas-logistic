@@ -272,5 +272,6 @@ export const BLOCK_DAY_DRAFT: IBlockDay = {
     responsible  : null,
     workers      : [],
     ready        : false,  // __ Готовность к добавлению новых СЗ
-    cell_events  : []
+    cell_events  : [],
+    assembler    : 0,
 }

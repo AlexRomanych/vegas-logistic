@@ -404,6 +404,7 @@ Route::prefix('blocks')
         Route::get('/day/{date}/{change}', [BlockDayController::class, 'getBlockDayByDateAndChange']);
         Route::get('/day/dates', [BlockDayController::class, 'getBlockDaysByDates']);
         Route::post('/day/comment', [BlockDayController::class, 'setBlockDayComment']);
+        Route::post('/day/assembler', [BlockDayController::class, 'setBlockDayAssembler']);
         Route::post('/day/worker/add', [BlockDayController::class, 'addWorkerToBlockDay']);
         Route::post('/day/workers/add', [BlockDayController::class, 'addWorkersToBlockDay']);
         Route::post('/day/worker/remove', [BlockDayController::class, 'removeWorkerFromBlockDay']);

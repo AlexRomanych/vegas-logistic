@@ -74,7 +74,8 @@ const URL_BLOCK_DAY                    = '/blocks/day'                         /
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
 const URL_BLOCK_DAY_DATES              = '/blocks/day/dates'                   // URL для получения рабочих дней по статусу
 const URL_BLOCK_DAY_COMMENT            = '/blocks/day/comment'                 // URL для сохранения комментария к дню
-const URL_BLOCK_DAY_WORKERS_ACTIVE     = '/workers/active'                      // URL для получения активных рабочих
+const URL_BLOCK_DAY_ASSEMBLER          = '/blocks/day/assembler'               // URL для сохранения показаний Ассемблера к дню
+const URL_BLOCK_DAY_WORKERS_ACTIVE     = '/workers/active'                     // URL для получения активных рабочих
 const URL_BLOCK_DAY_WORKER_ADD         = '/blocks/day/worker/add'              // URL для добавления исполнителя к дню
 const URL_BLOCK_DAY_WORKER_GROUP_ADD   = '/blocks/day/workers/add'             // URL для добавления группы исполнителей к дню
 const URL_BLOCK_DAY_WORKER_REMOVE      = '/blocks/day/worker/remove'           // URL для удаления исполнителя к дню
@@ -707,6 +708,14 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Сохранение Показателя Ассемблера к производственному дню
+    const setBlockDayAssembler = async (id: number, assembler: number | null = null) => {
+        const response = await jwtPost(URL_BLOCK_DAY_ASSEMBLER, { id, assembler })
+        const result   = await response
+        if (DEBUG) console.log('BlockStore: setBlockDayAssembler: ', result)
+        return result.data
+    }
+
     // __ Получение производственных дней по массиву дат
     // __ Тут по хорошему надо прикрутить еще и смену, но оставим на потом
     const getBlockDaysByDates = async (dates: string[]) => {
@@ -1020,6 +1029,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         getBlockDayByPeriod,
         getBlockDayByDateAndChange,
         setBlockDayComment,
+        setBlockDayAssembler,
         modifyChange,
         readyGetBlockDay,
         getBlockDaysByDates,
