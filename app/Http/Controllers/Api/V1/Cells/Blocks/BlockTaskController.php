@@ -304,11 +304,18 @@ class BlockTaskController extends Controller
                         usort($lineDiffs, function ($a, $b) {
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
-                                'ADDED'   => 1,
-                                'UPDATED' => 2,
+                                'UPDATED' => 1,
+                                'ADDED'   => 2,
                                 'DELETED' => 3,
                                 default   => 4,
                             };
+
+                            //$priorities = fn($type) => match ($type) {
+                            //    'ADDED'   => 1,
+                            //    'UPDATED' => 2,
+                            //    'DELETED' => 3,
+                            //    default   => 4,
+                            //};
 
                             return $priorities($a['type']) <=> $priorities($b['type']);
                         });
