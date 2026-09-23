@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Manufacture\Cells\Blocks\Days\BlockDayResource;
 use App\Models\Manufacture\Cells\Block\BlockDay;
 use App\Models\Manufacture\Cells\Block\BlockTask;
+use App\Models\Manufacture\Cells\Block\BlockTaskLine;
 use App\Models\Manufacture\Cells\Block\BlockTaskStatus;
 use App\Services\DefaultsService;
 use App\Services\Manufacture\BlocksService;
@@ -196,7 +197,6 @@ class BlockDayController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
 
 
     /**
@@ -535,6 +535,15 @@ class BlockDayController extends Controller
 
                     // __ Если есть невыполненные - переносим на следующий день и ставим первыми
                     if (count($falseBlockLines) !== 0) {
+
+                        // __ Ставим маяк того, что строки перешли с предыдущей смены со статусом 'Не Выполнено'
+                        $ids = collect($falseBlockLines)->pluck('id')->toArray();
+                        BlockTaskLine::query()
+                            ->whereIn('id', $ids)
+                            ->update([
+                                'false_rolling' => true,
+                            ]);
+
                         $falseTasks[] = [
                             'task'        => $task,
                             'false_lines' => $falseBlockLines,
@@ -673,7 +682,6 @@ class BlockDayController extends Controller
 
                     // __ Используем unique(), чтобы не пересчитывать один и тот же день дважды (если перенесли в 2-ю смену того же дня)
                     foreach (array_unique($datesToReorder) as $targetDate) {
-
                         // __ Выбираем все СЗ на дату: сперва 1-я смена, затем 2-я; внутри смен — по position
                         $tasks = BlockTask::query()
                             ->whereDate('action_at', '>=', Carbon::parse($targetDate)->startOfDay())

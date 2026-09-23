@@ -33,9 +33,10 @@ class BlockTaskLineResource extends JsonResource
             'productivity'   => $this->square,
             'order_line_ids' => $this->order_line_ids,
             'description'    => $this->description,
+            'f_r'            => $this->false_rolling,   // __ false_rolling
 
-            'order_lines'    => BlockTaskOrderLineResource::collection($this->whenLoaded('orderLines')),
-            'block'          => $this->whenLoaded('block', fn() => new BlockTaskLineBlockResource($this->block)),
+            'order_lines' => BlockTaskOrderLineResource::collection($this->whenLoaded('orderLines')),
+            'block'       => $this->whenLoaded('block', fn() => new BlockTaskLineBlockResource($this->block)),
 
             // 'cutting_task_id' => $this->cutting_task_id,
             // 'active'         => $this->active,

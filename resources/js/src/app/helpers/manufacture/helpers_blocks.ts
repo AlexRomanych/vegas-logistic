@@ -1330,7 +1330,7 @@ export function groupTaskLinesForExecute(
         // !!!!!!!!! --- Тут Логика Сортировки с добавлением Времени Переналадки
         // !!!!!!!!! --- Сначала сортировка, потом добавление Переналадки
 
-        // __ Сортируем по Коллекцию блоков:
+        // __ Сортируем по Коллекции блоков:
         if (optimizationType === OPTIMIZE_BY_PRIORITY) {
             // console.log('groupedBlockCollectionArray: ', groupedBlockCollectionArray)
 
@@ -1349,36 +1349,20 @@ export function groupTaskLinesForExecute(
                 return a.priority - b.priority
             }) // __ по приоритету
 
+        // __ Сортируем по Статусам Не Выполено в Переходящих Строках
         } else if (optimizationType === OPTIMIZE_BY_ROLLING) {
 
             groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
-                const hasFalseA = a.lines.some(line => line.false_at)
-                const hasFalseB = b.lines.some(line => line.false_at)
-
-                // console.log(a.subgroupName, b.subgroupName)
-                // console.log(hasFalseA, hasFalseB)
-
-
-                if (hasFalseA && hasFalseB) {
-                    return a.priority - b.priority
-                }
-
-                if (hasFalseA && !hasFalseB) {
-                    return -1
-                }
-
-                if (hasFalseB && !hasFalseA) {
-                    return 1
-                }
-
-                return a.priority - b.priority
+                const hasFalseRollingA = a.lines.some(line => line.f_r)
+                const hasFalseRollingB = b.lines.some(line => line.f_r)
 
                 // __ XOR ((hasFalseA && !hasFalseB) ||  (hasFalseB && !hasFalseA))
-                if (hasFalseA !== hasFalseB) {
-                    return Number(hasFalseB) - Number(hasFalseA)
+                if (hasFalseRollingA !== hasFalseRollingB) {
+                    return Number(hasFalseRollingB) - Number(hasFalseRollingA)
                 }
 
                 return a.priority - b.priority
+
             }) // __ по приоритету
 
 

@@ -241,6 +241,7 @@ export interface IBlockTaskLine {
     completed?: boolean                             // __ Флаг для SFC выполнения СЗ
     groupAttr?: string                              // __ Атрибут для группировки строк
 
+    f_r: boolean                                    // __ false_rolling - Маяк, что строка переходящая со статусом Не Выполнено
 
     block: IBlockTaskLineBlock
     order_line_ids: IBlockTaskLineExpense[]
