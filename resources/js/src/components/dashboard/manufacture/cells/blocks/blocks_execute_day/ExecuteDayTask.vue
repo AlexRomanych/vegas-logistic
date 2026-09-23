@@ -518,6 +518,8 @@
     <ManageEventsAsync
         ref="manageEventsAsync"
         :cell="CELL_EVENT_BLOCK"
+        :day-action-at="dayActionAt"
+        :day-change="dayChange"
         :day-id="dayId"
     />
 
@@ -584,7 +586,9 @@ import ExecuteDayTaskSubGroupCommon from '@/components/dashboard/manufacture/cel
 
 interface IProps {
     blockTask: IBlockTask
-    dayId: number   // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
+    dayId: number               // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
+    dayChange?: '1' | '2'       // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
+    dayActionAt?: string        // __ Прокидываем для Журнала Событий, чтобы был виден в каждом СЗ
     isRunning: boolean | null
     tuningTimes?: IBlockCollectionTime[]
     startCollectionId?: number
@@ -593,6 +597,8 @@ interface IProps {
 const props = withDefaults(defineProps<IProps>(), {
     tuningTimes      : () => [],
     startCollectionId: 0,
+    dayChange        : '1',
+    dayActionAt      : '',
 })
 
 const emits = defineEmits<{
@@ -1307,7 +1313,6 @@ async function changeManufLineByMenu(targetManufLine: IBlockTaskLinesGroupNames)
 
 const collapsedSubGroupsState = ref(true)
 // const collapsedUnderGroupsState = ref(true)
-
 
 
 // --- Логика реактивного сворачивания групп (Тканей и Нарезки) ---

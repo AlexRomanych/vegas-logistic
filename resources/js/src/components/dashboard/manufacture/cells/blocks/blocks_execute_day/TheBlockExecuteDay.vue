@@ -158,7 +158,9 @@
                 <div class="">
                     <ExecuteDayTask
                         :block-task="tabs.find(tab => tab.position === activeTabPosition)!.task!"
-                        :day-id="blockDay ? blockDay.id : 0 "
+                        :day-id="blockDay ? blockDay.id : 0"
+                        :day-change="blockDay?.change === CHANGE_1 ? '1' : '2'"
+                        :day-action-at="blockDay?.action_at"
                         :is-running="isBlockDayStarted  && !isBlockDayReadyForNewTasks"
                         :tuning-times="tuningTimes"
                         @set-finish-status="setFinishStatus"

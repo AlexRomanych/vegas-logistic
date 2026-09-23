@@ -22,7 +22,7 @@
 
                     <div class="w-full pl-8 border-b border-slate-800/50 pb-4">
                         <h2 class="text-left text-white text-lg font-bold uppercase">
-                            Изменение/добавление События
+                            Изменение / добавление События
                         </h2>
                     </div>
 
@@ -50,7 +50,7 @@
                         <!-- __ Длительность -->
                         <AppLabelTS
                             :height="LABEL_HEIGHT"
-                            :width="DATE_LABEL_WIDTH"
+                            :width="DURATION_WIDTH"
                             align="center"
                             rounded="4"
                             text="ДЛИТЕЛЬНОСТЬ"
@@ -90,7 +90,9 @@
                                     id="start"
                                     v-model="cellEvent.start_at"
                                     :color="getColor(cellEvent)"
-                                    :only-time="true"
+                                    :max-date="minMaxDates.maxDate"
+                                    :min-date="minMaxDates.minDate"
+                                    :only-time="isFirstChange"
                                     :time-enable="true"
                                     :width="DATE_LABEL_WIDTH_PICKER"
                                     @update:modelValue="checkForSave(cellEvent)"
@@ -103,7 +105,9 @@
                                     id="start"
                                     v-model="cellEvent.finish_at"
                                     :color="getColor(cellEvent)"
-                                    :only-time="true"
+                                    :max-date="minMaxDates.maxDate"
+                                    :min-date="minMaxDates.minDate"
+                                    :only-time="isFirstChange"
                                     :time-enable="true"
                                     :width="DATE_LABEL_WIDTH_PICKER"
                                     @getInputDate="checkForSave(cellEvent)"
@@ -115,7 +119,7 @@
                                 <AppLabelTS
                                     :color="getColor(cellEvent)"
                                     :text="getDuration(cellEvent)"
-                                    :width="DATE_LABEL_WIDTH"
+                                    :width="DURATION_WIDTH"
                                     align="center"
                                     height="h-[35px]"
                                     rounded="4"
@@ -212,6 +216,8 @@ import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultilin
 interface IProps {
     cell: ICellEventsCells,
     dayId: number
+    dayChange?: '1' | '2'
+    dayActionAt?: string
     type?: IColorTypes,
     width?: string,
     height?: string,
@@ -219,16 +225,19 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    type  : 'primary',
-    width : 'min-w-[1000px] max-w-[1000px]',
-    height: 'min-h-[800px]',
-    label : 'Комментарий',
+    type       : 'primary',
+    width      : 'min-w-[1000px] max-w-[1000px]',
+    height     : 'min-h-[800px]',
+    label      : 'Комментарий',
+    dayChange  : '1',
+    dayActionAt: ''
 })
 
 const cellEventsStore = useCellEventsStore()
 
-const DATE_LABEL_WIDTH        = 'w-[120px]'
-const DATE_LABEL_WIDTH_PICKER = 'w-[122px]'
+const DATE_LABEL_WIDTH        = 'w-[150px]'
+const DATE_LABEL_WIDTH_PICKER = 'w-[152px]'
+const DURATION_WIDTH          = 'w-[110px]'
 const SERVICE_LABEL_WIDTH     = 'w-[40px]'
 const EVENT_LABEL_WIDTH       = 'w-[450px]'
 const LABEL_HEIGHT            = 'h-[40px]'
@@ -238,6 +247,9 @@ const showModal = ref(false)
 
 const cellEvents                 = ref<ICellEvent[]>([])
 let cellEventsCopy: ICellEvent[] = []
+
+// __ Определяем смену текущую
+const isFirstChange = computed(() => props.dayChange === '1')
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---                Ошибки                         !!!
@@ -268,6 +280,50 @@ async function showError(error: string | string[] | null = null) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!! ---               Основная логика                 !!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+const minMaxDates = computed(() => {
+
+    const currentDate = new Date()
+
+    // __ Копируем дату, чтобы избежать мутаций оригинала
+    const minDate = new Date(currentDate)
+    const maxDate = new Date(currentDate)
+
+    // __ Переводим текущее время в минуты для удобного сравнения
+    const hours        = currentDate.getHours()
+    const minutes      = currentDate.getMinutes()
+    const totalMinutes = hours * 60 + minutes
+
+    const MORNING_LIMIT = 8 * 60 + 30   // 08:30 (510 минут)
+    const EVENING_LIMIT = 20 * 60 + 30  // 20:30 (1230 минут)
+
+    // __ Условие 1: Время в пределах 20:30 - 23:59
+    if (totalMinutes >= EVENING_LIMIT) {
+        minDate.setHours(20, 30, 0, 0) // Сегодня 20:30
+
+        maxDate.setDate(maxDate.getDate() + 1) // Завтра 08:30
+        maxDate.setHours(8, 30, 0, 0)
+    }
+    // __ Условие 2: Время в пределах 00:00 - 08:30
+    else if (totalMinutes <= MORNING_LIMIT) {
+        minDate.setDate(minDate.getDate() - 1) // Вчера 20:30
+        minDate.setHours(20, 30, 0, 0)
+
+        maxDate.setHours(8, 30, 0, 0) // Сегодня 08:30
+    }
+    // __ Условие 3: Время в пределах 08:31 - 20:29
+    else {
+        minDate.setHours(8, 30, 0, 0)  // Сегодня 08:30
+        maxDate.setHours(20, 30, 0, 0) // Сегодня 20:30
+    }
+
+    return { minDate, maxDate }
+})
+
+// const checkDates = (cellEvent: ICellEvent) => {
+//
+// }
+
 
 // __ Длительность События
 const getDuration = (cellEvent: ICellEvent) => {
@@ -301,7 +357,7 @@ const saveCellEvent = async (cellEvent: ICellEvent) => {
         const result = await cellEventsStore.createEvent(props.dayId, cellEvent)
         if (checkCRUD(result)) {
             // __ Обновляем реактивный Массив и Копию
-            cellEvent.id = result.id
+            cellEvent.id          = result.id
             cellEvent.readyToSave = false
             cellEventsCopy.push(JSON.parse(JSON.stringify(cellEvent)))
         } else {
@@ -313,7 +369,7 @@ const saveCellEvent = async (cellEvent: ICellEvent) => {
         if (checkCRUD(result)) {
             // __ Обновляем реактивный Массив и Копию
             cellEvent.readyToSave = false
-            cellEventsCopy = cellEventsCopy.filter(cellEventCopy => cellEventCopy.id !== cellEvent.id) // Удаляем
+            cellEventsCopy        = cellEventsCopy.filter(cellEventCopy => cellEventCopy.id !== cellEvent.id) // Удаляем
             cellEventsCopy.push(JSON.parse(JSON.stringify(cellEvent))) // Добавляем
         } else {
             await showError()
@@ -329,10 +385,21 @@ const deleteCellEvent = async (cellEvent: ICellEvent) => {
 
     const answer = await appModalAsyncMultiline.value!.show()
     if (answer) {
-        const result = await cellEventsStore.deleteEvent(cellEvent)
+
+        let result
+        if (cellEvent.id !== 0) {
+            result = await cellEventsStore.deleteEvent(cellEvent)
+        } else {
+            // __ Удаление того, что еще не записано в базу
+            result = {
+                data : 'success',
+                error: null
+            }
+        }
+
         if (checkCRUD(result)) {
             // __ Обновляем реактивный Массив и Копию
-            cellEventsCopy = cellEventsCopy.filter(cellEventCopy => cellEventCopy.id !== cellEvent.id) // Удаляем
+            cellEventsCopy   = cellEventsCopy.filter(cellEventCopy => cellEventCopy.id !== cellEvent.id) // Удаляем
             cellEvents.value = cellEvents.value.filter(cellEventItem => cellEventItem.id !== cellEvent.id) // Удаляем
         } else {
             await showError()
