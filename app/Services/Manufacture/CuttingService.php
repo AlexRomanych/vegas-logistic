@@ -457,9 +457,9 @@ final class CuttingService
                     ];
 
                     // __ Получаем Высоту Чехла из Комментариев
-                    if ($line->id === 16454) {
-                        $a = 0;
-                    }
+                    //if ($line->id === 16454) {
+                    //    $a = 0;
+                    //}
                     $coverHeight = OrdersService::getCoverHeightByOrderLine($line);
 
                     foreach ($cuttingTables as $table => $data) {

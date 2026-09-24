@@ -7,6 +7,7 @@ use App\Classes\EndPointStaticRequestAnswer;
 use App\Enums\ElementTypes;
 use App\Models\Client;
 use App\Models\Logs\EventLog;
+use App\Models\Models\Model;
 use App\Models\Models\ModelConstruct;
 use App\Models\Order\Order;
 use App\Models\Order\OrderLine;
@@ -1119,12 +1120,22 @@ final class OrdersService
 
     /**
      * ___ Парсим Комментарии к Заявке на наличие Метаданных
-     * ___ Высота Чехла и Стол для Раскроя
+     * ___ Высота Чехла + Стол для Раскроя + ШМ + Название Блоков
      * @param array $attributes
      * @return array
      */
     public static function getOrderLineMetaData(array $attributes): array
     {
+        $result = [];
+
+        // __ Быстрая проверка на пустоту
+        if (empty($attributes['composition']) &&
+            empty($attributes['describe_1']) &&
+            empty($attributes['describe_2']) &&
+            empty($attributes['describe_3'])) {
+            return $result;
+        }
+
         $strings = [
             $attributes['composition'],
             $attributes['describe_1'],
@@ -1132,107 +1143,156 @@ final class OrdersService
             $attributes['describe_3'],
         ];
 
-        // __ Парсим метадату для раскроя и Пошива
+        // __ Парсим метадату для Раскроя и Пошива
+        // __ #ВысЧех=20см;Стол2(крыш);Стол3(бок)#
+
         $extractedValues = [];
 
         foreach ($strings as $text) {
-            // 1. Быстрая проверка: если строка пустая, null или в ней нет '#' — пропускаем
+            // __ Быстрая проверка: если строка пустая, null или в ней нет '#' — пропускаем
             if (empty($text) || !str_contains($text, '#')) {
                 continue;
             }
 
-            // 2. Если решетка есть, безопасно ищем текст внутри
+            // __ Если решетка есть, безопасно ищем текст внутри
             if (preg_match('/#(.*?)#/u', $text, $matches)) {
                 $extractedValues[] = $matches[1];
             }
         }
 
-        if (empty($extractedValues)) {
-            return [];
-        } elseif (count($extractedValues) > 1) {
-            $eventLog          = new EventLog();
-            $eventLog->level   = EventLog::LEVEL_ERROR;
-            $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
-            $eventLog->message = 'Дублирование метаданных (Высота Чехла, Стол) в комментариях строки Заявки';
-            $eventLog->context = $extractedValues;
-            $eventLog->save();
-        }
-
-        // __ Берем самую первуцю Запись
-        $string = $extractedValues[0];
-
-        // __Регулярное выражение с паттерном поиска ключевых слов без учета регистра (/i)
-        // __ и границей следующего ключевого слова или конца строки (?=ВысЧех|Стол2|Стол3|$)
-        $pattern = '/(ВысЧех|Стол1|Стол2|Стол3).*?(?=ВысЧех|Стол1|Стол2|Стол3|$)/ui';
-
-        preg_match_all($pattern, $string, $matches);
-
-        // __ В $matches[0] окажутся готовые куски:
-        $input = $matches[0];
-
-        // __ Результат в $results будет примерно таким:
-        // __ [0 => "ВысЧех=17см", 1 => "Стол2(крыш)", 2 => "Стол3(бок)"]
-
-        $result = [];
-
-        foreach ($input as $item) {
-            // Сделаем надежнее и чище через точечные проверки:
-            if (stripos($item, 'ВысЧех') !== false) {
-                // Ищем знак '=', опциональные пробелы, а затем захватываем только цифры (\d+)
-                if (preg_match('/=\s*(\d+)/u', $item, $m)) {
-                    $result[ModelConstruct::COVER_HEIGHT_NAME] = (int)$m[1]; // Приводим к числу (int)
-                }
+        // __ Найдена Хоть Одна запись между #...#
+        if (count($extractedValues) >= 1) {
+            // __ Если Записей больше - пишем Ошибку
+            if (count($extractedValues) > 1) {
+                $eventLog          = new EventLog();
+                $eventLog->level   = EventLog::LEVEL_ERROR;
+                $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
+                $eventLog->message = 'Дублирование метаданных (Высота Чехла, Стол) в комментариях строки Заявки';
+                $eventLog->context = $extractedValues;
+                $eventLog->save();
             }
 
-            // __ Проверяем наличие ключевого слова с вариациями "крыш"
-            if (stripos($item, 'крыш') !== false) {
-                // Ищем паттерн вроде "Стол2" или любое слово со словом "Стол" перед этим
-                if (preg_match('/(стол\d+)/ui', $item, $m)) {
-                    // Извлекаем только цифру из найденного слова (например, "Стол2" -> "2")
-                    if (preg_match('/\d+/', $m[1], $num)) {
-                        $result[ModelConstruct::PANEL_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
+            // __ Берем самую первуцю Запись
+            $string = $extractedValues[0];
+
+            // __Регулярное выражение с паттерном поиска ключевых слов без учета регистра (/i)
+            // __ и границей следующего ключевого слова или конца строки (?=ВысЧех|Стол2|Стол3|$)
+            $pattern = '/(ВысЧех|Стол1|Стол2|Стол3).*?(?=ВысЧех|Стол1|Стол2|Стол3|$)/ui';
+
+            preg_match_all($pattern, $string, $matches);
+
+            // __ В $matches[0] окажутся готовые куски:
+            $input = $matches[0];
+
+            // __ Результат в $results будет примерно таким:
+            // __ [0 => "ВысЧех=17см", 1 => "Стол2(крыш)", 2 => "Стол3(бок)"]
+
+            foreach ($input as $item) {
+                // Сделаем надежнее и чище через точечные проверки:
+                if (stripos($item, 'ВысЧех') !== false) {
+                    // Ищем знак '=', опциональные пробелы, а затем захватываем только цифры (\d+)
+                    if (preg_match('/=\s*(\d+)/u', $item, $m)) {
+                        $result[ModelConstruct::COVER_HEIGHT_NAME] = (int)$m[1]; // Приводим к числу (int)
+                    }
+                }
+
+                // __ Проверяем наличие ключевого слова с вариациями "крыш"
+                if (stripos($item, 'крыш') !== false) {
+                    // Ищем паттерн вроде "Стол2" или любое слово со словом "Стол" перед этим
+                    if (preg_match('/(стол\d+)/ui', $item, $m)) {
+                        // Извлекаем только цифру из найденного слова (например, "Стол2" -> "2")
+                        if (preg_match('/\d+/', $m[1], $num)) {
+                            $result[ModelConstruct::PANEL_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
+                        }
+                    }
+                }
+
+                // __ Проверяем наличие ключевого слова с вариациями "бок" или "боковина"
+                if (stripos($item, 'бок') !== false) {
+                    if (preg_match('/(стол\d+)/ui', $item, $m)) {
+                        if (preg_match('/\d+/', $m[1], $num)) {
+                            $result[ModelConstruct::SIDE_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
+                        }
                     }
                 }
             }
-
-            // __ Проверяем наличие ключевого слова с вариациями "бок" или "боковина"
-            if (stripos($item, 'бок') !== false) {
-                if (preg_match('/(стол\d+)/ui', $item, $m)) {
-                    if (preg_match('/\d+/', $m[1], $num)) {
-                        $result[ModelConstruct::SIDE_NAME] = CuttingService::getTableConstantByLiteral($num[0]);
-                    }
-                }
-            }
         }
-
 
         // __ Здесь парсим то, что должно попасть в СЗ блоков. Располагается внутри $...$
+        // __ $Блок:67х178(12х35)$
+
         $extractedValues = [];
 
         foreach ($strings as $text) {
-            // 1. Быстрая проверка: если строка пустая, null или в ней нет '#' — пропускаем
+            // __ Быстрая проверка: если строка пустая, null или в ней нет '$' — пропускаем
             if (empty($text) || !str_contains($text, '$')) {
                 continue;
             }
 
-            // 2. Если решетка есть, безопасно ищем текст внутри
+            // __ Если $ есть, безопасно ищем текст внутри
             if (preg_match('/\$([^$]*)\$/u', $text, $matches)) {
                 $extractedValues[] = $matches[1];
             }
         }
 
-        if (empty($extractedValues)) {
-            return $result;
-        } elseif (count($extractedValues) > 1) {
-            $eventLog          = new EventLog();
-            $eventLog->level   = EventLog::LEVEL_ERROR;
-            $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
-            $eventLog->message = 'Дублирование метаданных (Данные по Размеру Блока) в комментариях строки Заявки';
-            $eventLog->context = $extractedValues;
-            $eventLog->save();
+        if (count($extractedValues) >= 1) {
+            // __ Если Записей больше - пишем Ошибку
+            if (count($extractedValues) > 1) {
+                $eventLog          = new EventLog();
+                $eventLog->level   = EventLog::LEVEL_ERROR;
+                $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
+                $eventLog->message = 'Дублирование метаданных (Данные по Размеру Блока) в комментариях строки Заявки';
+                $eventLog->context = $extractedValues;
+                $eventLog->save();
+            }
+            $result[OrderLine::BLOCK_META_FIELD] = $extractedValues[0];
         }
 
-        $result[OrderLine::BLOCK_META_FIELD] = $extractedValues[0];
+
+        // __ Здесь парсим то, что должно попасть в СЗ Пошива - УШМ, АШМ или ГП. Располагается внутри !...!
+        // __ !ТипЧех:глух! = глухой простой (ГП)
+        // __ !ТипЧех:авт! = АШМ
+        // __ !ТипЧех:ушм! = УШМ
+
+        $extractedValues = [];
+
+        foreach ($strings as $text) {
+            // __ Быстрая проверка: если строка пустая, null или в ней нет '!' — пропускаем
+            if (empty($text) || !str_contains($text, '!')) {
+                continue;
+            }
+
+            // __ Если ! есть, безопасно ищем текст внутри
+            if (preg_match('/!([^!]*)!/u', $text, $matches)) {
+                $extractedValues[] = $matches[1];
+            }
+        }
+
+        if (count($extractedValues) >= 1) {
+            // __ Если Записей больше - пишем Ошибку
+            if (count($extractedValues) > 1) {
+                $eventLog          = new EventLog();
+                $eventLog->level   = EventLog::LEVEL_ERROR;
+                $eventLog->target  = EventLog::TARGET_PARSE_ORDER_LINE_META_DATA;
+                $eventLog->message = 'Дублирование метаданных (Тип Чехла) в комментариях строки Заявки';
+                $eventLog->context = $extractedValues;
+                $eventLog->save();
+            }
+
+            $string = $extractedValues[0];
+
+            // __ Проверяем, что в строке действительно содержится маркер "ТипЧех" или "ТипЧехла"
+            if (stripos($string, 'ТипЧех') !== false) {
+                // __ Определяем значение Типа Чехла по ключевым словам
+                if (stripos($string, 'глух') !== false) {
+                    $result[ModelConstruct::COVER_TYPE_NAME] = ModelsService::TYPE_SOLID_LITE;
+                } elseif (stripos($string, 'авт') !== false) {
+                    $result[ModelConstruct::COVER_TYPE_NAME] = ModelsService::TYPE_AUTO;
+                } elseif (stripos($string, 'ушм') !== false) {
+                    $result[ModelConstruct::COVER_TYPE_NAME] = ModelsService::TYPE_UNIVERSAL;
+                }
+            }
+        }
 
         return $result;
     }
@@ -1248,6 +1308,20 @@ final class OrdersService
         $metaData = $orderLine->meta_data;          // __ Получаем метадату из Комментариев по Столу
         if (!empty($metaData)) {
             return $metaData[ModelConstruct::COVER_HEIGHT_NAME] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * ___ Получаем Тип Чехла по Комментариям в Строке Заявки
+     * @param OrderLine $orderLine
+     * @return string|null
+     */
+    public static function getCoverTypeByOrderLine(OrderLine $orderLine): string|null
+    {
+        $metaData = $orderLine->meta_data;          // __ Получаем метадату из Комментариев по Столу
+        if (!empty($metaData)) {
+            return $metaData[ModelConstruct::COVER_TYPE_NAME] ?? null;
         }
         return null;
     }

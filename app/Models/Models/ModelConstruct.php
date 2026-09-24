@@ -13,6 +13,7 @@ class ModelConstruct extends LaravelModel
     public const PANEL_DOWN_NAME = 'panel_down';
     public const SIDE_NAME = 'side';
     public const COVER_HEIGHT_NAME = 'cover_height';
+    public const COVER_TYPE_NAME = 'cover_type';
 
     // __ Для Раскроя
     public const DETAIL_CONSTRUCT_PANEL_NAME = 'Крышка';
@@ -22,8 +23,6 @@ class ModelConstruct extends LaravelModel
 
     // __ Для БП
     public const DETAIL_CONSTRUCT_BASE_BLOCK = 'Базовый блок';
-
-
 
 
     protected $primaryKey = CODE_1C;
@@ -48,6 +47,6 @@ class ModelConstruct extends LaravelModel
     // Relations: Связь с Моделью
     public function model(): BelongsTo
     {
-        return $this->belongsTo(/*\App\Models\Models\*/Model::class);
+        return $this->belongsTo(/*\App\Models\Models\*/ Model::class);
     }
 }

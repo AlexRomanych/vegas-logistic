@@ -12,6 +12,7 @@ use App\Models\Manufacture\Cells\Sewing\SewingTaskStatus;
 use App\Models\Order\Order;
 use App\Services\BusinessProcessesService;
 use App\Services\ModelsService;
+use App\Services\OrdersService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -106,6 +107,10 @@ final class SewingService
                 if ($data['amount'] < 1) {
                     continue;
                 }
+
+                // __ Проверяем на ШМ из комментариев к Строке
+                $targetMachine = OrdersService::getCoverTypeByOrderLine($line) ?? $machine;
+
                 $createdTaskLine = SewingTaskLine::query()->create([
                     'sewing_task_id' => $createdTask->id,
                     'order_line_id'  => $line->id,
@@ -114,8 +119,11 @@ final class SewingService
                     'time'           => $data['time'],
 
                     // __ Задаем подмену свойств
-                    'phantom'        => $machine,
-                    'phantom_json'   => ['is_' . $machine => true],
+                    'phantom'        => $targetMachine,
+                    'phantom_json'   => ['is_' . $targetMachine => true],
+
+                    //'phantom'        => $machine,
+                    //'phantom_json'   => ['is_' . $machine => true],
 
                 ]);
             }
