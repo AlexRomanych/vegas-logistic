@@ -133,6 +133,7 @@
             </div>
         </div>
 
+        <!-- __ Содержимое Табов -->
         <div class="m-2">
             <template v-if="activeTabPosition === infoTabPosition">
                 <!-- __ Общая инфа -->
@@ -254,6 +255,13 @@ const tuningTimes             = ref<IBlockCollectionTime[]>([])
 const assembler               = ref(blockDay.value?.assembler ?? 0)
 
 const statistics = computed(() => getExecuteTaskStatistics(allBlockTasksLinesUnion.value))
+// const statistics = computed(() => {
+//     console.log('allBlockTasksLinesUnion.value: ', allBlockTasksLinesUnion.value)
+//     const stat = getExecuteTaskStatistics(allBlockTasksLinesUnion.value)
+//     console.log('statistics: ', stat)
+//     return stat
+// })
+
 
 const now                = ref(0)
 let timer: number | null = null
@@ -418,7 +426,7 @@ const deviation = computed(() => {
         // console.log('remainingUnfinishedTime: ', remainingUnfinishedTime)
 
         // __ Опережение или отставание в секундах
-        return round(remainingWorkingTime - 2 * remainingUnfinishedTime)
+        return round(2 * remainingWorkingTime - remainingUnfinishedTime)        // __ 2 - это две линии
         // return (remainingWorkingTime - 2 * remainingUnfinishedTime) / remainingUnfinishedTime * 100
     }
 
@@ -430,7 +438,7 @@ const deviationText = computed(() => {
     if (deviation.value === 0) {
         return 'В графике'
     }
-    return deviation.value > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ' + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation.value))
+    return (deviation.value > 0 ? 'ОПЕРЕЖЕНИЕ' : 'ОТСТАВАНИЕ') + ' ' + formatTimeWithLeadingZeros(Math.abs(deviation.value))
 })
 
 // __ Организация Tabs
