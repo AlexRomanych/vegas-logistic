@@ -83,7 +83,7 @@
 
                 <!-- __ Ассемблер -->
                 <AppLabelMultiLineTS
-                    :text="['🧮АССЕМБЛЕР:', assembler.toString()]"
+                    :text="['🧮АССЕМБЛЕР', assembler.toString()]"
                     :type="assembler ? 'success' : 'danger'"
                     :width="MENU_LABEL_WIDTH"
                     align="center"

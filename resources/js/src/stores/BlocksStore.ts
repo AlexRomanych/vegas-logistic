@@ -54,6 +54,7 @@ const URL_BLOCKS_TASK_STATUSES_COLOR_PATCH = '/blocks/task/statuses/color/patch'
 const URL_BLOCKS_TASKS                      = '/blocks/tasks'                       // URL для получения Сменных заданий
 const URL_BLOCKS_TASKS_UPDATE               = '/blocks/tasks/update'                // URL для обновления Сменных заданий
 const URL_BLOCKS_TASKS_ORDER_ID             = '/blocks/tasks/order'                 // URL для получения Сменных заданий по id Заявки
+const URL_BLOCKS_TASKS_DELETE               = '/blocks/tasks/delete'                // URL для удаления Сменных заданий по id СЗ
 const URL_BLOCKS_TASKS_DELETE_BY_ORDER_ID   = '/blocks/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
 const URL_BLOCKS_TASKS_ADD_BY_ORDER_ID      = '/blocks/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
 const URL_BLOCKS_TASKS_CALC_BY_ORDER_ID     = '/blocks/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
@@ -409,6 +410,16 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Удаление СЗ Блоков по ID СЗ
+    const deleteBlockTask = async (id: number | null = null) => {
+        if (!id) {
+            return
+        }
+        const response = await jwtDelete(URL_BLOCKS_TASKS_DELETE, { id })
+        const result   = await response
+        if (DEBUG) console.log('BlocksStore: deleteBlockTask: ', result)
+        return result
+    }
 
     // __ Удаление СЗ Блоков по ID Заявки
     const deleteBlockTasksByOrderId = async (id: number | null = null) => {
@@ -1036,6 +1047,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 
         getBlockTasks,
         getBlockTasksByOrderId,
+        deleteBlockTask,
         deleteBlockTasksByOrderId,
         addBlockTasksByOrderId,
         calcBlockTasksCutByOrderId,

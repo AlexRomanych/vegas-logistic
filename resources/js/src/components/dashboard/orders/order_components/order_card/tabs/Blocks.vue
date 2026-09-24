@@ -50,6 +50,8 @@
                     :client-show="false"
                     :fields-width="blockTaskFieldsWidth"
                     :order-info="false"
+                    :with-deleting="true"
+                    @delete-task="deleteTask(blockTask)"
                 />
             </div>
         </template>
@@ -102,6 +104,7 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
+import { isTaskStatusCreated } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 
 interface IProps {
@@ -136,8 +139,9 @@ const orderLines = ref<IRenderOrderLine[]>([])
 
 // __ Вычисляемые свойства
 // const hasTask    = computed(() => blockTasks.value?.length !== 0)
+const canDelete  = computed(() => blockTasks.value?.length !== 0 && blockTasks.value.every(task => isTaskStatusCreated(task)))
 const actionText = computed(() => blockTasks.value?.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
-const actionType = computed(() => blockTasks.value?.length !== 0 ? 'danger' : 'success')
+const actionType = computed(() => blockTasks.value?.length !== 0 ? canDelete.value ? 'danger' : 'dark' : 'success')
 
 // __ Табы
 const tabs              = ref<ITab[]>([])
@@ -289,6 +293,10 @@ const actionTask = async () => {
     let result
     if (blockTasks.value?.length !== 0) {
 
+        if (!canDelete.value) {
+            return
+        }
+
         // __ Удаляем СЗ
         modalInfoType.value = 'danger'
         modalInfoMode.value = 'confirm'
@@ -336,6 +344,40 @@ const actionTask = async () => {
     }
 }
 
+
+// __ Удаляем конкретное СЗ
+const deleteTask = async (blockTask: IBlockTask) => {
+
+    // __ Удаляем СЗ
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        'Сменное задание будет удалено.',
+        'Продолжить?',
+    ]
+
+    const answer = await appModalAsyncMultiline.value!.show()
+    if (!answer) {
+        return
+    }
+
+    const result = await blocksStore.deleteBlockTask(blockTask.id)
+
+    if (checkCRUD(result)) {
+        blockTasks.value = blockTasks.value.filter(task => task.id !== blockTask.id)
+
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = [result.payload]
+        await appModalAsyncMultiline.value!.show()
+    } else {
+        await showError()
+    }
+
+    //
+    // await getTasks()
+    // console.log(blockTask)
+}
 
 // __ Пересчет размеров Деталек
 // const calculateTaskCut = async () => {

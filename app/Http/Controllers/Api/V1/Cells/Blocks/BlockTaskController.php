@@ -824,6 +824,29 @@ class BlockTaskController extends Controller
      * @param Request $request
      * @return string
      */
+    public function deleteBlockTask(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:block_tasks,id'
+            ]);
+
+            BlockTask::query()->findOrFail($validated['id'])->delete();
+            //BlockTask::destroy($validated['id']);
+
+
+            return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Удаляем СЗ для Блоков
+     * @param Request $request
+     * @return string
+     */
     public function deleteBlockTasksByOrderId(Request $request)
     {
         try {

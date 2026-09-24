@@ -43,6 +43,19 @@
         <!-- __ Комментарий  -->
         <AppLabelTSWrapper :render-object="render.comment"/>
 
+        <!-- __ Удалить -->
+        <AppLabelTS
+            v-if="withDeleting && isTaskStatusCreated(blockTask)"
+            align="center"
+            rounded="4"
+            text="🗑️"
+            text-size="mini"
+            type="danger"
+            width="w-[30px]"
+            class="cursor-pointer"
+            @click="emits('deleteTask')"
+        />
+
     </div>
 
     <div v-if="!blockTask.collapsed">
@@ -109,7 +122,7 @@ import { computed, reactive, ref, } from 'vue'
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
 
 import {
-    getExecuteTaskStatistics, getBlockTaskAmountAndTime, getTaskStatusById,
+    getExecuteTaskStatistics, getBlockTaskAmountAndTime, getTaskStatusById, isTaskStatusCreated,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
@@ -124,6 +137,7 @@ import ExecuteTaskTotals
 import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 // import OrderItemInfo from '@/components/dashboard/manufacture/cells/block/block_components/common/OrderItemInfo.vue'
 // import CommentEdit from '@/components/dashboard/manufacture/cells/block/block_components/common/CommentEdit.vue'
@@ -136,12 +150,18 @@ interface IProps {
     fieldsWidth: Record<string, string>
     clientShow?: boolean
     orderInfo?: boolean
+    withDeleting?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
     clientShow: true,
     orderInfo : true,
+    withDeleting: false
 })
+
+const emits = defineEmits<{
+    (e: 'deleteTask'): void
+}>()
 
 const blockStore = useBlocksStore()
 
@@ -156,6 +176,7 @@ const blockStore = useBlocksStore()
 // const comment = ref('')
 // const commentEdit = ref<InstanceType<typeof CommentEdit> | null>(null)
 
+// const CAN_DELETE = true
 
 // __ Объект отображения данных
 // const DEFAULT_WIDTH_BOOL = 'w-[70px]'

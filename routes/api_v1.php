@@ -375,6 +375,7 @@ Route::prefix('blocks')
         Route::post('tasks/line/reset', [BlockTaskController::class, 'setBlockTaskLinesReset']);
         Route::post('tasks/line/description', [BlockTaskController::class, 'setBlockTaskLineDescription']);
         Route::post('tasks/add/order', [BlockTaskController::class, 'addBlockTasksByOrderId']);
+        Route::delete('tasks/delete', [BlockTaskController::class, 'deleteBlockTask']);
         Route::delete('tasks/delete/order', [BlockTaskController::class, 'deleteBlockTasksByOrderId']);
 
         // __ Коллекция Блоков
