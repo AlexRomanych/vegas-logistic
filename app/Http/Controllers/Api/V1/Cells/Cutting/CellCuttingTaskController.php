@@ -335,7 +335,6 @@ class CellCuttingTaskController extends Controller
      * ___ Пересчитываем Крой Деталей СЗ на Раскрой
      * @param Request $request
      * @return string
-     * @noinspection PhpUndefinedFieldInspection
      */
     public function calcCuttingTasksCutByOrderId(Request $request)
     {
@@ -524,7 +523,7 @@ class CellCuttingTaskController extends Controller
     /**
      * ___ Получаем СЗ на Раскрой по статусам в определенную дату
      * @param Request $request
-     * @return AnonymousResourceCollection|JsonResponse
+     * @return AnonymousResourceCollection|string
      */
     public function getCuttingTasksByStatusOnDate(Request $request)
     {
@@ -558,13 +557,11 @@ class CellCuttingTaskController extends Controller
                 ->orderBy('action_at')
                 ->get();
 
-
             // !!!!!!!!!!!!!!!!!!!!!
             // !!! __ TODO: Тут, если есть не выполенные задания за предыдущие дни,
             // !!! __ То автоматом переносить на следующий день
             // !!! __ Отдельная функция
             // !!!!!!!!!!!!!!!!!!!!!
-
 
             return CuttingTaskResource::collection($cuttingTasks);
         } catch (Exception $e) {
@@ -714,11 +711,18 @@ class CellCuttingTaskController extends Controller
                         usort($diffs, function ($a, $b) {
                             // __ Назначаем приоритеты: чем меньше число, тем выше элемент в списке
                             $priorities = fn($type) => match ($type) {
-                                'ADDED'   => 1,
-                                'UPDATED' => 2,
+                                'UPDATED' => 1,
+                                'ADDED'   => 2,
                                 'DELETED' => 3,
                                 default   => 4,
                             };
+
+                            //$priorities = fn($type) => match ($type) {
+                            //    'ADDED'   => 1,
+                            //    'UPDATED' => 2,
+                            //    'DELETED' => 3,
+                            //    default   => 4,
+                            //};
 
                             return $priorities($a['type']) <=> $priorities($b['type']);
                         });
