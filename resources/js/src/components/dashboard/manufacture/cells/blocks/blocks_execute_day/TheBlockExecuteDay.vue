@@ -420,8 +420,12 @@ const deviation = computed(() => {
 
         // __ Время от текущего момента до окончания смены
         const remainingWorkingTime    = endShiftTime.getTime() / 1000 - now.value       // __ в секундах
+
+        // !!! Тут попробовать Из общего вычитать Не Выполнено ???
         const remainingUnfinishedTime = statistics.value.time.unfinished * 60 * 60      // __ в секундах
 
+
+        console.log('statistics: ', statistics.value)
         // console.log('remainingWorkingTime: ', remainingWorkingTime)
         // console.log('remainingUnfinishedTime: ', remainingUnfinishedTime)
 
