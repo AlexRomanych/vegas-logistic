@@ -564,6 +564,9 @@ export const useBlocksStore = defineStore('blocks', () => {
 
     // __ Получение СЗ Блоков по статусу или массиву статусов и Периоду
     const getBlockTasksByStatusAndPeriod = async (status: number[] | number | null | undefined = null, period: IPeriod | null = null) => {
+        console.log('period: ', period)
+
+
         let response
         if (status) {
             if (isNumber(status)) {
@@ -571,17 +574,16 @@ export const useBlocksStore = defineStore('blocks', () => {
             }
 
             if (period) {
-                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { statuses: status, period })
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS_PERIOD, { statuses: status, period })
             } else {
-                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { statuses: status })
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS_PERIOD, { statuses: status })
             }
         } else {
             if (period) {
-                response = await jwtGet(URL_BLOCK_TASKS_STATUS, { period })
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS_PERIOD, { period })
             } else {
-                response = await jwtGet(URL_BLOCK_TASKS_STATUS)
+                response = await jwtGet(URL_BLOCK_TASKS_STATUS_PERIOD)
             }
-            response = await jwtGet(URL_BLOCK_TASKS_STATUS)
         }
         const result = await response
 

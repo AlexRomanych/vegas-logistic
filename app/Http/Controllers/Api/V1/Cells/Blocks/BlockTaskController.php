@@ -1039,7 +1039,7 @@ class BlockTaskController extends Controller
     public function getBlockTasksByStatusAndPeriod(Request $request)
     {
         try {
-            //$all = $request->all();
+            $all = $request->all();
             $validated = $request->validate([
                 // __ Проверяем, что 'statuses' — это массив
                 'statuses'     => 'nullable|array',
@@ -1047,11 +1047,15 @@ class BlockTaskController extends Controller
                 'statuses.*'   => 'integer|exists:block_task_statuses,id',
                 //'status'       => 'nullable|numeric|in:1,2,3,4,5',
                 'period'       => 'nullable|array',
-                'period.start' => 'required_if:period,*,!null|date',        // условная валидация
-                'period.end'   => 'required_if:period,*,!null|date',
+                'period.start' => 'required_if:period,*,!null|date|date_format:Y-m-d',        // условная валидация
+                'period.end'   => 'required_if:period,*,!null|date|date_format:Y-m-d',
             ]);
 
+
+
             if (isset($validated['period'])) {
+                $a = $validated['period'];
+
                 $start = Carbon::parse($validated['period']['start']);
                 $end   = Carbon::parse($validated['period']['end']);
             } else {

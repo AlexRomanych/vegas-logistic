@@ -692,8 +692,11 @@ const getBlockTasks = async (period: IPeriod | null = null) => {
     await loaderHandler(
         loadingService,
         async () => {
+            if (DEBUG) console.log('renderPeriod:', renderPeriod.value)
+
             // __ Получаем BlockTasks по статусу и записываем в глобальную переменную в BlockStore
             await blockStore.getBlockTasksByStatusAndPeriod(null, renderPeriod.value)
+            if (DEBUG) console.log('globalBlockTasksPending:', globalBlockTasksPending.value)
 
             // __ Получаем дни
             await getBlockDays()
@@ -707,9 +710,11 @@ const getBlockTasks = async (period: IPeriod | null = null) => {
             // __ Добавляем свернутость
             addCollapsed()
 
-            if (DEBUG) console.log('globalBlockTasksPending:', globalBlockTasksPending.value)
+            // if (DEBUG) console.log('renderPeriod:', renderPeriod.value)
+            // if (DEBUG) console.log('globalBlockTasksPending:', globalBlockTasksPending.value)
             if (DEBUG) console.log('blockDays:', blockDays.value)
             if (DEBUG) console.log('renderBlockDays:', renderBlockDays.value)
+
         },
         undefined
         // false,
