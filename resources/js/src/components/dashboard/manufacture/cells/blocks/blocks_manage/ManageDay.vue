@@ -1472,13 +1472,17 @@ const actionDayMenu = async (change: IBlockTaskChangeKeys) => {
     if (result.menuItem === 4) {
         // __ Получаем день
         const blockDay = await blockStore.getBlockDayByDateAndChange(formatToYMD(props.date))
-        console.log('day: ', blockDay)
 
-        comment.value = blockDay.comment ?? '' // __ Устанавливаем комментарий
+        if (!blockDay[0]) {
+            await showError()
+            return
+        }
+
+        comment.value = blockDay[0].comment ?? '' // __ Устанавливаем комментарий
         const answer  = await commentEdit.value!.show()
         if (answer) {
             const newComment = commentEdit.value!.comment.trim()
-            const result     = await blockStore.setBlockDayComment(blockDay.id, newComment)
+            const result     = await blockStore.setBlockDayComment(blockDay[0].id, newComment)
             if (!checkCRUD(result)) {
                 await showError()
                 return
