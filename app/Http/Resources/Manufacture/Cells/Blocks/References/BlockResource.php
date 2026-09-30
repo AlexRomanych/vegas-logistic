@@ -16,15 +16,25 @@ class BlockResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'          => $this->id,
-            'code_1c'     => $this->code_1c,
-            'name'        => $this->name,
-            'unit'        => $this->unit,
-            'width'       => $this->width,
-            'length'      => $this->length,
-            'active'      => $this->active,
-            'description' => $this->description,
-            'collection'  => $this->collection,
+            'id'            => $this->id,
+            'code_1c'       => $this->code_1c,
+            'name'          => $this->name,
+            'unit'          => $this->unit,
+            'width'         => $this->width,
+            'length'        => $this->length,
+            'active'        => $this->active,
+            'description'   => $this->description,
+            'collection'    => $this->collection,
+            'shown'         => $this->shown,
+            'substitution'  => $this->whenLoaded('substitutionBlock', function () {
+                return [
+                    'substitution' => $this->substitution,
+                    'code_1c'      => $this->substitutionBlock->code_1c,
+                    'name'         => $this->substitutionBlock->name,
+                ];
+            }),
+            //'code_1c_subst' => $this->substitution_block_code_1c,
+            //'substitution'  => $this->substitution,
             //'status'      => $this->status,
             //'comment'     => $this->comment,
             //'note'        => $this->note,

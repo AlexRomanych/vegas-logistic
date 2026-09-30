@@ -32,6 +32,7 @@ class BlockCollectionResource extends JsonResource
             'length'       => $this->length,
             'productivity' => $this->productivity,
             'own'          => $this->own,
+            'shown'        => $this->shown,
             'blocks'       => BlockResource::collection($this->whenLoaded('blocks')),
             //'kdb'          => $this->kdb,
             //'status'      => $this->status,

@@ -182,6 +182,62 @@
                         />
                     </div>
 
+                    <!-- __ Shown -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.shown"/>
+
+                        <!-- __ Фильтр: Active -->
+                        <AppSelectSimpleTS
+                            v-if="render.shown.show"
+                            id="shown"
+                            :select-data="shownSelect"
+                            :text-size="render.shown.headerTextSize"
+                            :type="
+                                shownFilter === 0
+                                ? 'primary'
+                                : shownFilter === 1
+                                    ? 'success'
+                                    : 'danger'
+                            "
+                            :width="render.shown.width"
+                            align="center"
+                            class="mt-[8px]"
+                            height="h-[30px]"
+                            @change="filterByShown"
+                        />
+                    </div>
+
+                    <!-- __ Substitution -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.substitution"/>
+
+                        <!--    &lt;!&ndash; __ Фильтр: Substitution &ndash;&gt;-->
+                        <!--    <AppSelectSimpleTS-->
+                        <!--        v-if="render.shown.show"-->
+                        <!--        id="shown"-->
+                        <!--        :select-data="shownSelect"-->
+                        <!--        :text-size="render.shown.headerTextSize"-->
+                        <!--        :type="-->
+                        <!--            shownFilter === 0-->
+                        <!--            ? 'primary'-->
+                        <!--            : shownFilter === 1-->
+                        <!--                ? 'success'-->
+                        <!--                : 'danger'-->
+                        <!--        "-->
+                        <!--        :width="render.shown.width"-->
+                        <!--        align="center"-->
+                        <!--        class="mt-[8px]"-->
+                        <!--        height="h-[30px]"-->
+                        <!--        @change="filterByShown"-->
+                        <!--    />-->
+                    </div>
+
+                    <!-- __ Название Блока Подмены -->
+                    <div>
+                        <AppLabelMultilineTSWrapper :render-object="render.substitution_name"/>
+                        <!--<AppInputTextTSWrapper v-model="lengthFilter" :render-object="render.length"/>-->
+                    </div>
+
                     <!-- __ Описание -->
                     <div>
                         <AppLabelMultilineTSWrapper :render-object="render.description"/>
@@ -215,6 +271,17 @@
                                     width="w-[64px]"
                                 />
                             </router-link>
+
+                            <!-- __ ⌛ Синхронизировать время -->
+                            <AppLabelMultiLineTS
+                                :text="['⌛🔄', 'Синхрон.']"
+                                align="center"
+                                class="cursor-pointer"
+                                rounded="4"
+                                text-size="mini"
+                                type="indigo"
+                                width="w-[64px]"
+                            />
                         </div>
                         <!-- __ Сброс фильтров -->
                         <div class="mt-[6px]">
@@ -227,7 +294,7 @@
                                 text="Очистить фильтр"
                                 text-size="mini"
                                 type="orange"
-                                width="w-[132px]"
+                                width="w-[200px]"
                                 @click="resetFilters"
                             />
                         </div>
@@ -304,6 +371,15 @@
                 <!-- __ Active -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.active"/>
 
+                <!-- __ Shown -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.shown"/>
+
+                <!-- __ Подмена -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.substitution"/>
+
+                <!-- __ Название Блока для Подмены -->
+                <AppLabelTSWrapper :arg="blockCollection" :render-object="render.substitution_name"/>
+
                 <!-- __ Описание -->
                 <AppLabelTSWrapper :arg="blockCollection" :render-object="render.description"/>
 
@@ -336,7 +412,7 @@
             </div>
 
             <!-- __ Сами Блоки -->
-            <div v-if="!blockCollection.collapsed" class="ml-[34px] mt-0.5 mb-2 bg-green-200">
+            <div v-if="!collapsedMap.get(blockCollection.code_1c)" class="ml-[34px] mt-0.5 mb-2 bg-green-200">
 
                 <div v-for="block of blockCollection.blocks" :key="block.id">
                     <div class="flex">
@@ -368,6 +444,9 @@
                         <!-- __ Приоритет изготовления -->
                         <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority" c="italic"/>
 
+                        <!-- __ Приоритет изготовления Линии 2 -->
+                        <AppLabelTSWrapper :arg="blockCollection" :render-object="render.priority_2" c="italic"/>
+
                         <!-- __ Ширина -->
                         <AppLabelTSWrapper :arg="[blockCollection, block]" :render-object="render.width_block" c="italic"/>
 
@@ -385,6 +464,15 @@
 
                         <!-- __ Active -->
                         <AppLabelTSWrapper :arg="block" :render-object="render.active_block"/>
+
+                        <!-- __ Shown -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.shown_block"/>
+
+                        <!-- __ Подмена -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.substitution_block"/>
+
+                        <!-- __ Название Блока для Подмены -->
+                        <AppLabelTSWrapper :arg="block" :render-object="render.substitution_block_name" c="italic"/>
 
                         <!-- __ Описание -->
                         <AppLabelTSWrapper :arg="block" :render-object="render.description_block" c="italic"/>
@@ -436,7 +524,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watchEffect, computed } from 'vue'
+import { onMounted, reactive, ref, computed, watch } from 'vue'
 
 import type {
     IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument, IBlock,
@@ -465,7 +553,7 @@ import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 
 const isLoading = ref(false)
 
-const userStore = useUserStore()
+const userStore   = useUserStore()
 const blocksStore = useBlocksStore()
 
 // const DEBUG = true
@@ -478,12 +566,20 @@ const getRights = computed(() => {
 const CAN_EDIT   = getRights.value
 const CAN_DELETE = true
 
+// __ Поле LocalStorage для сохранения состояния Collapsed
+const BLOCK_REFERENCE_COLLAPSED_STATE_FIELD = 'block_reference_collapsed_state'
+
 // __ Определяем переменные
-const blockCollections       = ref<IBlockCollection[]>([])
-const blockCollectionsRender = ref<IBlockCollection[]>([])
+const blockCollections = ref<IBlockCollection[]>([])
+// const blockCollectionsRender = ref<IBlockCollection[]>([])
+
+// __ Collapsed
+const collapsedMap = ref<Map<string, boolean>>(new Map())
+const collapsed    = ref(true)
 
 // __ Объект отображения данных
 const DEFAULT_WIDTH_BOOL   = 'w-[70px]'
+const BLOCK_NAME_WIDTH     = 'w-[300px]'
 const DEFAULT_HEIGHT       = 'h-[30px]'
 const HEADER_TYPE          = 'primary'
 const DATA_TYPE            = 'primary'
@@ -500,7 +596,7 @@ const DATA_ALIGN           = 'left'
 // const DATA_ALIGN_DEFAULT = 'center'
 
 const render: IRenderData = reactive({
-    collapsed    : {
+    collapsed              : {
         header        : ['▲', '▼'],
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -512,11 +608,11 @@ const render: IRenderData = reactive({
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
-        data          : (blockCollection: IBlockCollection) => (blockCollection.collapsed ? '▲' : '▼'),
-        click         : (blockCollection: IBlockCollection) => (blockCollection.collapsed = !blockCollection.collapsed),
+        data          : (blockCollection: IBlockCollection) => collapsedMap.value.get(blockCollection.code_1c) ? '▲' : '▼',
+        click         : (blockCollection: IBlockCollection) => collapsedMap.value.set(blockCollection.code_1c, !collapsedMap.value.get(blockCollection.code_1c)),
         class         : 'cursor-pointer',
     },
-    plug         : {
+    plug                   : {
         header        : ['', ''],
         width         : 'w-[30px]',
         height        : DEFAULT_HEIGHT,
@@ -530,7 +626,7 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         data          : () => '',
     },
-    id           : {
+    id                     : {
         id            : () => 'id-search',
         header        : ['ID', ''],
         width         : 'w-[50px]',
@@ -546,7 +642,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍id...',
         data          : (blockCollection: IBlockCollection) => blockCollection.id.toString()
     },
-    code_1c      : {
+    code_1c                : {
         id            : () => 'code-1c-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -562,7 +658,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (blockCollection: IBlockCollection) => blockCollection.code_1c
     },
-    code_1c_block: {
+    code_1c_block          : {
         id            : () => 'code-1c-block-search',
         header        : ['Код', 'из 1С'],
         width         : 'w-[100px]',
@@ -578,10 +674,10 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Код...',
         data          : (block: IBlock) => block.code_1c
     },
-    name         : {
+    name                   : {
         id            : () => 'name-search',
         header        : ['Название', 'группы блоков'],
-        width         : 'w-[300px]',
+        width         : BLOCK_NAME_WIDTH,
         height        : DEFAULT_HEIGHT,
         show          : true,
         headerType    : () => HEADER_TYPE,
@@ -594,7 +690,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Название...',
         data          : (blockCollection: IBlockCollection) => blockCollection.name
     },
-    name_block   : {
+    name_block             : {
         id            : () => 'name-block-search',
         header        : ['Название', 'блоков'],
         width         : 'w-[300px]',
@@ -610,7 +706,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Название...',
         data          : (block: IBlock) => block.name
     },
-    unit         : {
+    unit                   : {
         id            : () => 'unit-search',
         header        : ['Ед.', 'изм.'],
         width         : 'w-[70px]',
@@ -631,7 +727,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Ед...',
         data          : (blockCollection: IBlockCollection) => blockCollection.unit ?? ''
     },
-    kdb          : {
+    kdb                    : {
         id            : () => 'kdb-search',
         header        : ['КДБ', ''],
         width         : 'w-[80px]',
@@ -647,7 +743,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍КДБ...',
         data          : (blockCollection: IBlockCollection) => blockCollection.kdb_id && blockCollection.kdb_id !== 0 ? `${blockCollection.kdb} 🔍` : '',
     },
-    line         : {
+    line                   : {
         id            : () => 'line-search',
         header        : ['Линия', ''],
         width         : 'w-[70px]',
@@ -672,7 +768,7 @@ const render: IRenderData = reactive({
             return ''
         },
     },
-    line_alt     : {
+    line_alt               : {
         id            : () => 'line-alt-search',
         header        : ['Альт.', 'линия'],
         width         : 'w-[70px]',
@@ -697,7 +793,7 @@ const render: IRenderData = reactive({
             return ''
         },
     },
-    priority     : {
+    priority               : {
         id            : () => 'priority-search',
         header        : ['Приор-', 'тет Л.1'],
         width         : 'w-[60px]',
@@ -716,7 +812,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority.toString()
     },
-    priority_2   : {
+    priority_2             : {
         id            : () => 'priority-2-search',
         header        : ['Приор-', 'тет Л.2'],
         width         : 'w-[60px]',
@@ -735,7 +831,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Пр-т...',
         data          : (blockCollection: IBlockCollection) => blockCollection.priority_2.toString()
     },
-    width        : {
+    width                  : {
         id            : () => 'width-search',
         header        : ['W', 'см'],
         width         : 'w-[60px]',
@@ -752,7 +848,7 @@ const render: IRenderData = reactive({
         data          : (/*blockCollection: IBlockCollection*/) => ''
         // data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-    width_block  : {
+    width_block            : {
         id            : () => 'width-block-search',
         header        : ['W', 'см'],
         width         : 'w-[60px]',
@@ -772,7 +868,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : ([, block]) => block.width.toString()
     },
-    length       : {
+    length                 : {
         id        : () => 'length-search',
         header    : ['L', 'см'],
         width     : 'w-[60px]',
@@ -794,7 +890,7 @@ const render: IRenderData = reactive({
         data          : (/*blockCollection: IBlockCollection*/) => '',
         // data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
     },
-    length_block : {
+    length_block           : {
         id        : () => 'length-block-search',
         header    : ['L', 'см'],
         width     : 'w-[60px]',
@@ -816,7 +912,7 @@ const render: IRenderData = reactive({
         data          : ([, block]) => block.length.toString()
         // data          : (blockCollection: IBlockCollection) => blockCollection.length.toString()
     },
-    height       : {
+    height                 : {
         id            : () => 'height-search',
         header        : ['H', 'см'],
         width         : 'w-[60px]',
@@ -835,8 +931,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍H...',
         data          : (blockCollection: IBlockCollection) => blockCollection.height.toString()
     },
-
-    productivity     : {
+    productivity           : {
         id            : () => 'productivity-search',
         header        : ['Произ-сть', 'm2/ч'],
         width         : 'w-[100px]',
@@ -855,7 +950,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Произ-сть...',
         data          : (blockCollection: IBlockCollection) => blockCollection.productivity.toFixed(3)
     },
-    active           : {
+    active                 : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -871,7 +966,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Active...',
         data          : (blockCollection: IBlockCollection) => blockCollection.active ? '✓' : '✗'
     },
-    active_block     : {
+    active_block           : {
         id            : () => 'active-search',
         header        : ['Актуаль-', 'ность'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -887,7 +982,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Active...',
         data          : (block: IBlock) => block.active ? '✓' : '✗'
     },
-    own              : {
+    own                    : {
         id            : () => 'own-search',
         header        : ['Собств.', 'пр-во'],
         width         : DEFAULT_WIDTH_BOOL,
@@ -903,7 +998,103 @@ const render: IRenderData = reactive({
         placeholder   : '🔍...',
         data          : (blockCollection: IBlockCollection) => blockCollection.own ? '✓' : '✗'
     },
-    description      : {
+    shown                  : {
+        id            : () => 'shown-search',
+        header        : ['Видим.', 'в спр-ке'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection.shown ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.shown ? '✓' : '✗'
+    },
+    shown_block            : {
+        id            : () => 'shown-block-search',
+        header        : ['Вид.', 'в спр-ке'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (block: IBlock) => block.shown ? 'success' : 'danger',
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (block: IBlock) => block.shown ? '✓' : '✗'
+    },
+    substitution           : {
+        id            : () => 'substitution-search',
+        header        : ['Авто-', 'подмена'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockCollection: IBlockCollection) => blockCollection.substitution ? 'danger' : DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (blockCollection: IBlockCollection) => blockCollection.substitution ? '✓' : '✗',
+    },
+    substitution_block     : {
+        id            : () => 'substitution-search',
+        header        : ['Авто-', 'подмена'],
+        width         : DEFAULT_WIDTH_BOOL,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (block: IBlock) => block.substitution?.substitution ? 'danger' : DEFAULT_TYPE_BLOCK,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (block: IBlock) => block.substitution?.substitution ? '✓' : '✗'
+    },
+    substitution_name      : {
+        id            : () => 'substitution-block-search',
+        header        : ['Блок для подмены', 'в сменном задании'],
+        width         : BLOCK_NAME_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (/*blockCollection: IBlockCollection*/) => DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍...',
+        data          : (/*blockCollection: IBlockCollection*/) => ''
+    },
+    substitution_block_name: {
+        id            : () => 'substitution-block-search',
+        header        : ['Блок для подмены', 'в сменном задании'],
+        width         : BLOCK_NAME_WIDTH,
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (block: IBlock) => block.substitution?.name ? 'warning' : DEFAULT_TYPE_BLOCK,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : DATA_ALIGN,
+        placeholder   : '🔍...',
+        data          : (block: IBlock) => block.substitution?.name ?? ''
+    },
+    description            : {
         id            : () => 'description-search',
         header        : ['Описание', ''],
         width         : 'w-[450px]',
@@ -919,7 +1110,7 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Описание...',
         data          : (blockCollection: IBlockCollection) => blockCollection.description ?? ''
     },
-    description_block: {
+    description_block      : {
         id            : () => 'description-block-search',
         header        : ['Описание', ''],
         width         : 'w-[450px]',
@@ -954,42 +1145,52 @@ const lineFilter         = ref(0)
 const lineAltFilter      = ref(0)
 const activeFilter       = ref(0)
 const ownFilter          = ref(0)
+const shownFilter        = ref(1)
 
 
 // __ Подготавливаем селекты
 const activeSelect: ISelectData = {
     name: 'active',
     data: [
-        { id: 0, name: 'Все', selected: true, disabled: false },
-        { id: 1, name: '✓', selected: false, disabled: false },
-        { id: 2, name: '✗', selected: false, disabled: false },
+        { id: 0, name: 'Все', selected: activeFilter.value === 0, disabled: false },
+        { id: 1, name: '✓', selected: activeFilter.value === 1, disabled: false },
+        { id: 2, name: '✗', selected: activeFilter.value === 2, disabled: false },
     ],
 }
 
 const ownSelect: ISelectData = {
     name: 'own',
     data: [
-        { id: 0, name: 'Все', selected: true, disabled: false },
-        { id: 1, name: '✓', selected: false, disabled: false },
-        { id: 2, name: '✗', selected: false, disabled: false },
+        { id: 0, name: 'Все', selected: ownFilter.value === 0, disabled: false },
+        { id: 1, name: '✓', selected: ownFilter.value === 1, disabled: false },
+        { id: 2, name: '✗', selected: ownFilter.value === 2, disabled: false },
     ],
 }
 
 const lineSelect: ISelectData = {
     name: 'line',
     data: [
-        { id: 0, name: 'Все', selected: true, disabled: false },
-        { id: 1, name: 'Линия 1', selected: false, disabled: false },
-        { id: 2, name: 'Линия 2', selected: false, disabled: false },
+        { id: 0, name: 'Все', selected: lineFilter.value === 0, disabled: false },
+        { id: 1, name: 'Линия 1', selected: lineFilter.value === 1, disabled: false },
+        { id: 2, name: 'Линия 2', selected: lineFilter.value === 2, disabled: false },
     ],
 }
 
 const lineAltSelect: ISelectData = {
     name: 'line_alt',
     data: [
-        { id: 0, name: 'Все', selected: true, disabled: false },
-        { id: 1, name: 'Линия 1', selected: false, disabled: false },
-        { id: 2, name: 'Линия 2', selected: false, disabled: false },
+        { id: 0, name: 'Все', selected: lineAltFilter.value === 0, disabled: false },
+        { id: 1, name: 'Линия 1', selected: lineAltFilter.value === 1, disabled: false },
+        { id: 2, name: 'Линия 2', selected: lineAltFilter.value === 2, disabled: false },
+    ],
+}
+
+const shownSelect: ISelectData = {
+    name: 'shown',
+    data: [
+        { id: 0, name: 'Все', selected: shownFilter.value === 0, disabled: false },
+        { id: 1, name: '✓', selected: shownFilter.value === 1, disabled: false },
+        { id: 2, name: '✗', selected: shownFilter.value === 2, disabled: false },
     ],
 }
 
@@ -1006,6 +1207,10 @@ const filterByLine    = (value: ISelectDataItem) => {
 }
 const filterByLineAlt = (value: ISelectDataItem) => {
     lineAltFilter.value = value.id
+}
+
+const filterByShown = (value: ISelectDataItem) => {
+    shownFilter.value = value.id
 }
 
 
@@ -1026,11 +1231,34 @@ const resetFilters = () => {
     lineAltFilter.value     = 0
     activeFilter.value      = 0
     ownFilter.value         = 0
+    shownFilter.value       = 1
+}
+
+// __ Обновляем Карту Collapsed в Local Storage
+const updateCollapseMap = () => {
+    localStorage.setItem(BLOCK_REFERENCE_COLLAPSED_STATE_FIELD, JSON.stringify(Object.fromEntries(collapsedMap.value)))
+}
+
+// __ Устанавливаем Карту Collapsed
+const setCollapsedMap = () => {
+    const savedMapString = localStorage.getItem(BLOCK_REFERENCE_COLLAPSED_STATE_FIELD)
+    const savedMap       = savedMapString
+        ? new Map<string, boolean>(Object.entries(JSON.parse(savedMapString)))
+        : new Map<string, boolean>()
+
+    blockCollections.value.forEach(collection => {
+        collapsedMap.value.set(collection.code_1c, Boolean(savedMap.get(collection.code_1c)))
+    })
+
+    // updateCollapseMap()
 }
 
 // __ Сворачиваем/Разворачиваем
 const toggleCollapsed = () => {
-    blockCollections.value.forEach(collection => collection.collapsed = !collection.collapsed)
+    collapsed.value = !collapsed.value
+    blockCollections.value.forEach(collection => collapsedMap.value.set(collection.code_1c, collapsed.value))
+
+    // updateCollapseMap()
 }
 
 // __ Показываем КДБ
@@ -1055,30 +1283,46 @@ const showDocument = async (blockCollection: IBlockCollection) => {
 
 // __ Получаем данные
 const getBlockCollections = async () => {
-    blockCollections.value = await blocksStore.getBlockCollections()
-    blockCollections.value = blockCollections.value
+    const rawCollections: IBlockCollection[] = await blocksStore.getBlockCollections()
+
+    blockCollections.value = rawCollections
         .map(blockCollection => ({
             ...blockCollection,
-            kdb        : blockCollection.kdb ?? '',
-            unit       : blockCollection.unit ?? '',
-            description: blockCollection.description ?? '',
-            line_alt   : blockCollection.line_alt ?? LINE_0,
-            can_edit   : true,
-            collapsed  : true,
+            kdb         : blockCollection.kdb ?? '',
+            unit        : blockCollection.unit ?? '',
+            description : blockCollection.description ?? '',
+            line_alt    : blockCollection.line_alt ?? LINE_0,
+            can_edit    : true,
+            collapsed   : true,
+            substitution: blockCollection.blocks.some(block => block.substitution)
         }))
-        .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
-        .sort((a, b) => a.priority - b.priority) // по приоритету на линии
-        .sort((a, b) => a.line.localeCompare(b.line)) // по линии пр-ва
-        .sort((a, b) => Number(b.active) - Number(a.active)) // по актуальности
-        .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
+        .sort((a, b) => {
+            // __ 1. По собственному производству (own: true вверху)
+            if (b.own !== a.own) {
+                return Number(b.own) - Number(a.own)
+            }
+
+            // __ 2. По актуальности (active: true вверху)
+            if (b.active !== a.active) {
+                return Number(b.active) - Number(a.active)
+            }
+
+            // __ 3. По линии производства (по алфавиту / коду)
+            const lineCmp = a.line.localeCompare(b.line)
+            if (lineCmp !== 0) {
+                return lineCmp
+            }
+
+            // __ 4. По приоритету на линии (по возрастанию)
+            if (a.priority !== b.priority) {
+                return a.priority - b.priority
+            }
+
+            // __ 5. По алфавиту (название)
+            return a.name.localeCompare(b.name)
+        })
 
     return blockCollections
-}
-
-
-// __ Формируем отображение Коллекций блоков
-const getBlockCollectionsRender = () => {
-    blockCollectionsRender.value = blockCollections.value
 }
 
 
@@ -1094,7 +1338,7 @@ const deleteBlock = async (block: IBlock) => {
 
 
 // __ Реализация фильтров
-watchEffect(() => {
+const blockCollectionsRender = computed<IBlockCollection[]>(() => {
     const idFilterSearch          = idFilter.value.toLowerCase()
     const nameFilterSearch        = nameFilter.value.toLowerCase()
     const code_1cFilterSearch     = code_1cFilter.value.toLowerCase()
@@ -1105,50 +1349,146 @@ watchEffect(() => {
     const heightFilterSearch      = heightFilter.value.toLowerCase()
     const lengthFilterSearch      = lengthFilter.value.toLowerCase()
     const descriptionFilterSearch = descriptionFilter.value.toLowerCase()
-    // const lineFilterSearch        = lineFilter.value.toLowerCase()
-    // const lineAltFilterSearch     = lineAltFilter.value.toLowerCase()
 
-    blockCollectionsRender.value = blockCollections.value
-        .filter(blockCollection => blockCollection.id.toString().toLowerCase().includes(idFilterSearch))
-        .filter(blockCollection => blockCollection.name.toLowerCase().includes(nameFilterSearch))
-        .filter(blockCollection => blockCollection.code_1c.toLowerCase().includes(code_1cFilterSearch))
-        .filter(blockCollection => blockCollection.unit!.toLowerCase().includes(unitFilterSearch))
-        .filter(blockCollection => blockCollection.kdb!.toLowerCase().includes(kdbFilterSearch))
-        // .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
-        // .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
-        .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
-        .filter(blockCollection => blockCollection.priority_2.toString().toLowerCase().includes(priorityFilterSearch_2))
-        .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
-        .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))
-        .filter(blockCollection => blockCollection.description!.toString().toLowerCase().includes(descriptionFilterSearch))
-        .filter(collection => {
-            if (activeFilter.value === 0) return true
-            else if (activeFilter.value === 1) return collection.active
-            else if (activeFilter.value === 2) return !collection.active
+    return blockCollections.value
+        // __ Создаем копии объектов и фильтруем вложенные блоки без мутации исходника
+        .map(blockCollection => {
+            if (shownFilter.value === 0) return blockCollection
+
+            const shown = shownFilter.value === 1
+            return {
+                ...blockCollection,
+                blocks: blockCollection.blocks.filter(block => block.shown === shown)
+            }
         })
-        .filter(collection => {
-            if (ownFilter.value === 0) return true
-            else if (ownFilter.value === 1) return collection.own
-            else if (ownFilter.value === 2) return !collection.own
+        // __ Фильтруем сами коллекции
+        .filter(blockCollection => {
+            if (shownFilter.value !== 0) {
+                const shown = shownFilter.value === 1
+                if (blockCollection.shown !== shown /*|| blockCollection.blocks.length === 0*/) {
+                    return false
+                }
+            }
+
+            if (idFilterSearch && !blockCollection.id.toString().toLowerCase().includes(idFilterSearch)) return false
+            if (nameFilterSearch && !blockCollection.name.toLowerCase().includes(nameFilterSearch)) return false
+            if (code_1cFilterSearch && !blockCollection.code_1c.toLowerCase().includes(code_1cFilterSearch)) return false
+            if (unitFilterSearch && !blockCollection.unit!.toLowerCase().includes(unitFilterSearch)) return false
+            if (kdbFilterSearch && !blockCollection.kdb!.toLowerCase().includes(kdbFilterSearch)) return false
+            if (priorityFilterSearch && !blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch)) return false
+            if (priorityFilterSearch_2 && !blockCollection.priority_2.toString().toLowerCase().includes(priorityFilterSearch_2)) return false
+            if (heightFilterSearch && !blockCollection.height.toString().toLowerCase().includes(heightFilterSearch)) return false
+            if (lengthFilterSearch && !blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch)) return false
+            if (descriptionFilterSearch && !blockCollection.description!.toString().toLowerCase().includes(descriptionFilterSearch)) return false
+
+            if (activeFilter.value === 1 && !blockCollection.active) return false
+            if (activeFilter.value === 2 && blockCollection.active) return false
+
+            if (ownFilter.value === 1 && !blockCollection.own) return false
+            if (ownFilter.value === 2 && blockCollection.own) return false
+
+            if (lineFilter.value === 1 && blockCollection.line !== LINE_1) return false
+            if (lineFilter.value === 2 && blockCollection.line !== LINE_2) return false
+
+            if (lineAltFilter.value === 1 && blockCollection.line_alt !== LINE_1) return false
+            if (lineAltFilter.value === 2 && blockCollection.line_alt !== LINE_2) return false
+
+            return true
         })
-        .filter(collection => {
-            if (lineFilter.value === 0) return true
-            else if (lineFilter.value === 1) return collection.line === LINE_1
-            else if (lineFilter.value === 2) return collection.line === LINE_2
+        .sort((a, b) => {
+            // __ 1) По собственному производству (own: true вверху)
+            if (b.own !== a.own) return Number(b.own) - Number(a.own)
+
+            // __ 2) По актуальности (active: true вверху)
+            if (b.active !== a.active) return Number(b.active) - Number(a.active)
+
+            // __ 3) По линии производства
+            const lineCmp = a.line.localeCompare(b.line)
+            if (lineCmp !== 0) return lineCmp
+
+            // __ 4) По приоритету
+            if (a.priority !== b.priority) return a.priority - b.priority
+
+            // __ 5) По алфавиту
+            return a.name.localeCompare(b.name)
         })
-        .filter(collection => {
-            if (lineAltFilter.value === 0) return true
-            else if (lineAltFilter.value === 1) return collection.line_alt === LINE_1
-            else if (lineAltFilter.value === 2) return collection.line_alt === LINE_2
-        })
-        .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
-        .sort((a, b) => a.priority - b.priority) // по приоритету на линии
-        .sort((a, b) => a.line.localeCompare(b.line)) // по линии пр-ва
-        .sort((a, b) => Number(b.active) - Number(a.active)) // по актуальности
-        .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
-    return
+    //
+    //
+    // return blockCollections.value
+    //     .filter(blockCollection => {
+    //         if (shownFilter.value === 0) return true
+    //         const shown = shownFilter.value === 1 // __ true
+    //
+    //         // console.log(blockCollection.name, blockCollection.shown)
+    //
+    //         return blockCollection.shown === shown && blockCollection.blocks.length > 0
+    //     })
+    //     .filter(blockCollection => blockCollection.id.toString().toLowerCase().includes(idFilterSearch))
+    //     .filter(blockCollection => blockCollection.name.toLowerCase().includes(nameFilterSearch))
+    //     .filter(blockCollection => blockCollection.code_1c.toLowerCase().includes(code_1cFilterSearch))
+    //     .filter(blockCollection => blockCollection.unit!.toLowerCase().includes(unitFilterSearch))
+    //     .filter(blockCollection => blockCollection.kdb!.toLowerCase().includes(kdbFilterSearch))
+    //     // .filter(blockCollection => blockCollection.line.toString().toLowerCase().includes(lineFilterSearch))
+    //     // .filter(blockCollection => blockCollection.line_alt!.toString().toLowerCase().includes(lineAltFilterSearch))
+    //     .filter(blockCollection => blockCollection.priority.toString().toLowerCase().includes(priorityFilterSearch))
+    //     .filter(blockCollection => blockCollection.priority_2.toString().toLowerCase().includes(priorityFilterSearch_2))
+    //     .filter(blockCollection => blockCollection.height.toString().toLowerCase().includes(heightFilterSearch))
+    //     .filter(blockCollection => blockCollection.length.toString().toLowerCase().includes(lengthFilterSearch))
+    //     .filter(blockCollection => blockCollection.description!.toString().toLowerCase().includes(descriptionFilterSearch))
+    //     .filter(collection => {
+    //         if (activeFilter.value === 0) return true
+    //         else if (activeFilter.value === 1) return collection.active
+    //         else if (activeFilter.value === 2) return !collection.active
+    //     })
+    //     .filter(collection => {
+    //         if (ownFilter.value === 0) return true
+    //         else if (ownFilter.value === 1) return collection.own
+    //         else if (ownFilter.value === 2) return !collection.own
+    //     })
+    //     .filter(collection => {
+    //         if (lineFilter.value === 0) return true
+    //         else if (lineFilter.value === 1) return collection.line === LINE_1
+    //         else if (lineFilter.value === 2) return collection.line === LINE_2
+    //     })
+    //     .filter(collection => {
+    //         if (lineAltFilter.value === 0) return true
+    //         else if (lineAltFilter.value === 1) return collection.line_alt === LINE_1
+    //         else if (lineAltFilter.value === 2) return collection.line_alt === LINE_2
+    //     })
+    //     .sort((a, b) => {
+    //         // 1) По собственному производству (own: true вверху)
+    //         if (b.own !== a.own) return Number(b.own) - Number(a.own)
+    //
+    //         // 2) По актуальности (active: true вверху)
+    //         if (b.active !== a.active) return Number(b.active) - Number(a.active)
+    //
+    //         // 3) По линии производства
+    //         const lineCmp = a.line.localeCompare(b.line)
+    //         if (lineCmp !== 0) return lineCmp
+    //
+    //         // 4) По приоритету
+    //         if (a.priority !== b.priority) return a.priority - b.priority
+    //
+    //         // 5) По алфавиту
+    //         return a.name.localeCompare(b.name)
+    //     })
+    //     // .sort((a, b) => a.name.localeCompare(b.name)) // по алфавиту
+    //     // .sort((a, b) => a.priority - b.priority) // по приоритету на линии
+    //     // .sort((a, b) => a.line.localeCompare(b.line)) // по линии пр-ва
+    //     // .sort((a, b) => Number(b.active) - Number(a.active)) // по актуальности
+    //     // .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
+
 })
 
+
+// __ Формируем отображение Коллекций блоков
+// const getBlockCollectionsRender = () => {
+//     blockCollectionsRender.value = blockCollections.value
+// }
+
+watch(() => collapsedMap.value, () => {
+    updateCollapseMap()
+}, { deep: true })
 
 onMounted(async () => {
     isLoading.value      = true
@@ -1158,7 +1498,8 @@ onMounted(async () => {
         async () => {
 
             await getBlockCollections()
-            getBlockCollectionsRender()
+            // getBlockCollectionsRender()
+            setCollapsedMap()
             if (DEBUG) console.log('blockCollections: ', blockCollections.value)
 
         },

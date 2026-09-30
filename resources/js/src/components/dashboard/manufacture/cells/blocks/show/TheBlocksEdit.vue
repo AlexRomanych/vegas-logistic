@@ -32,7 +32,7 @@
                 <!-- __ Коллекция блоков -->
                 <div class="input-wrapper" @dblclick="selectCollection">
                     <AppInputTextTS
-                        id="kdb"
+                        id="block-collections"
                         v-model:textValue.trim="collectionName"
                         :errors="v$.collection.$errors"
                         :width="FIELD_WIDTH_CHECK_BOX"
@@ -95,6 +95,47 @@
                     type="secondary"
                     @checked="activeCheckedHandler"
                 />
+
+                <!-- __ Shown -->
+                <div class="mt-5"></div>
+                <AppCheckboxTSReactive
+                    id="shown"
+                    :checkboxData="shownCheckboxData"
+                    :width="FIELD_WIDTH_CHECK_BOX"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Отображение в Справочнике"
+                    type="secondary"
+                    @checked="shownCheckedHandler"
+                />
+
+                <!-- __ Подменять ли при загрузке или нет (Substitution) -->
+                <div class="mt-5"></div>
+                <AppCheckboxTSReactive
+                    id="substitution"
+                    :checkboxData="substitutionCheckboxData"
+                    :width="FIELD_WIDTH_CHECK_BOX"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Подмена при создании СЗ"
+                    type="secondary"
+                    @checked="substitutionCheckedHandler"
+                />
+
+                <!-- __ Блок для подмены -->
+                <div class="input-wrapper" @dblclick="selectBlock">
+                    <AppInputTextTS
+                        id="block-substitution"
+                        v-model:textValue.trim="blockName"
+                        :errors="v$.blockSubstitutionName.$errors"
+                        :width="FIELD_WIDTH_CHECK_BOX"
+                        class="disabled-input"
+                        disabled
+                        label="Блок подмены"
+                        mode="text"
+                        placeholder="Выберите Блок подмены (двойной клик)..."
+                    />
+                </div>
 
                 <!-- __ Описание Блока -->
                 <AppInputTextAreaSimpleTS
@@ -200,7 +241,7 @@ import AppCheckboxTSReactive from '@/components/ui/checkboxes/AppCheckboxTSReact
 // import AppCheckboxTS from '@/components/ui/checkboxes/AppCheckboxTS.vue'
 
 
-type ISelectableItem = IBlockCollection & { id: number; name: string };
+type ISelectableItem = (IBlockCollection | IBlock) & { id: number; name: string }
 
 const blockStore = useBlocksStore()
 
@@ -236,6 +277,7 @@ const appModalAsyncSelectTS = ref<any>(null)
 
 // __ Подготавливаем переменные
 const blockCollections = ref<IBlockCollection[]>([])
+const blocks           = ref<IBlock[]>([])
 const block            = ref<IBlock>(BLOCK_DRAFT)
 
 
@@ -253,30 +295,49 @@ const getBlockCollections = async () => {
     blockCollections.value = await blockStore.getBlockCollections()
 }
 
+// __ Получаем Сами Блоки
+const getBlocks = async () => {
+    const temp: IBlock[] = await blockStore.getBlocks()
+    blocks.value = temp.toSorted((a, b) => a.name.localeCompare(b.name))
+}
+
 // __ Определяем объекты валидации
 // const id = ref(-1)
-const code_1c     = ref('')
-const name        = ref('')
-const collection  = ref('')
-const width       = ref(0)
-const length      = ref(0)
-const active      = ref(true)
-const description = ref('')
+const code_1c               = ref('')
+const name                  = ref('')
+const collection            = ref('')
+const blockSubstitutionName = ref('')
+const blockSubstitutionCode = ref('')
+const width                 = ref(0)
+const length                = ref(0)
+const active                = ref(true)
+const shown                 = ref(true)
+const substitution          = ref(true)
+const description           = ref('')
 
 const collectionName = computed(() => {
     const blockCollection = blockCollections.value.find(coll => coll.code_1c === collection.value)
     return blockCollection?.name ?? 'Не определено'
 })
 
+const blockName = computed(() => {
+    const block = blocks.value.find(block => block.code_1c === blockSubstitutionCode.value)
+    return block?.name ?? 'Не определен'
+})
+
 // __ Заполняем объекты валидации
 const fillData = () => {
-    code_1c.value     = block.value.code_1c
-    name.value        = block.value.name
-    width.value       = block.value.width
-    length.value      = block.value.length
-    collection.value  = block.value.collection
-    active.value      = block.value.active
-    description.value = block.value.description ?? ''
+    code_1c.value               = block.value.code_1c
+    name.value                  = block.value.name
+    width.value                 = block.value.width
+    length.value                = block.value.length
+    collection.value            = block.value.collection
+    blockSubstitutionName.value = block.value.substitution?.name ?? 'Не определен'
+    blockSubstitutionCode.value = block.value.substitution?.code_1c ?? ''
+    active.value                = block.value.active
+    shown.value                 = block.value.shown
+    substitution.value          = block.value.substitution?.substitution ?? false
+    description.value           = block.value.description ?? ''
 }
 
 
@@ -287,6 +348,7 @@ const verify = {
     width,
     length,
     collection,
+    blockSubstitutionName,
     description,
 }
 
@@ -305,7 +367,7 @@ const rules = {
     //     required: helpers.withMessage(REQUIRED_MESSAGE, required),
     // },
 
-    code_1c    : {
+    code_1c              : {
         $autoDirty: true,
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength : helpers.withMessage(
@@ -317,7 +379,7 @@ const rules = {
             maxLength(CODE_1C_LENGTH),
         ),
     },
-    name       : {
+    name                 : {
         $autoDirty: true,
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
         minLength : helpers.withMessage(
@@ -325,7 +387,7 @@ const rules = {
             minLength(MIN_NAME_LENGTH),
         ),
     },
-    width      : {
+    width                : {
         $autoDirty: true,
         minValue  : helpers.withMessage(`Поле должно быть больше или равно 1`, minValue(1)),
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -333,7 +395,7 @@ const rules = {
         integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
         // $lazy: true,
     },
-    length     : {
+    length               : {
         $autoDirty: true,
         minValue  : helpers.withMessage(`Поле должно быть больше или равно 1`, minValue(1)),
         required  : helpers.withMessage(REQUIRED_MESSAGE, required),
@@ -341,8 +403,9 @@ const rules = {
         integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
         // $lazy: true,
     },
-    collection : {},
-    description: {},
+    collection           : {},
+    blockSubstitutionName: {},
+    description          : {},
 }
 
 // __ Оборачиваем в объект
@@ -357,6 +420,22 @@ const activeCheckboxData = computed<ICheckboxData>(() => ({
     ],
 }))
 
+const shownCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'shown',
+    data: [
+        { id: 1, name: 'Отображать', checked: shown.value },
+        { id: 2, name: 'Скрыть', checked: !shown.value },
+    ],
+}))
+
+const substitutionCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'substitution',
+    data: [
+        { id: 1, name: 'Подменять', checked: substitution.value },
+        { id: 2, name: 'Не подменять', checked: !substitution.value },
+    ],
+}))
+
 // __ Обработчик чекбокса на active
 const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
@@ -365,6 +444,30 @@ const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => 
     }
 }
 
+// __ Обработчик чекбокса на shown
+const shownCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        block.value.shown = data.id === 1
+        shown.value       = block.value.shown
+    }
+}
+
+// __ Обработчик чекбокса на substitution
+const substitutionCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        if (data.id === 1) {
+            substitution.value       = true
+            block.value.substitution = {
+                substitution: true,
+                code_1c     : '',
+                name        : '',
+            }
+        } else {
+            substitution.value       = false
+            block.value.substitution = null
+        }
+    }
+}
 
 // __ Показываем сообщение об ошибке
 // const showError = async (error: string | null = null) => {
@@ -388,6 +491,22 @@ const selectCollection = async () => {
     }
 }
 
+// __ Выбираем Блок Подмены
+const selectBlock = async () => {
+    if (!substitution.value) {
+        return
+    }
+
+    selectedItems.value  = blocks.value
+    const findItem       = blocks.value.find(block => block.name === blockSubstitutionName.value)
+    selectedItemId.value = findItem ? findItem.id : 0
+
+    const answer = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
+    if (answer) {
+        const selectedBlock         = appModalAsyncSelectTS.value!.selected
+        blockSubstitutionCode.value = selectedBlock.code_1c
+    }
+}
 
 // __ Отправка формы
 const formSubmit = async () => {
@@ -398,10 +517,21 @@ const formSubmit = async () => {
     block.value.code_1c     = code_1c.value
     block.value.name        = name.value
     block.value.active      = active.value
+    block.value.shown       = shown.value
     block.value.description = description.value
     block.value.width       = width.value
     block.value.length      = length.value
     block.value.collection  = collection.value
+
+    if (substitution.value) {
+        block.value.substitution = {
+            substitution: true,
+            code_1c     : blockSubstitutionCode.value,
+            name        : blockSubstitutionName.value,
+        }
+    } else {
+        block.value.substitution = null
+    }
 
     console.log('block.value', block.value)
 
@@ -449,7 +579,11 @@ onMounted(async () => {
         editMode.value = route.meta.mode === 'edit' // определяем режим работы формы (редактирование или создание)
     })
 
-    await Promise.all([loadEntity(paramId), getBlockCollections()])
+    await Promise.all([
+        loadEntity(paramId),
+        getBlockCollections(),
+        getBlocks(),
+    ])
 
     // await loadEntity(paramId)
 
@@ -473,5 +607,6 @@ onMounted(async () => {
     /* Важно: заставляем курсор игнорировать инпут,
        тогда клик уйдет на .input-wrapper */
     pointer-events: none;
+    cursor: pointer;
 }
 </style>

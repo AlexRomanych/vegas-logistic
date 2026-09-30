@@ -120,6 +120,19 @@
                     @checked="activeCheckedHandler"
                 />
 
+                <!-- __ Shown -->
+                <div class="mt-5"></div>
+                <AppCheckboxTSReactive
+                    id="shown"
+                    :checkboxData="shownCheckboxData"
+                    :width="FIELD_WIDTH_CHECK_BOX"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Отображение в Справочнике"
+                    type="secondary"
+                    @checked="shownCheckedHandler"
+                />
+
                 <!-- __ Own - Собственное производство -->
                 <div class="mt-5"></div>
                 <AppCheckboxTSReactive
@@ -356,6 +369,7 @@ const height       = ref(0)
 const length       = ref(0)
 const productivity = ref(0)
 const active       = ref(true)
+const shown        = ref(true)
 const own          = ref(true)
 const description  = ref('')
 
@@ -483,6 +497,14 @@ const activeCheckboxData = computed<ICheckboxData>(() => ({
     ],
 }))
 
+const shownCheckboxData = computed<ICheckboxData>(() => ({
+    name: 'shown',
+    data: [
+        { id: 1, name: 'Отображать', checked: shown.value },
+        { id: 2, name: 'Скрыть', checked: !shown.value },
+    ],
+}))
+
 const ownCheckboxData = computed<ICheckboxData>(() => ({
     name: 'own',
     data: [
@@ -522,6 +544,14 @@ const activeCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => 
     if (!Array.isArray(data)) {
         blockCollection.value.active = data.id === 1
         active.value                 = blockCollection.value.active
+    }
+}
+
+// __ Обработчик чекбокса на shown
+const shownCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        blockCollection.value.shown = data.id === 1
+        shown.value                 = blockCollection.value.shown
     }
 }
 
@@ -637,6 +667,7 @@ const formSubmit = async () => {
     blockCollection.value.length       = length.value
     blockCollection.value.productivity = productivity.value
     blockCollection.value.active       = active.value
+    blockCollection.value.shown        = shown.value
     blockCollection.value.own          = own.value
     blockCollection.value.description  = description.value
 

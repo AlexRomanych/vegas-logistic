@@ -29,7 +29,7 @@ class BlockCollectionController extends Controller
     {
         try {
             $blockCollections = BlockCollection::query()
-                ->with(['blocks', 'kdbDoc'])
+                ->with(['blocks', 'blocks.substitutionBlock', 'kdbDoc'])
                 ->get();
             return BlockCollectionResource::collection($blockCollections);
         } catch (Exception $e) {
@@ -93,6 +93,7 @@ class BlockCollectionController extends Controller
                 'length'       => 'required|integer',
                 'productivity' => 'required|numeric',
                 'own'          => 'required|boolean',
+                'shown'        => 'required|boolean',
             ]);
 
             $blockCollection = BlockCollection::query()->create([
@@ -110,6 +111,7 @@ class BlockCollectionController extends Controller
                 'length'       => $data['length'],
                 'productivity' => $data['productivity'],
                 'description'  => $data['description'],
+                'shown'        => $data['shown'],
             ]);
 
             if (!$blockCollection) {
@@ -149,6 +151,7 @@ class BlockCollectionController extends Controller
                 'length'       => 'required|integer',
                 'productivity' => 'required|numeric',
                 'own'          => 'required|boolean',
+                'shown'        => 'required|boolean',
             ]);
 
             $blockCollection = BlockCollection::query()->findOrFail($data['id']);
@@ -167,6 +170,7 @@ class BlockCollectionController extends Controller
                 'length',
                 'productivity',
                 'own',
+                'shown',
             ]);
 
             $blockCollection->update($updates);
@@ -334,8 +338,8 @@ class BlockCollectionController extends Controller
                             $minTime                += $tuningMap[$mapKey];
                         } else {
                             $matrix[$fromId][$toId] = 0;
-                            $collectionFrom = BlocksService::getBlockCollectionById($fromId);
-                            $collectionTo = BlocksService::getBlockCollectionById($toId);
+                            $collectionFrom         = BlocksService::getBlockCollectionById($fromId);
+                            $collectionTo           = BlocksService::getBlockCollectionById($toId);
                             $errors[]               = $collectionFrom->name . ' --> ' . $collectionTo->name;
                         }
 

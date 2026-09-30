@@ -5,9 +5,11 @@ namespace App\Models\Manufacture\Cells\Block;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @method own (mixed $query)
+ * @method query()
+ * @method own(mixed $query)
  */
 class Block extends Model
 {
@@ -42,6 +44,12 @@ class Block extends Model
     public function blockCollection(): BelongsTo
     {
         return $this->belongsTo(BlockCollection::class, 'collection', CODE_1C);
+    }
+
+    // Relations: Связь с Блоком подмены
+    public function substitutionBlock(): BelongsTo
+    {
+        return $this->belongsTo(Block::class, 'substitution_block_code_1c', CODE_1C);
     }
 
 }

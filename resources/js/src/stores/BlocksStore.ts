@@ -632,6 +632,15 @@ export const useBlocksStore = defineStore('blocks', () => {
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---                 Блоки                       !!!
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // __ Получение Списка Блоков
+    const getBlocks = async () => {
+        const response = await jwtGet(URL_BLOCKS)
+        const result   = await response
+        if (DEBUG) console.log('BlocksStore: getBlocks: ', result)
+        return result.data
+    }
+
     // __ Получение Блока по id
     const getBlockById = async (id: number) => {
         const response = await jwtGet(URL_BLOCKS + '/' + id)
@@ -1074,6 +1083,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         deleteBlockPicturesTuningTime,
         getBlockCollectionsTuningTimeOptimized,
 
+        getBlocks,
         getBlockById,
         createBlock,
         updateBlock,

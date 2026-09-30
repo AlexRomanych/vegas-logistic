@@ -69,20 +69,23 @@ export const BLOCK_COLLECTION_DRAFT: IBlockCollection = {
     own         : true,
     description : null,
     blocks      : [],
+    shown       : true,
 }
 
 
 // __ Объект Блока
 export const BLOCK_DRAFT: IBlock = {
-    id         : 0,
-    code_1c    : '',
-    name       : '',
-    unit       : null,
-    width      : 0,
-    length     : 0,
-    active     : true,
-    description: null,
-    collection : '000000000' // Без коллекции
+    id          : 0,
+    code_1c     : '',
+    name        : '',
+    unit        : null,
+    width       : 0,
+    length      : 0,
+    active      : true,
+    description : null,
+    collection  : '000000000', // __ Без коллекции
+    shown       : true,
+    substitution: null,
 
 }
 

@@ -42,10 +42,12 @@ export interface IBlockCollection {
     active: boolean
     own: boolean
     description: string | null
+    shown: boolean
     blocks: IBlock[]
 
     collapsed?: boolean
     can_edit?: boolean
+    substitution?: boolean
 }
 
 
@@ -60,7 +62,16 @@ export interface IBlock {
     active: boolean
     description: string | null
     collection: string
+    shown: boolean
+    substitution: IBlockSubstitution | null
     can_edit?: boolean
+}
+
+// __ Блок Подмены
+export interface IBlockSubstitution {
+    substitution: boolean
+    code_1c: string
+    name: string
 }
 
 // __ Линия производства

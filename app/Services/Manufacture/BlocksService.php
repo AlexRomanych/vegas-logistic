@@ -49,7 +49,7 @@ final class BlocksService
     {
         try {
             $blocks = Block::query()
-                ->with(['blockCollection'])
+                ->with(['blockCollection', 'substitutionBlock', 'substitutionBlock.blockCollection'])
                 ->get();
 
             foreach ($blocks as $block) {
@@ -214,20 +214,29 @@ final class BlocksService
             foreach ($groupedPivotRecordsExpense as $code1C => $records) {
                 $block = self::getBlockByCode1c($code1C);
                 if (!$block) {
+                    //$a = 0;
                     throw new Exception('Missing Block with code 1c ' . $code1C);
                 }
 
-                // __ Получаем так, потому что collection - поле в Block
-                $collection = $block->getRelation('blockCollection');
+                // __ Обрабатываем Подмену Блока
+                $workBlock = $block;
+                if (isset($block->substitutionBlock) && !is_null($block->substitutionBlock)) {
+                    $workBlock = $block->substitutionBlock;
+                }
 
+                $blockCode1C = $workBlock->code_1c;
+                $blockName   = $workBlock->name;
+
+                // __ Получаем так, потому что collection - поле в Block
+                $collection = $workBlock->getRelation('blockCollection');
 
                 // __ Формируем контекст для Блока в СЗ
                 $orderLineContext[] = [];
                 $totals             = 0;
                 foreach ($records as $record) {
-                    if ($record->order_line_id === 19507) {
-                        $a = 0;
-                    }
+                    //if ($record->order_line_id === 19507) {
+                    //    $a = 0;
+                    //}
 
                     // __ Получаем метаинформацию для блока из Комментариев Строки
                     $attr = [
@@ -244,9 +253,9 @@ final class BlocksService
                         BlockTaskLine::query()->create([
                             'description'        => $meta[OrderLine::BLOCK_META_FIELD],
                             'block_task_id'      => $createdTask->id,
-                            'block_code_1c'      => $block->code_1c,
-                            'block_code_1c_copy' => $block->code_1c,
-                            'block_name'         => $block->name,
+                            'block_code_1c'      => $blockCode1C,
+                            'block_code_1c_copy' => $block->code_1c,    // __ Тут все же пишем Оригинал Блока
+                            'block_name'         => $blockName,
                             'order_line_ids'     => [
                                 'order_line_id'     => $record->order_line_id,
                                 'order_line_amount' => $record->amount,
@@ -257,8 +266,8 @@ final class BlocksService
                             'line'               => $collection->line,
                             'position'           => $position++,
                             'productivity'       => $collection->productivity,
-                            'square'             => $block->length * $block->width / 100 / 100,
-                            'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totalMeta / $collection->productivity : 0,
+                            'square'             => $workBlock->length * $workBlock->width / 100 / 100,
+                            'time'               => $collection->productivity !== 0.0 ? ($workBlock->length * $workBlock->width / 100 / 100) * (int)$totalMeta / $collection->productivity : 0,
                         ]);
                     } else {
                         $orderLineContext[] = [
@@ -276,19 +285,18 @@ final class BlocksService
                 if ($totals > 0) {
                     BlockTaskLine::query()->create([
                         'block_task_id'      => $createdTask->id,
-                        'block_code_1c'      => $block->code_1c,
-                        'block_code_1c_copy' => $block->code_1c,
-                        'block_name'         => $block->name,
+                        'block_code_1c'      => $blockCode1C,
+                        'block_code_1c_copy' => $block->code_1c,    // __ Тут все же пишем Оригинал Блока
+                        'block_name'         => $blockName,
                         'order_line_ids'     => $orderLineContext,
                         'amount'             => (int)$totals,
                         'line'               => $collection->line,
                         'position'           => $position++,
                         'productivity'       => $collection->productivity,
-                        'square'             => $block->length * $block->width / 100 / 100,
-                        'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * (int)$totals / $collection->productivity : 0,
+                        'square'             => $workBlock->length * $workBlock->width / 100 / 100,
+                        'time'               => $collection->productivity !== 0.0 ? ($workBlock->length * $workBlock->width / 100 / 100) * (int)$totals / $collection->productivity : 0,
                     ]);
                 }
-
             }
 
             // __ Создаем запись в Статусе: Создано
@@ -648,9 +656,8 @@ final class BlocksService
 
         $nextChange = BlocksService::getNextChange(Carbon::parse('2026-08-13'), '1');
 
-        $date = $nextChange->getManufactureDay();
+        $date   = $nextChange->getManufactureDay();
         $change = $nextChange->getChange();
-        $a = 0;
-
+        $a      = 0;
     }
 }

@@ -27,7 +27,7 @@ use Throwable;
 class BlockTaskController extends Controller
 {
     /**
-     * ___ Получаем СЗ на Раскрой
+     * ___ Получаем СЗ на Блоки
      * @param Request $request
      * @return AnonymousResourceCollection|string
      * @noinspection DuplicatedCode
@@ -122,7 +122,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Получаем СЗ на Раскрой
+     * ___ Получаем СЗ на Блоки
      * @param string $orderId
      * @return AnonymousResourceCollection|string
      * @noinspection DuplicatedCode
@@ -778,7 +778,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Проверяем наличие СЗ на Раскрой по статусам в определенную дату
+     * ___ Проверяем наличие СЗ на Блоки по статусам в определенную дату
      * @param Request $request
      * @return bool[]|string
      */
@@ -917,7 +917,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Получаем СЗ на Раскрой по статусам
+     * ___ Получаем СЗ на Блоки по статусам
      * @param Request $request
      * @return AnonymousResourceCollection|string
      */
@@ -1039,7 +1039,6 @@ class BlockTaskController extends Controller
     public function getBlockTasksByStatusAndPeriod(Request $request)
     {
         try {
-            $all = $request->all();
             $validated = $request->validate([
                 // __ Проверяем, что 'statuses' — это массив
                 'statuses'     => 'nullable|array',
@@ -1051,11 +1050,7 @@ class BlockTaskController extends Controller
                 'period.end'   => 'required_if:period,*,!null|date|date_format:Y-m-d',
             ]);
 
-
-
             if (isset($validated['period'])) {
-                $a = $validated['period'];
-
                 $start = Carbon::parse($validated['period']['start']);
                 $end   = Carbon::parse($validated['period']['end']);
             } else {
