@@ -220,7 +220,7 @@ final class BlocksService
 
                 // __ Обрабатываем Подмену Блока
                 $workBlock = $block;
-                if (isset($block->substitutionBlock) && !is_null($block->substitutionBlock)) {
+                if ($block->substitution && isset($block->substitutionBlock) && !is_null($block->substitutionBlock)) {
                     $workBlock = $block->substitutionBlock;
                 }
 

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
+ * @property bool $substitution
+ *
  * @method static Builder|BlockTask query()
  * @method Builder|BlockTask byStatus(mixed $data)
  * @method Builder|BlockTask whereDayAt(mixed $data)

@@ -52,6 +52,7 @@ const URL_BLOCKS_TASK_STATUSES_SET         = '/blocks/task/statuses/set'        
 const URL_BLOCKS_TASK_STATUSES_COLOR_PATCH = '/blocks/task/statuses/color/patch'   // URL для получения Статуса Движения СЗ
 
 const URL_BLOCKS_TASKS                      = '/blocks/tasks'                       // URL для получения Сменных заданий
+const URL_BLOCKS_TASKS_SYNC                 = '/blocks/tasks/sync'                  // URL для синхронизации Трудозатрат Сменных заданий и Справочника
 const URL_BLOCKS_TASKS_UPDATE               = '/blocks/tasks/update'                // URL для обновления Сменных заданий
 const URL_BLOCKS_TASKS_ORDER_ID             = '/blocks/tasks/order'                 // URL для получения Сменных заданий по id Заявки
 const URL_BLOCKS_TASKS_DELETE               = '/blocks/tasks/delete'                // URL для удаления Сменных заданий по id СЗ
@@ -594,6 +595,13 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Синхронизируем Трудозатраты
+    const syncBlockTasksProductivity = async () => {
+        const result = await jwtGet(URL_BLOCKS_TASKS_SYNC)
+        if (DEBUG) console.log('BlockStore: syncBlockTasksProductivity: ', result)
+        return result
+    }
+
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---        Коллекции (Группы) Блоков            !!!
@@ -1090,6 +1098,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 
         getBlockTasksByStatus,
         getBlockTasksByStatusAndPeriod,
+        syncBlockTasksProductivity,
 
         getBlockTaskStatuses,
         patchBlockTaskStatusColor,

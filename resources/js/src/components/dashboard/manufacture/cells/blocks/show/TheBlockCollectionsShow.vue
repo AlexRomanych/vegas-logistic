@@ -281,6 +281,7 @@
                                 text-size="mini"
                                 type="indigo"
                                 width="w-[64px]"
+                                @click="productivitySync"
                             />
                         </div>
                         <!-- __ Сброс фильтров -->
@@ -521,13 +522,23 @@
         type="primary"
     />
 
+    <!-- __ Модальное окно для сообщений -->
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
+        :align="modalInfoAlign"
+        :mode="modalInfoMode"
+        :text="modalInfoText"
+        :type="modalInfoType"
+        width="w-[600px]"
+    />
+
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, computed, watch } from 'vue'
 
 import type {
-    IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument, IBlock,
+    IRenderData, ISelectData, ISelectDataItem, IBlockCollection, IBlockDocument, IBlock, IColorTypes,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -549,6 +560,8 @@ import BlockDesignDocumentAsync from '@/components/dashboard/manufacture/shared/
 // __ Loader
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 
 
 const isLoading = ref(false)
@@ -1326,17 +1339,6 @@ const getBlockCollections = async () => {
 }
 
 
-// __ Удаляем Коллекцию блоков
-const deleteBlockCollection = async (blockCollection: IBlockCollection) => {
-    return blockCollection
-}
-
-// __ Удаляем блок
-const deleteBlock = async (block: IBlock) => {
-    return block
-}
-
-
 // __ Реализация фильтров
 const blockCollectionsRender = computed<IBlockCollection[]>(() => {
     const idFilterSearch          = idFilter.value.toLowerCase()
@@ -1479,6 +1481,62 @@ const blockCollectionsRender = computed<IBlockCollection[]>(() => {
     //     // .sort((a, b) => Number(b.own) - Number(a.own)) // по собственному производству
 
 })
+
+// __ Тип для модального окна Сообщений
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const modalInfoAlign           = ref<'left' | 'right' | 'center'>('center')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null) // Получаем ссылку на модальное окно с асинхронной функцией
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---                 Ошибки                      !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// __ Показываем сообщение об ошибке
+async function showError(error: string | string[] | null = null) {
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'inform'
+
+    let renderError = ['Упс! Что-то пошло не так!', 'Ошибка при обработке запроса!']
+    if (typeof error === 'string' && error.length > 0) {
+        renderError = [error]
+    } else if (Array.isArray(error) && error.length > 0) {
+        renderError = error
+    }
+
+    modalInfoText.value  = renderError
+    modalInfoAlign.value = 'center'
+    await appModalAsyncMultilineTS.value!.show()
+}
+
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! ---              Side Effects                   !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// __ Удаляем Коллекцию блоков
+const deleteBlockCollection = async (blockCollection: IBlockCollection) => {
+    return blockCollection
+}
+
+// __ Удаляем блок
+const deleteBlock = async (block: IBlock) => {
+    return block
+}
+
+// __ Синхронизируем трудозатраты на сервере
+const productivitySync = async () => {
+    const result = await blocksStore.syncBlockTasksProductivity()
+    console.log(result)
+    if (checkCRUD(result)) {
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = [result.payload]
+        await appModalAsyncMultilineTS.value!.show()
+    } else {
+        await showError()
+    }
+}
 
 
 // __ Формируем отображение Коллекций блоков

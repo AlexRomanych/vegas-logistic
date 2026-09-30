@@ -1293,4 +1293,51 @@ class BlockTaskController extends Controller
     }
 
 
+    /**
+     * ___ Обновляем Трудозатраты
+     * @return string
+     */
+    public function syncBlockTasksProductivity()
+    {
+        try {
+            $createdTasks = BlockTask::query()
+                ->byStatus([
+                    BlockTaskStatus::BLOCK_STATUS_CREATED_ID,
+                    BlockTaskStatus::BLOCK_STATUS_ROLLING_ID,
+                ])
+                ->with(['blockLines'])
+                ->get();
+
+
+            foreach ($createdTasks as $createdTask) {
+                foreach ($createdTask->blockLines as $blockLine) {
+                    $block = BlocksService::getBlockByCode1c($blockLine->block_code_1c);
+
+                    // __ Обрабатываем Подмену Блока
+                    $workBlock = $block;
+                    if ($block->substitution && isset($block->substitutionBlock) && !is_null($block->substitutionBlock)) {
+                        $workBlock = $block->substitutionBlock;
+                    }
+
+                    // __ Получаем так, потому что collection - поле в Block
+                    $collection = $workBlock->getRelation('blockCollection');
+
+                    // __ Меняем в Записи (BlockTaskLine) все, что Зависит от Трудозатрат
+                    $blockLine->productivity = $collection->productivity;
+                    $blockLine->time =
+                        $collection->productivity !== 0.0
+                            ? ($workBlock->length * $workBlock->width / 100 / 100) * $blockLine->amount / $collection->productivity
+                            : 0;
+
+                    $blockLine->save();
+                }
+            }
+
+            return EndPointStaticRequestAnswer::ok('Данные успешно обновлены');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
 }

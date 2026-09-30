@@ -561,6 +561,7 @@ watch([
     () => code_1c,
     () => name,
     () => width,
+    () => length,
     () => description,
     () => collection,
 ], async () => {

@@ -365,6 +365,7 @@ Route::prefix('blocks')
         Route::get('tasks/status/date/before', [BlockTaskController::class, 'getBlockTasksByStatusBeforeDateAndChange']);
         //Route::get('tasks/status/date/on', [CellCuttingTaskController::class, 'getCuttingTasksByStatusOnDate']);
         Route::get('tasks/status/date/on/check', [BlockTaskController::class, 'checkBlockTasksByStatusOnDate']);
+        Route::get('tasks/sync', [BlockTaskController::class, 'syncBlockTasksProductivity']);
         Route::post('tasks/update', [BlockTaskController::class, 'updateBlockTasks']);
         Route::post('tasks/comment', [BlockTaskController::class, 'setBlockTaskComment']);
         Route::post('tasks/change', [BlockTaskController::class, 'modifyChange']);
