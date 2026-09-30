@@ -33,6 +33,9 @@
                     <!-- __ Финиш -->
                     <AppLabelMultilineTSWrapper :render-object="render.finish_at"/>
 
+                    <!-- __ Ассемблер -->
+                    <AppLabelMultilineTSWrapper :render-object="render.assembler"/>
+
                     <!-- __ Продолжительность -->
                     <AppLabelMultilineTSWrapper :render-object="render.duration"/>
 
@@ -103,6 +106,12 @@
                 <AppLabelTSWrapper
                     :arg="blockDay"
                     :render-object="render.finish_at"
+                />
+
+                <!-- __ Ассемблер -->
+                <AppLabelTSWrapper
+                    :arg="blockDay"
+                    :render-object="render.assembler"
                 />
 
                 <!-- __ Продолжительность -->
@@ -487,6 +496,23 @@ const render: IRenderData = reactive({
         dataAlign     : 'center',
         placeholder   : '🔍Дата...',
         data          : (blockDay: IBlockDay) => getDuration(blockDay),
+        class         : 'cursor-pointer',
+    },
+    assembler     : {
+        id            : () => 'assembler-search',
+        header        : ['Ассемблер', '',],
+        width         : 'w-[80px]',
+        height        : DEFAULT_HEIGHT,
+        show          : true,
+        headerType    : () => HEADER_TYPE,
+        dataType      : () => DATA_TYPE,
+        type          : (blockDay: IBlockDay) => blockDay.assembler === 0 ? 'danger' : DEFAULT_TYPE,
+        headerTextSize: HEADER_TEXT_SIZE,
+        dataTextSize  : DATA_TEXT_SIZE,
+        headerAlign   : HEADER_ALIGN,
+        dataAlign     : 'center',
+        placeholder   : '🔍Ассемблер...',
+        data          : (blockDay: IBlockDay) => blockDay.assembler.toString(),
         class         : 'cursor-pointer',
     },
     progressTotal: {
