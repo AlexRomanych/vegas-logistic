@@ -78,6 +78,32 @@
             rounded="4"
         />
 
+        <!-- __ Ручной приоритет -->
+        <AppInputNumberTSExtend
+            v-if="showManual"
+            v-model="manual"
+            :height="lineHeight"
+            :precision="0"
+            :text-size="LINE_TEXT_SIZE"
+            :type="manual === null ? getCheckType(blockLine) : 'orange'"
+            :width="fieldWidths.manual"
+            align="center"
+            placeholder=""
+            rounded="4"
+            @change="onManualChange"
+        />
+
+        <!-- __ Ручной приоритет -->
+        <!--<AppLabelTS-->
+        <!--    :height="lineHeight"-->
+        <!--    :text="blockLine.manual?.toString() || ''"-->
+        <!--    :text-size="LINE_TEXT_SIZE"-->
+        <!--    :type="getCheckType(blockLine)"-->
+        <!--    :width="fieldWidths.manual"-->
+        <!--    align="center"-->
+        <!--    rounded="4"-->
+        <!--/>-->
+
         <!-- __ КДБ -->
         <AppLabelTS
             :class="kdbId ? 'cursor-pointer' : ''"
@@ -170,28 +196,33 @@ import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
 
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
+import AppInputNumberTSExtend from '@/components/ui/inputs/AppInputNumberTSExtend.vue'
 
 interface IProps {
     blockLine: IBlockTaskLine
     fieldWidths: Record<string, string>
     index?: number
     ordering?: 'index' | 'position'
+    showManual?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    index   : 0,
-    ordering: 'position'
+    index     : 0,
+    ordering  : 'position',
+    showManual: false,
 })
 
 
 const emits = defineEmits<{
     (e: 'showDocument', payload: number): void
     (e: 'changeDescription', payload: string): void
+    (e: 'changeManual', payload: number | null): void
 }>()
 
 // const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TYPE      = 'dark'
 const LINE_TEXT_SIZE = 'mini'
+
 
 // __ Получаем символ завершенности
 const getCheckSymbol = (blockLine: IBlockTaskLine) => {
@@ -280,6 +311,13 @@ const changeDescription = async () => {
         const newComment = commentEdit.value!.comment.trim()
         emits('changeDescription', newComment)
     }
+}
+
+// __ Меняем Приоритет вручную
+const manual         = ref<number | null>(props.blockLine.manual)
+const onManualChange = (val: number | null) => {
+    // console.log('changeManual:', val)
+    emits('changeManual', val)
 }
 
 </script>

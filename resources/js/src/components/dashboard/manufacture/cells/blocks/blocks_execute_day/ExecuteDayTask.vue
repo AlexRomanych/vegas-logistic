@@ -295,7 +295,10 @@
 
         <!-- __ Заголовок для Линий -->
         <div class="ml-[39px]">
-            <ExecuteDayTaskLineHeader :field-widths="fieldWidths"/>
+            <ExecuteDayTaskLineHeader
+                :field-widths="fieldWidths"
+                :show-manual="editRights && blockTask.id === UNION_TASKS_ID"
+            />
         </div>
 
         <div
@@ -315,6 +318,7 @@
                             <ExecuteDayTaskSubGroup
                                 :collapsed="collapseStates[subgroup.subgroupName]"
                                 :subgroup
+                                :show-manual="editRights && blockTask.id === UNION_TASKS_ID"
                                 @toggle-collapse="toggleCollapse(subgroup.subgroupName)"
                                 @select-subgroup-items="selectSubgroupItems(subgroup)"
                             />
@@ -347,8 +351,10 @@
                                     :field-widths="fieldWidths"
                                     :index="index + 1"
                                     :ordering="'index'"
+                                    :show-manual="editRights && blockTask.id === UNION_TASKS_ID"
                                     @show-document="showDocument(blockLine, $event)"
                                     @change-description="changeDescription(blockLine, $event)"
+                                    @change-manual="changeManual(blockLine, $event)"
                                 />
 
                                 <!--class="absolute inset-y-0 left-0 w-1 bg-slate-500 pointer-events-none"-->
@@ -379,6 +385,7 @@
             <div class="ml-2">
                 <ExecuteDayTaskSubGroupCommon
                     :subgroup="commonSubGroup"
+                    :show-manual="editRights && blockTask.id === UNION_TASKS_ID"
                 />
             </div>
 
@@ -592,6 +599,7 @@ interface IProps {
     isRunning: boolean | null
     tuningTimes?: IBlockCollectionTime[]
     startCollectionId?: number
+    editRights?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -599,6 +607,7 @@ const props = withDefaults(defineProps<IProps>(), {
     startCollectionId: 0,
     dayChange        : '1',
     dayActionAt      : '',
+    editRights       : false,
 })
 
 const emits = defineEmits<{
@@ -805,6 +814,7 @@ const fieldWidths: Record<string, string> = {
     false_reason: 'min-w-[174px] max-w-[174px]',
     order       : 'min-w-[300px] max-w-[300px]',
     description : 'min-w-[300px] max-w-[300px]',
+    manual      : 'min-w-[40px] max-w-[40px]',
 }
 
 // --- Состояние выделения ---
@@ -1260,10 +1270,21 @@ const showDocument = async (blockLine: IBlockTaskLine, id: number) => {
 
 // __ Меняем Комментарий
 const changeDescription = async (blockLine: IBlockTaskLine, description: string) => {
-
     const result = await blockStore.setBlockTaskLineDescription(blockLine.id, description)
     if (checkCRUD(result)) {
         blockLine.description = description
+        return
+    } else {
+        await showError()
+        return
+    }
+}
+
+// __ Меняем Приоритет Вручную
+const changeManual = async (blockLine: IBlockTaskLine, val: number | null) => {
+    const result = await blockStore.setBlockTaskLineManual(blockLine.id, val)
+    if (checkCRUD(result)) {
+        blockLine.manual = val
         return
     } else {
         await showError()

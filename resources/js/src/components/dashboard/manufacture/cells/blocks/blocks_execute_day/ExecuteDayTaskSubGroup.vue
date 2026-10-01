@@ -68,10 +68,25 @@
             @click.ctrl="emits('selectSubgroupItems')"
         />
 
+        <!-- __ Линия -->
+        <AppLabelTS
+            text=""
+            :type="DEFAULT_TYPE"
+            align="center"
+            class="cursor-pointer"
+            rounded="4"
+            text-size="mini"
+            title="Ctrl + Click - Выделить все элементы Коллекции Блоков"
+            width="w-[40px]"
+            @click.exact="emits('toggleCollapse')"
+            @click.ctrl="emits('selectSubgroupItems')"
+        />
+
         <!-- __ Приоритет -->
         <AppLabelTS
+            v-if="showManual"
             :text="subgroup.priority.toString()"
-            :type="DEFAULT_TYPE"
+            type="orange"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -151,9 +166,10 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 interface IProps {
     subgroup: IBlockTaskLinesSubgroup
     collapsed?: boolean
+    showManual?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), { showManual: false })
 
 const emits = defineEmits<{
     (e: 'toggleCollapse'): void

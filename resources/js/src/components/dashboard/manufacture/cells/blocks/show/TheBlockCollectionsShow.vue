@@ -808,7 +808,7 @@ const render: IRenderData = reactive({
     },
     priority               : {
         id            : () => 'priority-search',
-        header        : ['Приор-', 'тет Л.1'],
+        header        : ['Приори-', 'тет Л.1'],
         width         : 'w-[60px]',
         height        : DEFAULT_HEIGHT,
         show          : true,
@@ -827,7 +827,7 @@ const render: IRenderData = reactive({
     },
     priority_2             : {
         id            : () => 'priority-2-search',
-        header        : ['Приор-', 'тет Л.2'],
+        header        : ['Приори-', 'тет Л.2'],
         width         : 'w-[60px]',
         height        : DEFAULT_HEIGHT,
         show          : true,

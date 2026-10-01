@@ -71,6 +71,7 @@ const URL_BLOCKS_TASK_LINE_DONE        = '/blocks/tasks/line/done'             /
 const URL_BLOCKS_TASK_LINE_FALSE       = '/blocks/tasks/line/false'            // URL для установки статуса "Не Выполнено" для записи СЗ
 const URL_BLOCKS_TASK_LINE_RESET       = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 const URL_BLOCKS_TASK_LINE_DESCRIPTION = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
+const URL_BLOCKS_TASK_LINE_MANUAL      = '/blocks/tasks/line/manual'           // URL для изменения Приоритет вручную для записи СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
@@ -922,6 +923,16 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result.data
     }
 
+    // __ Устанавливаем Приоритет Вручную для Строки СЗ
+    const setBlockTaskLineManual = async (blockTaskLinesId: number, manual: number | null) => {
+        if (!blockTaskLinesId) {
+            return null
+        }
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_MANUAL, { id: blockTaskLinesId, manual })
+        if (DEBUG) console.log('BlockStore: setBlockTaskLineManual: ', result)
+        return result.data
+    }
+
     // __ Разделение линий СЗ при выполнении СЗ
     const divideLineInBlockTaskPending = async (blockTask: IBlockTask, period: IPeriod | null = null) => {
 
@@ -1052,6 +1063,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockTaskLinesFalse,
         setBlockTaskLinesReset,
         setBlockTaskLineDescription,
+        setBlockTaskLineManual,
         divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,

@@ -50,8 +50,19 @@
             width="w-[70px]"
         />
 
-        <!-- __ Заглушка -->
+        <!-- __ Заглушка Линия -->
         <AppLabelTS
+            text=""
+            :type="subgroup.subgroupType"
+            rounded="4"
+            text-size="mini"
+            width="w-[40px]"
+            align="center"
+        />
+
+        <!-- __ Заглушка Приоритет -->
+        <AppLabelTS
+            v-if="showManual"
             text=""
             :type="subgroup.subgroupType"
             rounded="4"
@@ -102,10 +113,11 @@ import { formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
 interface IProps {
     subgroup: IBlockTaskLinesSubgroup
+    showManual?: boolean
 }
 
 /*const props =*/
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), { showManual: false })
 
 const FIELDS_AMOUNT_TIME_WIDTH = 'w-[174px]'
 

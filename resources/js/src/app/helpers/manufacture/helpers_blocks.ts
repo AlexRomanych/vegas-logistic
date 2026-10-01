@@ -1285,6 +1285,23 @@ export function groupTaskLinesForExecute(
         return findCollection ? findCollection.id : 0
     }
 
+    const getPriority = (keyManufLine: IBlockManufLine, valueBlockCollection: IBlockTaskLine[]) => {
+        const priority = keyManufLine === BLOCK_MANUF_LINES.LINE_1
+            ? (valueBlockCollection?.[0].block.collection.priority_1 || 999)
+            : (valueBlockCollection?.[0].block.collection.priority_2 || 999)
+
+        const minTaskLinePriorityManual = valueBlockCollection.reduce<number | null>((acc, line) => {
+            if (line.manual !== null) {
+                if (acc === null || line.manual < acc) {
+                    return line.manual
+                }
+            }
+            return acc
+        }, null)
+
+        return minTaskLinePriorityManual ?? priority
+    }
+
     const groupedManufLines = Object.groupBy(lines, line => line.manuf_line)
 
     // console.log('groupedManufLines: ', groupedManufLines)
@@ -1320,9 +1337,7 @@ export function groupTaskLinesForExecute(
                     done      : (valueBlockCollection || []).reduce((acc, line) => isTaskLineDone(line) ? acc + getBlockTaskLineTime(line) : acc, 0),
                     incomplete: (valueBlockCollection || []).reduce((acc, line) => !isTaskLineDone(line) ? acc + getBlockTaskLineTime(line) : acc, 0),
                 },
-                priority          : keyManufLine === BLOCK_MANUF_LINES.LINE_1
-                    ? (valueBlockCollection?.[0].block.collection.priority_1 || 999)
-                    : (valueBlockCollection?.[0].block.collection.priority_2 || 999),
+                priority          : getPriority(keyManufLine as IBlockManufLine, valueBlockCollection || []),
                 isTuning          : false
             })
         }
@@ -1330,8 +1345,9 @@ export function groupTaskLinesForExecute(
         // !!!!!!!!! --- Тут Логика Сортировки с добавлением Времени Переналадки
         // !!!!!!!!! --- Сначала сортировка, потом добавление Переналадки
 
-        // __ Сортируем по Коллекции блоков:
+
         if (optimizationType === OPTIMIZE_BY_PRIORITY) {
+            // __ Сортируем по Коллекции блоков:
             // console.log('groupedBlockCollectionArray: ', groupedBlockCollectionArray)
 
             groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
@@ -1346,12 +1362,12 @@ export function groupTaskLinesForExecute(
                     return Number(hasFalseB) - Number(hasFalseA)
                 }
 
-                return a.priority - b.priority
+                return a.priority! - b.priority!
             }) // __ по приоритету
 
-        // __ Сортируем по Статусам Не Выполено в Переходящих Строках
-        } else if (optimizationType === OPTIMIZE_BY_ROLLING) {
 
+        } else if (optimizationType === OPTIMIZE_BY_ROLLING) {
+            // __ Сортируем по Статусам Не Выполено в Переходящих Строках
             groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
                 const hasFalseRollingA = a.lines.some(line => line.f_r)
                 const hasFalseRollingB = b.lines.some(line => line.f_r)
@@ -1361,7 +1377,7 @@ export function groupTaskLinesForExecute(
                     return Number(hasFalseRollingB) - Number(hasFalseRollingA)
                 }
 
-                return a.priority - b.priority
+                return a.priority! - b.priority!
 
             }) // __ по приоритету
 

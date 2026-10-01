@@ -194,7 +194,10 @@ export const useUserStore = defineStore('user', () => {
     const canEditBlocksPermissionsRole = () => {
         // return false
         // return currentUser.email.includes('@admin')
-        return currentUser.email === 'kofanov@vegas.by' || hasAdminRole()
+        return hasAdminRole()
+            || currentUser.email === 'kofanov@vegas.by'
+            || currentUser.email === 'rabchuk@vegas.by'
+
     }
 
 

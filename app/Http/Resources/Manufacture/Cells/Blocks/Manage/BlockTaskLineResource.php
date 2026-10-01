@@ -34,6 +34,7 @@ class BlockTaskLineResource extends JsonResource
             'order_line_ids' => $this->order_line_ids,
             'description'    => $this->description,
             'f_r'            => $this->false_rolling,   // __ false_rolling
+            'manual'         => $this->priority_manual,
 
             'order_lines' => BlockTaskOrderLineResource::collection($this->whenLoaded('orderLines')),
             'block'       => $this->whenLoaded('block', fn() => new BlockTaskLineBlockResource($this->block)),

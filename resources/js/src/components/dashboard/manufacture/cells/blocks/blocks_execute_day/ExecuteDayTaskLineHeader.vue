@@ -80,6 +80,18 @@
             text="Л-я"
         />
 
+        <!-- __ Приоритет вручную -->
+        <AppLabelTS
+            v-if="showManual"
+            :height="LINE_HEIGHT"
+            :text-size="LINE_TEXT_SIZE"
+            type="orange"
+            :width="fieldWidths.manual"
+            align="center"
+            rounded="4"
+            text="П"
+        />
+
         <!-- __ КДБ -->
         <AppLabelTS
             :align="DEFAULT_ALIGN"
@@ -145,9 +157,10 @@ import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 interface IProps {
     fieldWidths: Record<string, string>
+    showManual?: boolean
 }
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), { showManual: false })
 
 const LINE_HEIGHT    = 'h-[25px]'
 const LINE_TEXT_SIZE = 'mini'

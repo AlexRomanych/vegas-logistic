@@ -506,7 +506,7 @@ const render: IRenderData = reactive({
         show          : true,
         headerType    : () => HEADER_TYPE,
         dataType      : () => DATA_TYPE,
-        type          : (blockDay: IBlockDay) => blockDay.assembler === 0 ? 'danger' : DEFAULT_TYPE,
+        type          : (blockDay: IBlockDay) => blockDay.assembler === 0 ? 'danger' : dateType(blockDay),
         headerTextSize: HEADER_TEXT_SIZE,
         dataTextSize  : DATA_TEXT_SIZE,
         headerAlign   : HEADER_ALIGN,

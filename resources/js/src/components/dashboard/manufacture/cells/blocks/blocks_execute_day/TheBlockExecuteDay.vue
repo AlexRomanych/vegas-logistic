@@ -164,6 +164,7 @@
                         :day-action-at="blockDay?.action_at"
                         :is-running="isBlockDayStarted  && !isBlockDayReadyForNewTasks"
                         :tuning-times="tuningTimes"
+                        :edit-rights="canEditBlocksPermissionsRights"
                         @set-finish-status="setFinishStatus"
                         @set-false-status="setFalseStatus"
                         @reset-status="resetStatus"
@@ -202,6 +203,7 @@ import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vu
 import { BLOCK_TASK_DRAFT, BLOCK_TASK_STATUSES, CHANGE_1, CHANGE_2, } from '@/app/constants/blocks.ts'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useUserStore } from '@/stores/UserStore'
 
 import { useLoading } from 'vue-loading-overlay'
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
@@ -222,6 +224,7 @@ import ExecuteDayTask from '@/components/dashboard/manufacture/cells/blocks/bloc
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecutePersonal.vue'
 import AppModalAsyncNumberTS from '@/components/ui/modals/AppModalAsyncNumberTS.vue'
 
+
 interface ITab {
     show: boolean
     active: boolean
@@ -232,7 +235,14 @@ interface ITab {
     task: IBlockTask | null
 }
 
+const userStore   = useUserStore()
 const blockStore = useBlocksStore()
+
+const canEditBlocksPermissionsRights = computed(() => {
+    return userStore.canEditBlocksPermissionsRole()
+})
+
+
 const router     = useRouter()
 const route      = useRoute()
 

@@ -1294,6 +1294,31 @@ class BlockTaskController extends Controller
 
 
     /**
+     * ___ Обновляем Приоритет Вручную Записи
+     * @param Request $request
+     * @return string
+     */
+    public function setBlockTaskLineManual(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'     => 'required|integer|exists:block_task_lines,id',
+                'manual' => 'nullable|integer',
+            ]);
+
+            $manual = $validated['manual'] ?? null;
+            BlockTaskLine::query()
+                ->where('id', $validated['id'])
+                ->update(['priority_manual' => $manual]);
+
+            return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
      * ___ Обновляем Трудозатраты
      * @return string
      */
@@ -1324,7 +1349,7 @@ class BlockTaskController extends Controller
 
                     // __ Меняем в Записи (BlockTaskLine) все, что Зависит от Трудозатрат
                     $blockLine->productivity = $collection->productivity;
-                    $blockLine->time =
+                    $blockLine->time         =
                         $collection->productivity !== 0.0
                             ? ($workBlock->length * $workBlock->width / 100 / 100) * $blockLine->amount / $collection->productivity
                             : 0;
