@@ -181,7 +181,7 @@ class BlockDayController extends Controller
         try {
             $validated = $request->validate([
                 'id'        => 'required|integer|exists:block_days,id',
-                'assembler' => 'present|integer',
+                'assembler' => 'present|numeric',
             ]);
 
             $blockDay = BlockDay::query()->find($validated['id']);
