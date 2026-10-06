@@ -7,14 +7,23 @@ use App\Models\Manufacture\Cells\Assembly\AssemblyTask;
 
 class AssemblySize
 {
-    private const TOR_TITLE_WIDTH = 'ТорецШирина';
+    // __ Торец
+    private const TOR_TITLE_WIDTH = 'ШиринаТорец';
+    //private const TOR_TITLE_WIDTH = 'ТорецШирина';
     private const TOR_TITLE_LENGTH = 'ТорецДлина';
-    private const TOR_TITLE_HEIGHT = 'ТорецВысота';
+    private const TOR_TITLE_HEIGHT = 'ВысотаБорт';
+    //private const TOR_TITLE_HEIGHT = 'ТорецВысота';
     private const TOR_TITLE_AMOUNT = 'ТорецКоличество';
-    private const SIDE_TITLE_WIDTH = 'БокШирина';
+
+    // __ Бок
+    private const SIDE_TITLE_WIDTH = 'ШиринаБок';
+    //private const SIDE_TITLE_WIDTH = 'БокШирина';
     private const SIDE_TITLE_LENGTH = 'БокДлина';
-    private const SIDE_TITLE_HEIGHT = 'БокВысота';
+    private const SIDE_TITLE_HEIGHT = 'ВысотаБорт';
+    //private const SIDE_TITLE_HEIGHT = 'БокВысота';
     private const SIDE_TITLE_AMOUNT = 'БокКоличество';
+
+    // __ Настил
     private const LAYER_TITLE_WIDTH = 'НастилШирина';
     private const LAYER_TITLE_LENGTH = 'НастилДлина';
     private const LAYER_TITLE_HEIGHT = 'НастилВысота';
@@ -29,7 +38,7 @@ class AssemblySize
 
     public function __construct(
         private readonly string $sector,
-        private string|null $scope,
+        private readonly string|null $scope,
         private int|null $width = 0,
         private int|null $length = 0,
         private int|null $height = 0,
@@ -147,44 +156,61 @@ class AssemblySize
                 $scope = $this->parseScope();
 
                 if (!is_null($scope)) {
-                    $findTor  = false;
-                    $findSide = false;
+                    //$findTor  = false;
+                    //$findSide = false;
 
                     // __ Короткий Борт (Торец)
-                    if (
-                        isset($scope[self::TOR_TITLE_WIDTH]) &&
-                        isset($scope[self::TOR_TITLE_LENGTH]) &&
-                        isset($scope[self::TOR_TITLE_HEIGHT]) &&
-                        isset($scope[self::TOR_TITLE_AMOUNT])
-                    ) {
-                        $this->details[] = [
-                            'width'  => $scope[self::TOR_TITLE_WIDTH] * 10,
-                            'length' => $scope[self::TOR_TITLE_LENGTH] * 10,
-                            'height' => $scope[self::TOR_TITLE_HEIGHT] * 10,
-                            'amount' => $scope[self::TOR_TITLE_AMOUNT],
-                        ];
-                        $findTor         = true;
-                    }
+                    $this->details[] = [
+                        'width'  => isset($scope[self::TOR_TITLE_WIDTH]) ? $scope[self::TOR_TITLE_WIDTH] * 10 : 0,
+                        'length' => isset($scope[self::TOR_TITLE_LENGTH]) ? $scope[self::TOR_TITLE_LENGTH]  * 10: 0,
+                        'height' => isset($scope[self::TOR_TITLE_HEIGHT]) ? $scope[self::TOR_TITLE_HEIGHT]  * 10: 0,
+                        'amount' => $scope[self::TOR_TITLE_AMOUNT] ?? 2,
+                    ];
+
+                    //if (
+                    //    isset($scope[self::TOR_TITLE_WIDTH]) &&
+                    //    isset($scope[self::TOR_TITLE_LENGTH]) &&
+                    //    isset($scope[self::TOR_TITLE_HEIGHT]) &&
+                    //    isset($scope[self::TOR_TITLE_AMOUNT])
+                    //) {
+                    //    $this->details[] = [
+                    //        'width'  => $scope[self::TOR_TITLE_WIDTH] * 10,
+                    //        'length' => $scope[self::TOR_TITLE_LENGTH] * 10,
+                    //        'height' => $scope[self::TOR_TITLE_HEIGHT] * 10,
+                    //        'amount' => $scope[self::TOR_TITLE_AMOUNT],
+                    //    ];
+                    //    $findTor         = true;
+                    //}
 
                     // __ Длинный Борт (Бок)
-                    if (
-                        isset($scope[self::SIDE_TITLE_WIDTH]) &&
-                        isset($scope[self::SIDE_TITLE_LENGTH]) &&
-                        isset($scope[self::SIDE_TITLE_HEIGHT]) &&
-                        isset($scope[self::SIDE_TITLE_AMOUNT])
-                    ) {
-                        $this->details[] = [
-                            'width'  => $scope[self::SIDE_TITLE_WIDTH] * 10,
-                            'length' => $scope[self::SIDE_TITLE_LENGTH] * 10,
-                            'height' => $scope[self::SIDE_TITLE_HEIGHT] * 10,
-                            'amount' => $scope[self::SIDE_TITLE_AMOUNT],
-                        ];
-                        $findSide        = true;
-                    }
+                    $this->details[] = [
+                        'width'  => isset($scope[self::SIDE_TITLE_WIDTH]) ? $scope[self::SIDE_TITLE_WIDTH] * 10 : 0,
+                        'length' => isset($scope[self::SIDE_TITLE_LENGTH]) ? $scope[self::SIDE_TITLE_LENGTH]  * 10: 0,
+                        'height' => isset($scope[self::SIDE_TITLE_HEIGHT]) ? $scope[self::SIDE_TITLE_HEIGHT]  * 10: 0,
+                        'amount' => $scope[self::SIDE_TITLE_AMOUNT] ?? 2,
+                    ];
 
-                    if ($findTor || $findSide) {
-                        break;
-                    }
+
+                    //if (
+                    //    isset($scope[self::SIDE_TITLE_WIDTH]) &&
+                    //    isset($scope[self::SIDE_TITLE_LENGTH]) &&
+                    //    isset($scope[self::SIDE_TITLE_HEIGHT]) &&
+                    //    isset($scope[self::SIDE_TITLE_AMOUNT])
+                    //) {
+                    //    $this->details[] = [
+                    //        'width'  => $scope[self::SIDE_TITLE_WIDTH] * 10,
+                    //        'length' => $scope[self::SIDE_TITLE_LENGTH] * 10,
+                    //        'height' => $scope[self::SIDE_TITLE_HEIGHT] * 10,
+                    //        'amount' => $scope[self::SIDE_TITLE_AMOUNT],
+                    //    ];
+                    //    $findSide        = true;
+                    //}
+
+                    //if ($findTor || $findSide) {
+                    //    break;
+                    //}
+
+                    break;
                 }
 
                 $this->widthDetail  = $this->width * 10;
@@ -192,7 +218,8 @@ class AssemblySize
                 $this->heightDetail = $this->height * 10;
                 $this->amountDetail = 2;
 
-                $offSet = 10;   // __ Ширина Детальки по умолчанию
+                $offSet = 0;   // __ Ширина Детальки по умолчанию
+                //$offSet = 10;   // __ Ширина Детальки по умолчанию
 
                 // __ Длинный Борт
                 $this->details[] = [
@@ -252,7 +279,8 @@ class AssemblySize
     }
 
 
-    private function parseScope()
+    // __ Парсим Scope
+    private function parseScope(): ?array
     {
         if (!is_null($this->scope)) {
             $scope = json_decode($this->scope, true);

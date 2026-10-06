@@ -87,14 +87,15 @@
 
             <!-- __ Комментарий к дню -->
             <AppLabelTS
+                v-if="sewingDay?.comment"
                 :text="sewingDay?.comment ?? ''"
                 align="left"
                 class="start-group"
                 height="h-[50px]"
                 rounded="4"
                 text-size="mini"
-                type="indigo"
-                width="min-w-[400px]"
+                type="warning"
+                width="min-w-[600px]"
             />
         </div>
 
@@ -855,6 +856,11 @@ onMounted(async () => {
             // if (DEBUG) console.log('globalSewingTasksPending:', globalSewingTasksPending.value)
             // if (DEBUG) console.log('sewingDays:', sewingDays.value)
             // if (DEBUG) console.log('renderSewingDays:', renderSewingDays.value)
+
+
+
+
+
         },
         undefined
         // false,

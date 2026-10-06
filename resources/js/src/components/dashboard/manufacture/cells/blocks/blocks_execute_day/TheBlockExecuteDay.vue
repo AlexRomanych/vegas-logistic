@@ -435,7 +435,7 @@ const deviation = computed(() => {
         const remainingUnfinishedTime = statistics.value.time.unfinished * 60 * 60      // __ в секундах
 
 
-        console.log('statistics: ', statistics.value)
+        // console.log('statistics: ', statistics.value)
         // console.log('remainingWorkingTime: ', remainingWorkingTime)
         // console.log('remainingUnfinishedTime: ', remainingUnfinishedTime)
 

@@ -56,3 +56,9 @@ export interface IModalAsyncMenuItem {
     id: number
     title: string | string[]
 }
+
+
+// --- --------------------------------------------------------
+// ___ Данные для компонентов Callouts
+export type IHorizontalAlignmentType = 'left' | 'right'
+export type IVerticalAlignmentType = 'top' | 'bottom'
