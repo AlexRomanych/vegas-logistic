@@ -1369,6 +1369,17 @@ export function groupTaskLinesForExecute(
         } else if (optimizationType === OPTIMIZE_BY_ROLLING) {
             // __ Сортируем по Статусам Не Выполено в Переходящих Строках
             groupedBlockCollectionArray = groupedBlockCollectionArray.toSorted((a, b) => {
+
+                // __ Сортировка, если выставлен приоритет вручную
+                const hasManualA = a.lines.some(line => line.manual)
+                const hasManualB = b.lines.some(line => line.manual)
+
+                // __ XOR ((hasFalseA && !hasFalseB) ||  (hasFalseB && !hasFalseA))
+                if (hasManualA !== hasManualB) {
+                    return Number(hasManualB) - Number(hasManualA)
+                }
+
+                // __ Сортировка, если есть переходящие рулоны
                 const hasFalseRollingA = a.lines.some(line => line.f_r)
                 const hasFalseRollingB = b.lines.some(line => line.f_r)
 
