@@ -154,7 +154,17 @@ watch(() => props.show, (newValue) => shown.value = newValue)
 }
 
 .callout-container {
-    @apply z-[500] fixed flex items-center justify-start p-10 m-1 rounded-xl font-semibold border-l-8 text-wrap break-words overflow-hidden text-ellipsis
+    @apply
+    z-[500]
+    fixed
+    flex items-center justify-start
+    p-10 m-1
+    rounded-md
+    font-semibold
+    border-l-8
+    text-wrap break-words text-ellipsis
+    overflow-hidden
+    cursor-pointer
 }
 
 </style>

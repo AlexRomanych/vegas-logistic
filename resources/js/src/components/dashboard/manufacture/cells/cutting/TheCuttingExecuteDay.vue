@@ -2,7 +2,6 @@
     <template v-if="!isLoading">
         <div class="flex m-2">
 
-
             <template v-if="isStartAvailable">
                 <!-- __ Начать/Закончить выполнение -->
                 <AppLabelMultiLineTS
@@ -16,7 +15,6 @@
                     @click="handleStartAction"
                 />
 
-
                 <!-- __ Остановить для добавления новых СЗ -->
                 <AppLabelMultiLineTS
                     :text="addNewTasksLabelTitle"
@@ -28,7 +26,6 @@
                     text-size="mini"
                     @click="handleReadyAction"
                 />
-
 
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
@@ -86,16 +83,20 @@
             </template>
 
             <!-- __ Комментарий к дню -->
-            <AppLabelTS
-                :text="cuttingDay?.comment ?? ''"
-                align="left"
-                class="start-group"
-                height="h-[50px]"
-                rounded="4"
-                text-size="mini"
-                type="indigo"
-                width="min-w-[400px]"
+            <DayComment
+                :work-day="cuttingDay"
+                showType="callout"
             />
+            <!--<AppLabelTS-->
+            <!--    :text="cuttingDay?.comment ?? ''"-->
+            <!--    align="left"-->
+            <!--    class="start-group"-->
+            <!--    height="h-[50px]"-->
+            <!--    rounded="4"-->
+            <!--    text-size="mini"-->
+            <!--    type="indigo"-->
+            <!--    width="min-w-[400px]"-->
+            <!--/>-->
         </div>
 
         <!-- __ Табы -->
@@ -184,14 +185,17 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import { round } from '@/app/helpers/helpers_lib.ts'
 import { formatDateInFullFormat, formatTimeInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
 
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+// import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+
 import ExecutePersonal from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute/ExecutePersonal.vue'
 import ExecuteDayInfo from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayInfo.vue'
 import ExecuteDayTask from '@/components/dashboard/manufacture/cells/cutting/cutting_components/cutting_execute_day/ExecuteDayTask.vue'
-import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import DayComment from '@/components/dashboard/manufacture/components/DayComment.vue'
+
 
 interface ITab {
     show: boolean

@@ -2,7 +2,7 @@
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="shown"
-                 :class="[width, height, position, bgColor, borderColor, textColor, 'callout-container']"
+                 :class="[width, height, position, bgColor, borderColor, textColor, textSizeClass, 'callout-container']"
                  @click="toggleShow">
 
                 <div>
@@ -22,7 +22,8 @@ import { computed, ref, watch } from 'vue'
 import { LINE_SEPARATOR } from '@/app/constants/common.js'
 import type { IColorTypes } from '@/app/constants/colorsClasses.js'
 
-import { getColorClassByType, getTextColorClassByType } from '@/app/helpers/helpers.js'
+import { getColorClassByType, getFontSizeClass, getTextColorClassByType } from '@/app/helpers/helpers.js'
+import type { IFontsType } from '@/app/constants/fontSizes.ts'
 
 
 type IHorizontalAlignmentType = 'left' | 'right'
@@ -36,16 +37,18 @@ interface IProps {
     pos_x?: IHorizontalAlignmentType
     pos_y?: IVerticalAlignmentType
     show?: boolean
+    textSize?: IFontsType
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    width:  'w-[500px]',
+    width : 'w-[500px]',
     height: 'h-[100px]',
-    type:   'primary',
-    text:   'This is a callout',
-    pos_x:  'right',
-    pos_y:  'bottom',
-    show:   false
+    type  : 'primary',
+    text  : 'This is a callout',
+    pos_x : 'right',
+    pos_y : 'bottom',
+    show  : false,
+    textSize: 'normal',
 })
 
 const emits = defineEmits<{
@@ -112,10 +115,11 @@ const getTextArray = (inTextData: string | string[]) => {
 const textArray = computed(() => getTextArray(props.text))
 
 
-const position    = getPositionClass(props.pos_x, props.pos_y)                                     // Получаем класс для позиции
-const bgColor     = computed(() => getColorClassByType(props.type, 'bg', 0, false))         // Получаем класс для цвета заднего фона
-const borderColor = computed(() => getColorClassByType(props.type, 'border', 700))      // Получаем класс для цвета границы
-const textColor   = computed(() => getTextColorClassByType(props.type))
+const position      = getPositionClass(props.pos_x, props.pos_y)                                     // Получаем класс для позиции
+const bgColor       = computed(() => getColorClassByType(props.type, 'bg', 0, false))         // Получаем класс для цвета заднего фона
+const borderColor   = computed(() => getColorClassByType(props.type, 'border', 700))      // Получаем класс для цвета границы
+const textColor     = computed(() => getTextColorClassByType(props.type))
+const textSizeClass = computed(() => getFontSizeClass(props.textSize))
 
 watch(() => props.show, (newValue) => shown.value = newValue)
 
@@ -156,7 +160,17 @@ watch(() => props.show, (newValue) => shown.value = newValue)
 }
 
 .callout-container {
-    @apply z-[500] fixed flex items-center justify-start p-10 m-1 rounded-xl font-semibold border-l-8 text-wrap break-words overflow-hidden text-ellipsis
+    @apply
+    z-[500]
+    fixed
+    flex items-center justify-start
+    p-10 m-1
+    rounded-md
+    font-semibold
+    border-l-8
+    text-wrap break-words text-ellipsis
+    overflow-hidden
+    cursor-pointer
 }
 
 </style>

@@ -21,16 +21,23 @@
         </div>
 
         <!-- __ Комментарий к Дню СЗ -->
-        <AppLabelTS
-            v-if="renderDay.description"
-            :text="renderDay.description"
-            align="left"
-            height="h-[50px]"
-            rounded="4"
-            text-size="mini"
-            type="warning"
-            width="w-[200px]"
-        />
+        <div class="mt-0.5">
+            <DayComment
+                :work-day="renderDay.day"
+                showType="callout"
+            />
+        </div>
+
+        <!--<AppLabelTS-->
+        <!--    v-if="renderDay.description"-->
+        <!--    :text="renderDay.description"-->
+        <!--    align="left"-->
+        <!--    height="h-[50px]"-->
+        <!--    rounded="4"-->
+        <!--    text-size="mini"-->
+        <!--    type="warning"-->
+        <!--    width="w-[200px]"-->
+        <!--/>-->
 
     </div>
 
@@ -108,9 +115,10 @@ import {
     // getAssemblyManipulationRenderTasks,
 } from '@/app/helpers/manufacture/helpers_assembly.ts'
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import ManipulateDaySector from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDaySector.vue'
+import DayComment from '@/components/dashboard/manufacture/components/DayComment.vue'
 
+// import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 // import ManipulateDayLine from '@/components/dashboard/manufacture/cells/assembly/assembly_manipulate_day/ManipulateDayLine.vue'
 
 interface ITab {

@@ -2,7 +2,6 @@
     <template v-if="!isLoading">
         <div class="flex m-2">
 
-
             <template v-if="isStartAvailable">
                 <!-- __ Начать/Закончить выполнение -->
                 <AppLabelMultiLineTS
@@ -16,7 +15,6 @@
                     @click="handleStartAction"
                 />
 
-
                 <!-- __ Остановить для добавления новых СЗ -->
                 <AppLabelMultiLineTS
                     :text="addNewTasksLabelTitle"
@@ -28,7 +26,6 @@
                     text-size="mini"
                     @click="handleReadyAction"
                 />
-
 
                 <!-- __ Начало выполнения -->
                 <AppLabelMultiLineTS
@@ -86,17 +83,23 @@
             </template>
 
             <!-- __ Комментарий к дню -->
-            <AppLabelTS
-                v-if="sewingDay?.comment"
-                :text="sewingDay?.comment ?? ''"
-                align="left"
-                class="start-group"
-                height="h-[50px]"
-                rounded="4"
-                text-size="mini"
-                type="warning"
-                width="min-w-[600px]"
+            <DayComment
+                :work-day="sewingDay"
+                showType="callout"
             />
+
+            <!--<AppLabelTS-->
+            <!--    v-if="sewingDay?.comment"-->
+            <!--    :text="sewingDay?.comment ?? ''"-->
+            <!--    align="left"-->
+            <!--    class="start-group"-->
+            <!--    height="h-[50px]"-->
+            <!--    rounded="4"-->
+            <!--    text-size="mini"-->
+            <!--    type="warning"-->
+            <!--    width="min-w-[600px]"-->
+            <!--/>-->
+
         </div>
 
         <!-- __ Табы -->
@@ -193,6 +196,7 @@ import ExecuteDayTask from '@/components/dashboard/manufacture/cells/sewing/sewi
 import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import DeviationBar from '@/components/ui/bars/DeviationBar.vue'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
+import DayComment from '@/components/dashboard/manufacture/components/DayComment.vue'
 
 interface ITab {
     show: boolean
@@ -856,9 +860,6 @@ onMounted(async () => {
             // if (DEBUG) console.log('globalSewingTasksPending:', globalSewingTasksPending.value)
             // if (DEBUG) console.log('sewingDays:', sewingDays.value)
             // if (DEBUG) console.log('renderSewingDays:', renderSewingDays.value)
-
-
-
 
 
         },

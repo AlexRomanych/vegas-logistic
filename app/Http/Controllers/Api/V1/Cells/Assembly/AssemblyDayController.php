@@ -198,6 +198,7 @@ class AssemblyDayController extends Controller
 
             $days = AssemblyDay::query()
                 ->byDates($validated['dates'])
+                ->where('change', AssemblyDay::CHANGE_1)    // __ Только первую смену берем
                 ->with(['workers', 'responsible', 'cellEvents'])
                 ->get();
 
