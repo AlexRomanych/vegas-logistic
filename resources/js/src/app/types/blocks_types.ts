@@ -195,6 +195,7 @@ export interface IBlockTask extends IPlanMatrixDayItem {
     block_lines: IBlockTaskLine[]
     statuses: IBlockTaskStatus[]
     current_status: IBlockTaskStatus
+    manual_adding: boolean
 
     collapsed?: boolean
 }

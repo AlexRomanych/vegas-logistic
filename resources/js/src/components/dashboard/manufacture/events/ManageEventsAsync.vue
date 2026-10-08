@@ -201,6 +201,8 @@
 import { computed, nextTick, ref } from 'vue'
 import type { ICellEvent, ICellEventsCells, IColorTypes } from '@/types'
 
+import { CELL_EVENT_BLOCK, CELL_EVENT_DRAFT } from '@/app/constants/cell_events.ts'
+
 import { useCellEventsStore } from '@/stores/CellEventsStore.ts'
 
 import { getColorClassByType } from '@/app/helpers/helpers.js'
@@ -210,7 +212,6 @@ import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
 import AppInputButton from '@/components/ui/inputs/AppInputButton.vue'
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import InputDateTS from '@/components/dashboard/manufacture/events/InputDateTS.vue'
-import { CELL_EVENT_BLOCK, CELL_EVENT_DRAFT } from '@/app/constants/cell_events.ts'
 import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
 
 interface IProps {

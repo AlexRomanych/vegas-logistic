@@ -57,7 +57,8 @@ const URL_BLOCKS_TASKS_UPDATE               = '/blocks/tasks/update'            
 const URL_BLOCKS_TASKS_ORDER_ID             = '/blocks/tasks/order'                 // URL для получения Сменных заданий по id Заявки
 const URL_BLOCKS_TASKS_DELETE               = '/blocks/tasks/delete'                // URL для удаления Сменных заданий по id СЗ
 const URL_BLOCKS_TASKS_DELETE_BY_ORDER_ID   = '/blocks/tasks/delete/order'          // URL для удаления Сменных заданий по id Заявки
-const URL_BLOCKS_TASKS_ADD_BY_ORDER_ID      = '/blocks/tasks/add/order'             // URL для добавления Сменных заданий по id Заявки
+const URL_BLOCKS_TASKS_CREATE_BY_ORDER_ID   = '/blocks/tasks/create/order'          // URL для создания Сменных заданий по id Заявки
+const URL_BLOCKS_TASKS_ADD_BY_ORDER_ID      = '/blocks/tasks/add/order'             // URL для добавления Сменного задания по id Заявки
 const URL_BLOCKS_TASKS_CALC_BY_ORDER_ID     = '/blocks/tasks/calc/order'            // URL для пересчета Кроя по id Заявки
 const URL_BLOCKS_TASKS_STATUS_BEFORE_DATE   = '/blocks/tasks/status/date/before'    // URL для получения Сменных заданий по статусу
 const URL_BLOCKS_TASKS_STATUS_ON_DATE       = '/blocks/tasks/status/date/on'        // URL для получения Сменных заданий по статусу в определенный день
@@ -72,6 +73,7 @@ const URL_BLOCKS_TASK_LINE_FALSE       = '/blocks/tasks/line/false'            /
 const URL_BLOCKS_TASK_LINE_RESET       = '/blocks/tasks/line/reset'            // URL для сброса статуса для записи СЗ
 const URL_BLOCKS_TASK_LINE_DESCRIPTION = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
 const URL_BLOCKS_TASK_LINE_MANUAL      = '/blocks/tasks/line/manual'           // URL для изменения Приоритет вручную для записи СЗ
+const URL_BLOCKS_TASK_LINE_ADD         = '/blocks/tasks/line/add'              // URL для добавления вручную строки (записи) СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
@@ -92,6 +94,9 @@ const URL_BLOCK_DAY_READY_UNSET        = '/blocks/day/ready/unset'             /
 
 
 export const useBlocksStore = defineStore('blocks', () => {
+
+    // __ Массив с Блоками
+    let globalBlocks: IBlock[] = []
 
     // __ Массив СЗ Раскроя
     const globalBlockTasks = ref<IBlockTask[]>([])
@@ -240,7 +245,6 @@ export const useBlocksStore = defineStore('blocks', () => {
                 }
             }
         })
-
 
 
         return await saveChanges()   // __ Сохраняем изменения
@@ -434,15 +438,36 @@ export const useBlocksStore = defineStore('blocks', () => {
         return result
     }
 
-    // __ Добавление СЗ Блоков по ID Заявки
-    const addBlockTasksByOrderId = async (id: number | null = null) => {
+    // __ Создание СЗ Блоков по ID Заявки
+    const createBlockTasksByOrderId = async (id: number | null = null) => {
         if (!id) {
             return
         }
-        const response = await jwtPost(URL_BLOCKS_TASKS_ADD_BY_ORDER_ID, { id })
+        const response = await jwtPost(URL_BLOCKS_TASKS_CREATE_BY_ORDER_ID, { id })
         const result   = await response
         if (DEBUG) console.log('BlocksStore: addBlockTasksByOrderId: ', result)
         return result
+    }
+
+    // __ Добавление СЗ Блоков по ID Заявки
+    const addBlockTasksByOrderId = async (
+        id: number | null      = null,
+        action_at: string,
+        change: IBlockTaskChangeKeys,
+        comment: string | null = null
+    ) => {
+        if (!id) {
+            return
+        }
+        const response = await jwtPost(URL_BLOCKS_TASKS_ADD_BY_ORDER_ID, {
+            id,
+            action_at: action_at.split(' ')[0],
+            change,
+            comment  : comment?.toString()
+        })
+        const result   = await response
+        if (DEBUG) console.log('BlocksStore: addBlockTasksByOrderId: ', result)
+        return result.data
     }
 
     // __ Пересчет СЗ Блоков по ID Заявки
@@ -644,9 +669,18 @@ export const useBlocksStore = defineStore('blocks', () => {
 
     // __ Получение Списка Блоков
     const getBlocks = async () => {
+        if (globalBlocks.length > 0) {
+            return globalBlocks
+        }
+
         const response = await jwtGet(URL_BLOCKS)
         const result   = await response
+
+        // __ Кэшируем
+        globalBlocks = result.data
+
         if (DEBUG) console.log('BlocksStore: getBlocks: ', result)
+
         return result.data
     }
 
@@ -948,6 +982,13 @@ export const useBlocksStore = defineStore('blocks', () => {
         // return saveChanges(globalBlockTasksPending.value, globalBlockTasksPendingCopy)
     }
 
+    // __ Добавляем Запись в СЗ вручную
+    const addBlockTaskLine = async (taskId: number, blockCode: string, amount: number) => {
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_ADD, { task_id: taskId, block_code: blockCode, amount })
+        if (DEBUG) console.log('BlockStore: addBlockTaskLine: ', result)
+        return result.data
+    }
+
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---          Время Переналадки                  !!!
@@ -1064,6 +1105,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockTaskLinesReset,
         setBlockTaskLineDescription,
         setBlockTaskLineManual,
+        addBlockTaskLine,
         divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,
@@ -1080,6 +1122,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         getBlockTasksByOrderId,
         deleteBlockTask,
         deleteBlockTasksByOrderId,
+        createBlockTasksByOrderId,
         addBlockTasksByOrderId,
         calcBlockTasksCutByOrderId,
         getBlockTasksByStatusBeforeDateAndChange,

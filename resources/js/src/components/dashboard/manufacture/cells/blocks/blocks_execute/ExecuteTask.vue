@@ -47,14 +47,28 @@
         <AppLabelTS
             v-if="withDeleting && isTaskStatusCreated(blockTask)"
             align="center"
+            class="cursor-pointer"
             rounded="4"
             text="🗑️"
             text-size="mini"
             type="danger"
             width="w-[30px]"
-            class="cursor-pointer"
             @click="emits('deleteTask')"
         />
+
+        <!-- __ Добавить Блоки вручную -->
+        <AppLabelTS
+            v-if="withDeleting && isTaskStatusCreated(blockTask) && blockTask.manual_adding"
+            align="center"
+            class="cursor-pointer"
+            rounded="4"
+            text="➕"
+            text-size="mini"
+            type="warning"
+            width="w-[30px]"
+            @click="addBlock"
+        />
+
 
     </div>
 
@@ -112,10 +126,15 @@
     <!--    label="Комментарий к Сменному Заданию"-->
     <!--/>-->
 
+    <!-- __ Модальное окно для Добавления СЗ -->
+    <AddBlocksTaskLineAsync
+        ref="addBlocksTaskLineAsync"
+    />
+
 </template>
 
 <script lang="ts" setup>
-import type { IRenderData, IBlockTask, IBlockTaskLine, IColorTypes, } from '@/types'
+import type { IRenderData, IBlockTask, IBlockTaskLine, IColorTypes, IBlock, } from '@/types'
 
 import { computed, reactive, ref, } from 'vue'
 
@@ -125,19 +144,21 @@ import {
     getExecuteTaskStatistics, getBlockTaskAmountAndTime, getTaskStatusById, isTaskStatusCreated,
 } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import { formatDateInFullFormat, formatTimeWithLeadingZeros } from '@/app/helpers/helpers_date'
+import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
+import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
+import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
 import ExecuteTaskLine
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskLine.vue'
 import ExecuteTaskLineHeader
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskLineHeader.vue'
-import AppProgressBar from '@/components/ui/bars/AppProgressBar.vue'
 import ExecuteTaskTotals
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskTotals.vue'
-import TheDividerLineTS from '@/components/ui/dividers/TheDividerLineTS.vue'
-import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
-import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
+import AddBlocksTaskLineAsync from '@/components/dashboard/orders/order_components/order_card/tasks/AddBlocksTaskLineAsync.vue'
 
 // import OrderItemInfo from '@/components/dashboard/manufacture/cells/block/block_components/common/OrderItemInfo.vue'
 // import CommentEdit from '@/components/dashboard/manufacture/cells/block/block_components/common/CommentEdit.vue'
@@ -154,13 +175,14 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    clientShow: true,
-    orderInfo : true,
+    clientShow  : true,
+    orderInfo   : true,
     withDeleting: false
 })
 
 const emits = defineEmits<{
     (e: 'deleteTask'): void
+    (e: 'addBlockLine', payload: {block: IBlock, amount: number}): void
 }>()
 
 const blockStore = useBlocksStore()
@@ -328,7 +350,8 @@ const render: IRenderData = reactive({
         headerAlign   : HEADER_ALIGN,
         dataAlign     : 'center',
         placeholder   : '🔍Прогресс...',
-        data          : (/*blockTask: IBlockTask*/) => formatDateInFullFormat(props.blockTask.action_at, true, false),
+        data          : (/*blockTask: IBlockTask*/) =>
+            `${formatDateInFullFormat(props.blockTask.action_at, true, false)} (Смена: ${props.blockTask.change})`,
     },
     progressTotal: {
         id            : () => 'progress-total-search',
@@ -426,10 +449,8 @@ async function showError(error: string | string[] | null = null) {
     await appModalAsyncMultilineTS.value!.show()
 }
 
-
 // __ Меняем Комментарий
 const changeDescription = async (blockLine: IBlockTaskLine, description: string) => {
-
     const result = await blockStore.setBlockTaskLineDescription(blockLine.id, description)
     if (checkCRUD(result)) {
         blockLine.description = description
@@ -437,6 +458,24 @@ const changeDescription = async (blockLine: IBlockTaskLine, description: string)
     } else {
         await showError()
         return
+    }
+}
+
+// __ Тип для модального окна Добавления Блока в СЗ
+const addBlocksTaskLineAsync = ref<InstanceType<typeof AddBlocksTaskLineAsync> | null>(null)
+
+// __ Добавляем Блок
+const addBlock = async () => {
+    const answer = await addBlocksTaskLineAsync.value!.show()
+    if (answer) {
+        const lineData: { block: IBlock | null, amount: number } = addBlocksTaskLineAsync.value!.lineData
+
+        if (!lineData.block || lineData.amount === 0) {
+            return
+        }
+
+        console.log('lineData: ', lineData)
+        emits('addBlockLine', {block: lineData!.block, amount: lineData.amount})
     }
 }
 

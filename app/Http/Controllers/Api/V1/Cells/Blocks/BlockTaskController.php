@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacture\Blocks\Sync\SyncBlockTasksRequest;
 use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskLineResource;
 use App\Http\Resources\Manufacture\Cells\Blocks\Manage\BlockTaskResource;
+use App\Models\Manufacture\Cells\Block\Block;
 use App\Models\Manufacture\Cells\Block\BlockCollection;
 use App\Models\Manufacture\Cells\Block\BlockDay;
 use App\Models\Manufacture\Cells\Block\BlockTask;
@@ -827,13 +828,40 @@ class BlockTaskController extends Controller
     public function deleteBlockTask(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'id' => 'required|exists:block_tasks,id'
-            ]);
+            // __ Надо при удалении переопределить позтции СЗ в дне
+            DB::transaction(function () use ($request) {
+                $validated = $request->validate([
+                    'id' => 'required|exists:block_tasks,id'
+                ]);
 
-            BlockTask::query()->findOrFail($validated['id'])->delete();
+                $blockTask = BlockTask::query()->findOrFail($validated['id']);
+
+                $actionAt = Carbon::parse($blockTask->action_at);
+
+                $blockTask->delete();
+
+                $tasks = BlockTask::query()
+                    ->whereDate('action_at', $actionAt)
+                    ->orderBy('position')
+                    ->get();
+
+                $startPosition = 1;
+                $tasksToUpdate = [];
+
+                foreach ($tasks as $task) {
+                    $tasksToUpdate[] = [
+                        'id'        => $task->id,
+                        'action_at' => null,
+                        'position'  => $startPosition++,
+                    ];
+                }
+
+                BlocksService::bulkUpdateTasks($tasksToUpdate);
+            });
+
+
+            //BlockTask::query()->findOrFail($validated['id'])->delete();
             //BlockTask::destroy($validated['id']);
-
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно удалено');
         } catch (Exception|Throwable $e) {
@@ -896,11 +924,11 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Добавляем СЗ для Блоков
+     * ___ Создаем СЗ для Блоков
      * @param Request $request
      * @return string
      */
-    public function addBlockTasksByOrderId(Request $request)
+    public function createBlockTasksByOrderId(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -910,6 +938,100 @@ class BlockTaskController extends Controller
             BlocksService::createBlockTaskFromOrderId($validated['id']);
 
             return EndPointStaticRequestAnswer::ok('СЗ успешно создано');
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Добавляем СЗ для Блоков
+     * @param Request $request
+     * @return BlockTaskResource|string
+     */
+    public function addBlockTasksByOrderId(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id'        => 'required|exists:orders,id',
+                'action_at' => 'required|date_format:Y-m-d',
+                'change'    => 'required|in:'
+                    //. BlockDay::CHANGE_0 . ','
+                    . BlockDay::CHANGE_1 . ','
+                    . BlockDay::CHANGE_2,
+                'comment'   => 'nullable|string|max:255',
+            ]);
+
+            $createdTask = null;
+            DB::transaction(function () use ($validated, &$createdTask) {
+                $createdTask = BlockTask::query()->create([
+                    'order_id'      => $validated['id'],
+                    'action_at'     => Carbon::parse($validated['action_at'])->startOfDay(),
+                    'change'        => $validated['change'],
+                    'comment'       => $validated['comment'] ?? null,
+                    'position'      => 0,
+                    'manual_adding' => true,
+                ]);
+
+                // __ Тут разбираемся с позициями
+                $position = 0;
+                if ($validated['change'] == BlockDay::CHANGE_2) {
+                    $position = BlocksService::getBlockTaskLastPositionInDay($validated['action_at']) + 1; // __ Потому, что сквозная нумерация
+                } elseif ($validated['change'] == BlockDay::CHANGE_1) {
+                    $position = BlockTask::query()
+                            ->whereDate('action_at', $validated['action_at'])
+                            ->where('change', BlockDay::CHANGE_1)
+                            ->max('position') + 1;
+
+                    $tasksChange2 = BlockTask::query()
+                        ->whereDate('action_at', $validated['action_at'])
+                        ->where('change', BlockDay::CHANGE_2)
+                        ->orderBy('position')
+                        ->get();
+
+                    $startPosition = $position + 1;
+                    $tasksToUpdate = [];
+
+                    foreach ($tasksChange2 as $task) {
+                        $tasksToUpdate[] = [
+                            'id'        => $task->id,
+                            'action_at' => null,
+                            'position'  => $startPosition++,
+                        ];
+                    }
+
+                    BlocksService::bulkUpdateTasks($tasksToUpdate);
+                }
+
+                $createdTask->position = $position;
+                $createdTask->save();
+
+                // __ Создаем запись в Статусе: Создано
+                $createdTask->statuses()->attach([
+                    BlockTaskStatus::BLOCK_STATUS_CREATED_ID => [
+                        'set_at'     => now(),
+                        'created_by' => auth()->id(),
+                    ]
+                ]);
+            });
+
+            $resultTask = BlockTask::query()
+                ->with([
+                    'order',
+                    'order.client',
+                    'order.orderType',
+                    'statuses',
+                    'blockLines',
+                    'blockLines.block',
+                    'blockLines.block.blockCollection',
+                    'blockLines.block.blockCollection.kdbDoc',
+                ])
+                ->findOrFail($createdTask->id);
+
+            $a = 0;
+
+            return new BlockTaskResource($resultTask);
+            //return EndPointStaticRequestAnswer::ok('СЗ успешно добавлено');
         } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
@@ -1312,6 +1434,61 @@ class BlockTaskController extends Controller
                 ->update(['priority_manual' => $manual]);
 
             return EndPointStaticRequestAnswer::ok();
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Добавляем
+     * @param Request $request
+     * @return BlockTaskLineResource|string
+     */
+    public function addBlockTaskLine(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'task_id'    => 'required|integer|exists:block_tasks,id',
+                'block_code' => 'required|string|exists:blocks,code_1c',
+                'amount'     => 'required|decimal:0|min:1',
+            ]);
+
+            $block = Block::query()
+                ->where(CODE_1C, $validated['block_code'])
+                ->with(['blockCollection'])
+                ->first();
+
+            // __ Получаем так, потому что collection - поле в Block
+            $collection = $block->getRelation('blockCollection');
+
+            $position = BlockTaskLine::query()
+                ->where('block_task_id', $validated['task_id'])
+                ->max('position') + 1;
+
+            $blockTaskLine = BlockTaskLine::query()->create([
+                'block_task_id'      => $validated['task_id'],
+                'block_code_1c'      => $block->code_1c,
+                'block_code_1c_copy' => $block->code_1c,    // __ Тут все же пишем Оригинал Блока
+                'block_name'         => $block->name,
+                'order_line_ids'     => [],
+                'amount'             => $validated['amount'],
+                'line'               => $collection->line,
+                'position'           => $position,
+                'productivity'       => $collection->productivity,
+                'square'             => $block->length * $block->width / 100 / 100,
+                'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * $validated['amount'] / $collection->productivity : 0,
+            ]);
+
+            $blockLine = BlockTaskLine::query()
+                ->with([
+                    'block',
+                    'block.blockCollection',
+                    'block.blockCollection.kdbDoc',
+                ])
+                ->findOrFail($blockTaskLine->id);
+
+            return new BlockTaskLineResource($blockLine);
         } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }

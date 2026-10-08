@@ -13,6 +13,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Block extends Model
 {
+    //// __ Имя колонки первичного ключа (если это не 'id')
+    //protected $primaryKey = 'code_1c';
+    //
+    //// __ Указываем, что тип ключа — строка
+    //protected $keyType = 'string';
+    //
+    //// __ Отключаем автоинкремент (Laravel по умолчанию пытается привести ключ к int)
+    //public $incrementing = false;
+
     protected $guarded = false;
 
     protected $casts = [

@@ -21,16 +21,28 @@
                 />
             </div>
 
-            <!-- __ Удаление/добавление СЗ -->
-            <AppLabelTS
+            <!-- __ Удаление/Создание СЗ -->
+            <AppLabelMultiLineTS
                 :text="actionText"
                 :type="actionType"
                 :width="BUTTON_WIDTH"
                 align="center"
-                height="h-[50px]"
+                height-limit="h-[50px]"
                 rounded="4"
                 text-size="mini"
                 @click="actionTask"
+            />
+
+            <!-- __ Добавление СЗ -->
+            <AppLabelMultiLineTS
+                :text="['Добавить', 'сменное задание']"
+                :width="BUTTON_WIDTH"
+                align="center"
+                height-limit="h-[50px]"
+                rounded="4"
+                text-size="mini"
+                type="success"
+                @click="addTask"
             />
 
         </div>
@@ -50,8 +62,9 @@
                     :client-show="false"
                     :fields-width="blockTaskFieldsWidth"
                     :order-info="false"
-                    :with-deleting="true"
+                    :with-deleting="canEditBlocksPermissionsRights"
                     @delete-task="deleteTask(blockTask)"
+                    @add-block-line="addBlockLine(blockTask, $event)"
                 />
             </div>
         </template>
@@ -65,12 +78,19 @@
 
     </div>
 
+    <!-- __ Модальное окно для Добавления СЗ -->
+    <AddBlocksTaskAsync
+        ref="addBlocksTaskAsync"
+        :max-date="order.load_at || new Date()"
+    />
+
     <!-- __ Модальное окно для сообщений -->
-    <AppModalAsyncMultiline
-        ref="appModalAsyncMultiline"
+    <AppModalAsyncMultilineTS
+        ref="appModalAsyncMultilineTS"
         :mode="modalInfoMode"
         :text="modalInfoText"
         :type="modalInfoType"
+        align="center"
         ok-word="Понятно"
     />
 
@@ -83,28 +103,33 @@ import type {
     IColorTypes,
     IRenderOrder,
     IBlockTask,
-    IRenderOrderLine,
+    IRenderOrderLine, IBlockTaskChangeKeys, IBlock,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import { useUserStore } from '@/stores/UserStore'
 // import { useOrdersStore } from '@/stores/OrdersStore.ts'
+
+import { RENDER_ORDER_LINE_MODEL_DRAFT } from '@/app/constants/orders.ts'
+
+import { isTaskStatusCreated } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 import { loaderHandler } from '@/app/helpers/helpers_render.ts'
 import { useLoading } from 'vue-loading-overlay'
 
-import { RENDER_ORDER_LINE_MODEL_DRAFT } from '@/app/constants/orders.ts'
-
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
+
+import AppModalAsyncMultilineTS from '@/components/ui/modals/AppModalAsyncMultilineTS.vue'
+import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
+// import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 
 import ExecuteTaskHeader
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTaskHeader.vue'
 import ExecuteTask
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTask.vue'
-import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
-import AppModalAsyncMultiline from '@/components/ui/modals/AppModalAsyncMultiline.vue'
-import AppLabelMultiLineTS from '@/components/ui/labels/AppLabelMultiLineTS.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
-import { isTaskStatusCreated } from '@/app/helpers/manufacture/helpers_blocks.ts'
+import AddBlocksTaskAsync from '@/components/dashboard/orders/order_components/order_card/tasks/AddBlocksTaskAsync.vue'
+
 
 
 interface IProps {
@@ -123,7 +148,12 @@ interface ITab {
 const props = defineProps<IProps>()
 
 const blocksStore = useBlocksStore()
+const userStore   = useUserStore()
 // const ordersStore  = useOrdersStore()
+
+const canEditBlocksPermissionsRights = computed(() => {
+    return userStore.canEditBlocksPermissionsRole()
+})
 
 const DEBUG     = true
 const isLoading = ref(false)
@@ -140,7 +170,7 @@ const orderLines = ref<IRenderOrderLine[]>([])
 // __ Вычисляемые свойства
 // const hasTask    = computed(() => blockTasks.value?.length !== 0)
 const canDelete  = computed(() => blockTasks.value?.length !== 0 && blockTasks.value.every(task => isTaskStatusCreated(task)))
-const actionText = computed(() => blockTasks.value?.length !== 0 ? 'Удалить сменное задание' : 'Создать сменное задание')
+const actionText = computed(() => blockTasks.value?.length !== 0 ? ['Удалить', 'сменное задание'] : ['Создать', 'сменное задание'])
 const actionType = computed(() => blockTasks.value?.length !== 0 ? canDelete.value ? 'danger' : 'dark' : 'success')
 
 // __ Табы
@@ -187,10 +217,10 @@ const blockTaskFieldsWidth = {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // __ Тип для модального окна Сообщений
-const modalInfoType          = ref<IColorTypes>('danger')
-const modalInfoText          = ref<string | string[]>('')
-const modalInfoMode          = ref<'inform' | 'confirm'>('confirm')
-const appModalAsyncMultiline = ref<InstanceType<typeof AppModalAsyncMultiline> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
+const modalInfoType            = ref<IColorTypes>('danger')
+const modalInfoText            = ref<string | string[]>('')
+const modalInfoMode            = ref<'inform' | 'confirm'>('confirm')
+const appModalAsyncMultilineTS = ref<InstanceType<typeof AppModalAsyncMultilineTS> | null>(null)        // Получаем ссылку на модальное окно с асинхронной функцией
 
 // __ Показываем сообщение об ошибке
 async function showError(error: string | string[] | null = null) {
@@ -205,7 +235,7 @@ async function showError(error: string | string[] | null = null) {
     }
 
     modalInfoText.value = renderError
-    await appModalAsyncMultiline.value!.show()
+    await appModalAsyncMultilineTS.value!.show()
 }
 
 
@@ -287,7 +317,7 @@ const getTasks = async () => {
     return tasks
 }
 
-// __ Удаляем/добавляем СЗ
+// __ Удаляем/Создаем СЗ
 const actionTask = async () => {
 
     let result
@@ -305,7 +335,7 @@ const actionTask = async () => {
             'Продолжить?',
         ]
 
-        const answer = await appModalAsyncMultiline.value!.show()
+        const answer = await appModalAsyncMultilineTS.value!.show()
         if (!answer) {
             return
         }
@@ -316,20 +346,20 @@ const actionTask = async () => {
 
     } else {
 
-        // __ Добавляем СЗ
+        // __ Создаем СЗ
         modalInfoType.value = 'primary'
         modalInfoMode.value = 'confirm'
         modalInfoText.value = [
-            'Сменное задание будет добавлено.',
+            'Сменное задание будет создано.',
             'Продолжить?',
         ]
 
-        const answer = await appModalAsyncMultiline.value!.show()
+        const answer = await appModalAsyncMultilineTS.value!.show()
         if (!answer) {
             return
         }
 
-        result = await blocksStore.addBlockTasksByOrderId(props.id)
+        result = await blocksStore.createBlockTasksByOrderId(props.id)
         await getTasks()
 
     }
@@ -338,7 +368,7 @@ const actionTask = async () => {
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = [result.payload]
-        await appModalAsyncMultiline.value!.show()
+        await appModalAsyncMultilineTS.value!.show()
     } else {
         await showError()
     }
@@ -356,7 +386,7 @@ const deleteTask = async (blockTask: IBlockTask) => {
         'Продолжить?',
     ]
 
-    const answer = await appModalAsyncMultiline.value!.show()
+    const answer = await appModalAsyncMultilineTS.value!.show()
     if (!answer) {
         return
     }
@@ -369,7 +399,7 @@ const deleteTask = async (blockTask: IBlockTask) => {
         modalInfoType.value = 'success'
         modalInfoMode.value = 'inform'
         modalInfoText.value = [result.payload]
-        await appModalAsyncMultiline.value!.show()
+        await appModalAsyncMultilineTS.value!.show()
     } else {
         await showError()
     }
@@ -379,39 +409,48 @@ const deleteTask = async (blockTask: IBlockTask) => {
     // console.log(blockTask)
 }
 
-// __ Пересчет размеров Деталек
-// const calculateTaskCut = async () => {
-//     if (!hasTask.value) {
-//         return
-//     }
-//
-//     // __ Пересчитываем детали Кроя
-//     modalInfoType.value = 'primary'
-//     modalInfoMode.value = 'confirm'
-//     modalInfoText.value = [
-//         'Детали Кроя будут пересчитаны.',
-//         'Продолжить?',
-//     ]
-//
-//     const answer = await appModalAsyncMultiline.value!.show()
-//     if (!answer) {
-//         return
-//     }
-//
-//     const result = await blocksStore.calcBlockTasksCutByOrderId(props.id)
-//     await getTasks()
-//
-//
-//     if (checkCRUD(result)) {
-//         modalInfoType.value = 'success'
-//         modalInfoMode.value = 'inform'
-//         modalInfoText.value = [result.payload]
-//         await appModalAsyncMultiline.value!.show()
-//     } else {
-//         await showError()
-//     }
-// }
 
+
+// __ Тип для модального окна Добавления СЗ
+const addBlocksTaskAsync = ref<InstanceType<typeof AddBlocksTaskAsync> | null>(null)
+
+// __ Добавляем СЗ
+const addTask = async () => {
+    const answer = await addBlocksTaskAsync.value!.show()
+    if (answer) {
+        const taskData: {action_at: string, change: IBlockTaskChangeKeys, comment: string | null} = addBlocksTaskAsync.value!.taskData
+        // console.log('taskData: ', taskData)
+        const result = await blocksStore.addBlockTasksByOrderId(props.order.id, taskData.action_at, taskData.change, taskData.comment)
+
+        if (checkCRUD(result)) {
+            modalInfoType.value = 'success'
+            modalInfoMode.value = 'inform'
+            modalInfoText.value = ['Сменное Задание', 'успешно добавлено']
+            await appModalAsyncMultilineTS.value!.show()
+
+            // result.collapsed = true
+            blockTasks.value.push(result)
+            // console.log('result: ', result)
+            // await getTasks()
+        } else {
+            await showError()
+        }
+    }
+}
+
+// __ Добавляем Строку СЗ
+const addBlockLine = async (blockTask: IBlockTask, lineData: {block: IBlock, amount: number}) => {
+    const result = await blocksStore.addBlockTaskLine(blockTask.id, lineData.block.code_1c, lineData.amount)
+    if (checkCRUD(result)) {
+        blockTask.collapsed = false
+        blockTask.block_lines.push(result)
+        // console.log('result: ', result)
+        // await getTasks()
+    } else {
+        await showError()
+    }
+    // console.log('result: ', result)
+}
 
 onMounted(async () => {
     isLoading.value = true

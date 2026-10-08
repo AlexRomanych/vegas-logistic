@@ -330,7 +330,7 @@ final class BlocksService
         }
         return BlockTask::query()
             ->whereDate('action_at', $date)
-            ->count();
+            ->count() + 1;
     }
 
 

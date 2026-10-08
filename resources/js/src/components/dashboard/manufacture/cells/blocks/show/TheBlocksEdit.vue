@@ -284,7 +284,7 @@ const block            = ref<IBlock>(BLOCK_DRAFT)
 // __ Подгружаем данные по коллекции, если мы в режиме редактирования
 const loadEntity = async (paramId: number) => {
     if (editMode.value) {
-        block.value = await blockStore.getBlockById(paramId) as IBlock // Получаем Операцию
+        block.value = await blockStore.getBlockById(paramId) as IBlock
     } else {
         block.value = JSON.parse(JSON.stringify(BLOCK_DRAFT))
     }
