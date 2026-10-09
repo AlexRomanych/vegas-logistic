@@ -487,7 +487,7 @@ export function getBlockTasksGroupedByOrder(blockTasks: IBlockTask[], applyStatu
 // __ Проверяем, есть ли в конкретном дне СЗ для какой-то конкретной Заявки
 // __ Если передан entity типа IBlockTask и applyStatus = true, то проверяем еще на одинаковость статусов
 export function getBlockTasksSameOrderInDay(
-    entity: IBlockTask | IBlockTaskOrder | number,
+    entity: IBlockTask | IBlockTaskOrder | number, // __ для order_id
     tasksList: IBlockTask[],
     date: string | null   = null,
     change: string | null = null,

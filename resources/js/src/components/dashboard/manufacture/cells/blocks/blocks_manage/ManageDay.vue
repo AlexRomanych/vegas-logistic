@@ -1132,7 +1132,7 @@ const finishDrag = async (evt: DraggableHTMLElement) => {
 
         // __ Получаем все СЗ в целевом дне с тем же Заказом, что и у перемещаемого СЗ для проверки на объединение
         // __ Проверяем также соответствие статусов. Если одинаковые статусы, то объединяем
-        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || '', true)
+        const existingBlockTasks = getBlockTasksSameOrderInDay(blockTask, globalBlockTasks.value, targetDate, targetChange || blockTask.change, true)
 
         // __ Формируем текст для модального окна
         const orderInfo = `${blockTask.order.client.short_name} №${blockTask.order.order_no_str}`
