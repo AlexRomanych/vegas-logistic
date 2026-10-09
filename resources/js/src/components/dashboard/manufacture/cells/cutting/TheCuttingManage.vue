@@ -62,7 +62,8 @@ provide('renderMatrix', renderMatrix)
 provide('renderMatrixCopy', renderMatrixCopy)
 
 // __ Получаем период плана загрузок с сервера
-const getDefaultPeriod = async () => (planPeriod = await planStore.getPlanLoadsDefaultPeriod())
+const getDefaultPeriod = async () => (planPeriod = await planStore.getCuttingTasksDefaultPeriod())
+// const getDefaultPeriod = async () => (planPeriod = await planStore.getPlanLoadsDefaultPeriod())
 
 const getPlanPeriod = async () => {
     // TODO: Доделать выбор периода

@@ -314,6 +314,7 @@ Route::prefix('/plan')
 
         Route::get('/loads', [PlanLoadsController::class, 'getPlanLoads']);
         Route::get('/loads/default/period', [PlanLoadsController::class, 'getPlanLoadsDefaultPeriod']);
+        Route::get('/cutting/default/period', [PlanLoadsController::class, 'getCuttingTasksDefaultPeriod']);
 
 
         Route::get('/business-process-node', [PlanController::class, 'getPlanBusinessProcessNode']);

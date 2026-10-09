@@ -459,4 +459,25 @@ class PlanLoadsController extends Controller
     }
 
 
+    /**
+     * ___ Получаем период по умолчанию для Плана Раскроя
+     * @return string
+     */
+    public function getCuttingTasksDefaultPeriod()
+    {
+        try {
+            return DefaultsService::getDefaultPeriodCuttingTask()->toJson();
+        } catch (Exception $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+
+
+
+
+
+
+
 }

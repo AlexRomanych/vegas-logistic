@@ -47,6 +47,22 @@ final class DefaultsService
 
 
     /**
+     * ___ Возвращает период Раскроя по умолчанию
+     * @return Period
+     */
+    public static function getDefaultPeriodCuttingTask(): Period
+    {
+        // __ Начало предыдущей недели
+        $start = Carbon::now()->subWeek()->startOfWeek();
+
+        // __ Начало + 4 месяца
+        $end = $start->clone()->addMonths(4);
+
+        return new Period($start, $end);
+    }
+
+
+    /**
      * ___ Возвращает период СЗ Раскроя для отображения в архиве по умолчанию
      * @return Period
      */

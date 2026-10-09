@@ -55,7 +55,8 @@ class CellCuttingTaskController extends Controller
                 $start = Carbon::parse($validated['period']['start']);
                 $end   = Carbon::parse($validated['period']['end']);
             } else {
-                $period = DefaultsService::getDefaultPeriodPlanLoads();
+                $period = DefaultsService::getDefaultPeriodCuttingTask();
+                //$period = DefaultsService::getDefaultPeriodPlanLoads();
                 $start  = Carbon::parse($period->getStart());
                 $end    = Carbon::parse($period->getEnd());
             }
