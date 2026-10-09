@@ -331,8 +331,8 @@ export function formatTimeInFullFormat(dateTimeString) {
     return `${pad(hours)}ч. ${pad(minutes)}м. ${pad(seconds)}с.` // Часы: 20, Минуты: 58, Секунды: 57
 
     // Для получения времени в формате HH:MM:SS:
-    const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-    console.log(timeString) // Выведет: 20:58:57
+    // const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+    // console.log(timeString) // Выведет: 20:58:57
 }
 
 

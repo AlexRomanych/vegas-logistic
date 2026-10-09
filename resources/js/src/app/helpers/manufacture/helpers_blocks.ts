@@ -1374,10 +1374,16 @@ export function groupTaskLinesForExecute(
                 const hasManualA = a.lines.some(line => line.manual)
                 const hasManualB = b.lines.some(line => line.manual)
 
-                // __ XOR ((hasFalseA && !hasFalseB) ||  (hasFalseB && !hasFalseA))
-                if (hasManualA !== hasManualB) {
-                    return Number(hasManualB) - Number(hasManualA)
+
+                if (hasManualA || hasManualB) {
+                    return a.priority! - b.priority!
+                    // return Number(hasManualB) - Number(hasManualA)
                 }
+
+                // __ XOR ((hasManualA && !hasManualB) ||  (hasManualB && !hasManualA))
+                // if (hasManualA !== hasManualB) {
+                //     return Number(hasManualB) - Number(hasManualA)
+                // }
 
                 // __ Сортировка, если есть переходящие рулоны
                 const hasFalseRollingA = a.lines.some(line => line.f_r)
