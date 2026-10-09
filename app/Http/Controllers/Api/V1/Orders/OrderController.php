@@ -64,7 +64,7 @@ class OrderController extends Controller
                 ->withExists('cuttingTask')     // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('assemblyTask')    // <-- Добавит boolean-поле cutting_task_exists
                 ->withExists('blockTask')       // <-- Добавит boolean-поле block_task_exists
-                                           // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
+                                                // Проверяем наличие связанных материалов через строки заказа и создаем поле expense_exists (или любое другое)
                 ->withCount([
                     'lines as expense_exists' => function ($query) {
                         $query->whereHas('materials');
@@ -590,7 +590,7 @@ class OrderController extends Controller
 
 
     /**
-     * __ Добавляем прогнозную Заявку
+     * ___ Добавляем прогнозную Заявку
      * @param Request $request
      * @return string
      */
@@ -600,11 +600,12 @@ class OrderController extends Controller
             $all = $request->all();
 
             $validated = $request->validate([
-                'client'  => 'required|integer|exists:clients,id',
-                'order'   => 'required|string|numeric',
-                'load_at' => 'required|date|date_format:Y-m-d',
-                'amount'  => 'required|numeric|min:1',
-                'type'    => 'required|in:' . ElementTypes::MATTRESSES->value . ',' . ElementTypes::ACCESSORIES->value,
+                'client'   => 'required|integer|exists:clients,id',
+                'order'    => 'required|string|numeric',
+                'load_at'  => 'required|date|date_format:Y-m-d',
+                'amount'   => 'required|numeric|min:1',
+                'type'     => 'required|in:' . ElementTypes::MATTRESSES->value . ',' . ElementTypes::ACCESSORIES->value,
+                'function' => 'required|in:raw,tasks', // __ Плановая или Техническая
             ]);
 
             // __ Создаем прогнозную Заявку
@@ -614,6 +615,7 @@ class OrderController extends Controller
                 $validated['type'],
                 $validated['load_at'],
                 $validated['amount'],
+                func: $validated['function'],
             );
 
             return EndPointStaticRequestAnswer::ok('Заявка успешно создана');
@@ -1185,8 +1187,6 @@ class OrderController extends Controller
             return EndPointStaticRequestAnswer::fail($e);
         }
     }
-
-
 
 
 }

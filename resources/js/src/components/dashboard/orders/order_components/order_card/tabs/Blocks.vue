@@ -65,6 +65,7 @@
                     :with-deleting="canEditBlocksPermissionsRights"
                     @delete-task="deleteTask(blockTask)"
                     @add-block-line="addBlockLine(blockTask, $event)"
+                    @delete-block-line="deleteBlockLine(blockTask, $event)"
                 />
             </div>
         </template>
@@ -103,7 +104,7 @@ import type {
     IColorTypes,
     IRenderOrder,
     IBlockTask,
-    IRenderOrderLine, IBlockTaskChangeKeys, IBlock,
+    IRenderOrderLine, IBlockTaskChangeKeys, IBlock, IBlockTaskLine,
 } from '@/types'
 
 import { useBlocksStore } from '@/stores/BlocksStore.ts'
@@ -129,7 +130,6 @@ import ExecuteTask
     from '@/components/dashboard/manufacture/cells/blocks/blocks_execute/ExecuteTask.vue'
 import OrderLines from '@/components/dashboard/orders/order_components/order_render/OrderLines.vue'
 import AddBlocksTaskAsync from '@/components/dashboard/orders/order_components/order_card/tasks/AddBlocksTaskAsync.vue'
-
 
 
 interface IProps {
@@ -410,7 +410,6 @@ const deleteTask = async (blockTask: IBlockTask) => {
 }
 
 
-
 // __ Тип для модального окна Добавления СЗ
 const addBlocksTaskAsync = ref<InstanceType<typeof AddBlocksTaskAsync> | null>(null)
 
@@ -418,9 +417,9 @@ const addBlocksTaskAsync = ref<InstanceType<typeof AddBlocksTaskAsync> | null>(n
 const addTask = async () => {
     const answer = await addBlocksTaskAsync.value!.show()
     if (answer) {
-        const taskData: {action_at: string, change: IBlockTaskChangeKeys, comment: string | null} = addBlocksTaskAsync.value!.taskData
+        const taskData: { action_at: string, change: IBlockTaskChangeKeys, comment: string | null } = addBlocksTaskAsync.value!.taskData
         // console.log('taskData: ', taskData)
-        const result = await blocksStore.addBlockTasksByOrderId(props.order.id, taskData.action_at, taskData.change, taskData.comment)
+        const result                                                                                = await blocksStore.addBlockTasksByOrderId(props.order.id, taskData.action_at, taskData.change, taskData.comment)
 
         if (checkCRUD(result)) {
             modalInfoType.value = 'success'
@@ -439,8 +438,8 @@ const addTask = async () => {
 }
 
 // __ Добавляем Строку СЗ
-const addBlockLine = async (blockTask: IBlockTask, lineData: {block: IBlock, amount: number}) => {
-    const result = await blocksStore.addBlockTaskLine(blockTask.id, lineData.block.code_1c, lineData.amount)
+const addBlockLine = async (blockTask: IBlockTask, lineData: { block: IBlock, amount: number, comment: string | null }) => {
+    const result = await blocksStore.addBlockTaskLine(blockTask.id, lineData.block.code_1c, lineData.amount, lineData.comment)
     if (checkCRUD(result)) {
         blockTask.collapsed = false
         blockTask.block_lines.push(result)
@@ -451,6 +450,38 @@ const addBlockLine = async (blockTask: IBlockTask, lineData: {block: IBlock, amo
     }
     // console.log('result: ', result)
 }
+
+
+// __ Удаляем Строку СЗ
+const deleteBlockLine = async (blockTask: IBlockTask, blockLine: IBlockTaskLine) => {
+
+    // __ Удаляем Строку СЗ
+    modalInfoType.value = 'danger'
+    modalInfoMode.value = 'confirm'
+    modalInfoText.value = [
+        'Запись будет удалена.',
+        'Продолжить?',
+    ]
+
+    const answer = await appModalAsyncMultilineTS.value!.show()
+    if (!answer) {
+        return
+    }
+
+    const result = await blocksStore.deleteBlockTaskLine(blockLine.id)
+
+    if (checkCRUD(result)) {
+        blockTask.block_lines = blockTask.block_lines.filter(line => line.id !== blockLine.id)
+
+        modalInfoType.value = 'success'
+        modalInfoMode.value = 'inform'
+        modalInfoText.value = [result.payload]
+        await appModalAsyncMultilineTS.value!.show()
+    } else {
+        await showError()
+    }
+}
+
 
 onMounted(async () => {
     isLoading.value = true

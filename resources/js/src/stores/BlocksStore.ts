@@ -74,6 +74,7 @@ const URL_BLOCKS_TASK_LINE_RESET       = '/blocks/tasks/line/reset'            /
 const URL_BLOCKS_TASK_LINE_DESCRIPTION = '/blocks/tasks/line/description'      // URL для изменения описания для записи СЗ
 const URL_BLOCKS_TASK_LINE_MANUAL      = '/blocks/tasks/line/manual'           // URL для изменения Приоритет вручную для записи СЗ
 const URL_BLOCKS_TASK_LINE_ADD         = '/blocks/tasks/line/add'              // URL для добавления вручную строки (записи) СЗ
+const URL_BLOCKS_TASK_LINE_DELETE      = '/blocks/tasks/line/delete'           // URL для удаления вручную строки (записи) СЗ
 
 const URL_BLOCK_DAY                    = '/blocks/day'                         // URL для получения рабочего дня
 const URL_BLOCK_DAY_PERIOD             = '/blocks/days/period'                 // URL для получения рабочих дней за период
@@ -983,12 +984,18 @@ export const useBlocksStore = defineStore('blocks', () => {
     }
 
     // __ Добавляем Запись в СЗ вручную
-    const addBlockTaskLine = async (taskId: number, blockCode: string, amount: number) => {
-        const result = await jwtPost(URL_BLOCKS_TASK_LINE_ADD, { task_id: taskId, block_code: blockCode, amount })
+    const addBlockTaskLine = async (taskId: number, blockCode: string, amount: number = 0, comment: string | null = null) => {
+        const result = await jwtPost(URL_BLOCKS_TASK_LINE_ADD, { task_id: taskId, block_code: blockCode, amount, comment })
         if (DEBUG) console.log('BlockStore: addBlockTaskLine: ', result)
         return result.data
     }
 
+    // __ Добавляем Запись в СЗ вручную
+    const deleteBlockTaskLine = async (id: number) => {
+        const result = await jwtDelete(URL_BLOCKS_TASK_LINE_DELETE, { id })
+        if (DEBUG) console.log('BlockStore: deleteBlockTaskLine: ', result)
+        return result
+    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // !!! ---          Время Переналадки                  !!!
@@ -1106,6 +1113,7 @@ export const useBlocksStore = defineStore('blocks', () => {
         setBlockTaskLineDescription,
         setBlockTaskLineManual,
         addBlockTaskLine,
+        deleteBlockTaskLine,
         divideLineInBlockTaskPending,
 
         taskLinesManufLineSet,

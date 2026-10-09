@@ -22,13 +22,13 @@ const URL_ORDER                          = 'order'                              
 const URL_ORDERS_TYPES                   = 'orders/types'                       // URL для получения типа заказов
 const URL_ORDERS_TYPES_COLOR_UPDATE      = 'orders/types/color/patch'           // URL для обновления цвета типа заказов
 
-const URL_ORDERS_UPLOAD                  = 'orders/upload/'                     // URL для загрузки заказов с диска
-const URL_ORDERS_VALIDATE                = 'orders/validate/'                   // URL для проверки заказов с диска
-const URL_ORDERS_DELETE                  = 'orders/delete/'                     // URL для удаления заказов
-const URL_ORDERS_LINE_DELETE             = 'orders/line/delete/'                // URL для удаления линии контекста в заказе
-const URL_ORDERS_ADD_AVERAGE             = 'orders/add/average'                 // URL для добавления прогнозной Заявки
-const URL_ORDERS_SET_LOAD_AT             = 'orders/patch/load-at'               // URL для изменения даты загрузки на складе
-const URL_ORDERS_SET_DESCRIPTION         = 'orders/patch/description'           // URL для изменения описания Заявки
+const URL_ORDERS_UPLOAD          = 'orders/upload/'                     // URL для загрузки заказов с диска
+const URL_ORDERS_VALIDATE        = 'orders/validate/'                   // URL для проверки заказов с диска
+const URL_ORDERS_DELETE          = 'orders/delete/'                     // URL для удаления заказов
+const URL_ORDERS_LINE_DELETE     = 'orders/line/delete/'                // URL для удаления линии контекста в заказе
+const URL_ORDERS_ADD_AVERAGE     = 'orders/add/average'                 // URL для добавления прогнозной Заявки
+const URL_ORDERS_SET_LOAD_AT     = 'orders/patch/load-at'               // URL для изменения даты загрузки на складе
+const URL_ORDERS_SET_DESCRIPTION = 'orders/patch/description'           // URL для изменения описания Заявки
 
 
 export const TOTAL_PRECISION = 0    // __ Количество знаков после запятой при рендере расчетных значений
@@ -160,22 +160,24 @@ export const useOrdersStore = defineStore('orders', () => {
 
     // __ Добавляем прогнозную Заявку
     const addOrdersAverage = async (
-        clientId: number | null    = null,
-        orderNo: string | null     = null,
-        amount: number | null      = null,
-        elementType: string | null = null,
-        loadDate: string | null    = null,
+        clientId: number | null     = null,
+        orderNo: string | null      = null,
+        amount: number | null       = null,
+        elementType: string | null  = null,
+        loadDate: string | null     = null,
+        functionType: string | null = null,
     ) => {
-        if (!(clientId && orderNo && amount && elementType && loadDate)) {
+        if (!(clientId && orderNo && amount && elementType && loadDate && functionType)) {
             return
         }
 
         const response = await jwtPost(URL_ORDERS_ADD_AVERAGE, {
-            client : clientId,
-            order  : orderNo,
+            client    : clientId,
+            order     : orderNo,
             amount,
-            type   : elementType,
-            load_at: loadDate,
+            'type'    : elementType,
+            load_at   : loadDate,
+            'function': functionType,
         })
         const result   = await response
 

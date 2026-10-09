@@ -8,10 +8,10 @@
                 <!-- __ Клиент -->
                 <AppLabelTS
                     :text="clientRenderName"
-                    @click="selectClient"
                     :width="DEFAULT_WIDTH"
                     height="h-[50px]"
                     type="indigo"
+                    @click="selectClient"
                 />
 
                 <!-- __ Номер Заявки -->
@@ -19,10 +19,10 @@
                     id="name"
                     v-model:textValue.trim="v$.orderNo.$model as unknown as string"
                     :errors="v$.orderNo.$errors"
+                    :width="DEFAULT_WIDTH"
                     label="Номер Заявки"
                     mode="text"
                     placeholder="Номер Заявки..."
-                    :width="DEFAULT_WIDTH"
                 />
 
                 <!-- __ Тип изделий-->
@@ -30,12 +30,25 @@
                 <AppCheckboxTS
                     id="calc-mode"
                     :checkboxData="elementTypeCheckboxData"
+                    :width="DEFAULT_WIDTH"
                     dir="horizontal"
                     inputType="radio"
                     legend="Тип изделий"
                     type="secondary"
-                    :width="DEFAULT_WIDTH"
                     @checked="elementTypesCheckedHandler"
+                />
+
+                <!-- __ Назначение (функция) -->
+                <div class="mt-5"></div>
+                <AppCheckboxTS
+                    id="calc-mode"
+                    :checkboxData="functionTypeCheckboxData"
+                    :width="DEFAULT_WIDTH"
+                    dir="horizontal"
+                    inputType="radio"
+                    legend="Назначение"
+                    type="secondary"
+                    @checked="functionTypesCheckedHandler"
                 />
 
                 <!-- __ Кол-во изделий -->
@@ -43,10 +56,10 @@
                     id="amount"
                     v-model:input-number.number="v$.amount.$model as unknown as number"
                     :errors="v$.amount.$errors"
+                    :width="DEFAULT_WIDTH"
                     label="Количество изделий"
                     mode="text"
                     placeholder="Количество изделий..."
-                    :width="DEFAULT_WIDTH"
                 />
 
                 <div class="min-h-[15px]"></div>
@@ -55,10 +68,10 @@
                 <AppInputDateTS
                     id="start"
                     v-model="loadDate"
+                    :width="DEFAULT_WIDTH"
                     class="mr-1 ml-0.5"
                     label="Дата загрузки на складе:"
                     type="light"
-                    :width="DEFAULT_WIDTH"
                 />
 
                 <!-- __ К списку -->
@@ -96,7 +109,7 @@
         :func="(client) => `${client!.short_name}`"
         :items="globalClients"
         title="Выберите клиента"
-        width="w-[600px]" />
+        width="w-[600px]"/>
 
 
     <AppCallout
@@ -110,23 +123,20 @@
 
 <script lang="ts" setup>
 import type {
-    ICalcMode,
     ICheckboxData,
     ICheckboxDataItem,
     IElementTypeUnion,
-    ISewingOperation,
 } from '@/types'
 
 import { onMounted, ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, helpers, minValue, integer, numeric } from '@vuelidate/validators'
+import { required, /*minLength,*/ helpers, minValue, integer, numeric } from '@vuelidate/validators'
 
 import { useOrdersStore } from '@/stores/OrdersStore'
 import { useClientsStore } from '@/stores/ClientsStore'
 
-import { SEWING_OPERATION_DRAFT } from '@/app/constants/sewing.ts'
 import { ACCESSORIES_TYPE, MATTRESSES_TYPE } from '@/app/constants/orders.ts'
 
 import { checkCRUD } from '@/app/helpers/helpers_checks.ts'
@@ -139,7 +149,9 @@ import AppModalAsyncSelectTSFuncUpgraded from '@/components/ui/modals/AppModalAs
 import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 import AppInputTextTS from '@/components/ui/inputs/AppInputTextTS.vue'
 import AppInputDateTS from '@/components/ui/inputs/AppInputDateTS.vue'
-import { formatDateTime, getISOFromLocaleDate } from '@/app/helpers/helpers_date'
+import {/* formatDateTime,*/ getISOFromLocaleDate } from '@/app/helpers/helpers_date'
+
+type IOrderFunctionType = 'raw' | 'tasks' // __ Сырье или СЗ
 
 const DEFAULT_WIDTH = 'w-[500px]'
 
@@ -153,10 +165,11 @@ const ordersStore  = useOrdersStore()
 const { globalClients } = storeToRefs(clientsStore)
 
 // __ Определяем объекты валидации
-const orderNo     = ref('')
-const amount      = ref(0)
-const loadDate    = ref<Date>(new Date())
-const elementType = ref<IElementTypeUnion>(MATTRESSES_TYPE)
+const orderNo      = ref('')
+const amount       = ref(0)
+const loadDate     = ref<Date>(new Date())
+const elementType  = ref<IElementTypeUnion>(MATTRESSES_TYPE)
+const functionType = ref<IOrderFunctionType>('raw')
 
 
 const clientRenderName = computed(() => {
@@ -164,13 +177,8 @@ const clientRenderName = computed(() => {
     return client ? `Клиент: ${client.short_name}` : ''
 })
 
-
-const setPeriod = () => console.log(loadDate)
-
 const isLoading     = ref(false)
 const isFormCorrect = ref(false)
-const editMode      = ref(false)         // определяем режим работы формы (редактирование или создание)
-let paramId: number = -1
 
 const calloutShow    = ref(false)      // состояние окна
 const confirmClick   = ref(false)     // определяем для вывода этого callout
@@ -180,18 +188,16 @@ const calloutHandler = () => setInterval(() => (confirmClick.value = false), 500
 
 
 // __ Подготавливаем переменные
-const operation = ref<ISewingOperation>(SEWING_OPERATION_DRAFT)
-let elementTypeCheckboxData: ICheckboxData         // выбор типа изделий
+let elementTypeCheckboxData: ICheckboxData         // __ выбор типа изделий
+let functionTypeCheckboxData: ICheckboxData        // __ выбор функцтт Заявки: для расчеты сырья или для создания СЗ
 
 
 // __ Определяем объекты валидации
 const name        = ref('')
 const machine     = ref('')
-const active      = ref(true)
-const calcMode    = ref<ICalcMode>('dynamic')
 const time        = ref(0)
 const description = ref('')
-
+// const active      = ref(true)
 
 // __ Определяем объект валидации
 const verify = {
@@ -203,17 +209,17 @@ const verify = {
 const REQUIRED_MESSAGE = 'Поле обязательно для заполнения'
 
 const rules = {
-    amount: {
+    amount : {
         $autoDirty: true,
-        minValue: helpers.withMessage(`Поле должно быть больше 0`, minValue(1)),
-        integer: helpers.withMessage(`Поле должно быть целочисленным`, integer),
-        required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        numeric: helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        minValue  : helpers.withMessage(`Поле должно быть больше 0`, minValue(1)),
+        integer   : helpers.withMessage(`Поле должно быть целочисленным`, integer),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
     },
     orderNo: {
         $autoDirty: true,
-        required: helpers.withMessage(REQUIRED_MESSAGE, required),
-        numeric: helpers.withMessage(`Поле должно содержать только цифры`, numeric),
+        required  : helpers.withMessage(REQUIRED_MESSAGE, required),
+        numeric   : helpers.withMessage(`Поле должно содержать только цифры`, numeric),
     },
 }
 
@@ -229,22 +235,34 @@ const fillSelects = () => {
             { id: 2, name: 'Аксессуары', checked: elementType.value === ACCESSORIES_TYPE },
         ],
     }
+
+    functionTypeCheckboxData = {
+        name: 'function-type',
+        data: [
+            { id: 1, name: 'Прогнозная (для Сырья)', checked: functionType.value === 'raw' },
+            { id: 2, name: 'Техническая (для СЗ)', checked: functionType.value === 'tasks' },
+        ],
+    }
 }
 
-
-// __ Обработчик чекбокса на Типе расчета
+// __ Обработчик чекбокса на Типе изделий
 const elementTypesCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
     if (!Array.isArray(data)) {
         elementType.value = data.id === 1 ? MATTRESSES_TYPE : ACCESSORIES_TYPE
     }
 }
 
+// __ Обработчик чекбокса на Типе функции
+const functionTypesCheckedHandler = (data: ICheckboxDataItem | ICheckboxDataItem[]) => {
+    if (!Array.isArray(data)) {
+        functionType.value = data.id === 1 ? 'raw' : 'tasks'
+    }
+}
 
 // __ Выбираем Клиента
 const selectClient = async () => {
     await appModalAsyncSelectTS.value!.show(selectedClientId.value)
 }
-
 
 // __ Отправка формы
 const formSubmit = async () => {
@@ -258,8 +276,8 @@ const formSubmit = async () => {
         amount.value,
         elementType.value,
         getISOFromLocaleDate(loadDate.value),
+        functionType.value,
     )
-
 
     if (checkCRUD(result.data)) {
         calloutMessage.value = result.payload
@@ -293,7 +311,7 @@ onMounted(async () => {
 
     if (globalClients.value.length === 0) {
         await clientsStore.getClients(true)
-        const zeroClientIndex =  globalClients.value.findIndex(item => item.id === 0)
+        const zeroClientIndex = globalClients.value.findIndex(item => item.id === 0)
         if (zeroClientIndex !== -1) {
             selectedClientId.value = globalClients.value[zeroClientIndex].id
         } else {

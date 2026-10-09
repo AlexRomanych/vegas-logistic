@@ -20,50 +20,76 @@
                         </div>
                     </div>
 
-                    <!-- __ Блок -->
-                    <div>
-                        <div class="flex flex-col items-center mb-1"><span class="text-white font-semibold">Блок Пружинный:</span></div>
-                        <AppLabelTS
-                            :text="`${blockCode} ${blockName}`.trim()"
-                            rounded="4"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[500px]"
-                            @dblclick="selectBlock"
-                        />
+                    <div class="flex">
+                        <!-- __ Блок -->
+                        <div>
+                            <div class="flex flex-col items-center mb-1"><span class="text-white font-semibold">Блок Пружинный:</span></div>
+                            <AppLabelTS
+                                :text="`${blockCode} ${blockName}`.trim()"
+                                rounded="4"
+                                text-size="mini"
+                                type="primary"
+                                width="w-[350px]"
+                                @dblclick="selectBlock"
+                            />
+                        </div>
+
+                        <!-- __ Блок -->
+                        <!--<div class="input-wrapper" @dblclick="selectBlock">-->
+                        <!--    <AppInputTextTS-->
+                        <!--        id="block-substitution"-->
+                        <!--        v-model:textValue.trim="blockCode"-->
+                        <!--        :width="DEFAULT_WIDTH"-->
+                        <!--        class="disabled-input"-->
+                        <!--        disabled-->
+                        <!--        label="Блок"-->
+                        <!--        mode="text"-->
+                        <!--        placeholder="Выберите Блок..."-->
+                        <!--        type="primary"-->
+                        <!--    />-->
+                        <!--</div>-->
+
+                        <!-- __ Количество -->
+                        <div>
+                            <div class="flex flex-col items-center mb-1"><span class="text-white font-semibold">Количество:</span></div>
+                            <AppInputNumberTSExtend
+                                v-model="amount"
+                                :allowNegative="false"
+                                :precision="0"
+                                align="center"
+                                height="h-[30px]"
+                                placeholder=""
+                                rounded="4"
+                                text-size="mini"
+                                type="primary"
+                                width="w-[150px]"
+                                @change="onAmountChange"
+                            />
+                        </div>
                     </div>
-
-                    <!-- __ Блок -->
-                    <!--<div class="input-wrapper" @dblclick="selectBlock">-->
-                    <!--    <AppInputTextTS-->
-                    <!--        id="block-substitution"-->
-                    <!--        v-model:textValue.trim="blockCode"-->
-                    <!--        :width="DEFAULT_WIDTH"-->
-                    <!--        class="disabled-input"-->
-                    <!--        disabled-->
-                    <!--        label="Блок"-->
-                    <!--        mode="text"-->
-                    <!--        placeholder="Выберите Блок..."-->
-                    <!--        type="primary"-->
-                    <!--    />-->
-                    <!--</div>-->
-
-                    <!-- __ Количество -->
-                    <div>
-                        <div class="flex flex-col items-center mb-1"><span class="text-white font-semibold">Количество:</span></div>
-                        <AppInputNumberTSExtend
-                            v-model="amount"
-                            :allowNegative="false"
-                            :precision="0"
-                            align="center"
-                            height="h-[30px]"
-                            placeholder=""
-                            rounded="4"
-                            text-size="mini"
-                            type="primary"
-                            width="w-[200px]"
-                            @change="onAmountChange"
-                        />
+                    <!-- __ Комментарий Сменного Задания -->
+                    <div class="w-full">
+                        <div class="flex flex-col items-center  mb-1 mt-3">
+                            <span class="text-white font-semibold">Комментарий:</span>
+                        </div>
+                        <div class="relative group">
+                                <textarea
+                                    v-model="comment"
+                                    class="w-full max-h-[100px] bg-[#161e2d] text-blue-400 text-sm font-mono leading-relaxed
+                                           border border-slate-800/50 rounded-[4px] px-4 py-1
+                                           focus:ring-1 focus:ring-blue-500 outline-none transition-all
+                                           custom-scrollbar resize-none whitespace-pre-wrap"
+                                    placeholder="Добавьте комментарий..."
+                                    rows="8"
+                                ></textarea>
+                            <div class="absolute right-3 bottom-3 opacity-20 pointer-events-none">
+                                <svg class="text-slate-400" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                     stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- __ Нижний блок с кнопками действий -->
@@ -103,10 +129,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, /*watch,*/ } from 'vue'
-import type { IColorTypes, IBlock } from '@/types'
+import { computed, ref } from 'vue'
 
-import { useBlocksStore } from '@/stores/BlocksStore.ts'
+import type { IColorTypes, IBlock } from '@/types'
 
 import { getColorClassByType } from '@/app/helpers/helpers.js'
 
@@ -122,6 +147,7 @@ type ISelectableItem = Omit<IBlock, 'id'> & {
 }
 
 interface IProps {
+    blocks: IBlock[]
     type?: IColorTypes
     width?: string
     height?: string
@@ -133,21 +159,13 @@ const props = withDefaults(defineProps<IProps>(), {
     height: 'min-h-[400px]',
 })
 
-const blocksStore = useBlocksStore()
-
 // __ Подготавливаем переменные
 const BLOCK_PLACEHOLDER = 'Выберите Блок... (двойной клик)'
-const blocks            = ref<IBlock[]>([])
 const block             = ref<IBlock | null>(null)
 const blockCode         = ref<string>('')
 const blockName         = ref<string>(BLOCK_PLACEHOLDER)
 const amount            = ref<number>(0)
-
-// __ Получаем Сами Блоки
-const getBlocks = async () => {
-    const temp: IBlock[] = await blocksStore.getBlocks()
-    blocks.value         = temp.toSorted((a, b) => a.name.localeCompare(b.name))
-}
+const comment           = ref<string>('')
 
 // __ Тип для модального окна выбора Коллекции
 const selectedItems         = ref<ISelectableItem[]>([])
@@ -156,9 +174,9 @@ const appModalAsyncSelectTS = ref<any>(null)
 
 // __ Выбираем Блок
 const selectBlock = async () => {
-    selectedItems.value = blocks.value.map(block => ({ ...block, id: block.code_1c, description: block.code_1c }))
+    selectedItems.value = props.blocks.map(block => ({ ...block, id: block.code_1c, description: block.code_1c }))
 
-    const findItem       = blocks.value.find(b => b.name === block.value?.name)
+    const findItem       = props.blocks.find(b => b.name === block.value?.name)
     selectedItemId.value = findItem ? findItem.id : 0
 
     const answer = await appModalAsyncSelectTS.value!.show(selectedItemId.value)
@@ -199,15 +217,13 @@ defineExpose({
     show,
     get lineData() {
         return {
-            block : block.value,
-            amount: amount.value,
+            block  : block.value,
+            amount : amount.value,
+            comment: comment.value !== '' ? comment.value : null,
         }
     }
 })
 
-onMounted(async () => {
-    await getBlocks()
-})
 </script>
 
 <style scoped>

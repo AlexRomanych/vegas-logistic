@@ -47,6 +47,21 @@
         <!-- __ Причина невыполнения -->
         <AppLabelTSWrapper :render-object="render.false_reason"/>
 
+        <!-- __ Удалить -->
+        <AppLabelTS
+            v-if="withDeleting"
+            align="center"
+            class="cursor-pointer"
+            rounded="4"
+            text="🗑️"
+            text-size="micro"
+            type="danger"
+            width="w-[30px]"
+            :height="DEFAULT_HEIGHT"
+            @click="emits('deleteBlockLine')"
+        />
+
+
     </div>
 
     <!-- __ Модальное окно для изменения/добавления комментария -->
@@ -66,10 +81,11 @@ import type { IColorTypes, IRenderData, IBlockTaskLine, IBlockManufLine } from '
 import { BLOCK_MANUF_LINES } from '@/app/constants/blocks.ts'
 
 import { formatTimeInFullFormat } from '@/app/helpers/helpers_date'
+import { getBlockTaskLineSquare, getTimeString } from '@/app/helpers/manufacture/helpers_blocks.ts'
 
 import AppLabelTSWrapper from '@/components/dashboard/manufacture/cells/components/AppLabelTSWrapper.vue'
-import { getBlockTaskLineSquare, getTimeString } from '@/app/helpers/manufacture/helpers_blocks.ts'
 import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/CommentEdit.vue'
+import AppLabelTS from '@/components/ui/labels/AppLabelTS.vue'
 // import AppLabelMultilineTSWrapper
 //     from '@/components/dashboard/manufacture/cells/components/AppLabelMultilineTSWrapper.vue'
 
@@ -77,12 +93,16 @@ import CommentEdit from '@/components/dashboard/manufacture/cells/blocks/common/
 interface IProps {
     blockLine: IBlockTaskLine
     fieldsWidth: Record<string, string>
+    withDeleting?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+    withDeleting: false,
+})
 
 const emits = defineEmits<{
     (e: 'changeDescription', payload: string): void
+    (e: 'deleteBlockLine'): void
 }>()
 
 // __ Объект отображения данных

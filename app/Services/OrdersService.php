@@ -635,6 +635,7 @@ final class OrdersService
      * @param string|Carbon $loadAt
      * @param int $amount
      * @param string|Carbon|null $unloadAt
+     * @param string|null $func - 'raw' или 'tasks' - Для Сырья или для СЗ
      * @return void
      * @throws Throwable
      */
@@ -645,6 +646,7 @@ final class OrdersService
         string|Carbon $loadAt,
         int $amount,
         string|Carbon|null $unloadAt = null,
+        string|null $func = 'raw'
     ): void {
         // __ Находим Клиента
         $client = null;
@@ -702,7 +704,7 @@ final class OrdersService
         $orderType = OrdersService::getOrderTypeByIndex(AVERAGE_TYPE_INDEX);
         // $orderType = OrdersService::getOrderTypeByOrderNoAndClientId($planLoad['order_no'], $client->id);
 
-        DB::transaction(function () use ($averageModel, $orderType, $loadAt, $unloadAt, $amount, $elementType, $orderNo, $client) {
+        DB::transaction(function () use ($averageModel, $orderType, $loadAt, $unloadAt, $amount, $elementType, $orderNo, $client, $func) {
             $createdOrder = PlanLoad::query()->create([
                 'client_id'         => $client->id,
                 'order_type_id'     => $orderType->id,
@@ -764,39 +766,40 @@ final class OrdersService
                 throw new Exception('Error while creating Average Order with Client id = ' . $client->id . ' is failed');
             }
 
-            // __ Вставляем содержимое Прогнозной Заявки
-            // __ Получаем размеры
-            $AVERAGE_SIZE_STR = '0x0x0';
-            $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
+            // __ Вставляем содержимое Прогнозной Заявки только если это заявка для Сырья (Прогнозная, а не Техническая)
+            if ($func === 'raw') {
+                // __ Получаем размеры
+                $AVERAGE_SIZE_STR = '0x0x0';
+                $dims             = SizeService::getDimensions($AVERAGE_SIZE_STR);
 
-            $createLine = OrderLine::query()->create(
-                [
-                    'order_id'      => $createdOrder->id,
-                    'size'          => $AVERAGE_SIZE_STR,
-                    'width'         => $dims->getWidth(),
-                    'length'        => $dims->getLength(),
-                    'height'        => $dims->getHeight(),
-                    'model_name'    => $averageModel->name,
-                    'model_code_1c' => $averageModel->code_1c,
-                    'amount'        => $amount,
-                    // 'textile'       => $orderLine['t'],
-                    // 'composition'   => $orderLine['d'],
-                    // 'describe_1'    => $orderLine['d1'],
-                    // 'describe_2'    => $orderLine['d2'],
-                    // 'describe_3'    => $orderLine['d3'],
-                    // 'active'        => $orderLine[''],
-                    // 'status'        => $orderLine[''],
-                    // 'description'   => $orderLine[''],
-                    // 'comment'       => $orderLine[''],
-                    // 'note'          => $orderLine[''],
-                    // 'meta'          => $orderLine[''],
-                ]
-            );
+                $createLine = OrderLine::query()->create(
+                    [
+                        'order_id'      => $createdOrder->id,
+                        'size'          => $AVERAGE_SIZE_STR,
+                        'width'         => $dims->getWidth(),
+                        'length'        => $dims->getLength(),
+                        'height'        => $dims->getHeight(),
+                        'model_name'    => $averageModel->name,
+                        'model_code_1c' => $averageModel->code_1c,
+                        'amount'        => $amount,
+                        // 'textile'       => $orderLine['t'],
+                        // 'composition'   => $orderLine['d'],
+                        // 'describe_1'    => $orderLine['d1'],
+                        // 'describe_2'    => $orderLine['d2'],
+                        // 'describe_3'    => $orderLine['d3'],
+                        // 'active'        => $orderLine[''],
+                        // 'status'        => $orderLine[''],
+                        // 'description'   => $orderLine[''],
+                        // 'comment'       => $orderLine[''],
+                        // 'note'          => $orderLine[''],
+                        // 'meta'          => $orderLine[''],
+                    ]
+                );
 
-            if (!$createLine) {
-                throw new Exception('Error while creating Average Order Line with Client id = ' . $client->id . ' is failed');
+                if (!$createLine) {
+                    throw new Exception('Error while creating Average Order Line with Client id = ' . $client->id . ' is failed');
+                }
             }
-
 
             // __ Устанавливаем статус Заявки - Создано
             $createdOrder->statuses()->attach([
@@ -807,24 +810,24 @@ final class OrdersService
             ]);
 
 
-            // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения СЗ
+            // __ Тут начинаем формировать СЗ на различные участки !!! Точка рождения Прогнозных СЗ
 
             // __ Если тип элементов в Заявке - не матрасы, то пропускаем
             // __ Создаем СЗ на Участки только для матрасов
-            $typeRef = $createdOrder->elements_type_ref;
-            if ($createdOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
-                // __ Создаем СЗ на Пошив
-                $sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
-                if (!$sewingTask) {
-                    throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
-                };
-
-                // __ Создаем СЗ на Раскрой
-                //$cuttingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
-                //if (!$cuttingTask) {
-                //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
-                //};
-            }
+            //$typeRef = $createdOrder->elements_type_ref;
+            //if ($createdOrder->elements_type_ref === ElementTypes::MATTRESSES->value) {
+            //    // __ Создаем СЗ на Пошив
+            //    //$sewingTask = SewingService::createSewingTaskFromOrderId($createdOrder->id);
+            //    //if (!$sewingTask) {
+            //    //    throw new Exception('Error while creating Sewing Task with Client id = ' . $client->id);
+            //    //};
+            //
+            //    // __ Создаем СЗ на Раскрой
+            //    //$cuttingTask = CuttingService::createCuttingTaskFromOrderId($createdOrder->id);
+            //    //if (!$cuttingTask) {
+            //    //    throw new Exception('Error while creating Cutting Task with Client id = ' . $client->id);
+            //    //};
+            //}
         });
     }
 

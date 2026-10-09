@@ -58,7 +58,7 @@
 
         <!-- __ Добавить Блоки вручную -->
         <AppLabelTS
-            v-if="withDeleting && isTaskStatusCreated(blockTask) && blockTask.manual_adding"
+            v-if="canBlockLineModify"
             align="center"
             class="cursor-pointer"
             rounded="4"
@@ -68,8 +68,6 @@
             width="w-[30px]"
             @click="addBlock"
         />
-
-
     </div>
 
     <div v-if="!blockTask.collapsed">
@@ -85,7 +83,9 @@
                 <ExecuteTaskLine
                     :block-line="blockLine"
                     :fields-width="blockLineFieldsWidth"
+                    :with-deleting="canBlockLineModify"
                     @change-description="changeDescription(blockLine, $event)"
+                    @delete-block-line="emits('deleteBlockLine', blockLine)"
                 />
             </div>
 
@@ -101,7 +101,6 @@
             />
 
         </div>
-
     </div>
 
     <!-- __ Модальное окно для сообщений -->
@@ -129,6 +128,7 @@
     <!-- __ Модальное окно для Добавления СЗ -->
     <AddBlocksTaskLineAsync
         ref="addBlocksTaskLineAsync"
+        :blocks="blocks"
     />
 
 </template>
@@ -182,10 +182,15 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<{
     (e: 'deleteTask'): void
-    (e: 'addBlockLine', payload: {block: IBlock, amount: number}): void
+    (e: 'addBlockLine', payload: { block: IBlock, amount: number, comment: string | null }): void
+    (e: 'deleteBlockLine', payload: IBlockTaskLine): void
 }>()
 
-const blockStore = useBlocksStore()
+const blocksStore = useBlocksStore()
+
+const canBlockLineModify = computed(() => props.withDeleting && isTaskStatusCreated(props.blockTask) && props.blockTask.manual_adding)
+
+const blocks = ref<IBlock[]>([])
 
 // console.log('task: ', props.blockTask)
 
@@ -451,7 +456,7 @@ async function showError(error: string | string[] | null = null) {
 
 // __ Меняем Комментарий
 const changeDescription = async (blockLine: IBlockTaskLine, description: string) => {
-    const result = await blockStore.setBlockTaskLineDescription(blockLine.id, description)
+    const result = await blocksStore.setBlockTaskLineDescription(blockLine.id, description)
     if (checkCRUD(result)) {
         blockLine.description = description
         return
@@ -466,16 +471,22 @@ const addBlocksTaskLineAsync = ref<InstanceType<typeof AddBlocksTaskLineAsync> |
 
 // __ Добавляем Блок
 const addBlock = async () => {
+
+    if (blocks.value.length === 0) {
+        const temp: IBlock[] = await blocksStore.getBlocks()
+        blocks.value         = temp.toSorted((a, b) => a.name.localeCompare(b.name))
+    }
+
     const answer = await addBlocksTaskLineAsync.value!.show()
     if (answer) {
-        const lineData: { block: IBlock | null, amount: number } = addBlocksTaskLineAsync.value!.lineData
+        const lineData: { block: IBlock | null, amount: number, comment: string | null } = addBlocksTaskLineAsync.value!.lineData
 
         if (!lineData.block || lineData.amount === 0) {
             return
         }
 
-        console.log('lineData: ', lineData)
-        emits('addBlockLine', {block: lineData!.block, amount: lineData.amount})
+        // console.log('lineData: ', lineData)
+        emits('addBlockLine', { block: lineData!.block, amount: lineData.amount, comment: lineData.comment })
     }
 }
 

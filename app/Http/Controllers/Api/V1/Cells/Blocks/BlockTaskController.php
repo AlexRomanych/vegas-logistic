@@ -1441,7 +1441,7 @@ class BlockTaskController extends Controller
 
 
     /**
-     * ___ Добавляем
+     * ___ Добавляем Запись
      * @param Request $request
      * @return BlockTaskLineResource|string
      */
@@ -1452,6 +1452,7 @@ class BlockTaskController extends Controller
                 'task_id'    => 'required|integer|exists:block_tasks,id',
                 'block_code' => 'required|string|exists:blocks,code_1c',
                 'amount'     => 'required|decimal:0|min:1',
+                'comment'    => 'nullable|string|max:255',
             ]);
 
             $block = Block::query()
@@ -1463,8 +1464,8 @@ class BlockTaskController extends Controller
             $collection = $block->getRelation('blockCollection');
 
             $position = BlockTaskLine::query()
-                ->where('block_task_id', $validated['task_id'])
-                ->max('position') + 1;
+                    ->where('block_task_id', $validated['task_id'])
+                    ->max('position') + 1;
 
             $blockTaskLine = BlockTaskLine::query()->create([
                 'block_task_id'      => $validated['task_id'],
@@ -1478,6 +1479,8 @@ class BlockTaskController extends Controller
                 'productivity'       => $collection->productivity,
                 'square'             => $block->length * $block->width / 100 / 100,
                 'time'               => $collection->productivity !== 0.0 ? ($block->length * $block->width / 100 / 100) * $validated['amount'] / $collection->productivity : 0,
+                'comment'            => $validated['comment'] ?? null,
+                'description'        => $validated['comment'] ?? null,
             ]);
 
             $blockLine = BlockTaskLine::query()
@@ -1489,6 +1492,28 @@ class BlockTaskController extends Controller
                 ->findOrFail($blockTaskLine->id);
 
             return new BlockTaskLineResource($blockLine);
+        } catch (Exception|Throwable $e) {
+            return EndPointStaticRequestAnswer::fail($e);
+        }
+    }
+
+
+    /**
+     * ___ Удаляем Запись
+     * @param Request $request
+     * @return string
+     */
+    public function deleteBlockTaskLine(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:block_task_lines,id',
+            ]);
+
+            $blockTaskLine = BlockTaskLine::query()->findOrFail($validated['id']);
+            $blockTaskLine->delete();
+
+            return EndPointStaticRequestAnswer::ok('Запись успешно удалена.');
         } catch (Exception|Throwable $e) {
             return EndPointStaticRequestAnswer::fail($e);
         }
