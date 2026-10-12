@@ -28,7 +28,7 @@
                 <!-- __ Тип изделий-->
                 <div class="mt-5"></div>
                 <AppCheckboxTS
-                    id="calc-mode"
+                    id="elements-type"
                     :checkboxData="elementTypeCheckboxData"
                     :width="DEFAULT_WIDTH"
                     dir="horizontal"
@@ -41,7 +41,7 @@
                 <!-- __ Назначение (функция) -->
                 <div class="mt-5"></div>
                 <AppCheckboxTS
-                    id="calc-mode"
+                    id="order-func"
                     :checkboxData="functionTypeCheckboxData"
                     :width="DEFAULT_WIDTH"
                     dir="horizontal"

@@ -478,7 +478,8 @@ const render: IRenderData = reactive({
         placeholder   : '🔍Клиент...',
         data          : (order: IRenderOrder) => order.client.short_name,
         color         : (order: IRenderOrder) => order.order_type.color,
-        title         : (order: IRenderOrder) => order.order_type.display_name,
+        title         : 'Заявка',
+        // title         : (order: IRenderOrder) => order.order_type.display_name,
     },
     orderNoStr   : {
         id            : () => 'order-no-search',
@@ -496,7 +497,8 @@ const render: IRenderData = reactive({
         placeholder   : '🔍№...',
         data          : (order: IRenderOrder) => order.order_no_str,
         color         : (order: IRenderOrder) => order.order_type.color,
-        title         : (order: IRenderOrder) => order.order_type.display_name,
+        title         : 'Номер заявки',
+        // title         : (order: IRenderOrder) => order.order_type.display_name,
     },
     elementsType : {
         id            : () => 'elements-type-search',
