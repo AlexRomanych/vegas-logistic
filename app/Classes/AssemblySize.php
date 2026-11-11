@@ -7,27 +7,36 @@ use App\Models\Manufacture\Cells\Assembly\AssemblyTask;
 
 class AssemblySize
 {
-    // __ Торец
-    private const TOR_TITLE_WIDTH = 'ШиринаТорец';
+    // __ Торец ППУ
+    private const FOAM_TOR_TITLE_WIDTH = 'ШиринаТорец';
     //private const TOR_TITLE_WIDTH = 'ТорецШирина';
-    private const TOR_TITLE_LENGTH = 'ТорецДлина';
-    private const TOR_TITLE_HEIGHT = 'ВысотаБорт';
+    private const FOAM_TOR_TITLE_LENGTH = 'ТорецДлина';
+    private const FOAM_TOR_TITLE_HEIGHT = 'ВысотаБорт';
     //private const TOR_TITLE_HEIGHT = 'ТорецВысота';
-    private const TOR_TITLE_AMOUNT = 'ТорецКоличество';
+    private const FOAM_TOR_TITLE_AMOUNT = 'ТорецКоличество';
 
-    // __ Бок
-    private const SIDE_TITLE_WIDTH = 'ШиринаБок';
+    // __ Бок ППУ
+    private const FOAM_SIDE_TITLE_WIDTH = 'ШиринаБок';
     //private const SIDE_TITLE_WIDTH = 'БокШирина';
-    private const SIDE_TITLE_LENGTH = 'БокДлина';
-    private const SIDE_TITLE_HEIGHT = 'ВысотаБорт';
+    private const FOAM_SIDE_TITLE_LENGTH = 'БокДлина';
+    private const FOAM_SIDE_TITLE_HEIGHT = 'ВысотаБорт';
     //private const SIDE_TITLE_HEIGHT = 'БокВысота';
-    private const SIDE_TITLE_AMOUNT = 'БокКоличество';
+    private const FOAM_SIDE_TITLE_AMOUNT = 'БокКоличество';
 
-    // __ Настил
-    private const LAYER_TITLE_WIDTH = 'НастилШирина';
-    private const LAYER_TITLE_LENGTH = 'НастилДлина';
-    private const LAYER_TITLE_HEIGHT = 'НастилВысота';
-    private const LAYER_TITLE_AMOUNT = 'НастилКоличество';
+    // __ Настил ППУ
+    private const FOAM_LAYER_TITLE_HEIGHT = 'ТолщинаНастила';
+    private const FOAM_LAYER_TITLE_WIDTH = 'НастШирина';
+    private const FOAM_LAYER_TITLE_WIDTH_2 = 'НастШирина2';
+    private const FOAM_LAYER_TITLE_LENGTH = 'НастДлина';
+    private const FOAM_LAYER_TITLE_LENGTH_2 = 'НастДлина2';
+    private const FOAM_LAYER_TITLE_AMOUNT = 'НастилКоличество';
+    private const FOAM_LAYER_TITLE_AMOUNT_2 = 'НастилКоличество2';
+
+    // __ Тонкий Настил
+    private const THIN_LAYER_TITLE_WIDTH = 'НастилШирина';
+    private const THIN_LAYER_TITLE_LENGTH = 'НастилДлина';
+    private const THIN_LAYER_TITLE_HEIGHT = 'ТолщинаНастила';
+    private const THIN_LAYER_TITLE_AMOUNT = 'КоличествоДеталей';
 
 
     private int $widthDetail = 0;
@@ -98,6 +107,27 @@ class AssemblySize
                 break;
 
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_LAYER:  // __ Тонкий настил
+                $scope = $this->parseScope();
+
+                if (!is_null($scope)) {
+                    // __ тонкий Настил
+                    if (
+                        isset($scope[self::THIN_LAYER_TITLE_WIDTH]) &&
+                        isset($scope[self::THIN_LAYER_TITLE_LENGTH]) &&
+                        //isset($scope[self::THIN_LAYER_TITLE_HEIGHT]) && // __ не учавствует в расчетах
+                        isset($scope[self::THIN_LAYER_TITLE_AMOUNT])
+                    ) {
+                        $this->details[] = [
+                            'width'  => $scope[self::THIN_LAYER_TITLE_WIDTH] * 10,
+                            'length' => $scope[self::THIN_LAYER_TITLE_LENGTH] * 10,
+                            'height' => 0,
+                            //'height' => $scope[self::THIN_LAYER_TITLE_HEIGHT] * 10,
+                            'amount' => $scope[self::THIN_LAYER_TITLE_AMOUNT],
+                        ];
+                        break;
+                    }
+                }
+
                 $this->widthDetail  = $this->width * 10;
                 $this->lengthDetail = $this->length * 10;
                 //$this->heightDetail = $this->height * 10;
@@ -114,41 +144,97 @@ class AssemblySize
                 break;
 
             case AssemblyTask::ASSEMBLY_TASK_SECTOR_FOAM_LAYER: // __ ППУ Настил
+                // --- 11.11.2026
+
                 $scope = $this->parseScope();
 
                 if (!is_null($scope)) {
+                    // __ Настил ППУ
 
-                    // __ Настил
+                    $this->details[] = [
+                        'width'  => isset($scope[self::FOAM_LAYER_TITLE_WIDTH]) ? $scope[self::FOAM_LAYER_TITLE_WIDTH] * 10 : 0,
+                        'length' => isset($scope[self::FOAM_LAYER_TITLE_LENGTH]) ? $scope[self::FOAM_LAYER_TITLE_LENGTH] * 10 : 0,
+                        'height' => isset($scope[self::FOAM_LAYER_TITLE_HEIGHT]) ? $scope[self::FOAM_LAYER_TITLE_HEIGHT] * 10 : 0,
+                        'amount' => $scope[self::FOAM_LAYER_TITLE_AMOUNT] ?? 0,
+                    ];
+
+                    // __ Настил ППУ 2 (Возможный дополнительный второй настил)
                     if (
-                        isset($scope[self::LAYER_TITLE_WIDTH]) &&
-                        isset($scope[self::LAYER_TITLE_LENGTH]) &&
-                        isset($scope[self::LAYER_TITLE_HEIGHT]) &&
-                        isset($scope[self::LAYER_TITLE_AMOUNT])
+                        isset($scope[self::FOAM_LAYER_TITLE_AMOUNT])
+                        && isset($scope[self::FOAM_LAYER_TITLE_AMOUNT_2])
+                        && $scope[self::FOAM_LAYER_TITLE_AMOUNT_2] > 0
                     ) {
                         $this->details[] = [
-                            'width'  => $scope[self::LAYER_TITLE_WIDTH] * 10,
-                            'length' => $scope[self::LAYER_TITLE_LENGTH] * 10,
-                            'height' => $scope[self::LAYER_TITLE_HEIGHT] * 10,
-                            'amount' => $scope[self::LAYER_TITLE_AMOUNT],
+                            'width'  => isset($scope[self::FOAM_LAYER_TITLE_WIDTH_2]) ? $scope[self::FOAM_LAYER_TITLE_WIDTH_2] * 10 : 0,
+                            'length' => isset($scope[self::FOAM_LAYER_TITLE_LENGTH_2]) ? $scope[self::FOAM_LAYER_TITLE_LENGTH_2] * 10 : 0,
+                            'height' => isset($scope[self::FOAM_LAYER_TITLE_HEIGHT]) ? $scope[self::FOAM_LAYER_TITLE_HEIGHT] * 10 : 0,
+                            'amount' => $scope[self::FOAM_LAYER_TITLE_AMOUNT_2],
                         ];
-                        break;
                     }
+
+                    break;
                 }
 
-                $defaultHeight = 10;   // __ Высота Детальки по умолчанию
 
-                $this->widthDetail  = $this->width * 10;
-                $this->lengthDetail = $this->length * 10;
-                $this->heightDetail = $defaultHeight * 10;
-                $this->amountDetail = 2;
+                //if (!is_null($scope)) {
+                //    // __ Настил ППУ
+                //    if (
+                //        isset($scope[self::FOAM_LAYER_TITLE_WIDTH]) &&
+                //        isset($scope[self::FOAM_LAYER_TITLE_LENGTH]) &&
+                //        isset($scope[self::FOAM_LAYER_TITLE_HEIGHT]) &&
+                //        isset($scope[self::FOAM_LAYER_TITLE_AMOUNT])
+                //    ) {
+                //        $this->details[] = [
+                //            'width'  => $scope[self::FOAM_LAYER_TITLE_WIDTH] * 10,
+                //            'length' => $scope[self::FOAM_LAYER_TITLE_LENGTH] * 10,
+                //            'height' => $scope[self::FOAM_LAYER_TITLE_HEIGHT] * 10,
+                //            'amount' => $scope[self::FOAM_LAYER_TITLE_AMOUNT],
+                //        ];
+                //
+                //        // __ Настил ППУ 2 (Возможный дополнительный второй настил)
+                //        if (
+                //            isset($scope[self::FOAM_LAYER_TITLE_WIDTH_2]) &&
+                //            isset($scope[self::FOAM_LAYER_TITLE_LENGTH_2]) &&
+                //            isset($scope[self::FOAM_LAYER_TITLE_HEIGHT]) &&
+                //            isset($scope[self::FOAM_LAYER_TITLE_AMOUNT_2])
+                //        ) {
+                //            $this->details[] = [
+                //                'width'  => $scope[self::FOAM_LAYER_TITLE_WIDTH_2] * 10,
+                //                'length' => $scope[self::FOAM_LAYER_TITLE_LENGTH_2] * 10,
+                //                'height' => $scope[self::FOAM_LAYER_TITLE_HEIGHT] * 10,
+                //                'amount' => $scope[self::FOAM_LAYER_TITLE_AMOUNT_2],
+                //            ];
+                //        }
+                //
+                //        break;
+                //    }
+                //}
+
+                //$defaultHeight = 0;   // __ Высота Детальки по умолчанию
+                //$defaultHeight = 10;   // __ Высота Детальки по умолчанию
+
+                //$this->widthDetail  = 0;
+                //$this->lengthDetail = 0;
+                //$this->heightDetail = 0;
+
+                //$this->widthDetail  = $this->width * 10;
+                //$this->lengthDetail = $this->length * 10;
+                //$this->heightDetail = $defaultHeight * 10;
 
                 // __ Настил
                 $this->details[] = [
-                    'width'  => $this->width * 10,
-                    'length' => $this->length * 10,
-                    'height' => $defaultHeight * 10,
+                    'width'  => 0,
+                    'length' => 0,
+                    'height' => 0,
                     'amount' => 1,
                 ];
+
+                //$this->details[] = [
+                //    'width'  => $this->width * 10,
+                //    'length' => $this->length * 10,
+                //    'height' => $defaultHeight * 10,
+                //    'amount' => 1,
+                //];
 
                 break;
 
@@ -161,47 +247,47 @@ class AssemblySize
 
                     // __ Короткий Борт (Торец)
                     $this->details[] = [
-                        'width'  => isset($scope[self::TOR_TITLE_WIDTH]) ? $scope[self::TOR_TITLE_WIDTH] * 10 : 0,
-                        'length' => isset($scope[self::TOR_TITLE_LENGTH]) ? $scope[self::TOR_TITLE_LENGTH]  * 10: 0,
-                        'height' => isset($scope[self::TOR_TITLE_HEIGHT]) ? $scope[self::TOR_TITLE_HEIGHT]  * 10: 0,
-                        'amount' => $scope[self::TOR_TITLE_AMOUNT] ?? 2,
+                        'width'  => isset($scope[self::FOAM_TOR_TITLE_WIDTH]) ? $scope[self::FOAM_TOR_TITLE_WIDTH] * 10 : 0,
+                        'length' => isset($scope[self::FOAM_TOR_TITLE_LENGTH]) ? $scope[self::FOAM_TOR_TITLE_LENGTH] * 10 : 0,
+                        'height' => isset($scope[self::FOAM_TOR_TITLE_HEIGHT]) ? $scope[self::FOAM_TOR_TITLE_HEIGHT] * 10 : 0,
+                        'amount' => $scope[self::FOAM_TOR_TITLE_AMOUNT] ?? 2,
                     ];
 
                     //if (
-                    //    isset($scope[self::TOR_TITLE_WIDTH]) &&
-                    //    isset($scope[self::TOR_TITLE_LENGTH]) &&
-                    //    isset($scope[self::TOR_TITLE_HEIGHT]) &&
-                    //    isset($scope[self::TOR_TITLE_AMOUNT])
+                    //    isset($scope[self::FOAM_TOR_TITLE_WIDTH]) &&
+                    //    isset($scope[self::FOAM_TOR_TITLE_LENGTH]) &&
+                    //    isset($scope[self::FOAM_TOR_TITLE_HEIGHT]) &&
+                    //    isset($scope[self::FOAM_TOR_TITLE_AMOUNT])
                     //) {
                     //    $this->details[] = [
-                    //        'width'  => $scope[self::TOR_TITLE_WIDTH] * 10,
-                    //        'length' => $scope[self::TOR_TITLE_LENGTH] * 10,
-                    //        'height' => $scope[self::TOR_TITLE_HEIGHT] * 10,
-                    //        'amount' => $scope[self::TOR_TITLE_AMOUNT],
+                    //        'width'  => $scope[self::FOAM_TOR_TITLE_WIDTH] * 10,
+                    //        'length' => $scope[self::FOAM_TOR_TITLE_LENGTH] * 10,
+                    //        'height' => $scope[self::FOAM_TOR_TITLE_HEIGHT] * 10,
+                    //        'amount' => $scope[self::FOAM_TOR_TITLE_AMOUNT],
                     //    ];
                     //    $findTor         = true;
                     //}
 
                     // __ Длинный Борт (Бок)
                     $this->details[] = [
-                        'width'  => isset($scope[self::SIDE_TITLE_WIDTH]) ? $scope[self::SIDE_TITLE_WIDTH] * 10 : 0,
-                        'length' => isset($scope[self::SIDE_TITLE_LENGTH]) ? $scope[self::SIDE_TITLE_LENGTH]  * 10: 0,
-                        'height' => isset($scope[self::SIDE_TITLE_HEIGHT]) ? $scope[self::SIDE_TITLE_HEIGHT]  * 10: 0,
-                        'amount' => $scope[self::SIDE_TITLE_AMOUNT] ?? 2,
+                        'width'  => isset($scope[self::FOAM_SIDE_TITLE_WIDTH]) ? $scope[self::FOAM_SIDE_TITLE_WIDTH] * 10 : 0,
+                        'length' => isset($scope[self::FOAM_SIDE_TITLE_LENGTH]) ? $scope[self::FOAM_SIDE_TITLE_LENGTH] * 10 : 0,
+                        'height' => isset($scope[self::FOAM_SIDE_TITLE_HEIGHT]) ? $scope[self::FOAM_SIDE_TITLE_HEIGHT] * 10 : 0,
+                        'amount' => $scope[self::FOAM_SIDE_TITLE_AMOUNT] ?? 2,
                     ];
 
 
                     //if (
-                    //    isset($scope[self::SIDE_TITLE_WIDTH]) &&
-                    //    isset($scope[self::SIDE_TITLE_LENGTH]) &&
-                    //    isset($scope[self::SIDE_TITLE_HEIGHT]) &&
-                    //    isset($scope[self::SIDE_TITLE_AMOUNT])
+                    //    isset($scope[self::FOAM_SIDE_TITLE_WIDTH]) &&
+                    //    isset($scope[self::FOAM_SIDE_TITLE_LENGTH]) &&
+                    //    isset($scope[self::FOAM_SIDE_TITLE_HEIGHT]) &&
+                    //    isset($scope[self::FOAM_SIDE_TITLE_AMOUNT])
                     //) {
                     //    $this->details[] = [
-                    //        'width'  => $scope[self::SIDE_TITLE_WIDTH] * 10,
-                    //        'length' => $scope[self::SIDE_TITLE_LENGTH] * 10,
-                    //        'height' => $scope[self::SIDE_TITLE_HEIGHT] * 10,
-                    //        'amount' => $scope[self::SIDE_TITLE_AMOUNT],
+                    //        'width'  => $scope[self::FOAM_SIDE_TITLE_WIDTH] * 10,
+                    //        'length' => $scope[self::FOAM_SIDE_TITLE_LENGTH] * 10,
+                    //        'height' => $scope[self::FOAM_SIDE_TITLE_HEIGHT] * 10,
+                    //        'amount' => $scope[self::FOAM_SIDE_TITLE_AMOUNT],
                     //    ];
                     //    $findSide        = true;
                     //}
@@ -213,29 +299,43 @@ class AssemblySize
                     break;
                 }
 
-                $this->widthDetail  = $this->width * 10;
-                $this->lengthDetail = $this->length * 10;
-                $this->heightDetail = $this->height * 10;
-                $this->amountDetail = 2;
+                //$this->widthDetail  = $this->width * 10;
+                //$this->lengthDetail = $this->length * 10;
+                //$this->heightDetail = $this->height * 10;
+                //$this->amountDetail = 2;
 
                 $offSet = 0;   // __ Ширина Детальки по умолчанию
                 //$offSet = 10;   // __ Ширина Детальки по умолчанию
 
                 // __ Длинный Борт
                 $this->details[] = [
-                    'width'  => $offSet * 10,
-                    'length' => $this->length * 10,
-                    'height' => $this->height * 10,
+                    'width'  => 0,
+                    'length' => 0,
+                    'height' => 0,
                     'amount' => 2,
                 ];
 
+                //$this->details[] = [
+                //    'width'  => $offSet * 10,
+                //    'length' => $this->length * 10,
+                //    'height' => $this->height * 10,
+                //    'amount' => 2,
+                //];
+
                 // __ Короткий Борт
                 $this->details[] = [
-                    'width'  => $offSet * 10,
-                    'length' => ($this->width - 2 * $offSet) * 10,
-                    'height' => $this->height * 10,
+                    'width'  => 0,
+                    'length' => 0,
+                    'height' => 0,
                     'amount' => 2,
                 ];
+
+                //$this->details[] = [
+                //    'width'  => $offSet * 10,
+                //    'length' => ($this->width - 2 * $offSet) * 10,
+                //    'height' => $this->height * 10,
+                //    'amount' => 2,
+                //];
 
                 break;
 

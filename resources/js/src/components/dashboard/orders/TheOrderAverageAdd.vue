@@ -180,10 +180,10 @@ const clientRenderName = computed(() => {
 const isLoading     = ref(false)
 const isFormCorrect = ref(false)
 
-const calloutShow    = ref(false)      // состояние окна
-const confirmClick   = ref(false)     // определяем для вывода этого callout
-const calloutMessage = ref('')      // определяем показываемое сообщение
-const calloutType    = ref('danger')   // определяем тип callout
+const calloutShow    = ref(false)       // состояние окна
+const confirmClick   = ref(false)       // определяем для вывода этого callout
+const calloutMessage = ref('')          // определяем показываемое сообщение
+const calloutType    = ref('danger')    // определяем тип callout
 const calloutHandler = () => setInterval(() => (confirmClick.value = false), 5000)
 
 
